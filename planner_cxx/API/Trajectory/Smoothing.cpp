@@ -73,10 +73,10 @@ bool Smoothing::oneLoopShortCut()
     {
         if (ENV.getBool(Env::debugCostOptim))
         {
-            //			if( getIdOfPathAt(lFirst)==getHighestCostId() || getIdOfPathAt(lSecond)==getHighestCostId() ){
-            //				debugShowTraj(lFirst,lSecond);
-            //				nbReallyBiased++;
-            //			}
+				if( getIdOfPathAt(lFirst)==getHighestCostId() || getIdOfPathAt(lSecond)==getHighestCostId() ){
+					debugShowTraj(lFirst,lSecond);
+					nbReallyBiased++;
+				}
         }
 
 

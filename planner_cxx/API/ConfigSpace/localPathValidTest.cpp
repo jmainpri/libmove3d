@@ -9,6 +9,7 @@
 
 #include "localPathValidTest.h"
 
+#include "P3d-pkg.h"
 #include "Collision-pkg.h"
 
 using namespace std;

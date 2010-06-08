@@ -1,13 +1,21 @@
 #ifndef ROBOT_HPP
 #define ROBOT_HPP
 
-#include "P3d-pkg.h"
+#include <Eigen/Core>
+#define EIGEN_USE_NEW_STDVECTOR
+#include <Eigen/StdVector>
+#include <Eigen/Geometry> 
+
 #include "Device/joint.h"
 #include "ConfigSpace/configuration.hpp"
 
 #ifndef _DEVICE_H
-typedef struct p3d_rob;
-typedef struct p3d_traj;
+typedef struct rob;
+typedef struct jnt;
+#endif
+
+#ifndef _TRAJ_H
+typedef struct traj;
 #endif
 
 /**
@@ -29,21 +37,21 @@ public:
      * Constructeur de la classe
      * @param R le p3d_rob pour lequel l'objet Robot est créé
      */
-    Robot(p3d_rob* R , bool copy = false );
+    Robot(rob* R , bool copy = false );
 
     /**
      * Destructeur de la classe
      */
     ~Robot();
 
-    p3d_rob* copyRobotStruct(p3d_rob* robotPt);
+    rob* copyRobotStruct(rob* robotPt);
 
   //Accessor
     /**
      * obtient la structure p3d_rob de la classe
      * @return la structure p3d_rob
      */
-    p3d_rob* getRobotStruct();
+    rob* getRobotStruct();
 
     /**
      * obtient le nom du Robot
@@ -55,7 +63,7 @@ public:
      * Gets traj associated with Robot
      * @return pointer to structure p3d_traj
      */
-    p3d_traj* getTrajStruct();
+    traj* getTrajStruct();
 	
 	/**
 	 * Get the number of Joints
@@ -68,7 +76,19 @@ public:
 	 * @return ith joint structure
 	 */
 	Joint* getJoint(unsigned int i);
-
+	
+	/**
+	 * Returns the Object
+	 * Box
+	 */
+	std::vector<Eigen::Vector3d> getObjectBox();
+	
+	/**
+	 * Initializes the box in which the FF 
+	 * Will be sampled
+	 */
+	void initObjectBox();
+	
     /**
      * tire une Configuration aléatoire pour le Robot
      * @param samplePassive (default = TRUE) indique si l'on tire les joints passif ou non (ie. FALSE dans le cas de ML-RRT)
@@ -83,10 +103,11 @@ public:
     std::tr1::shared_ptr<Configuration> shootDir(bool samplePassive = false);
 
     /**
-      * Gets the active free flyer inside a box
+      * shoots the active free flyer inside a box
       */
     std::tr1::shared_ptr<Configuration> shootFreeFlyer(double* box);
 
+	
     /**
      * place le Robot dans une Configuration
      * @param q la Configuration dans laquelle le Robot sera placé
@@ -130,12 +151,12 @@ public:
 	void setGoTo(Configuration& conf);
 
     /**
-     *
+     * Returns the Robot current Configuration
      */
     std::tr1::shared_ptr<Configuration> getCurrentPos();
 	
     /**
-      *
+      * Returns a new configuration
       */
     std::tr1::shared_ptr<Configuration> getNewConfig();
 
@@ -149,26 +170,60 @@ public:
      */
     Eigen::Vector3d getJointPos(int id);
 
-    /**
-      *
-      */
-    int getObjectDof() 
-	{ 
 #ifdef LIGHT_PLANNER
-		return _Robot->curObjectJnt->index_dof; 
-#else
-		std::cout << "Warning: no light planner" << std::endl;
-		return 0;
+    /**
+      * Returns the Virtual object dof
+      */
+    int getObjectDof();
+	
+	/**
+	 * Activate Constraint
+	 */
+	void activateCcConstraint();
+	
+	/**
+	 * Deactivate Constraint
+	 */
+	void deactivateCcConstraint();
+	
+	/**
+	 * Returns the base Joint
+ 	 */
+	jnt* getBaseJnt();
+	
+	/**
+	 * Shoots the base Joint of the robot
+	 */
+	std::tr1::shared_ptr<Configuration> shootBase();
+	
+	/**
+	 * Shoots the base Joint of the robot
+	 */
+	std::tr1::shared_ptr<Configuration> shootAllExceptBase();
+	
+	/**
+	 * Update but not base
+	 */ 
+	bool setAndUpdateAllExceptBase(Configuration& Conf);
+	
+	/**
+	 * shoots the robot by shooting the 
+	 * FreeFlyer inside the accecibility box
+	 */
+	void shootObjectJoint(Configuration& Conf);
 #endif
-	}
 
 private:
-    p3d_rob* _Robot; /*!< une structure de p3d_rob contenant les données sur le Robot*/
+    rob* _Robot; /*!< une structure de p3d_rob contenant les données sur le Robot*/
     std::string _Name; /*!< le nom du Robot*/
 	bool _copy; /*!< Is true if the p3d_jnt copies and not only points to the structure */
 	
 	std::vector<Joint*> m_Joints;
-
+	
+	Eigen::Vector3d m_ObjectBoxCenter;
+	Eigen::Vector3d m_ObjectBoxDimentions;
 };
+
+extern Robot* API_activeRobot;
 
 #endif

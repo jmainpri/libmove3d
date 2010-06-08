@@ -11,10 +11,13 @@
 //
 #include "../planningAPI.hpp"
 
+#include "P3d-pkg.h"
 #include "Collision-pkg.h"
 #include "Planner-pkg.h"
 
 #include "Localpath-pkg.h"
+
+#include "cost_space.hpp"
 
 using namespace std;
 using namespace tr1;
@@ -285,6 +288,23 @@ double Configuration::dist(Configuration& q, int distChoice)
                 << "Warning: the MOBILE_FRAME_DIST can't be directly returned from the configurations"
                 << endl;
         // hrm_mob_frame_dist(robotPt, mob_frame_ref,ListNode->N->rel_mob_frame);
+	case ONLY_ROBOT_BASE:
+		{
+			double ljnt=0.0;
+			p3d_jnt* jntPt= _Robot->getBaseJnt();
+			for(int j=0; j<jntPt->dof_equiv_nbr; j++) 
+			{
+				int k = jntPt->index_dof + j;
+				
+				if ( (p3d_jnt_get_dof_is_user(jntPt, j) && p3d_jnt_get_dof_is_active_for_planner(jntPt,j)) &&
+					(_Robot->getRobotStruct()->cntrt_manager->in_cntrt[k] != 2) ) 
+				{
+					ljnt += SQR(p3d_jnt_calc_dof_dist(jntPt, j, _Configuration, q.getConfigStruct()));
+				} 
+			}
+			return ljnt;
+		}
+			
     case GENERAL_CSPACE_DIST:
     default:
         return (this->dist(q));
@@ -305,6 +325,11 @@ bool Configuration::IsInCollision()
     {
         return _InCollision;
     }
+}
+
+void Configuration::setAsNotTested()
+{
+	_CollisionTested = false;
 }
 
 double Configuration::distEnv()
@@ -424,6 +449,7 @@ bool Configuration::setConstraints()
     return respect;
 }
 
+#ifdef LIGHT_PLANNER
 Vector3d Configuration::getTaskPos()
 {
     if(!ENV.getBool(Env::isInverseKinematics))
@@ -432,24 +458,23 @@ Vector3d Configuration::getTaskPos()
     }
     Vector3d taskPos;
     int objDof = _Robot->getObjectDof();
-    taskPos[0] = this->at(objDof+0);
-    taskPos[1] = this->at(objDof+1);
-    taskPos[2] = this->at(objDof+2);
+	//cout << "Robot object dof = " << objDof << endl;
+    taskPos[0] = _Configuration[objDof+0];
+    taskPos[1] = _Configuration[objDof+1];
+    taskPos[2] = _Configuration[objDof+2];
     return taskPos;
 }
+#endif
 
 double Configuration::cost()
 {
     if(!_CostTested)
     {
-        _Cost = p3d_GetConfigCost(_Robot->getRobotStruct(), _Configuration);
+        _Cost = global_costSpace->cost(*this);
         _CostTested = true;
-        return _Cost;
     }
-    else
-    {
-        return _Cost;
-    }
+	
+	return _Cost;
 }
 
 void Configuration::print(bool withPassive)

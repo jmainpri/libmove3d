@@ -10,7 +10,7 @@
 //
 //
 #include "../planningAPI.hpp"
-
+#include "P3d-pkg.h"
 #include "Planner-pkg.h"
 
 using namespace std;
@@ -35,7 +35,7 @@ Node::Node(const Node& N) :
 }
 
 //Constructor and destructor
-Node::Node(Graph* G, shared_ptr<Configuration> C) :
+Node::Node(Graph* G, shared_ptr<Configuration> C, bool newCompco) :
         _SelectCost(0.0),
         _nbExpan(0)
 {
@@ -46,7 +46,10 @@ Node::Node(Graph* G, shared_ptr<Configuration> C) :
     _Node = p3d_APInode_make_multisol(G->getGraphStruct(),
                                       C->getConfigStruct(), NULL);
 	
-    p3d_create_compco(G->getGraphStruct(), _Node);
+	if (newCompco) 
+	{
+		p3d_create_compco(G->getGraphStruct(), _Node);
+	}
 }
 
 Node::Node(Graph* G, p3d_node* N) :
@@ -96,6 +99,41 @@ Node::~Node()
 }
 
 //Accessors
+
+/**
+ * Returns the temperature
+ */
+double Node::getTemp() 
+{ 
+	return(_Node->temp); 
+}
+
+/**
+ * modifie la temperature du Node
+ * @param t la nouvelle temperature
+ */
+void Node::setTemp(double t) 
+{ 
+	_Node->temp = t; 
+}
+
+/**
+ * Get Number of neighbors
+ */
+int Node::getNumberOfNeighbors() 
+{ 
+	return _Node->nneighb; 
+}
+
+
+/**
+ * Get Number of Edges
+ */
+int Node::getNumberOfEdges() 
+{ 
+	return _Node->nedge; 
+}
+
 p3d_node* Node::getNodeStruct()
 {
     return _Node;

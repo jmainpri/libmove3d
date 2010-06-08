@@ -3,8 +3,10 @@
 #include "../ThreeDCell.h"
 
 #include <vector>
-#include "Planner-pkg.h"
 #include <iostream>
+
+#include "P3d-pkg.h"
+#include "Planner-pkg.h"
 
 using namespace std;
 using namespace tr1;

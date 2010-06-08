@@ -9,6 +9,9 @@
 
 #include "graph.hpp"
 #include "compco.h"
+
+#include "P3d-pkg.h"
+
 /*
 ConnectedComponent::ConnectedComponent(cpp_Graph* G, p3d_compco* C) :
 	m_compco(C)

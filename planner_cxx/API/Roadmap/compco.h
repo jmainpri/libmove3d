@@ -11,17 +11,21 @@
 
 class Graph;
 
+#ifndef _ROADMAP_H
+struct compco;
+#endif
+
 class ConnectedComponent
 {
 public:
 	//ConnectedComponent(cpp_Graph* G, p3d_compco* C);
-	ConnectedComponent(Graph* G, p3d_compco* C);
+	ConnectedComponent(Graph* G, compco* C);
 	
 	~ConnectedComponent();
 	
-	p3d_compco* getCompcoStruct() { return m_compco; }
+	compco* getCompcoStruct() { return m_compco; }
 	
 private:
-	p3d_compco* m_compco;
+	compco* m_compco;
 };
 #endif

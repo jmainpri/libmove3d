@@ -8,8 +8,13 @@
 #ifndef TRAJECTORY_HPP_
 #define TRAJECTORY_HPP_
 
-#include "planningAPI.hpp"
+#include "API/Device/robot.hpp"
+#include "API/ConfigSpace/configuration.hpp"
+#include "API/ConfigSpace/localpath.hpp"
 
+#ifndef _TRAJ_H
+typedef struct p3d_traj;
+#endif
 /**
  * @ingroup CPP_API
  * @defgroup Trajectory
@@ -97,10 +102,10 @@ public:
 	void 	replaceP3dTraj();
 	void 	replaceP3dTraj(p3d_traj* trajPt);
 
-	void drawGL(int nbKeyFrame);
+	void draw(int nbKeyFrame);
 	void print();
 
-        int meanCollTest();
+	int meanCollTest();
 
 	//---------------------------------------------------------
 	// Getters & Setters

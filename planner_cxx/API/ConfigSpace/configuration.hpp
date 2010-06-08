@@ -148,6 +148,11 @@ public:
      * @return la Configuration est en collision
      */
     bool IsInCollision();
+	
+	/**
+	 * Set the configuration as not tested
+	 */
+	void setAsNotTested();
 
 
     double distEnv();
@@ -198,10 +203,13 @@ public:
 	 */
     bool setConstraints();
 
+#ifdef LIGHT_PLANNER
     /**
-      * Sets the config constraints and returns the task 3d pos
+      * Sets the config constraints 
+	  * and returns the task 3d pos (Virtual Object)
       */
     Eigen::Vector3d getTaskPos();
+#endif
 
     /**
      *
@@ -217,7 +225,7 @@ public:
      * Checks that Configruation is not out of bands
      */
     bool isOutOfBands();
-
+	
     /**
      *
      */

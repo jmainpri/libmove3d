@@ -1,15 +1,13 @@
 #ifndef WORKSPACE_HPP
 #define WORKSPACE_HPP
 
-#include "planningAPI.hpp"
+#include "scene.h"
 
 /**
   * @ingroup NEW_CPP_MODULE
   * @defgroup CPP_API C++ Planning API
   * @brief Implements in C++ an interface to the more low level functionalities
   */
-
-class Scene;
 
 /**
  * @ingroup CPP_API
@@ -22,37 +20,34 @@ public:
 	/**
 	 * Class constructor
 	 */
-        Project();
-
-        Project(std::string nameMainEnv);
+	Project(Scene* sc);
 
 	/**
 	 * Class Destructor
 	 */
-        ~Project();
+	~Project();
 
 	/**
-         * obtient l'Scene actif
-         * @return l'Scene actif
+	 * obtient l'Scene actif
+	 * @return l'Scene actif
 	 */
-        Scene* getActivScene();
+	Scene* getActiveScene();
+	
 	/**
-         * modifie l'Scene actif
-         * @param name le nom du nouvel Scene actif
-	 */
-        void setActivScene(std::string name);
+	  * modifie l'Scene actif
+	  * @param name le nom du nouvel Scene actif
+	  */
+	void setActiveScene(std::string name);
 
 	/**
-         * insert un nouvel Scene au vecteur des Scene
-         * @param E le nouvel Scene
+	 * insert un nouvel Scene au vecteur des Scene
+	 * @param E le nouvel Scene
 	 */
-        void insertScene(Scene* E);
+	void insertScene(Scene* E);
 
 private:
-        std::vector<Scene*> _Scenes;/*!< le vecteur des Scene chargés*/
-        std::string _activScene;/*!< le nom de l'Scene actif*/
+        std::vector<Scene*> m_Scenes;/*!< le vecteur des Scene chargés*/
+        std::string m_activeScene;/*!< le nom de l'Scene actif*/
 };
-
-extern Project WS;
 
 #endif

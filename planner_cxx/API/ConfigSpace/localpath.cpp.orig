@@ -12,15 +12,11 @@
 #include "../planningAPI.hpp"
 //#include "../../HRI_CostSpace/HRICS_HAMP.h"
 
-#include "P3d-pkg.h"
 #include "Localpath-pkg.h"
 #include "Planner-pkg.h"
 
-#include "cost_space.hpp"
-
 using namespace std;
 using namespace tr1;
-
 
 // import most common Eigen types 
 //USING_PART_OF_NAMESPACE_EIGEN
@@ -58,6 +54,10 @@ LocalPath::LocalPath(LocalPath& path, double& p) :
   // If the parameter p is > 0,
   // the given path is at least partially valid
   // and consequently the new path is valid.
+<<<<<<< HEAD
+=======
+  _LocalPath(NULL),
+>>>>>>> e18593aad4c0c6cb5cae1ae838dce0af346f5803
   _Valid(p > 0),
   _Evaluated(path._Evaluated), _lastValidParam(p > 0 ? 1.0 : 0.0),
   _lastValidEvaluated(true),
@@ -245,7 +245,7 @@ bool LocalPath::isValid()
 			}
 		}
 		_NbColTest++;
-		//cout << "_NbColTest = " << _NbColTest << endl;
+		cout << "_NbColTest = " << _NbColTest << endl;
 		_Evaluated = true;
 	}
 	return _Valid;
@@ -422,12 +422,64 @@ double LocalPath::getResolution()
 
 double LocalPath::cost()
 {
-	if (!_costEvaluated) 
+	if (!ENV.getBool(Env::isCostSpace))
 	{
-		_Cost = global_costSpace->cost(*this);
+		return getParamMax();
+	}
+
+	if (!_costEvaluated)
+	{
+		_Cost = 0;
+
+		double currentCost, prevCost;
+                Vector3d taskPos;
+		Vector3d prevTaskPos(0, 0, 0);
+
+		double currentParam = 0;
+
+                double DeltaStep = getResolution();
+                double CostDistStep = DeltaStep;
+
+//                cout << "DeltaStep  = "  << DeltaStep << endl;
+                unsigned int nStep = getParamMax() / DeltaStep;
+
+		shared_ptr<Configuration> confPtr;
+		prevCost = _Begin->cost();
+		
+		// If the value of Env::HRIPlannerWS changes while executing this
+		// function, it could lead to the use of the incorrectly initialized 
+		// prevTaskPos variable, and this triggers a compiler warning.
+		// So, save the value of Env::HRIPlannerWS in a local variable.
+		const bool isHRIPlannerWS = ENV.getBool(Env::HRIPlannerWS);
+		if(isHRIPlannerWS)
+		{
+			prevTaskPos = _Begin->getTaskPos();
+		}
+		// Case of task space
+		vector<double> Pos;
+
+//                cout << "nStep =" << nStep << endl;
+		for (unsigned int i = 0; i < nStep; i++)
+		{
+                        currentParam += DeltaStep;
+
+			confPtr = configAtParam(currentParam);
+			currentCost = confPtr->cost();
+
+			// Case of task space
+                        if(isHRIPlannerWS)
+                        {
+                                taskPos = confPtr->getTaskPos();
+                                CostDistStep = ( taskPos - prevTaskPos ).norm();
+                                prevTaskPos = taskPos;
+                        }
+                        _Cost += p3d_ComputeDeltaStepCost(prevCost, currentCost, CostDistStep);
+
+			prevCost = currentCost;
+		}
 		_costEvaluated = true;
 	}
-	
+
 	return _Cost;
 }
 

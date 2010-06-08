@@ -18,6 +18,8 @@
 #include "../../lightPlanner/proto/lightPlannerApi.h"
 #endif
 
+Robot* API_activeRobot = NULL;
+
 using namespace std;
 using namespace tr1;
 
@@ -71,9 +73,8 @@ Robot::Robot(p3d_rob* robotPt, bool copy )
 	
 	for (int i=0; i<_Robot->njoints; i++) 
 	{
-		m_Joints.push_back( new Joint( _Robot->joints[i] , _copy ) );
+		m_Joints.push_back( new Joint( this , _Robot->joints[i] , _copy ) );
 	}
-
 }
 
 Robot::~Robot()
@@ -115,6 +116,60 @@ Joint* Robot::getJoint(unsigned int i)
 	return m_Joints[i];
 }
 
+vector<Vector3d> Robot::getObjectBox()
+{
+//	if (m_ObjectBox.empty()) {
+//		cout << "Warning : " << __func__ << " : no Object Box" << endl;
+//	}
+	
+	vector<Vector3d> box(8);
+	
+	box[0][0] = 1;		box[4][0] = -1;
+	box[0][1] = -1;		box[4][1] = -1;
+	box[0][2] = 1;		box[4][2] = 1;
+	
+	box[1][0] = 1;		box[5][0] = -1;
+	box[1][1] = 1;		box[5][1] = -1;
+	box[1][2] = 1;		box[5][2] = 1;
+	
+	box[2][0] = 1;		box[6][0] = -1;
+	box[2][1] = -1;		box[6][1] = -1;
+	box[2][2] = -1;		box[6][2] = -1;
+	
+	box[3][0] = 1;		box[7][0] = -1;
+	box[3][1] = 1;		box[7][1] = 1;
+	box[3][2] = -1;		box[7][2] = -1;
+	
+/*	vector<Vector3d> box;
+	box.clear();
+	
+	Transform3d T = getJoint(1)->getMatrixPos();
+	
+	for (unsigned int i=0; i<8; i++) 
+	{
+		box.push_back(m_ObjectBox[i]);
+	}*/
+	
+	Matrix3d A = Matrix3d::Zero();
+	
+    A(0,0) = m_ObjectBoxDimentions[0]/2;
+    A(1,1) = m_ObjectBoxDimentions[1]/2;
+    A(2,2) = m_ObjectBoxDimentions[2]/2;
+	
+	for (unsigned int i=0; i<8; i++) 
+	{
+		box[i] = A*box[i];
+		box[i] = m_ObjectBoxCenter+box[i];
+	}
+	
+	return box;
+}
+
+void Robot::initObjectBox()
+{
+	
+}
+
 shared_ptr<Configuration> Robot::shoot(bool samplePassive)
 {
     shared_ptr<Configuration> q(new Configuration(this));
@@ -123,22 +178,13 @@ shared_ptr<Configuration> Robot::shoot(bool samplePassive)
     {
         deactivateCcCntrts(_Robot,-1);
         p3d_shoot(_Robot, q->getConfigStruct(), false);
-        this->setAndUpdate(*q);
-        q = this->getCurrentPos();
-		
+        setAndUpdate(*q);
+        q = getCurrentPos();
         activateCcCntrts(_Robot,-1,true);
 
 		if (ENV.getBool(Env::drawPoints)) {
-		
-			int VirtualObjDof = this->getObjectDof();
-			Vector3d randomPoint;
-			randomPoint[0] = (*q)[VirtualObjDof+0];
-			randomPoint[1] = (*q)[VirtualObjDof+1];
-			randomPoint[2] = (*q)[VirtualObjDof+2];
-			
-			PointsToDraw->push_back(randomPoint);
-			
-			g3d_draw_allwin_active();
+			PointsToDraw->push_back(q->getTaskPos());
+			//g3d_draw_allwin_active();
 		}
 
         return q;
@@ -174,6 +220,143 @@ shared_ptr<Configuration> Robot::shootFreeFlyer(double* box)
     p3d_FreeFlyerShoot(_Robot, q->getConfigStruct(), box);
     return q;
 }
+
+#ifdef LIGHT_PLANNER
+/**
+ * Activate Constraint
+ */
+void Robot::activateCcConstraint()
+{
+	activateCcCntrts(_Robot,-1,true);
+}
+
+/**
+ * Deactivate Constraint
+ */
+void Robot::deactivateCcConstraint()
+{
+	deactivateCcCntrts(_Robot,-1);
+}
+
+/**
+ * Returns the Virtual object dof
+ */
+int Robot::getObjectDof() 
+{
+	if (_Robot->curObjectJnt) {
+		return _Robot->curObjectJnt->index_dof;
+	}
+	else {
+		return 0;
+		std::cout << "Robot::getObjectDof()::Warning" << std::endl;
+	}
+	
+}
+
+/**
+ * Returns the base Joint
+ */
+p3d_jnt* Robot::getBaseJnt()
+{
+	return _Robot->baseJnt;
+}
+
+
+/**
+ * Shoots the base Joint of the robot
+ */
+shared_ptr<Configuration> Robot::shootBase()
+{
+	shared_ptr<Configuration> q( new Configuration(this));
+	m_Joints[_Robot->baseJnt->num]->shoot(*q);
+	return q;
+}
+
+/**
+ * Shoots all exept base
+ */
+shared_ptr<Configuration> Robot::shootAllExceptBase()
+{
+	shared_ptr<Configuration> q( new Configuration(this));
+	
+	for (unsigned int i=0; i<m_Joints.size(); i++) 
+	{
+		if (_Robot->baseJnt->num == ((int)i)) 
+		//if (i<2)
+		{
+			m_Joints[i]->setConfigFromDofValues(*q);
+		}
+		else
+		{
+			m_Joints[i]->shoot(*q);
+		}
+	}
+	
+	return q;
+}
+
+bool Robot::setAndUpdateAllExceptBase(Configuration& q)
+{
+	int njnt = _Robot->njoints;
+	
+	for(int i=0; i<=njnt; i++) 
+	{
+		p3d_jnt* jntPt = m_Joints[i]->getJointStruct();
+		
+		//if (_Robot->baseJnt->num == ((int)i)) 
+		if ( i <= 1)
+		{ continue; }
+		
+		for(int j=0; j<jntPt->dof_equiv_nbr; j++) 
+		{
+			int k = jntPt->index_dof+j;
+			
+			m_Joints[i]->setJointDof(j,q[k]); 
+		}
+	}
+	
+	return p3d_update_this_robot_pos(_Robot);
+}
+
+void Robot::shootObjectJoint(Configuration& Conf)
+{
+	/*shared_ptr<Configuration> q(new Configuration(Conf));
+	
+	vector<Vector3d> FFBox = getObjectBox();
+	
+	Vector3d center(Vector3d::Zero());
+	
+	double box[8][3];
+	
+	for (int i=0; i<8; i++) 
+	{
+		for (int j=0; j<3; j++) 
+		{
+			box[i][j] = FFBox[i][j];
+		}
+	}*/
+	
+	shared_ptr<Configuration> q(new Configuration(Conf));
+	deactivateCcConstraint();
+	
+	p3d_shoot_justin_left_arm(_Robot, q->getConfigStruct(), false);
+	setAndUpdate(*q);
+	q = getCurrentPos();
+	
+	activateCcConstraint();
+	
+	int ObjectDof = getObjectDof();
+	
+	Conf[ObjectDof+0] = (*q)[ObjectDof+0];
+	Conf[ObjectDof+1] = (*q)[ObjectDof+1];
+	Conf[ObjectDof+2] = (*q)[ObjectDof+2];
+	Conf[ObjectDof+3] = (*q)[ObjectDof+3];
+	Conf[ObjectDof+4] = (*q)[ObjectDof+4];
+	Conf[ObjectDof+5] = (*q)[ObjectDof+5];
+	
+	//p3d_JointFreeFlyerShoot(_Robot,_Robot->curObjectJnt,q->getConfigStruct(),box);
+}
+#endif
 
 /**
  * Returns false if does not respect the 

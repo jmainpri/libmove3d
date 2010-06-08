@@ -11,18 +11,21 @@
 //
 #include "scene.h"
 
+#include "P3d-pkg.h"
+
 using namespace std;
 
-Scene::Scene(string name)
+Scene::Scene(p3d_env* environnement)
 {
-  _Name = name;
-  _activRobot = "";
-}
-
-Scene::Scene(string name, Robot* Robot)
-{
-  _Name = name;
-  setActivRobot(Robot->getName());
+	m_Scene = environnement;
+	
+	m_Name = m_Scene->name;
+	
+	for (int i=0; i<m_Scene->nr; i++) 
+	{
+		cout << "Add new Robot to Scene : " << m_Scene->robot[i]->name << endl;
+		m_Robot.push_back( new Robot( m_Scene->robot[i] ) );
+	}
 }
 
 
@@ -32,35 +35,68 @@ Scene::~Scene()
 
 string Scene::getName()
 {
-  return _Name;
+  return m_Name;
 }
 
-void Scene::setActivRobot(string name)
+void Scene::setActiveRobot(string name)
 {
-  _activRobot = name;
+	unsigned int id = getRobotId(name);
+	p3d_sel_desc_id(P3D_ROBOT,m_Scene->robot[id]);
 }
 
-Robot* Scene::getActivRobot()
+Robot* Scene::getActiveRobot()
 {
-  for(uint i = 0; i < _Robots.size(); i = i + 1)
-  {
-    if(_Robots[i]->getName() == _activRobot)
-    {
-      return _Robots[i];
-    }
-  }
-  if (XYZ_ROBOT->name == _activRobot)
-  {
-    Robot* R = new Robot(XYZ_ROBOT);
-    this->insertRobot(R);
-    return R;
-  }
-  return NULL;
+	return getRobotByName(m_Scene->cur_robot->name);
+}
+
+unsigned int Scene::getRobotId(string str)
+{
+	for (unsigned int i=0; i<m_Robot.size(); i++) 
+	{
+		if ( m_Robot[i]->getName().compare( str ) == 0 ) 
+		{
+			return i;
+		}
+	}
+	
+	cout << "Error geting robot id in " << __func__ << endl;
+	return 0;
+}
+
+/**
+ * Get robot by name
+ */
+Robot* Scene::getRobotByName(string str)
+{
+	unsigned int id = getRobotId(str);
+	
+	if (id < m_Robot.size() ) 
+	{
+		return m_Robot[id];
+	}
+
+	return 0x00;
+}
+
+/**
+ * Get robot by name containing
+ */
+Robot* Scene::getRobotByNameContaining(string str)
+{
+	for (unsigned int i=0; i<m_Robot.size(); i++) 
+	{
+		if ( m_Robot[i]->getName().find( str ) != string::npos ) 
+		{
+			return m_Robot[i];
+		}
+	}
+
+	return 0x00;
 }
 
 void Scene::insertRobot(Robot* R)
 {
-  _Robots.push_back(R);
+  m_Robot.push_back(R);
 }
 
 

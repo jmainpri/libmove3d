@@ -111,14 +111,14 @@ TwoDGrid::TwoDGrid( double samplingRate, vector<double> envSize )
 void TwoDGrid::createAllCells()
 {
 
-    int _nbCells = _nbCellsX * _nbCellsY ;
+    unsigned int _nbCells = _nbCellsX * _nbCellsY ;
 
     _cells.resize(_nbCells);
 
-    int x=0;
-    int y=0;
+    unsigned int x=0;
+    unsigned int y=0;
 
-    for(int i = 0; i < _nbCells; i++)
+    for(unsigned int i = 0; i < _nbCells; i++)
     {
         //        cout << "("<< x << "," << y << ")" << endl;
 
@@ -214,7 +214,7 @@ TwoDCell* TwoDGrid::getCell(double* pos)
   */
 bool TwoDGrid::isCellCoordInGrid(const Vector2i& coord)
 {
-    return !( coord[0] >=_nbCellsX ||  coord[1]>=_nbCellsY || coord[0] <0 || coord[1] <0 );
+    return !( coord[0] >=((int)_nbCellsX) ||  coord[1]>= ((int)_nbCellsY) || coord[0] <0 || coord[1] <0 );
 }
 
 /*!

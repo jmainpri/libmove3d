@@ -5,9 +5,9 @@
  *      Author: jmainpri
  */
 
-#include "trajectory.hpp"
-//#include "../planner/Diffusion/proto/p3d_SpaceCost_proto.h"
+#include "planningAPI.hpp"
 
+#include "P3d-pkg.h"
 #include "Localpath-pkg.h"
 #include "GroundHeight-pkg.h"
 #include "Planner-pkg.h"
@@ -983,7 +983,7 @@ extern double ZmaxEnv;
 
 extern void* GroundCostObj;
 
-void Trajectory::drawGL(int nbKeyFrame)
+void Trajectory::draw(int nbKeyFrame)
 {
 
     double du = range_param / nbKeyFrame;

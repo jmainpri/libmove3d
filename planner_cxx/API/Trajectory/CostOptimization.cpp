@@ -7,6 +7,9 @@
 
 #include "CostOptimization.hpp"
 
+#include "planningAPI.hpp"
+
+#include "P3d-pkg.h"
 #include "Planner-pkg.h"
 
 #include "Grids/gridsAPI.hpp"

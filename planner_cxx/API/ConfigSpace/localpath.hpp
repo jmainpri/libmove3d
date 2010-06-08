@@ -3,6 +3,8 @@
 
 #include "configuration.hpp"
 
+#include "Localpath-pkg.h"
+
 class Robot;
 
 /**

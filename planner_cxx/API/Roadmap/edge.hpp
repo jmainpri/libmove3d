@@ -6,6 +6,10 @@
 
 class Graph;
 
+#ifndef _ROADMAP_H
+typedef struct edge;
+#endif
+
 /**
   * @ingroup CPP_API
   * @defgroup ROADMAP Roadmap
@@ -29,7 +33,7 @@ public:
      * @param G le Graph pour laquel l'Edge est créée
      * @param E la structure d'edge qui sera stockée
      */
-    Edge(Graph* G, p3d_edge* E);
+    Edge(Graph* G, edge* E);
 	
 	
 	/**
@@ -58,7 +62,7 @@ public:
      * obtient la structure p3d_edge stockée
      * @return la structure p3d_edge stockée
      */
-    p3d_edge* getEdgeStruct();
+    edge* getEdgeStruct();
 
     /**
      * obtient le Graph pour lequel l'Edge est créée
@@ -102,7 +106,7 @@ public:
 	std::tr1::shared_ptr<LocalPath> getLocalPath();
 
 private:
-      p3d_edge* _Edge;
+      edge* _Edge;
       Node* _Start;
       Node* _End;
       Graph* _Graph;

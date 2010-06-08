@@ -1,9 +1,11 @@
 #ifndef ENVIRONNEMENT_HPP
 #define ENVIRONNEMENT_HPP
 
-#include "planningAPI.hpp"
+#include "Device/robot.hpp"
 
-class Robot;
+#ifndef _ENVIRONMENT_H
+typedef struct env;
+#endif
 
 /**
         @ingroup CPP_API
@@ -20,9 +22,8 @@ public:
      * Constructeur de la classe
      * @param name le nom de l'Scene
      */
-    Scene(std::string name);
-
-    Scene(std::string name, Robot* Robot);
+	Scene(env* environnment);
+	
     /**
      * Destructeur de la classe
      */
@@ -38,24 +39,52 @@ public:
      * modifie le Robot actif
      * @param name le nom du nouveau Robot actif
      */
-    void setActivRobot(std::string name);
-   /**
+    void setActiveRobot(std::string name);
+	
+	/**
      * obtient le Robot actif
      * @return le Robot actif; NULL si le Robot ne peux pas être créé
      */
-    Robot* getActivRobot();
+    Robot* getActiveRobot();
+	
+	/**
+	 * Returns the robot by id
+	 */
+	Robot* getRobot(unsigned int i) { return m_Robot[i]; }
+	
+	/**
+	 * Returns the robot ID
+	 */
+	unsigned int getRobotId(std::string str);
+	
+	/**
+	 * Get robot by name
+	 */
+	Robot* getRobotByName(std::string name);
+	
+	/**
+	 * Get robot by name containing
+	 */
+	Robot* getRobotByNameContaining(std::string name);
 
     /**
      * insert un nouveau Robot au vecteur des Robot
      * @param R le nouveau Robot
      */
     void insertRobot(Robot* R);
+	
+	/**
+	 * Returns the number of Robots in the
+	 * Scene
+	 */
+	unsigned int getNumberOfRobots() { return m_Robot.size(); }
 
 private:
-    std::vector<Robot*> _Robots;/*!< le vecteur des Robot de l'Scene*/
-    std::string _Name;/*!< le nom de l'Scene*/
-    std::string _activRobot;/*!< le nom du Robot actif*/
-
+    std::vector<Robot*> m_Robot;/*!< All Robots in the scene */
+    std::string m_Name;/*!< The environnement name */
+	
+	env* m_Scene; 
+	
 };
 
 #endif

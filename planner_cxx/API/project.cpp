@@ -10,63 +10,42 @@
 //
 //
 #include "project.h"
+#include "planningAPI.hpp"
 
 using namespace std;
 
-Project::Project()
+Project* global_Project = NULL;
+
+Project::Project(Scene* sc)
 {
+	m_Scenes.push_back( sc );
+	setActiveScene( m_Scenes.back()->getName() );
 }
-
-Project::Project(string nameMainEnv)
-{
-	if(XYZ_ROBOT == NULL)
-	{
-		cout << "Warning: XYZ_ROBOT doesn't exist" << endl;
-	}
-
-        Robot* xyz_Robot = new Robot(XYZ_ROBOT,false);
-        Scene* BasicEnv = new Scene("MainEnv",xyz_Robot);
-        insertScene(BasicEnv);
-        setActivScene("MainEnv");
-}
-
 
 Project::~Project()
 {
 }
 
-Scene* Project::getActivScene()
+Scene* Project::getActiveScene()
 {
-        for(uint i = 0; i < _Scenes.size(); i = i + 1)
+	for(unsigned int i = 0; i < m_Scenes.size(); i++)
 	{
-                if(_Scenes[i]->getName() == _activScene)
+		if( m_Scenes[i]->getName().compare( m_activeScene ) == 0 )
 		{
-                        return _Scenes[i];
+			return m_Scenes[i];
 		}
 	}
-        Scene* env = new Scene(_activScene);
-        this->insertScene(env);
-	return env;
+	
+	return 0x00;
 }
 
-void Project::setActivScene(string name)
-{
-        _activScene = name;
-        for(uint i = 0; i < _Scenes.size(); i = i + 1)
-	{
-                if(_Scenes[i]->getName() == _activScene)
-		{
-			return;
-		}
-	}
-        Scene* env = new Scene(_activScene);
-        this->insertScene(env);
+void Project::setActiveScene(string name)
+{	
+	m_activeScene = name;
 }
 
 void Project::insertScene(Scene* E)
 {
-        _Scenes.push_back(E);
+	m_Scenes.push_back(E);
 }
-
-Project WS;
 

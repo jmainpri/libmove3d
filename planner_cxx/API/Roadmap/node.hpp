@@ -2,11 +2,16 @@
 #define NODE_HPP
 
 #include <tr1/memory>
-#include "P3d-pkg.h"
 
 #include "ConfigSpace/configuration.hpp"
 
 class Graph;
+
+#ifndef _ROADMAP_H
+typedef struct node;
+typedef struct edge;
+typedef struct compco;
+#endif
 
 //class cpp_Graph;
 
@@ -26,14 +31,14 @@ public:
      * @param G le Graph pour lequel le Node est créé
      * @param C la Configuration stockée dans le Node
      */
-    Node(Graph* G, std::tr1::shared_ptr<Configuration> C);
+    Node(Graph* G, std::tr1::shared_ptr<Configuration> C, bool newCompco=true);
 	
     /**
      * Constructeur de la classe
      * @param G le Graph pour lequelle Node est créé
      * @param N la structure de p3d_node qui sera stockée
      */
-    Node(Graph* G, p3d_node* N);
+    Node(Graph* G, node* N);
 	
 	/**
      * Constructeur de la classe
@@ -59,7 +64,7 @@ public:
      * obtient la structure p3d_node
      * @return la structure p3d_node
      */
-    p3d_node* getNodeStruct();
+    node* getNodeStruct();
 
     /**
      * obtient le Graph pour lequel le Node a été créé
@@ -104,12 +109,12 @@ public:
      * obtient la temperature du Node
      * @return la temperature du Node
      */
-    double getTemp() { return(_Node->temp); }
+    double getTemp();
     /**
      * modifie la temperature du Node
      * @param t la nouvelle temperature
      */
-    void setTemp(double t) { _Node->temp = t; }
+    void setTemp(double t);
 
     /**
       * Set node a Start Compco node
@@ -159,22 +164,22 @@ public:
     /**
      * Get Number of neighbors
      */
-    int getNumberOfNeighbors() { return _Node->nneighb; }
+    int getNumberOfNeighbors();
 
     /**
       * Get All neighbors
       */
-    std::vector<p3d_node*> getNeighbors();
+    std::vector<node*> getNeighbors();
 
     /**
      * Get Number of Edges
      */
-    int getNumberOfEdges() { return _Node->nedge; }
+    int getNumberOfEdges();
 
     /**
      * Get All Edges
      */
-    std::vector<p3d_edge*> getEdges();
+    std::vector<edge*> getEdges();
 
     /**
      * teste si deux Node peuvent être liés
@@ -194,18 +199,18 @@ public:
      * obtient la structure de composante connexe à laquelle appartient le Node
      * @return la structure de composante connexe à laquelle appartient le Node
      */
-    p3d_compco* getCompcoStruct();
+    compco* getCompcoStruct();
     /**
      * obtient le pointeur sur la structure Compco
      * @return le pointeur sur la structure Compco
      */
-    p3d_compco** getCompcoStructPt();
+    compco** getCompcoStructPt();
 
     /**
      * place le Node dans la composante connexe
      * @param compco la composante dans laquelle le Node doit être placé
      */
-    void setCompco(p3d_compco* compco);
+    void setCompco(compco* compco);
 
     /**
      * detruit la composante connexe
@@ -248,21 +253,22 @@ public:
      * Method for EST
      */
     void setSelectCost(double Cost) { _SelectCost = Cost; }
-
     double getSelectCost() { return _SelectCost; }
-
     void setExpandFailed() { _nbExpan++;  }
-
     int getNbExpandFailed() { return _nbExpan; }
 
-    void print();
-
-    std::vector<Node*>& getSortedNodes() {return _SortedNodes;}
+	std::vector<Node*>& getSortedNodes() {return _SortedNodes;}
     void setSortedNodes( std::vector<Node*>& nodes ) { _SortedNodes = nodes;}
+	
+	
+	/**
+	 * Prints the node to the standard output
+	 */
+    void print();
 
 private:
 
-    p3d_node* _Node;
+    node* _Node;
     Graph* _Graph;
     Robot* _Robot;
 

@@ -15,6 +15,8 @@
 #include "P3d-pkg.h"
 #include "Util-pkg.h"
 #include "Planner-pkg.h"
+#include "Move3d-pkg.h"
+#include "cost_space.hpp"
 
 #ifdef LIGHT_PLANNER
 #include "../../lightPlanner/proto/lightPlannerApi.h"
@@ -376,14 +378,41 @@ bool Graph::equalName(Graph* G)
 
 // Graph operations
 //----------------------------------------------
+/**
+ * Is Edge in graph
+ */
+bool Graph::isEdgeInGraph(Node* N1, Node* N2)
+{
+    bool flag = false;
+	
+    for (uint i = 0; i < _Edges.size(); i = i + 1)
+    {
+        flag =
+		( _Edges[i]->getEdgeStruct()->Ni == N1->getNodeStruct() ) &&
+		( _Edges[i]->getEdgeStruct()->Nf == N2->getNodeStruct() );
+        if (flag)
+        {
+            return flag;
+        }
+    }
+    return flag;
+}
 
 /**
   * Search configuration in graph
   */
-Node* Graph::searchConf(shared_ptr<Configuration> q)
+Node* Graph::searchConf(Configuration& q)
 {
-    p3d_node* node(p3d_TestConfInGraph(_Graph, q->getConfigStruct()));
+    p3d_node* node(p3d_TestConfInGraph(_Graph,q.getConfigStruct()));
     return (node ? _NodesTable[node] : NULL);
+}
+
+/**
+ * Create a Compco
+ */
+void Graph::createCompco(Node* node)
+{
+	p3d_create_compco(_Graph, node->getNodeStruct() );
 }
 
 /**
@@ -411,6 +440,112 @@ Node* Graph::insertExtremalNode(Node* node)
     this->insertNode(node);
     node->getNodeStruct()->type = ISOLATED;
     return (node);
+}
+
+/**
+ * Insert node for RRT
+ */
+Node* Graph::insertNode(Node* expansionNode,LocalPath& path)
+
+/*shared_ptr<Configuration> q,
+ Node* expansionNode,
+ double currentCost, double step)*/
+{
+    double step = path.getParamMax();
+	
+	
+    Node* node(this->insertConfigurationAsNode(path.getEnd(), expansionNode, step));
+	
+    // Cost updates
+    if (ENV.getBool(Env::isCostSpace))
+    {
+        double currentCost = path.getEnd()->cost();
+		
+        p3d_SetNodeCost(_Graph, node->getNodeStruct(), currentCost );
+		
+        //for adaptive variant, new temp is refreshed except if it is going down.
+        if (currentCost < expansionNode->getNodeStruct()->cost)
+        {
+            node->getNodeStruct()->temp = expansionNode->getNodeStruct()->temp;
+        }
+        else
+        {
+            node->getNodeStruct()->temp = expansionNode->getNodeStruct()->temp
+			/ 2.;
+        }
+    }
+	
+    //weight updates
+    if (p3d_GetIsWeightedChoice())
+        p3d_SetNodeWeight(_Graph, node->getNodeStruct());
+	
+    //check stop conditions
+    if (p3d_GetIsWeightStopCondition())
+    {
+        node->checkStopByWeight();
+    }
+	
+    // Graph updates for RANDOM_IN_SHELL method
+    if (ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH)
+    {
+        p3d_SetNGood(p3d_GetNGood() + 1);
+		
+        if (node->getNodeStruct()->weight > _Graph->CurPbLevel)
+        {
+            _Graph->CurPbLevel = node->getNodeStruct()->weight;
+            _Graph->n_consec_pb_level = 0;
+            _Graph->n_consec_fail_pb_level = 0;
+            if (p3d_GetNGood() > 2)
+                _Graph->critic_cur_pb_level = _Graph->CurPbLevel;
+        }
+        else
+        {
+            _Graph->n_consec_pb_level++;
+            _Graph->n_consec_fail_pb_level = 0;
+        }
+    }
+	
+    //Additional cycles through edges addition if the flag is active
+    if (ENV.getBool(Env::addCycles))
+    {
+        this->addCycles(node, step);
+    }
+	
+	
+    return (node);
+}
+
+/**
+ * Insert Lining Node for RRT
+ */
+Node* Graph::insertConfigurationAsNode(shared_ptr<Configuration> q, Node* from,double step)
+{
+    Node* node = new Node(this, q);
+	
+    this->insertNode(node);
+	
+    if (node->getCompcoStruct()->num < from->getCompcoStruct()->num)
+    {
+        p3d_merge_comp(_Graph,
+                       node->getCompcoStruct(),
+                       from->getCompcoStructPt());
+    }
+    else if (from->getCompcoStruct()->num < node->getCompcoStruct()->num)
+    {
+        p3d_merge_comp(_Graph,
+                       from->getCompcoStruct(),
+                       node->getCompcoStructPt());
+    }
+	
+    p3d_create_edges(_Graph,
+                     from->getNodeStruct(),
+                     node->getNodeStruct(),
+                     step);
+	
+    node->getNodeStruct()->rankFromRoot = from->getNodeStruct()->rankFromRoot +1;
+    node->getNodeStruct()->type = LINKING;
+	
+    return(node);
 }
 
 /**
@@ -455,26 +590,6 @@ void Graph::sortNodesByDist(Node* N)
         }
         sort(_Nodes.begin(), _Nodes.end(), &compareNodes);
     }
-}
-
-/**
-  * Is Edge in graph
-  */
-bool Graph::isEdgeInGraph(Node* N1, Node* N2)
-{
-    bool flag = false;
-
-    for (uint i = 0; i < _Edges.size(); i = i + 1)
-    {
-        flag =
-                ( _Edges[i]->getEdgeStruct()->Ni == N1->getNodeStruct() ) &&
-                ( _Edges[i]->getEdgeStruct()->Nf == N2->getNodeStruct() );
-        if (flag)
-        {
-            return flag;
-        }
-    }
-    return flag;
 }
 
 /**
@@ -600,7 +715,7 @@ bool Graph::linkNodeWithoutDist(Node* N)
 bool Graph::linkNodeAtDist(Node* N)
 {
   int nbLinkedComponents = p3d_link_node_graph_multisol(N->getNodeStruct(), _Graph);
-  this->MergeCheck();
+  this->mergeCheck();
   return(nbLinkedComponents > 0);
 }
 
@@ -615,8 +730,7 @@ bool Graph::linkToAllNodes(Node* newN)
 /**
   * Create Random Configurations
   */
-void Graph::createRandConfs(int NMAX, int(*fct_stop)(void), void(*fct_draw)(
-        void))
+void Graph::createRandConfs(int NMAX)
 {
     int inode;
     double tu, ts;
@@ -778,7 +892,7 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> conf
 /**
   * Merge Component
   */
-int Graph::MergeComp(Node* CompCo1, Node* CompCo2, double DistNodes)
+int Graph::mergeComp(Node* CompCo1, Node* CompCo2, double DistNodes)
 {
 
     if ((CompCo1 == NULL) || (CompCo2 == NULL))
@@ -827,84 +941,9 @@ std::vector<Node*> Graph::getNodesInTheCompCo(Node* node)
 /**
   * Detect the need of merging comp
   */
-void Graph::MergeCheck()
+void Graph::mergeCheck()
 {
     p3d_merge_check(_Graph);
-}
-
-/**
-  * Insert node for RRT
-  */
-Node* Graph::insertNode(
-        Node* expansionNode,
-        LocalPath& path)
-
-        /*shared_ptr<Configuration> q,
-                Node* expansionNode,
-                double currentCost, double step)*/
-{
-    double step = path.getParamMax();
-
-
-    Node* node(this->insertConfigurationAsNode(path.getEnd(), expansionNode, step));
-
-    // Cost updates
-    if (ENV.getBool(Env::isCostSpace))
-    {
-        double currentCost = path.getEnd()->cost();
-
-        p3d_SetNodeCost(_Graph, node->getNodeStruct(), currentCost );
-
-        //for adaptive variant, new temp is refreshed except if it is going down.
-        if (currentCost < expansionNode->getNodeStruct()->cost)
-        {
-            node->getNodeStruct()->temp = expansionNode->getNodeStruct()->temp;
-        }
-        else
-        {
-            node->getNodeStruct()->temp = expansionNode->getNodeStruct()->temp
-                                          / 2.;
-        }
-    }
-
-    //weight updates
-    if (p3d_GetIsWeightedChoice())
-        p3d_SetNodeWeight(_Graph, node->getNodeStruct());
-
-    //check stop conditions
-    if (p3d_GetIsWeightStopCondition())
-    {
-        node->checkStopByWeight();
-    }
-
-    // Graph updates for RANDOM_IN_SHELL method
-    if (ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH)
-    {
-        p3d_SetNGood(p3d_GetNGood() + 1);
-
-        if (node->getNodeStruct()->weight > _Graph->CurPbLevel)
-        {
-            _Graph->CurPbLevel = node->getNodeStruct()->weight;
-            _Graph->n_consec_pb_level = 0;
-            _Graph->n_consec_fail_pb_level = 0;
-            if (p3d_GetNGood() > 2)
-                _Graph->critic_cur_pb_level = _Graph->CurPbLevel;
-        }
-        else
-        {
-            _Graph->n_consec_pb_level++;
-            _Graph->n_consec_fail_pb_level = 0;
-        }
-    }
-
-    //Additional cycles through edges addition if the flag is active
-    if (ENV.getBool(Env::addCycles))
-    {
-        this->addCycles(node, step);
-    }
-
-
-    return (node);
 }
 
 /**
@@ -951,40 +990,6 @@ void Graph::addCycles(Node* node, double step)
 }
 
 /**
-  * Insert Lining Node for RRT
-  */
-Node* Graph::insertConfigurationAsNode(shared_ptr<Configuration> q, Node* from,
-                                       double step)
-{
-    Node* node = new Node(this, q);
-
-    this->insertNode(node);
-
-    if (node->getCompcoStruct()->num < from->getCompcoStruct()->num)
-    {
-        p3d_merge_comp(_Graph,
-                       node->getCompcoStruct(),
-                       from->getCompcoStructPt());
-    }
-    else if (from->getCompcoStruct()->num < node->getCompcoStruct()->num)
-    {
-        p3d_merge_comp(_Graph,
-                       from->getCompcoStruct(),
-                       node->getCompcoStructPt());
-    }
-
-    p3d_create_edges(_Graph,
-                     from->getNodeStruct(),
-                     node->getNodeStruct(),
-                     step);
-
-    node->getNodeStruct()->rankFromRoot = from->getNodeStruct()->rankFromRoot +1;
-    node->getNodeStruct()->type = LINKING;
-
-    return(node);
-}
-
-/**
  * Recompute all node and edge
  * cost
  */
@@ -1023,3 +1028,144 @@ void Graph::recomputeCost()
 	
 	return true;
 }*/
+
+void Graph::extractBestTraj(shared_ptr<Configuration> qi,shared_ptr<Configuration> qf)
+{
+	Node  *Ns=NULL,*Ng=NULL;
+
+	//  p3d_graph* graphPt = NULL;
+	double    tu;//,ts;
+	p3d_traj* trajPt = NULL;
+	//  ChronoOn();
+	
+	
+	if(_Graph == NULL) {
+		cout << "Warning: cannot extract the best path\
+				   as there is no current graph" << endl;
+		return;
+	}
+	// Dense Roadmap creation
+	//  graphPt = XYZ_GRAPH;
+	
+	// start and goal config creation
+//	qi = _Robot->getInitialPosition();
+//	qf = _Robot->getGoTo();
+	if(qf->IsInCollision()) {
+		(_Graph->nb_test_coll)++;
+		cout << "Computation of approximated optimal cost stopped: \
+				   Goal configuration in collision" << endl;
+		ChronoOff();
+		return;
+	}
+	
+	// start and goal nodes creation and initialisation
+	Ns = searchConf(*qi);
+	if(Ns == NULL) {
+		Ns = new Node(this,qi);
+		insertExtremalNode(Ns);
+	} else {
+		//p3d_destroy_config(robotPt, configStart);
+		//configStart = NULL;
+	}
+	
+	Ng = searchConf(*qf);
+	if(Ng == NULL) {
+		Ng = new Node(this,qf);
+		insertExtremalNode(Ng);
+	} else {
+		//p3d_destroy_config(robotPt, configGoal);
+		//configGoal = NULL;
+	}
+	initMotionPlanning(Ns,Ng);
+	_Robot->setAndUpdate(*Ns->getConfiguration());
+	
+	//search of the main constructed connected compoant
+	p3d_compco* actualCompco = _Graph->comp;
+	p3d_compco* mainCompPt = actualCompco;
+	for(int i=0;i<_Graph->ncomp;i++)
+	{
+		if (actualCompco->nnode > mainCompPt->nnode) {
+			mainCompPt = actualCompco;
+		}
+		actualCompco = actualCompco->suiv;
+	}
+	
+	//connection of the the extremal nodes to the main componant
+	bool ConnectRes = p3d_ConnectNodeToComp(_Graph,  Ns->getNodeStruct(), mainCompPt);
+	ConnectRes = (ConnectRes && p3d_ConnectNodeToComp(_Graph, Ng->getNodeStruct(), mainCompPt)) ;
+	
+	if(!ConnectRes) 
+	{
+		cout << "The extremal nodes can't be connected" << endl;
+	}
+	else 
+	{
+		// on construit la trajectoire entre les points etapes
+		(_Graph->nb_test_coll)++;
+		cout << "Connection of the extremal nodes succeeded\n" << endl;
+		cout << _Graph->ncomp << endl;
+		trajPt = p3d_graph_to_traj(_Robot->getRobotStruct());
+	}
+	
+	//time info
+	// ChronoPrint("");
+	// ChronoTimes(&tu,&ts);
+	_Graph->time = _Graph->time + tu;
+	// ChronoOff();
+	
+	//PrintInfo(("ConnectRes: %d\n",ConnectRes));
+	if(ConnectRes == TRUE && trajPt) {
+		Trajectory traj(_Robot,trajPt);
+		cout << "Trajectory cost  = " << traj.cost() << endl;
+	}
+}
+
+/**
+ * Replaces p3d_InitRun
+ */
+void Graph::initMotionPlanning(Node* start,Node* goal)
+{
+#ifdef ENERGY
+	int n_coldeg,icoldeg;
+	double *coldeg_qs;
+#endif
+	_Graph->search_start = start->getNodeStruct();
+	if(ENV.getBool(Env::expandToGoal)== true) 
+	{
+		_Graph->search_goal = goal->getNodeStruct();
+	}
+	
+	_Graph->search_done = FALSE;
+	p3d_InitDynDomainParam(_Graph,start->getNodeStruct(),goal->getNodeStruct());
+	
+	if(ENV.getBool(Env::isCostSpace) == true) {
+		global_costSpace->initMotionPlanning(this, start, goal);
+	}
+	if (p3d_GetIsWeightedChoice()== TRUE) {
+		p3d_init_root_weight(_Graph);
+	}
+	if(ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH ) {
+		p3d_init_pb_variables(_Graph);
+	}
+	if(start != NULL) {
+		start->getNodeStruct()->rankFromRoot = 1;
+		start->getNodeStruct()->comp->nbTests = 0;
+	}
+	if(goal != NULL) {
+		goal->getNodeStruct()->rankFromRoot = 1;
+		goal->getNodeStruct()->comp->nbTests = 0;
+	}
+#ifdef ENERGY
+	if(p3d_get_MOTION_PLANNER() ==  BIO_COLDEG_RRT) {
+		n_coldeg = bio_get_num_collective_degrees();
+		// init coldeg_q in Ns
+		coldeg_qs = bio_alloc_coldeg_config(n_coldeg);
+		for(icoldeg=0; icoldeg<n_coldeg; icoldeg++) {
+			coldeg_qs[icoldeg] = 0.0;
+		}
+		bio_copy_coldeg_q_in_N(start,coldeg_qs,n_coldeg);
+		bio_destroy_coldeg_config(coldeg_qs,n_coldeg);
+		// WARNING : currently Ng is not considered !!!
+	}
+#endif
+}

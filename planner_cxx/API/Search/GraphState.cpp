@@ -1,6 +1,8 @@
 #include "GraphState.h"
 #include "../planningAPI.hpp"
 
+#include "P3d-pkg.h"
+
 using namespace std;
 using namespace API;
 
@@ -98,7 +100,10 @@ double GraphState::computeLength(State *parent)
     }
     else
     {
-        double cost = preced->g() + p3d_ComputeDeltaStepCost(_GraphNode->cost,preced->_GraphNode->cost, dist);
+        double cost = preced->g() + p3d_ComputeDeltaStepCost(
+															 _GraphNode->cost,
+															 preced->_GraphNode->cost, 
+															 dist);
 //        cout << cost << endl;
         return cost;
     }

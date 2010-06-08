@@ -1,14 +1,18 @@
 #include "dijkstra.hpp"
 
+#include <set>
+
+#include "P3d-pkg.h"
+
 using namespace std;
 using namespace tr1;
 using namespace API;
 
-Dijkstra::Dijkstra() : graph(NULL)
+Dijkstra::Dijkstra() : m_graph(NULL)
 {
 }
 
-Dijkstra::Dijkstra(Graph* ptrGraph) : graph(ptrGraph)
+Dijkstra::Dijkstra(Graph* ptrGraph) : m_graph(ptrGraph)
 {
 
 }
@@ -20,20 +24,20 @@ Dijkstra::~Dijkstra()
 
 void Dijkstra::creatStructures()
 {
-    if(graph==NULL)
+    if(m_graph==NULL)
     {
         return;
     }
 
-    graph_node_map.clear();
-    graph_adjacency_map.clear();
+    m_graph_node_map.clear();
+    m_graph_adjacency_map.clear();
 
-    vector<Node*> nodes = graph->getNodes();
+    vector<Node*> nodes = m_graph->getNodes();
 
     for (unsigned i = 0; i < nodes.size(); i++)
     {
         int id_node = nodes[i]->getNodeStruct()->num;
-        graph_node_map[id_node] = nodes[i];
+        m_graph_node_map[id_node] = nodes[i];
         //		cout << "Node num = " << id_node << endl;
         //		nodes[i]->print();
     }
@@ -65,7 +69,7 @@ void Dijkstra::creatStructures()
 
         for (int j = 0; j < ptrNode->getNumberOfNeighbors(); j++)
         {
-            graph_adjacency_map[nodes[i]->getNodeStruct()->num].push_back(edge_dijkstra(neighID[j], neighWeight[j]));
+            m_graph_adjacency_map[nodes[i]->getNodeStruct()->num].push_back(edge_dijkstra(neighID[j], neighWeight[j]));
             //			cout << "graph_adjacency_map["<<i<<"] = "<<"edge_dijkstra("<<neighID[j]<<","<<neighWeight[j]<<")"<< endl;
         }
     }
@@ -77,15 +81,15 @@ void Dijkstra::creatStructuresFromGrid(ThreeDGrid* grid)
     {
         return;
     }
-    graph_node_map.clear();
-    graph_adjacency_map.clear();
+    m_graph_node_map.clear();
+    m_graph_adjacency_map.clear();
 
-    for (int i = 0; i < grid->getNumberOfCells(); i++)
+    for (unsigned int i = 0; i < grid->getNumberOfCells(); i++)
     {
         //                graph_node_map[i] = i;
     }
 
-    for (int i = 0; i < grid->getNumberOfCells(); i++)
+    for (unsigned int i = 0; i < grid->getNumberOfCells(); i++)
     {
         // Cell* ptrCell = grid->getCell(i);
 
@@ -123,18 +127,17 @@ void Dijkstra::computePaths(vertex_t source, adjacency_map_t& adjacency_map,
                             map<vertex_t, vertex_t>& previous)
 {
     for (adjacency_map_t::iterator vertex_iter = adjacency_map.begin(); vertex_iter
-                                                 != adjacency_map.end(); vertex_iter++)
+											  != adjacency_map.end();   vertex_iter++)
     {
         vertex_t v = vertex_iter->first;
         min_distance[v] = numeric_limits<double>::infinity();
     }
 
     min_distance[source] = 0;
-    set<pair<weight_t, vertex_t> , pair_first_less<weight_t, vertex_t> >
-            vertex_queue;
+    set<pair<weight_t, vertex_t> , pair_first_less<weight_t, vertex_t> > vertex_queue;
 
     for (adjacency_map_t::iterator vertex_iter = adjacency_map.begin(); vertex_iter
-                                                 != adjacency_map.end(); vertex_iter++)
+											  != adjacency_map.end();   vertex_iter++)
     {
         vertex_t v = vertex_iter->first;
         vertex_queue.insert(pair<weight_t, vertex_t> (min_distance[v], v));
@@ -160,8 +163,7 @@ void Dijkstra::computePaths(vertex_t source, adjacency_map_t& adjacency_map,
 
                 min_distance[v] = distance_through_u;
                 previous[v] = u;
-                vertex_queue.insert(pair<weight_t, vertex_t> (min_distance[v],
-                                                              v));
+                vertex_queue.insert(pair<weight_t, vertex_t> (min_distance[v],v));
             }
         }
     }
@@ -237,22 +239,22 @@ int Dijkstra::example()
 
 Trajectory* Dijkstra::extractTrajectory(shared_ptr<Configuration> init,shared_ptr<Configuration> goal)
 {
-    if(graph==NULL)
+    if(m_graph==NULL)
     {
         return NULL;
     }
 
     Node* N;
 
-    N = new Node(graph,init);
-    graph->insertNode(N);
-    graph->linkNode(N);
+    N = new Node(m_graph,init);
+    m_graph->insertNode(N);
+    m_graph->linkNode(N);
 
     vertex_t source = N->getNodeStruct()->num;
 
-    N = new Node(graph,goal);
-    graph->insertNode(N);
-    graph->linkNode(N);
+    N = new Node(m_graph,goal);
+    m_graph->insertNode(N);
+    m_graph->linkNode(N);
 
     vertex_t target = N->getNodeStruct()->num;
 
@@ -271,16 +273,16 @@ Trajectory* Dijkstra::extractTrajectory(vertex_t source,vertex_t target)
     map<vertex_t, weight_t> min_distance;
     map<vertex_t, vertex_t> previous;
 
-    computePaths(source, graph_adjacency_map, min_distance, previous);
+    computePaths(source, m_graph_adjacency_map, min_distance, previous);
     list<vertex_t> path = getShortestPathTo(target, previous);
 
-    Trajectory* traj = new Trajectory(graph->getRobot());
+    Trajectory* traj = new Trajectory(m_graph->getRobot());
 
     for (list<vertex_t>::iterator path_iter = path.begin();
     path_iter != path.end();
     path_iter++)
     {
-        Node* ptrNode = graph_node_map[*path_iter];
+        Node* ptrNode = m_graph_node_map[*path_iter];
         shared_ptr<Configuration> q = ptrNode->getConfiguration();
         traj->push_back(q);
     }

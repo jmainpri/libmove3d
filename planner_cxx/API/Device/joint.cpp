@@ -7,6 +7,7 @@
  *
  */
 
+#include "P3d-pkg.h"
 #include "../planningAPI.hpp"
 #include <string>
 
@@ -16,7 +17,7 @@ using namespace std;
 //USING_PART_OF_NAMESPACE_EIGEN
 using namespace Eigen;
 
-Joint::Joint(p3d_jnt* jntPt, bool copy )
+Joint::Joint(Robot *R, p3d_jnt* jntPt, bool copy ) : m_Robot(R)
 {
 	m_Joint = jntPt;
 	
@@ -66,4 +67,67 @@ Transform3d Joint::getMatrixPos()
 	
 	//cout << "Warning: Joint::getAbsPos() undefined" << endl;
 	return t;
+}
+
+p3d_matrix4* Joint::getAbsPos()
+{ 
+	return &(m_Joint->abs_pos); 
+}
+
+void Joint::shoot(Configuration& q,bool sample_passive)
+{
+	for(int j=0; j<m_Joint->dof_equiv_nbr; j++) 
+	{
+		int k = m_Joint->index_dof + j;
+	
+		if ( 
+			sample_passive ||
+			(p3d_jnt_get_dof_is_user(m_Joint, j) && p3d_jnt_get_dof_is_active_for_planner(m_Joint,j)) &&
+			(q.getRobot()->getRobotStruct()->cntrt_manager->in_cntrt[k] != 2) ) 
+		{
+			double vmin,vmax;
+			p3d_jnt_get_dof_rand_bounds(m_Joint, j, &vmin, &vmax);
+			q[k] = p3d_random(vmin, vmax);
+			//std::cout << "Sample Passive = "<<sample_passive<<" , Sampling q["<<k<<"] = "<<q[k]<< std::endl;
+		} 
+		else
+		{ 
+			q[k] = p3d_jnt_get_dof(m_Joint, j); 
+		}
+	}
+}
+
+double Joint::getJointDof(int ithDoF)
+{
+	return p3d_jnt_get_dof(m_Joint,ithDoF);
+}
+
+void Joint::setJointDof(int ithDoF, double value)
+{
+	p3d_jnt_set_dof(m_Joint,ithDoF,value);
+}
+
+void Joint::getDofBounds(int ithDoF, double& vmin, double& vmax)
+{
+	vmin = m_Joint->dof_data[ithDoF].vmin;
+	vmax = m_Joint->dof_data[ithDoF].vmax;
+}
+
+unsigned int Joint::getNumberOfDof()
+{
+	return m_Joint->dof_equiv_nbr;
+}
+
+unsigned int Joint::getIndexOfFirstDof()
+{
+	return m_Joint->index_dof;
+}
+
+void Joint::setConfigFromDofValues(Configuration& q)
+{
+	for(int j=0; j<m_Joint->dof_equiv_nbr; j++) 
+	{
+		int k = m_Joint->index_dof + j;
+		q[k] = getJointDof(j); 
+	}
 }

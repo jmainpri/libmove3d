@@ -8,8 +8,13 @@
 #ifndef DIJKSTRA_HPP_
 #define DIJKSTRA_HPP_
 
-#include "planningAPI.hpp"
+#include "API/Trajectory/trajectory.hpp"
+#include "API/ConfigSpace/configuration.hpp"
+#include "API/Roadmap/graph.hpp"
 #include "../../Grids/ThreeDGrid.h"
+
+#include <list>
+#include <map>
 
 typedef int vertex_t;
 typedef double weight_t;
@@ -59,7 +64,7 @@ public :
 	 */
 	void creatStructures();
 
-        void creatStructuresFromGrid(API::ThreeDGrid* grid);
+	void creatStructuresFromGrid(API::ThreeDGrid* grid);
 
 	void computePaths(vertex_t source,
 	                          adjacency_map_t& adjacency_map,
@@ -77,7 +82,7 @@ public :
 	/**
 	 * Extract Trajectory beetween two Configurations
 	 */
-	Trajectory* extractTrajectory(std::tr1::shared_ptr<Configuration> init,std::tr1::shared_ptr<Configuration> goal);
+	Trajectory* extractTrajectory(std::tr1::shared_ptr<Configuration> init, std::tr1::shared_ptr<Configuration> goal);
 
 	/**
 	 * Extract Trajectory beetween two Nodes
@@ -86,9 +91,9 @@ public :
 
 
 private :
-	Graph* 				graph;
-	adjacency_map_t 	graph_adjacency_map;
-	node_map_t 			graph_node_map;
+	Graph* 				m_graph;
+	adjacency_map_t 	m_graph_adjacency_map;
+	node_map_t 			m_graph_node_map;
 };
 
 #endif /* DIJKSTRA_HPP_ */

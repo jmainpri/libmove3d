@@ -244,6 +244,7 @@ ThreeDCell* ThreeDGrid::getCell(const Vector3d& point)
 	
     if( x>=_nbCellsX ||  y>=_nbCellsY || z>=_nbCellsZ || x<0 || y<0 || z<0 )
     {
+		cout << "WSPoint = " << endl << point << endl;
         cout << "ThreeDGrid:: OutBands " << __func__ << endl;
         return 0x0;
     }

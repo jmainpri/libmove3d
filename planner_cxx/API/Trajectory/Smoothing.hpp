@@ -42,14 +42,14 @@ public:
 
 	double getBiasedParamOnTraj();
 
-	friend bool costMaj(uint i,uint j);
+	//friend bool costMaj(uint i,uint j);
 
-        void saveOptimToFile( std::string str );
+	void saveOptimToFile( std::string str );
 
-        void runShortCut(int nbIteration, int idRun = 0);
+	void runShortCut(int nbIteration, int idRun = 0);
 
 protected:
-        std::vector<double> mOptimCost;
+	std::vector<double> mOptimCost;
 	std::vector<double> mSelected;
 	int nbBiased;
 	int nbReallyBiased;

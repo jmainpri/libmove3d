@@ -1,16 +1,23 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-#include "P3d-pkg.h"
-
 #include "edge.hpp"
 #include "compco.h"
 
+#include <map>
 /**
   @ingroup ROADMAP
   \brief Classe représentant un Graph pour un Robot
   @author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
+#ifndef _TRAJ_H
+typedef struct traj;
+#endif
+
+#ifndef _ROADMAP_H
+typedef struct node;
+typedef struct graph;
+#endif
 
 class Graph{
 
@@ -26,7 +33,7 @@ public:
      * @param G la structure p3d_graph qui sera stockée
      * @param R le Robot pour lequel le Graph est créé
      */
-    Graph(Robot* R, p3d_graph* ptGraph);
+    Graph(Robot* R, graph* ptGraph);
     /**
      * Constructeur de classe
      * @param R le Robot pour lequel le Graph est créé
@@ -37,7 +44,7 @@ public:
      * !!Attention!! ce constructeur n'est à utiliser que si le Robot pour lequel le Graph est créé n'existe pas
      * @param G la structure p3d_graph qui sera stockée
      */
-    Graph(p3d_graph* G);
+    Graph(graph* G);
 
     /**
      * Destructeur de la classe
@@ -47,12 +54,12 @@ public:
 	/**
 	 * import p3d graph struct
 	 */
-	void importGraphStruct(p3d_graph* G);
+	void importGraphStruct(graph* G);
 	
 	/**
 	 * export p3d graph struct
 	 */
-	p3d_graph* exportGraphStruct();
+	graph* exportGraphStruct();
 
 
     //Accessors
@@ -60,12 +67,13 @@ public:
      * obtient la structure p3d_graph stockée
      * @return la structure p3d_graph stockée
      */
-    p3d_graph* getGraphStruct();
+    graph* getGraphStruct();
+	
     /**
      * stocke la structure p3d_graph
      * @param G la structure à stocker
      */
-    void setGraph(p3d_graph* G);
+    void setGraph(graph* G);
 
     /**
      * obtient le Robot pour lequel le Graph est créé
@@ -82,13 +90,13 @@ public:
      * modifie la trajectoire stockée
      * @param Traj la nouvelle trajectoire à stocker
      */
-    void setTraj(p3d_traj* Traj);
+    void setTraj(traj* Traj);
     /**
      * obtient la trajectoire stockée
      * @return la trajectoire stockée
      */
-    p3d_traj* getTrajStruct();
-
+    traj* getTrajStruct();
+	
     /**
      * obtient le vecteur des Node du Graph
      * @return le vecteut des Node du Graph
@@ -110,7 +118,7 @@ public:
      * obtient la table des noeuds du Graph
      * @return la table des noeuds du Graph
      */
-    std::map<p3d_node*, Node*> getNodesTable();
+    std::map<node*, Node*> getNodesTable();
 
     /**
      * obtient le nombre de Node dans le Graph
@@ -123,7 +131,7 @@ public:
      * @param N le p3d_node
      * @return le Node correspondant; NULL si le Node n'existe pas
      */
-    Node* getNode(p3d_node* N);
+    Node* getNode(node* N);
 
     /**
      * obtient le dernier Node ajouté au Graph
@@ -183,30 +191,73 @@ public:
      * @return les deux Graph ont le même nom
      */
     bool equalName(Graph* G);
-
+	
+	/**
+     * vérifie si un node est dans le Graph
+     * @param N le Node à tester
+     * @return le Node est dans le Graph
+     */
+    bool isInGraph(Node* N);
+	
+	/**
+	 * Looks if two Node make an edge in the Graph
+	 * @param N1 the first node
+	 * @param N2 the second node
+	 * @return true if the node is the graph
+	 */
+	bool isEdgeInGraph(Node* N1,Node* N2);
+	
     /**
-     * obtient le Node correspondant à la Configuration
+     * Gets the node that corresponds to a configuration
      * @param q la Configuration recherchée
      * @return le Node s'il existe, NULL sinon
      */
-    Node* searchConf(std::tr1::shared_ptr<Configuration> q);
+    Node* searchConf(Configuration& q);
+	
+	/**
+	 * New Compco 
+	 * @param node to create a compco for
+	 */
+	void createCompco(Node* node);
+	
     /**
      * insert un Node dans le Graph
      * @param node le Node à insérer
      * @return le Node a été inséré
      */
     Node* insertNode(Node* node);
+	
+	
     /**
      * insert un Node de type ISOLATE
      * @param node le Node à insérer
      * @return le Node a été inséré
      */
     Node* insertExtremalNode(Node* node);
+	
+	/**
+     * \brief Link a Configuration to a Node for the RRT Planner
+     * @param q the Configuration to link
+     * @param expansionNode the Node
+     * @param currentCost the current cost to reach the Node
+     * @param step the max distance for one step of RRT expansion
+     * @return the inserted Node
+     */
+    Node* insertNode(Node* expansionNode, LocalPath& path);
+	
+    /**
+     * Link a Configuration to a Node for the RRT Planner
+     * @param q the Configuration to link
+     * @param from the Node
+     * @return the linked Node
+     */
+    Node* insertConfigurationAsNode(std::tr1::shared_ptr<Configuration> q, Node* from, double step );
 
     /**
      * trie les Edges en fonction de leur longueur
      */
     void sortEdges();
+	
     /**
      * ajoute un Edge au Graph
      * @param N1 le Node initial de l'Edge
@@ -227,37 +278,35 @@ public:
      * @param N le Node de référence
      */
     void sortNodesByDist(Node* N);
+	
     /**
      * ajoute un Node s'il est à moins d'une distance max du Graph
      * @param N le Node à ajouter
      * @param maxDist la distance max
      */
     void addNode(Node* N, double maxDist);
+	
     /**
      * ajoute des Node s'ils sont à moins d'une distance max du Graph
      * @param N les Node à ajouter
      * @param maxDist la distance max
      */
     void addNodes(std::vector<Node*> N, double maxDist);
-
-    /**
-     * vérifie si un node est dans le Graph
-     * @param N le Node à tester
-     * @return le Node est dans le Graph
-     */
-    bool isInGraph(Node* N);
+	
     /**
      * lie un Node au Graph
      * @param N le Node à lier
      * @return le Node est lié
      */
     bool linkNode(Node* N);
+	
     /**
      * Lie un node au Graph sans prendre en compte la distance max
      * @param N le Node à lier
      * @return le Node est lié
      */
     bool linkNodeWithoutDist(Node* N);
+	
     /**
      * Lie un Node au Graph en prenant en compte la distance max
      * @param N le Node à lier
@@ -278,8 +327,7 @@ public:
      * @param (*fct_stop)(void) la fonction d'arret
      * @param (*fct_draw)(void) la fonction d'affichage
      */
-    void createRandConfs(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void));
-
+    void createRandConfs(int NMAX);
 	
 	/**
 	 * Gets Random node in the connected component
@@ -316,29 +364,12 @@ public:
      * @param DistNodes la distance entre les deux composantes connexes
      * @return les deux composantes sont mergées
      */
-    int MergeComp(Node* CompCo1, Node* CompCo2, double DistNodes);
+    int mergeComp(Node* CompCo1, Node* CompCo2, double DistNodes);
+	
     /**
      * teste si des composantes connexes doivent être merger et le fait le cas échéant
      */
-    void MergeCheck();
-
-    /**
-     * \brief Link a Configuration to a Node for the RRT Planner
-     * @param q the Configuration to link
-     * @param expansionNode the Node
-     * @param currentCost the current cost to reach the Node
-     * @param step the max distance for one step of RRT expansion
-     * @return the inserted Node
-     */
-    Node* insertNode(Node* expansionNode, LocalPath& path);
-
-    /**
-     * Link a Configuration to a Node for the RRT Planner
-     * @param q the Configuration to link
-     * @param from the Node
-     * @return the linked Node
-     */
-    Node* insertConfigurationAsNode(std::tr1::shared_ptr<Configuration> q, Node* from, double step );
+    void mergeCheck();
 	
 	/**
 	 * Recompute the Graph cost (Edges and Nodes)
@@ -350,6 +381,17 @@ public:
 	 */
 	bool checkAllEdgesValid();
 	
+	/**
+	 * Extract best traj 
+	 * @param the configuration
+	 */
+	void extractBestTraj(std::tr1::shared_ptr<Configuration> qi, std::tr1::shared_ptr<Configuration> qf);
+	
+	/**
+	 * Init Motion planning problem
+	 */
+	void initMotionPlanning(Node* start,Node* goal);
+	
 
 private:
 
@@ -357,10 +399,9 @@ private:
     void freeResources();
     static bool compareEdges(Edge* E1, Edge* E2);
     static bool compareNodes(Node* N1, Node* N2);
-    bool isEdgeInGraph(Node* N1,Node* N2);
 
 private:
-    p3d_graph* _Graph;
+    graph* _Graph;
     Robot* _Robot;
 
     p3d_traj* _Traj;
@@ -368,14 +409,12 @@ private:
     std::vector<Node*> _Nodes;
     std::vector<Edge*> _Edges;
 	std::vector<ConnectedComponent*> m_Comp;
-    std::map<p3d_node*, Node*> _NodesTable;
+    std::map<node*, Node*> _NodesTable;
 
     Node* _Start;
     Node* _Goal;
 
     std::string _Name;
-
-
 };
 
 #endif
