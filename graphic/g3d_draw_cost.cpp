@@ -20,6 +20,7 @@
 
 #ifdef CXX_PLANNER
 #include "planningAPI.hpp"
+#include "Grids/gridsAPI.hpp"
 #endif
 
 #include <iostream>
