@@ -847,10 +847,9 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
   double rotation_step = 0.1;
   double zoom_step = 1;
 
-	/*
-  if(!win->vs.eventsEnabled) {
+  if(!g3dwin->vs.eventsEnabled) {
     return TRUE;
-  }*/
+  }
 
   G3D_MODIF_VIEW = TRUE;
 

@@ -400,20 +400,6 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
     case HRI_ACHILE:
       *tasklist_no = 4;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
-
-//      (*tasklist)[0].type = GIK_RATREACH;
-//      (*tasklist)[0].default_joints[0] = 2;
-//      (*tasklist)[0].default_joints[1] = 3;
-//      (*tasklist)[0].default_joints[2] = 4;
-//      (*tasklist)[0].default_joints[3] = 8;
-//      (*tasklist)[0].default_joints[4] = 9;
-//      (*tasklist)[0].default_joints[5] = 10;
-//      (*tasklist)[0].default_joints[6] = 11;
-//      (*tasklist)[0].default_joints[7] = 12;
-//      (*tasklist)[0].default_joints[8] = 13;
-//      (*tasklist)[0].default_joints[9] = 14;
-//      (*tasklist)[0].active_joint = 36; /* active joint */
-//      (*tasklist)[0].default_joints_no = 10;
       
       (*tasklist)[0].type = GIK_RATREACH;
       (*tasklist)[0].default_joints[0] = 3;
@@ -440,20 +426,6 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       (*tasklist)[1].default_joints[8] = 21;
       (*tasklist)[1].active_joint = 37; /* active joint */
       (*tasklist)[1].default_joints_no = 9;
-      
-//      (*tasklist)[1].type = GIK_LATREACH;
-//      (*tasklist)[1].default_joints[0] = 2;
-//      (*tasklist)[1].default_joints[1] = 3;
-//      (*tasklist)[1].default_joints[2] = 4;
-//      (*tasklist)[1].default_joints[3] = 15;
-//      (*tasklist)[1].default_joints[4] = 16;
-//      (*tasklist)[1].default_joints[5] = 17;
-//      (*tasklist)[1].default_joints[6] = 18;
-//      (*tasklist)[1].default_joints[7] = 19;
-//      (*tasklist)[1].default_joints[8] = 20;
-//      (*tasklist)[1].default_joints[9] = 21;
-//      (*tasklist)[1].active_joint = 37; /* active joint */
-//      (*tasklist)[1].default_joints_no = 10;
 
       (*tasklist)[2].type = GIK_RAREACH;
       (*tasklist)[2].default_joints[0] = 8;
@@ -649,5 +621,143 @@ int g3d_hri_display_shared_zone()
   return TRUE;
 }
 
+static int hri_compute_leg_angles(double dist1, double dist2, double height, double *hip, double *knee, double *ankle)
+{
+  if( dist1+dist2 <= height ) {
+    *hip = 0;
+    *ankle = 0;
+    *knee = 0;
+  }
+  else {
+    *hip = acos( (SQR(dist1)+SQR(height)-SQR(dist2)) / (2*dist1*height) );
+    *ankle = acos( (SQR(dist2)+SQR(height)-SQR(dist1)) / (2*dist2*height) );
+    *knee = *hip + *ankle;
+  }
+  return TRUE;
+}
 
+int hri_agent_compute_posture(HRI_AGENT * agent, double head_height, double height_threshold, configPt q)
+{
+  double hiptoknee_dist, kneetoankle_dist, necktobase_dist, hiptoground_dist; 
+  double basetohip_dist, headtoneck_dist, hiptoankle_dist, ankletoground_dist;
+  double hip_angle, knee_angle, ankle_angle,hz_hip_angle;
+  
+  if(agent == NULL) return FALSE;
+    
+  // Only supports ACHILE human model
+  // everything else return FALSE
+  
+  if(agent->type == HRI_ACHILE) {
+         
+    headtoneck_dist = (agent->robotPt->joints[6]->o->BB.zmax + agent->robotPt->joints[6]->o->BB.zmin) / 2 - agent->robotPt->joints[5]->abs_pos[2][3];
+    
+    necktobase_dist = agent->robotPt->joints[5]->abs_pos[2][3]-agent->robotPt->joints[1]->abs_pos[2][3];
+    
+    hiptoknee_dist = DISTANCE2D(agent->robotPt->joints[23]->abs_pos[0][3],
+                                agent->robotPt->joints[23]->abs_pos[2][3],
+                                agent->robotPt->joints[25]->abs_pos[0][3],                                 
+                                agent->robotPt->joints[25]->abs_pos[2][3]); // Constant -> 0.47
+    kneetoankle_dist = DISTANCE2D(agent->robotPt->joints[25]->abs_pos[0][3],                                   
+                                  agent->robotPt->joints[25]->abs_pos[2][3],
+                                  agent->robotPt->joints[27]->abs_pos[0][3],                                   
+                                  agent->robotPt->joints[27]->abs_pos[2][3]); // Constant -> 0.39
+    basetohip_dist = agent->robotPt->joints[1]->abs_pos[2][3]-agent->robotPt->joints[23]->abs_pos[2][3];
+    
+    hiptoground_dist =  head_height - headtoneck_dist - necktobase_dist - basetohip_dist;
+    
+    ankletoground_dist = 0.08; // Fixed distance in ACHILE model
+    
+    if(head_height > height_threshold) {
+      hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, hiptoground_dist - ankletoground_dist, 
+                             &hip_angle, &knee_angle, &ankle_angle);      
+      
+      q[8] = head_height - headtoneck_dist - necktobase_dist;
+      q[agent->robotPt->joints[23]->index_dof] = -hip_angle;
+      q[agent->robotPt->joints[25]->index_dof] = knee_angle;
+      q[agent->robotPt->joints[27]->index_dof] = -ankle_angle;
+      q[agent->robotPt->joints[30]->index_dof] = -hip_angle;
+      q[agent->robotPt->joints[32]->index_dof] = knee_angle;
+      q[agent->robotPt->joints[34]->index_dof] = -ankle_angle;
+      
+      agent->actual_state = BT_STANDING;
+    } 
+    else {
+      
+      hiptoankle_dist = sqrt(SQR(0.4)+SQR(hiptoground_dist-ankletoground_dist));
+      
+      hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, 
+                             hiptoankle_dist, 
+                             &hip_angle, &knee_angle, &ankle_angle);      
+      
+      hz_hip_angle = acos( (SQR(hiptoknee_dist)+SQR(hiptoground_dist-ankletoground_dist)-SQR(kneetoankle_dist)) / 
+                          (2*hiptoknee_dist*(hiptoground_dist-ankletoground_dist)) );
+      q[8] = head_height - headtoneck_dist - necktobase_dist;
+      
+      hip_angle = hip_angle+hz_hip_angle;
+      ankle_angle = (M_PI_2-(M_PI - ankle_angle - atan2(hiptoground_dist-ankletoground_dist,0.4)));
+      
+      
+      if (-hip_angle > agent->robotPt->joints[23]->dof_data->vmax ||
+          -hip_angle < agent->robotPt->joints[23]->dof_data->vmin ||
+          knee_angle > agent->robotPt->joints[25]->dof_data->vmax ||
+          knee_angle < agent->robotPt->joints[25]->dof_data->vmin ||
+          -ankle_angle > agent->robotPt->joints[27]->dof_data->vmax ||
+          -ankle_angle < agent->robotPt->joints[27]->dof_data->vmin ) {
+        q[agent->robotPt->joints[23]->index_dof] = -M_PI_2;
+        q[agent->robotPt->joints[25]->index_dof] = M_PI_2;
+        q[agent->robotPt->joints[27]->index_dof] = 0;
+        q[agent->robotPt->joints[30]->index_dof] = -M_PI_2;
+        q[agent->robotPt->joints[32]->index_dof] = M_PI_2;
+        q[agent->robotPt->joints[34]->index_dof] = 0;
+      }
+      else {
+        q[agent->robotPt->joints[23]->index_dof] = -hip_angle;
+        q[agent->robotPt->joints[25]->index_dof] = knee_angle;
+        q[agent->robotPt->joints[27]->index_dof] = -ankle_angle;
+        q[agent->robotPt->joints[30]->index_dof] = -hip_angle;
+        q[agent->robotPt->joints[32]->index_dof] = knee_angle;
+        q[agent->robotPt->joints[34]->index_dof] = -ankle_angle;
+      }
+      agent->actual_state = BT_SITTING;
+    }    
+    return TRUE;
+  }
+  else {
+    printf("In %s:%d, Trying to compute the posture of an unsupported robot\n",__FILE__,__LINE__);
+    return FALSE;
+  }
+}
 
+int hri_agent_load_default_arm_posture(HRI_AGENT * agent, configPt q)
+{
+  int first_rshoulder_dof,first_lshoulder_dof;
+  
+  if(agent == NULL) return FALSE;
+  
+  if(agent->type == HRI_ACHILE) {
+    first_rshoulder_dof = agent->robotPt->joints[8]->index_dof;
+    q[first_rshoulder_dof]   = DTOR( 80);
+    q[first_rshoulder_dof+1] = DTOR(  0);
+    q[first_rshoulder_dof+2] = DTOR(-20);
+    q[first_rshoulder_dof+3] = DTOR( 45);
+    q[first_rshoulder_dof+4] = DTOR(  0);
+    q[first_rshoulder_dof+5] = DTOR(  0);
+    q[first_rshoulder_dof+6] = DTOR(  0);
+    
+    first_lshoulder_dof = agent->robotPt->joints[15]->index_dof;
+    q[first_lshoulder_dof]   = DTOR(-80);
+    q[first_lshoulder_dof+1] = DTOR(  0);
+    q[first_lshoulder_dof+2] = DTOR( 20);
+    q[first_lshoulder_dof+3] = DTOR(-45);
+    q[first_lshoulder_dof+4] = DTOR(  0);
+    q[first_lshoulder_dof+5] = DTOR(  0);
+    q[first_lshoulder_dof+6] = DTOR(  0);
+    
+    return TRUE;
+  }
+  else {
+    printf("In %s:%d, Trying to load default arm posture to a unsupported robot\n",__FILE__,__LINE__);
+    return FALSE;
+  }
+  
+}
