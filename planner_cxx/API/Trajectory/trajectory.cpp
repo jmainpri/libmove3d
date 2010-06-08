@@ -447,12 +447,13 @@ double Trajectory::computeSubPortionIntergralCost(vector<LocalPath*> portion)
 
     double currentCost, prevCost;
     Vector3d taskPos, prevTaskPos;
-
+#ifdef LIGHT_PLANNER
     prevCost = portion[0]->getBegin()->cost();
     if( ENV.getBool(Env::HRIPlannerWS) )
     {
         prevTaskPos = portion[0]->getBegin()->getTaskPos();
     }
+#endif
 
     double range = computeSubPortionRange(portion);
     double distStep = dmax;
@@ -467,7 +468,7 @@ double Trajectory::computeSubPortionIntergralCost(vector<LocalPath*> portion)
         currentCost = confPtr->cost();
 
         distStep = dmax;
-
+#ifdef LIGHT_PLANNER
         // Case of task space
         if( ENV.getBool(Env::HRIPlannerWS) )
         {
@@ -475,7 +476,7 @@ double Trajectory::computeSubPortionIntergralCost(vector<LocalPath*> portion)
             distStep = ( taskPos - prevTaskPos ).norm();
             prevTaskPos = taskPos;
         }
-
+#endif
         //the cost associated to a small portion of curve
         double step_cost =
                 p3d_ComputeDeltaStepCost(prevCost, currentCost, distStep);
