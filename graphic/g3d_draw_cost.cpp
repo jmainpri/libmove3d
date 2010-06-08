@@ -18,6 +18,10 @@
 #include "planner_cxx/HRI_CostSpace/HRICS_costspace.h"
 #endif
 
+#ifdef CXX_PLANNER
+#include "planningAPI.hpp"
+#endif
+
 #include <iostream>
 #include <tr1/memory>
 
