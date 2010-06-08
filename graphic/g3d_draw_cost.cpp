@@ -15,7 +15,7 @@
 #endif
 
 #ifdef HRI_COSTSPACE
-#include "../planner_cxx/HRI_CostSpace/HRICS_costspace.h"
+#include "planner_cxx/HRI_CostSpace/HRICS_costspace.h"
 #endif
 
 #include <iostream>
@@ -167,10 +167,10 @@ void g3d_draw_grids()
 		}
 	}
 	
-//	if( HRICS_Natural )
-//	{
-//	   HRICS_Natural->printBodyPos();
-//	}
+	if( HRICS_activeNatu )
+	{
+	   HRICS_activeNatu->printBodyPos();
+	}
 	
 #endif
 	

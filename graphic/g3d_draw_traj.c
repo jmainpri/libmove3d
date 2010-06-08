@@ -617,9 +617,11 @@ void g3d_draw_all_tcur(void) {
 #ifdef CXX_PLANNER
 	if( ENV.getBool(Env::debugCostOptim) || ENV.getBool(Env::drawTrajVector) )
 	{
+		std::cout << "Should be drawing traj" << std::endl;
 		for(unsigned i=0;i<trajToDraw.size();i++)
 		{
 			trajToDraw.at(i).draw(NB_KEY_FRAME);
+			std::cout << "Drawing traj" << std::endl;
 		}
 	}	
 #endif

@@ -73,7 +73,7 @@ int G3D_MODIF_VIEW  = FALSE; /* flag true durant modif viewing */
 //static void get_lookat_vector(G3D_Window *win, p3d_vector4 Vec);
 //static void get_pos_cam_matrix(G3D_Window *win, p3d_matrix4 Transf);
 //static void recalc_mouse_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw);
-static void calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw);
+void calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw);
 //static void recalc_cam_up(G3D_Window *win, p3d_matrix4 transf);
 
 //edit Mokhtar Picking functions
@@ -847,9 +847,10 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
   double rotation_step = 0.1;
   double zoom_step = 1;
 
+	/*
   if(!win->vs.eventsEnabled) {
     return TRUE;
-  }
+  }*/
 
   G3D_MODIF_VIEW = TRUE;
 
@@ -1588,6 +1589,32 @@ void qt_canvas_viewing(int mouse_press, int button)
 		}
 	}
 }
+
+void qt_change_mob_frame(G3D_Window* win,pp3d_matrix4 frame)
+{
+	p3d_matrix4 matr;
+	p3d_vector4 Xc,Xcnew,Xw,Xwnew;
+	
+	calc_cam_param(win,Xc,Xw);
+	win->cam_frame = frame;
+	p3d_matInvertXform(*win->cam_frame, matr);
+	p3d_matvec4Mult(matr, Xc, Xcnew);
+	p3d_matvec4Mult(matr, Xw, Xwnew);
+	recalc_mouse_param(win->vs,Xcnew,Xwnew);
+	recalc_cam_up(win->vs,matr);
+}
+
+void qt_reset_mob_frame(G3D_Window* win)
+{
+	p3d_vector4 Xc,Xcnew,Xw,Xwnew;
+	
+	calc_cam_param(win,Xc,Xw);
+	recalc_mouse_param(win->vs,Xc,Xw);
+	recalc_cam_up(win->vs,*win->cam_frame);
+	win->cam_frame = &Id;
+}
+
+
 #endif
 
 static void
@@ -2378,7 +2405,7 @@ G3D_Window *g3d_get_cmc_win(void)
 
 /* fonction pour calculer les parametres de position de la      */
 /* camera de la facon necessaire pour openGL                    */
-static void
+void
 calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw) {
   static p3d_matrix4 Txc = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};
   p3d_matrix4 m_aux;
