@@ -4,7 +4,6 @@ BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME})
 BM3D_SRC_SUBDIR_PROCESS(
 
 GreedyCost.cpp
-Seeding.cpp
 GridCollisionChecker.cpp
 CellCollisionChecker.cpp
 
