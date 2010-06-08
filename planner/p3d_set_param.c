@@ -523,12 +523,12 @@ int p3d_get_is_general_proj(void){
 
 void p3d_set_max_connect(int n)
 {
-  MAX_CONNECT = n;
+	ENV.setInt(Env::maxConnect,n);
 }
 
 int p3d_get_max_connect(void)
 {
-  return(MAX_CONNECT);
+  return ENV.getInt(Env::maxConnect);
 }
 
 void p3d_set_gvis(int n)

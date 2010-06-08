@@ -11,9 +11,9 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 
-#ifdef P3D_PLANNER
-#include "Planner-pkg.h"
-#endif
+//#ifdef P3D_PLANNER
+//#include "Planner-pkg.h"
+//#endif
 
 
 /*--------------------------------------------------------------------------*/
@@ -389,9 +389,7 @@ static int p3d_random_position_boundary_method_fixmanip(p3d_parallel *psdataPt)
 #endif
   while(n_iter < NUM_VALIDCONF_TEST) {
     for(i=0; i<6; i++) {
-#ifdef P3D_PLANNER
       val = p3d_random(fbm[i],fbM[i]);
-#endif
       p3d_jnt_set_dof(psdataPt->platform_jntPt,i,val);
     }
     // ????????????????????
@@ -783,9 +781,7 @@ static int p3d_shoot_platform_position_fixmanip(p3d_parallel *psdataPt, configPt
   
   /* generate for x y in the precomputed region */
   for(i=0; i < 2; i++) {
-#ifdef P3D_PLANNER
     val = p3d_random(psdataPt->platform_dof_min_bounds[i],psdataPt->platform_dof_max_bounds[i]);
-#endif
     q[psdataPt->platform_jntPt->index_dof + i] = val;
   }
   
@@ -839,9 +835,9 @@ static int p3d_shoot_z_platform_fixmanip(p3d_parallel *psdataPt, double xplatf, 
     if(zmax_i < zmax)
       zmax = zmax_i;
   }
-#ifdef P3D_PLANNER
+
   *zplatf = p3d_random(zmin,zmax);
-#endif
+
   if(PRINTPROC_PS) {
     printf("zmin = %f, zmax = %f, z = %f\n",zmin,zmax,*zplatf);
   }   
@@ -1126,9 +1122,9 @@ double p3d_random_in_several_ordered_intervals(int nint, double *relmin, double 
     diff[i] = relmax[i+1] - relmin[i+1];
     maxso += diff[i];
   }
-#ifdef P3D_PLANNER
+
   nv = p3d_random(relmin[0],maxso);
-#endif
+
   if(nv <= relmax[0]) {
     valor = nv;
   }
@@ -1362,9 +1358,7 @@ static int p3d_shoot_platform_in_precomputed_bounds(p3d_parallel *psdataPt, conf
   double val;
   
   for(i=0; i < psdataPt->platform_jntPt->dof_equiv_nbr; i++) {
-#ifdef P3D_PLANNER
     val = p3d_random(psdataPt->platform_dof_min_bounds[i],psdataPt->platform_dof_max_bounds[i]);
-#endif
     q[psdataPt->platform_jntPt->index_dof + i] = val;
   }
 
@@ -1390,9 +1384,7 @@ static int p3d_shoot_platform_position_in_precomputed_bounds(p3d_parallel *psdat
   double val;
   
   for(i=0; i < 3; i++) {
-#ifdef P3D_PLANNER
     val = p3d_random(psdataPt->platform_dof_min_bounds[i],psdataPt->platform_dof_max_bounds[i]);
-#endif
     q[psdataPt->platform_jntPt->index_dof + i] = val;
   }
 

@@ -9,6 +9,7 @@ extern void p3d_init_random_seed ( int seed );
 extern void p3d_init_random ( void );
 extern double p3d_random ( double a, double b );
 extern double NormalRand ( double Sigma_d_a );
+extern double p3d_gaussian_random( const double& mean, const double& variance , const double& min, const double& max);
 extern void p3d_bridge_shoot(p3d_rob *r, configPt q, int sample_passive);//mokhtar
 extern void p3d_obprm_shoot(p3d_rob *r, configPt q, int sample_passive);//mokhtar
 extern void p3d_gaussian_config2_specific(p3d_rob *r, configPt c1, configPt c2, double translationFactor, double rotationFactor, int sample_passive);
@@ -32,6 +33,8 @@ int p3d_RandDirShoot(p3d_rob* robotPt, configPt q, int sample_passive);
 int p3d_RandNShpereDirShoot(p3d_rob* robotPt, configPt q, int sample_passive);
 bool p3d_isOutOfBands(p3d_rob* robotPt, configPt q, int sample_passive);
 void p3d_FreeFlyerShoot(p3d_rob* robotPt, configPt q, double* box );
+void p3d_shoot_justin_left_arm(p3d_rob *robotPt, configPt q, int sample_passive);
+void p3d_JointFreeFlyerShoot(p3d_rob* robotPt, p3d_jnt* jntPt, configPt q, double* box );
 bool p3d_ShootInCell(p3d_rob* robotPt, configPt q, double* box , int sample_passive);
 bool p3d_ShootAroundPoint(p3d_rob* robotPt, configPt q, double* point , int sample_passive);
 

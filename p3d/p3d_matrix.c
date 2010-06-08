@@ -1,8 +1,8 @@
 #include "P3d-pkg.h"
 
-#ifdef P3D_PLANNER
-#include "Planner-pkg.h" //for p3d_random() function
-#endif
+//#ifdef P3D_PLANNER
+//#include "Planner-pkg.h" //for p3d_random() function
+//#endif
 
 #include "Graphic-pkg.h" //for GLfloat type
 
@@ -1933,11 +1933,10 @@ double p3d_mat4Distance(p3d_matrix4 M1, p3d_matrix4 M2, double weightR, double w
 void p3d_random_quaternion(p3d_vector4 q)
 {
   double u1, u2, u3;
-#ifdef P3D_PLANNER
+
   u1=  p3d_random(0.0, 1.0);
   u2=  p3d_random(0.0, 1.0);
   u3=  p3d_random(0.0, 1.0);
-#endif
 
   q[0] =  sqrt(1-u1)*sin(2*M_PI*u2);
   q[1] =  sqrt(1-u1)*cos(2*M_PI*u2);

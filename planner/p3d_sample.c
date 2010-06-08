@@ -7,89 +7,17 @@
 #include "Localpath-pkg.h"
 #endif
 #define DEBUG(x) x
-#include "MTRand.hpp"
-
-#ifdef USE_GSL
-#include <gsl/gsl_randist.h>
-gsl_rng * _gsl_seed;
-#endif
-
-MTRand mersenne_twister_rng = MTRand(time(NULL));
 
 extern double  InitCostThreshold;
 
 static void p3d_nearby_variation_shoot(p3d_rob *r, configPt q, configPt pc, double maxVar);
 static void p3d_binary_search(p3d_rob *r, configPt qInObst,configPt qInFree, double threshold);
 
-
-
-/***********************************************/
-/* Fonction initialisant le generateur de      */
-/* nombres aleatoires par un nombre choisi     */
-/* In : l'initialisation                       */
-/* Out :                                       */
-/***********************************************/
-void p3d_init_random_seed(int seed)
-{
-  //  srand((unsigned int) (seed)); // C library implementation
-  mersenne_twister_rng.seed(seed);
 #ifdef USE_GSL
-  _gsl_seed = gsl_rng_alloc (gsl_rng_taus);
+#include <gsl/gsl_randist.h>
 #endif
-}
 
-/***********************************************/
-/* Fonction initialisant le generateur de      */
-/* nombres aleatoires avec l'horloge           */
-/* In :                                        */
-/* Out :                                       */
-/***********************************************/
-void p3d_init_random(void)
-{
-  // srand(time(NULL)); // C library implementation
-  mersenne_twister_rng.seed(time(NULL));
-#ifdef USE_GSL
-  _gsl_seed = gsl_rng_alloc (gsl_rng_taus);
-#endif
-}
 
-/*******************************************/
-/* Fonction generant un nombre aleatoire   */
-/* entre a et b                            */
-/* Int : a et b                            */
-/* Out : le nombre genere                  */
-/*******************************************/
-double p3d_random(double a, double b)
-{double v;
-
-  // C library implementation
-  // v =  rand()/((double)RAND_MAX+1); /* nombre aleatoire [0.,1.] */
-  v = mersenne_twister_rng.rand();
-  v = (b-a)*v + a;
-  return(v);
-}
-
-/***************************************************/
-/* by Boor 7-12-1999                               */
-/* Gaussian random number generator                */
-/* Given a double Sigma_d_a, NormalRand            */
-/* returns a double chosen from a normal           */
-/* distribution using sigma Sigma_d_a              */
-/***************************************************/
-double NormalRand( double Sigma_d_a )
-{
-  double a,b;
-  double result;
-
-  a = p3d_random(.0,1.0);
-  // following test necessary only when rand() can return 0!!!
-  while(a == 0.0){
-    a = p3d_random(.0,1.) ;
-  }
-  b = p3d_random(.0,1.0);
-  result = Sigma_d_a*cos(2.0*M_PI*b)*sqrt(-2.0*log(a));
-  return(result);
-}
 
 /* modif Juan Cortes */
 /*************************************************/
@@ -98,23 +26,30 @@ double NormalRand( double Sigma_d_a )
 /*************************************************/
 int p3d_standard_shoot(p3d_rob *robotPt, configPt q, int sample_passive)
 {
-  int njnt = robotPt->njoints, i, j, k;
-  double vmin, vmax;
-  p3d_jnt * jntPt;
-  
-  for(i=0; i<=njnt; i++) {
-    jntPt = robotPt->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      k = jntPt->index_dof + j;
-
-      if (p3d_jnt_get_dof_is_user(jntPt, j) &&
-	  (p3d_jnt_get_dof_is_active_for_planner(jntPt,j) || sample_passive)) {
-	p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
-	q[k] = p3d_random(vmin, vmax);
-//        std::cout << "Sample Passive = "<<sample_passive<<" , Sampling q["<<k<<"] = "<<q[k]<< std::endl;
-      } else
-	{ q[k] = p3d_jnt_get_dof(jntPt, j); }
-    }
+	int njnt = robotPt->njoints, i, j, k;
+	double vmin, vmax;
+	p3d_jnt * jntPt;
+	
+	for(i=0; i<=njnt; i++) {
+		jntPt = robotPt->joints[i];
+		for(j=0; j<jntPt->dof_equiv_nbr; j++) 
+		{
+			k = jntPt->index_dof + j;
+			
+			if ( 
+				sample_passive ||
+				(p3d_jnt_get_dof_is_user(jntPt, j) && p3d_jnt_get_dof_is_active_for_planner(jntPt,j)) &&
+				(robotPt->cntrt_manager->in_cntrt[k] != 2) ) 
+			{
+				p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+				q[k] = p3d_random(vmin, vmax);
+				//std::cout << "Sample Passive = "<<sample_passive<<" , Sampling q["<<k<<"] = "<<q[k]<< std::endl;
+			} 
+			else
+			{ 
+				q[k] = p3d_jnt_get_dof(jntPt, j); 
+			}
+		}
   }
 #ifdef  MULTILOCALPATH
   p3d_localplanner_type lpl_type = robotPt->lpl_type;
@@ -781,29 +716,69 @@ void p3d_FreeFlyerShoot(p3d_rob* robotPt, configPt q, double* box )
         {
 //            std::cout << "Joint " << i << " is a free flyer" << std::endl;
         }
-
-        for (int j = 0; j < jntPt->dof_equiv_nbr; j++)
-        {
-            int k = jntPt->index_dof + j;
-
-            if (p3d_jnt_get_dof_is_user(jntPt, j) && (p3d_jnt_get_dof_is_active_for_planner(jntPt, j)))
-            {
-                if (p3d_jnt_is_dof_angular(jntPt, j))
-                {
-                    double vmax,vmin;
-                    p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
-                    q[k] = p3d_random(vmin,vmax);
-                }
-                else
-                {
-                    q[k] = p3d_random(box[2*j],box[2*j+1]);
-                }
-            }
-        }
+		p3d_JointFreeFlyerShoot(robotPt,jntPt,q,box);
     }
 }
 
+void p3d_JointFreeFlyerShoot(p3d_rob* robotPt, p3d_jnt* jntPt, configPt q, double* box )
+{		
+	if( jntPt->type != P3D_FREEFLYER )
+	{
+		return;
+	}
+	
+	for (int j = 0; j < jntPt->dof_equiv_nbr; j++)
+	{
+		int k = jntPt->index_dof + j;
+		
+		if (p3d_jnt_get_dof_is_user(jntPt, j) && (p3d_jnt_get_dof_is_active_for_planner(jntPt, j)))
+		{
+			if (p3d_jnt_is_dof_angular(jntPt, j))
+			{
+				double vmax,vmin;
+				p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+				q[k] = p3d_random(vmin,vmax);
+			}
+			else
+			{
+				q[k] = p3d_random(box[2*j],box[2*j+1]);
+			}
+		}
+	}
+}
 
+void p3d_shoot_justin_left_arm(p3d_rob *robotPt, configPt q, int sample_passive)
+{
+	int njnt = robotPt->njoints, i, j, k;
+	double vmin, vmax;
+	p3d_jnt * jntPt;
+	
+	for(i=0; i<=njnt; i++) {
+		jntPt = robotPt->joints[i];
+		for(j=0; j<jntPt->dof_equiv_nbr; j++) 
+		{
+			k = jntPt->index_dof + j;
+			
+			if (k<25) {
+				continue;
+			}
+			
+			if ( 
+				sample_passive ||
+				(p3d_jnt_get_dof_is_user(jntPt, j) && p3d_jnt_get_dof_is_active_for_planner(jntPt,j)) &&
+				(robotPt->cntrt_manager->in_cntrt[k] != 2) ) 
+			{
+				p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+				q[k] = p3d_random(vmin, vmax);
+				//std::cout << "Sample Passive = "<<sample_passive<<" , Sampling q["<<k<<"] = "<<q[k]<< std::endl;
+			} 
+			else
+			{ 
+				q[k] = p3d_jnt_get_dof(jntPt, j); 
+			}
+		}
+	}
+}
 /*************************************************/
 /* Fonction generant une configuration aleatoire */
 /* pour un robot                                 */

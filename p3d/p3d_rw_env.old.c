@@ -5,9 +5,9 @@
 #include "Localpath-pkg.h"
 #endif
 
-#ifdef P3D_PLANNER
-#include "Planner-pkg.h"
-#endif
+//#ifdef P3D_PLANNER
+//#include "Planner-pkg.h"
+//#endif
 
 #include "Bio-pkg.h"
 #ifdef ENERGY
