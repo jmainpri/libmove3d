@@ -17,6 +17,7 @@ GridCollisionChecker* global_GridCollisionChecker = NULL;
 using namespace std;
 using namespace tr1;
 
+#ifdef DPG
 void p3d_compute_object_point_cloud(p3d_obj* obj, double step)
 {
 	for(int i = 0; i < obj->np; i++)
@@ -320,3 +321,5 @@ CellCollisionChecker* GridCollisionChecker::createNewCell(unsigned int index,uns
     CellCollisionChecker* newCell = new CellCollisionChecker( index, computeCellCorner(x,y,z) , this );
     return newCell;
 }
+
+#endif
