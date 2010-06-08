@@ -92,7 +92,7 @@ int gpSAHfinger_manipulability_ellipsoid(double length1, double length2, double 
   return GP_OK;
 }
 
-static float *vector(long nl, long nh);
+static float *new_vector(long nl, long nh);
 static void free_vector(float *v, long nl, long nh);
 static float **matrix(long nrl, long nrh, long ncl, long nch);
 static void free_matrix(float **m, long nrl, long nrh, long ncl, long nch);
@@ -126,7 +126,7 @@ void nrerror(char error_text[])
 
 //! The following function comes from "Numerical Recipes in C". (nrutil.c, appendix B).
 //! allocate a float vector with subscript range v[nl..nh]
-float *vector(long nl, long nh)
+float *new_vector(long nl, long nh)
 {
   float *v;
   v=(float *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(float)));
@@ -135,7 +135,7 @@ float *vector(long nl, long nh)
 }
 
 //! The following function comes from "Numerical Recipes in C". (nrutil.c, appendix B).
-//! free a float vector allocated with vector() 
+//! free a float vector allocated with new_vector() 
 void free_vector(float *v, long nl, long nh)
 {
   free((FREE_ARG) (v+nl-NR_END));
@@ -178,7 +178,7 @@ void svdcmp(float **a, int m, int n, float w[], float **v)
   float pythag(float a, float b);
   int flag,i,its,j,jj,k,l,nm;
   float anorm,c,f,g,h,s,scale,x,y,z,*rv1;
-  rv1=vector(1,n);
+  rv1= new_vector(1,n);
   g=scale=anorm=0.0; //Householder reduction to bidiagonal form.
   for (i=1;i<=n;i++) {
     l=i+1;
@@ -374,7 +374,7 @@ void p3d_mat3SVD(p3d_matrix3 M, p3d_matrix3 U, p3d_vector3 S, p3d_matrix3 V)
 
   a= matrix(1, nbRows, 1, nbCols);
   v= matrix(1, nbRows, 1, nbCols);
-  w= vector(1, nbRows);
+  w= new_vector(1, nbRows);
 
  
   a[1][1]= M[0][0];  a[1][2]= M[0][1];   a[1][3]= M[0][2]; 
@@ -419,7 +419,7 @@ void p3d_mat4SVD(p3d_matrix4 M, p3d_matrix4 U, p3d_vector4 S, p3d_matrix4 V)
 
   a= matrix(1, nbRows, 1, nbCols);
   v= matrix(1, nbRows, 1, nbCols);
-  w= vector(1, nbRows);
+  w= new_vector(1, nbRows);
 
  
   a[1][1]= M[0][0];  a[1][2]= M[0][1];   a[1][3]= M[0][2];  a[1][4]= M[0][3]; 
