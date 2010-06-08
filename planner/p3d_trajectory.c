@@ -801,12 +801,12 @@ int p3d_is_reductible_cycle(p3d_rob* robotPt, p3d_traj* trajPt, int nstep) {
   t1Pt->rob = robotPt; 
   t1Pt->range_param = p3d_compute_traj_rangeparam(t1Pt);
 
-  if(abs(p2 - traj2Pt->range_param) > EPS6) {
+	if(__gnu_cxx::abs(p2 - traj2Pt->range_param) > EPS6) {
     t2Pt = p3d_extract_traj_from_traj(traj2Pt, p2, traj2Pt->range_param);
     p3d_concat_traj(t1Pt, t2Pt);
     p3d_del_traj(t2Pt);//mokhtar
   }
-  if(abs(p1 - traj1Pt->range_param) > EPS6) {
+	if(__gnu_cxx::abs(p1 - traj1Pt->range_param) > EPS6) {
     inv_t3Pt = p3d_extract_traj_from_traj(traj1Pt, p1, traj1Pt->range_param);
     t3Pt = p3d_invert_traj(robotPt, inv_t3Pt);
     p3d_del_traj(inv_t3Pt);//mokhtar
