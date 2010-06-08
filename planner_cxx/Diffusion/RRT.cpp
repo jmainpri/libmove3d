@@ -124,10 +124,12 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
                                                     directionNode);
 //    directionConfig->setConstraints();
 //
+#ifdef LIGTH_PLANNER
     if(ENV.getBool(Env::drawPoints))
     {
         PointsToDraw->push_back(directionConfig->getTaskPos());
     }
+#endif
 
 //    cout << "***********************************************************"  << endl;
 //    cout << "directionConfig->print()"  << endl;
