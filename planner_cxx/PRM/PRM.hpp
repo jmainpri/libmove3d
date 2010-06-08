@@ -1,7 +1,7 @@
 #ifndef PRM_HPP
 #define PRM_HPP
 
-#include "../planner.hpp"
+#include "planner.hpp"
 /**
     @ingroup NEW_CPP_MODULE
     @defgroup PRM Probabilistic-RM
@@ -59,10 +59,11 @@ public:
     unsigned int run();
 
 protected:
+	/**
+	 * Members
+	 */
 	unsigned int m_nbAddedNode;
 	int m_nbConscutiveFailures; /*!< nombre d'échecs consécutifs*/	
-//private:
-
 };
 
 #endif
