@@ -2661,7 +2661,7 @@ int psp_test_actual_robot_pos(p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PSP_BT
   if (dist<= objRob->max_pos_range && dist >= objRob->min_pos_range)
   {
     //printf("1 - in the area %f --> %f - %f = %f\n", dist, refHumAngle2,refHumAngle3, refHumAngle2-refHumAngle3 );
-    if ( abs(refHumAngle3-refHumAngle2)<=M_PI/2)
+	  if ( __gnu_cxx::abs(refHumAngle3-refHumAngle2)<=M_PI/2)
     {
       p3d_get_robot_center(objRob, point);
       ox = point[0];
@@ -3756,7 +3756,7 @@ int psp_srch_model_pt_obj(p3d_rob* r, p3d_obj* object, int numsegs, int numlayer
             {
               if (PSP_NEXT_TASK != PSP_NO_TASK)
               {
-                if (abs(qQual-maxQual)<5 && taskValue<bestTaskVal)
+				  if (__gnu_cxx::abs(qQual-maxQual)<5 && taskValue<bestTaskVal)
                 {
                   besti   = qindex;
                   maxQual = qQual;
@@ -4173,7 +4173,7 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
 
               if (PSP_NEXT_TASK != PSP_NO_TASK)
               {
-                if (abs(qQual-maxQual)<5 && taskValue<bestTaskVal)
+                if (__gnu_cxx::abs(qQual-maxQual)<5 && taskValue<bestTaskVal)
                 {
                   besti   = qindex;
                   maxQual = qQual;
