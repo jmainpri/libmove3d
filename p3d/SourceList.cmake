@@ -27,6 +27,7 @@ p3d_matrix.c
 p3d_parallel.c 
 p3d_poly.c 
 p3d_prim.c 
+p3d_random.c 
 p3d_rlg.c 
 p3d_copy_robot.cpp 
 p3d_rw_env.c 
