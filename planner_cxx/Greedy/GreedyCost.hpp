@@ -1,12 +1,12 @@
 #ifndef P3D_GREEDY_PROTO_HH
 #define P3D_GREEDY_PROTO_HH
 
-#include "../../planner_cxx/API/planningAPI.hpp"
-#include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"
-#include "../../planner_cxx/API/Trajectory/Smoothing.hpp"
+#include "API/planningAPI.hpp"
+#include "API/Trajectory/CostOptimization.hpp"
+#include "API/Trajectory/Smoothing.hpp"
 
-#include "../Diffusion/RRT.hpp"
-#include "../Diffusion/RRT-Variants/Transition-RRT.hpp"
+#include "Diffusion/RRT.hpp"
+#include "Diffusion/RRT-Variants/Transition-RRT.hpp"
 
 /**
   * Planner based on trajectory optimization
@@ -15,7 +15,7 @@ class GreedyCost {
 
 public:
 
-	GreedyCost(p3d_graph* G, int (*stop_func)(), void (*draw_func)());
+	GreedyCost(graph* G, int (*stop_func)(), void (*draw_func)());
 	~GreedyCost();
 
 	bool run();
@@ -63,7 +63,7 @@ private:
 
 };
 
-extern bool p3d_RunGreedyCost(p3d_graph* GraphPt, int (*fct_stop)(void),
+extern bool p3d_RunGreedyCost(graph* GraphPt, int (*fct_stop)(void),
 		void (*fct_draw)(void));
 
 #endif
