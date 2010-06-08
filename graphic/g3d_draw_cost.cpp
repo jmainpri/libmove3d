@@ -21,6 +21,7 @@
 #ifdef CXX_PLANNER
 #include "planningAPI.hpp"
 #include "Grids/gridsAPI.hpp"
+std::vector<Eigen::Vector3d> CXX_drawBox; 
 #endif
 
 #include <iostream>
@@ -30,7 +31,6 @@ using namespace std;
 using namespace tr1;
 
 std::vector<double> vect_jim;
-std::vector<Eigen::Vector3d> CXX_drawBox; 
 
 #ifdef CXX_PLANNER
 //! @ingroup graphic
@@ -178,7 +178,7 @@ void g3d_draw_grids()
 	}
 	
 #endif
-	
+#ifdef CXX_PLANNER	
 	if( ENV.getBool(Env::drawPoints) )
 	{
 		if(PointsToDraw != NULL)
@@ -187,6 +187,7 @@ void g3d_draw_grids()
 			PointsToDraw->drawAllPoints();
 		}
 	}
+#endif
 }
 
 /**
