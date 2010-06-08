@@ -79,7 +79,7 @@ shared_ptr<Configuration> RRTExpansion::getExpansionDirection(
                                      q->getConfigStruct(), expandComp->getCompcoStruct()->box_env_small,
                                      (int) samplePassive);
             break;
-
+#ifdef LIGHT_PLANNER
 			case NAVIGATION_BEFORE_MANIPULATION:
 			{
 				mGraph->getRobot()->deactivateCcConstraint();
@@ -110,7 +110,7 @@ shared_ptr<Configuration> RRTExpansion::getExpansionDirection(
 //				g3d_draw_allwin_active();
 			}
 			break;
-						   
+#endif
 			case GLOBAL_CS_EXP:
               default:
                 // Selection in the entire CSpace
