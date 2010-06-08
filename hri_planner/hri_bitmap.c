@@ -1602,7 +1602,7 @@ static int is_in_fow(double xh, double yh, double xt, double yt, double orient, 
   double angle2human = atan2(yt - yh, xt - xh);
 
   // check is different depending on orientation of human
-	if (__gnu_cxx::abs(angle2human - orient) < fowangle) {
+	if (fabs(angle2human - orient) < fowangle) {
     return TRUE;
   } else {
     if ((angle2human > M_PI_2) && (M_PI > angle2human) && (orient < -M_PI_2)
