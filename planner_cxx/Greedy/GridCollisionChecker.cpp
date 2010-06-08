@@ -18,7 +18,7 @@ using namespace std;
 using namespace tr1;
 
 #ifdef DPG
-void p3d_compute_object_point_cloud(p3d_obj* obj, double step)
+void p3d_compute_object_point_cloud2(p3d_obj* obj, double step)
 {
 	for(int i = 0; i < obj->np; i++)
 	{
@@ -70,30 +70,30 @@ void p3d_compute_object_point_cloud(p3d_obj* obj, double step)
 	}
 }
 
-void p3d_compute_static_objects_point_cloud(p3d_env* env, double step)
+void p3d_compute_static_objects_point_cloud2(p3d_env* env, double step)
 {
 	for(int i = 0; i < env->no; i++)
 	{
-		p3d_compute_object_point_cloud(env->o[i], step);
+		p3d_compute_object_point_cloud2(env->o[i], step);
 	}
 }
 
-void p3d_compute_robot_bodies_point_cloud(p3d_rob* robot, double step)
+void p3d_compute_robot_bodies_point_cloud2(p3d_rob* robot, double step)
 {
 	for(int i = 0; i <= robot->njoints; i++)
 	{
 		if(robot->joints[i]->o)
 		{
-			p3d_compute_object_point_cloud(robot->joints[i]->o, step);
+			p3d_compute_object_point_cloud2(robot->joints[i]->o, step);
 		}
 	}
 }
 
-void p3d_compute_all_robots_bodies_point_cloud(p3d_env* env, double step)
+void p3d_compute_all_robots_bodies_point_cloud2(p3d_env* env, double step)
 {
 	for(int i = 0; i < env->nr; i++)
 	{
-		p3d_compute_robot_bodies_point_cloud(env->robot[i], step);
+		p3d_compute_robot_bodies_point_cloud2(env->robot[i], step);
 	}
 }
 
@@ -152,8 +152,8 @@ GridCollisionChecker::~GridCollisionChecker()
 
 void GridCollisionChecker::init(void)
 {
-	p3d_compute_static_objects_point_cloud(XYZ_ENV, _cellSize[0]*0.25);
-	p3d_compute_all_robots_bodies_point_cloud(XYZ_ENV, _cellSize[0]*0.25);
+	p3d_compute_static_objects_point_cloud2(XYZ_ENV, _cellSize[0]*0.25);
+	p3d_compute_all_robots_bodies_point_cloud2(XYZ_ENV, _cellSize[0]*0.25);
 	
 	//unvalid static object Cells
 	for(int i = 0; i < XYZ_ENV->no; i++)

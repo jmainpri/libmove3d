@@ -7,7 +7,7 @@
 
 class DpgCell : public API::ThreeDCell{
   public:
-    DpgCell(int i, Vector3d corner, API::ThreeDGrid* grid);
+    DpgCell(int i, Eigen::Vector3d corner, API::ThreeDGrid* grid);
     //setters and getters
     inline int isValid(void){return _valid;}
     inline void setValid(int value){_valid = value;}
@@ -21,7 +21,7 @@ class DpgCell : public API::ThreeDCell{
     std::vector<p3d_node*> _nodes;
     int _valid; //There is no static obstacles crossing this cell
     int _visited;
-    Vector3d _cellSize;
+    Eigen::Vector3d _cellSize;
 };
 
 #endif
