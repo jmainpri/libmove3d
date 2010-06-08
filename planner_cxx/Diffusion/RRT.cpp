@@ -10,7 +10,7 @@
 //
 //
 #include "RRT.hpp"
-#include "../API/Grids/ThreeDPoints.h"
+#include "Grids/ThreeDPoints.h"
 
 using namespace std;
 using namespace tr1;
@@ -85,6 +85,7 @@ int  RRT::init()
 {
     int added = TreePlanner::init();
     _expan = new RRTExpansion(_Graph);
+	//_expan->setDirectionMethod(NAVIGATION_BEFORE_MANIPULATION);
     setInit(true);
     return added;
 }
@@ -125,14 +126,7 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
 //
     if(ENV.getBool(Env::drawPoints))
     {
-        int VirtualObjDof = _Robot->getObjectDof();
-
-        Vector3d randomPoint;
-        randomPoint[0] = (*directionConfig)[VirtualObjDof+0];
-        randomPoint[1] = (*directionConfig)[VirtualObjDof+1];
-        randomPoint[2] = (*directionConfig)[VirtualObjDof+2];
-
-        PointsToDraw->push_back(randomPoint);
+        PointsToDraw->push_back(directionConfig->getTaskPos());
     }
 
 //    cout << "***********************************************************"  << endl;

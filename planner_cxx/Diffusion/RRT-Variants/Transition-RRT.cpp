@@ -33,13 +33,14 @@ int TransitionRRT::init()
     int added = TreePlanner::init();
 
     _expan = new TransitionExpansion(this->getActivGraph());
+	_expan->setDirectionMethod(NAVIGATION_BEFORE_MANIPULATION);
 
 
-    p3d_InitSpaceCostParam(this->getActivGraph()->getGraphStruct(),
-                           this->getStart()->getNodeStruct(),
-                           this->getGoal()->getNodeStruct());
+//    p3d_InitSpaceCostParam(this->getActivGraph()->getGraphStruct(),
+//                           this->getStart()->getNodeStruct(),
+//                           this->getGoal()->getNodeStruct());
 	
-	/*this->getStart()->getNodeStruct()->temp = ENV.getDouble(Env::initialTemperature);
+	this->getStart()->getNodeStruct()->temp = ENV.getDouble(Env::initialTemperature);
     this->getStart()->getNodeStruct()->comp->temperature = ENV.getDouble(Env::initialTemperature);
     this->getStart()->getNodeStruct()->nbFailedTemp = 0;
 	
@@ -49,8 +50,7 @@ int TransitionRRT::init()
     //  Ns->NbDown = 0;
     p3d_SetNodeCost(this->getActivGraph()->getGraphStruct(),
 					this->getStart()->getNodeStruct(), 
-					p3d_GetConfigCost(_Robot->getRobotStruct(),
-					this->getStart()->getNodeStruct()->q));
+					this->getStart()->getConfiguration()->cost());
 	
     p3d_SetCostThreshold(this->getStart()->getNodeStruct()->cost);
 	
@@ -66,8 +66,7 @@ int TransitionRRT::init()
         //    Ng->NbDown = 0;
         p3d_SetNodeCost(this->getActivGraph()->getGraphStruct(), 
 						this->getGoal()->getNodeStruct(), 
-						p3d_GetConfigCost(_Robot->getRobotStruct(), 
-										  this->getGoal()->getNodeStruct()->q));
+						this->getGoal()->getConfiguration()->cost());
 		
         p3d_SetCostThreshold(MAX(
 								 p3d_GetNodeCost(this->getStart()->getNodeStruct()), 
@@ -86,7 +85,7 @@ int TransitionRRT::init()
         p3d_SetCostThreshold(this->getStart()->getNodeStruct()->cost);
         p3d_SetInitCostThreshold( this->getStart()->getNodeStruct()->cost );
         p3d_SetAverQsQgCost( this->getActivGraph()->getGraphStruct()->rob->GRAPH->search_start->cost);
-    }*/
+    }
 
     return added;
 }

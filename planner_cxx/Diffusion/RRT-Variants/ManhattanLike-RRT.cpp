@@ -1,4 +1,8 @@
 #include "ManhattanLike-RRT.hpp"
+
+#include "planningAPI.hpp"
+
+#include "P3d-pkg.h"
 #include "Bio-pkg.h"
 #include "Collision-pkg.h"
 #include "Planner-pkg.h"
@@ -119,6 +123,8 @@ bool ManhattanLikeRRT::getCurrentInvalidConf(Configuration& q) {
 	 bio_get_current_q_inv(_Robot->getRobotStruct(), q.getConfigStruct()) :
 	 p3d_get_current_q_inv(_Robot->getRobotStruct(), q.getConfigStruct()));
 #endif
+	cout << "Warning : BIO Not compiled in " << __func__ <<  endl;
+	return false;
 }
 
 int ManhattanLikeRRT::passiveExpandProcess(Node* expansionNode, 

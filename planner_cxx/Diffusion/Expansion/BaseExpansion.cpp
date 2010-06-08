@@ -8,26 +8,29 @@
 
 #include "BaseExpansion.h"
 
+#include "planningAPI.hpp"
+
+#include "P3d-pkg.h"
 #include "Planner-pkg.h"
 
 using namespace std;
 using namespace tr1;
 
 BaseExpansion::BaseExpansion() :
-	ExpansionNodeMethod(NEAREST_EXP_NODE_METH),
-	MaxExpandNodeFailure(10),
-	kNearestPercent(10),
-	ExpansionDirectionMethod(GLOBAL_CS_EXP),
-	IsDirSampleWithRlg(false)
+	m_ExpansionNodeMethod(NEAREST_EXP_NODE_METH),
+	m_MaxExpandNodeFailure(10),
+	m_kNearestPercent(10),
+	m_ExpansionDirectionMethod(GLOBAL_CS_EXP),
+	m_IsDirSampleWithRlg(false)
 	{ cout << "no graph in expansion method" << endl; }
 
 BaseExpansion::BaseExpansion(Graph* ptrGraph) :
 
-	ExpansionNodeMethod(NEAREST_EXP_NODE_METH),
-	MaxExpandNodeFailure(10),
-	kNearestPercent(10),
-	ExpansionDirectionMethod(GLOBAL_CS_EXP),
-	IsDirSampleWithRlg(false),
+	m_ExpansionNodeMethod(NEAREST_EXP_NODE_METH),
+	m_MaxExpandNodeFailure(10),
+	m_kNearestPercent(10),
+	m_ExpansionDirectionMethod(GLOBAL_CS_EXP),
+	m_IsDirSampleWithRlg(false),
 	mGraph(ptrGraph) {}
 
 BaseExpansion::~BaseExpansion(){}
@@ -87,7 +90,7 @@ bool BaseExpansion::expandControl(LocalPath& path, double positionAlongDirection
 
 void BaseExpansion::expansionFailed(Node& node) {
 
-	if(ExpansionNodeMethod == RANDOM_IN_SHELL_METH)  {
+	if(m_ExpansionNodeMethod == RANDOM_IN_SHELL_METH)  {
 		p3d_SetNGood(0);
 	}
 
@@ -96,7 +99,7 @@ void BaseExpansion::expansionFailed(Node& node) {
 	if((ENV.getBool(Env::discardNodes)) &&
 			(node.getNodeStruct() != mGraph->getGraphStruct()->search_start) &&
 			(node.getNodeStruct() != mGraph->getGraphStruct()->search_goal) &&
-			(node.getNodeStruct()->n_fail_extend > MaxExpandNodeFailure)) {
+			(node.getNodeStruct()->n_fail_extend > m_MaxExpandNodeFailure)) {
 
 		node.getNodeStruct()->IsDiscarded = true;
 		update_parent_nfails(node.getNodeStruct());
@@ -112,7 +115,7 @@ Node* BaseExpansion::addNode(Node* currentNode, LocalPath& path, double pathDelt
 	if ((pathDelta == 1. && directionNode))
 	{
 		cout << "MergeComp" << endl;
-		mGraph->MergeComp(currentNode, directionNode, path.getParamMax());
+		mGraph->mergeComp(currentNode, directionNode, path.getParamMax());
 		return (directionNode);
 	}
 	else

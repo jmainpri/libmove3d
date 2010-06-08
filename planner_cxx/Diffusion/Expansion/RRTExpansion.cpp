@@ -1,9 +1,15 @@
 #include "RRTExpansion.h"
 
+#include "planningAPI.hpp"
+
+#include "P3d-pkg.h"
 #include "Planner-pkg.h"
+
+#include "../API/Grids/ThreeDPoints.h"
 
 using namespace std;
 using namespace tr1;
+
 
 RRTExpansion::RRTExpansion() :
         BaseExpansion()
@@ -42,7 +48,7 @@ shared_ptr<Configuration> RRTExpansion::getExpansionDirection(
     shared_ptr<Configuration> q;
     int savedRlg;
 
-    if (IsDirSampleWithRlg)
+    if (m_IsDirSampleWithRlg)
     {
         // Save the previous Rlg setting to shoot without Rlg
         savedRlg = p3d_get_RLG();
@@ -59,7 +65,7 @@ shared_ptr<Configuration> RRTExpansion::getExpansionDirection(
     }
     else
     {
-        switch (ExpansionDirectionMethod)
+        switch (m_ExpansionDirectionMethod)
         {
             case SUBREGION_CS_EXP:
                 // Selection in a subregion of the CSpace
@@ -74,13 +80,44 @@ shared_ptr<Configuration> RRTExpansion::getExpansionDirection(
                                      (int) samplePassive);
             break;
 
-          case GLOBAL_CS_EXP:
+			case NAVIGATION_BEFORE_MANIPULATION:
+			{
+				mGraph->getRobot()->deactivateCcConstraint();
+				
+				q = mGraph->getRobot()->shoot();
+				Node* closest = mGraph->nearestWeightNeighbour(expandComp,q,false,ONLY_ROBOT_BASE);
+				
+				LocalPath path(closest->getConfiguration(),q);
+//				cout << "Param max = " << path.getParamMax() << " , step = " << step() << endl;
+				q = path.configAtParam(2*step());
+				
+//				cout << "1 :" << endl;
+//				q->print();
+				
+				mGraph->getRobot()->setAndUpdate(*q);
+				q = mGraph->getRobot()->shootAllExceptBase();
+				q->setConstraintsWithSideEffect();
+				
+//				cout << "2 :" << endl;
+//				q->print();
+				
+//				mGraph->getRobot()->setAndUpdate(*q);
+//				g3d_draw_allwin_active();
+				
+				mGraph->getRobot()->activateCcConstraint();
+//				q->setConstraintsWithSideEffect();
+//				mGraph->getRobot()->setAndUpdate(*q);
+//				g3d_draw_allwin_active();
+			}
+			break;
+						   
+			case GLOBAL_CS_EXP:
               default:
                 // Selection in the entire CSpace
                 q = mGraph->getRobot()->shoot(samplePassive);
         }
     }
-    if (!IsDirSampleWithRlg)
+    if (!m_IsDirSampleWithRlg)
     {
         //Restore the previous Rlg setting
         p3d_set_RLG(savedRlg);
@@ -110,7 +147,7 @@ Node* RRTExpansion::getExpansionNode(Node* compNode, shared_ptr<Configuration> d
 
     case K_NEAREST_EXP_NODE_METH:
         /* Select randomly among the K nearest nodes of a componant */
-        NearestPercent = kNearestPercent;
+        NearestPercent = m_kNearestPercent;
         KNearest
                 = MAX(1,(int)((NearestPercent*(compNode->getCompcoStruct()->nnode))/100.));
         // TODO : fix
@@ -126,7 +163,7 @@ Node* RRTExpansion::getExpansionNode(Node* compNode, shared_ptr<Configuration> d
                                                p3d_GetIsWeightedChoice(), distance));
 
     case K_BEST_SCORE_EXP_METH:
-        NearestPercent = kNearestPercent;
+        NearestPercent = m_kNearestPercent;
         KNearest
                 = MAX(1,(int)((NearestPercent*(compNode->getCompcoStruct()->nnode))/100.));
         // TODO : fix
@@ -142,6 +179,38 @@ Node* RRTExpansion::getExpansionNode(Node* compNode, shared_ptr<Configuration> d
     case RANDOM_NODE_METH:
         return (mGraph->getNode(p3d_RandomNodeFromComp(
                 compNode->getCompcoStruct())));
+	
+	/*case NAVIGATION_BEFORE_MANIPULATION:
+	{
+		Node* node = mGraph->nearestWeightNeighbour(compNode,direction,p3d_GetIsWeightedChoice(), distance);
+			
+		LocalPath path(node->getConfiguration(),direction);
+		double pathDelta = path.getParamMax() <= 0. ? 1. : MIN(1., this->step() / path.getParamMax());
+			
+		shared_ptr<Configuration> newDirection = path.configAtParam(pathDelta);
+		mGraph->getRobot()->shootObjectJoint(*newDirection);
+		
+		int ObjectDof = mGraph->getRobot()->getObjectDof();
+		
+		(*direction)[ObjectDof+0] = (*newDirection)[ObjectDof+0];
+		(*direction)[ObjectDof+1] = (*newDirection)[ObjectDof+1];
+		(*direction)[ObjectDof+2] = (*newDirection)[ObjectDof+2];
+		(*direction)[ObjectDof+3] = (*newDirection)[ObjectDof+3];
+		(*direction)[ObjectDof+4] = (*newDirection)[ObjectDof+4];
+		(*direction)[ObjectDof+5] = (*newDirection)[ObjectDof+5];
+		
+		if (ENV.getBool(Env::drawPoints)) {
+			
+			Eigen::Vector3d point;
+			point[0] = (*direction)[ObjectDof+0];
+			point[1] = (*direction)[ObjectDof+1];
+			point[2] = (*direction)[ObjectDof+2];
+			
+			PointsToDraw->push_back(point);	
+		}
+		
+		return node;
+	}*/
 
     default:
         /* By default return the nearest node of the componant */

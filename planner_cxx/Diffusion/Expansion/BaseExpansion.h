@@ -7,7 +7,7 @@
 #ifndef P3D_BASE_EXPANSION_HPP
 #define P3D_BASE_EXPANSION_HPP
 
-#include "../../../planner_cxx/API/planningAPI.hpp"
+#include "planningAPI.hpp"
 
 /**
   @ingroup Diffusion
@@ -20,7 +20,6 @@ public:
       * Constructor
       */
     BaseExpansion();
-
     BaseExpansion(Graph* prtGraph);
 
     /**
@@ -28,8 +27,26 @@ public:
       */
     ~BaseExpansion();
 
-    int getNodeMethod() { return ExpansionNodeMethod; }
-
+	/**
+	 * Get Node Expansion Method
+	 */
+    int getDirectionMethod() { return m_ExpansionDirectionMethod; }
+	
+	/**
+	 * Set Expansion node Method
+	 */
+	void setDirectionMethod(int directionExpansion) { m_ExpansionDirectionMethod = directionExpansion; }
+	
+	/**
+	 * Get Node Expansion Method
+	 */
+    int getNodeMethod() { return m_ExpansionNodeMethod; }
+	
+	/**
+	 * Set Expansion node Method
+	 */
+	void setNodeMethod(int nodeExpansion) { m_ExpansionNodeMethod = nodeExpansion; }
+	
     /**
       * Expansion Step (Delta)
       */
@@ -87,14 +104,14 @@ public:
 
 protected:
 
-    int ExpansionNodeMethod;
-    int MaxExpandNodeFailure;
-    int kNearestPercent;
+    int m_ExpansionNodeMethod;
+    int m_MaxExpandNodeFailure;
+    int m_kNearestPercent;
 
-    int ExpansionDirectionMethod; // = GLOBAL_CS_EXP;
+    int m_ExpansionDirectionMethod; // = GLOBAL_CS_EXP;
     //	double GoalBias; //= 0.1;
     //	bool IsGoalBias; //= FALSE;
-    bool IsDirSampleWithRlg; //= FALSE;
+    bool m_IsDirSampleWithRlg; //= FALSE;
 
     Graph* mGraph;
 };
