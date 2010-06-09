@@ -281,7 +281,7 @@ int g3d_object_visibility_placement(p3d_matrix4 camera_frame, p3d_rob *object, d
   
   p3d_cartesian2spherical(objectCenterCamFr[0],objectCenterCamFr[1],objectCenterCamFr[2],
                           &rho,&phi,&theta);
-  printf("Distance:%f, Elevation: %f, Azimuth: %f\n",rho,RTOD(phi),RTOD(theta));
+  // printf("Distance:%f, Elevation: %f, Azimuth: %f\n",rho,RTOD(phi),RTOD(theta));
   
   *phi_result = phi; // Elevation
   *theta_result = theta; // Azimuth
