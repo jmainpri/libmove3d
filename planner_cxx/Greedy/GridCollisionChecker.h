@@ -42,7 +42,7 @@ public:
 	
     void unvalidObjectCells(obj* obj);
     void draw();
-	
+    bool collisionCheck();	
 protected:
 	CellCollisionChecker* createNewCell(unsigned int index,unsigned  int x,unsigned  int y,unsigned  int z );
 	
