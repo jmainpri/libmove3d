@@ -16,6 +16,9 @@
 
 #include "Manipulation.h"
 
+#include "../planner_cxx/API/Grids/gridsAPI.hpp"
+#include "../planner_cxx/Greedy/GridCollisionChecker.h"
+
 
 #ifdef MULTILOCALPATH
 static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
@@ -355,6 +358,11 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 
 void draw_grasp_planner()
 {
+
+return;
+//     g3d_draw_costspace(); 
+API_activeGrid->draw();
+return;
 p3d_rob *jido= p3d_get_robot_by_name("HRP2TABLE");
 p3d_rob *GREY_TAPE= p3d_get_robot_by_name("GREY_TAPE");
   p3d_vector3 a, b, amin, bmin;
@@ -1375,6 +1383,26 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+// API_activeGrid = global_GridCollisionChecker = new GridCollisionChecker;
+// ENV.setBool(Env::drawGrid, true);
+//  redraw();
+  p3d_vector3 points[5000];
+  for(int i=0; i<5000; ++i)
+  {
+//     points[i][0]= p3d_random(-0.2, 0.2);
+//     points[i][1]= p3d_random(0.3, 0.6);
+//     points[i][2]= p3d_random(0.65, 0.95);
+
+    points[i][0]= p3d_random(100, 350);
+    points[i][1]= p3d_random(350, 450);
+    points[i][2]= p3d_random(0, 0);
+  }
+  p3d_set_collision_cloud( points, 5000);
+
+return;
+
+redraw();
+return;
 
 g3d_win *win= NULL;
 win= g3d_get_cur_win();
