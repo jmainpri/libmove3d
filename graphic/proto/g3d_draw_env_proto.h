@@ -13,6 +13,7 @@ extern void g3d_draw_robots ( G3D_Window *win );
 extern void g3d_draw_env_box ( void );
 extern void g3d_draw_robot ( int ir, G3D_Window* win );
 extern void g3d_draw_env(void);
+extern void g3d_draw_env_custom(void);
 extern void g3d_draw_obstacle(G3D_Window *win);
 extern void g3d_draw_body(int coll, G3D_Window *win);
 extern void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win);

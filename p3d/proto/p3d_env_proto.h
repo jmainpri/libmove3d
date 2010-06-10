@@ -76,5 +76,6 @@ extern int p3d_print_obj_info(p3d_obj *o);
 extern int p3d_print_env_info();
 extern p3d_plane p3d_plane_from_points(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3);
 extern int p3d_is_point_above_plane(p3d_vector3 point, p3d_plane plane);
+extern int p3d_set_collision_cloud(p3d_vector3* points, int nbPoints);
 
 #endif /* __CEXTRACT__ */
