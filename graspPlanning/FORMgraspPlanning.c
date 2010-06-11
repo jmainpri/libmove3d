@@ -16,9 +16,6 @@
 
 #include "Manipulation.h"
 
-#include "../planner_cxx/API/Grids/gridsAPI.hpp"
-#include "../planner_cxx/Greedy/GridCollisionChecker.h"
-
 
 #ifdef MULTILOCALPATH
 static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
@@ -358,10 +355,6 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 
 void draw_grasp_planner()
 {
-
-return;
-//     g3d_draw_costspace(); 
-API_activeGrid->draw();
 return;
 p3d_rob *jido= p3d_get_robot_by_name("HRP2TABLE");
 p3d_rob *GREY_TAPE= p3d_get_robot_by_name("GREY_TAPE");
