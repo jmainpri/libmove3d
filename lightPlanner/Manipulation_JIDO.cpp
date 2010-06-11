@@ -1359,7 +1359,7 @@ int Manipulation_JIDO::getObjectPose(double *x, double *y, double *z, double *rx
 }
 
 //! Computes a list of grasps for the currently selected object.
-//! NB: works for the gripper only for now
+//! NB: works only for the gripper for now
 //! \return 0 in case of success, 1 otherwise
 int Manipulation_JIDO::computeGraspList(){
   if(_object==NULL) {
@@ -1432,6 +1432,25 @@ int Manipulation_JIDO::computeGraspList(){
   } else {
     return 1;
   }
+}
+
+//! Reduces the size of the current grasp list.
+//! \param maxSize the desired maximum number of elements of the list
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::reduceGraspList(unsigned int maxSize){
+  if(_graspList.empty()) {
+    printf("%s: %d: Manipulation_JIDO::reduceGraspList(): the current grasp list is empty.\n", __FILE__, __LINE__);
+    return 1;
+  }
+
+  if(_graspList.size() < maxSize) {
+    printf("%s: %d: Manipulation_JIDO::reduceGraspList(): the current grasp list has already less than %d elements.\n", __FILE__, __LINE__,maxSize);
+    return 1;
+  }
+
+  gpReduce_grasp_list_size(_graspList, _graspList, maxSize);
+
+  return 0;
 }
 
 

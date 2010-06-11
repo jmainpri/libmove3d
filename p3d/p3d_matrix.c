@@ -1902,8 +1902,9 @@ void p3d_matrix3_to_quaternion(p3d_matrix3 R, p3d_vector4 q)
  q[3]/= n;
 }
 
-//! Returns a weighted distance between two homogenaous transform matrices.
+//! Returns a weighted distance between two homogeneous transform matrices.
 //! distance= weightR*(distance between the two quaternions) + weightT*(euclidean distance between the two positions)
+//! Note that the distance between the two quaternions is in [0 ; PI]
 double p3d_mat4Distance(p3d_matrix4 M1, p3d_matrix4 M2, double weightR, double weightT)
 {
   double x;
