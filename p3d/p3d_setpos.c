@@ -235,23 +235,24 @@ void p3d_set_robot_config(p3d_rob *robotPt, configPt config) {
  * @brief Sample the robot singularity
  * @param robotPt the current robot
  * @param cntrtNum the contraint to put at singular value
- * @return the singular value choosen.
+ * @return 0 if error 1 if success.
  */
-int p3d_set_robot_singularity(p3d_rob *robotPt, int cntrtNum) {
+int p3d_set_robot_singularity(p3d_rob *robotPt, int cntrtNum, int *singNum) {
   p3d_cntrt_management * cntrt_manager = robotPt->cntrt_manager;
   p3d_cntrt * ct = NULL;
-  int i = 0,j = 0,jntNum = 0,singularityNum = 0;
+  int i = 0,j = 0,jntNum = 0;
   double v[6] = {0,0,0,0,0,0}, vMin = 0.0, vMax = 0.0;
   p3d_matrix4 endJntAbsPos, newObjPos;
-  configPt config;
   p3d_singularity * singularity = NULL;
 
-  config = p3d_alloc_config(robotPt);
   ct = cntrt_manager->cntrts[cntrtNum];
 #ifdef P3D_CONSTRAINTS
-  singularityNum = p3d_get_random_singularity(ct);
+  if(*singNum == -1){
+    *singNum = p3d_get_random_singularity(ct);
+  }
+
 #endif
-  singularity = ct->singularities[singularityNum];
+  singularity = ct->singularities[*singNum];
   for(i = 0; i < singularity->nJnt; i++){
     jntNum = (singularity->singJntVal[i])->jntNum;
     for (j = 0; j < robotPt->joints[jntNum]->dof_equiv_nbr; j++){
@@ -260,6 +261,7 @@ int p3d_set_robot_singularity(p3d_rob *robotPt, int cntrtNum) {
   }
   p3d_update_this_robot_pos(robotPt);
   if(DEBUG_SETPOS){
+    configPt config = p3d_alloc_config(robotPt);
     g3d_refresh_allwin_active();
     p3d_get_robot_config_into(robotPt, &config);
     print_config(robotPt, config);
@@ -269,6 +271,7 @@ int p3d_set_robot_singularity(p3d_rob *robotPt, int cntrtNum) {
     p3d_mat4Print(ct->Tatt, "Tatt");
     p3d_matInvertXform(ct->Tatt, newObjPos);
     p3d_mat4Print(newObjPos, "Tsing");
+    p3d_destroy_config(robotPt, config);
   }
   //update the position of the end effector
   p3d_matInvertXform((ct->actjnts[0])->pos0_obs, newObjPos); //if the initial manipulated jnt matrix != Id
@@ -283,22 +286,19 @@ int p3d_set_robot_singularity(p3d_rob *robotPt, int cntrtNum) {
       if (v[0] > vMin && v[0] < vMax){
         p3d_jnt_set_dof((ct->actjnts[0]), 0, v[0]);
       }else{
-        p3d_destroy_config(robotPt, config);
-        return -1;
+        return 0;
       }
       p3d_jnt_get_dof_bounds(ct->actjnts[0], 1, &vMin, &vMax);
       if (v[1] > vMin && v[1] < vMax){
         p3d_jnt_set_dof((ct->actjnts[0]), 1, v[1]);
       }else{
-        p3d_destroy_config(robotPt, config);
-        return -1;
+        return 0;
       }
       p3d_jnt_get_dof_bounds(ct->actjnts[0], 2, &vMin, &vMax);
       if (v[5] > vMin && v[5] < vMax){
         p3d_jnt_set_dof((ct->actjnts[0]), 2, v[5]);
       }else{
-        p3d_destroy_config(robotPt, config);
-        return -1;
+        return 0;
       }
       break;
     }
@@ -308,8 +308,7 @@ int p3d_set_robot_singularity(p3d_rob *robotPt, int cntrtNum) {
         if (v[i] > vMin && v[i] < vMax){
           p3d_jnt_set_dof((ct->actjnts[0]), i, v[i]);
         }else{
-          p3d_destroy_config(robotPt, config);
-          return -1;
+          return 0;
         }
       }
       break;
@@ -321,14 +320,15 @@ int p3d_set_robot_singularity(p3d_rob *robotPt, int cntrtNum) {
   }
   p3d_update_this_robot_pos_without_cntrt(robotPt);
   if(DEBUG_SETPOS){
+    configPt config = p3d_alloc_config(robotPt);
     g3d_refresh_allwin_active();
     p3d_get_robot_config_into(robotPt, &config);
     print_config(robotPt, config);
     printf("\n\n");
     p3d_mat4Print((ct->actjnts[0])->abs_pos, "object");
+    p3d_destroy_config(robotPt, config);
   }
-  p3d_destroy_config(robotPt, config);
-  return singularityNum;
+  return 1;
 }
 
 /*
