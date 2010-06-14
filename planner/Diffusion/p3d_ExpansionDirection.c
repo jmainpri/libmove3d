@@ -1,6 +1,7 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"
+#include "Collision-pkg.h"
 
 /**
  * Note: the integer values of the different
@@ -163,9 +164,25 @@ int SelectExpansionDirection(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
         if (RandomValue > GoalBias) {
           /* Classical random expansion*/
           GraphPt->IsCurrentNodeBias = FALSE;
-
-          IsExpandDirectionFound = p3d_shoot(GraphPt->rob, DirectionConfig,
-                                             ArePassiveDofsSampled);
+//singularities
+          if ((GraphPt->rob->cntrt_manager->ncntrts != 0) && p3d_get_ik_choice() == IK_UNIQUE) {
+            int test = (int)p3d_random(0, 5);//5
+            if (test == 0 && GraphPt->ncomp > 1) {// 1/5 to shoot a singularity
+              int singularity = -1, cntrtNum = -1;
+              do{
+                p3d_APInode_shoot_singularity(GraphPt->rob, &DirectionConfig, &singularity, &cntrtNum);
+                p3d_unmark_for_singularity(GraphPt->rob->cntrt_manager, cntrtNum);
+                //g3d_draw_allwin_active();
+              }while(p3d_col_test());
+            }else{//normal shoot
+              IsExpandDirectionFound = p3d_shoot(GraphPt->rob, DirectionConfig,
+                                                 ArePassiveDofsSampled);
+            }
+          }else {//normal shoot
+            IsExpandDirectionFound = p3d_shoot(GraphPt->rob, DirectionConfig,
+                                               ArePassiveDofsSampled);
+          }
+//end singularities
         } else {
           GraphPt->IsCurrentNodeBias = TRUE;
           /* select randomly a node in the goal componant as direction of expansion */
@@ -184,10 +201,27 @@ int SelectExpansionDirection(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
           p3d_copy_config_into(GraphPt->rob, SelectedNodePt->q, & DirectionConfig);
           IsExpandDirectionFound = TRUE;
         }
-      } else {
-
-        /* Selection in the entire CSpace */
-        IsExpandDirectionFound = p3d_shoot(GraphPt->rob, DirectionConfig, ArePassiveDofsSampled);
+      } else {/* Selection in the entire CSpace */
+        //singularities
+        if ((GraphPt->rob->cntrt_manager->ncntrts != 0) && p3d_get_ik_choice() == IK_UNIQUE) {
+          int test = (int)p3d_random(0, 6-EPS6);//5
+          if (test == 0) {// 1/5 to shoot a singularity
+            int singularity = -1, cntrtNum = -1;
+            do{
+              p3d_APInode_shoot_singularity(GraphPt->rob, &DirectionConfig, &singularity, &cntrtNum);
+              p3d_unmark_for_singularity(GraphPt->rob->cntrt_manager, cntrtNum);
+            }while(p3d_col_test());
+            IsExpandDirectionFound = 1;
+          }else{//normal shoot
+            IsExpandDirectionFound = p3d_shoot(GraphPt->rob, DirectionConfig,
+                                               ArePassiveDofsSampled);
+          }
+        }else {//normal shoot
+          IsExpandDirectionFound = p3d_shoot(GraphPt->rob, DirectionConfig,
+                                             ArePassiveDofsSampled);
+        }
+        //end singularities
+       // IsExpandDirectionFound = p3d_shoot(GraphPt->rob, DirectionConfig, ArePassiveDofsSampled);
       }
       break;
     case SUBREGION_CS_EXP:
