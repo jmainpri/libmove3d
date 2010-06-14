@@ -259,7 +259,7 @@ class gpVector3D
           return z;
         break;
         default:
-          printf("gpVector3D::operator []: index exceeds vector dimensions.\n");
+          printf("%s: %d: gpVector3D::operator []: index exceeds vector dimensions.\n",__FILE__,__LINE__);
           return 0;
         break;
       }
@@ -279,7 +279,7 @@ class gpVector3D
           return z;
         break;
         default:
-          printf("gpVector3D::operator []: index exceeds vector dimensions.\n");
+          printf("%s: %d: gpVector3D::operator []: index exceeds vector dimensions.\n",__FILE__,__LINE__);
           return x;
         break;
       }
@@ -295,7 +295,7 @@ class gpVector3D
    {
       if(this==NULL)
       {
-        printf("%s: %d: gpSphere::setCenter(): the calling instance is NULL.\n",__FILE__,__LINE__);
+        printf("%s: %d: gpVector3D::setCenter(): the calling instance is NULL.\n",__FILE__,__LINE__);
         return GP_ERROR;
       }
       x= x0;

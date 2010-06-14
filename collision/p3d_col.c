@@ -1095,6 +1095,8 @@ int p3d_col_test(void)
   double p3d_kcd_dist = P3D_HUGE;
   p3d_type_col_choice  mode_dist;
 
+
+
 	switch (p3d_col_mode)
 	{
 #ifdef VCOLLIDE_ACT
@@ -1148,6 +1150,11 @@ int p3d_col_test(void)
 
 #ifdef PQP
         case p3d_col_mode_pqp:
+           if(p3d_col_rob_collision_cloud(XYZ_ENV->cur_robot))
+           {  
+             p3d_report_num= 1;
+             return p3d_report_num;
+           }
            p3d_report_num= pqp_all_collision_test();
            return p3d_report_num;
         break;
@@ -1166,6 +1173,7 @@ int p3d_col_test_all(void)
 { 
   double p3d_kcd_dist;
   p3d_type_col_choice  mode_dist;
+
 
   switch (p3d_col_mode)
     { 
@@ -1226,6 +1234,11 @@ int p3d_col_test_all(void)
 
 #ifdef PQP
     case p3d_col_mode_pqp:
+          if(p3d_col_rob_collision_cloud(XYZ_ENV->cur_robot))
+          {  
+            p3d_report_num= 1;
+            return p3d_report_num;
+          }
           p3d_report_num= pqp_all_collision_test();
 //          if(p3d_report_num)
 //          {
@@ -2234,6 +2247,11 @@ int p3d_col_does_robot_collide(int rob_nr, int numcoll)
 #endif
   int nb;
 
+  if(p3d_col_rob_collision_cloud(XYZ_ENV->cur_robot))
+  {  
+    return 1;
+  }
+
   nb= p3d_get_desc_number(P3D_BODY);
   switch (p3d_col_mode)
     {
@@ -2912,3 +2930,220 @@ double p3d_distanceObjToEnv(p3d_obj* o)
     return(0);
   }
 }
+
+
+//! Computes the minimal distance between a 3D point (in world coordinates) and the surface of a p3d_obj* (of a robot).
+//! The computed distance is < 0 if the point is inside the surface volume, > otherwise
+//! \warning only the poly that are primitive shapes (box, cynlinder and spheres only) are taken into account.
+//! If no distance can be computed due to this limitation, the returned returns an error.
+//! NB: the function may not work with bodies that do not belong to a robot.
+//! \param o pointer to the object
+//! \param point the point to test
+//! \param distance will be filled with the computed distance (can be < 0)
+//! \return 0 in case of success, 1 otherwise
+int p3d_obj_point_distance(p3d_obj *o, p3d_vector3 point, double *distance)
+{
+  if(o==NULL) {
+      printf("%s: %d: p3d_obj_point_distance(): input p3d_obj* is NULL.\n",__FILE__,__LINE__);
+      return 1;
+  }
+  if(distance==NULL) {
+      printf("%s: %d: p3d_obj_point_distance(): input double* is NULL.\n",__FILE__,__LINE__);
+      return 1;
+  }
+  
+  int i;
+  int skip, insideFound, outsideFound, firstInside, firstOutside;
+  double radius, height, dimX, dimY, dimZ, r, z, dx, dy, dz;
+  double d, dInsideMin, dOutsideMin;
+  p3d_vector3 center, diff, plocal;
+  p3d_matrix4 T, Tinv;
+  p3d_primitive *prim= NULL;
+  
+  
+  
+  dInsideMin =  1;
+  dOutsideMin= -1;
+  
+  
+  insideFound= 0; // no inside point was found yet
+  outsideFound= 0; // no outside point was found yet
+  firstInside= 1; //the next point found inside will be the first
+  firstOutside= 1; //the next point found outside will be the first
+  
+  for(i=0; i<o->np; ++i)
+  {
+    if(o->pol[i]->TYPE==P3D_GRAPHIC)
+    {  continue;  }
+  
+    if(o->is_used_in_device_flag && o->jnt!=NULL)
+    {    
+      p3d_matMultXform(o->jnt->abs_pos, o->pol[i]->pos_rel_jnt, T);
+    }
+    else
+    {
+      p3d_mat4Copy(o->pol[i]->pos0, T);
+    }
+  
+    skip= 0;
+    switch(o->pol[i]->entity_type)
+    {
+      case SPHERE_ENTITY:
+          prim= o->pol[i]->primitive_data;
+          radius= prim->radius;
+          p3d_mat4ExtractTrans(T, center);
+          p3d_vectSub(point, center, diff);
+          d= p3d_vectNorm(diff) - radius;
+      break;
+  
+      case BOX_ENTITY:
+          prim= o->pol[i]->primitive_data;
+          dimX= 0.5*prim->x_length;
+          dimY= 0.5*prim->y_length;
+          dimZ= 0.5*prim->z_length;
+  
+          p3d_matInvertXform(T, Tinv);
+          p3d_xformPoint(Tinv, point, plocal);
+  
+  
+          dx= fabs(plocal[0]) - dimX;
+          dy= fabs(plocal[1]) - dimY;
+          dz= fabs(plocal[2]) - dimZ;
+  
+          if( (dx < 0) && (dy < 0) && (dz < 0) ) // point is inside
+          {  d= MIN(dx, MIN(dy, dz)); }
+          else
+          {  d= MAX(dx, MAX(dy, dz)); }
+      break;
+  
+      case CYLINDER_ENTITY:
+          prim= o->pol[i]->primitive_data;
+          height= prim->height;
+          radius= prim->radius;
+  
+          p3d_matInvertXform(T, Tinv);
+          p3d_xformPoint(Tinv, point, plocal);
+  
+          // get polar coordinates of the point (actually distance from cylinder axis + position along cylinder axis)
+          r= sqrt(plocal[0]*plocal[0] + plocal[1]*plocal[1]);
+          z= plocal[2];
+  
+          if( fabs(z) > 0.5*height ) // point is outside the cylinder volume
+          {
+            if( r < radius )
+            {  d= fabs(z) - 0.5*height;  }
+            else
+            {  d= sqrt( SQR(r-radius) + SQR(fabs(z) - 0.5*height) );  }
+          }
+          else
+          {
+            if( r < radius ) // point is inside the cylinder volume
+            {  d= MAX( r-radius, fabs(z)- 0.5*height);  }
+            else
+            {  d= r - radius;  }
+          }
+      break;
+      default:
+          skip= 1;
+      break;
+    }
+  
+    if(skip)
+    {  continue; }
+  
+    if(d < 0)
+    {
+      if(d > dInsideMin || firstInside==1)
+      { 
+        dInsideMin= d;
+        firstInside= 0;
+      }
+      insideFound= 1;
+    }
+    else
+    {
+      if(d < dOutsideMin || firstOutside==1)
+      { 
+        dOutsideMin= d; 
+        firstOutside= 0;
+      }
+      outsideFound= 1;
+    }
+  }
+  
+  
+  if(insideFound==1)
+  {
+    *distance= dInsideMin;
+    return 0;
+  }
+  
+  if(outsideFound==1)
+  { 
+    *distance= dOutsideMin;
+    return 0;
+  }
+  
+  return 1;
+}
+
+
+//! Tests if a robot is in collision with a sphere of given center and radius.
+//! \warning the only bodies that are considered are those having the following type (shape)
+//! sphere, box, cylinder.
+//! \param r pointer to the robot
+//! \param center center of the sphere
+//! \param radius radius of the sphere (can be 0)
+//! \return 0 if there is no collision, 1 otherwise
+int p3d_col_rob_sphere(p3d_rob *robotPt, p3d_vector3 center, double radius)
+{
+  if(robotPt==NULL) {
+      printf("%s: %d: p3d_col_rob_sphere(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+      return 0;
+  }
+  
+  int i;
+  double distance;
+  
+  radius= fabs(radius);
+  
+  for(i=0; i<robotPt->no; ++i)
+  {
+    if(p3d_obj_point_distance(robotPt->o[i], center, &distance)!=0)
+    {  continue;  } 
+  
+    if(distance < radius)
+    {
+      return 1;
+    }
+  }
+  
+  return 0;
+}
+
+//! Tests if a robot is in collision with the environment collision cloud.
+//! \warning the only bodies that are considered are those having the following type (shape)
+//! sphere, box, cylinder.
+//! \return 0 if there is no collision, 1 otherwise
+int p3d_col_rob_collision_cloud(p3d_rob *robotPt)
+{
+  if(robotPt==NULL) {
+    printf("%s: %d: p3d_col_rob_collision_cloud(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  int i, col;
+
+  for(i=0; i<XYZ_ENV->cloudSize; ++i)
+  {
+    col= p3d_col_rob_sphere(robotPt, XYZ_ENV->collisionCloud[i], 0);
+    if(col!=0)
+    {
+      return 1;
+    }
+  }
+  
+  return 0;
+}
+
+

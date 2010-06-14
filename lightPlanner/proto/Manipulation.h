@@ -301,6 +301,7 @@ class  Manipulation_JIDO {
      /*Functions relative to JIDO */
      int computeTrajBetweenTwoConfigs(bool cartesian, configPt qi, configPt qf);
      int computeGraspList();
+     int reduceGraspList(unsigned int maxSize);
      int findSimpleGraspConfiguration(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
      int computePlacementList();
      

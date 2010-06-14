@@ -101,5 +101,7 @@ extern double p3d_col_robot_environment_distance(p3d_rob *robot, p3d_vector3 clo
 extern double p3d_col_robot_robot_weighted_distance(p3d_rob *robot1, p3d_rob *robot2);
 extern double p3d_distanceObjToObj(p3d_obj* o1, p3d_obj* o2);
 extern double p3d_distanceObjToEnv(p3d_obj* o);
-
+extern double p3d_obj_point_distance(p3d_obj *o, p3d_vector3 point);
+extern int p3d_col_rob_sphere(p3d_rob *rrobotPt, p3d_vector3 center, double radius);
+extern int p3d_col_rob_collision_cloud(p3d_rob *robotPt);
 #endif /* __CEXTRACT__ */

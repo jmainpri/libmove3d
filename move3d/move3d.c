@@ -25,6 +25,7 @@
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #endif
 #ifdef CXX_PLANNER
+#include "planningAPI.hpp"
 #include "cost_space.hpp"
 #include <boost/bind.hpp>
 #endif
@@ -531,7 +532,11 @@ int main(int argc, char ** argv) {
 		deactivateCcCntrts(MyRobot,-1);
 	}
 #endif
-	
+
+#ifdef CXX_PLANNER
+global_Project = new Project(new Scene(XYZ_ENV));
+#endif	
+
 #ifdef QT_GL
   sem->release();
 #endif

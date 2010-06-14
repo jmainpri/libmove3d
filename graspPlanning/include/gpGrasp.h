@@ -65,9 +65,9 @@ class gpGrasp
   int computeQuality();
   double configCost();
   bool areContactsTooCloseToEdge(double angleThreshold, double distancethreshold);
-  double distance(const gpGrasp &grasp);
+  friend double gpGraspDistance(const gpGrasp &grasp1, const gpGrasp &grasp2);
   int contactCentroid(p3d_vector3 centroid);
-  int direction(p3d_vector3 direction);
+  int direction(p3d_vector3 direction) const;
   double similarity(const gpGrasp &grasp);
 };
 
