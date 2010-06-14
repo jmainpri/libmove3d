@@ -5,7 +5,7 @@
 #include "P3d-pkg.h"
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
-#include "../planner/dpg/proto/p3d_chanEnv_proto.h"
+#include "p3d_chanEnv_proto.h"
 
 static p3d_edge* p3d_getLpEdge(p3d_rob* robot, p3d_graph* graph, p3d_localpath* lp);
 
