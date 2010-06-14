@@ -615,9 +615,12 @@ static void CB_node_counter(FL_OBJECT *ob, long arg){
     }
     if(list_node!=NULL){
       q_copy = p3d_copy_config(robotPt,list_node->N->q);
-      p3d_set_robot_config(robotPt,q_copy);
+//      p3d_set_robot_config(robotPt,q_copy);
+      p3d_set_and_update_this_robot_conf_multisol(robotPt, q_copy, NULL, 0, list_node->N->iksol);
+      p3d_set_robot_iksol(robotPt, list_node->N->iksol);
       //edit mokhtar création de trajectoires
       p3d_copy_config_into(robotPt, q_copy, &(robotPt->ROBOT_POS));
+      p3d_copy_iksol(robotPt->cntrt_manager, list_node->N->iksol, &robotPt->ikSolPos);
       // Very strange : g3d_draw_allwin_active() must
       //be called twice to draw correctly the position of the robot
       g3d_draw_allwin_active();

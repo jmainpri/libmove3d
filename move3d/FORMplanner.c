@@ -263,7 +263,9 @@ static FL_OBJECT  *NORMAL_CB;
 static FL_OBJECT  *MULTISOL_CB;
 static FL_OBJECT  *UNIQUE_CB;
 static FL_OBJECT  *IK_DRAW_FRAME;
+static FL_OBJECT  *IK_ROBOT_FRAME;
 static FL_OBJECT  **IK_DRAW;
+static FL_OBJECT  **IK_ROBOT;
 
 FL_OBJECT  *SEARCH_COMPCO_PARAM_OBJ;
 static FL_OBJECT  *SEARCH_COMPCO_INPUT_OBJ;
@@ -1222,7 +1224,7 @@ void CB_print_obj(FL_OBJECT *ob, long arg) {
                 graphNodeList[i] = edge->E->Ni->num;
                 graphNodeList[i+nbEdges] = edge->E->Nf->num;
                 if (edge->E->Ni->iksol != NULL) {
-                  fprintf(dotFile, "\t%d [label=\"%d(%d)\\n ", edge->E->Nf->num, edge->E->Nf->num, edge->E->Nf->numcomp);
+                  fprintf(dotFile, "\t%d [label=\"%d(%d)\\n ", edge->E->Ni->num, edge->E->Ni->num, edge->E->Ni->numcomp);
                   if(p3d_get_ik_choice() != IK_NORMAL){
                     for (j = 0; j < G->rob->cntrt_manager->ncntrts; j++) {
                       fprintf(dotFile, "%d", edge->E->Ni->iksol[j]);
@@ -1388,12 +1390,28 @@ static void CB_ik_draw_obj(FL_OBJECT *ob, long arg) {
   }
 }
 
+static void CB_ik_robot_obj(FL_OBJECT *ob, long arg) {
+  int value = 0;
+  
+  p3d_rob *robot = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+  
+  value = atoi(fl_get_input(ob));
+  if (value <= (robot->cntrt_manager->cntrts[arg])->nbSol) {
+    int ir = p3d_get_desc_curnum(P3D_ROBOT);
+    if(fl_get_choice(ROBOTS_FORM[ir].GOTO_OBJ) == 1){
+      robot->ikSolPos[arg] = value;
+    }else{
+      robot->ikSolGoto[arg] = value;
+    }
+  }
+}
+
 static void g3d_create_ik_form(void) {
   p3d_rob *robot = (p3d_rob *)p3d_get_desc_curid(P3D_ROBOT);
-  int nbMulti = 0, multiOffset = 0, i = 0, counter = 0, *ikSol = NULL;
+  int nbMulti = 0, multiOffset = 0, i = 0, counter = 0, *ikSol = NULL, nbSol = 0;
   char buffer [10];
-
-  if ((nbMulti = p3d_is_multisol(robot->cntrt_manager))) {
+  
+  if ((nbMulti = p3d_is_multisol(robot->cntrt_manager, &nbSol))) {
     multiOffset = 30 + nbMulti * 40;
   }
   g3d_create_form(&IK_FORM, 225, 45 + multiOffset, FL_UP_BOX);
@@ -1410,7 +1428,6 @@ static void g3d_create_ik_form(void) {
   g3d_create_checkbutton(&MULTISOL_CB, FL_RADIO_BUTTON, -1, 20, "Multisol", (void**)&IK_FRAME, 0);
   fl_set_object_color(MULTISOL_CB, FL_MCOL, FL_GREEN);
   fl_set_call_back(MULTISOL_CB, CB_ik_choice, (long)IK_MULTISOL);
-  //IK_GROUP = 
   fl_end_group();
   switch (p3d_get_ik_choice()) {
     case(IK_NORMAL): {
@@ -1439,6 +1456,27 @@ static void g3d_create_ik_form(void) {
         fl_set_input(IK_DRAW[counter], buffer);
         fl_set_call_back(IK_DRAW[counter], CB_ik_draw_obj, counter);
         counter++;
+      }
+    }
+    counter = 0;
+    int ir = p3d_get_desc_curnum(P3D_ROBOT);
+    if(fl_get_choice(ROBOTS_FORM[ir].GOTO_OBJ) == 1){
+      ikSol = robot->ikSolPos;
+    }else{
+      ikSol = robot->ikSolGoto;
+    }
+    if (ikSol) {
+      g3d_create_labelframe(&IK_ROBOT_FRAME, FL_ENGRAVED_FRAME, -1, -1, "RobotSol", (void**)&IK_FORM, 1);
+      IK_ROBOT = (FL_OBJECT**) malloc(nbMulti * sizeof(FL_OBJECT*));
+      for (i = 0; i < robot->cntrt_manager->ncntrts; i++) {
+        if ((robot->cntrt_manager->cntrts[i])->nbSol > 1) {
+          sprintf(buffer, "IkSol %d", counter);
+          g3d_create_input(&IK_ROBOT[counter], FL_NORMAL_INPUT, -1, 27, buffer, (void**)&IK_ROBOT_FRAME, 0);
+          sprintf(buffer, "%d", ikSol[i]);
+          fl_set_input(IK_ROBOT[counter], buffer);
+          fl_set_call_back(IK_ROBOT[counter], CB_ik_robot_obj, i);
+          counter++;
+        }
       }
     }
   }
