@@ -1003,7 +1003,7 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
      we could test the configuration at dist0 from the bounds */
   /* Remove the end of interval */
   u = umax;
-  if (change_position_robot_without_cntrt(robotPt, localpathPt, u)) {   // modif Juan
+  if (change_position_robot_multisol(robotPt, localpathPt, u, 0, NULL)) {   // modif Juan
     /* The initial position of the robot is recovered */
     p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, qp);
     p3d_destroy_config(robotPt, qp);
@@ -1033,7 +1033,7 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
 
   /* Remove the beginning of interval */
   u = 0;
-  if (change_position_robot(robotPt, localpathPt, u)) {
+  if (change_position_robot_multisol(robotPt, localpathPt, u, 0, NULL)) {
     /* The initial position of the robot is recovered */
     p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, qp);
     p3d_destroy_config(robotPt, qp);
@@ -1057,7 +1057,7 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
   while (end_localpath < 2) {
 
     /* position of the robot corresponding to parameter u */
-    if (change_position_robot(robotPt, localpathPt, u)) {
+    if (change_position_robot_multisol(robotPt, localpathPt, u, 0, NULL)) {
       /* The initial position of the robot is recovered */
       p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, qp);
       //p3d_destroy_config(robotPt, qsave);
@@ -1080,7 +1080,7 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
          }
          if (test) {
     /////////////////////////
-
+          
 		/* collision checking */
 		*ntest = *ntest + 1;
 		if (p3d_col_test()) {
@@ -1341,7 +1341,7 @@ static int p3d_col_test_localpath_autocol(p3d_rob *robotPt,
      we could test the configuration at dist0 from the bounds */
   /* Remove the end of interval */
   u = umax;
-  if (change_position_robot(robotPt, localpathPt, u)) {
+  if (change_position_robot_multisol(robotPt, localpathPt, u, 0, NULL)) {
     /* The initial position of the robot is recovered */
     p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, qsave);
     p3d_destroy_config(robotPt, qsave);
@@ -1366,7 +1366,7 @@ static int p3d_col_test_localpath_autocol(p3d_rob *robotPt,
   }
   /* Remove the beginning of interval  */
   u = 0;
-  if (change_position_robot(robotPt, localpathPt, u)) {
+  if (change_position_robot_multisol(robotPt, localpathPt, u, 0, NULL)) {
     /* The initial position of the robot is recovered */
     p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, qsave);
     p3d_destroy_config(robotPt, qsave);
@@ -1388,7 +1388,7 @@ static int p3d_col_test_localpath_autocol(p3d_rob *robotPt,
 
   while (end_localpath < 2) {
     /* position of the robot corresponding to parameter u */
-    if (change_position_robot(robotPt, localpathPt, u)) {
+    if (change_position_robot_multisol(robotPt, localpathPt, u, 0, NULL)) {
       /* The initial position of the robot is recovered */
       p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, qsave);
       p3d_destroy_config(robotPt, qsave);

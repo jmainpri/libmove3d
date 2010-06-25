@@ -93,8 +93,7 @@ p3d_node* NearestWeightNeighbor(p3d_graph* GraphPt, p3d_compco* CompPt,
   p3d_matrix4 *RefFramePt = NULL, *MobFramePt = NULL;
   p3d_matrix4 MobFrameRef, invT;
   if (CompPt == NULL) {
-    PrintInfo(("Warning: Try to find the nearest neighbor \
-               node of a Null comp \n"));
+    PrintInfo(("Warning: Try to find the nearest neighbor node of a Null comp \n"));
     return NULL;
   }
   /* When retrieving statistics; Commit Jim; date: 01/10/2008 */
@@ -116,9 +115,31 @@ p3d_node* NearestWeightNeighbor(p3d_graph* GraphPt, p3d_compco* CompPt,
     }
   }
 
+  extern int rrtExpansionPhase;
+  int * ikSol = NULL;
+  if(p3d_get_ik_choice() == IK_UNIQUE && rrtExpansionPhase == true){
+    ikSol = MY_ALLOC(int, GraphPt->rob->cntrt_manager->ncntrts);
+    for (int i = 0; i < GraphPt->rob->cntrt_manager->ncntrts; i++) {
+      ikSol[i] = p3d_get_random_ikSol(GraphPt->rob->cntrt_manager, i);
+    }
+  }
+  
   while (NodeOfCompListPt != NULL) {
     /* We take into account only the nodes undiscarded */
     if (NodeOfCompListPt->N->IsDiscarded == FALSE) {
+      if(p3d_get_ik_choice() == IK_UNIQUE){
+        if (rrtExpansionPhase == false) {
+          p3d_copy_iksol(GraphPt->rob->cntrt_manager, NULL, &ikSol);
+        }
+        if(!p3d_compare_iksol(GraphPt->rob->cntrt_manager, ikSol, NodeOfCompListPt->N->iksol)){
+          NodeOfCompListPt = NodeOfCompListPt->next;
+          continue;
+        }
+        if (rrtExpansionPhase == false) {
+          MY_FREE(ikSol, int, GraphPt->rob->cntrt_manager->ncntrts);
+        }
+      }
+      
       if (p3d_GetDistConfigChoice() == MOBILE_FRAME_DIST) {
         CurrentDist = p3d_GetSe3DistanceFrames(GraphPt->rob, MobFrameRef,
                                                NodeOfCompListPt->N->RelMobFrame);
@@ -139,6 +160,10 @@ p3d_node* NearestWeightNeighbor(p3d_graph* GraphPt, p3d_compco* CompPt,
     }
     NodeOfCompListPt = NodeOfCompListPt->next;
   }
+  if(p3d_get_ik_choice() == IK_UNIQUE && rrtExpansionPhase == true){
+    MY_FREE(ikSol, int, GraphPt->rob->cntrt_manager->ncntrts);
+  }
+  
   if (SavedDistConfigChoice != -1) {
     ENV.setInt(Env::DistConfigChoice, SavedDistConfigChoice);
   }
@@ -375,8 +400,9 @@ int p3d_ConnectNodeToComp(p3d_graph* GraphPt,
       p3d_SetIsWeightedChoice(SavedIsWeightChoice);
 
       if (Node2ToConnectPt == NULL) {
-        PrintInfo(("Warning: Failed to find a nearest node in \
-                   the Componant to connect\n"));
+        if (p3d_get_ik_choice() == IK_NORMAL) {
+          PrintInfo(("Warning: Failed to find a nearest node in the Componant to connect\n"));
+        }
         return FALSE;
       }
 
@@ -407,8 +433,7 @@ int p3d_ConnectNodeToComp(p3d_graph* GraphPt,
       p3d_SetIsWeightedChoice(SavedIsWeightChoice);
 
       if (Node2ToConnectPt == NULL) {
-        PrintInfo(("Warning: Failed to find a nearest node in \
-                   the Componant to connect\n"));
+        PrintInfo(("Warning: Failed to find a nearest node in the Componant to connect\n"));
         return FALSE;
       }
       /*    if(SelectedDistConfig(GraphPt->rob, Node1ToConnectPt->q, Node2ToConnectPt->q) >  */

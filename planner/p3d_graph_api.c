@@ -27,7 +27,7 @@ p3d_node* p3d_APInode_shoot(p3d_graph *graphPt) {
   while (ADM == 0) {
     //if we have to shoot a singularity. No singularity shoot if we are is normal mode
     if(singularityCheck && p3d_get_ik_choice() != IK_NORMAL){
-      singularityCt = p3d_APInode_shoot_singularity(graphPt->rob, &q, & speVal);
+      p3d_APInode_shoot_singularity(graphPt->rob, &q, & speVal, &singularityCt);
     }else{
       p3d_APInode_shoot_normal(graphPt, &q, TRUE);
     }
@@ -103,7 +103,7 @@ static void p3d_mix_constraints_solutions(p3d_rob* robotPt, p3d_cntrt *ct,config
  */
 p3d_node** p3d_APInode_shoot_multisol(p3d_graph *graphPt, int* nbNodes) {
   p3d_rob *robotPt = graphPt->rob;
-  int **ikSol = NULL, *nikSol = NULL, i = 0, j = 0, adm = 0, nbSolutions = 1, ikChoice = p3d_get_ik_choice(), singularityCt = -1, speVal = 0;
+  int **ikSol = NULL, *nikSol = NULL, i = 0, j = 0, adm = 0, nbSolutions = 1, ikChoice = p3d_get_ik_choice(), singularityCt = -1, speVal = -1, nbMaxSol = 0;
   configPt * configs, q; //array of possible configurations
   p3d_node** N = NULL;
 
@@ -113,11 +113,11 @@ p3d_node** p3d_APInode_shoot_multisol(p3d_graph *graphPt, int* nbNodes) {
     //if there is at least one constraint
     if (robotPt->cntrt_manager->cntrts != NULL) {
       q = p3d_alloc_config(robotPt);
-      if (p3d_is_multisol(robotPt->cntrt_manager)){//if there is a constraint with multi solutions
+      if (p3d_is_multisol(robotPt->cntrt_manager, &nbMaxSol)){//if there is a constraint with multi solutions
         while (adm == 0) {
           p3d_reset_iksol(robotPt->cntrt_manager);
           if(singularityCheck){
-            singularityCt = p3d_APInode_shoot_singularity(graphPt->rob, &q, &speVal);
+            p3d_APInode_shoot_singularity(graphPt->rob, &q, &speVal, &singularityCt);
           }else{
             p3d_APInode_shoot_normal(graphPt, &q, TRUE);
           }
@@ -235,36 +235,45 @@ void p3d_APInode_shoot_normal(p3d_graph *graphPt, configPt* q, int shootPassive)
  * @brief select randomly one constraint having a singularity and generates nodes corresponding to this configuration
  * @param graphPt the current graph
  * @param q the sampled configuration
- * @param speVal the choosen singularity
- * @return the choosen constraint
+ * @param singNum the choosen singularity
+ * @param cntrtNum the choosen constraint
+ * @return 0 on error 1 on success
  */
-int p3d_APInode_shoot_singularity(p3d_rob *rob, configPt* q, int *speVal){
+int p3d_APInode_shoot_singularity(p3d_rob *rob, configPt* q, int *singNum, int *cntrtNum){
   p3d_cntrt_management * cntrt_manager = rob->cntrt_manager;
-  int cntrtNum = 0;
 
   if(cntrt_manager->ncntrts == 0){
     printf("No Singular value defined\n");
     p3d_SetStopValue(TRUE);
-    return -1;
+    return 0;
   }
-  do{//take a random constraint having a singularity.
-    cntrtNum = (int)p3d_random(0, cntrt_manager->ncntrts);//the constraint to shoot as singularity
-  }while(cntrt_manager->cntrts[cntrtNum]->nSingularities == 0);
-
-  p3d_mark_for_singularity(cntrt_manager,cntrtNum);
+  
+  if (*cntrtNum == -1) {
+    do{//take a random constraint having a singularity.
+      *cntrtNum = (int)p3d_random(0, cntrt_manager->ncntrts-EPS6);//the constraint to shoot as singularity
+    }while(cntrt_manager->cntrts[*cntrtNum]->nSingularities == 0); 
+  }
+  p3d_mark_for_singularity(cntrt_manager,*cntrtNum);
+  int *ikSol = MY_ALLOC(int, rob->cntrt_manager->ncntrts);
+  int result = 0;
   do {
     p3d_shoot(rob, *q, 1);
     p3d_set_robot_config(rob, *q);
-    *speVal = p3d_set_robot_singularity(rob, cntrtNum);
+    result = p3d_set_robot_singularity(rob, *cntrtNum, singNum);
     p3d_get_robot_config_into(rob, q);
-  } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(rob, *q));//shoot until we have a valid configuration
+    for (int i = 0; i < rob->cntrt_manager->ncntrts; i++) {
+      ikSol[i] = p3d_get_random_ikSol(rob->cntrt_manager, i);
+    }
+  } while (!result || (!p3d_set_and_update_this_robot_conf_multisol(rob, *q, NULL, 0, ikSol)));//shoot until we have a valid configuration
+  p3d_set_iksol_elem(*cntrtNum, -(*singNum) - 1);
+  
   if (DEBUG_GRAPH_API){
     PrintInfo(("configuration tirée :\n"));
     print_config(rob, *q);
     PrintInfo(("\n"));
     p3d_print_iksol(cntrt_manager, NULL);
   }
-  return cntrtNum;
+  return 1;
 }
 
 p3d_node* p3d_APInode_shoot_nocolltest(p3d_graph *graphPt) {
@@ -278,7 +287,7 @@ p3d_node* p3d_APInode_shoot_nocolltest(p3d_graph *graphPt) {
   while (ADM == 0) {
     //if we have to shoot a singularity. No singularity shoot if we are is normal mode
     if(singularityCheck && p3d_get_ik_choice() != IK_NORMAL){
-      singularityCt = p3d_APInode_shoot_singularity(graphPt->rob, &q, & speVal);
+      p3d_APInode_shoot_singularity(graphPt->rob, &q, & speVal, &singularityCt);
     }else{
       p3d_APInode_shoot_normal(graphPt, &q, TRUE);
     }
@@ -433,6 +442,10 @@ p3d_APInode_linked(p3d_graph *graphPt, p3d_node *N1,  p3d_node *N2, double *dist
     printf("API Node Linked :\n");
     p3d_print_iksol(robotPt->cntrt_manager,N1->iksol);
     p3d_print_iksol(robotPt->cntrt_manager,N2->iksol);
+  }
+  if(!p3d_compare_iksol(robotPt->cntrt_manager, N1->iksol, N2->iksol)){
+    p3d_destroy_config(robotPt, qsave);
+    return(FALSE);
   }
   p3d_get_non_sing_iksol(robotPt->cntrt_manager, N1->iksol, N2->iksol, &ikSol);
   localpathPt = p3d_local_planner_multisol(robotPt, N1->q, N2->q, ikSol);

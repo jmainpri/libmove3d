@@ -1,7 +1,10 @@
-#include "../planner/dpg/proto/DpgCell.h"
+#include "DpgCell.h"
 #include "Graphic-pkg.h"
 
 using namespace std;
+// import most common Eigen types 
+//USING_PART_OF_NAMESPACE_EIGEN
+using namespace Eigen;
 
 DpgCell::DpgCell(int i, Eigen::Vector3d corner, API::ThreeDGrid* grid): API::ThreeDCell(i, corner, grid){
   _valid = 1;

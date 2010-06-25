@@ -5,6 +5,9 @@
 #include "P3d-pkg.h"
 #include "Localpath-pkg.h"
 
+int rrtExpansionPhase = false;
+int *rrtCurrentIkSol = NULL;
+
 /**
  * p3d_DiffuseOneConf
  * Create a new configuration diffused from a first one
@@ -89,8 +92,13 @@ static int p3d_ExpandOneStep(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
   double Ratio = -1.;
   double RandomNum = -1.;
   int savedDistChoice;
+//  int nbIKSolutions = 1;
   DirectionConfig  = p3d_alloc_config(GraphPt->rob);
 
+  if (p3d_get_ik_choice() != IK_NORMAL) {
+    rrtExpansionPhase = true;
+  }
+  
   /* selection of the direction of expansion */
   if(ENV.getBool(Env::isManhattan) == true) {
     Ratio = ENV.getDouble(Env::manhatRatio);
@@ -100,12 +108,17 @@ static int p3d_ExpandOneStep(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
       ArePassiveDofsSampled = FALSE;
     }
   }
+  
 //   printf("RRT before shoot\n");
   IsExpandDirectionFound = SelectExpansionDirection(GraphPt, 
 						    CompToExpandPt, GoalCompPt, 
 						    DirectionConfig, 
 						    ArePassiveDofsSampled);
-//   printf("RRT after shoot: direction found = %d\n", IsExpandDirectionFound);
+//  printf("RRT after shoot: direction found = %d\n", IsExpandDirectionFound);
+//  p3d_set_and_update_this_robot_conf_without_cntrt(GraphPt->rob, DirectionConfig);
+//  g3d_draw_allwin_active();
+  
+  
   if (IsExpandDirectionFound  == FALSE) {
     p3d_destroy_config(GraphPt->rob, DirectionConfig);
     return 0;
@@ -115,8 +128,8 @@ static int p3d_ExpandOneStep(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
   savedDistChoice = p3d_GetDistConfigChoice();
   ENV.setInt(Env::DistConfigChoice,ACTIVE_CONFIG_DIST);
   }
- /* selection of the node to expand */
-
+ /* selection of the node to expand */  
+  
   ExpansionNodePt = SelectExpansionNode(GraphPt, CompToExpandPt, 
 					DirectionConfig);
 //   printf("RRT found neighbour\n");
@@ -141,6 +154,10 @@ static int p3d_ExpandOneStep(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
 					     NbCreatedNodes);
   }
   p3d_destroy_config(GraphPt->rob, DirectionConfig);
+  
+  if (p3d_get_ik_choice() == IK_UNIQUE) {
+    rrtExpansionPhase = false;
+  }
   return NbCreatedNodes;
 }
 
@@ -436,88 +453,88 @@ or ComponantsPt NULL\n"));
   while( (AreCompConnected == FALSE ) &&
 	 (Comp1Pt->nnode < NbNodeMaxComp) &&
 	 (Comp2Pt->nnode < NbNodeMaxComp) &&
-	 (p3d_GetStopValue() == FALSE)) {
+        (p3d_GetStopValue() == FALSE)) {
     if((ENV.getBool(Env::expandBalanced) == false) ||
        (Comp1Pt->nnode < Comp2Pt->nnode +2)) {
-
-    if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH) {
-      NbCurCreatedNodes = p3d_MonteCarloOneStep(GraphPt,Comp1Pt, NULL);
-    } else{
-      NbCurCreatedNodes =  p3d_ExpandOneStep(GraphPt,Comp1Pt, Comp2Pt);
-    }
+      
+      if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH) {
+        NbCurCreatedNodes = p3d_MonteCarloOneStep(GraphPt,Comp1Pt, NULL);
+      } else{
+        NbCurCreatedNodes =  p3d_ExpandOneStep(GraphPt,Comp1Pt, Comp2Pt);
+      }
       if(NbCurCreatedNodes != 0) {
-	NbTotCreatedNodes += NbCurCreatedNodes;
-	NTryCreateNode = 0;
-	if(ENV.getBool(Env::isCostSpace) == false ) {
-	AreCompConnected = p3d_ConnectNodeToComp(GraphPt,
-						 GraphPt->last_node->N,
-						 Comp2Pt);
-	} else {
-	AreCompConnected = p3d_CostConnectNodeToComp(GraphPt,
-						 GraphPt->last_node->N,
-						 Comp2Pt);
-	}
-	if (DrawFunction) (*DrawFunction)();
+        NbTotCreatedNodes += NbCurCreatedNodes;
+        NTryCreateNode = 0;
+        if(ENV.getBool(Env::isCostSpace) == false ) {
+          AreCompConnected = p3d_ConnectNodeToComp(GraphPt,
+                                                   GraphPt->last_node->N,
+                                                   Comp2Pt);
+        } else {
+          AreCompConnected = p3d_CostConnectNodeToComp(GraphPt,
+                                                       GraphPt->last_node->N,
+                                                       Comp2Pt);
+        }
+        if (DrawFunction) (*DrawFunction)();
       }
       else {
-	NTryCreateNode += 1;
-	if(NTryCreateNode > ENV.getInt(Env::NbTry)) {
-	  PrintInfo (("Riched the maximal number of consecutive \
- failures to expand a Comp \n"));
-	  p3d_SetStopValue(TRUE);
-	}
+        NTryCreateNode += 1;
+        if(NTryCreateNode > ENV.getInt(Env::NbTry)) {
+          PrintInfo (("Riched the maximal number of consecutive \
+                      failures to expand a Comp \n"));
+          p3d_SetStopValue(TRUE);
+        }
       }
     }
     if(NodeComp1Pt->comp->num == NodeComp2Pt->comp->num ) {
       AreCompConnected = TRUE;
     }
     if((AreCompConnected == FALSE )&&((ENV.getBool(Env::expandBalanced) == false) ||
-	(Comp2Pt->nnode < Comp1Pt->nnode +2))) {
+                                      (Comp2Pt->nnode < Comp1Pt->nnode +2))) {
       if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH) {
-	NbCurCreatedNodes = p3d_MonteCarloOneStep(GraphPt,Comp2Pt, Comp1Pt);
+        NbCurCreatedNodes = p3d_MonteCarloOneStep(GraphPt,Comp2Pt, Comp1Pt);
       } else{
-	NbCurCreatedNodes =  p3d_ExpandOneStep(GraphPt,Comp2Pt, Comp1Pt);
+        NbCurCreatedNodes =  p3d_ExpandOneStep(GraphPt,Comp2Pt, Comp1Pt);
       }
- 
+      
       if(NbCurCreatedNodes != 0) {
-	NbTotCreatedNodes += NbCurCreatedNodes;
-	NTryCreateNode = 0;
-	if(ENV.getBool(Env::isCostSpace) == false ) {
-	AreCompConnected = p3d_ConnectNodeToComp(GraphPt,
-						 GraphPt->last_node->N,
-						 Comp1Pt); 
-	} else   {
-	  AreCompConnected  = p3d_CostConnectNodeToComp(GraphPt,
-						 GraphPt->last_node->N,
-						 Comp1Pt); 
-	  
-	}
-	if (DrawFunction) (*DrawFunction)();
+        NbTotCreatedNodes += NbCurCreatedNodes;
+        NTryCreateNode = 0;
+        if(ENV.getBool(Env::isCostSpace) == false ) {
+          AreCompConnected = p3d_ConnectNodeToComp(GraphPt,
+                                                   GraphPt->last_node->N,
+                                                   Comp1Pt); 
+        } else   {
+          AreCompConnected  = p3d_CostConnectNodeToComp(GraphPt,
+                                                        GraphPt->last_node->N,
+                                                        Comp1Pt); 
+          
+        }
+        if (DrawFunction) (*DrawFunction)();
       }
       else {
-	NTryCreateNode += 1;
-	if(NTryCreateNode > ENV.getInt(Env::NbTry)) {
-	  PrintInfo (("Riched the maximal number of consecutive \
- failures to expand a Comp \n"));
-	  p3d_SetStopValue(TRUE);
-
-
-	}
+        NTryCreateNode += 1;
+        if(NTryCreateNode > ENV.getInt(Env::NbTry)) {
+          PrintInfo (("Riched the maximal number of consecutive \
+                      failures to expand a Comp \n"));
+          p3d_SetStopValue(TRUE);
+          
+          
+        }
       }
     }
     /*NbNodeMaxComp need to be refreshed as the user 
-      can change its value during the expand process */
+     can change its value during the expand process */
     NbNodeMaxComp = p3d_get_COMP_NODES();
-
+    
     /* Function used to stop the exploration process. Typically, 
-       used when someone check the stop button*/
+     used when someone check the stop button*/
     if (StopFunction) {
       if (!(*StopFunction)())
-	{
-	  PrintInfo(("Componants bi-expansion canceled\n"));
-	  p3d_SetStopValue(TRUE);
-
-	}
+      {
+        PrintInfo(("Componants bi-expansion canceled\n"));
+        p3d_SetStopValue(TRUE);
+        
+      }
     }
   }
   return NbTotCreatedNodes;

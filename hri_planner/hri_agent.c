@@ -398,7 +398,7 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       return TRUE;
 
     case HRI_ACHILE:
-      *tasklist_no = 4;
+      *tasklist_no = 6;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
       
       (*tasklist)[0].type = GIK_RATREACH;
@@ -448,6 +448,28 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       (*tasklist)[3].default_joints[6] = 21;
       (*tasklist)[3].active_joint = 37; /* active joint */
       (*tasklist)[3].default_joints_no = 7;
+
+      (*tasklist)[4].type = GIK_RAWREACH;
+      (*tasklist)[4].default_joints[0] = 8;
+      (*tasklist)[4].default_joints[1] = 9;
+      (*tasklist)[4].default_joints[2] = 10;
+      (*tasklist)[4].default_joints[3] = 11;
+      (*tasklist)[4].default_joints[4] = 12;
+      (*tasklist)[4].default_joints[5] = 13;
+      (*tasklist)[4].default_joints[6] = 14;
+      (*tasklist)[4].active_joint = 14; /* active joint */
+      (*tasklist)[4].default_joints_no = 7;
+
+      (*tasklist)[5].type = GIK_LAWREACH;
+      (*tasklist)[5].default_joints[0] = 15;
+      (*tasklist)[5].default_joints[1] = 16;
+      (*tasklist)[5].default_joints[2] = 17;
+      (*tasklist)[5].default_joints[3] = 18;
+      (*tasklist)[5].default_joints[4] = 19;
+      (*tasklist)[5].default_joints[5] = 20;
+      (*tasklist)[5].default_joints[6] = 21;
+      (*tasklist)[5].active_joint = 21; /* active joint */
+      (*tasklist)[5].default_joints_no = 7;
 
       return TRUE;
 

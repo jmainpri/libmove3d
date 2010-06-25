@@ -20,21 +20,7 @@ hri_bitmap* hri_bt_get_bitmap(int type, hri_bitmapset* bitmapset) {
   return bitmapset->bitmap[type];
 }
 
-/*
- * used to determine whether xyz coordinates are on a given bitmap
- *
- */
-int on_map(int x, int y, int z, hri_bitmap* bitmap) {
-  if( (bitmap->nx - 1 < x) ||
-      (bitmap->ny - 1 < y) ||
-      (bitmap->nz - 1 < z) ||
-      (0 > x) ||
-      (0 > y) ||
-      (0 > z)) {
-    return FALSE;
-  }
-  return TRUE;
-}
+
 
 /**
  * returns the direction the satellite cell is with respect to the center cell
@@ -450,6 +436,133 @@ hri_bitmap_cell* hri_bt_get_cell(hri_bitmap* bitmap, int x, int y, int z)
   return &bitmap->data[x][y][z];
 }
 
+/*
+ * used to determine whether xyz coordinates are on a given bitmap
+ *
+ */
+int on_map(int x, int y, int z, hri_bitmap* bitmap) {
+  return (hri_bt_get_cell(bitmap, x, y, z) !=  NULL);
+}
+
+/**
+ * check static robot collisions on a cell by placing a robot in its current configuration on the cell in with the given orientation.
+ * optionally checks for collision with humans as they appear in the bitmap
+ *
+ * returns TRUE or FALSE
+ */
+int hri_bt_isRobotOnCellInCollision(hri_bitmapset * bitmapset, hri_bitmap* bitmap, hri_bitmap_cell* cell, double orientation, int checkHumanCollision) {
+  int i;
+  int result = FALSE;
+  configPt qc;
+
+  if(bitmapset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val < -1) {
+    result = TRUE;
+  }
+
+  if (result == FALSE && checkHumanCollision == TRUE) {
+    for (i=0; i < bitmapset->human_no; i++) {
+      if (bitmapset->human[i]->exists) {
+        qc = p3d_get_robot_config(bitmapset->robot); /** ALLOC */
+        qc[6]  = cell->x * bitmapset->pace + bitmapset->realx;
+        qc[7]  = cell->y * bitmapset->pace + bitmapset->realy;
+        qc[11] = bitmapset->robot->ROBOT_POS[11];
+        p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
+        if (p3d_col_test_robot_other(bitmapset->robot,bitmapset->human[i]->HumanPt, FALSE)) {
+          PrintWarning(("Human too close to start position (%f, %f) \n", qs[0], qs[1]));
+          p3d_destroy_config(bitmapset->robot, qc);/** FREE */
+          result = TRUE;
+          break;
+        }
+        p3d_destroy_config(bitmapset->robot, qc);/** FREE */
+      }
+    }
+  }
+
+  if (result == FALSE &&
+      (bitmapset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val < 0 ||
+          bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, cell->x, cell->y, cell->z) < 0)) {
+    qc = p3d_get_robot_config(bitmapset->robot); /** ALLOC */
+    qc[6]  = cell->x*bitmapset->pace + bitmapset->realx;
+    qc[7]  = cell->y*bitmapset->pace + bitmapset->realy;
+    qc[11] = orientation;
+    p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
+    if(p3d_col_test_robot_statics(bitmapset->robot, FALSE)){
+      result = TRUE;
+    }
+    p3d_destroy_config(bitmapset->robot, qc); /** FREE */
+  }
+  return result;
+}
+
+/****************************************************************/
+/*!
+ * \brief get the cell closest to given real coordinates, if it is free,
+ * else returns a manhattan-closest free surrounding cell of the closest
+ * cell, if it exists, that is max_grid_tolerance manhattan steps away.
+ *
+ * \param bitmap the bitmap
+ * \param x      x coord
+ * \param y      y coord
+ * \param z      z coord
+ * \param orientation      orientation of the robot for 3d collision checks
+ * \param z      max_grid_tolerance how many grid steps away solution may be
+ *
+ * \return NULL in case of a problem
+ */
+/****************************************************************/
+hri_bitmap_cell* hri_bt_get_closest_free_cell(hri_bitmapset* bitmapset,
+    hri_bitmap* bitmap,
+    double x,
+    double y,
+    double z,
+    double orientation,
+    int max_grid_tolerance)
+{
+  int m, i, j, k;
+  hri_bitmap_cell* loop_cell;
+  int loop_man_distance;
+  hri_bitmap_cell* candidate = hri_bt_get_closest_cell(bitmapset, bitmap, x, y, z);
+
+  if (bitmapset->bitmap[BT_OBSTACLES]==NULL) {
+    // we cannot check whether cell is free
+    return candidate;
+  }
+
+  if (candidate == NULL) {
+    PrintError(("Position is in outside map or bitmap is NULL (%f, %f, %f) \n", x, y, z));
+    return NULL;
+  }
+
+  if(!hri_bt_isRobotOnCellInCollision(bitmapset, bitmap, candidate, orientation, TRUE)) {
+    return candidate;
+  } else {
+    // try out all neighbors of candidate
+    for(m=1; m<=max_grid_tolerance; m++) { // start with closest cells
+      for(i=-m; i<=m; i++) {
+        for(j=-m; j<=m; j++) {
+          for(k=-m; k<m; k++) {
+            loop_man_distance = ABS(i) + ABS(j) + ABS(k);
+            if (loop_man_distance != m) { // this way we start with cells of m-dst=1, 2, etc.
+              continue;
+            }
+            loop_cell = hri_bt_get_cell(bitmap, candidate->x + i, candidate->y + j, candidate->z + k);
+            if (loop_cell == NULL) {
+              continue;
+            }
+            if (!hri_bt_isRobotOnCellInCollision(bitmapset, bitmap, loop_cell, orientation, TRUE)) {
+              return loop_cell;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  PrintError(("Start Position is in an obstacle or human (%f, %f, %f) \n", x, y, z));
+  return NULL;
+
+}
+
 
 /****************************************************************/
 /*!
@@ -466,10 +579,12 @@ hri_bitmap_cell* hri_bt_get_cell(hri_bitmap* bitmap, int x, int y, int z)
 hri_bitmap_cell* hri_bt_get_closest_cell(hri_bitmapset* bitmapset, hri_bitmap* bitmap, double x, double y, double z)
 {
   // round by adding 0.5
+  int rx = (int)(((x- bitmapset->realx) / bitmapset->pace) + 0.5);
+  int ry = (int)(((y- bitmapset->realy) / bitmapset->pace) + 0.5);
+  int rz = (int)(((z- bitmapset->realz) / bitmapset->pace) + 0.5);
+
   return hri_bt_get_cell(bitmap,
-      (int)(((x- bitmapset->realx) / bitmapset->pace) + 0.5),
-      (int)(((y- bitmapset->realy) / bitmapset->pace) + 0.5),
-      (int)(((z- bitmapset->realz) / bitmapset->pace) + 0.5));
+      rx, ry,rz);
 }
 
 /**
