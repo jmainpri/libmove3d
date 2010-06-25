@@ -73,6 +73,7 @@ Manipulation_JIDO::Manipulation_JIDO(p3d_rob *robotPt, gpHand_type handType)//: 
    _cameraImageHeight= 200;
 
    _liftUpDistance= 0.15;
+   _nbGraspsToTestForPickGoto= 1;
    _placementTranslationStep= 0.2; 
    _placementNbOrientations= 8;
    _placementOffset= -0.005;
@@ -684,7 +685,8 @@ MANIPULATION_TASK_MESSAGE Manipulation_JIDO::armPlanTask(MANIPULATION_TASK_TYPE_
   configPt qi = NULL, qf = NULL;
   p3d_rob *cur_robot= NULL;
   p3d_traj *traj = NULL;
-  int ntest=0;
+  bool success;
+  int i, ntest=0;
   double gain = 0;
 
 
@@ -788,6 +790,9 @@ printf("************************************************************************
 	p3d_copy_config_into(_robotPt, qi, &qStart);
       break;
     case  ARM_PICK_GOTO:
+      success= true;
+      for(i=0; i<_nbGraspsToTestForPickGoto; ++i)
+      {
         printf("plan for ARM_PICK_GOTO task\n");
         destroyTrajectories();
 
@@ -801,6 +806,7 @@ printf("************************************************************************
 
         if(findPregraspAndGraspConfiguration(_liftUpDistance,&pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
 	  printf("no solution to grasp\n");
+          success= false;
 	  return MANIPULATION_TASK_NO_GRASP;
 	}
 	//p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
@@ -833,16 +839,25 @@ printf("************************************************************************
 
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
-		  return MANIPULATION_TASK_NO_TRAJ_FOUND;
+                  // mark the unreachable grasp as tested for path planning:
+                  markGraspAsTested(_graspID);
+                  success= false;
+                  break;
 		}
-              
 	        cleanRoadmap();
 	}
 
+        if(success==true)
+        {  break;  }
+      }
+
+      if(success==false)
+      {  return MANIPULATION_TASK_NO_TRAJ_FOUND;  }
 
 	GP_ConcateneAllTrajectories(_robotPt);
         _robotPt->tcur= _robotPt->t[0];
 	p3d_copy_config_into(_robotPt, qi, &qStart);
+      
     break;
     case  ARM_PICK_TAKE_TO_FREE:
         printf("plan for ARM_TAKE_TO_FREE task\n");
@@ -1437,13 +1452,15 @@ int Manipulation_JIDO::computeGraspList(){
 //! Reduces the size of the current grasp list.
 //! \param maxSize the desired maximum number of elements of the list
 //! \return 0 in case of success, 1 otherwise
-int Manipulation_JIDO::reduceGraspList(unsigned int maxSize){
+int Manipulation_JIDO::reduceGraspList(int maxSize){
   if(_graspList.empty()) {
     printf("%s: %d: Manipulation_JIDO::reduceGraspList(): the current grasp list is empty.\n", __FILE__, __LINE__);
     return 1;
   }
 
-  if(_graspList.size() < maxSize) {
+  maxSize= abs(maxSize);
+
+  if((int)_graspList.size() < maxSize) {
     printf("%s: %d: Manipulation_JIDO::reduceGraspList(): the current grasp list has already less than %d elements.\n", __FILE__, __LINE__,maxSize);
     return 1;
   }
@@ -1451,6 +1468,51 @@ int Manipulation_JIDO::reduceGraspList(unsigned int maxSize){
   gpReduce_grasp_list_size(_graspList, _graspList, maxSize);
 
   return 0;
+}
+
+
+
+//! Sets the _nbGraspsToTestForPickGoto variable.
+//! \param n the desired value
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::setNbGraspsToTestForPickGoto(int n){
+
+  n= abs(n);
+
+  if( n > (int)_graspList.size()) {
+    printf("%s: %d: Manipulation_JIDO::setNbGraspsToTestForPickGoto(): warning:  the input value is greater than the number of elements of the current grasp list.\n", __FILE__, __LINE__);
+    n= _graspList.size();
+  }
+
+  _nbGraspsToTestForPickGoto= n;
+
+  return 0;
+}
+
+//! Marks the grasp with specified ID as tested.
+//! \param id the ID of the grasp (see gpGrasp.h)
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::markGraspAsTested(int id){
+  if(_graspList.empty()) {
+    printf("%s: %d: Manipulation_JIDO::markGraspAsTested(): the current grasp list is empty.\n", __FILE__, __LINE__);
+    return 1;
+  }
+
+  std::list<gpGrasp>::iterator igrasp;
+
+  for(igrasp=_graspList.begin(); igrasp!=_graspList.end(); ++igrasp)
+  {
+    if(igrasp->ID==id)
+    {
+      igrasp->tested= true;
+      return 0;
+    }
+  }
+
+  printf("%s: %d: Manipulation_JIDO::markGraspAsTested(): there is no grasp with ID= %d.\n", __FILE__, __LINE__, id);
+
+
+  return 1;
 }
 
 
@@ -1706,6 +1768,8 @@ int Manipulation_JIDO::findPregraspAndGraspConfiguration(double distance, double
 //   p3d_matrix4 objectPose;
   configPt qcur= NULL, qgrasp= NULL, qpregrasp= NULL;
   p3d_rob *cur_robotPt= NULL;
+  list<gpGrasp> untestedGrasps;
+  list<gpGrasp>::iterator igrasp;
 
   cur_robotPt= XYZ_ENV->cur_robot;
   XYZ_ENV->cur_robot= _robotPt;
@@ -1715,7 +1779,18 @@ int Manipulation_JIDO::findPregraspAndGraspConfiguration(double distance, double
   qpregrasp= p3d_alloc_config(_robotPt);
   p3d_get_robot_config_into(_robotPt, &qcur);
 
-  result= gpFind_grasp_and_pregrasp_from_base_configuration(_robotPt, _object, _graspList, GP_PA10, qcur, _grasp, _handProp, _liftUpDistance, qpregrasp, qgrasp);
+  // only copy the grasps that were not tested for path planning:
+  for(igrasp=_graspList.begin(); igrasp!=_graspList.end(); ++igrasp)
+  {
+    if(igrasp->tested==false)
+    {
+      untestedGrasps.push_back(*igrasp);
+    }
+  }
+
+  result= gpFind_grasp_and_pregrasp_from_base_configuration(_robotPt, _object, untestedGrasps, GP_PA10, qcur, _grasp, _handProp, _liftUpDistance, qpregrasp, qgrasp);
+
+  _graspID= _grasp.ID;
 
   if(result==GP_ERROR)
   {

@@ -2072,7 +2072,6 @@ configPt gpFind_grasp_from_base_configuration ( p3d_rob *robot, p3d_rob *object,
 					if ( !p3d_col_test_robot_statics ( robot, 0 ) && !p3d_col_test_self_collision ( robot, 0 ) ) //if no collision
 					{
 						p3d_get_robot_config_into ( robot, &result );
-						igrasp->collision_state= COLLISION_FREE;
 						grasp= *igrasp;
 
 						p3d_set_and_update_this_robot_conf ( robot, q0 );
@@ -2358,7 +2357,6 @@ int gpFind_grasp_and_pregrasp_from_base_configuration ( p3d_rob *robot, p3d_rob 
 					if ( p3d_col_test() )
 						{  continue;  }
 
-					igrasp->collision_state= COLLISION_FREE;
 					grasp= *igrasp;
 
 					p3d_set_and_update_this_robot_conf ( robot, q0 );
@@ -2458,7 +2456,6 @@ configPt gpFind_configuration_from_grasp ( p3d_rob *robot, p3d_rob *object, gpGr
 					if ( !p3d_col_test_robot_statics ( robot, 0 ) && !p3d_col_test_self_collision ( robot, 0 ) ) //if no collision
 					{
 						p3d_get_robot_config_into ( robot, &result );
-						grasp.collision_state= COLLISION_FREE;
 
 						p3d_set_and_update_this_robot_conf ( robot, q0 );
 						p3d_destroy_config ( robot, q0 );

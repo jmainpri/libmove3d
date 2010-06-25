@@ -209,7 +209,7 @@ gpGrasp::gpGrasp()
   body_index      = 0;
   object_name     = "none";
   hand_type       = GP_HAND_NONE;
-  collision_state = NOT_TESTED;
+  tested          = false;
 }
 
 gpGrasp::gpGrasp(const gpGrasp &grasp)
@@ -233,7 +233,7 @@ gpGrasp::gpGrasp(const gpGrasp &grasp)
   body_index= grasp.body_index;
   object_name= grasp.object_name;
   hand_type= grasp.hand_type;
-  collision_state= grasp.collision_state;
+  tested= grasp.tested;
 
   contacts.resize(grasp.contacts.size());
   for(i=0; i<contacts.size(); i++)
@@ -281,7 +281,7 @@ gpGrasp & gpGrasp::operator = (const gpGrasp &grasp)
     body_index= grasp.body_index;
     object_name= grasp.object_name;
     hand_type= grasp.hand_type;
-    collision_state= grasp.collision_state;
+    tested= grasp.tested;
 
     config.resize(grasp.config.size());  
     for(i=0; i<config.size(); i++)
