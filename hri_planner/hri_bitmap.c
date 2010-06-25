@@ -450,7 +450,7 @@ void  hri_bt_show_bitmapset(hri_bitmapset* bitmapset)
 void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
 {
   bitmapset->parameters = MY_ALLOC(hri_astar_parameters, 1);
-  bitmapset->parameters->path_length_weight = 60;
+  bitmapset->parameters->path_length_weight = 40;
   bitmapset->parameters->soft_collision_distance_weight = 8;
   bitmapset->parameters->soft_collision_base_cost = 15;
   bitmapset->parameters->start_cell_tolerance = 2;
@@ -599,12 +599,12 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
     
     strcpy(human->state[BT_SITTING].name,"SITTING");
     
-    human->state[BT_SITTING].dheight = 360;
-    human->state[BT_SITTING].dradius = 2.5;
+  human->state[BT_SITTING].dheight = 8;
+  human->state[BT_SITTING].dradius = 1.3;
     human->state[BT_SITTING].vheight = 50;
     human->state[BT_SITTING].vback = 1.3;
     human->state[BT_SITTING].vradius = 2.4;
-    human->state[BT_SITTING].hradius = 2.8;
+  human->state[BT_SITTING].hradius = 0.0;
     
     human->state[BT_SITTING].c1 =  DTOR(-14.08);// left hip
     human->state[BT_SITTING].c2 =  DTOR( 90);// left leg
@@ -616,12 +616,12 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
     
     strcpy(human->state[BT_STANDING_TRANSPARENT].name,"STANDING TRANS");
     
-    human->state[BT_STANDING_TRANSPARENT].dheight = 300;
-    human->state[BT_STANDING_TRANSPARENT].dradius = 1.6;
+  human->state[BT_STANDING_TRANSPARENT].dheight = 8;
+  human->state[BT_STANDING_TRANSPARENT].dradius = 1.3;
     human->state[BT_STANDING_TRANSPARENT].vheight = 40;
     human->state[BT_STANDING_TRANSPARENT].vback = 1.2;
-    human->state[BT_STANDING_TRANSPARENT].vradius = 2;
-    human->state[BT_STANDING_TRANSPARENT].hradius = 1.5;
+  human->state[BT_STANDING_TRANSPARENT].vradius = 1.3;
+  human->state[BT_STANDING_TRANSPARENT].hradius = 0.0;
     
     human->state[BT_STANDING_TRANSPARENT].c1 = 0;// left hip
     human->state[BT_STANDING_TRANSPARENT].c2 = 0;// left leg
@@ -633,12 +633,12 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
     
     strcpy(human->state[BT_STANDING].name,"STANDING");
     
-    human->state[BT_STANDING].dheight = 300;
-    human->state[BT_STANDING].dradius = 1.6;
+  human->state[BT_STANDING].dheight = 8;
+  human->state[BT_STANDING].dradius = 1.3;
     human->state[BT_STANDING].vheight = 40;
-    human->state[BT_STANDING].vback = 1.2;
-    human->state[BT_STANDING].vradius = 2;
-    human->state[BT_STANDING].hradius = 1.5;
+  human->state[BT_STANDING].vback = 1.4;
+  human->state[BT_STANDING].vradius = 1.3;
+  human->state[BT_STANDING].hradius = 0.0;
     
     human->state[BT_STANDING].c1 = 0;// left hip
     human->state[BT_STANDING].c2 = 0;// left leg
@@ -650,12 +650,12 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
     
     strcpy(human->state[BT_MOVING].name,"MOVING");
     
-    human->state[BT_MOVING].dheight = 360;
-    human->state[BT_MOVING].dradius = 1.8;
+  human->state[BT_MOVING].dheight = 8;
+  human->state[BT_MOVING].dradius = 1.5;
     human->state[BT_MOVING].vheight = 40;
     human->state[BT_MOVING].vback = 1.0;
-    human->state[BT_MOVING].vradius = 1.5;
-    human->state[BT_MOVING].hradius = 1.8;
+  human->state[BT_MOVING].vradius = 1.3;
+  human->state[BT_MOVING].hradius = 0.0;
     
     human->state[BT_MOVING].c1 =  0;// left hip
     human->state[BT_MOVING].c2 =  DTOR(-5);// left leg
@@ -1598,7 +1598,7 @@ double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
 {
   int i;
   double radius,height;
-  double val = 0,res =0;
+  double val = 0, sigmoid = 0, quot = 0, res =0;
   double realx, realy;
   double humanx, humany;
   double distance;
@@ -1624,7 +1624,10 @@ double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
     if(distance > radius) {
       val = 0;
     } else {
-      val = height * pow((cos(distance/radius*M_PI_2)+0), 2);
+      // sigmoid function up to radius
+      sigmoid = cos(distance / radius * M_PI_2) + 0;
+      quot = 1 / (0.6 + distance );
+      val = pow(height * (sigmoid * quot), 3);
     }
     if(res < val) {
       res = val;
