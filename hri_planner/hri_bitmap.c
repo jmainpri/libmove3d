@@ -592,7 +592,7 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   human->state = MY_ALLOC(hri_human_state, BT_STATE_NO);
   human->states_no = BT_STATE_NO;
   human->exists = FALSE; /* HUMAN EXIST */
-  human->transparent = FALSE; /* HRI_PLANNER may move through juman */
+  human->transparent = FALSE; /* HRI_PLANNER may move through human */
   human->id = -1;
 
   if(strcasestr(robot->name,"SUPERMAN")){
@@ -1521,7 +1521,7 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int rob_grid_x, int rob_grid_
       temp_env_dmax = p3d_get_env_dmax();
       p3d_set_env_dmax(0);
 
-      // calulate a localpath object for visball from human to goal
+      // calculate a localpath object for visball from human to goal
       path = p3d_local_planner(btset->visball, qtarget, qhuman);
 
       val = -1;
