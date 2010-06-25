@@ -679,6 +679,7 @@ configPt Manipulation_JIDO::robotRest(){
   return _qrest;
 }
 
+
 //! Computes a path for a given manipulation elementary task.
 MANIPULATION_TASK_MESSAGE Manipulation_JIDO::armPlanTask(MANIPULATION_TASK_TYPE_STR task, configPt qStart, configPt qGoal, char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions){
 
@@ -790,13 +791,17 @@ printf("************************************************************************
 	p3d_copy_config_into(_robotPt, qi, &qStart);
       break;
     case  ARM_PICK_GOTO:
-      success= true;
+      for(std::list<gpGrasp>::iterator igrasp=_graspList.begin(); igrasp!=_graspList.end(); ++igrasp)
+      {  igrasp->tested= false;   }
+
       for(i=0; i<_nbGraspsToTestForPickGoto; ++i)
       {
+        success= true;
         printf("plan for ARM_PICK_GOTO task\n");
         destroyTrajectories();
 
         clearConfigTraj();
+
         printf("il y a %d configurations\n", _configTraj.size());
 
         p3d_set_and_update_this_robot_conf(_robotPt, qStart);
@@ -809,6 +814,8 @@ printf("************************************************************************
           success= false;
 	  return MANIPULATION_TASK_NO_GRASP;
 	}
+        // mark the unreachable grasp as tested for path planning:
+        markGraspAsTested(_graspID);
 	//p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
         gpOpen_hand(_robotPt, _handProp);
@@ -829,32 +836,35 @@ printf("************************************************************************
 	cleanTraj();
 	
 	printf("il y a %d configurations\n", _configTraj.size());
+
         for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
                 q2_conf = _configTraj[itraj+1];
+
 
                // if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
                //    p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
                // }
 
+
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
-                  // mark the unreachable grasp as tested for path planning:
-                  markGraspAsTested(_graspID);
                   success= false;
+                  cleanRoadmap();
                   break;
 		}
 	        cleanRoadmap();
 	}
-
         if(success==true)
         {  break;  }
+
       }
 
       if(success==false)
       {  return MANIPULATION_TASK_NO_TRAJ_FOUND;  }
 
 	GP_ConcateneAllTrajectories(_robotPt);
+
         _robotPt->tcur= _robotPt->t[0];
 	p3d_copy_config_into(_robotPt, qi, &qStart);
       
@@ -1078,7 +1088,7 @@ printf("************************************************************************
       return MANIPULATION_TASK_INVALID_TASK;
     break;
   }
-  
+   
    /* COMPUTE THE SOFTMOTION TRAJECTORY */
   traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
   if(!traj) {
@@ -1143,12 +1153,19 @@ int Manipulation_JIDO::computeRRT(){
   p3d_set_multiGraph(FALSE);
 #endif
 
+//   ENV.setBool(Env::biDir,true);
+//   ENV.setInt(Env::NbTry, 100000);
+//   ENV.setInt(Env::MaxExpandNodeFail, 30000);
+//   ENV.setInt(Env::maxNodeCompco, 100000);
+//   ENV.setExpansionMethod(Env::Extend);
+//   ENV.setDouble(Env::extensionStep, 2.0);
   ENV.setBool(Env::biDir,true);
-  ENV.setInt(Env::NbTry, 100000);
-  ENV.setInt(Env::MaxExpandNodeFail, 30000);
-  ENV.setInt(Env::maxNodeCompco, 100000);
+  ENV.setInt(Env::NbTry, 10000);
+  ENV.setInt(Env::MaxExpandNodeFail, 10000);
+  ENV.setInt(Env::maxNodeCompco, 10000);
   ENV.setExpansionMethod(Env::Extend);
   ENV.setDouble(Env::extensionStep, 2.0);
+
 
 #if defined (USE_CXX_PLANNER)
   ENV.setBool(Env::withSmoothing, true);
@@ -1421,7 +1438,11 @@ int Manipulation_JIDO::computeGraspList(){
     return 1;
   }
 
+
   // remove the grasp if contacts are too close to an angulous edge:
+
+/*
+  
   igrasp= _graspList.begin();
   while(igrasp!=_graspList.end()) {
    if( igrasp->areContactsTooCloseToEdge(30*DEGTORAD, 0.02) ) {
@@ -1429,7 +1450,7 @@ int Manipulation_JIDO::computeGraspList(){
      continue;
    }
    igrasp++;
-  }
+  }*/
 
   // compute the visibility score of the grasps and sort them according to this score:
   if(_cameraJnt!=NULL)
@@ -1439,6 +1460,7 @@ int Manipulation_JIDO::computeGraspList(){
     gpGrasp_visibility_filter(_robotPt, _object, _cameraJnt, _cameraFOV, _cameraImageWidth, _cameraImageHeight, _graspList, GP_PA10, qbase, _handProp);
     p3d_destroy_config(_robotPt, qbase);
   }
+
 
   allowWindowEvents();
 
@@ -1478,11 +1500,6 @@ int Manipulation_JIDO::reduceGraspList(int maxSize){
 int Manipulation_JIDO::setNbGraspsToTestForPickGoto(int n){
 
   n= abs(n);
-
-  if( n > (int)_graspList.size()) {
-    printf("%s: %d: Manipulation_JIDO::setNbGraspsToTestForPickGoto(): warning:  the input value is greater than the number of elements of the current grasp list.\n", __FILE__, __LINE__);
-    n= _graspList.size();
-  }
 
   _nbGraspsToTestForPickGoto= n;
 
@@ -2498,6 +2515,48 @@ int Manipulation_JIDO::setCameraImageSize(int width, int height) {
   return 0;
 }
 
+void printManipulationError(MANIPULATION_TASK_MESSAGE message) {
+  switch(message)
+  {
+    case MANIPULATION_TASK_OK:
+     printf("MANIPULATION_TASK_OK\n");
+    break;
+    case MANIPULATION_TASK_NOT_INITIALIZED:
+     printf("MANIPULATION_TASK_NOT_INITIALIZED\n");
+    break;
+    case MANIPULATION_TASK_NO_TRAJ_FOUND:
+     printf("MANIPULATION_TASK_NO_TRAJ_FOUND\n");
+    break;
+    case MANIPULATION_TASK_INVALID_QSTART:
+     printf("MANIPULATION_TASK_INVALID_QSTART \n");
+    break;
+    case MANIPULATION_TASK_INVALID_QGOAL:
+     printf("MANIPULATION_TASK_INVALID_QGOAL\n");
+    break;
+    case MANIPULATION_TASK_INVALID_TRAJ_ID:
+     printf("MANIPULATION_TASK_INVALID_TRAJ_ID\n");
+    break;
+    case MANIPULATION_TASK_INVALID_TASK:
+     printf("MANIPULATION_TASK_INVALID_TASK\n");
+    break;
+    case MANIPULATION_TASK_UNKNOWN_OBJECT:
+     printf("MANIPULATION_TASK_UNKNOWN_OBJECT\n");
+    break;
+    case MANIPULATION_TASK_NO_GRASP:
+     printf("MANIPULATION_TASK_NO_GRASP\n");
+    break;
+    case MANIPULATION_TASK_NO_PLACE:
+     printf("MANIPULATION_TASK_NO_PLACE\n");
+    break;
+    case MANIPULATION_TASK_ERROR_UNKNOWN:
+     printf("MANIPULATION_TASK_ERROR_UNKNOWN\n");
+    break;
+
+   }
+
+
+}
+
 
 void printManipulationMessage(MANIPULATION_TASK_MESSAGE message)
 {
@@ -2539,4 +2598,3 @@ void printManipulationMessage(MANIPULATION_TASK_MESSAGE message)
   }
 
 }
-
