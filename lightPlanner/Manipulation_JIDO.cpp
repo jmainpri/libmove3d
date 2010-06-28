@@ -679,7 +679,7 @@ configPt Manipulation_JIDO::robotRest(){
 }
 
 //! Computes a path for a given manipulation elementary task.
-MANIPULATION_TASK_MESSAGE Manipulation_JIDO::armPlanTask(MANIPULATION_TASK_TYPE_STR task, configPt qStart, configPt qGoal, char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions){
+MANIPULATION_TASK_MESSAGE Manipulation_JIDO::armPlanTask(MANIPULATION_TASK_TYPE_STR task, configPt qStart, configPt qGoal, char* objectName, std::vector <int> lp, std::vector < std::vector <double> > positions,  int *nbPositions){
 
   configPt qi = NULL, qf = NULL;
   p3d_rob *cur_robot= NULL;

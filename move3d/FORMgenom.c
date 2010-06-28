@@ -416,8 +416,7 @@ static void CB_genomSetX_obj(FL_OBJECT *obj, long arg) {
 }
 
 static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
-	int lp[10000];
-	Gb_q6 positions[10000];
+
 	int nbPositions = 0;
 	
 	if (manipulation== NULL) {
@@ -429,7 +428,7 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	} else {
 	  manipulation->setArmCartesian(false);
 	}
-	manipulation->armPlanTask(ARM_FREE,manipulation->robotStart(),manipulation->robotGoto(),(char*)"", lp, positions, &nbPositions);
+	manipulation->armPlanTask(ARM_FREE,manipulation->robotStart(),manipulation->robotGoto(),(char*)"", manipulation->lp, manipulation->positions, &nbPositions);
 	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
         return;
 }
@@ -440,7 +439,7 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 //! Plans a path to go from the currently defined ROBOT_POS config to the specified end effector pose defined for the arm only.
 //! End effector pose is given in world coordinates (lenghts in meters, angles in radians).
 //! \return 0 in case of success, !=0 otherwise
-int genomArmGotoX(p3d_rob* robotPt, int cartesian, double x, double y, double z, double rx, double ry, double rz, int lp[], Gb_q6 positions[], int *nbPositions)
+int genomArmGotoX(p3d_rob* robotPt, int cartesian, double x, double y, double z, double rx, double ry, double rz, std::vector <int> lp, std::vector < std::vector <double> > positions, int *nbPositions)
 {
   if(robotPt==NULL)
   {
@@ -462,7 +461,7 @@ int genomArmGotoX(p3d_rob* robotPt, int cartesian, double x, double y, double z,
 	}
 
 
-  return manipulation->armPlanTask(ARM_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)"", lp, positions, nbPositions);
+  return manipulation->armPlanTask(ARM_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)"", manipulation->lp, manipulation->positions, nbPositions);
 }
 
 static void CB_genomCleanRoadmap_obj(FL_OBJECT *obj, long arg){
@@ -858,8 +857,9 @@ static void CB_genomGraspObject(FL_OBJECT *obj, long arg) {
 static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
 
 
-        int lp[10000];
-        Gb_q6 positions[10000];
+
+
+
         int nbPositions = 0;
 //         double x, y, theta;
 	if (manipulation== NULL) {
@@ -877,7 +877,7 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
         manipulation->setCameraJnt((char*)CAMERA_JNT_NAME);
         manipulation->setCameraFOV(CAMERA_FOV);
         manipulation->setCameraImageSize(200, 200);
-        manipulation->armPlanTask(ARM_PICK_GOTO,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
+        manipulation->armPlanTask(ARM_PICK_GOTO,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME,  manipulation->lp,  manipulation->positions, &nbPositions);
 
 
         g3d_win *win= NULL;
@@ -889,8 +889,7 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
 }
 
 static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
-        int lp[10000];
-        Gb_q6 positions[10000];
+
         int nbPositions = 0;
 
 	if (manipulation== NULL) {
@@ -905,7 +904,7 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
 
         manipulation->setObjectToManipulate((char*)OBJECT_NAME);
 	
-        manipulation->armPlanTask(ARM_PICK_TAKE_TO_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
+        manipulation->armPlanTask(ARM_PICK_TAKE_TO_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME,  manipulation->lp,  manipulation->positions, &nbPositions);
 
 	g3d_draw_allwin_active();
 	return;
@@ -913,8 +912,7 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
 
 
 static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg) {
-  int lp[10000];
-  Gb_q6 positions[10000];
+
   int nbPositions;
 
   if (manipulation== NULL) {
@@ -931,7 +929,7 @@ static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg) {
   manipulation->setSupport((char*)SUPPORT_NAME);
   manipulation->setHuman((char*)HUMAN_NAME);
 
-  manipulation->armPlanTask(ARM_PICK_TAKE_TO_PLACE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
+  manipulation->armPlanTask(ARM_PICK_TAKE_TO_PLACE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, manipulation->lp, manipulation->positions, &nbPositions);
 
   g3d_draw_allwin_active();
 
@@ -939,8 +937,7 @@ static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg) {
 }
 
 static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
-  int lp[10000];
-  Gb_q6 positions[10000];
+
   int nbPositions = 0;
 
   if (manipulation== NULL) {
@@ -957,7 +954,7 @@ static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
   manipulation->setSupport((char*)SUPPORT_NAME);
   manipulation->setHuman((char*)HUMAN_NAME);
 
-  manipulation->armPlanTask(ARM_PLACE_FROM_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
+  manipulation->armPlanTask(ARM_PLACE_FROM_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, manipulation->lp, manipulation->positions, &nbPositions);
 
   g3d_draw_allwin_active();
 
