@@ -10,7 +10,7 @@
 ## Check for the header files
 
 find_path (QHULL_INCLUDE_DIR qhull_a.h
-  PATHS ${QHULL_INC} /usr/local/include /usr/include /sw/include /opt/local/include
+  PATHS ${QHULL_INC} /usr/local/include /usr/include /sw/include /opt/local/include  $ENV{ROBOTPKG_BASE}/include
   PATH_SUFFIXES qhull
   )
 
@@ -18,7 +18,7 @@ find_path (QHULL_INCLUDE_DIR qhull_a.h
 ## Check for the library
 
 find_library (QHULL_LIBRARIES qhull
-  PATHS ${QHULL_LIB} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
+  PATHS ${QHULL_LIB} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib  $ENV{ROBOTPKG_BASE}/lib
   )
 
 ## -----------------------------------------------------------------------------

@@ -101,8 +101,7 @@ typedef struct {
 /*  fin reprise du gl.c */
 
 /*   Statics for UNIX (XForms & GLX) */
-
-static int        G3D_GLCONFIG[30] = { /* pas utilise... servirait pour le stencil */
+static int        G3D_GLCONFIG[30] = { // pas utilise... servirait pour le stencil 
 GLX_RGBA, GLX_DEPTH_SIZE, 1,
 GLX_RED_SIZE, 1, GLX_GREEN_SIZE, 1, GLX_BLUE_SIZE, 1,
 GLX_STENCIL_SIZE,1,

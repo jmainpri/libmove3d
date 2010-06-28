@@ -8,7 +8,7 @@
  */
 #include "P3d-pkg.h"
 
-#include "MTRand.hpp"
+#include "../planner/MTRand.hpp"
 
 #ifdef USE_GSL
 #include <gsl/gsl_randist.h>

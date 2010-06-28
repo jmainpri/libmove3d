@@ -57,6 +57,7 @@ class gpGrasp
   gpGrasp(const gpGrasp &grasp);
   ~gpGrasp();
   gpGrasp & operator = (const gpGrasp &grasp);
+  bool operator == (const gpGrasp &grasp);
   bool operator < (const gpGrasp &grasp);
   bool operator > (const gpGrasp &grasp);
   int print();

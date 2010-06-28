@@ -254,7 +254,7 @@ struct bitmap_set{
 
   hri_human ** human;
   p3d_rob * robot;
-  p3d_rob * secondary_robot; //AKP: To have two robots
+  
   p3d_rob * visball;        // virtual move3d object for calculating hidden zones
   p3d_rob * object;         // for grasping
 
