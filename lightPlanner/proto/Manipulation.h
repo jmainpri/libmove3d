@@ -188,6 +188,7 @@ class  Manipulation_JIDO {
      gpHand_properties _handProp;  /*!< information about the used hand */
      std::list<gpGrasp> _graspList; 
      gpGrasp _grasp;   /*!< the current grasp */
+     unsigned int _graspID; /*!< the current grasp ID */
      gpPlacement _placement;   /*!< the current or target object placement */     
      p3d_jnt *_cameraJnt; /*!< the robot's joint that gives the pose of the pan/tilt camera */ 
      double _cameraFOV; /*!< robot's camera field of view angle (IN DEGREES) used for grasp visibility score computation */
@@ -199,6 +200,8 @@ class  Manipulation_JIDO {
      std::vector<configPt> _configTraj; /*!< this array stores the key configurations that will be used to compute a sequence of trajectory*/
 
      double _liftUpDistance;  /*!< the distance the object is lifted up after it is grasped, before any other movement */
+
+     int _nbGraspsToTestForPickGoto; /*!< the  _nbGraspsToTestForPickGoto first grasps of the grasp list will be tested for the ARM_PICK_GOTO task planning */
 
      //! for stable placement computation, the space of possible poses on the support is sampled with the following steps:
      double _placementTranslationStep; /*!< the translation step of the discretization of the horizontal faces of the support */
@@ -298,15 +301,16 @@ class  Manipulation_JIDO {
     int clearConfigTraj();
     int copyConfigTrajToFORM();
     int destroyTrajectories();
-     
+  
   protected:
      /*Functions relative to JIDO */
      int computeTrajBetweenTwoConfigs(bool cartesian, configPt qi, configPt qf);
      int computeGraspList();
-     int reduceGraspList(unsigned int maxSize);
+     int reduceGraspList(int maxSize);
      int findSimpleGraspConfiguration(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
      int computePlacementList();
-     
+     int setNbGraspsToTestForPickGoto(int n);
+     int markGraspAsTested(int id);
 
      int computeRRT();
      int computeOptimTraj();

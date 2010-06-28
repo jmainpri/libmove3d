@@ -45,7 +45,7 @@ extern pp3d_obj  XYZ_OBSTACLES;
 #include <gsl/gsl_randist.h>
 extern gsl_rng * _gsl_seed;
 #endif
-#include "MTRand.hpp"
+#include "../planner/MTRand.hpp"
 extern MTRand mersenne_twister_rng;
   
   /* pointer to function to choose the type of bounding box computation */

@@ -50,7 +50,8 @@ class gpGrasp
   enum gpHand_type hand_type;  /*!< type of the hand realizing the grasp */
   std::vector<double> config; /*!< configuration vector of the hand for the associated grasp */
   std::vector<double> openConfig; /*!< configuration vector of the hand slightly open from its grasp configuration (is used for the hand approach phase) */
-  enum gpGrasp_collision_state collision_state; 
+  bool tested; /*!< used to mark the grasps that have been tested in some path planning function  */
+  
 
   gpGrasp();
   gpGrasp(const gpGrasp &grasp);

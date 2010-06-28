@@ -10,7 +10,7 @@ extern void p3d_set_this_robot_pos_deg ( pp3d_rob r, configPt q );
 extern void p3d_set_robot_pos ( configPt q );
 extern void p3d_set_robot_pos_deg ( configPt q );
 extern void p3d_set_this_robot_jnt ( p3d_rob *robotPt, int i, double v );
-extern int p3d_set_robot_singularity(p3d_rob *robotPt, int cntrtNum);
+extern int p3d_set_robot_singularity(p3d_rob *robotPt, int cntrtNum, int *singNum);
 extern void p3d_set_robot_jnt ( int i, double v );
 extern void p3d_set_robot_jnt_deg ( int i, double v );
 extern void p3d_set_robot_dof ( p3d_rob *robotPt, int i, double v );

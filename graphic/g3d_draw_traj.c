@@ -349,8 +349,8 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 //fin modif xav
 	  while (( end_localpath < 1) && stopShowTraj ) {
 
-	  std::cout << "-------------------------------------------" << std::endl;
-	  std::cout << "Robot = " << robotPt->name << std::endl;
+//	  std::cout << "-------------------------------------------" << std::endl;
+//	  std::cout << "Robot = " << robotPt->name << std::endl;
 
       /* begin modif Carl */
       /* dmax = p3d_get_env_dmax(); */

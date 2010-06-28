@@ -106,7 +106,8 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
   configPt NewConfig;
   double DeltaPath = -1.;
   double ExpansionDist = -1.;
-  int** IndexConstrSoluPt = NULL;
+  //int** IndexConstrSoluPt = NULL;
+  int * ikSol = NULL, *ikSolTmp = NULL;
   double PreviousCost, CurrentCost;
   int IsRaisingCost;
   double distNodes;
@@ -124,8 +125,53 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
     }
   }
 
-  LocalPathPt = p3d_local_planner(robotPt,
-                                  ExpansionNodePt->q, DirectionConfig);
+  if (p3d_get_ik_choice() == IK_UNIQUE) {
+    p3d_copy_iksol(robotPt->cntrt_manager, ExpansionNodePt->iksol, &ikSol);
+    if(ExpansionNodePt->isSingularity){//choose an iksol different from neigbourg ikSols
+      for (int i = 0; i < robotPt->cntrt_manager->ncntrts; i++) {
+        if (ikSol[i] < 0) {
+          //check witch class we have to explore.
+          int validSol = TRUE;
+          do{
+            ikSol[i] = p3d_get_random_ikSol(robotPt->cntrt_manager, i);
+            for (p3d_list_node * nl = ExpansionNodePt->neighb ; nl; nl = nl->next) {
+              if(nl->N->iksol[i] == ikSol[i]){
+                validSol = FALSE;
+                break;
+              }else {
+                validSol = TRUE;
+              }
+            }
+            if(!validSol && robotPt->cntrt_manager->cntrts[i]->nSingularities){
+              int differentIkSols = 0;
+              int ** iksolsArray = MY_ALLOC(int*, ExpansionNodePt->nneighb);
+              for (p3d_list_node * nl = ExpansionNodePt->neighb ; nl; nl = nl->next){
+                for (p3d_list_node * nl2 = nl->next ; nl2; nl2 = nl2->next){
+                  int allreadyCompared = false;
+                  for (int i = 0; i < differentIkSols; i++) {
+                    if(p3d_compare_iksol(robotPt->cntrt_manager, iksolsArray[i], nl2->N->iksol)){
+                      allreadyCompared = true;
+                    }
+                  }
+                  if(!allreadyCompared && !p3d_compare_iksol(robotPt->cntrt_manager, nl->N->iksol, nl2->N->iksol)){
+                    iksolsArray[differentIkSols] = nl2->N->iksol;
+                    differentIkSols++; 
+                  }
+                }
+              }
+              if (robotPt->cntrt_manager->cntrts[i]->nSingularities <= differentIkSols) {
+                return FALSE;
+              }
+            }
+          }while(!validSol);          
+        }
+      }
+    }
+    p3d_copy_iksol(robotPt->cntrt_manager, ikSol, &ikSolTmp);
+  }
+  
+  LocalPathPt = p3d_local_planner_multisol(robotPt,
+                                  ExpansionNodePt->q, DirectionConfig, ikSolTmp);
   if (LocalPathPt == NULL) {
     PrintInfo(("Failed to create a localpath during the expansion process\n"));
     return FALSE;
@@ -169,6 +215,19 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
     }
     return FALSE;
   }
+  
+  if (p3d_get_ik_choice() == IK_UNIQUE) {
+    p3d_cntrt* cntrt = NULL;
+    int singId = 0;
+    p3d_singularity* singularity = p3d_get_config_singular_jnt(robotPt->cntrt_manager, NewConfig, &cntrt, &singId);
+    if(singularity){
+      ikSol[cntrt->num] = - singId - 1;
+      extern int singularityCheck;
+      ChronoPrint("singularity");
+      singularityCheck = true;
+    }
+  }
+  
   GraphPt->nb_q_free = GraphPt->nb_q_free + 1;
   (GraphPt->nb_local_call)++;
 
@@ -210,11 +269,17 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
 
   ExpansionDist = DeltaPath * LocalPathPt->length_lp;
   LocalPathPt->destroy(robotPt, LocalPathPt);
+  ikSolTmp = NULL;
 
-  p3d_get_iksol_vector(robotPt->cntrt_manager,&IndexConstrSoluPt);
+  //p3d_get_iksol_vector(robotPt->cntrt_manager,&IndexConstrSoluPt);
   // WARNING: iksol does not work, a new vector containing the 1st solution of each constraint must be passed as argument
-  NewNodePt = p3d_APInode_make_multisol(GraphPt, NewConfig, NULL);
+  NewNodePt = p3d_APInode_make_multisol(GraphPt, NewConfig, ikSol);
 
+  if(p3d_get_ik_choice() == IK_UNIQUE){
+    int singNum = 0;
+    p3d_isCloseToSingularityConfig(robotPt, robotPt->cntrt_manager, NewNodePt->q, &singNum);
+  }
+  
   if (NewNodePt == NULL) {
     if (ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH)  {
       p3d_SetNGood(0);
@@ -235,7 +300,10 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
 
   p3d_AddNodeUpdateGraphStruc(GraphPt, NewNodePt, ExpansionNodePt,
                               ExpansionDist, CurrentCost);
-
+  if (p3d_get_ik_choice() == IK_UNIQUE) {
+    extern int singularityCheck;
+    singularityCheck = false;
+  }
   //Additional cycles through edges addition if the flag is active
   if (ENV.getBool(Env::addCycles) == TRUE) {
     DMax =  p3d_get_env_dmax();
