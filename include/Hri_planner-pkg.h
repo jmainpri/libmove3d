@@ -82,6 +82,7 @@
  extern int SHOW_MM_BASED_OBJECT_REACHABLE;
  extern int SHOW_MM_BASED_OBJECT_VISIBLE;
  extern hri_bitmapset * ACBTSET;
+ extern robots_status robots_status_for_Mightability_Maps[100];
 #endif
 
 #ifdef USE_HRP2_GIK
