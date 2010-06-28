@@ -69,5 +69,23 @@ extern int find_candidate_points_on_plane_to_put_obj();
 extern int Create_and_init_Mightability_Maps();
 extern int get_set_of_points_to_put_object();
 extern int JIDO_find_candidate_points_on_plane_to_put_obj();
+extern int find_symbolic_Mightability_Map();
+extern int show_symbolic_Mightability_Map_Relations();
+extern int is_object_graspable();
+extern int show_candidate_points_for_curr_geo_node();
+extern int find_symbolic_Mightability_Map_new();
+extern int make_cells_around_point_as_near_to_obstacle(double hand_pos[3], int expansion);
+extern int show_weighted_candidate_points_for_putinto_obj(int show_weight);
+extern int reverse_sort_weighted_candidate_points_to_putinto_obj();
+extern int get_object_mightabilities();
+extern int show_object_Mightabilities();
+extern int show_first_non_visible_cells(int obj_index);
+extern int get_index_of_robot_by_name(char *rob_name);
+extern int test_jido_grasp_traj();
+extern int JIDO_put_obj_in_hand_into_trashbin(char trashbin_name[50], char obj_to_manipulate[50]);
+extern int execute_JIDO_trajectory();
+extern int simulate_object_falling(char obj_name[50]);
+extern int play_all_JIDO_trajectories();
+
 #endif /* __CEXTRACT__ */
 

@@ -13,7 +13,37 @@
 #include "include/hri_bitmap_cost.h"
 #include "include/hri_bitmap_bin_heap.h"
 
+
+
+///////////****** For graspability tests
+#include "Manipulation.h"
+
+#include "GraspPlanning-pkg.h"
+#include "gbM/Proto_gbModeles.h"
+#include "lightPlanner.h"
+#include "lightPlannerApi.h"
+#include <gp_grasp_generation_proto.h>
+#include <gp_grasp_generation_proto.h>
+
+#include "planner_cxx/plannerFunctions.hpp"
+#include <list>
+#include <string>
+#include <iostream>
+
+
+//#define OBJECT_NAME "YELLOW_BOTTLE"
+//#define OBJECT_NAME "GREY_TAPE"
+//#define SUPPORT_NAME "HRP2TABLE"
+//#define HUMAN_NAME "ACHILE_HUMAN1"
+
+static Manipulation_JIDO *manipulation= NULL;
+
+/////////******* END for graspability tests
+
 //#include "dynamicsJRLJapan/HumanoidDynamicMultiBody.h"
+
+//// This will be used for exporting the object level mightability information to the external modules/functions
+object_mightabilities_info_set Mightabilities_for_obj;
 
 
 //AKP 
@@ -27,7 +57,6 @@ extern ChppGikPositionConstraint *pc;
 extern struct gik_solution curr_gik_sol; // To store the gik solution between two segments in the path. It will be reset with each call of HRP2_hand_reach
 extern struct gik_solution HRP2_GIK_sol;// It will store entire configuration to reach from the start to the goal of the entire path
 extern struct SOLUTION_CONFIGS_FOR_HRP2 cur_gik_sol_configs;//It will store the final set of configurations to be executed on HRP2 
-
 #endif
 
 extern hri_bitmapset * ACBTSET;
@@ -69,6 +98,8 @@ extern int SHOW_2D_TURNING_AROUND_REACHABLE_HUM;
 extern int SHOW_3D_TURNING_AROUND_REACHABLE_HUM;
 extern int SHOW_PUT_OBJ_CANDIDATES;
 extern int SHOW_WEIGHT_FOR_CANDIDATE_POINTS;
+extern int SHOW_MM_BASED_OBJECT_REACHABLE;
+extern int SHOW_MM_BASED_OBJECT_VISIBLE;
 
 //extern int HRP2_CURRENT_STATE;//1 for sitting, 2 for half sitting
 int HRP2_CURRENT_STATE=1;//1 for sitting, 2 for half sitting
@@ -80,6 +111,10 @@ int BT_AFFORDANCE_VISIBILITY=1;//For the bitmap which is used for calculating vi
 candidate_poins_for_task candidate_points_to_put;
 candidate_poins_for_task candidate_points_to_show;
 candidate_poins_for_task candidate_points_to_hide;
+candidate_poins_for_task candidate_points_to_putinto_by_jido;
+candidate_poins_for_task candidate_points_to_putinto_blue_trashbin_by_jido;
+candidate_poins_for_task candidate_points_to_putinto_pink_trashbin_by_jido;
+candidate_poins_for_task current_candidate_points_to_putinto;
 ////point_co_ordi candidate_points_to_put[100];
 
 int no_candidate_points_to_put=0;
@@ -121,22 +156,95 @@ int NEED_HRP2_VISIBILITY_UPDATE=0; //For updating the mightability maps
 int NEED_JIDO_VISIBILITY_UPDATE=0; //For updating the mightability maps
 ////int NEED_HUMAN_CURRENT_VISIBILITY_UPDATE=0;// For updating the visibility from the current head orientation
 
-struct object_Symbolic_Mightability_Maps_Relation obj_MM;
+struct object_Symbolic_Mightability_Maps_Relation object_MM;
 
+#ifdef USE_SYM_GEO_PLAN
+struct constraints_set curr_constraints;
+////curr_constraints.no_constraints=0;
+
+struct geometric_plan curr_geo_plan;
+
+configPt tmp_robot_config_after_exec[50]; //To store configurations of the robots after validating a particular node , the index should be synchronized with the index of the robots
+int tmp_changed_robot_config[50];//To keep track of the indices of the robots which will be changed  after a particular action.
+
+vectorN tmp_HRP2_GIK_final_config; //For storing the final configuration of HRP2 for GIK, for storing into node of symbolic planner
+
+#endif 
+
+struct robots_indices rob_indx; 
+
+int UPDATE_MIGHTABILITY_MAP_INFO=1;
+int SHOW_MIGHTABILITY_MAP_INFO=1;
+
+int CURR_GEO_NODE=0;//To keep track of the current node in geometric plan while executing the entire plan
+int SHOW_CANDIDATE_POINTS_FOR_GEO_NODE=0;
+
+int show_obstacle_cells_belonging_to(int object_index);
+
+point_co_ordi point_to_put;
+int MM_RECORD_MOVIE_FRAMES=0;
+int AKP_record_movie_frames();
+
+robots_status robots_status_for_Mightability_Maps[100];
+int JIDO_HOLDING_OBJECT=0;
+int index_of_curr_obj_in_JIDO_hand=-1; //To update the status of this object for recalculating Mightability Maps, because when JIDO grasps an object it becomes different object
 //================================
 
 int execute_Mightability_Map_functions()
 {
+////////////g3d_drawDisc(point_to_put.x,point_to_put.y,point_to_put.z,0.02, Green, NULL);
  ////printf(" Inside execute_Mightability_Map_functions()\n");
    if(Affordances_Found==1)
    {
+  
+   // printf(" Inside Affordances_Found==1\n");
+   if(UPDATE_MIGHTABILITY_MAP_INFO==1)
+    {
+   ////printf(" Inside UPDATE_MIGHTABILITY_MAP_INFO \n");
+   if(JIDO_HOLDING_OBJECT==1)
+     {
+   printf(" Jido holding the object having index %d, so need to update MM\n",index_of_curr_obj_in_JIDO_hand);
+   robots_status_for_Mightability_Maps[index_of_curr_obj_in_JIDO_hand].has_moved=1;
+     }
    update_robots_and_objects_status();
    int expansion=1;
    ////////update_3D_grid_for_Mightability_Maps_new(grid_around_HRP2.GRID_SET,expansion,HRP2_GIK_MANIP);
-   
+   //printf(" **** Calling update_Mightability_Maps()\n");
    update_Mightability_Maps();
+
+   //printf(" **** Calling find_symbolic_Mightability_Map_new()\n");
+   ////find_symbolic_Mightability_Map();
+   find_symbolic_Mightability_Map_new();
+  
+   //printf(" **** Calling get_object_mightabilities() \n");
+
+   get_object_mightabilities();
+    }
+
+    if(SHOW_MIGHTABILITY_MAP_INFO==1)
+    {
+
+   show_object_Mightabilities();
+
+
+   show_symbolic_Mightability_Map_Relations();
    ////////////show_3d_grid_Bounding_box_for_HRP2_GIK();
    show_3D_workspace_Bounding_Box();
+   
+
+     if(grid_3d_affordance_calculated==1)
+     {
+      show_3d_grid_affordances_new();  
+     } 
+    
+    /* 
+    ////To show the obstacle cell belonging to an object, For debuging 
+    int index=get_index_of_robot_by_name("RED_BOTTLE");//("SPACENAVBOX");//("ACCESSKIT");//("YELLOW_BOTTLE");
+    show_obstacle_cells_belonging_to(index);
+    show_first_non_visible_cells(index);
+    */
+    }
+
    if(SHOW_OBSTACLE_CELLS==1)
    show_exact_obstacles_for_HRP2_GIK_manip(grid_around_HRP2.GRID_SET,HRP2_GIK_MANIP);
    ////show_3d_grid_for_HRP2_GIK();
@@ -151,12 +259,13 @@ int execute_Mightability_Map_functions()
    g3d_drawDisc(hum_R_shoulder_pos[0], hum_R_shoulder_pos[1], hum_R_shoulder_pos[2], 0.05, 4, NULL);
   */ 
    ////g3d_drawDisc(point_to_look[0], point_to_look[1], point_to_look[2], 0.1, 4, NULL);
+
+    if(MM_RECORD_MOVIE_FRAMES==1)
+    {
+    AKP_record_movie_frames();
+    }
    }
    
-   if(grid_3d_affordance_calculated==1)
-   {
-   show_3d_grid_affordances_new();  
-   } 
     
     //show_HRP2_gik_sol(); 
   #ifdef USE_HRP2_GIK
@@ -178,32 +287,144 @@ int execute_Mightability_Map_functions()
    if(SHOW_PUT_OBJ_CANDIDATES==1)
     {
    //int show_weight=0;
-    show_weighted_candidate_points_to_put_obj(SHOW_WEIGHT_FOR_CANDIDATE_POINTS);
+   show_weighted_candidate_points_to_put_obj(SHOW_WEIGHT_FOR_CANDIDATE_POINTS);
     } 
+   
    /////////show_weighted_candidate_points_to_show_obj();
-   /////////show_weighted_candidate_points_to_hide_obj();
+   //////// show_weighted_candidate_points_to_hide_obj();
    } 
-
-
-
+int show_weight=1;
+show_weighted_candidate_points_for_putinto_obj(show_weight);
+    
+   #ifdef USE_SYM_GEO_PLAN
+   if(SHOW_CANDIDATE_POINTS_FOR_GEO_NODE==1)
+   {
+    show_candidate_points_for_curr_geo_node();
+   }
+   #endif
+  ////////pqp_print_colliding_pair();
+  
+return 1;
 }
+
+static int movie_count = 0;
+/* static int movie_count_real = 0; */
+static int image_rate = 1;
+static int image_compress = 100;
+int AKP_record_movie_frames()
+{
+  char str[512];
+  char file[64];
+  int count;
+
+if((++movie_count)%image_rate == 0) {
+    count = movie_count/image_rate;
+    if(count < 10) sprintf(file,"0000%d.jpg",count);
+    else if(count < 100) sprintf(file,"000%d.jpg",count);
+    else sprintf(file,"00%d.jpg",count);
+    sprintf(str,"/usr/bin/import -silent -window %d -quality %d %s",g3d_win_id(G3D_WIN),image_compress,file);
+/*     sprintf(str,"/usr/local/imagetools/sparc-solaris/bin/import -silent -window %d -quality %d %s",g3d_win_id(G3D_WIN),image_compress,file); */
+    system(str);
+ printf("**** AKP >>>> Recorded Frame %s \n",file);
+ }
+
+ return 1;
+}
+
+#ifdef USE_SYM_GEO_PLAN
+int init_geometric_plan_data()
+{
+ 
+
+  envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+ 
+    int nr = envPt->nr;
+    int nr_ctr=0;
+    for(;nr_ctr<nr;nr_ctr++)
+     {
+       tmp_robot_config_after_exec[nr_ctr]=MY_ALLOC(double,envPt->robot[nr_ctr]->nb_dof); 
+       tmp_changed_robot_config[nr_ctr]=0;
+     } 
+
+curr_geo_plan.total_no_nodes=0;
+
+return 1;
+}
+
+#endif
+
+int assign_indices_of_robots()
+{
+
+ envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+ 
+    int nr = envPt->nr;
+    int nr_ctr=0;
+    for(;nr_ctr<nr;nr_ctr++)
+     {
+    if (strcasestr(envPt->robot[nr_ctr]->name,"HRP2_ROBOT"))//HRP2 has to perform the action
+      {
+       rob_indx.HRP2=nr_ctr;
+      }
+    else
+      {
+      if (strcasestr(envPt->robot[nr_ctr]->name,"JIDO_ROBOT"))//HRP2 has to perform the action
+       {
+       rob_indx.JIDO=nr_ctr;
+       }
+       else
+       {
+       if (strcasestr(envPt->robot[nr_ctr]->name,"YELLOW"))//HRP2 has to perform the action
+        {
+       rob_indx.YELLOW_BOTTLE=nr_ctr;
+        }
+       else
+        {
+        if (strcasestr(envPt->robot[nr_ctr]->name,"HUMAN1"))//HRP2 has to perform the action
+         {
+          rob_indx.HUMAN=nr_ctr;
+         }
+        }
+       }
+      } 
+     }      
+  return 1;
+}
+
 
 int Create_and_init_Mightability_Maps()
 {
+ printf(" Inside Create_and_init_Mightability_Maps()\n");
+ p3d_init_robot_parameters(); //To remove the dependency on Watch button
+ printf(" After p3d_init_robot_parameters()\n");
+
+ assign_indices_of_robots();
+
+ #ifdef USE_SYM_GEO_PLAN
+ init_geometric_plan_data();
+ #endif
+
+ printf(" Calling find_affordance \n");
  find_affordance_new();
+ printf(" After find_affordance()\n");
+ ////find_symbolic_Mightability_Map();
+ find_symbolic_Mightability_Map_new();
+ printf(" After find_symbolic_Mightability_Map_new()\n");
+   ////show_symbolic_Mightability_Map_Relations();
  CALCULATE_AFFORDANCE=1;
 
  Affordances_Found=1; 
 
  ////fl_check_forms();
  ////g3d_draw_allwin_active();
+return 1;
 }
 
 int get_set_of_points_to_put_object()
 {
    if(Affordances_Found==1)
    {
-   printf(" Inside get_set_of_points_to_put_object()\n");
+   //////////printf(" Inside get_set_of_points_to_put_object()\n");
    ////update_robots_and_objects_status();
 
 /*
@@ -229,6 +450,7 @@ int get_set_of_points_to_put_object()
 
    #ifdef HRI_JIDO
    JIDO_find_candidate_points_on_plane_to_put_obj();
+   assign_weights_on_candidte_points_to_put_obj(); 
    #elif defined(HRI_HRP2)
    find_candidate_points_on_plane_to_put_obj_new();
    assign_weights_on_candidte_points_to_put_obj(); 
@@ -239,8 +461,12 @@ int get_set_of_points_to_put_object()
    ////SHOW_WEIGHT_FOR_CANDIDATE_POINTS=0;
    ////show_3D_workspace_Bounding_Box();
    ////show_weighted_candidate_points_to_put_obj(0);
-   
+   return 1;
   } 
+
+return 0;
+
+
 }
 
 void get_Frustum_Vertices(float l, float r, float b, float t, float n, float f)
@@ -326,7 +552,7 @@ point_co_ordi frustumVertices[8];
     ////FOV_end_point_vertices[no_FOV_end_point_vertices][i].z=frustumVertices[i].z;
     }
     no_FOV_end_point_vertices++;
-    //printf(" no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
+    ////////printf(" no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
 }
 
 int get_points_on_FOV_screen(p3d_rob *r)
@@ -361,8 +587,10 @@ int get_points_on_FOV_screen(p3d_rob *r)
     for(j=0 ; j<=3 ; j++){
       
       frustum_transformation_mat[i][j]=jntPt->abs_pos[i][j];
+      ////printf(" %lf ",frustum_transformation_mat[i][j]);  
       
     }
+   ////printf("\n");
   }
   //matrix[14]=0.0;
   //float degYang = (r->cam_v_angle * 180.0/M_PI);//good
@@ -979,12 +1207,71 @@ curr_surfaces_in_env.flat_surf[1].no_vertices=4;
   curr_surfaces_in_env.total_no_of_surfaces=2;
   
   */
-  
+  return 1;
 }
 
 
 int show_3d_grid_affordances_new()
 {
+/*
+     //tmp for showing the points for putting inside 
+envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+ double increment=3.0/4.0*grid_around_HRP2.GRID_SET->pace;
+int nr_ctr=0;
+  int nr = envPt->nr;
+ for(nr_ctr=0;nr_ctr<nr;nr_ctr++)
+  {
+    if(strcasestr(envPt->robot[nr_ctr]->name,"ROBOT")||strcasestr(envPt->robot[nr_ctr]->name,"HUMAN")||strcasestr(envPt->robot[nr_ctr]->name,"TABLE"))
+   {
+    //No need to calculate PUTABILITY :-)
+   }
+    else
+   {
+     double top_z=envPt->robot[nr_ctr]->BB.zmax;
+     int cell_top_z=(top_z- grid_around_HRP2.GRID_SET->realz)/grid_around_HRP2.GRID_SET->pace;
+     ////cell_top_z+=1;
+     double BB_x_ctr;
+     double BB_y_ctr;
+
+ if(cell_top_z>=0&&cell_top_z<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz)
+    { 
+     for(BB_x_ctr=envPt->robot[nr_ctr]->BB.xmin;BB_x_ctr<envPt->robot[nr_ctr]->BB.xmax;BB_x_ctr+=increment)
+     {
+      int cell_x=(BB_x_ctr- grid_around_HRP2.GRID_SET->realx)/grid_around_HRP2.GRID_SET->pace;  
+
+      if(cell_x>=0&&cell_x<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx)
+      {
+      for(BB_y_ctr=envPt->robot[nr_ctr]->BB.ymin;BB_y_ctr<envPt->robot[nr_ctr]->BB.ymax;BB_y_ctr+=increment)
+       {
+      
+       int cell_y=(BB_y_ctr- grid_around_HRP2.GRID_SET->realy)/grid_around_HRP2.GRID_SET->pace;  
+ 
+       if(cell_y>=0&&cell_y<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny)
+        {
+
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_top_z].val>=0&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_top_z-1].val>=0)//No obstacle
+         {
+
+        if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_top_z].Mightability_Map.reachable_by_JIDO_Hand==1)
+          {  
+       //g3d_drawDisc(BB_x_ctr, BB_y_ctr, top_z, grid_around_HRP2.GRID_SET->pace/2.0, Red, NULL);
+          }
+    
+        if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_top_z].Mightability_Map.reachable_by_human_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_top_z].Mightability_Map.reachable_by_human_RHand==1)
+          {  
+       g3d_drawDisc(BB_x_ctr, BB_y_ctr, top_z, grid_around_HRP2.GRID_SET->pace/2.0, Green, NULL);
+          }
+
+         }
+        }
+       } 
+      }
+     }
+    }
+   }
+  }
+ */
+    
 
 /* point_co_ordi shoulder_pos;
 shoulder_pos.x = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_LSHOULDER]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
@@ -1079,7 +1366,8 @@ double interval=grid_around_HRP2.GRID_SET->pace/1.0;
        double cell_x_world = grid_around_HRP2.GRID_SET->realx + (x * grid_around_HRP2.GRID_SET->pace);
        double cell_y_world = grid_around_HRP2.GRID_SET->realy + (y * grid_around_HRP2.GRID_SET->pace);
        double cell_z_world = grid_around_HRP2.GRID_SET->realz + (z * grid_around_HRP2.GRID_SET->pace);
- 
+
+  
       
        int show_showing_points=0;
 
@@ -1319,6 +1607,23 @@ double interval=grid_around_HRP2.GRID_SET->pace/1.0;
           g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/4.0, Blue, NULL);
           }
          }
+        }
+       }
+
+       if(SHOW_3D_COMMON_REACH_HRP2_HUMAN==1)
+       {
+        //printf("SHOW_3D_COMMON_REACH_HRP2_HUMAN=%d\n",SHOW_3D_COMMON_REACH_HRP2_HUMAN);
+        if((grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_JIDO_Hand==1)&&((grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_LHand==1&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_RHand==1)))//Points which are reachable by both hands of both, human and HRP2
+        {
+         g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/4.0, Green, NULL);
+        }
+        else
+        {
+          if((grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_JIDO_Hand==1)&&(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_RHand==1))//Points which are reachable by both hands of HRP2 and atleast one hand of human
+         {
+         g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/4.0, Blue, NULL);
+         }
+         
         }
        }
 
@@ -1611,12 +1916,13 @@ double interval=grid_around_HRP2.GRID_SET->pace/1.0;
  }
 //fl_check_forms();
   //     g3d_draw_allwin_active();
+return 1;
 }
 
 
 int show_3d_grid_affordances()
 {
- printf("Inside show_3d_grid_affordances()\n");
+ //////////printf("Inside show_3d_grid_affordances()\n");
  int x=0;
  for(x=0;x<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx;x++)
  {
@@ -1755,6 +2061,7 @@ int show_3d_grid_affordances()
  }
 //fl_check_forms();
   //     g3d_draw_allwin_active();
+return 1;
 }
 
 int update_3d_grid_reachability_for_human_new()
@@ -1765,7 +2072,7 @@ int update_3d_grid_reachability_for_human_new()
 
   
 
-   printf("Inside update_3d_grid_reachability_for_human_new()\n");
+   //////////printf("Inside update_3d_grid_reachability_for_human_new()\n");
    point_co_ordi shoulder_pos;
       ////point_co_ordi sphere_pt;
 configPt hum_tmp_pos=p3d_get_robot_config(ACBTSET->human[ACBTSET->actual_human]->HumanPt);
@@ -1807,7 +2114,7 @@ ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TORSO_TILT]=hum
   
 for(;pitch_ang<0.785&&collision==0;pitch_ang+=0.25)
   {
-printf(" **** for yaw_ang = %lf, pitch_ang = %lf\n",yaw_ang, pitch_ang);
+//////////printf(" **** for yaw_ang = %lf, pitch_ang = %lf\n",yaw_ang, pitch_ang);
 
 hum_tmp_pos[HUMANq_TORSO_TILT]=pitch_ang; // Around 5 degrees
 p3d_set_and_update_this_robot_conf(ACBTSET->human[ACBTSET->actual_human]->HumanPt, hum_tmp_pos);
@@ -1821,7 +2128,16 @@ p3d_rob *human=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
 int res = p3d_col_test_robot(human,kcd_with_report);
  if(res>0)
    {
-  printf(" **** There is collision with human, for pitch_ang = %lf res=%d \n", pitch_ang, res);
+  kcd_with_report=0;
+  res = p3d_col_test_self_collision(human,kcd_with_report);
+   if(res>0)
+   {
+  //////////printf(" There is self collision with human, res=%d \n", res);
+  //return 0;
+   }
+   else
+   {
+  //////////printf(" **** There is collision with human, for pitch_ang = %lf res=%d \n", pitch_ang, res);
   for_actual_pitch=0;
   collision=1;
   hum_tmp_pos[HUMANq_TORSO_TILT]=orig_pitch_ang; 
@@ -1830,6 +2146,7 @@ int res = p3d_col_test_robot(human,kcd_with_report);
   ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TORSO_TILT]=hum_tmp_pos[HUMANq_TORSO_TILT];
 
   break;
+    }
    }
 
    shoulder_pos.x = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_LSHOULDER]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
@@ -1877,9 +2194,11 @@ int res = p3d_col_test_robot(human,kcd_with_report);
    
       if(for_actual_pitch==1&&for_actual_yaw==1)
         {
-      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable_by_human_LHand=1;
+       grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable_by_human_LHand=1;
        grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable_by_LHand_by_bending=1;  
        grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable_by_LHand_by_turning_around_bending=1; 
+
+       ////object_MM.object_indx[nr_ctr].
         }
       else
         {
@@ -1902,7 +2221,7 @@ int res = p3d_col_test_robot(human,kcd_with_report);
     shoulder_pos.x = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_RSHOULDER]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     shoulder_pos.y = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_RSHOULDER]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     shoulder_pos.z = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_RSHOULDER]->abs_pos[2][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
-    g3d_drawDisc(shoulder_pos.x, shoulder_pos.y, shoulder_pos.z, .1, Red, NULL);
+    ////////////g3d_drawDisc(shoulder_pos.x, shoulder_pos.y, shoulder_pos.z, .1, Red, NULL);
   
     for_hand=2;//1 for left, 2 for right
     no_sphere_surface_pts=0;
@@ -1983,7 +2302,7 @@ int res = p3d_col_test_robot(human,kcd_with_report);
   {
   
   curr_left_turn+=0.5;
-  printf(" curr_left_turn = %lf\n",curr_left_turn);
+  //////////printf(" curr_left_turn = %lf\n",curr_left_turn);
   yaw_ang+=0.5;
   }
  else
@@ -1992,7 +2311,7 @@ int res = p3d_col_test_robot(human,kcd_with_report);
    {
    
    curr_right_turn+=0.5;
-    printf(" curr_right_turn = %lf\n",curr_right_turn);
+    //////////printf(" curr_right_turn = %lf\n",curr_right_turn);
     if(init_yaw==1)
     {
    yaw_ang=orig_yaw_ang; 
@@ -2022,10 +2341,20 @@ p3d_rob *human=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
 int res = p3d_col_test_robot(human,kcd_with_report);
  if(res>0)
    {
-   printf(" There is collision with human, for yaw_ang = %lf and pitch_ang = %lf res=%d \n", yaw_ang, pitch_ang, res);
+  kcd_with_report=0;
+  res = p3d_col_test_self_collision(human,kcd_with_report);
+  if(res>0)
+    {
+  //////////printf(" There is self collision with human, res=%d \n", res);
+  //return 0;
+    }
+   else
+    { 
+   //////////printf(" There is collision with human, for yaw_ang = %lf and pitch_ang = %lf res=%d \n", yaw_ang, pitch_ang, res);
   turn_collision=1;
   turn_human=0;
    break;
+    }
    }
 
 
@@ -2058,7 +2387,7 @@ int update_3d_grid_reachability_for_human_standing_new()
 
   
 
-   printf("Inside update_3d_grid_reachability_for_human_standing_new()\n");
+   //////////printf("Inside update_3d_grid_reachability_for_human_standing_new()\n");
    point_co_ordi shoulder_pos;
       ////point_co_ordi sphere_pt;
 configPt hum_tmp_pos=p3d_get_robot_config(ACBTSET->human[ACBTSET->actual_human]->HumanPt);
@@ -2191,7 +2520,7 @@ int res = p3d_col_test_robot(human,kcd_with_report);
     shoulder_pos.x = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_RSHOULDER]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     shoulder_pos.y = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_RSHOULDER]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     shoulder_pos.z = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_RSHOULDER]->abs_pos[2][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
-    g3d_drawDisc(shoulder_pos.x, shoulder_pos.y, shoulder_pos.z, .1, Red, NULL);
+    ////////////g3d_drawDisc(shoulder_pos.x, shoulder_pos.y, shoulder_pos.z, .1, Red, NULL);
   
     for_hand=2;//1 for left, 2 for right
     no_sphere_surface_pts=0;
@@ -2343,7 +2672,7 @@ int update_3d_grid_reachability_for_human()
   configPt rob_cur_pos = MY_ALLOC(double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof); /* Allocation of temporary robot configuration */
   p3d_get_robot_config_into(ACBTSET->human[ACBTSET->actual_human]->HumanPt,&rob_cur_pos); 
  
-  printf("Inside update_3D_grid_based_on_current_human_pos()\n");
+  //////////printf("Inside update_3D_grid_based_on_current_human_pos()\n");
  int x=0;
  for(x=0;x<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx;x++)
  {
@@ -2414,6 +2743,7 @@ int update_3d_grid_reachability_for_human()
   
 
  MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof);
+return 1;
 
 }
 
@@ -2573,7 +2903,7 @@ int update_3d_grid_reachability_for_JIDO_new()
   
   
 
-   printf("Inside update_3d_grid_reachability_for_JIDO_new()\n");
+   //////////printf("Inside update_3d_grid_reachability_for_JIDO_new()\n");
    point_co_ordi shoulder_pos;
       ////point_co_ordi sphere_pt;
       
@@ -2647,7 +2977,7 @@ int update_3d_grid_reachability_for_HRP2_new()
 
   
 
-   printf("Inside update_3d_grid_reachability_for_HRP2_new()\n");
+   //////////printf("Inside update_3d_grid_reachability_for_HRP2_new()\n");
    point_co_ordi shoulder_pos;
       ////point_co_ordi sphere_pt;
       
@@ -2727,7 +3057,7 @@ int update_3d_grid_reachability_for_HRP2()
   configPt rob_cur_pos = MY_ALLOC(double,ACBTSET->robot->nb_dof); /* Allocation of temporary robot configuration */
   p3d_get_robot_config_into(ACBTSET->robot,&rob_cur_pos); 
  
-  printf("Inside update_3D_grid_based_on_current_human_pos()\n");
+  //////////printf("Inside update_3D_grid_based_on_current_human_pos()\n");
  int x=0;
  for(x=0;x<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx;x++)
  {
@@ -2796,6 +3126,7 @@ int update_3d_grid_reachability_for_HRP2()
  }
 
  MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof);
+return 1;
 
 }
 
@@ -2803,7 +3134,12 @@ int update_3d_grid_reachability_for_HRP2()
 
 int update_3d_grid_visibility(int type)//1 means human, 2 means HRP2, 3 means JIDO
 {
-printf(" Inside update_3d_grid_visibility(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
+
+ envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  
+  int nr = envPt->nr;
+
+//////////printf(" Inside update_3d_grid_visibility(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
 point_co_ordi eye_pos;
    
 eye_pos.x=(FOV_end_point_vertices[0][0].x+FOV_end_point_vertices[0][1].x+FOV_end_point_vertices[0][2].x+FOV_end_point_vertices[0][3].x)/4.0;//Average of the 4 vertices of the near screen
@@ -2824,7 +3160,7 @@ eye_pos.z=(FOV_end_point_vertices[0][0].z+FOV_end_point_vertices[0][1].z+FOV_end
     
 
  double interval=grid_around_HRP2.GRID_SET->pace/2.0;
-   printf("interval=%lf, no_FOV_end_point_vertices=%d\n",interval,no_FOV_end_point_vertices);
+   //////////printf("interval=%lf, no_FOV_end_point_vertices=%d\n",interval,no_FOV_end_point_vertices);
  
 int visible_ctr=0;  
 int not_visible_ctr=0;
@@ -2868,6 +3204,7 @@ int not_visible_ctr=0;
        ////g3d_drawDisc(x,y,z,grid_around_HRP2.GRID_SET->pace/4.0,2,NULL);
       ////printf(" x,y,z=(%lf,%lf,%lf)\n",x,y,z);
       int obs_found=0;
+      int first_obs_cell=0;
       double t2=0.1;//Just to avoid very checking very near to human
       
       for(;t2<1;t2+=interval) 
@@ -2941,7 +3278,10 @@ int not_visible_ctr=0;
           }
          }
          */
+
         int is_visible=1; 
+        ////grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_human=0;
+
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].val==-1)//Exact obstacle cells
          {
        ////g3d_drawDisc(x2,y2,z2,grid_around_HRP2.GRID_SET->pace/4.0,2,NULL);
@@ -2993,10 +3333,46 @@ int not_visible_ctr=0;
           ////////{
           is_visible=0;
           obs_found=1;
+          if(first_obs_cell==0)
+           {
+          first_obs_cell=1;
+           ////This is the first obstacle cell found in the ray
+           if(type==1)//means for human
+            {
+          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_human=1;
+            } 
+
+            if(type==2)//means for HRP2
+            {
+          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2=1;
+            } 
+
+             if(type==3)//means for JIDO
+            {
+          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_JIDO=1;
+            } 
+           }
+
           //printf(" Not Visible ");
           not_visible_ctr++;
           ////////////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
           ////////}
+
+           
+         /*
+         //, so assume that the object corresponding to this obstacle is visible
+          
+          int i=0;
+          for(i=0;i<nr;i++)
+          {
+           
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.belongs_to_objects_indx[i]==1)
+           {
+            object_MM.object[i].visible_by_human=1;
+           }
+          }
+          */
+
          }
         //else
          if(obs_found==0&&is_visible==1)
@@ -3033,12 +3409,13 @@ int not_visible_ctr=0;
   
     p3d_destroy_config(ACBTSET->visball, hum_head_pos);
     p3d_destroy_config(ACBTSET->visball, point_to_look);   
-    printf(" Visible_ctr=%d, not_visible_ctr=%d\n",visible_ctr,not_visible_ctr); 
+    //////////printf(" Visible_ctr=%d, not_visible_ctr=%d\n",visible_ctr,not_visible_ctr); 
+return 1;
 }
 
 int update_3d_grid_straight_visibility(int type)//1 means human, 2 means HRP2, 3 means JIDO
 {
-printf(" Inside update_3d_grid_visibility(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
+//////////printf(" Inside update_3d_grid_visibility(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
 point_co_ordi eye_pos;
    
 eye_pos.x=(FOV_end_point_vertices[0][0].x+FOV_end_point_vertices[0][1].x+FOV_end_point_vertices[0][2].x+FOV_end_point_vertices[0][3].x)/4.0;//Average of the 4 vertices of the near screen
@@ -3059,7 +3436,7 @@ eye_pos.z=(FOV_end_point_vertices[0][0].z+FOV_end_point_vertices[0][1].z+FOV_end
     
 
  double interval=grid_around_HRP2.GRID_SET->pace/2.0;
-   printf("interval=%lf, no_FOV_end_point_vertices=%d\n",interval,no_FOV_end_point_vertices);
+   //////////printf("interval=%lf, no_FOV_end_point_vertices=%d\n",interval,no_FOV_end_point_vertices);
  
 int visible_ctr=0;  
 int not_visible_ctr=0;
@@ -3103,6 +3480,7 @@ int not_visible_ctr=0;
        ////g3d_drawDisc(x,y,z,grid_around_HRP2.GRID_SET->pace/4.0,2,NULL);
       ////printf(" x,y,z=(%lf,%lf,%lf)\n",x,y,z);
       int obs_found=0;
+      int first_obs_cell=0;
       double t2=0.1;//Just to avoid very checking very near to human
       
       for(;t2<1;t2+=interval) 
@@ -3230,6 +3608,27 @@ int not_visible_ctr=0;
           is_visible=0;
           obs_found=1;
           //printf(" Not Visible ");
+ 
+          if(first_obs_cell==0)
+           {
+          first_obs_cell=1;
+           ////This is the first obstacle cell found in the ray
+           if(type==1)//means for human
+            {
+          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_human_straight_head_orientation=1;
+            } 
+
+            if(type==2)//means for HRP2
+            {
+          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2_straight_head_orientation=1;
+            } 
+
+             if(type==3)//means for JIDO
+            {
+          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_JIDO_straight_head_orientation=1;
+            } 
+           }
+
           not_visible_ctr++;
           ////////////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
           ////////}
@@ -3269,12 +3668,13 @@ int not_visible_ctr=0;
   
     p3d_destroy_config(ACBTSET->visball, hum_head_pos);
     p3d_destroy_config(ACBTSET->visball, point_to_look);   
-    printf(" Visible_ctr=%d, not_visible_ctr=%d\n",visible_ctr,not_visible_ctr); 
+    //////////printf(" Visible_ctr=%d, not_visible_ctr=%d\n",visible_ctr,not_visible_ctr); 
+ return 1;
 }
 
 int update_3d_grid_visibility_standing(int type)//1 means human, 2 means HRP2
 {
-printf(" Inside update_3d_grid_visibility(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
+//////////printf(" Inside update_3d_grid_visibility(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
 point_co_ordi eye_pos;
    
 eye_pos.x=(FOV_end_point_vertices[0][0].x+FOV_end_point_vertices[0][1].x+FOV_end_point_vertices[0][2].x+FOV_end_point_vertices[0][3].x)/4.0;//Average of the 4 vertices of the near screen
@@ -3291,7 +3691,7 @@ eye_pos.z=(FOV_end_point_vertices[0][0].z+FOV_end_point_vertices[0][1].z+FOV_end
     
 
  double interval=grid_around_HRP2.GRID_SET->pace/2.0;
-   printf("interval=%lf\n",interval);
+   //////////printf("interval=%lf\n",interval);
  
 int visible_ctr=0;  
  int j=0;
@@ -3334,6 +3734,8 @@ int visible_ctr=0;
        ////g3d_drawDisc(x,y,z,grid_around_HRP2.GRID_SET->pace/4.0,2,NULL);
       ////printf(" x,y,z=(%lf,%lf,%lf)\n",x,y,z);
       int obs_found=0;
+      int first_obs_cell=0;
+
       double t2=0.1;//Just to avoid very checking very near to human
       for(;t2<1;t2+=interval) 
        { 
@@ -3451,6 +3853,23 @@ int visible_ctr=0;
           ////////{
           obs_found=1;
           is_visible=0;
+
+          
+          if(first_obs_cell==0)
+           {
+          first_obs_cell=1;
+           ////This is the first obstacle cell found in the ray
+           if(type==1)//means for human
+            {
+          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_standing_human=1;
+            } 
+
+            if(type==2)//means for HRP2
+            {
+          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_standing_HRP2=1;
+            } 
+
+           }
           ////////////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
           ////////}
          }
@@ -3482,14 +3901,15 @@ int visible_ctr=0;
   
     p3d_destroy_config(ACBTSET->visball, hum_head_pos);
     p3d_destroy_config(ACBTSET->visball, point_to_look);   
-    printf(" Visible_ctr=%d\n",visible_ctr); 
+    //////////printf(" Visible_ctr=%d\n",visible_ctr); 
+  return 1;
 }
 
 
 
 int update_3d_grid_visibility_by_neck_turn(int type)//1 means human, 2 means HRP2, 3 means JIDO
 {
-printf(" Inside update_3d_grid_visibility_by_neck_turn(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
+//////////printf(" **** Inside update_3d_grid_visibility_by_neck_turn() for %d,  no_FOV_end_point_vertices=%d\n",type,no_FOV_end_point_vertices);
 point_co_ordi eye_pos;
    
 eye_pos.x=(FOV_end_point_vertices[0][0].x+FOV_end_point_vertices[0][1].x+FOV_end_point_vertices[0][2].x+FOV_end_point_vertices[0][3].x)/4.0;//Average of the 4 vertices of the near screen
@@ -3506,7 +3926,7 @@ eye_pos.z=(FOV_end_point_vertices[0][0].z+FOV_end_point_vertices[0][1].z+FOV_end
     
 
  double interval=grid_around_HRP2.GRID_SET->pace/2.0;
-   printf("interval=%lf\n",interval);
+   //////////printf("interval=%lf\n",interval);
  
 int visible_ctr=0;  
  int j=0;
@@ -3549,6 +3969,7 @@ int visible_ctr=0;
        ////g3d_drawDisc(x,y,z,grid_around_HRP2.GRID_SET->pace/4.0,2,NULL);
       ////printf(" x,y,z=(%lf,%lf,%lf)\n",x,y,z);
       int obs_found=0;
+      int first_obs_cell=0;
       double t2=0.1;//Just to avoid very checking very near to human
       for(;t2<1;t2+=interval) 
        { 
@@ -3674,6 +4095,27 @@ int visible_ctr=0;
           ////////{
           is_visible=0;
           obs_found=1;
+
+          if(first_obs_cell==0)
+           {
+          first_obs_cell=1;
+           ////This is the first obstacle cell found in the ray
+           if(type==1)//means for human
+            {
+          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_human_neck_turn=1;
+            } 
+
+            if(type==2)//means for HRP2
+            {
+          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2_neck_turn=1;
+            } 
+
+             if(type==3)//means for JIDO
+            {
+          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_JIDO_neck_turn=1;
+          ////printf(" ************ first_non_visible_by_JIDO_neck_turn \n");
+            } 
+           }
           ////////////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
           ////////}
          }
@@ -3712,13 +4154,14 @@ int visible_ctr=0;
   
     p3d_destroy_config(ACBTSET->visball, hum_head_pos);
     p3d_destroy_config(ACBTSET->visball, point_to_look);   
-  printf(" Visible_ctr=%d\n",visible_ctr); 
+ return 1;
+  //////////printf(" Visible_ctr=%d\n",visible_ctr); 
 }
 
 
 int update_3d_grid_straight_visibility_standing(int type)//1 means human, 2 means HRP2
 {
-printf(" Inside update_3d_grid_visibility(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
+//////////printf(" Inside update_3d_grid_visibility(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
 point_co_ordi eye_pos;
    
 eye_pos.x=(FOV_end_point_vertices[0][0].x+FOV_end_point_vertices[0][1].x+FOV_end_point_vertices[0][2].x+FOV_end_point_vertices[0][3].x)/4.0;//Average of the 4 vertices of the near screen
@@ -3735,7 +4178,7 @@ eye_pos.z=(FOV_end_point_vertices[0][0].z+FOV_end_point_vertices[0][1].z+FOV_end
     
 
  double interval=grid_around_HRP2.GRID_SET->pace/2.0;
-   printf("interval=%lf\n",interval);
+   //////////printf("interval=%lf\n",interval);
  
 int visible_ctr=0;  
  int j=0;
@@ -3778,6 +4221,7 @@ int visible_ctr=0;
        ////g3d_drawDisc(x,y,z,grid_around_HRP2.GRID_SET->pace/4.0,2,NULL);
       ////printf(" x,y,z=(%lf,%lf,%lf)\n",x,y,z);
       int obs_found=0;
+      int first_obs_cell=0;
       double t2=0.1;//Just to avoid very checking very near to human
       for(;t2<1;t2+=interval) 
        { 
@@ -3896,6 +4340,22 @@ int visible_ctr=0;
           ////////{
           obs_found=1;
           is_visible=0;
+
+          if(first_obs_cell==0)
+           {
+          first_obs_cell=1;
+           ////This is the first obstacle cell found in the ray
+           if(type==1)//means for human
+            {
+          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_human_straight_head_orientation_standing=1;
+            } 
+
+            if(type==2)//means for HRP2
+            {
+          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2_straight_head_orientation_standing=1;
+            } 
+
+           }
           ////////////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
           ////////}
          }
@@ -3927,13 +4387,14 @@ int visible_ctr=0;
   
     p3d_destroy_config(ACBTSET->visball, hum_head_pos);
     p3d_destroy_config(ACBTSET->visball, point_to_look);   
-  printf(" Visible_ctr=%d\n",visible_ctr); 
+  //////////printf(" Visible_ctr=%d\n",visible_ctr); 
+   return 1;
 }
 
 
 int update_3d_grid_visibility_by_neck_turn_standing(int type)//1 means human, 2 means HRP2
 {
-printf(" Inside update_3d_grid_visibility(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
+//////////printf(" Inside update_3d_grid_visibility(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
 point_co_ordi eye_pos;
    
 eye_pos.x=(FOV_end_point_vertices[0][0].x+FOV_end_point_vertices[0][1].x+FOV_end_point_vertices[0][2].x+FOV_end_point_vertices[0][3].x)/4.0;//Average of the 4 vertices of the near screen
@@ -3950,7 +4411,7 @@ eye_pos.z=(FOV_end_point_vertices[0][0].z+FOV_end_point_vertices[0][1].z+FOV_end
     
 
  double interval=grid_around_HRP2.GRID_SET->pace/2.0;
-   printf("interval=%lf\n",interval);
+   //////////printf("interval=%lf\n",interval);
  
 int visible_ctr=0;  
  int j=0;
@@ -3993,6 +4454,7 @@ int visible_ctr=0;
        ////g3d_drawDisc(x,y,z,grid_around_HRP2.GRID_SET->pace/4.0,2,NULL);
       ////printf(" x,y,z=(%lf,%lf,%lf)\n",x,y,z);
       int obs_found=0;
+      int first_obs_cell=0;
       double t2=0.1;//Just to avoid very checking very near to human
       for(;t2<1;t2+=interval) 
        { 
@@ -4111,6 +4573,22 @@ int visible_ctr=0;
           ////////{
           obs_found=1;
           is_visible=0;
+
+           if(first_obs_cell==0)
+           {
+          first_obs_cell=1;
+           ////This is the first obstacle cell found in the ray
+           if(type==1)//means for human
+            {
+          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_standing_human_neck_turn=1;
+            } 
+
+            if(type==2)//means for HRP2
+            {
+          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_standing_human_neck_turn=1;
+            } 
+
+           }
           ////////////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
           ////////}
          }
@@ -4142,13 +4620,14 @@ int visible_ctr=0;
   
     p3d_destroy_config(ACBTSET->visball, hum_head_pos);
     p3d_destroy_config(ACBTSET->visball, point_to_look);   
-  printf(" Visible_ctr=%d\n",visible_ctr); 
+  //////////printf(" Visible_ctr=%d\n",visible_ctr); 
+ return 1;
 }
 
 
 int update_3D_grid_based_on_current_human_pos()
 {
- printf("Inside update_3D_grid_based_on_current_human_pos()\n");
+ //////////printf("Inside update_3D_grid_based_on_current_human_pos()\n");
  int x=0;
  for(x=0;x<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx;x++)
  {
@@ -4193,13 +4672,14 @@ int update_3D_grid_based_on_current_human_pos()
    }
   } 
  }
+return 1;
 }
 
 int human_state_updated=0;
 int update_human_state(int state) //1 means sitting 0 means standing
 {
  
- printf("Before updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
+ //////////printf("Before updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
  if(human_state_updated==0)
  { //ACBTSET->human[ACBTSET->actual_human]->actual_state = 1; //// AKP Note: Comment it if using motion capture button
   ////update_human_state(1);//For sitting //// AKP Note: Comment it if using motion capture button
@@ -4251,8 +4731,8 @@ ACBTSET->changed = TRUE;
   human_state_updated=0;
  }
  
-printf("After updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
-
+//////////printf("After updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
+return 1;
 }
 /*
 int update_human_state_new(int state) //1 means sitting 0 means standing
@@ -4330,7 +4810,7 @@ printf("After updating human state, ACBTSET->human[ACBTSET->actual_human]->actua
 int virtually_update_human_state(int state) //1 means sitting 0 means standing
 {
  
- printf("Before updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
+ //////////printf("Before updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
  if(human_state_updated==0)
  { //ACBTSET->human[ACBTSET->actual_human]->actual_state = 1; //// AKP Note: Comment it if using motion capture button
   ////update_human_state(1);//For sitting //// AKP Note: Comment it if using motion capture button
@@ -4382,15 +4862,15 @@ ACBTSET->changed = TRUE;
   human_state_updated=0;
  }
  
-printf("After updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
-
+//////////printf("After updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
+return 1;
 }
 
 
 int virtually_update_human_state_new(int state) //1 means sitting 0 means standing
 {
  
- printf("Before updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
+ //////////printf("Before updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
  if(human_state_updated==0)
  { //ACBTSET->human[ACBTSET->actual_human]->actual_state = 1; //// AKP Note: Comment it if using motion capture button
   ////update_human_state(1);//For sitting //// AKP Note: Comment it if using motion capture button
@@ -4449,8 +4929,8 @@ ACBTSET->changed = TRUE;
   human_state_updated=0;
  }
  
-printf("After updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
-
+//////////printf("After updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
+return 1;
 }
 
 int find_affordance_new()
@@ -4466,6 +4946,7 @@ int res = p3d_col_test_robot(human,kcd_with_report);
  if(res>0)
  {
   printf(" There is collision with human, res=%d \n", res);
+  pqp_print_colliding_pair();
   //return 0;
  }
 kcd_with_report=0;
@@ -4473,6 +4954,7 @@ kcd_with_report=0;
  if(res>0)
  {
   printf(" There is self collision with human, res=%d \n", res);
+  pqp_print_colliding_pair();
   //return 0;
  }
 
@@ -4488,7 +4970,7 @@ p3d_rob *cur_rob=ACBTSET->robot;
 	//if (strstr(o->name,"head") || strstr(o->name,"HEAD") || strstr(o->name,"hand") || strstr(o->name,"HAND"))
 	// {
 	////p3d_get_object_center(o,objCenter);
-        printf("%s\n",o->name);
+        //////////printf("%s\n",o->name);
 					// }	  
 	}
 			
@@ -4533,14 +5015,14 @@ kcd_with_report=0;
  
 ////int HRP2_state=HRP2_CURRENT_STATE; //AKP : 1 is sitting, 2 is standing 
 
-printf(" Before create_3d_grid_for_HRP2_GIK() \n");
-ChronoPrint("***");
+//////////printf(" Before create_3d_grid_for_HRP2_GIK() \n");
+////////////ChronoPrint("***");
 create_3d_grid_for_HRP2_GIK();
-ChronoPrint("Time for create_3d_grid_for_HRP2_GIK()");
-printf(" After create_3d_grid_for_HRP2_GIK() \n");
+//////////ChronoPrint("Time for create_3d_grid_for_HRP2_GIK()");
+//////////printf(" After create_3d_grid_for_HRP2_GIK() \n");
 ChronoOff();
 
-printf(" **** 3D grid dimension is (%d x %d x %d) cells.  \n",grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx,grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny,grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz);
+//////////printf(" **** 3D grid dimension is (%d x %d x %d) cells.  \n",grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx,grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny,grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz);
 
 double cur_h_angle;
 double interval;
@@ -4581,8 +5063,11 @@ ChronoOn();
 //*****AKP: Tmp uncomment/comment because of problem in new human model for sitting as well as standing
 virtually_update_human_state_new(1);// Sitting
 
+
+
 cur_h_angle=human->cam_h_angle;
 printf(" cur_h_angle=%lf\n",cur_h_angle);
+
 
 //int i_h_a=0;
 interval=grid_around_HRP2.GRID_SET->pace;
@@ -4591,8 +5076,9 @@ while(human->cam_h_angle>0.001)
 { 
 human->cam_h_angle-=interval;
 get_points_on_FOV_screen(human);
-}
 
+}
+////return 0;
 human->cam_h_angle=cur_h_angle;
 ////int expansion=1; //To populate the number of cells, around a cell having obstacle, with obstacles also
 ////create_exact_obstacles_for_HRP2_GIK_manip(grid_around_HRP2.GRID_SET,expansion,BT_AFFORDANCE_VISIBILITY); 
@@ -4600,7 +5086,7 @@ human->cam_h_angle=cur_h_angle;
 
 update_3d_grid_visibility(1); //1 for human
 
-ChronoPrint("TIME of 3D Visibility calculation for sitting Human from current position for current head orientation");
+////////////ChronoPrint("TIME of 3D Visibility calculation for sitting Human from current position for current head orientation");
 
 //Now making the head straight along of axis of torso
 configPt hum_cur_pos = MY_ALLOC(double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof); /* Allocation of temporary robot configuration */
@@ -4613,7 +5099,7 @@ double yaw=0.0;
 double pitch=fixed_pitch;
 double orig_pan=hum_cur_pos[HUMANq_PAN];
 double orig_tilt=hum_cur_pos[HUMANq_TILT];
-printf(" Original pan = %lf, tilt= %lf \n",orig_pan, orig_tilt); 
+//////////printf(" Original pan = %lf, tilt= %lf \n",orig_pan, orig_tilt); 
 
 hum_cur_pos[HUMANq_PAN]=yaw; // Human Yaw angle relative to the human body frame
 hum_cur_pos[HUMANq_TILT]=pitch; // Human pitch angle relative to the human body frame
@@ -4622,7 +5108,7 @@ ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_PAN]=hum_cur_po
 ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TILT]=hum_cur_pos[HUMANq_TILT];
 
 cur_h_angle=human->cam_h_angle;
-printf(" cur_h_angle=%lf\n",cur_h_angle);
+//////////printf(" cur_h_angle=%lf\n",cur_h_angle);
 //int i_h_a=0;
 interval=grid_around_HRP2.GRID_SET->pace;
 no_FOV_end_point_vertices=0;
@@ -4654,7 +5140,7 @@ ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_PAN]=hum_cur_po
 ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TILT]=hum_cur_pos[HUMANq_TILT];
 
 cur_h_angle=human->cam_h_angle;
-printf(" cur_h_angle=%lf\n",cur_h_angle);
+//////////printf(" cur_h_angle=%lf\n",cur_h_angle);
 //int i_h_a=0;
 interval=grid_around_HRP2.GRID_SET->pace;
 no_FOV_end_point_vertices=0;
@@ -4683,7 +5169,7 @@ ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TILT]=hum_cur_p
 
 
 cur_h_angle=human->cam_h_angle;
-printf(" cur_h_angle=%lf\n",cur_h_angle);
+//////////printf(" cur_h_angle=%lf\n",cur_h_angle);
 //int i_h_a=0;
 interval=grid_around_HRP2.GRID_SET->pace;
 no_FOV_end_point_vertices=0;
@@ -4705,17 +5191,18 @@ ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TILT]=hum_cur_p
 MY_FREE(hum_cur_pos,double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof);
 
 double tu,ts;
-ChronoPrint("TIME of 3D Visibility calculation for sitting Human");
+//////////ChronoPrint("TIME of 3D Visibility calculation for sitting Human");
 ChronoTimes(&tu,&ts);
-printf(" %lf, %lf \n",tu,ts);
+//////////printf(" %lf, %lf \n",tu,ts);
 ChronoOff();
 
+#ifdef MM_FOR_VIRTUALLY_STANDING_HUMAN
 ///////////////3D visibility calculation for making human virtually standing//////////////////////////
-/*
+
 ChronoOn();
 virtually_update_human_state_new(0);// Standing
 cur_h_angle=human->cam_h_angle;
-printf(" cur_h_angle for standing human=%lf\n",cur_h_angle);
+//////////printf(" cur_h_angle for standing human=%lf\n",cur_h_angle);
 //int i_h_a=0;
 interval=grid_around_HRP2.GRID_SET->pace;
 no_FOV_end_point_vertices=0;
@@ -4732,7 +5219,7 @@ human->cam_h_angle=cur_h_angle;
 
 update_3d_grid_visibility_standing(1); //1 for human
 
-ChronoPrint("TIME of 3D Visibility calculation for standing Human from current position");
+/////////////ChronoPrint("TIME of 3D Visibility calculation for standing Human from current position");
 
 //Now making the head straight
 hum_cur_pos = MY_ALLOC(double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof); 
@@ -4744,7 +5231,7 @@ yaw=0.0;
 pitch=fixed_pitch;
 orig_pan=hum_cur_pos[HUMANq_PAN];
 orig_tilt=hum_cur_pos[HUMANq_TILT];
-printf(" Original pan = %lf \n",orig_pan); 
+//////////printf(" Original pan = %lf \n",orig_pan); 
 hum_cur_pos[HUMANq_PAN]=yaw; // Human Yaw angle relative to the human body frame
 hum_cur_pos[HUMANq_TILT]=pitch; // Human Yaw angle relative to the human body frame
 p3d_set_and_update_this_robot_conf(ACBTSET->human[ACBTSET->actual_human]->HumanPt, hum_cur_pos);
@@ -4834,14 +5321,15 @@ ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TILT]=hum_cur_p
 MY_FREE(hum_cur_pos,double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof);
 
 
-ChronoPrint("TIME of 3D Visibility calculation for standing Human");
+//////////ChronoPrint("TIME of 3D Visibility calculation for standing Human");
 ChronoTimes(&tu,&ts);
 ////printf(" %lf, %lf \n",tu,ts);
 ////////update_human_state(1);// Again make it to Sitting
 virtually_update_human_state_new(1);// // Again make it to Sitting
 ChronoOff();
-*/
+
 ///////////////END of 3D visibility calculation for making human virtually standing//////////////////////////
+#endif
 
 
 ChronoOn();
@@ -4872,7 +5360,7 @@ configPt rob_cur_pos = MY_ALLOC(double,ACBTSET->robot->nb_dof); /* Allocation of
 
 orig_pan=rob_cur_pos[ROBOTq_PAN];
 orig_tilt=rob_cur_pos[ROBOTq_TILT];
-printf(" Original pan = %lf \n",orig_pan); 
+//////////printf(" Original pan = %lf \n",orig_pan); 
 
 yaw=0.0;
 pitch=fixed_pitch;
@@ -4979,7 +5467,7 @@ ACBTSET->robot->ROBOT_POS[ROBOTq_TILT]=rob_cur_pos[ROBOTq_TILT];
 MY_FREE(rob_cur_pos,double,ACBTSET->robot->nb_dof);
 
 
-ChronoPrint("TIME of 3D Visibility calculation for ROBOT");
+////////////ChronoPrint("TIME of 3D Visibility calculation for ROBOT");
 ////ChronoOff();
 ////int HRP2_state=HRP2_CURRENT_STATE; //AKP : 1 is sitting, 2 is standing 
 ////create_HRP2_robot(HRP2_state);
@@ -4997,7 +5485,7 @@ update_3d_grid_reachability_for_JIDO_new();
 update_3d_grid_reachability_for_HRP2_new();
 #endif
 //////////update_3d_grid_reachability_for_HRP2_new();
-ChronoPrint("****TIME of 3D reachability calculation for ROBOT\n");
+////ChronoPrint("****TIME of 3D reachability calculation for ROBOT\n");
 
 
 
@@ -5007,15 +5495,17 @@ ChronoOff();
 ChronoOn();
 
 update_3d_grid_reachability_for_human_new();
-/*
+
+#ifdef MM_FOR_VIRTUALLY_STANDING_HUMAN
 //////////update_human_state(0);// Standing
 virtually_update_human_state_new(0);// Standing
 update_3d_grid_reachability_for_human_standing_new();
 
 ////////update_human_state(1);
 virtually_update_human_state_new(1);// Sitting
-*/
-ChronoPrint("****TIME of 3D reachability calculation for human\n");
+#endif
+
+////ChronoPrint("****TIME of 3D reachability calculation for human\n");
 
 ChronoOff();
 
@@ -5145,8 +5635,8 @@ kcd_with_report=0;
 ////int HRP2_state=HRP2_CURRENT_STATE; //AKP : 1 is sitting, 2 is standing 
 ////update_robots_status();
 
-printf(" Before update_3D_grid_for_Mightability_Maps_new() \n");
-ChronoPrint("***");
+////printf(" Before update_3D_grid_for_Mightability_Maps_new() \n");
+////////////ChronoPrint("***");
 ////update_3d_grid_for_Mightability_Maps();
 int expansion=1;
 update_3D_grid_for_Mightability_Maps_new(grid_around_HRP2.GRID_SET,expansion,HRP2_GIK_MANIP);
@@ -5160,16 +5650,25 @@ int cell_x,cell_y,cell_z;
    {
        for(cell_z=0; cell_z<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz; cell_z++)
     {
- 
+     ////grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_human=0;
      if(HUMAN_HAS_MOVED==0&&NEED_HUMAN_VISIBILITY_UPDATE==1)
      {
       grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_human=0;
       grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_human_neck_turn=0;
       grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_human_straight_head_orientation=0;
+
       grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_standing_human=0;
       grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_standing_human_neck_turn=0;
       grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_human_straight_head_orientation_standing=0;
       
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_human=0;
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_human_straight_head_orientation=0;
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_human_neck_turn=0;
+
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_standing_human=0;
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_standing_human_neck_turn=0;
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_human_straight_head_orientation_standing=0;
+       
      }
       
      if(HUMAN_HAS_MOVED==1)
@@ -5190,6 +5689,14 @@ int cell_x,cell_y,cell_z;
      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable_by_LHand_by_turning_around_bending=0; 
      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable_by_RHand_by_turning_around_bending=0;
      
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_human=0;
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_human_straight_head_orientation=0;
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_human_neck_turn=0;
+
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_standing_human=0;
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_standing_human_neck_turn=0;
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_human_straight_head_orientation_standing=0;
+
      NEED_HUMAN_VISIBILITY_UPDATE=1; //To update visibility also
      }
 
@@ -5198,6 +5705,12 @@ int cell_x,cell_y,cell_z;
       grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_HRP2=0;
       grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_HRP2_neck_turn=0;
       grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_HRP2_straight_head_orientation=0;
+
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2=0;
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2_straight_head_orientation=0;
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2_neck_turn=0;
+
+    
       
      }
  
@@ -5210,6 +5723,11 @@ int cell_x,cell_y,cell_z;
      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable_by_HRP2_LHand=0;
      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable_by_HRP2_RHand=0;
      
+
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2=0;
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2_straight_head_orientation=0;
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2_neck_turn=0;
+
      NEED_HRP2_VISIBILITY_UPDATE=1; //To update visibility also
      ////grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable_by_LHand_by_bending=0;  
      ////grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable_by_RHand_by_bending=0;  
@@ -5224,6 +5742,10 @@ int cell_x,cell_y,cell_z;
      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_JIDO=0;
      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_JIDO_neck_turn=0;
      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_JIDO_straight_head_orientation=0;
+
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_JIDO=0;
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_JIDO_straight_head_orientation=0;
+      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_JIDO_neck_turn=0;
      }
 
      if(JIDO_HAS_MOVED==1)
@@ -5234,6 +5756,10 @@ int cell_x,cell_y,cell_z;
      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_JIDO_straight_head_orientation=0;
 
      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable_by_JIDO_Hand=0;
+
+     grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_JIDO=0;
+     grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_JIDO_straight_head_orientation=0;
+     grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_JIDO_neck_turn=0;
      
      NEED_JIDO_VISIBILITY_UPDATE=1; //To update visibility also
      ////grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable_by_LHand_by_bending=0;  
@@ -5246,15 +5772,15 @@ int cell_x,cell_y,cell_z;
    }
   }   
 //// }
-ChronoPrint("Time for update_3D_grid_for_Mightability_Maps_new()");
-printf(" After update_3D_grid_for_Mightability_Maps_new() \n");
+//////////ChronoPrint("Time for update_3D_grid_for_Mightability_Maps_new()");
+//////////printf(" After update_3D_grid_for_Mightability_Maps_new() \n");
 double tu,ts;
 ChronoTimes(&tu,&ts);
-printf(" tu=%lf, ts=%lf \n",tu,ts);
+//////////printf(" tu=%lf, ts=%lf \n",tu,ts);
 total_time+=tu;//In sec
 ChronoOff();
 
-printf(" **** 3D grid dimension is (%d x %d x %d) cells.  \n",grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx,grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny,grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz);
+//////////printf(" **** 3D grid dimension is (%d x %d x %d) cells.  \n",grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx,grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny,grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz);
 
 double cur_h_angle;
 double interval=grid_around_HRP2.GRID_SET->pace;
@@ -5264,7 +5790,7 @@ double orig_pan;
 double orig_tilt;
 double fixed_pitch=M_PI/8.0;
 
-printf(" NEED_HUMAN_VISIBILITY_UPDATE=%d\n",NEED_HUMAN_VISIBILITY_UPDATE);
+//////////printf(" NEED_HUMAN_VISIBILITY_UPDATE=%d\n",NEED_HUMAN_VISIBILITY_UPDATE);
 /*
 //////////////////////tmp for jido
 ChronoOn();
@@ -5305,7 +5831,7 @@ virtually_update_human_state_new(1);// Sitting
 
 
 cur_h_angle=human->cam_h_angle;
-printf(" cur_h_angle=%lf\n",cur_h_angle);
+//////////printf(" cur_h_angle=%lf\n",cur_h_angle);
 
 //int i_h_a=0;
 ////////interval=grid_around_HRP2.GRID_SET->pace;
@@ -5323,7 +5849,7 @@ human->cam_h_angle=cur_h_angle;
 
 update_3d_grid_visibility(1); //1 for human
 
-ChronoPrint("TIME of 3D Visibility calculation for sitting Human from current position");
+//////////ChronoPrint("TIME of 3D Visibility calculation for sitting Human from current position");
 
 ////return 1;
 
@@ -5337,7 +5863,7 @@ double yaw=0.0;
 double pitch=fixed_pitch;
 double orig_pan=hum_cur_pos[HUMANq_PAN];
 double orig_tilt=hum_cur_pos[HUMANq_TILT];
-printf(" Original pan = %lf, tilt= %lf \n",orig_pan, orig_tilt); 
+//////////printf(" Original pan = %lf, tilt= %lf \n",orig_pan, orig_tilt); 
 
 hum_cur_pos[HUMANq_PAN]=yaw; // Human Yaw/pan angle relative to the human body frame
 hum_cur_pos[HUMANq_TILT]=pitch; // Human pitch/tilt angle relative to the human body frame
@@ -5346,7 +5872,7 @@ ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_PAN]=hum_cur_po
 ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TILT]=hum_cur_pos[HUMANq_TILT];
 
 cur_h_angle=human->cam_h_angle;
-printf(" cur_h_angle=%lf\n",cur_h_angle);
+//////////printf(" cur_h_angle=%lf\n",cur_h_angle);
 //int i_h_a=0;
 interval=grid_around_HRP2.GRID_SET->pace;
 no_FOV_end_point_vertices=0;
@@ -5382,7 +5908,7 @@ ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_PAN]=hum_cur_po
 ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TILT]=hum_cur_pos[HUMANq_TILT];
 
 cur_h_angle=human->cam_h_angle;
-printf(" cur_h_angle=%lf\n",cur_h_angle);
+//////////printf(" cur_h_angle=%lf\n",cur_h_angle);
 //int i_h_a=0;
 interval=grid_around_HRP2.GRID_SET->pace;
 no_FOV_end_point_vertices=0;
@@ -5410,7 +5936,7 @@ ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_PAN]=hum_cur_po
 ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TILT]=hum_cur_pos[HUMANq_TILT];
 
 cur_h_angle=human->cam_h_angle;
-printf(" cur_h_angle=%lf\n",cur_h_angle);
+//////////printf(" cur_h_angle=%lf\n",cur_h_angle);
 //int i_h_a=0;
 interval=grid_around_HRP2.GRID_SET->pace;
 no_FOV_end_point_vertices=0;
@@ -5431,19 +5957,20 @@ ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TILT]=hum_cur_p
 MY_FREE(hum_cur_pos,double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof);
 
 ////double tu,ts;
-ChronoPrint("TIME for all 3D Visibility calculation for sitting Human");
+//////////ChronoPrint("TIME for all 3D Visibility calculation for sitting Human");
 ChronoTimes(&tu,&ts);
-printf(" tu=%lf, ts=%lf \n",tu,ts);
+//////////printf(" tu=%lf, ts=%lf \n",tu,ts);
 total_time+=tu;//In sec
 ChronoOff();
  
 ////return 1;
+#ifdef MM_FOR_VIRTUALLY_STANDING_HUMAN
 ///////////////3D visibility calculation for making human virtually standing//////////////////////////
-/*
+
 ChronoOn();
 virtually_update_human_state_new(0);// Standing
 cur_h_angle=human->cam_h_angle;
-printf(" cur_h_angle for standing human=%lf\n",cur_h_angle);
+//////////printf(" cur_h_angle for standing human=%lf\n",cur_h_angle);
 //int i_h_a=0;
 interval=grid_around_HRP2.GRID_SET->pace;
 no_FOV_end_point_vertices=0;
@@ -5460,7 +5987,7 @@ human->cam_h_angle=cur_h_angle;
 
 update_3d_grid_visibility_standing(1); //1 for human
 
-ChronoPrint("TIME of 3D Visibility calculation for standing Human from current position");
+////////////ChronoPrint("TIME of 3D Visibility calculation for standing Human from current position");
 
 //Now making the head straight
 hum_cur_pos = MY_ALLOC(double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof);
@@ -5473,7 +6000,7 @@ pitch=fixed_pitch;
 
 orig_pan=hum_cur_pos[HUMANq_PAN];
 orig_tilt=hum_cur_pos[HUMANq_TILT];
-printf(" Original pan = %lf \n",orig_pan); 
+//////////printf(" Original pan = %lf \n",orig_pan); 
 hum_cur_pos[HUMANq_PAN]=yaw; // Human Yaw angle relative to the human body frame
 hum_cur_pos[HUMANq_TILT]=pitch; // Human Yaw angle relative to the human body frame
 p3d_set_and_update_this_robot_conf(ACBTSET->human[ACBTSET->actual_human]->HumanPt, hum_cur_pos);
@@ -5565,17 +6092,18 @@ ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TILT]=hum_cur_p
 MY_FREE(hum_cur_pos,double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof);
 
 
-ChronoPrint("TIME for all 3D Visibility calculation for standing Human");
+//////////ChronoPrint("TIME for all 3D Visibility calculation for standing Human");
 ChronoTimes(&tu,&ts);
 ////printf(" %lf, %lf \n",tu,ts);
 virtually_update_human_state_new(1);// Again make it to Sitting
 ChronoTimes(&tu,&ts);
-printf(" tu=%lf, ts=%lf \n",tu,ts);
+//////////printf(" tu=%lf, ts=%lf \n",tu,ts);
 total_time+=tu;//In sec
 ChronoOff();
-*/
+
 NEED_HUMAN_VISIBILITY_UPDATE=0;
 ///////////////END of 3D visibility calculation for making human virtually standing//////////////////////////
+#endif
 
  }//END if(NEED_HUMAN_VISIBILITY_UPDATE==1)
 ////////return 1;
@@ -5584,7 +6112,7 @@ NEED_HUMAN_VISIBILITY_UPDATE=0;
 
 if(NEED_HRP2_VISIBILITY_UPDATE==1||NEED_JIDO_VISIBILITY_UPDATE==1)
  {
-printf(" Need visibility update for robot\n");
+//////////printf(" Need visibility update for robot\n");
 ChronoOn();
 grid_3d_affordance_calculated=1; 
 
@@ -5615,7 +6143,7 @@ orig_pan=rob_cur_pos[ROBOTq_PAN];
 orig_tilt=rob_cur_pos[ROBOTq_TILT];
 yaw=0.0;
 pitch=fixed_pitch;
-printf(" Original pan = %lf, tilt = %lf \n",orig_pan, orig_tilt); 
+//////////printf(" Original pan = %lf, tilt = %lf \n",orig_pan, orig_tilt); 
 
 rob_cur_pos[ROBOTq_PAN]=yaw; // Human Yaw angle relative to the human body frame
 rob_cur_pos[ROBOTq_TILT]=pitch; // Human Pitch angle relative to the human body frame
@@ -5723,7 +6251,7 @@ ACBTSET->robot->ROBOT_POS[ROBOTq_TILT]=rob_cur_pos[ROBOTq_TILT];
 MY_FREE(rob_cur_pos,double,ACBTSET->robot->nb_dof);
 
 
-ChronoPrint("TIME of 3D Visibility calculation for ROBOT");
+//////////ChronoPrint("TIME of 3D Visibility calculation for ROBOT");
 ////ChronoOff();
 ////int HRP2_state=HRP2_CURRENT_STATE; //AKP : 1 is sitting, 2 is standing 
 ////create_HRP2_robot(HRP2_state);
@@ -5732,7 +6260,7 @@ ChronoPrint("TIME of 3D Visibility calculation for ROBOT");
 //// g3d_draw_allwin_active();
 
 ChronoTimes(&tu,&ts);
-printf(" tu=%lf, ts=%lf \n",tu,ts);
+//////////printf(" tu=%lf, ts=%lf \n",tu,ts);
 total_time+=tu;//In sec
 ChronoOff();
 
@@ -5759,10 +6287,10 @@ if(HRP2_HAS_MOVED==1)
  }
 #endif
 //////////update_3d_grid_reachability_for_HRP2_new();
-ChronoPrint("****TIME of 3D reachability calculation for ROBOT\n");
+//////////ChronoPrint("****TIME of 3D reachability calculation for ROBOT\n");
 
 ChronoTimes(&tu,&ts);
-printf(" tu=%lf, ts=%lf \n",tu,ts);
+//////////printf(" tu=%lf, ts=%lf \n",tu,ts);
 total_time+=tu;//In sec
 
 ////return 1;
@@ -5773,23 +6301,40 @@ ChronoOn();
 if(HUMAN_HAS_MOVED==1)
  {
  update_3d_grid_reachability_for_human_new();
- /*
+ 
+ #ifdef MM_FOR_VIRTUALLY_STANDING_HUMAN
+ 
  virtually_update_human_state_new(0);// Standing
 update_3d_grid_reachability_for_human_standing_new();
  virtually_update_human_state_new(1);
- */
+ #endif
+
  HUMAN_HAS_MOVED=0;
  }
 
-ChronoPrint("****TIME of 3D reachability calculation for human\n");
+//////////ChronoPrint("****TIME of 3D reachability calculation for human\n");
  
 ChronoTimes(&tu,&ts);
-printf(" tu=%lf, ts=%lf \n",tu,ts);
+//////////printf(" tu=%lf, ts=%lf \n",tu,ts);
 total_time+=tu;//In sec
 
 ChronoOff();
 
-printf(" <<<<<<<<<< Total Time for updating all the Mightability Maps=%lf s >>>>>>>>>>\n",total_time);
+//////////printf(" <<<<<<<<<< Total Time for updating all the Mightability Maps=%lf s >>>>>>>>>>\n",total_time);
+/*
+  configPt visq;
+ visq= MY_ALLOC(double,ACBTSET->visball->nb_dof); 
+ p3d_get_robot_config_into(ACBTSET->visball,&visq);
+ visq[6]=0.0;
+ visq[7]=0.0;
+ visq[8]=0.0;
+  
+ p3d_set_and_update_this_robot_conf(ACBTSET->visball, visq);
+*/
+
+  ACBTSET->visball->joints[1]->abs_pos[0][3]=0;
+  ACBTSET->visball->joints[1]->abs_pos[1][3]=0;
+  ACBTSET->visball->joints[1]->abs_pos[2][3]=0;
 
 return 1;
 
@@ -6168,7 +6713,7 @@ for(no_path_pts=0;no_path_pts<cur_manipulation_path.total_no_pts;no_path_pts++)
  g3d_drawDisc(cur_manipulation_path.path_points[no_path_pts].x, cur_manipulation_path.path_points[no_path_pts].y, cur_manipulation_path.path_points[no_path_pts].z, 0.01, 4, NULL);
  }
 */
-
+return 1;
 }
 
 //AKP : To show the different affordance values 
@@ -6676,7 +7221,7 @@ void update_human_state_old(int state) //1 means sitting 0 means standing
   configPt q;
   q = MY_ALLOC(double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof); /* Allocation of temporary robot configuration */
   //p3d_rob* robotPt;
-  printf(" Inside update_human_state \n");
+  //////////printf(" Inside update_human_state \n");
 	
   ACBTSET->human[ACBTSET->actual_human]->actual_state = state;
   //q = p3d_copy_config(ACBTSET->human[ACBTSET->actual_human]->HumanPt, ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS);  
@@ -6883,7 +7428,16 @@ int hri_bt_initialize_affordance_data(hri_bitmapset* bitmapset,int bt_type)
   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_standing_turning_around_bending=0; 
   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_standing_turning_around_bending=0;
 
+  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_human=0;
+  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_human_straight_head_orientation=0;
+  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_human_neck_turn=0;
 
+  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_standing_human=0;
+  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_standing_human_neck_turn=0;
+  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_human_straight_head_orientation_standing=0;
+
+
+#ifdef HRI_HRP2
 //For HRP2
   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_Map.reachable_by_HRP2_LHand=0; 
   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_Map.reachable_by_HRP2_RHand=0; 
@@ -6896,11 +7450,24 @@ int hri_bt_initialize_affordance_data(hri_bitmapset* bitmapset,int bt_type)
   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_Map.visible_by_HRP2_straight_head_orientation=0;
   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_Map.visible_by_HRP2_straight_head_orientation_standing=0;
 
+  
+  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2=0;
+  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2_straight_head_orientation=0;
+  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2_neck_turn=0;
+#endif
+
+#ifdef HRI_JIDO
 //For Jido
   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_Map.reachable_by_JIDO_Hand=0; 
   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_Map.visible_by_JIDO=0;
   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_Map.visible_by_JIDO_neck_turn=0;
   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_Map.visible_by_JIDO_straight_head_orientation=0;
+  
+  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_JIDO=0;
+  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_JIDO_straight_head_orientation=0;
+  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_JIDO_neck_turn=0;
+#endif 
+
     }
    }
   }   
@@ -6909,7 +7476,7 @@ int hri_bt_initialize_affordance_data(hri_bitmapset* bitmapset,int bt_type)
 
 hri_bitmapset* create_3D_grid(int BB_length,int BB_width,int BB_height, double sampling_rate)
 {
-  ChronoPrint("<<<<<<<<Entering create_3D_grid");
+  ////////////ChronoPrint("<<<<<<<<Entering create_3D_grid");
   int dimx,dimy, dimz;
   configPt humanConf;
   double hx,hy,hz;
@@ -6959,7 +7526,7 @@ hri_bitmapset* create_3D_grid(int BB_length,int BB_width,int BB_height, double s
   
 
   //hri_exp_fill_obstacles(btset);
- ChronoPrint(">>>>>>>>>>>>Returning create_3D_grid");
+ ////////////ChronoPrint(">>>>>>>>>>>>Returning create_3D_grid");
   return btset;
 }
 
@@ -7019,7 +7586,7 @@ expand_rate=1;
   double minimum_expand_rate_for_HRP2_GIK=0.005;
 
   for(i=0; i<env->no ; i++){  
-    printf(" Inserting OBJECT %s \n",env->o[i]->name); 
+    //////////printf(" Inserting OBJECT %s \n",env->o[i]->name); 
     hri_bt_insert_obs(btset,btset->bitmap[HRP2_GIK_MANIP], env->o[i], env, minimum_expand_rate_for_HRP2_GIK, -2, 1);
     // potential 3d collision
     //hri_bt_insert_obs(btset,btset->bitmap[HRP2_GIK_MANIP], env->o[i], env, safe_expand_rate, BT_OBST_POTENTIAL_OBJECT_COLLISION, 0);
@@ -7052,7 +7619,7 @@ expand_rate=1;
      {
    ////  if(dynamic_obj[i].is_curr_visible==1)
       ////{
-        printf(" Inserting ROBOT %s \n",env->robot[i]->name);
+        //////////printf(" Inserting ROBOT %s \n",env->robot[i]->name);
        hri_bt_insert_obsrobot(btset, btset->bitmap[HRP2_GIK_MANIP], env->robot[i], env, minimum_expand_rate_for_HRP2_GIK, -2, 1);
      //hri_bt_insert_1obs2bitmaprobot(btset,btset->bitmap[BT_OBSTACLES],env->robot[i] , env, minimum_expand_rate_for_voronoi, -2);
       ////printf("Obstacles updated for %s\n",env->robot[i]->name);
@@ -7070,7 +7637,7 @@ int update_HRP2_in_bitmap(p3d_rob* rob)
  //double i=0;
  
  //for(i=rob->BB.xmin;i<rob->BB.xmax;i
- 
+return 0; 
 }
 
 int disactivate_collision_among_parts_of_HRP2_RHAND()
@@ -7126,6 +7693,7 @@ int disactivate_collision_among_parts_of_HRP2_RHAND()
   }
  }
 MY_FREE(o, p3d_obj*, r->no);
+return 1;
 }
 
 
@@ -7158,9 +7726,10 @@ bitmap = bitmapset->bitmap[bt_type];
   }  
   //////////g3d_drawDisc(point_of_curr_collision.x, point_of_curr_collision.y,point_of_curr_collision.z, 0.1,4, NULL);
  } 
+return 1;
 }
 
-robots_status robots_status_for_Mightability_Maps[100];
+
 int update_robots_and_objects_status()
 {
    envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
@@ -7187,7 +7756,8 @@ int update_robots_and_objects_status()
   if(robots_status_for_Mightability_Maps[r_ctr].has_moved==0)
     {
   
-  if(fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[6]-r->ROBOT_POS[6])>=0.01||fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[7]-r->ROBOT_POS[7])>=0.01||fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[8]-r->ROBOT_POS[8])>=0.01||fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[9]-r->ROBOT_POS[9])>=0.01||fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[10]-r->ROBOT_POS[10])>=0.01||fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[11]-r->ROBOT_POS[11])>=0.01)
+  //////////if(fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[6]-r->ROBOT_POS[6])>=0.01||fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[7]-r->ROBOT_POS[7])>=0.01||fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[8]-r->ROBOT_POS[8])>=0.01||fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[9]-r->ROBOT_POS[9])>=0.01||fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[10]-r->ROBOT_POS[10])>=0.01||fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[11]-r->ROBOT_POS[11])>=0.01)
+   if(fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[6]-r->ROBOT_POS[6])>=0.01||fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[7]-r->ROBOT_POS[7])>=0.01||fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[8]-r->ROBOT_POS[8])>=0.01||fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[9]-r->ROBOT_POS[9])>=0.01||fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[10]-r->ROBOT_POS[10])>=0.01||fabs(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[11]-r->ROBOT_POS[11])>=0.01)
      {
     
     robots_status_for_Mightability_Maps[r_ctr].has_moved=1;
@@ -7225,6 +7795,7 @@ int update_robots_and_objects_status()
     }
    }
   }
+return 1;
 }
 
 int update_3D_grid_for_Mightability_Maps(hri_bitmapset * bitmapset, int expansion, int bt_type)
@@ -7248,12 +7819,13 @@ int update_3D_grid_for_Mightability_Maps(hri_bitmapset * bitmapset, int expansio
   {
    if(robots_status_for_Mightability_Maps[r_ctr].has_moved==1)
    {
+  
   r = envPt->robot[r_ctr];
 
   cur_rob_pos=MY_ALLOC(double,r->nb_dof); 
   p3d_get_robot_config_into(r,&cur_rob_pos);
   
-  printf(" Robot name = %s \n",r->name);
+  //////////printf(" Robot name = %s \n",r->name);
 
     NEED_HUMAN_VISIBILITY_UPDATE=1;
    #ifdef HRI_JIDO
@@ -7262,7 +7834,7 @@ int update_3D_grid_for_Mightability_Maps(hri_bitmapset * bitmapset, int expansio
    NEED_HRP2_VISIBILITY_UPDATE=1;
    #endif
   
-  printf(" inside update_3D_grid_for_Mightability_Maps, NEED_HUMAN_VISIBILITY_UPDATE=%d\n",NEED_HUMAN_VISIBILITY_UPDATE);
+ //////////// printf(" inside update_3D_grid_for_Mightability_Maps, NEED_HUMAN_VISIBILITY_UPDATE=%d\n",NEED_HUMAN_VISIBILITY_UPDATE);
   ////**** First making previously occupied cells as free cells  
   p3d_set_and_update_this_robot_conf(r, robots_status_for_Mightability_Maps[r_ctr].rob_prev_config);
   p3d_col_deactivate_rob_rob(bitmapset->visball,r);//To make a cell occupied only if there is collision of visball with other objects not with robot
@@ -7476,7 +8048,7 @@ int update_3D_grid_for_Mightability_Maps(hri_bitmapset * bitmapset, int expansio
   }
   
 
-  
+  return 1;
 }
 
 
@@ -7497,9 +8069,10 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
   p3d_obj *o;
   p3d_rob *r;
   int r_ctr=0;
+  ////printf(" ***************************\n");
   for(r_ctr=0;r_ctr<nr;r_ctr++)
   {
-    
+   //// printf(" **** [%d] : %s \n",r_ctr,envPt->robot[r_ctr]->name);
    if(robots_status_for_Mightability_Maps[r_ctr].has_moved==1)
    {
   r = envPt->robot[r_ctr];
@@ -7507,7 +8080,7 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
   cur_rob_pos=MY_ALLOC(double,r->nb_dof); 
   p3d_get_robot_config_into(r,&cur_rob_pos);
   
-  printf(" Movable Object name = %s \n",r->name);
+  printf(" Moved Object name = %s \n",r->name);
    
    NEED_HUMAN_VISIBILITY_UPDATE=1;
    #ifdef HRI_JIDO
@@ -7516,7 +8089,7 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
    NEED_HRP2_VISIBILITY_UPDATE=1;
    #endif
   
-  printf(" inside update_3D_grid_for_Mightability_Maps_new(), NEED_HUMAN_VISIBILITY_UPDATE=%d\n",NEED_HUMAN_VISIBILITY_UPDATE);
+ ////////// printf(" inside update_3D_grid_for_Mightability_Maps_new(), NEED_HUMAN_VISIBILITY_UPDATE=%d\n",NEED_HUMAN_VISIBILITY_UPDATE);
     
   ////**** First making previously occupied cells as free cells  
   p3d_set_and_update_this_robot_conf(r, robots_status_for_Mightability_Maps[r_ctr].rob_prev_config);
@@ -7556,7 +8129,7 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
 
         cell_ctr_tmp++;
          //////////printf(" cell_ctr=%d: %d, %d\n",cell_ctr_tmp,bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr],bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects);
-        if(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.is_horizontal_surface==0)//NOT the cell just above the  horizontal surface of table
+       //////////// if(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.is_horizontal_surface==0)//NOT the cell just above the  horizontal surface of table
         {
         //////////printf(" Not horizontal surface\n");
         ////printf(" cell_ctr=%d, %d, %d\n",cell_ctr_tmp,bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr],bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects);
@@ -7631,7 +8204,7 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
             
 
           }// End else of if the cell belongs to this object
-        }//End if NOT the cell just above the  horizontal surface of table
+         }//End if NOT the cell just above the  horizontal surface of table
         
         
         
@@ -7655,7 +8228,7 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
               {
                 // printf(" Populating %d, %d, %d \n",i,j,k);
                  //if((bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]==1&&   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects==1)||(bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]==1&&   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects==1))
-               if(bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.is_horizontal_surface==0)//NOT the cell just above the horizontal surface of table
+               ////////////if(bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.is_horizontal_surface==0)//NOT the cell just above the horizontal surface of table
                {
                 if(bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]==1)
                 {  
@@ -7785,7 +8358,7 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
        bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=1;
        bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects++;
          }
-         bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=1;
+         /////////bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=1;
        //else
         //{
         //bitmapset->bitmap[bt_type]->data[x][y][surf_z].is_horizontal_surface=0;//Does not belong to a horizontal surface of table
@@ -7848,20 +8421,348 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
      }
     }
     }
+   ////printf(" Setting has moved = 0\n");
    robots_status_for_Mightability_Maps[r_ctr].has_moved=0;
    ////p3d_set_and_update_this_robot_conf(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config,r->ROBOT_POS);
   ////robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[6]=r->ROBOT_POS[6];
   ////robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[7]=r->ROBOT_POS[7];
   ////robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[8]=r->ROBOT_POS[8];
-  p3d_copy_config_into(r,r->ROBOT_POS, &(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config));
+  ////////////////p3d_copy_config_into(r,r->ROBOT_POS, &(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config));
   ////////robots_status_for_Mightability_Maps[r_ctr].prev_BB=r->BB;
+
+  p3d_get_robot_config_into ( r,&robots_status_for_Mightability_Maps[r_ctr].rob_prev_config ); 
    }
    
   }
   
 
-  
+  return 1;
 }
+
+
+int create_exact_obstacles_for_HRP2_GIK_manip_fast_new ( hri_bitmapset * bitmapset, int expansion, int bt_type )
+{
+ChronoOff();
+ChronoOn();
+
+	if ( bt_type==HRP2_GIK_MANIP )
+	{
+//                  configPt visq = MY_ALLOC(double,ACBTSET->visball->nb_dof); /* Allocation of temporary robot configuration */
+//                  p3d_get_robot_config_into(ACBTSET->robot,&visq); 
+// 		
+// 		hri_bitmap * bitmap;
+// 		double increment=3.0/4.0*bitmapset->pace;
+		 	configPt visq;
+  			hri_bitmap * bitmap;
+  			double increment=3.0/4.0*bitmapset->pace;
+  			visq = p3d_get_robot_config(bitmapset->visball);
+
+		////visq = p3d_get_robot_config(bitmapset->visball);
+
+		bitmap = bitmapset->bitmap[bt_type];
+		envPt = ( p3d_env * ) p3d_get_desc_curid ( P3D_ENV );
+		int no = envPt->no;
+		int nr = envPt->nr;
+
+		int x,y,z;
+		for ( x=0; x<bitmap->nx; x++ )
+		{
+			for ( y=0; y<bitmap->ny; y++ )
+			{
+				for ( z=0; z<bitmap->nz; z++ )
+				{
+					bitmapset->bitmap[bt_type]->data[x][y][z].val = 0;
+					int nr_ctr=0;
+					for ( ;nr_ctr<nr;nr_ctr++ )
+					{
+						bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[nr_ctr]=0;//Initially does not belong to any cell
+
+						bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.close_to_objects_indx[nr_ctr]=0;//Initially does not belong to any cell
+					}
+					bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.is_horizontal_surface=0;
+					bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.near_horizontal_surface=0;
+
+
+					bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects=0;
+					bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects=0;
+				}
+			}
+		}
+
+
+		p3d_obj *o;
+		p3d_rob *r;
+		int r_ctr=0;
+		for ( r_ctr=0;r_ctr<nr;r_ctr++ )
+		{
+			
+			r = envPt->robot[r_ctr];
+                        if ( strcasestr ( r->name,"visball" ) )
+			{
+                        continue;
+			}
+				robots_status_for_Mightability_Maps[r_ctr].rob_prev_config=MY_ALLOC ( double,r->nb_dof );
+				p3d_get_robot_config_into ( r,&robots_status_for_Mightability_Maps[r_ctr].rob_prev_config );
+				////robots_status_for_Mightability_Maps[r_ctr].prev_BB=r->BB;
+				robots_status_for_Mightability_Maps[r_ctr].has_moved=0;
+
+				//////////printf(" Robot name = %s \n",r->name);
+				int surf_z;
+				int is_tabel=0;
+				if ( strcasestr ( r->name,"table" ) )
+				{
+					//int surf_z=z;
+					//////////printf(" Cell belongs to table %s \n",r->name);
+
+					surf_z= ( ( r->BB.zmax - bitmapset->realz ) /bitmapset->pace ) +1;//One cell above the surface
+					is_tabel=1;
+					////////// printf(" surf_z = %d \n",surf_z);
+				}
+				////printf(" r->name = %s ,r->no=%d \n",r->name,r->no);
+				int r_o_ctr=0;
+				for ( r_o_ctr=0;r_o_ctr<r->no;r_o_ctr++ )
+				{
+					o = r->o[r_o_ctr];
+					////printf(" o->name = %s \n",o->name);
+					double BBx;
+					for ( BBx=o->BB.xmin;BBx<o->BB.xmax;BBx+=increment )
+					{
+						visq[6]  = BBx;
+						x= ( BBx- bitmapset->realx ) /bitmapset->pace;
+						double BBy;
+						for ( BBy=o->BB.ymin;BBy<o->BB.ymax&&x>0&&x<bitmap->nx;BBy+=increment )
+						{
+							visq[7]  = BBy;
+							y= ( BBy- bitmapset->realy ) /bitmapset->pace;
+							double BBz;
+							for ( BBz=o->BB.zmin;BBz<o->BB.zmax&&y>0&&y<bitmap->ny;BBz+=increment )
+							{
+								visq[8]  = BBz;
+								z= ( BBz - bitmapset->realz ) /bitmapset->pace;
+
+								if ( x>0&&x<bitmap->nx&&y>0&&y<bitmap->ny&&z>0&&z<bitmap->nz )
+								{
+									p3d_set_and_update_this_robot_conf ( bitmapset->visball, visq );
+									int kcd_with_report=0;
+									int res = p3d_col_test_robot ( bitmapset->visball,kcd_with_report );
+									if ( res>0 ) ////if(p3d_col_test_robot(bitmapset->visball,FALSE))
+									{
+										//////// printf(" Populating ACTUAL obstacle for x, y, z = %d %d %d\n",x, y, z);
+
+										bitmapset->bitmap[bt_type]->data[x][y][z].val = -1;  //Exact obstacle
+
+										if ( bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]==0 ) //the cell does not already belong to this robot index
+										{
+											bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=1;//cell belong to this robot index
+											bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.objects_belonging_to[bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects]=r_ctr;
+
+											bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects++;
+										}
+
+										////////////bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=1;//cell belong to this robot index
+
+
+										
+										if ( is_tabel==1&& ( r->BB.zmax-BBz ) <=bitmapset->pace )
+										{
+											bitmapset->bitmap[bt_type]->data[x][y][surf_z].Mightability_map_cell_obj_info.is_horizontal_surface=1;//Belongs to a horizontal surface of table
+											bitmapset->bitmap[bt_type]->data[x][y][surf_z].val = -2;  //To avoid the plan path close to the  table surface
+         										
+											/*
+											if(surf_z+1<bitmap->nz)
+											{
+											bitmapset->bitmap[bt_type]->data[x][y][surf_z+1].Mightability_map_cell_obj_info.near_horizontal_surface=1;//very close to a horizontal surface of table
+											bitmapset->bitmap[bt_type]->data[x][y][surf_z+1].val = -2;  //To avoid the plan path close to the table surface
+											}
+											if(x-1>0&&x-1<bitmap->nx&&y+1>0&&y+1<bitmap->ny)
+											{
+											bitmapset->bitmap[bt_type]->data[x-1][y+1][surf_z].Mightability_map_cell_obj_info.near_horizontal_surface=1;//very close to a horizontal surface of table
+											bitmapset->bitmap[bt_type]->data[x-1][y+1][surf_z].val = -2;  //To avoid the plan path close to the table surface
+											}
+											if(y+1>0&&y+1<bitmap->ny)
+											{
+											bitmapset->bitmap[bt_type]->data[x][y+1][surf_z].Mightability_map_cell_obj_info.near_horizontal_surface=1;//very close to a horizontal surface of table
+											bitmapset->bitmap[bt_type]->data[x][y+1][surf_z].val = -2;  //To avoid the plan path close to the table surface
+											}
+											if(x+1>0&&x+1<bitmap->nx&&y+1>0&&y+1<bitmap->ny)
+											{
+											bitmapset->bitmap[bt_type]->data[x+1][y+1][surf_z].Mightability_map_cell_obj_info.near_horizontal_surface=1;//very close to a horizontal surface of table
+											bitmapset->bitmap[bt_type]->data[x+1][y+1][surf_z].val = -2;  //To avoid the plan path close to the table surface
+											}
+											if(x-1>0&&x-1<bitmap->nx)
+											{
+											bitmapset->bitmap[bt_type]->data[x-1][y][surf_z].Mightability_map_cell_obj_info.near_horizontal_surface=1;//very close to a horizontal surface of table
+											bitmapset->bitmap[bt_type]->data[x-1][y][surf_z].val = -2;  //To avoid the plan path close to the table surface
+											}
+											if(x+1>0&&x+1<bitmap->nx)
+											{
+											bitmapset->bitmap[bt_type]->data[x+1][y][surf_z].Mightability_map_cell_obj_info.near_horizontal_surface=1;//very close to a horizontal surface of table
+											bitmapset->bitmap[bt_type]->data[x+1][y][surf_z].val = -2;  //To avoid the plan path close to the table surface
+											}
+											if(x-1>0&&x-1<bitmap->nx&&y-1>0&&y-1<bitmap->ny)
+											{
+											bitmapset->bitmap[bt_type]->data[x-1][y-1][surf_z].Mightability_map_cell_obj_info.near_horizontal_surface=1;//very close to a horizontal surface of table
+											bitmapset->bitmap[bt_type]->data[x-1][y-1][surf_z].val = -2;  //To avoid the plan path close to the table surface
+											}
+											if(y-1>0&&y-1<bitmap->ny)
+											{
+											bitmapset->bitmap[bt_type]->data[x][y-1][surf_z].Mightability_map_cell_obj_info.near_horizontal_surface=1;//very close to a horizontal surface of table
+											bitmapset->bitmap[bt_type]->data[x][y-1][surf_z].val = -2;  //To avoid the plan path close to the table surface
+											}
+											if(x+1>0&&x+1<bitmap->nx&&y-1>0&&y-1<bitmap->ny)
+											{
+											bitmapset->bitmap[bt_type]->data[x+1][y-1][surf_z].Mightability_map_cell_obj_info.near_horizontal_surface=1;//very close to a horizontal surface of table
+											bitmapset->bitmap[bt_type]->data[x+1][y-1][surf_z].val = -2;  //To avoid the plan path close to the table surface
+											}
+											*/
+										}
+
+										//else
+										//{
+										//bitmapset->bitmap[bt_type]->data[x][y][surf_z].is_horizontal_surface=0;//Does not belong to a horizontal surface of table
+										// }
+
+										int i=0;
+										for ( i=x-expansion;i<=x+expansion;i++ )
+										{
+											//printf(" for i = %d\n",i);
+											if ( i>=0&&i<bitmap->nx )
+											{
+												int j=0;
+												for ( j=y-expansion;j<=y+expansion;j++ )
+												{
+													//printf(" for i, j = %d %d\n",i, j);
+													if ( j>=0&&j<bitmap->ny )
+													{
+														int k=0;
+														for ( k=z-expansion;k<=z+expansion;k++ )
+														{
+															//printf(" for i, j, k = %d %d %\n",i, j, k);
+															if ( k>=0&&k<bitmap->nz )
+															{
+																// printf(" Populating %d, %d, %d \n",i,j,k);
+																if ( bitmapset->bitmap[bt_type]->data[i][j][k].val == -1 ) //Already exact obstacle
+																{
+
+																	if ( bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]==0 ) //the cell does not already close to this robot index
+																	{
+																		bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=1;//cell close to this robot index
+																		bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.no_close_to_objects++;
+																	}
+																	bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=1;//cell close to this robot index
+																}
+																else
+																{
+																	bitmapset->bitmap[bt_type]->data[i][j][k].val = -2;  //Near to the obstacle
+
+																	if ( bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]==0 ) //the cell does not already close to this robot index
+																	{
+																		bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=1;//cell close to this robot index
+																		bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.no_close_to_objects++;
+																	}
+																	bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=1;//cell close to this robot index
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+									////else
+									////{
+									////printf("Inside BB but no collison\n");
+									////exit(0);
+									////}
+								}
+							}
+						}
+					}
+				}
+			
+		}//End for ( r_ctr=0;r_ctr<nr;r_ctr++ )
+
+
+////Now same thing for onjects (non robots)
+		int o_ctr=0;
+		for ( o_ctr=0;o_ctr<no;o_ctr++ )
+		{
+
+			o = envPt->o[r_ctr];
+			//// printf(" o->name = %s, \n",o->name);
+			double BBx;
+			for ( BBx=o->BB.xmin;BBx<o->BB.xmax;BBx+=increment )
+			{
+				visq[6]  = BBx;
+				x= ( BBx- bitmapset->realx ) /bitmapset->pace;
+				double BBy;
+				for ( BBy=o->BB.ymin;BBy<o->BB.ymax&&x>0&&x<bitmap->nx;BBy+=increment )
+				{
+					visq[7]  = BBy;
+					y= ( BBy- bitmapset->realy ) /bitmapset->pace;
+					double BBz;
+					for ( BBz=o->BB.zmin;BBz<o->BB.zmax&&y>0&&y<bitmap->ny;BBz+=increment )
+					{
+						visq[8]  = BBz;
+						z= ( BBz- bitmapset->realz ) /bitmapset->pace;
+
+
+						if ( z>0&&z<bitmap->nz )
+						{
+							p3d_set_and_update_this_robot_conf ( bitmapset->visball, visq );
+							int kcd_with_report=0;
+							int res = p3d_col_test_robot ( bitmapset->visball,kcd_with_report );
+							if ( res>0 ) ////if(p3d_col_test_robot(bitmapset->visball,FALSE))
+							{
+								//printf(" Populating ACTUAL obstacle for x, y, z = %d %d %d\n",x, y, z);
+
+								bitmapset->bitmap[bt_type]->data[x][y][z].val = -2;
+
+								int i=0;
+								for ( i=x-expansion;i<=x+expansion;i++ )
+								{
+									//printf(" for i = %d\n",i);
+									if ( i>=0&&i<bitmap->nx )
+									{
+										int j=0;
+										for ( j=y-expansion;j<=y+expansion;j++ )
+										{
+											//printf(" for i, j = %d %d\n",i, j);
+											if ( j>=0&&j<bitmap->ny )
+											{
+												int k=0;
+												for ( k=z-expansion;k<=z+expansion;k++ )
+												{
+													//printf(" for i, j, k = %d %d %\n",i, j, k);
+													if ( k>=0&&k<bitmap->nz )
+													{
+														// printf(" Populating %d, %d, %d \n",i,j,k);
+
+														bitmapset->bitmap[bt_type]->data[i][j][k].val = -2;
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+
+			}
+		}
+		p3d_destroy_config ( bitmapset->visball, visq );
+//         MY_FREE ( visq,double,bitmapset->visball->nb_dof );
+	}
+
+ChronoPrint(" Time for create obstacle cell fast ");
+ChronoOff();
+	
+	return 1;
+}
+
+
 
 int create_exact_obstacles_for_HRP2_GIK_manip_fast(hri_bitmapset * bitmapset, int expansion, int bt_type)
 {
@@ -7871,6 +8772,7 @@ int create_exact_obstacles_for_HRP2_GIK_manip_fast(hri_bitmapset * bitmapset, in
   hri_bitmap * bitmap;
   double increment=3.0/4.0*bitmapset->pace;
   visq = p3d_get_robot_config(bitmapset->visball);
+
   bitmap = bitmapset->bitmap[bt_type];
   envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int no = envPt->no;
@@ -7888,10 +8790,13 @@ int create_exact_obstacles_for_HRP2_GIK_manip_fast(hri_bitmapset * bitmapset, in
     for(;nr_ctr<nr;nr_ctr++)
      {
      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[nr_ctr]=0;//Initially does not belong to any cell
+     
      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.close_to_objects_indx[nr_ctr]=0;//Initially does not belong to any cell
+     }
      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.is_horizontal_surface=0;
      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.near_horizontal_surface=0;
-     }
+     
+     
      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects=0;
      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects=0;  
     }
@@ -7912,17 +8817,17 @@ int create_exact_obstacles_for_HRP2_GIK_manip_fast(hri_bitmapset * bitmapset, in
   ////robots_status_for_Mightability_Maps[r_ctr].prev_BB=r->BB;
   robots_status_for_Mightability_Maps[r_ctr].has_moved=0;
  
-  printf(" Robot name = %s \n",r->name);
+  //////////printf(" Robot name = %s \n",r->name);
   int surf_z;
   int is_tabel=0;
    if (strcasestr(r->name,"table"))
    {
         //int surf_z=z;
-   printf(" Cell belongs to table %s \n",r->name);
+   //////////printf(" Cell belongs to table %s \n",r->name);
 
    surf_z=((r->BB.zmax - bitmapset->realz)/bitmapset->pace)+1;//One cell above the surface
    is_tabel=1;
-   printf(" surf_z = %d \n",surf_z);
+  ////////// printf(" surf_z = %d \n",surf_z);
    }
   ////printf(" r->name = %s ,r->no=%d \n",r->name,r->no);
   int r_o_ctr=0; 
@@ -7962,10 +8867,12 @@ int create_exact_obstacles_for_HRP2_GIK_manip_fast(hri_bitmapset * bitmapset, in
        if(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]==0)//the cell does not already belong to this robot index
         { 
        bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=1;//cell belong to this robot index 
+      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.objects_belonging_to[bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects]=r_ctr;
+
        bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects++;
         }
 
-          bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=1;//cell belong to this robot index 
+          ////////////bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=1;//cell belong to this robot index 
 
    
       
@@ -8157,6 +9064,7 @@ int create_exact_obstacles_for_HRP2_GIK_manip_fast(hri_bitmapset * bitmapset, in
   }
   p3d_destroy_config(bitmapset->visball, visq);
  } 
+return 1;
 }
 
 int create_exact_obstacles_for_HRP2_GIK_manip(hri_bitmapset * bitmapset, int expansion, int bt_type)
@@ -8360,12 +9268,14 @@ int create_3d_grid_for_HRP2_GIK()
  //***** AKP: Uncomment below to populate the bitmap based on the bounding box of the objects' and robots'
  ////create_obstacles_for_HRP2_GIK_manip(grid_around_HRP2.GRID_SET); 
 
- ChronoPrint("<<<<<<<<Calling create_exact_obstacles_for_HRP2_GIK_manip");
+ ////////////ChronoPrint("<<<<<<<<Calling create_exact_obstacles_for_HRP2_GIK_manip");
 //// create_exact_obstacles_for_HRP2_GIK_manip(grid_around_HRP2.GRID_SET,expansion,HRP2_GIK_MANIP); //-1 is for populating every bitmap type 
- create_exact_obstacles_for_HRP2_GIK_manip_fast(grid_around_HRP2.GRID_SET,expansion,HRP2_GIK_MANIP); //-1 is for populating every bitmap type 
- ChronoPrint("<<<<<<<<Returned from create_exact_obstacles_for_HRP2_GIK_manip");
+ ////create_exact_obstacles_for_HRP2_GIK_manip_fast(grid_around_HRP2.GRID_SET,expansion,HRP2_GIK_MANIP); //-1 is for populating every bitmap type 
+ create_exact_obstacles_for_HRP2_GIK_manip_fast_new(grid_around_HRP2.GRID_SET,expansion,HRP2_GIK_MANIP); //-1 is for populating every bitmap type 
+ ////////////ChronoPrint("<<<<<<<<Returned from create_exact_obstacles_for_HRP2_GIK_manip");
 
  MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof); 
+return 1;
 }
 
 int show_3D_workspace_Bounding_Box()
@@ -8419,10 +9329,61 @@ g3d_drawOneLine(
         grid_around_HRP2.grid_BB.min_x, grid_around_HRP2.grid_BB.max_y, grid_around_HRP2.grid_BB.min_z,
         grid_around_HRP2.grid_BB.min_x, grid_around_HRP2.grid_BB.max_y, grid_around_HRP2.grid_BB.max_z, Red, NULL);
 
-
+return 1;
 }
 
+#ifdef USE_SYM_GEO_PLAN
+int show_candidate_points_for_curr_geo_node()
+{
+     int i=0;
+     for(i=0;i<curr_geo_plan.GP_node[CURR_GEO_NODE].candidate_points.no_points;i++)
+     { 
+     
+     g3d_drawDisc(curr_geo_plan.GP_node[CURR_GEO_NODE].candidate_points.point[i].x,curr_geo_plan.GP_node[CURR_GEO_NODE].candidate_points.point[i].y,curr_geo_plan.GP_node[CURR_GEO_NODE].candidate_points.point[i].z,  grid_around_HRP2.GRID_SET->pace/4.0, 4, NULL);
+     
+   
+     }      
 
+ return 1;
+}
+#endif
+
+int show_weighted_candidate_points_for_putinto_obj(int show_weight)
+{
+  ////printf("Inside show_weighted_candidate_points_for_putinto_obj, current_candidate_points_to_putinto.no_points=%d\n",current_candidate_points_to_putinto.no_points);
+  int i=0;
+  for(i=0;i<current_candidate_points_to_putinto.no_points;i++)
+  {
+   ////////g3d_draw_vertical_cylinder(candidate_points_to_put.point[i].x, candidate_points_to_put.point[i].y, candidate_points_to_put.point[i].z, .02, candidate_points_to_put.weight[i]/2.0, 0.005, 4, NULL);
+   g3d_drawDisc(current_candidate_points_to_putinto.point[i].x, current_candidate_points_to_putinto.point[i].y, current_candidate_points_to_putinto.point[i].z, .02, Green, NULL);
+   ////////g3d_drawOneLine(candidate_points_to_put.point[i].x, candidate_points_to_put.point[i].y,candidate_points_to_put.point[i].z,ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[1]->abs_pos[0][3], ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[1]->abs_pos[1][3], ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[1]->abs_pos[2][3], Red, NULL);
+  if(show_weight==1)
+   {
+  g3d_drawOneLine(current_candidate_points_to_putinto.point[i].x, current_candidate_points_to_putinto.point[i].y,current_candidate_points_to_putinto.point[i].z, current_candidate_points_to_putinto.point[i].x, current_candidate_points_to_putinto.point[i].y, current_candidate_points_to_putinto.point[i].z+current_candidate_points_to_putinto.weight[i]/2.0, Green, NULL);
+   }
+  }
+   /*
+  i=0;
+  for(i=0;i<candidate_points_to_putinto_blue_trashbin_by_jido.no_points;i++)
+  {
+   ////////g3d_draw_vertical_cylinder(candidate_points_to_put.point[i].x, candidate_points_to_put.point[i].y, candidate_points_to_put.point[i].z, .02, candidate_points_to_put.weight[i]/2.0, 0.005, 4, NULL);
+   g3d_drawDisc(candidate_points_to_putinto_blue_trashbin_by_jido.point[i].x, candidate_points_to_putinto_blue_trashbin_by_jido.point[i].y, candidate_points_to_putinto_blue_trashbin_by_jido.point[i].z, .02, Green, NULL);
+   ////////g3d_drawOneLine(candidate_points_to_put.point[i].x, candidate_points_to_put.point[i].y,candidate_points_to_put.point[i].z,ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[1]->abs_pos[0][3], ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[1]->abs_pos[1][3], ACBTSET
+  
+  }
+ 
+
+  i=0;
+  for(i=0;i<candidate_points_to_putinto_by_jido.no_points;i++)
+  {
+   ////////g3d_draw_vertical_cylinder(candidate_points_to_put.point[i].x, candidate_points_to_put.point[i].y, candidate_points_to_put.point[i].z, .02, candidate_points_to_put.weight[i]/2.0, 0.005, 4, NULL);
+   g3d_drawDisc(candidate_points_to_putinto_by_jido.point[i].x, candidate_points_to_putinto_by_jido.point[i].y, candidate_points_to_putinto_by_jido.point[i].z, .02, Green, NULL);
+   ////////g3d_drawOneLine(candidate_points_to_put.point[i].x, candidate_points_to_put.point[i].y,candidate_points_to_put.point[i].z,ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[1]->abs_pos[0][3], ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[1]->abs_pos[1][3], ACBTSET
+  
+  }
+ */
+return 1;
+}
 
 
 int show_weighted_candidate_points_to_put_obj(int show_weight)
@@ -8438,6 +9399,7 @@ int show_weighted_candidate_points_to_put_obj(int show_weight)
   g3d_drawOneLine(candidate_points_to_put.point[i].x, candidate_points_to_put.point[i].y,candidate_points_to_put.point[i].z, candidate_points_to_put.point[i].x, candidate_points_to_put.point[i].y, candidate_points_to_put.point[i].z+candidate_points_to_put.weight[i]/2.0, Green, NULL);
    }
   }
+return 1;
 }
 
 int show_weighted_candidate_points_to_show_obj()
@@ -8450,6 +9412,7 @@ int show_weighted_candidate_points_to_show_obj()
    ////////g3d_drawOneLine(candidate_points_to_put.point[i].x, candidate_points_to_put.point[i].y,candidate_points_to_put.point[i].z,ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[1]->abs_pos[0][3], ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[1]->abs_pos[1][3], ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[1]->abs_pos[2][3], Red, NULL);
   g3d_drawOneLine(candidate_points_to_show.point[i].x, candidate_points_to_show.point[i].y,candidate_points_to_show.point[i].z, candidate_points_to_show.point[i].x, candidate_points_to_show.point[i].y, candidate_points_to_show.point[i].z+candidate_points_to_show.weight[i]/2.0, Green, NULL);
   }
+return 1;
 }
 
 
@@ -8464,6 +9427,59 @@ int show_weighted_candidate_points_to_hide_obj()
   
    g3d_drawOneLine(candidate_points_to_hide.point[i].x, candidate_points_to_hide.point[i].y,candidate_points_to_hide.point[i].z, candidate_points_to_hide.point[i].x, candidate_points_to_hide.point[i].y, candidate_points_to_hide.point[i].z+candidate_points_to_hide.weight[i]/2.0, Green, NULL);
   }
+return 1;
+}
+
+
+int reverse_sort_weighted_candidate_points_to_putinto_obj()
+{
+  ////point_co_ordi sorted_points[1000];
+int i=0;
+ for(i=0;i<current_candidate_points_to_putinto.no_points;i++)  
+
+  //////////printf("Inside sort_weighted_candidate_points_to_putinto_obj(), current_candidate_points_to_putinto.no_points=%d\n",current_candidate_points_to_putinto.no_points);
+
+  //////////printf(" Before sorting \n");
+  for(int i=0;i<current_candidate_points_to_putinto.no_points;i++)
+  {
+  //////////printf(" >>>>>>>>> current_candidate_points_to_putinto.weight[%d]=%lf\n",i, current_candidate_points_to_putinto.weight[i]); 
+  }  
+
+  for (int i = 0; i < current_candidate_points_to_putinto.no_points; i++) 
+  {
+   int curmax = i;
+   for (int j = i+1; j < current_candidate_points_to_putinto.no_points; j++) 
+   {
+    if(current_candidate_points_to_putinto.weight[j]>current_candidate_points_to_putinto.weight[curmax])
+    {
+     curmax=j;
+    } 
+   }
+   if (curmax != i)
+   {
+    double tmp_wt=current_candidate_points_to_putinto.weight[i];
+    double tmp_x=current_candidate_points_to_putinto.point[i].x;
+    double tmp_y=current_candidate_points_to_putinto.point[i].y;
+    double tmp_z=current_candidate_points_to_putinto.point[i].z;
+    current_candidate_points_to_putinto.weight[i]=current_candidate_points_to_putinto.weight[curmax];
+    current_candidate_points_to_putinto.point[i].x=current_candidate_points_to_putinto.point[curmax].x;
+    current_candidate_points_to_putinto.point[i].y=current_candidate_points_to_putinto.point[curmax].y;
+    current_candidate_points_to_putinto.point[i].z=current_candidate_points_to_putinto.point[curmax].z;
+ 
+    current_candidate_points_to_putinto.weight[curmax]=tmp_wt;
+    current_candidate_points_to_putinto.point[curmax].x=tmp_x;
+    current_candidate_points_to_putinto.point[curmax].y=tmp_y;
+    current_candidate_points_to_putinto.point[curmax].z=tmp_z;
+
+   }
+  }
+   
+  //////////printf(" After sorting \n");
+  for(int i=0;i<current_candidate_points_to_putinto.no_points;i++)
+  {
+  //////////printf(" <<<<<<<< current_candidate_points_to_putinto.weight[%d]=%lf\n",i, current_candidate_points_to_putinto.weight[i]); 
+  }  
+ return 1;
 }
 
 
@@ -8471,12 +9487,12 @@ int reverse_sort_weighted_candidate_points_to_put_obj()
 {
   ////point_co_ordi sorted_points[1000];
   
-  printf("Inside sort_weighted_candidate_points_to_put_obj(), candidate_points_to_put.no_points=%d\n",candidate_points_to_put.no_points);
+  //////////printf("Inside sort_weighted_candidate_points_to_put_obj(), candidate_points_to_put.no_points=%d\n",candidate_points_to_put.no_points);
 
-  printf(" Before sorting \n");
+  //////////printf(" Before sorting \n");
   for(int i=0;i<candidate_points_to_put.no_points;i++)
   {
-  printf(" candidate_points_to_put.weight[%d]=%lf\n",i, candidate_points_to_put.weight[i]); 
+  //////////printf(" candidate_points_to_put.weight[%d]=%lf\n",i, candidate_points_to_put.weight[i]); 
   }  
 
   for (int i = 0; i < candidate_points_to_put.no_points; i++) 
@@ -8508,24 +9524,24 @@ int reverse_sort_weighted_candidate_points_to_put_obj()
    }
   }
    
-  printf(" After sorting \n");
+  //////////printf(" After sorting \n");
   for(int i=0;i<candidate_points_to_put.no_points;i++)
   {
-  printf(" candidate_points_to_put.weight[%d]=%lf\n",i, candidate_points_to_put.weight[i]); 
+  //////////printf(" candidate_points_to_put.weight[%d]=%lf\n",i, candidate_points_to_put.weight[i]); 
   }  
- 
+ return 1;
 }
 
 int reverse_sort_weighted_candidate_points_to_show_obj()
 {
   ////point_co_ordi sorted_points[1000];
   
-  printf("Inside reverse_sort_weighted_candidate_points_to_show_obj(), candidate_points_to_show.no_points=%d\n",candidate_points_to_show.no_points);
+  //////////printf("Inside reverse_sort_weighted_candidate_points_to_show_obj(), candidate_points_to_show.no_points=%d\n",candidate_points_to_show.no_points);
 
-  printf(" Before sorting \n");
+  //////////printf(" Before sorting \n");
   for(int i=0;i<candidate_points_to_show.no_points;i++)
   {
-  printf(" candidate_points_to_show.weight[%d]=%lf\n",i, candidate_points_to_show.weight[i]); 
+  //////////printf(" candidate_points_to_show.weight[%d]=%lf\n",i, candidate_points_to_show.weight[i]); 
   }  
 
   for (int i = 0; i < candidate_points_to_show.no_points; i++) 
@@ -8557,24 +9573,24 @@ int reverse_sort_weighted_candidate_points_to_show_obj()
    }
   }
    
-  printf(" After sorting \n");
+  //////////printf(" After sorting \n");
   for(int i=0;i<candidate_points_to_show.no_points;i++)
   {
-  printf(" candidate_points_to_show.weight[%d]=%lf\n",i, candidate_points_to_show.weight[i]); 
+  //////////printf(" candidate_points_to_show.weight[%d]=%lf\n",i, candidate_points_to_show.weight[i]); 
   }  
- 
+ return 1;
 }
 
 int reverse_sort_weighted_candidate_points_to_hide_obj()
 {
   ////point_co_ordi sorted_points[1000];
   
-  printf("Inside reverse_sort_weighted_candidate_points_to_hide_obj(), candidate_points_to_hide.no_points=%d\n",candidate_points_to_hide.no_points);
+  //////////printf("Inside reverse_sort_weighted_candidate_points_to_hide_obj(), candidate_points_to_hide.no_points=%d\n",candidate_points_to_hide.no_points);
 
-  printf(" Before sorting \n");
+ ////////// printf(" Before sorting \n");
   for(int i=0;i<candidate_points_to_hide.no_points;i++)
   {
-  printf(" candidate_points_to_hide.weight[%d]=%lf\n",i, candidate_points_to_hide.weight[i]); 
+  //////////printf(" candidate_points_to_hide.weight[%d]=%lf\n",i, candidate_points_to_hide.weight[i]); 
   }  
 
   for (int i = 0; i < candidate_points_to_hide.no_points; i++) 
@@ -8606,12 +9622,12 @@ int reverse_sort_weighted_candidate_points_to_hide_obj()
    }
   }
    
-  printf(" After sorting \n");
+  //////////printf(" After sorting \n");
   for(int i=0;i<candidate_points_to_hide.no_points;i++)
   {
-  printf(" candidate_points_to_hide.weight[%d]=%lf\n",i, candidate_points_to_hide.weight[i]); 
+  //////////printf(" candidate_points_to_hide.weight[%d]=%lf\n",i, candidate_points_to_hide.weight[i]); 
   }  
- 
+ return 1;
 }
 
 
@@ -8651,7 +9667,7 @@ int assign_weights_on_candidte_points_to_put_obj()
 
   candidate_points_to_put.weight[i]=Amplitude*exp(-(((yaw_mean-relative_yaw)*(yaw_mean-relative_yaw)/2.0*sig_yaw*sig_yaw)));
 
-  printf(" relative_yaw=%lf, weight for candidate point %d to put with pos (%lf,%lf,%lf) is %lf\n",relative_yaw,i,point_in_global_frame[0],point_in_global_frame[1],point_in_global_frame[2],candidate_points_to_put.weight[i]);
+  //////////printf(" relative_yaw=%lf, weight for candidate point %d to put with pos (%lf,%lf,%lf) is %lf\n",relative_yaw,i,point_in_global_frame[0],point_in_global_frame[1],point_in_global_frame[2],candidate_points_to_put.weight[i]);
 
   
   ////Assigning weight based on the closeness to the point which is at dist 0.3 m from the human 
@@ -8663,7 +9679,7 @@ int assign_weights_on_candidte_points_to_put_obj()
   human_pos[2]=ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[1]->abs_pos[2][3];
   ////printf("bottle pos from ACBTSET->object = (%lf, %lf, %lf)\n",bottle_pos[0],bottle_pos[1],bottle_pos[2]); 
   double point_to_human_dist=sqrt((human_pos[0]-point_in_global_frame[0])*(human_pos[0]-point_in_global_frame[0])+(human_pos[1]-point_in_global_frame[1])*(human_pos[1]-point_in_global_frame[1])+(human_pos[2]-point_in_global_frame[2])*(human_pos[2]-point_in_global_frame[2]));
-  printf(" point to human dist = %lf \n", point_to_human_dist);
+  //////////printf(" point to human dist = %lf \n", point_to_human_dist);
   candidate_points_to_put.weight[i]+=Amplitude/2.0*exp(-(((mean_dist-point_to_human_dist)*(mean_dist-point_to_human_dist)/2.0*sig_hum_dist*sig_hum_dist)));
   
 
@@ -8687,7 +9703,7 @@ int assign_weights_on_candidte_points_to_put_obj()
   
  
   
-
+return 1;
   
 }
 
@@ -8740,7 +9756,7 @@ int assign_weights_on_candidte_points_to_show_obj()
    max_weight=candidate_points_to_show.weight[i];
   ////////candidate_points_to_show.weight[i]=Amplitude*exp(-(((yaw_mean-relative_yaw)*(yaw_mean-relative_yaw)/2.0*sig_yaw*sig_yaw)));
   
-  printf(" relative_yaw=%lf, relative_pitch=%lf, weight for candidate point %d to put with pos (%lf,%lf,%lf) is %lf\n",relative_yaw,relative_pitch, i,point_in_global_frame[0],point_in_global_frame[1],point_in_global_frame[2],candidate_points_to_show.weight[i]);
+  //////////printf(" relative_yaw=%lf, relative_pitch=%lf, weight for candidate point %d to put with pos (%lf,%lf,%lf) is %lf\n",relative_yaw,relative_pitch, i,point_in_global_frame[0],point_in_global_frame[1],point_in_global_frame[2],candidate_points_to_show.weight[i]);
 
   /*
   ////Assigning weight based on the closeness to the point which is at dist 0.3 m from the human 
@@ -8775,7 +9791,7 @@ int assign_weights_on_candidte_points_to_show_obj()
   */
   } 
   
-  printf(" max_weight=%lf\n",max_weight);
+  //////////printf(" max_weight=%lf\n",max_weight);
   for(i=0;i<candidate_points_to_show.no_points;i++)
   {
   point_in_global_frame[0] = candidate_points_to_show.point[i].x;
@@ -8791,15 +9807,15 @@ int assign_weights_on_candidte_points_to_show_obj()
   ////printf("bottle pos from ACBTSET->object = (%lf, %lf, %lf)\n",bottle_pos[0],bottle_pos[1],bottle_pos[2]); 
   double point_to_bottle_dist=sqrt((bottle_pos[0]-point_in_global_frame[0])*(bottle_pos[0]-point_in_global_frame[0])+(bottle_pos[1]-point_in_global_frame[1])*(bottle_pos[1]-point_in_global_frame[1])+(bottle_pos[2]-point_in_global_frame[2])*(bottle_pos[2]-point_in_global_frame[2]));
   
-  printf(" Old weight for candidate point %d to put with pos (%lf,%lf,%lf) is %lf\n", i,point_in_global_frame[0],point_in_global_frame[1],point_in_global_frame[2],candidate_points_to_show.weight[i]);
+  //////////printf(" Old weight for candidate point %d to put with pos (%lf,%lf,%lf) is %lf\n", i,point_in_global_frame[0],point_in_global_frame[1],point_in_global_frame[2],candidate_points_to_show.weight[i]);
   candidate_points_to_show.weight[i]+=2.0*max_weight*exp(-(((point_to_bottle_dist)*(point_to_bottle_dist)/2.0*sig_dist*sig_dist)));
   
-  printf(" New weight for candidate point %d to put with pos (%lf,%lf,%lf) is %lf\n", i,point_in_global_frame[0],point_in_global_frame[1],point_in_global_frame[2],candidate_points_to_show.weight[i]);
+  //////////printf(" New weight for candidate point %d to put with pos (%lf,%lf,%lf) is %lf\n", i,point_in_global_frame[0],point_in_global_frame[1],point_in_global_frame[2],candidate_points_to_show.weight[i]);
   }
   
 MY_FREE(hum_cur_pos,double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof);
 
-  
+  return 1;
 }
 
 
@@ -8849,18 +9865,18 @@ int assign_weights_on_candidte_points_to_hide_obj()
   ////printf(" Old weight for candidate point %d to put with pos (%lf,%lf,%lf) is %lf\n", i,point_in_global_frame[0],point_in_global_frame[1],point_in_global_frame[2],candidate_points_to_show.weight[i]);
   candidate_points_to_hide.weight[i]=Amplitude*exp(-(((point_to_bottle_dist)*(point_to_bottle_dist)/2.0*sig_dist*sig_dist)));
   
-  printf(" New weight for candidate point %d to hide with pos (%lf,%lf,%lf) is %lf\n", i,point_in_global_frame[0],point_in_global_frame[1],point_in_global_frame[2],candidate_points_to_hide.weight[i]);
+  //////////printf(" New weight for candidate point %d to hide with pos (%lf,%lf,%lf) is %lf\n", i,point_in_global_frame[0],point_in_global_frame[1],point_in_global_frame[2],candidate_points_to_hide.weight[i]);
   }
   
 MY_FREE(hum_cur_pos,double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof);
 
-  
+  return 1;
 }
 
 
 int find_candidate_points_to_hide_obj_new()
 {
- printf(" Inside find_candidate_points_to_hide_obj_new()\n");
+ //////////printf(" Inside find_candidate_points_to_hide_obj_new()\n");
 ////no_candidate_points_to_show=0;
 candidate_points_to_hide.no_points=0;
 
@@ -8897,9 +9913,10 @@ int x=0;
        double cell_z_world = grid_around_HRP2.GRID_SET->realz + (z * grid_around_HRP2.GRID_SET->pace);
      
     
-     if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human==0)
+     ////////////if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human==0)
+     if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human==0&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human_straight_head_orientation==0&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human_neck_turn==0)
      {
-      printf("* Not Visible by human\n");
+     ////////// printf("* Not Visible by human\n");
       ////////////if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].affordances.visible_by_HRP2==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].affordances.visible_by_HRP2_neck_turn==1)
       ////////////{
        ////////////printf("** Visible by HRP2 neck turn\n");
@@ -8909,7 +9926,7 @@ int x=0;
 
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_RHand==1)
         {
-         printf("**** Reachable by HRP2 \n");
+       //////////  printf("**** Reachable by HRP2 \n");
          candidate_points_to_hide.point[candidate_points_to_hide.no_points].x=cell_x_world;
          candidate_points_to_hide.point[candidate_points_to_hide.no_points].y=cell_y_world;
          candidate_points_to_hide.point[candidate_points_to_hide.no_points].z=cell_z_world;
@@ -8925,7 +9942,7 @@ int x=0;
   }
  }
       
-printf(" candidate_points_to_hide.no_points=%d\n",candidate_points_to_hide.no_points);
+//////////printf(" candidate_points_to_hide.no_points=%d\n",candidate_points_to_hide.no_points);
  return candidate_points_to_hide.no_points;
 
 }
@@ -8933,7 +9950,7 @@ printf(" candidate_points_to_hide.no_points=%d\n",candidate_points_to_hide.no_po
 
 int find_candidate_points_to_show_obj_new()
 {
- printf(" Inside find_candidate_points_to_show_obj_new()\n");
+ //////////printf(" Inside find_candidate_points_to_show_obj_new()\n");
 ////no_candidate_points_to_show=0;
 candidate_points_to_show.no_points=0;
 
@@ -8972,17 +9989,17 @@ int x=0;
     
      if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human==1)
      {
-      printf("* Visible by human\n");
+      //////////printf("* Visible by human\n");
       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_HRP2==1)
       {
-       printf("** Visible by HRP2\n");
+      ////////// printf("** Visible by HRP2\n");
        ////if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].affordances.reachable_by_human_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].affordances.reachable_by_human_RHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].affordances.reachable_by_LHand_by_bending==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].affordances.reachable_by_RHand_by_bending==1)
        {
        //// printf("*** Bending reachable by by human \n");
 
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_RHand==1)
         {
-         printf("**** Reachable by HRP2 \n");
+        ////////// printf("**** Reachable by HRP2 \n");
          candidate_points_to_show.point[candidate_points_to_show.no_points].x=cell_x_world;
          candidate_points_to_show.point[candidate_points_to_show.no_points].y=cell_y_world;
          candidate_points_to_show.point[candidate_points_to_show.no_points].z=cell_z_world;
@@ -8998,15 +10015,15 @@ int x=0;
   }
  }
       
-printf(" candidate_points_to_show.no_points=%d\n",candidate_points_to_show.no_points);
+//////////printf(" candidate_points_to_show.no_points=%d\n",candidate_points_to_show.no_points);
  return candidate_points_to_show.no_points;
 
 }
 
 
-int find_candidate_points_on_plane_to_put_obj_new()
+int find_candidate_points_on_plane_to_put_obj_new()//(int type)//type=1 means only directly reachable places by human, 2 mean also bending reachable places by human
 {
- printf(" \n****Inside find_candidate_points_on_plane_to_put_obj_new()\n");
+ //////////printf(" \n****Inside find_candidate_points_on_plane_to_put_obj_new()\n");
 no_candidate_points_to_put=0;
 candidate_points_to_put.no_points=0;
 
@@ -9045,17 +10062,17 @@ int x=0;
     
      if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human_straight_head_orientation==1)
      {
-      printf("* Visible by human\n");
+      ////printf("* Visible by human\n");
       ////if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].affordances.visible_by_HRP2==1)
       {
        ////printf("** Visible by HRP2\n");
        if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_RHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_bending==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_RHand_by_bending==1)
        {
-        printf("*** Reachable by by human \n");
-
+        ////printf("*** Reachable by by human \n");
+        #ifdef HRI_HRP2
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_RHand==1)
         {
-         printf("**** Reachable by HRP2 \n");
+         ////printf("**** Reachable by HRP2 \n");
          candidate_points_to_put.point[candidate_points_to_put.no_points].x=cell_x_world;
          candidate_points_to_put.point[candidate_points_to_put.no_points].y=cell_y_world;
          candidate_points_to_put.point[candidate_points_to_put.no_points].z=cell_z_world;
@@ -9063,6 +10080,19 @@ int x=0;
          candidate_points_to_put.no_points++;
 
         } 
+        #endif
+        #ifdef HRI_JIDO
+        if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_JIDO_Hand==1)
+        {
+         ////printf("**** Reachable by HRP2 \n");
+         candidate_points_to_put.point[candidate_points_to_put.no_points].x=cell_x_world;
+         candidate_points_to_put.point[candidate_points_to_put.no_points].y=cell_y_world;
+         candidate_points_to_put.point[candidate_points_to_put.no_points].z=cell_z_world;
+         candidate_points_to_put.weight[candidate_points_to_put.no_points]=0;
+         candidate_points_to_put.no_points++;
+
+        } 
+        #endif
        } 
       } 
      } 
@@ -9071,14 +10101,14 @@ int x=0;
   }
  }
       
-printf(" candidate_points_to_put.no_points=%d\n",candidate_points_to_put.no_points);
+//////////printf(" candidate_points_to_put.no_points=%d\n",candidate_points_to_put.no_points);
  return candidate_points_to_put.no_points;
 
 }
 
 int JIDO_find_candidate_points_on_plane_to_put_obj()
 {
- printf(" \n****Inside JIDO_find_candidate_points_on_plane_to_put_obj()\n");
+////////// printf(" \n****Inside JIDO_find_candidate_points_on_plane_to_put_obj()\n");
 no_candidate_points_to_put=0;
 candidate_points_to_put.no_points=0;
 
@@ -9117,17 +10147,17 @@ int x=0;
     
      if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human_straight_head_orientation==1)
      {
-      printf("* Visible by human\n");
+     ////////// printf("* Visible by human\n");
       ////if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].affordances.visible_by_HRP2==1)
       {
        ////printf("** Visible by HRP2\n");
        if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_RHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_bending==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_RHand_by_bending==1)
        {
-        printf("*** Reachable by by human \n");
+        //////////printf("*** Reachable by by human \n");
 
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_JIDO_Hand==1)
         {
-         printf("**** Reachable by HRP2 \n");
+        ////////// printf("**** Reachable by HRP2 \n");
          candidate_points_to_put.point[candidate_points_to_put.no_points].x=cell_x_world;
          candidate_points_to_put.point[candidate_points_to_put.no_points].y=cell_y_world;
          candidate_points_to_put.point[candidate_points_to_put.no_points].z=cell_z_world;
@@ -9143,7 +10173,7 @@ int x=0;
   }
  }
       
-printf(" candidate_points_to_put.no_points=%d\n",candidate_points_to_put.no_points);
+//////////printf(" candidate_points_to_put.no_points=%d\n",candidate_points_to_put.no_points);
  return candidate_points_to_put.no_points;
 
 }
@@ -9321,7 +10351,7 @@ for(;current_surface_index<curr_surfaces_in_env.total_no_of_surfaces;current_sur
     }
    }
   }
- 
+ return 1;
 }
 
 int get_index_of_robot_by_name(char *rob_name)
@@ -9344,13 +10374,13 @@ int get_index_of_robot_by_name(char *rob_name)
   
 int make_cells_around_point_obstacle_free(double hand_pos[3], int expansion)
 { 
- printf(" Inside  make_cells_around_point_obstacle_free=(%lf,%lf,%lf)\n",hand_pos[0],hand_pos[1],hand_pos[2]);
+ //////////printf(" Inside  make_cells_around_point_obstacle_free=(%lf,%lf,%lf)\n",hand_pos[0],hand_pos[1],hand_pos[2]);
 hri_bitmap_cell* current_cell=NULL;
  current_cell  =  hri_bt_get_closest_cell(grid_around_HRP2.GRID_SET, grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP], hand_pos[0], hand_pos[1], hand_pos[2]);
 
        if(current_cell!=NULL)
         { 
-        printf(" Inside  make_cells_around_point_obstacle_free, cell=(%d,%d,%d)\n",current_cell->x,current_cell->y,current_cell->z);
+      //////////  printf(" Inside  make_cells_around_point_obstacle_free, cell=(%d,%d,%d)\n",current_cell->x,current_cell->y,current_cell->z);
         grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[current_cell->x][current_cell->y][current_cell->z].val=0;
         
 
@@ -9386,8 +10416,56 @@ hri_bitmap_cell* current_cell=NULL;
      } 
     else
      {
-     printf(" Can't get cell corresponding to the hand\n");
+     //////////printf(" Can't get cell corresponding to the hand\n");
      } 
+return 1;
+}
+
+int make_cells_around_point_as_near_to_obstacle(double hand_pos[3], int expansion)
+{ 
+ //////////printf(" Inside  make_cells_around_point_obstacle=(%lf,%lf,%lf)\n",hand_pos[0],hand_pos[1],hand_pos[2]);
+hri_bitmap_cell* current_cell=NULL;
+ current_cell  =  hri_bt_get_closest_cell(grid_around_HRP2.GRID_SET, grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP], hand_pos[0], hand_pos[1], hand_pos[2]);
+
+       if(current_cell!=NULL)
+        { 
+      //////////  printf(" Inside  make_cells_around_point_obstacle_free, cell=(%d,%d,%d)\n",current_cell->x,current_cell->y,current_cell->z);
+        grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[current_cell->x][current_cell->y][current_cell->z].val=0;
+        
+           int i=0; 
+           for(i=current_cell->x-expansion;i<=current_cell->x+expansion;i++)
+           {
+            //printf(" for i = %d\n",i);
+            if(i>=0&&i<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx)
+            {
+             int j=0;
+             for(j=current_cell->y-expansion;j<=current_cell->y+expansion;j++)
+             {
+              //printf(" for i, j = %d %d\n",i, j);
+              if(j>=0&&j<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny)
+              {
+               int k=0;
+                for(k=current_cell->z-expansion;k<=current_cell->z+expansion;k++)
+               {
+              //printf(" for i, j, k = %d %d %\n",i, j, k);
+              if(k>=0&&k<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz)
+                {
+                 ////printf(" Populating cell (%d, %d, %d) with 0\n",i,j,k);
+                 grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[i][j][k].val=-2;
+                 
+        
+                }
+               } 
+              }
+             }
+            } 
+           }
+     } 
+    else
+     {
+  //////////   printf(" Can't get cell corresponding to the hand\n");
+     } 
+return 1;
 }
 
 /*int store_cur_GIK_sol_for_real_HRP2()
@@ -9434,15 +10512,36 @@ bitmap->data[x][y][z].val =-3;  //-3 to indicate that it has been marked as obst
    } 
   }
  }
+return 1;
 }
 
-
-int find_symbolic_Mightability_Map()
+int find_symbolic_MM_visibility()
 {
  hri_bitmap* bitmap=grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP];
  envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-  int no = envPt->no;
-  int nr = envPt->nr;
+ int no = envPt->no;
+ int nr = envPt->nr;
+
+ int nr_ctr=0;
+    for(;nr_ctr<nr;nr_ctr++)
+     {
+     object_MM.object[nr_ctr].geo_MM.visible_by_human=0;
+     object_MM.object[nr_ctr].geo_MM.visible_by_human_straight_head_orientation=0;
+     object_MM.object[nr_ctr].geo_MM.visible_by_human_neck_turn=0;
+     object_MM.object[nr_ctr].geo_MM.visible_by_standing_human=0;
+     object_MM.object[nr_ctr].geo_MM.visible_by_standing_human_neck_turn=0;
+     object_MM.object[nr_ctr].geo_MM.visible_by_human_straight_head_orientation_standing=0;
+    
+     object_MM.object[nr_ctr].geo_MM.visible_by_HRP2=0;
+     object_MM.object[nr_ctr].geo_MM.visible_by_HRP2_straight_head_orientation=0;
+     object_MM.object[nr_ctr].geo_MM.visible_by_HRP2_neck_turn=0;
+    
+     object_MM.object[nr_ctr].geo_MM.visible_by_JIDO=0;
+     object_MM.object[nr_ctr].geo_MM.visible_by_JIDO_straight_head_orientation=0;
+     object_MM.object[nr_ctr].geo_MM.visible_by_JIDO_neck_turn=0;
+    
+     }  
+
  int x,y,z;
   for(x=0; x<bitmap->nx; x++)
   {
@@ -9454,20 +10553,2573 @@ int find_symbolic_Mightability_Map()
   int nr_ctr=0;
     for(;nr_ctr<nr;nr_ctr++)
      {
-     bitmap->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[nr_ctr]=0;//Initially does not belong to any cell
-     bitmap->data[x][y][z].Mightability_map_cell_obj_info.close_to_objects_indx[nr_ctr]=0;//Initially does not belong to any cell
-     bitmap->data[x][y][z].Mightability_map_cell_obj_info.is_horizontal_surface=0;
-     bitmap->data[x][y][z].Mightability_map_cell_obj_info.near_horizontal_surface=0;
+    
+     if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[nr_ctr]==1)
+      {
+
+/////// FOR HUMAN
+
+     if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_human==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.visible_by_human=1;
+       }
+     
+     if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_human_straight_head_orientation==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.visible_by_human_straight_head_orientation=1;
+       }
+     
+      if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_human_neck_turn==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.visible_by_human_neck_turn=1;
+       }
+
+      if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_standing_human==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.visible_by_standing_human=1;
+       }
+
+      if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_standing_human_neck_turn==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.visible_by_standing_human_neck_turn=1;
+       }
+
+      if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_human_straight_head_orientation_standing==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.visible_by_human_straight_head_orientation_standing=1;
+       }
+
+
+
+/////// FOR HRP2
+     if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.visible_by_HRP2=1;
+       }
+
+     if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2_straight_head_orientation==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.visible_by_HRP2_straight_head_orientation=1;
+       }
+
+     if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_HRP2_neck_turn==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.visible_by_HRP2_neck_turn=1;
+       }
+
+      
+     
+////////// FOR JIDO
+     if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_JIDO==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.visible_by_JIDO=1;
+       }  
+  
+     if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_JIDO_straight_head_orientation==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.visible_by_JIDO_straight_head_orientation=1;
+       }
+
+     if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_JIDO_neck_turn==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.visible_by_JIDO_neck_turn=1;
+       }
+
+   
+
+      }
      }
-     bitmap->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects=0;
-     bitmap->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects=0;  
     }
    }
-  }   
+  }  
+return 1;     
+}
+
+int show_first_non_visible_cells(int obj_index)
+{
+hri_bitmap* bitmap=grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP];
+ int x,y,z;
+  for(x=0; x<bitmap->nx; x++)
+  {
+     for(y=0; y<bitmap->ny; y++)
+   {
+       for(z=0; z<bitmap->nz; z++)
+    {
+  
+  //int nr_ctr=0;
+    //for(;nr_ctr<nr;nr_ctr++)
+     //{
+    
+     if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[obj_index]==1)
+      {
+
+/////// FOR HUMAN
+
+     if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_human==1)
+       {
+       double x_world = grid_around_HRP2.GRID_SET->realx + (x * grid_around_HRP2.GRID_SET->pace);
+       double y_world = grid_around_HRP2.GRID_SET->realy + (y * grid_around_HRP2.GRID_SET->pace);
+       double z_world = grid_around_HRP2.GRID_SET->realz + (z * grid_around_HRP2.GRID_SET->pace);
+ 
+    
+       g3d_drawDisc(x_world, y_world, z_world, grid_around_HRP2.GRID_SET->pace/2.0, Green, NULL);
+     
+       }
+     
+     if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_human_straight_head_orientation==1)
+       {
+      double x_world = grid_around_HRP2.GRID_SET->realx + (x * grid_around_HRP2.GRID_SET->pace);
+       double y_world = grid_around_HRP2.GRID_SET->realy + (y * grid_around_HRP2.GRID_SET->pace);
+       double z_world = grid_around_HRP2.GRID_SET->realz + (z * grid_around_HRP2.GRID_SET->pace);
+ 
+    
+       g3d_drawDisc(x_world, y_world, z_world, grid_around_HRP2.GRID_SET->pace/2.0, Yellow, NULL);
+       }
+  
+   
+      if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_human_neck_turn==1)
+       {
+      double x_world = grid_around_HRP2.GRID_SET->realx + (x * grid_around_HRP2.GRID_SET->pace);
+       double y_world = grid_around_HRP2.GRID_SET->realy + (y * grid_around_HRP2.GRID_SET->pace);
+       double z_world = grid_around_HRP2.GRID_SET->realz + (z * grid_around_HRP2.GRID_SET->pace);
+ 
+    
+       g3d_drawDisc(x_world, y_world, z_world, grid_around_HRP2.GRID_SET->pace/2.0, Blue, NULL);
+       }
+
+     }
+    }
+   }
+  }
+
+}
+
+int get_object_mightabilities()
+{
+////printf(" Inside get_object_mightabilities()\n");
+ 
+ Mightabilities_for_obj.total_no_obj=0;
+  envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+ int no = envPt->no;
+ int nr = envPt->nr;
+
+ int nr_ctr=0;
+    for(;nr_ctr<nr;nr_ctr++)
+     {
+     strcpy( Mightabilities_for_obj.object[Mightabilities_for_obj.total_no_obj].object_name, envPt->robot[nr_ctr]->name);
+     Mightabilities_for_obj.object[Mightabilities_for_obj.total_no_obj].object_index=nr_ctr;
+
+     if(object_MM.object[nr_ctr].geo_MM.reachable_by_human_LHand==1||object_MM.object[nr_ctr].geo_MM.reachable_by_human_RHand==1||object_MM.object[nr_ctr].geo_MM.reachable_by_LHand_by_bending==1||object_MM.object[nr_ctr].geo_MM.reachable_by_RHand_by_bending==1)
+      {
+              
+       Mightabilities_for_obj.object[Mightabilities_for_obj.total_no_obj].obj_mightability.is_reachable_by_human=1;
+       
+      }
+      else
+      {
+       Mightabilities_for_obj.object[Mightabilities_for_obj.total_no_obj].obj_mightability.is_reachable_by_human=0;
+       
+      }
+     
+      #ifdef HRI_JIDO
+      if(object_MM.object[nr_ctr].geo_MM.reachable_by_JIDO_Hand==1)
+      {
+
+       Mightabilities_for_obj.object[Mightabilities_for_obj.total_no_obj].obj_mightability.is_reachable_by_robot=1;
+
+      }
+      else
+      {
+       Mightabilities_for_obj.object[Mightabilities_for_obj.total_no_obj].obj_mightability.is_reachable_by_robot=0;
+       
+      }
+      #endif
+
+      if(object_MM.object[nr_ctr].geo_MM.visible_by_human==1||object_MM.object[nr_ctr].geo_MM.visible_by_human_neck_turn==1||object_MM.object[nr_ctr].geo_MM.visible_by_human_straight_head_orientation==1)
+      {
+       Mightabilities_for_obj.object[Mightabilities_for_obj.total_no_obj].obj_mightability.is_visible_by_human=1;
+      }
+      else
+      {
+       Mightabilities_for_obj.object[Mightabilities_for_obj.total_no_obj].obj_mightability.is_visible_by_human=0;
+      }
+     
+      #ifdef HRI_JIDO
+      if(object_MM.object[nr_ctr].geo_MM.visible_by_JIDO==1||object_MM.object[nr_ctr].geo_MM.visible_by_JIDO_neck_turn==1||object_MM.object[nr_ctr].geo_MM.visible_by_JIDO_straight_head_orientation==1)
+      {
+       Mightabilities_for_obj.object[Mightabilities_for_obj.total_no_obj].obj_mightability.is_visible_by_robot=1;
+      }
+      else
+      {       
+       Mightabilities_for_obj.object[Mightabilities_for_obj.total_no_obj].obj_mightability.is_visible_by_robot=0;
+      }
+      #endif
+
+
+     Mightabilities_for_obj.total_no_obj++;
+     }
+return 1;
+}
+
+int show_object_Mightabilities()
+{
+ ////printf(" Inside show_object_Mightabilities()\n");
+ int i=0;
+ double x,y,z;
+ double radius=0.015;
+ 
+ for(i=0;i<Mightabilities_for_obj.total_no_obj;i++)
+ {
+  int obj_index=Mightabilities_for_obj.object[i].object_index;
+   
+   if(strcasestr(envPt->robot[obj_index]->name,"visball"))
+   {
+   continue;
+   }
+  
+  
+  x=(envPt->robot[obj_index]->BB.xmin+envPt->robot[obj_index]->BB.xmax)/2.0;
+  y=(envPt->robot[obj_index]->BB.ymin+envPt->robot[obj_index]->BB.ymax)/2.0;
+  z=envPt->robot[obj_index]->BB.zmax;
+
+  if(SHOW_MM_BASED_OBJECT_REACHABLE==1)
+  {
+  if( Mightabilities_for_obj.object[obj_index].obj_mightability.is_reachable_by_human==1)
+    {
+   ////g3d_drawDisc(envPt->robot[obj_index]->BB.xmin, envPt->robot[obj_index]->BB.ymin, envPt->robot[obj_index]->BB.zmax, 0.01, Red, NULL);
+   g3d_drawDisc(x-radius, y-radius, z, radius, Red, NULL);
+   
+   ////Draw_Bounding_Box(envPt->robot[obj_index]->BB.xmin,envPt->robot[obj_index]->BB.ymin,envPt->robot[obj_index]->BB.zmin,envPt->robot[obj_index]->BB.xmax,envPt->robot[obj_index]->BB.ymax,envPt->robot[obj_index]->BB.zmax, Green);
+   
+    }  
+  
+  if( Mightabilities_for_obj.object[obj_index].obj_mightability.is_reachable_by_robot==1)
+    {
+   ////g3d_drawDisc(envPt->robot[obj_index]->BB.xmax, envPt->robot[obj_index]->BB.ymin, envPt->robot[obj_index]->BB.zmax, 0.01, Green, NULL);
+   g3d_drawDisc(x-radius, y+radius, z, radius, Green, NULL);
+   ////Draw_Bounding_Box(envPt->robot[obj_index]->BB.xmin,envPt->robot[obj_index]->BB.ymin,envPt->robot[obj_index]->BB.zmin,envPt->robot[obj_index]->BB.xmax,envPt->robot[obj_index]->BB.ymax,envPt->robot[obj_index]->BB.zmax, Green);
+   
+    }
+   } 
+
+  if(SHOW_MM_BASED_OBJECT_VISIBLE==1)
+   {
+  if( Mightabilities_for_obj.object[obj_index].obj_mightability.is_visible_by_human==1)
+    {
+   ////g3d_drawDisc(envPt->robot[obj_index]->BB.xmin, envPt->robot[obj_index]->BB.ymax, envPt->robot[obj_index]->BB.zmax, 0.01, Blue, NULL);
+   g3d_drawDisc(x+radius, y-radius, z, radius, Blue, NULL);
+   ////Draw_Bounding_Box(envPt->robot[obj_index]->BB.xmin,envPt->robot[obj_index]->BB.ymin,envPt->robot[obj_index]->BB.zmin,envPt->robot[obj_index]->BB.xmax,envPt->robot[obj_index]->BB.ymax,envPt->robot[obj_index]->BB.zmax, Green);
+   
+    } 
+
+  if( Mightabilities_for_obj.object[obj_index].obj_mightability.is_visible_by_robot==1)
+    {
+   ////g3d_drawDisc(envPt->robot[obj_index]->BB.xmax, envPt->robot[obj_index]->BB.ymax, envPt->robot[obj_index]->BB.zmax, 0.01, Yellow, NULL);
+   g3d_drawDisc(x+radius, y+radius, z, radius, Yellow, NULL);
+   ////Draw_Bounding_Box(envPt->robot[obj_index]->BB.xmin,envPt->robot[obj_index]->BB.ymin,envPt->robot[obj_index]->BB.zmin,envPt->robot[obj_index]->BB.xmax,envPt->robot[obj_index]->BB.ymax,envPt->robot[obj_index]->BB.zmax, Green);
+   
+    } 
+   }
+ }
+
+ return 1;
+
 }
 
 
-//int find_3D_voronoi()
+int find_symbolic_Mightability_Map_new()
+{
+
+ find_symbolic_MM_visibility();
+
+ hri_bitmap* bitmap=grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP];
+ envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+ int no = envPt->no;
+ int nr = envPt->nr;
+
+ int nr_ctr=0;
+    for(;nr_ctr<nr;nr_ctr++)
+     {
+      object_MM.object[nr_ctr].geo_MM.reachable_by_human_LHand=0;
+      object_MM.object[nr_ctr].geo_MM.reachable_by_human_RHand=0;
+      object_MM.object[nr_ctr].geo_MM.reachable_by_LHand_by_bending=0;
+      object_MM.object[nr_ctr].geo_MM.reachable_by_RHand_by_bending=0;
+      object_MM.object[nr_ctr].geo_MM.reachable_by_LHand_by_turning_around_bending=0;
+      object_MM.object[nr_ctr].geo_MM.reachable_by_RHand_by_turning_around_bending=0;
+
+      object_MM.object[nr_ctr].geo_MM.reachable_by_HRP2_LHand=0;
+      object_MM.object[nr_ctr].geo_MM.reachable_by_HRP2_RHand=0;
+
+      object_MM.object[nr_ctr].geo_MM.reachable_by_JIDO_Hand=0;
+
+      object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.is_true=0;
+      object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.is_true=0;
+      object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_HRP2.is_true=0;
+ 
+      
+      object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_HRP2.no_points=0;
+      object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.no_points=0;
+      object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.no_points=0;
+      ////object_MM.object[nr_ctr].visible_by_human=0;
+     }  
+
+ int x,y,z;
+ double xc=0, yc=0, zc=0;
+  
+  
+  nr_ctr=0;
+    for(;nr_ctr<nr;nr_ctr++)
+     {
+     
+     xc=(envPt->robot[nr_ctr]->BB.xmax+envPt->robot[nr_ctr]->BB.xmin)/2.0;
+     yc=(envPt->robot[nr_ctr]->BB.ymax+envPt->robot[nr_ctr]->BB.ymin)/2.0;
+     zc=(envPt->robot[nr_ctr]->BB.zmax+envPt->robot[nr_ctr]->BB.zmin)/2.0;
+    
+     
+     x=(xc- grid_around_HRP2.GRID_SET->realx)/grid_around_HRP2.GRID_SET->pace;
+     
+  
+      if(x>=0&&x<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx)
+      {
+      
+      y=(yc- grid_around_HRP2.GRID_SET->realy)/grid_around_HRP2.GRID_SET->pace;
+      
+      if(y>=0&&y<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny)
+      {
+      
+      z=(zc- grid_around_HRP2.GRID_SET->realz)/grid_around_HRP2.GRID_SET->pace;
+ 
+       if(z>=0&&z<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz)
+       {
+       ////curr_cell=
+
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_LHand==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.reachable_by_human_LHand=1;
+       }
+       
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_RHand==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.reachable_by_human_RHand=1;
+       }
+
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_bending==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.reachable_by_LHand_by_bending=1;
+       }  
+
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_RHand_by_bending==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.reachable_by_RHand_by_bending=1;
+       }  
+
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_turning_around_bending==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.reachable_by_LHand_by_turning_around_bending=1;
+       } 
+
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_RHand_by_turning_around_bending==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.reachable_by_RHand_by_turning_around_bending=1;
+       }
+
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_LHand==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.reachable_by_HRP2_LHand=1;
+       }
+
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_RHand==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.reachable_by_HRP2_RHand=1;
+       }
 
 
-///// AKP : END Affordance analysis
+      if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_JIDO_Hand==1)
+       {
+       ////printf(" %s is reachable by JIDO \n",envPt->robot[nr_ctr]->name);
+       object_MM.object[nr_ctr].geo_MM.reachable_by_JIDO_Hand=1;
+       }
+      ////Object based visibility
+    /*if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_human==1&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[nr_ctr]==1)
+       {
+       object_MM.object[nr_ctr].visible_by_human=1;
+       }
+      */     
+      }
+     }
+    }
+   
+
+     //// For calculating that something can be put inside the object by the agent
+    if(strcasestr(envPt->robot[nr_ctr]->name,"ROBOT")||strcasestr(envPt->robot[nr_ctr]->name,"HUMAN")||strcasestr(envPt->robot[nr_ctr]->name,"TABLE"))
+    {
+    //No need to calculate PUTABILITY :-)
+    }
+    else
+    {
+    
+   
+     double increment=3.0/4.0*grid_around_HRP2.GRID_SET->pace;
+     double top_z=envPt->robot[nr_ctr]->BB.zmax;
+     int cell_top_z=(top_z- grid_around_HRP2.GRID_SET->realz)/grid_around_HRP2.GRID_SET->pace;
+     
+     double BB_x_ctr;
+     double BB_y_ctr;
+
+    if(cell_top_z>=0&&cell_top_z<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz)
+    { 
+     for(BB_x_ctr=envPt->robot[nr_ctr]->BB.xmin;BB_x_ctr<envPt->robot[nr_ctr]->BB.xmax;BB_x_ctr+=increment)
+     {
+      int cell_x=(BB_x_ctr- grid_around_HRP2.GRID_SET->realx)/grid_around_HRP2.GRID_SET->pace;  
+
+      if(cell_x>=0&&cell_x<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx)
+      {
+      for(BB_y_ctr=envPt->robot[nr_ctr]->BB.ymin;BB_y_ctr<envPt->robot[nr_ctr]->BB.ymax;BB_y_ctr+=increment)
+       {
+      
+       int cell_y=(BB_y_ctr- grid_around_HRP2.GRID_SET->realy)/grid_around_HRP2.GRID_SET->pace;  
+ 
+       if(cell_y>=0&&cell_y<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny)
+        {
+
+      if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_top_z].val>=0&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_top_z-1].val>=0)//No obstacle
+         {
+
+        if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_top_z].Mightability_Map.reachable_by_JIDO_Hand==1)
+          {  
+        object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.is_true=1;
+        
+        object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[
+      object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.no_points].x=BB_x_ctr; 
+        object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[
+      object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.no_points].y=BB_y_ctr;
+        object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[
+      object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.no_points].z=top_z;
+ 
+        object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.no_points++;
+          }
+       
+        if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_top_z].Mightability_Map.reachable_by_human_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_top_z].Mightability_Map.reachable_by_human_RHand==1)
+          {  
+        object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.is_true=1;
+         object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.point[
+      object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.no_points].x=BB_x_ctr; 
+        object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.point[
+      object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.no_points].y=BB_y_ctr;
+        object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.point[
+      object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.no_points].z=top_z;
+ 
+        object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.no_points++;
+          }  
+  
+        if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_top_z].Mightability_Map.reachable_by_HRP2_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_top_z].Mightability_Map.reachable_by_HRP2_RHand==1)
+          {  
+        object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_HRP2.is_true=1;
+
+         object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_HRP2.point[
+      object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_HRP2.no_points].x=BB_x_ctr; 
+
+        object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_HRP2.point[
+      object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_HRP2.no_points].y=BB_y_ctr;
+
+        object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_HRP2.point[
+      object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_HRP2.no_points].z=top_z;
+ 
+        object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_HRP2.no_points++;
+          }
+
+         }
+        }
+       } 
+      }
+     }
+    }
+   }
+      /*
+         //, so assume that the object corresponding to this obstacle is visible
+          
+          int i=0;
+          for(i=0;i<nr;i++)
+          {
+           
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.belongs_to_objects_indx[i]==1)
+   
+   /*int is_visible=psp_is_object_visible(ACBTSET->human[ACBTSET->actual_human]->HumanPt, envPt->robot[nr_ctr], 50, FALSE); 
+   if(is_visible==1)
+    {
+     object_MM.object[nr_ctr].visible_by_human=1;
+    }*/
+  }   
+return 1;
+}
+
+ 
+int find_symbolic_Mightability_Map()
+{
+ hri_bitmap* bitmap=grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP];
+ envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+ int no = envPt->no;
+ int nr = envPt->nr;
+
+ int nr_ctr=0;
+    for(;nr_ctr<nr;nr_ctr++)
+     {
+      object_MM.object[nr_ctr].geo_MM.reachable_by_human_LHand=0;
+      object_MM.object[nr_ctr].geo_MM.reachable_by_human_RHand=0;
+      object_MM.object[nr_ctr].geo_MM.reachable_by_LHand_by_bending=0;
+      object_MM.object[nr_ctr].geo_MM.reachable_by_RHand_by_bending=0;
+      object_MM.object[nr_ctr].geo_MM.reachable_by_LHand_by_turning_around_bending=0;
+      object_MM.object[nr_ctr].geo_MM.reachable_by_RHand_by_turning_around_bending=0;
+     }  
+
+ int x,y,z;
+  for(x=0; x<bitmap->nx; x++)
+  {
+     for(y=0; y<bitmap->ny; y++)
+   {
+       for(z=0; z<bitmap->nz; z++)
+    {
+  
+  int nr_ctr=0;
+    for(;nr_ctr<nr;nr_ctr++)
+     {
+     if(bitmap->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[nr_ctr]==1)
+      {
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_LHand==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.reachable_by_human_LHand=1;
+       }
+       
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_RHand==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.reachable_by_human_RHand=1;
+       }
+
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_bending==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.reachable_by_LHand_by_bending=1;
+       }  
+
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_RHand_by_bending==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.reachable_by_RHand_by_bending=1;
+       }  
+
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_turning_around_bending==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.reachable_by_LHand_by_turning_around_bending=1;
+       } 
+
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_RHand_by_turning_around_bending==1)
+       {
+       object_MM.object[nr_ctr].geo_MM.reachable_by_RHand_by_turning_around_bending=1;
+       }
+ 
+      
+      }  
+     //bitmap->data[x][y][z].Mightability_map_cell_obj_info.close_to_objects_indx[nr_ctr]=0;//Initially does not belong to any cell
+     //bitmap->data[x][y][z].Mightability_map_cell_obj_info.is_horizontal_surface=0;
+     //bitmap->data[x][y][z].Mightability_map_cell_obj_info.near_horizontal_surface=0;
+     }
+     //bitmap->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects=0;
+     //bitmap->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects=0;  
+    }
+   }
+  }   
+return 1;
+}
+
+int Draw_Bounding_Box(double min_x, double min_y, double min_z, double max_x, double max_y, double max_z, int color)
+{
+ g3d_drawOneLine(
+        min_x, min_y, min_z,
+        max_x, min_y, min_z, color, NULL);
+
+g3d_drawOneLine(
+        max_x, min_y, min_z,
+        max_x, max_y, min_z, color, NULL);
+
+g3d_drawOneLine(
+        max_x, max_y, min_z,
+        min_x, max_y, min_z, color, NULL);
+
+g3d_drawOneLine(
+        min_x, max_y, min_z,
+        min_x, min_y, min_z, color, NULL);
+
+g3d_drawOneLine(
+        min_x, min_y, max_z,
+        max_x, min_y, max_z, color, NULL);
+
+g3d_drawOneLine(
+        max_x, min_y, max_z,
+        max_x, max_y, max_z, color, NULL);
+
+g3d_drawOneLine(
+        max_x, max_y, max_z,
+        min_x, max_y, max_z, color, NULL);
+
+g3d_drawOneLine(
+        min_x, max_y, max_z,
+        min_x, min_y, max_z, color, NULL);
+
+g3d_drawOneLine(
+        max_x, min_y, min_z,
+        max_x, min_y, max_z, color, NULL);
+
+g3d_drawOneLine(
+        max_x, max_y, min_z,
+        max_x, max_y, max_z, color, NULL);
+
+g3d_drawOneLine(
+        min_x, min_y, min_z,
+        min_x, min_y, max_z, color, NULL);
+
+g3d_drawOneLine(
+        min_x, max_y, min_z,
+        min_x, max_y, max_z, color, NULL);
+
+return 1;
+}
+
+int show_symbolic_Mightability_Map_Relations()
+{
+ 
+ envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+ int no = envPt->no;
+ int nr = envPt->nr;
+ int x,y,z;
+  
+ int show_visibility=0;
+ int show_reachability=0;
+ int show_reachability_to_put_inside=0;
+  
+  int nr_ctr=0;
+    for(;nr_ctr<nr;nr_ctr++)
+     {
+    
+      if(show_reachability==1)
+      {
+       int for_jido=1;
+       int for_human=0;
+
+       if(for_human==1)
+       {
+       if(object_MM.object[nr_ctr].geo_MM.reachable_by_human_LHand==1||object_MM.object[nr_ctr].geo_MM.reachable_by_human_RHand==1)
+        {
+        Draw_Bounding_Box(envPt->robot[nr_ctr]->BB.xmin,envPt->robot[nr_ctr]->BB.ymin,envPt->robot[nr_ctr]->BB.zmin,envPt->robot[nr_ctr]->BB.xmax,envPt->robot[nr_ctr]->BB.ymax,envPt->robot[nr_ctr]->BB.zmax, Green);
+        ////envPt->robot[i]->BB.xmin
+        }
+       
+      
+       if(object_MM.object[nr_ctr].geo_MM.reachable_by_LHand_by_bending==1||object_MM.object[nr_ctr].geo_MM.reachable_by_RHand_by_bending==1)
+        {
+        Draw_Bounding_Box(envPt->robot[nr_ctr]->BB.xmin,envPt->robot[nr_ctr]->BB.ymin,envPt->robot[nr_ctr]->BB.zmin,envPt->robot[nr_ctr]->BB.xmax,envPt->robot[nr_ctr]->BB.ymax,envPt->robot[nr_ctr]->BB.zmax, Blue);
+        }  
+/*
+       if(object_MM.object[nr_ctr].geo_MM.reachable_by_LHand_by_turning_around_bending==1||object_MM.object[nr_ctr].geo_MM.reachable_by_RHand_by_turning_around_bending==1)
+       {
+       Draw_Bounding_Box(envPt->robot[nr_ctr]->BB.xmin,envPt->robot[nr_ctr]->BB.ymin,envPt->robot[nr_ctr]->BB.zmin,envPt->robot[nr_ctr]->BB.xmax,envPt->robot[nr_ctr]->BB.ymax,envPt->robot[nr_ctr]->BB.zmax, Red);
+       } 
+*/
+       }
+  
+       if(for_jido==1)
+       {  
+       if(object_MM.object[nr_ctr].geo_MM.reachable_by_JIDO_Hand==1)
+        {
+        Draw_Bounding_Box(envPt->robot[nr_ctr]->BB.xmin,envPt->robot[nr_ctr]->BB.ymin,envPt->robot[nr_ctr]->BB.zmin,envPt->robot[nr_ctr]->BB.xmax,envPt->robot[nr_ctr]->BB.ymax,envPt->robot[nr_ctr]->BB.zmax, Yellow);
+        }  
+       }
+      }
+
+      if(show_visibility==1)
+      { 
+ 
+       if(object_MM.object[nr_ctr].geo_MM.visible_by_human==1)
+       {
+        Draw_Bounding_Box(envPt->robot[nr_ctr]->BB.xmin,envPt->robot[nr_ctr]->BB.ymin,envPt->robot[nr_ctr]->BB.zmin,envPt->robot[nr_ctr]->BB.xmax,envPt->robot[nr_ctr]->BB.ymax,envPt->robot[nr_ctr]->BB.zmax, Green);
+       
+       }
+/*       
+       if(object_MM.object[nr_ctr].geo_MM.visible_by_human_neck_turn==1)
+       {
+        Draw_Bounding_Box(envPt->robot[nr_ctr]->BB.xmin,envPt->robot[nr_ctr]->BB.ymin,envPt->robot[nr_ctr]->BB.zmin,envPt->robot[nr_ctr]->BB.xmax,envPt->robot[nr_ctr]->BB.ymax,envPt->robot[nr_ctr]->BB.zmax, Red);
+       
+       }
+
+       if(object_MM.object[nr_ctr].geo_MM.visible_by_human_straight_head_orientation==1)
+       {
+        Draw_Bounding_Box(envPt->robot[nr_ctr]->BB.xmin,envPt->robot[nr_ctr]->BB.ymin,envPt->robot[nr_ctr]->BB.zmin,envPt->robot[nr_ctr]->BB.xmax,envPt->robot[nr_ctr]->BB.ymax,envPt->robot[nr_ctr]->BB.zmax, Blue);
+       
+       }
+*/
+/*
+       if(object_MM.object[nr_ctr].visible_by_HRP2==1)
+       {
+        Draw_Bounding_Box(envPt->robot[nr_ctr]->BB.xmin,envPt->robot[nr_ctr]->BB.ymin,envPt->robot[nr_ctr]->BB.zmin,envPt->robot[nr_ctr]->BB.xmax,envPt->robot[nr_ctr]->BB.ymax,envPt->robot[nr_ctr]->BB.zmax, Yellow);
+       }
+       
+       if(object_MM.object[nr_ctr].visible_by_HRP2_straight_head_orientation==1)
+       {
+        Draw_Bounding_Box(envPt->robot[nr_ctr]->BB.xmin,envPt->robot[nr_ctr]->BB.ymin,envPt->robot[nr_ctr]->BB.zmin,envPt->robot[nr_ctr]->BB.xmax,envPt->robot[nr_ctr]->BB.ymax,envPt->robot[nr_ctr]->BB.zmax, Yellow);
+       }
+
+         
+       if(object_MM.object[nr_ctr].visible_by_HRP2_neck_turn==1)
+       {
+        Draw_Bounding_Box(envPt->robot[nr_ctr]->BB.xmin,envPt->robot[nr_ctr]->BB.ymin,envPt->robot[nr_ctr]->BB.zmin,envPt->robot[nr_ctr]->BB.xmax,envPt->robot[nr_ctr]->BB.ymax,envPt->robot[nr_ctr]->BB.zmax, Yellow);
+       }
+
+*/
+       if(object_MM.object[nr_ctr].geo_MM.visible_by_JIDO==1)
+       {
+        Draw_Bounding_Box(envPt->robot[nr_ctr]->BB.xmin,envPt->robot[nr_ctr]->BB.ymin,envPt->robot[nr_ctr]->BB.zmin,envPt->robot[nr_ctr]->BB.xmax,envPt->robot[nr_ctr]->BB.ymax,envPt->robot[nr_ctr]->BB.zmax, Yellow);
+       }
+/*       
+       if(object_MM.object[nr_ctr].visible_by_JIDO_straight_head_orientation==1)
+       {
+        Draw_Bounding_Box(envPt->robot[nr_ctr]->BB.xmin,envPt->robot[nr_ctr]->BB.ymin,envPt->robot[nr_ctr]->BB.zmin,envPt->robot[nr_ctr]->BB.xmax,envPt->robot[nr_ctr]->BB.ymax,envPt->robot[nr_ctr]->BB.zmax, Yellow);
+       }
+
+         
+       if(object_MM.object[nr_ctr].visible_by_JIDO_neck_turn==1)
+       {
+        Draw_Bounding_Box(envPt->robot[nr_ctr]->BB.xmin,envPt->robot[nr_ctr]->BB.ymin,envPt->robot[nr_ctr]->BB.zmin,envPt->robot[nr_ctr]->BB.xmax,envPt->robot[nr_ctr]->BB.ymax,envPt->robot[nr_ctr]->BB.zmax, Yellow);
+       }
+*/
+
+      } 
+
+     if(show_reachability_to_put_inside==1)
+      {
+       int i=0;
+       
+       for(i=0;i<object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.no_points;i++)
+       {
+          g3d_drawDisc(object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[i].x, object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[i].y, object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[i].z, grid_around_HRP2.GRID_SET->pace/2.0, Red, NULL);
+
+       }
+       
+       for(i=0;i<object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.no_points;i++)
+       {
+          g3d_drawDisc(object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.point[i].x, object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.point[i].y, object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.point[i].z, grid_around_HRP2.GRID_SET->pace/2.0, Green, NULL);
+
+      
+       } 
+      }
+     /* if(object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.no_points>0)
+      {
+          g3d_drawDisc(object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[0].x, object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[0].y, object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[0].z, grid_around_HRP2.GRID_SET->pace/2.0, Red, NULL);
+
+       } 
+     */
+     }
+
+         
+  return 1;
+}
+
+int show_obstacle_cells_belonging_to(int object_index)
+{
+  //////////printf(" Showing obstacle cells belonging to index %d\n",object_index);
+  int x,y,z;
+  for(x=0; x<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx; x++)
+  {
+     for(y=0; y<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny; y++)
+   {
+       for(z=0; z<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz; z++)
+    {
+  
+  
+  if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[object_index]==1)
+      {
+       
+       
+      ////////// printf("cell %d,%d, %d,\n",x,y,z);
+ 
+       
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_human==1)
+       {
+        //////////printf("This is first non visible cell for human also \n");          
+
+        double x_world = grid_around_HRP2.GRID_SET->realx + (x * grid_around_HRP2.GRID_SET->pace);
+       double y_world = grid_around_HRP2.GRID_SET->realy + (y * grid_around_HRP2.GRID_SET->pace);
+       double z_world = grid_around_HRP2.GRID_SET->realz + (z * grid_around_HRP2.GRID_SET->pace);
+ 
+    
+       g3d_drawDisc(x_world, y_world, z_world, grid_around_HRP2.GRID_SET->pace/2.0, Blue, NULL);
+       }
+/*
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_map_cell_obj_info.first_non_visible_by_human_straight_head_orientation==1)
+       {
+       ////////// printf("This is first_non_visible_by_human_straight_head_orientation also \n");          
+
+        double x_world = grid_around_HRP2.GRID_SET->realx + (x * grid_around_HRP2.GRID_SET->pace);
+       double y_world = grid_around_HRP2.GRID_SET->realy + (y * grid_around_HRP2.GRID_SET->pace);
+       double z_world = grid_around_HRP2.GRID_SET->realz + (z * grid_around_HRP2.GRID_SET->pace);
+ 
+    
+       g3d_drawDisc(x_world, y_world, z_world, grid_around_HRP2.GRID_SET->pace/2.0, Red, NULL);
+       }
+*/
+
+       double x_world = grid_around_HRP2.GRID_SET->realx + (x * grid_around_HRP2.GRID_SET->pace);
+       double y_world = grid_around_HRP2.GRID_SET->realy + (y * grid_around_HRP2.GRID_SET->pace);
+       double z_world = grid_around_HRP2.GRID_SET->realz + (z * grid_around_HRP2.GRID_SET->pace);
+ 
+    
+       g3d_drawDisc(x_world, y_world, z_world, grid_around_HRP2.GRID_SET->pace/4.0, Green, NULL);
+    
+       envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+ 
+       int nr = envPt->nr;
+       int i=0; 
+       for(i=0;i<nr;i++)
+       {
+        if(i!=object_index&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[i]==1)
+        {
+        ////////// printf("This cell also belongs to %s\n",envPt->robot[i]->name);
+        }
+        
+       }
+ 
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_map_cell_obj_info.is_horizontal_surface==1)//the cell just above the  horizontal surface of table
+       {
+        //////////printf(" This cell also belongs to horizontal surface\n");
+       }
+      }
+ 
+    }
+   }
+  }
+return 1;
+}
+
+
+
+//////////// For mhp requests
+int MM_is_object_visible(HRI_AGENT *agent, p3d_rob *object)
+{
+ int i=0;
+ for(i=0;i<Mightabilities_for_obj.total_no_obj;i++)
+ {
+ if(strcmp(object->name,Mightabilities_for_obj.object[i].object_name)==0)
+  {
+  if(agent->type==HRI_JIDO1)
+   {
+  if( Mightabilities_for_obj.object[i].obj_mightability.is_visible_by_robot==1)
+    {
+    return 1;
+    }
+   }	
+  if(agent->type==HRI_ACHILE)
+   {
+  if( Mightabilities_for_obj.object[i].obj_mightability.is_visible_by_human==1)
+    {
+    return 1;
+    }
+   }	
+  }
+ }
+}
+
+int MM_is_object_reachable(HRI_AGENT *agent, p3d_rob *object)
+{
+ int i=0;
+ for(i=0;i<Mightabilities_for_obj.total_no_obj;i++)
+ {
+ if(strcmp(object->name,Mightabilities_for_obj.object[i].object_name)==0)
+  {
+  if(agent->type==HRI_JIDO1)
+   {
+  if( Mightabilities_for_obj.object[i].obj_mightability.is_reachable_by_robot==1)
+    {
+    return 1;
+    }
+   }	
+  if(agent->type==HRI_ACHILE)
+   {
+  if( Mightabilities_for_obj.object[i].obj_mightability.is_reachable_by_human==1)
+    {
+    return 1;
+    }
+   }	
+  }
+ }
+}
+
+
+
+
+
+/////////// For CHRIS demo
+int plan_JIDO_arm_path_to_grasp(char* obj_to_grasp, MANIPULATION_TASK_TYPE_STR type);
+configPt show_all_grasps ( p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand );
+
+//////// START Graspability of object test
+
+static int init_Manipulation_params() 
+{
+  if (manipulation == NULL) {
+       ////////// printf(" Initializing for robot %s \n",GP_ROBOT_NAME);
+        
+	p3d_rob * robotPt= p3d_get_robot_by_name(GP_ROBOT_NAME);
+        //////////printf(" robotPt->nbCcCntrts = %d \n",robotPt->nbCcCntrts);
+	manipulation= new Manipulation_JIDO(robotPt, GP_GRIPPER);
+  }
+  return 1;
+}
+
+
+
+int find_candidate_points_for_putinto(int by_agent, int container_index)
+{
+ if(by_agent==3)//For JIDO
+ { 
+ envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+ 
+ point_co_ordi center_of_opening;
+ center_of_opening.x=(envPt->robot[container_index]->BB.xmin+envPt->robot[container_index]->BB.xmax)/2.0;
+ center_of_opening.y=(envPt->robot[container_index]->BB.ymin+envPt->robot[container_index]->BB.ymax)/2.0;
+ center_of_opening.z=(envPt->robot[container_index]->BB.zmin+envPt->robot[container_index]->BB.zmax)/2.0;
+
+ double Amplitude=1.0;
+ double sig_dist=4.0;
+
+ candidate_points_to_putinto_by_jido.no_points=0;
+ int i=0;
+ for ( i=0;i<object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.no_points;i++ )
+  {
+  candidate_points_to_putinto_by_jido.point[candidate_points_to_putinto_by_jido.no_points].x=object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i].x;
+  candidate_points_to_putinto_by_jido.point[candidate_points_to_putinto_by_jido.no_points].y=object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i].y;
+  candidate_points_to_putinto_by_jido.point[candidate_points_to_putinto_by_jido.no_points].z=object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i].z;
+
+  //Assigning initial weights based on the distance from the centre of the opening
+  double point_to_cnter_dist=sqrt((candidate_points_to_putinto_by_jido.point[candidate_points_to_putinto_by_jido.no_points].x-center_of_opening.x)*(candidate_points_to_putinto_by_jido.point[candidate_points_to_putinto_by_jido.no_points].x-center_of_opening.x)+(candidate_points_to_putinto_by_jido.point[candidate_points_to_putinto_by_jido.no_points].y-center_of_opening.y)*(candidate_points_to_putinto_by_jido.point[candidate_points_to_putinto_by_jido.no_points].y-center_of_opening.y)+(candidate_points_to_putinto_by_jido.point[candidate_points_to_putinto_by_jido.no_points].z-center_of_opening.z)*(candidate_points_to_putinto_by_jido.point[candidate_points_to_putinto_by_jido.no_points].z-center_of_opening.z));
+  
+  candidate_points_to_putinto_by_jido.weight[candidate_points_to_putinto_by_jido.no_points]=Amplitude*exp(-(((point_to_cnter_dist)*(point_to_cnter_dist)/2.0*sig_dist*sig_dist)));
+
+  
+  candidate_points_to_putinto_by_jido.no_points++;
+  }  
+ }
+}
+
+static int traj_play = TRUE;
+
+static int 
+default_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp)
+{
+  g3d_draw_allwin_active();
+  fl_check_forms();
+  return(traj_play);
+}
+
+int lp[10000];
+       Gb_q6 positions[10000];
+       int nbPositions = 0;
+
+int traj_ctr=0;
+        p3d_traj* current_new_trajPt[20];
+
+int test_jido_grasp_traj()
+{
+MM_RECORD_MOVIE_FRAMES=0;
+char support_name[50]="HRP2TABLE";
+	int no_obj=5;
+
+	double distance = 0.1;
+	double pre_q1, pre_q2, pre_q3,pre_q4, pre_q5, pre_q6, q1, q2, q3, q4, q5, q6;
+
+	if ( manipulation== NULL )
+	{
+		////initManipulationGenom(); //AKP : This is decleared static in FORMGenom.c, so below we define our own function
+		init_Manipulation_params();
+	}
+	////manipulation->setObjectToManipulate((char*)OBJECT_NAME);
+
+
+	manipulation->setArmCartesian ( true );
+#define CAMERA_JNT_NAME "Tilt"
+#define CAMERA_FOV 80.0
+
+//         manipulation->setCameraJnt((char*)CAMERA_JNT_NAME);
+	manipulation->setCameraFOV ( CAMERA_FOV );
+	manipulation->setCameraImageSize ( 200, 200 );
+
+ configPt JIDO_actual_pos = MY_ALLOC ( double,ACBTSET->robot->nb_dof ); /* Allocation of temporary robot configuration */
+        p3d_get_robot_config_into ( ACBTSET->robot,&JIDO_actual_pos ); 
+
+char obj_to_manipulate[10][50]={"RED_BOTTLE","GREY_TAPE","BLACK_TAPE","YELLOW_BOTTLE","BLUE_BOTTLE"};
+  
+
+			int i=0;
+			printf ( " Manipulating %s \n",obj_to_manipulate[i] );
+			int obj_index=get_index_of_robot_by_name ( obj_to_manipulate[i] );
+			g3d_draw_allwin_active();
+                        int grasp_path_res=0;
+// 			if ( strcasestr ( obj_to_manipulate[i],"TAPE" ) )
+//                        return 1;
+                        manipulation->setNbGraspsToTestForPickGoto(100);
+		        grasp_path_res=plan_JIDO_arm_path_to_grasp ( obj_to_manipulate[i], ARM_PICK_GOTO );
+                        printf(" After plan_JIDO_arm_path_to_grasp ( %s, ARM_PICK_GOTO )\n", obj_to_manipulate[i]);
+                        if(grasp_path_res==0)
+                        {
+                        printf(" Not able to plan_JIDO_arm_path_to_grasp for %s \n",obj_to_manipulate[i]);
+			return 0;
+                        }
+
+			/*
+                        //////// Playing the current trajectory
+                        ////p3d_traj* new_trajPt;
+                        current_new_trajPt[traj_ctr] = p3d_create_traj_by_copy(ACBTSET->robot->t[0]);
+                       
+                        traj_play = TRUE;
+                        g3d_show_tcur_rob(ACBTSET->robot,default_drawtraj_fct);
+                        traj_ctr++;
+                        p3d_copy_config_into ( ACBTSET->robot, ACBTSET-BLUE>robot->ROBOT_GOTO, &ACBTSET->robot->ROBOT_POS );
+                        p3d_set_and_update_this_robot_conf ( ACBTSET->robot,ACBTSET->robot->ROBOT_POS );
+                        */
+
+                        execute_JIDO_trajectory();//******Uncomment to execute configuration by configuration
+
+                        
+                        JIDO_put_obj_in_hand_into_trashbin("PINK_TRASHBIN",obj_to_manipulate[i]);
+                         
+                        if ( manipulation->grabObject ( obj_to_manipulate[i] ) !=0 )
+			{
+			////FORMGENOM_OBJECTGRABED = 0;
+			printf ( " AKP WARNING: CAN NOT GRAB %s to Manipulate\n", obj_to_manipulate[i] );
+			return 0;
+			}
+
+			/*
+                        //////Playing the current trajectory
+                        current_new_trajPt[traj_ctr] = p3d_create_traj_by_copy(ACBTSET->robot->t[0]);
+                       
+                        traj_play = TRUE;
+                        g3d_show_tcur_rob(ACBTSET->robot,default_drawtraj_fct);
+                        traj_ctr++;
+                        p3d_copy_config_into ( ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO, &ACBTSET->robot->ROBOT_POS );
+                        p3d_set_and_update_this_robot_conf ( ACBTSET->robot,ACBTSET->robot->ROBOT_POS );
+			*/
+                        JIDO_HOLDING_OBJECT=1;
+                        index_of_curr_obj_in_JIDO_hand=obj_index;
+                        execute_JIDO_trajectory();
+
+			manipulation->releaseObject();
+			
+                        JIDO_HOLDING_OBJECT=0;
+			
+                        simulate_object_falling(obj_to_manipulate[i]);
+			robots_status_for_Mightability_Maps[index_of_curr_obj_in_JIDO_hand].has_moved=0;
+                        index_of_curr_obj_in_JIDO_hand=-1;
+
+i=1;
+printf ( " Manipulating %s \n",obj_to_manipulate[i] );
+			obj_index=get_index_of_robot_by_name ( obj_to_manipulate[i] );
+			g3d_draw_allwin_active();
+                        grasp_path_res=0;
+// 			if ( strcasestr ( obj_to_manipulate[i],"TAPE" ) )
+//                        return 1;
+		        grasp_path_res=plan_JIDO_arm_path_to_grasp ( obj_to_manipulate[i], ARM_PICK_GOTO );
+                        printf(" After plan_JIDO_arm_path_to_grasp ( %s, ARM_PICK_GOTO )\n", obj_to_manipulate[i]);
+                        if(grasp_path_res==0)
+                        {
+                        printf(" Not able to plan_JIDO_arm_path_to_grasp for %s \n",obj_to_manipulate[i]);
+			return 0;
+                        }
+ 
+			/*
+                         //////Playing the current trajectory
+                        current_new_trajPt[traj_ctr] = p3d_create_traj_by_copy(ACBTSET->robot->t[0]);
+                       
+                        traj_play = TRUE;
+                        g3d_show_tcur_rob(ACBTSET->robot,default_drawtraj_fct);
+                        traj_ctr++;
+                        p3d_copy_config_into ( ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO, &ACBTSET->robot->ROBOT_POS );
+                        p3d_set_and_update_this_robot_conf ( ACBTSET->robot,ACBTSET->robot->ROBOT_POS );
+                        */
+                         
+                        execute_JIDO_trajectory();
+
+                        JIDO_put_obj_in_hand_into_trashbin("BLUE_TRASHBIN",obj_to_manipulate[i]);
+
+			 if ( manipulation->grabObject ( obj_to_manipulate[i] ) !=0 )
+			{
+			////FORMGENOM_OBJECTGRABED = 0;
+			printf ( " AKP WARNING: CAN NOT GRAB %s to Manipulate\n", obj_to_manipulate[i] );
+			return 0;
+			}
+
+                        /*
+                         //////Playing the current trajectory
+                        current_new_trajPt[traj_ctr] = p3d_create_traj_by_copy(ACBTSET->robot->t[0]);
+                       
+                        traj_play = TRUE;
+                        g3d_show_tcur_rob(ACBTSET->robot,default_drawtraj_fct);
+                        traj_ctr++;
+                        p3d_copy_config_into ( ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO, &ACBTSET->robot->ROBOT_POS );
+                        p3d_set_and_update_this_robot_conf ( ACBTSET->robot,ACBTSET->robot->ROBOT_POS );
+                        */
+                        JIDO_HOLDING_OBJECT=1;
+                         index_of_curr_obj_in_JIDO_hand=obj_index;
+                        execute_JIDO_trajectory();
+
+			manipulation->releaseObject();
+			
+			JIDO_HOLDING_OBJECT=0;
+                        simulate_object_falling(obj_to_manipulate[i]);
+ 			robots_status_for_Mightability_Maps[index_of_curr_obj_in_JIDO_hand].has_moved=0;
+                        index_of_curr_obj_in_JIDO_hand=-1;
+ 
+                        /* TODO: Debug it  
+			p3d_set_and_update_this_robot_conf ( ACBTSET->robot,JIDO_actual_pos );
+                        play_all_JIDO_trajectories();
+                        */ 
+
+i=3;
+printf ( " Manipulating %s \n",obj_to_manipulate[i] );
+			obj_index=get_index_of_robot_by_name ( obj_to_manipulate[i] );
+			g3d_draw_allwin_active();
+                        grasp_path_res=0;
+// 			if ( strcasestr ( obj_to_manipulate[i],"TAPE" ) )
+//                        return 1;
+		        grasp_path_res=plan_JIDO_arm_path_to_grasp ( obj_to_manipulate[i], ARM_PICK_GOTO );
+                        printf(" After plan_JIDO_arm_path_to_grasp ( %s, ARM_PICK_GOTO )\n", obj_to_manipulate[i]);
+                        if(grasp_path_res==0)
+                        {
+                        printf(" Not able to plan_JIDO_arm_path_to_grasp for %s \n",obj_to_manipulate[i]);
+			return 0;
+                        }
+ 
+                        /*
+                         //////Playing the current trajectory
+                        current_new_trajPt[traj_ctr] = p3d_create_traj_by_copy(ACBTSET->robot->t[0]);
+                       
+                        traj_play = TRUE;
+                        g3d_show_tcur_rob(ACBTSET->robot,default_drawtraj_fct);
+                        traj_ctr++;
+                        p3d_copy_config_into ( ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO, &ACBTSET->robot->ROBOT_POS );
+                        p3d_set_and_update_this_robot_conf ( ACBTSET->robot,ACBTSET->robot->ROBOT_POS );
+                        */
+                         
+                        execute_JIDO_trajectory();
+
+                        JIDO_put_obj_in_hand_into_trashbin("PINK_TRASHBIN",obj_to_manipulate[i]);
+
+			 if ( manipulation->grabObject ( obj_to_manipulate[i] ) !=0 )
+			{
+			////FORMGENOM_OBJECTGRABED = 0;
+			printf ( " AKP WARNING: CAN NOT GRAB %s to Manipulate\n", obj_to_manipulate[i] );
+			return 0;
+			}
+
+                        /*
+                        //////Playing the current trajectory
+                        current_new_trajPt[traj_ctr] = p3d_create_traj_by_copy(ACBTSET->robot->t[0]);
+                       
+                        traj_play = TRUE;
+                        g3d_show_tcur_rob(ACBTSET->robot,default_drawtraj_fct);
+                        traj_ctr++;
+                        p3d_copy_config_into ( ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO, &ACBTSET->robot->ROBOT_POS );
+                        p3d_set_and_update_this_robot_conf ( ACBTSET->robot,ACBTSET->robot->ROBOT_POS );
+                        */
+                        JIDO_HOLDING_OBJECT=1;
+                        index_of_curr_obj_in_JIDO_hand=obj_index; 
+                        execute_JIDO_trajectory();
+                        
+
+			manipulation->releaseObject();
+			
+			JIDO_HOLDING_OBJECT=0;
+                        simulate_object_falling(obj_to_manipulate[i]);
+			robots_status_for_Mightability_Maps[index_of_curr_obj_in_JIDO_hand].has_moved=0;
+                        index_of_curr_obj_in_JIDO_hand=-1;
+
+MM_RECORD_MOVIE_FRAMES=0;
+
+}
+
+int play_all_JIDO_trajectories()
+{
+ int i=0;
+ for(i=0;i<traj_ctr;i++)
+ {
+ ACBTSET->robot->tcur=current_new_trajPt[i];
+ 
+ traj_play = TRUE;
+ g3d_show_tcur_rob(ACBTSET->robot,default_drawtraj_fct);
+ p3d_copy_config_into ( ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO, &ACBTSET->robot->ROBOT_POS );
+ p3d_set_and_update_this_robot_conf ( ACBTSET->robot,ACBTSET->robot->ROBOT_POS );
+ }
+}
+
+int JIDO_put_obj_in_hand_into_trashbin ( char trashbin_name[50], char obj_to_manipulate[50] )
+{
+  int traj_ctr=0;
+  p3d_traj* current_new_trajPt[20];
+
+       	p3d_copy_config_into ( ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO, &ACBTSET->robot->ROBOT_POS );
+	envPt = ( p3d_env * ) p3d_get_desc_curid ( P3D_ENV );
+
+        int obj_index=get_index_of_robot_by_name ( obj_to_manipulate );
+
+	configPt obj_actual_pos = MY_ALLOC ( double,envPt->robot[obj_index]->nb_dof );
+	p3d_get_robot_config_into ( envPt->robot[obj_index],&obj_actual_pos );
+
+        
+        configPt obj_tmp_pos = MY_ALLOC ( double,envPt->robot[obj_index]->nb_dof );
+	p3d_get_robot_config_into ( envPt->robot[obj_index],&obj_tmp_pos );
+
+	int by_agent=3;//For jido
+        configPt JIDO_actual_pos = MY_ALLOC ( double,ACBTSET->robot->nb_dof ); /* Allocation of temporary robot configuration */
+        p3d_get_robot_config_into ( ACBTSET->robot,&JIDO_actual_pos ); 
+	int container_index=get_index_of_robot_by_name ( "BLUE_TRASHBIN" );
+	find_candidate_points_for_putinto ( by_agent, container_index );
+	int candi_pts_ctr=0;
+
+	for ( candi_pts_ctr=0;candi_pts_ctr<candidate_points_to_putinto_by_jido.no_points;candi_pts_ctr++ )
+	{
+		candidate_points_to_putinto_blue_trashbin_by_jido.point[candi_pts_ctr].x=candidate_points_to_putinto_by_jido.point[candi_pts_ctr].x;
+		candidate_points_to_putinto_blue_trashbin_by_jido.point[candi_pts_ctr].y=candidate_points_to_putinto_by_jido.point[candi_pts_ctr].y;
+		candidate_points_to_putinto_blue_trashbin_by_jido.point[candi_pts_ctr].z=candidate_points_to_putinto_by_jido.point[candi_pts_ctr].z;
+		candidate_points_to_putinto_blue_trashbin_by_jido.weight[candi_pts_ctr]=candidate_points_to_putinto_by_jido.weight[candi_pts_ctr];
+	}
+	candidate_points_to_putinto_blue_trashbin_by_jido.no_points=candidate_points_to_putinto_by_jido.no_points;
+
+	container_index=get_index_of_robot_by_name ( "PINK_TRASHBIN" );
+	find_candidate_points_for_putinto ( by_agent, container_index );
+	candi_pts_ctr=0;
+
+	for ( candi_pts_ctr=0;candi_pts_ctr<candidate_points_to_putinto_by_jido.no_points;candi_pts_ctr++ )
+	{
+		candidate_points_to_putinto_pink_trashbin_by_jido.point[candi_pts_ctr].x=candidate_points_to_putinto_by_jido.point[candi_pts_ctr].x;
+		candidate_points_to_putinto_pink_trashbin_by_jido.point[candi_pts_ctr].y=candidate_points_to_putinto_by_jido.point[candi_pts_ctr].y;
+		candidate_points_to_putinto_pink_trashbin_by_jido.point[candi_pts_ctr].z=candidate_points_to_putinto_by_jido.point[candi_pts_ctr].z;
+		candidate_points_to_putinto_pink_trashbin_by_jido.weight[candi_pts_ctr]=candidate_points_to_putinto_by_jido.weight[candi_pts_ctr];
+	}
+	candidate_points_to_putinto_pink_trashbin_by_jido.no_points=candidate_points_to_putinto_by_jido.no_points;
+
+	if ( strcasestr ( trashbin_name,"BLUE_TRASHBIN" ) )
+	{
+		container_index=get_index_of_robot_by_name ( "BLUE_TRASHBIN" );
+		int candi_pts_ctr=0;
+		for ( candi_pts_ctr=0;candi_pts_ctr<candidate_points_to_putinto_blue_trashbin_by_jido.no_points;candi_pts_ctr++ )
+		{
+			current_candidate_points_to_putinto.point[candi_pts_ctr].x=candidate_points_to_putinto_blue_trashbin_by_jido.point[candi_pts_ctr].x;
+			current_candidate_points_to_putinto.point[candi_pts_ctr].y=candidate_points_to_putinto_blue_trashbin_by_jido.point[candi_pts_ctr].y;
+			current_candidate_points_to_putinto.point[candi_pts_ctr].z=candidate_points_to_putinto_blue_trashbin_by_jido.point[candi_pts_ctr].z;
+			current_candidate_points_to_putinto.weight[candi_pts_ctr]=candidate_points_to_putinto_blue_trashbin_by_jido.weight[candi_pts_ctr];
+		}
+		current_candidate_points_to_putinto.no_points=candidate_points_to_putinto_blue_trashbin_by_jido.no_points;
+	}
+
+
+	if ( strcasestr ( trashbin_name,"PINK_TRASHBIN" ) )
+	{
+		container_index=get_index_of_robot_by_name ( "PINK_TRASHBIN" );
+		int candi_pts_ctr=0;
+		for ( candi_pts_ctr=0;candi_pts_ctr<candidate_points_to_putinto_blue_trashbin_by_jido.no_points;candi_pts_ctr++ )
+		{
+			current_candidate_points_to_putinto.point[candi_pts_ctr].x=candidate_points_to_putinto_pink_trashbin_by_jido.point[candi_pts_ctr].x;
+			current_candidate_points_to_putinto.point[candi_pts_ctr].y=candidate_points_to_putinto_pink_trashbin_by_jido.point[candi_pts_ctr].y;
+			current_candidate_points_to_putinto.point[candi_pts_ctr].z=candidate_points_to_putinto_pink_trashbin_by_jido.point[candi_pts_ctr].z;
+			current_candidate_points_to_putinto.weight[candi_pts_ctr]=candidate_points_to_putinto_pink_trashbin_by_jido.weight[candi_pts_ctr];
+		}
+		current_candidate_points_to_putinto.no_points=candidate_points_to_putinto_pink_trashbin_by_jido.no_points;
+	}
+
+
+	reverse_sort_weighted_candidate_points_to_putinto_obj();
+	//////////printf ( " >>>> No. of point to putinto =%d for the object %s \n", object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.no_points,obj_to_manipulate[i] );
+
+	printf ( " >>>> No. of point to putinto =%d, for %s \n", current_candidate_points_to_putinto.no_points,obj_to_manipulate );
+
+	double x,y,z,rx,ry,rz;
+	manipulation->getArmX ( &x, &y, &z, &rx, &ry, &rz );
+
+	p3d_get_robot_config_into ( ACBTSET->robot,&JIDO_actual_pos );
+
+	point_co_ordi goal_pos;
+	int put_into_success=0;
+
+	int i1=0;
+	for ( i1=0;i1<current_candidate_points_to_putinto.no_points;i1++ )
+	{
+		printf ( " **** Testing for %d th place to put into the trashbin for %s\n", i1, obj_to_manipulate );
+		////g3d_drawDisc(object_MM.object[rob_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i].x, object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[i].y, object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[i].z, grid_around_HRP2.GRID_SET->pace/2.0, Red, NULL);
+
+		/*rob_tmp_pos[6]=object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i1].x;
+		rob_tmp_pos[7]=object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i1].y;
+		rob_tmp_pos[8]=object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i1].z+0.15;
+		 
+		g3d_drawDisc(rob_tmp_pos[6],rob_tmp_pos[7],rob_tmp_pos[8],0.1, Green, NULL);
+
+		point_to_put.x=rob_tmp_pos[6];
+		point_to_put.y=rob_tmp_pos[7];
+		point_to_put.z=rob_tmp_pos[8];
+		*/
+
+		/*point_to_put.x=x+0.1;
+		point_to_put.y=y+0.1;
+		point_to_put.z=z+0.1;
+		*/
+
+		/*goal_pos.x=object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i1].x;
+		goal_pos.y=object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i1].y;
+		goal_pos.z=object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i1].z+0.15;
+		                */
+
+		goal_pos.x=current_candidate_points_to_putinto.point[i1].x;
+		goal_pos.y=current_candidate_points_to_putinto.point[i1].y;
+		goal_pos.z=current_candidate_points_to_putinto.point[i1].z+0.15;
+
+		point_to_put.x=goal_pos.x;
+		point_to_put.y=goal_pos.y;
+		point_to_put.z=goal_pos.z;
+
+		obj_tmp_pos[6]=point_to_put.x;
+		obj_tmp_pos[7]=point_to_put.y;
+		obj_tmp_pos[8]=point_to_put.z-0.25;
+		p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_tmp_pos );
+		g3d_draw_allwin_active();
+		p3d_col_deactivate_rob_rob ( envPt->robot[obj_index],ACBTSET->robot );
+
+		int kcd_with_report=0;
+		int res = p3d_col_test_robot ( envPt->robot[obj_index],kcd_with_report );
+		if ( res>0 )
+		{
+			printf ( " There is collision at %d th place to put %s , res=%d \n", i1, obj_to_manipulate, res );
+			pqp_print_colliding_pair();
+			continue;
+			//return 0;
+		}
+		p3d_col_activate_rob_rob ( envPt->robot[obj_index],ACBTSET->robot );
+
+		p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_actual_pos );
+
+		////manipulation->setArmX(rob_tmp_pos[6],rob_tmp_pos[7], rob_tmp_pos[8], rx, ry, rz);
+		////int arm_set_res=manipulation->setArmX(rob_tmp_pos[6],rob_tmp_pos[7], rob_tmp_pos[8], 500);
+		int maxi_no_rand_samples=50;
+		double rx_tmp, ry_tmp, rz_tmp;
+		int setArmX_ctr=0;
+		for ( setArmX_ctr=0; setArmX_ctr<maxi_no_rand_samples; setArmX_ctr++ )
+		{
+			rx_tmp= p3d_random ( -M_PI, M_PI );
+			ry_tmp= p3d_random ( -M_PI, M_PI );
+			rz_tmp= p3d_random ( -M_PI, M_PI );
+
+			int arm_set_res= manipulation->setArmX ( goal_pos.x, goal_pos.y, goal_pos.z, rx_tmp, ry_tmp, rz_tmp );
+
+			if ( arm_set_res==0 && !p3d_col_test_robot ( ACBTSET->robot, 0 ) )
+			{
+				////p3d_destroy_config(_robotPt, qcur);
+				////return 0;
+			}
+			else
+			{
+				printf ( " AKP Warning : Fail to setArmX\n" );
+				p3d_set_and_update_this_robot_conf ( ACBTSET->robot,JIDO_actual_pos );
+				continue;
+			}
+
+			////////////int arm_set_res=manipulation->setArmX(goal_pos.x,goal_pos.y, goal_pos.z, 5000);
+
+			g3d_draw_allwin_active();
+			/* if(arm_set_res==1)//Fail
+			 {
+			  printf(" AKP Warning : Fail to setArmX\n");
+			  p3d_set_and_update_this_robot_conf(ACBTSET->robot,JIDO_actual_pos);
+			  ////return 1;
+			  continue;
+			 }
+
+			  g3d_draw_allwin_active();
+			 */
+
+			p3d_get_robot_config_into ( ACBTSET->robot,&ACBTSET->robot->ROBOT_GOTO );
+			p3d_set_and_update_this_robot_conf ( ACBTSET->robot,JIDO_actual_pos );
+			p3d_get_robot_config_into ( ACBTSET->robot,&ACBTSET->robot->ROBOT_POS );
+			////////p3d_set_and_update_this_robot_conf(envPt->robot[rob_index],rob_tmp_pos);
+
+			g3d_draw_allwin_active();
+			int path_res=0;
+			if ( manipulation->grabObject ( obj_to_manipulate ) !=0 )
+			{
+				////FORMGENOM_OBJECTGRABED = 0;
+				printf ( " AKP WARNING: CAN NOT GRAB THE OBJECT\n" );
+				return 0;
+			}
+
+			//// }
+			path_res=plan_JIDO_arm_path_to_grasp ( obj_to_manipulate, ARM_PICK_TAKE_TO_FREE );
+			////////pqp_print_colliding_pair();
+
+			if ( path_res==1 )
+			{
+
+				configPt* curr_traj_configs;
+				int no_configs=0;
+				////curr_traj_configs= GP_GetAllTrajectoriesAsOne ( ACBTSET->robot,  no_configs );
+
+				curr_traj_configs= GP_GetTrajectory ( ACBTSET->robot,  ACBTSET->robot->t[0], no_configs );
+
+				printf ( " <<<< no_configs for putinto %d >>>>\n",no_configs );
+				/*int j=0;
+				for ( j=0;j<no_configs;j++ )
+				{
+					p3d_set_and_update_this_robot_conf ( ACBTSET->robot,curr_traj_configs[j] );
+					g3d_draw_allwin_active();
+				}*/
+				p3d_set_and_update_this_robot_conf ( ACBTSET->robot,curr_traj_configs[no_configs-1] );
+				g3d_draw_allwin_active();
+				p3d_get_robot_config_into ( envPt->robot[obj_index],&obj_tmp_pos );
+
+				p3d_col_deactivate_rob_rob ( envPt->robot[obj_index],ACBTSET->robot );
+
+//                                                 //****TO SHOW ARM MOTION
+//
+//                                                 for(j=0;j< nbPositions;j++)
+//                                                 {
+//                                                 manipulation->setArmQ(positions[j].q1, positions[j].q2, positions[j].q3, positions[j].q4, positions[j].q5, positions[j].q6);
+// 						g3d_draw_allwin_active();
+//                                                  fl_check_forms();
+//                                                 }
+//                                                 manipulation->setArmQ(positions[0].q1, positions[0].q2, positions[0].q3, positions[0].q4, positions[0].q5, positions[0].q6);
+//                                                 //p3d_set_and_update_this_robot_conf ( ACBTSET->robot,ACBTSET->robot->ROBOT_POS );
+// 						////p3d_get_robot_config_into ( ACBTSET->robot,&ACBTSET->robot->ROBOT_POS );
+//                                                 g3d_draw_allwin_active();
+// 					        //****END TO SHOW ARM MOTION
+
+				////manipulation->releaseObject();
+				////Just to test of falling of the object after releasing
+				int falling_collides=0;
+				////////p3d_get_robot_config_into ( envPt->robot[obj_index],&obj_tmp_pos );
+
+				////////p3d_col_deactivate_rob_rob ( envPt->robot[obj_index],ACBTSET->robot );
+
+				manipulation->releaseObject();
+
+				obj_tmp_pos[8]-=0.15;
+				p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_tmp_pos );
+				g3d_draw_allwin_active();
+				kcd_with_report=0;
+				res = p3d_col_test_robot ( envPt->robot[obj_index],kcd_with_report );
+				if ( res>0 )
+				{
+					printf ( " If freefall, There will be collision at %d th place to put %s , res=%d \n", i1, envPt->robot[obj_index]->name, res );
+					pqp_print_colliding_pair();
+
+					p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_actual_pos );
+					falling_collides=1;
+					p3d_col_activate_rob_rob ( envPt->robot[obj_index],ACBTSET->robot );
+
+					if ( manipulation->grabObject ( obj_to_manipulate ) !=0 )
+					{
+						////FORMGENOM_OBJECTGRABED = 0;
+						printf ( " **** There was free fall collosion. AKP WARNING: CAN NOT GRAB THE OBJECT\n" );
+						return 0;
+					}
+					p3d_set_and_update_this_robot_conf ( ACBTSET->robot,JIDO_actual_pos );
+					g3d_draw_allwin_active();
+					continue;
+				}
+				else
+				{
+					p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_actual_pos );
+					manipulation->setArmQ ( positions[0].q1, positions[0].q2, positions[0].q3, positions[0].q4, positions[0].q5, positions[0].q6 );
+
+					if ( manipulation->grabObject ( obj_to_manipulate ) !=0 )
+					{
+						////FORMGENOM_OBJECTGRABED = 0;
+						printf ( " AKP WARNING: CAN NOT GRAB THE OBJECT\n" );
+						return 0;
+					}
+					/*
+                                        current_new_trajPt[traj_ctr] = p3d_create_traj_by_copy ( ACBTSET->robot->t[0] );
+					ACBTSET->robot->tcur=ACBTSET->robot->t[0];
+					traj_play = TRUE;
+					g3d_show_tcur_rob(ACBTSET->robot,default_drawtraj_fct);
+					traj_ctr++;
+					*/	
+ 					/*
+                                        printf(" ***** TOTAL no. of Configs = %d \n",nbPositions);
+					int j=0;
+					for ( j=0;j< nbPositions;j++ )
+					{
+						manipulation->setArmQ ( positions[j].q1, positions[j].q2, positions[j].q3, positions[j].q4, positions[j].q5, positions[j].q6 );
+						g3d_draw_allwin_active();
+						fl_check_forms();
+					}*/
+					//manipulation->releaseObject();
+					
+					printf ( " Putting the %s into trashbin is successfull \n",obj_to_manipulate );
+					//p3d_set_and_update_this_robot_conf ( ACBTSET->robot,JIDO_actual_pos );
+					/*
+					p3d_get_robot_config_into ( ACBTSET->robot,&JIDO_actual_pos );
+					p3d_get_robot_config_into ( ACBTSET->robot,&ACBTSET->robot->ROBOT_POS );
+					obj_tmp_pos[8]+=0.15;
+					p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_tmp_pos );
+					//////p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_actual_pos );
+					p3d_col_activate_rob_rob ( envPt->robot[obj_index],ACBTSET->robot );
+					g3d_draw_allwin_active();
+					*/
+// 						if ( manipulation->grabObject ( obj_to_manipulate[i] ) !=0 )
+// 						{
+// 					////FORMGENOM_OBJECTGRABED = 0;
+// 						printf ( " AKP WARNING: CAN NOT GRAB THE OBJECT\n" );
+// 						return 0;
+// 						}
+//
+// 				                 for(j=0;j< nbPositions;j++)
+//                                                 {
+//                                                 manipulation->setArmQ(positions[j].q1, positions[j].q2, positions[j].q3, positions[j].q4, positions[j].q5, positions[j].q6);
+// 						g3d_draw_allwin_active();
+//                                                  fl_check_forms();
+//                                                 }
+					//manipulation->releaseObject();
+					/*current_new_trajPt[traj_ctr] = p3d_create_traj_by_copy ( ACBTSET->robot->t[0] );
+					ACBTSET->robot->tcur=ACBTSET->robot->t[0];
+					traj_play = TRUE;
+					g3d_show_tcur_rob(ACBTSET->robot,default_drawtraj_fct);
+					traj_ctr++;
+                                        
+					p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_tmp_pos );
+                                        */ 
+					////current_new_trajPt = p3d_create_traj_by_copy(ACBTSET->robot->t[0]);
+					////CB_showtraj_obj(NULL,0);
+
+					put_into_success=1;
+				}
+				////continue;
+				//////////p3d_col_activate_rob_rob ( envPt->robot[obj_index],ACBTSET->robot );
+
+				////////if ( falling_collides==1 )
+				////////continue;
+
+				//return 0;
+
+				/*
+				int obj_pos_ctr=0;
+				for ( obj_pos_ctr=0;obj_pos_ctr<15;obj_pos_ctr++ )
+				{
+				printf(" Setting %s, as (x,y,z) =(%lf, %lf, %lf)\n", envPt->robot[obj_index]->name,obj_tmp_pos[6], obj_tmp_pos[7], obj_tmp_pos[8]);
+				obj_tmp_pos[8]-=0.02;
+				p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_tmp_pos );
+				g3d_draw_allwin_active();
+				        g3d_draw_allwin_active();
+				////kcd_with_report=0;
+				////res = p3d_col_test_robot(envPt->robot[obj_index],kcd_with_report);
+				////if(res>0)
+				////{
+				////printf(" While falling There is collision at %d th place to put %s , res=%d \n", i1, envPt->robot[obj_index]->name, res);
+				////pqp_print_colliding_pair();
+				////p3d_set_and_update_this_robot_conf(envPt->robot[obj_index],obj_actual_pos);
+				////falling_collides=1;
+				////continue;
+				////break;
+				//return 0;
+				////}
+
+				}
+				*/
+				////p3d_col_activate_rob_rob(envPt->robot[obj_index],ACBTSET->robot);
+
+				////if(falling_collides==1)
+				////continue;
+				////else
+				////break;
+				break; //It will break the for ( setArmX_ctr=0) loop
+
+			}
+
+		}//end for ( setArmX_ctr=0
+
+
+
+		/*
+		p3d_copy_config_into(ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO, &ACBTSET->robot->ROBOT_POS);
+
+		plan_JIDO_arm_path_to_grasp(obj_to_manipulate[i], ARM_PICK_TAKE_TO_FREE);
+		pqp_print_colliding_pair();
+
+		////curr_traj_configs= GP_GetAllTrajectoriesAsOne ( ACBTSET->robot,  no_configs );
+		curr_traj_configs= GP_GetTrajectory ( ACBTSET->robot,  ACBTSET->robot->t[0], no_configs );
+
+		printf(" <<<< no_configs %d >>>>\n",no_configs);
+		j=0;
+		for(j=0;j<no_configs;j++)
+		 {
+		 p3d_set_and_update_this_robot_conf(ACBTSET->robot,curr_traj_configs[j]);
+		 g3d_draw_allwin_active();
+		 }
+		////p3d_get_robot_config_into(ACBTSET->robot,&rob_cur_pos);
+		p3d_copy_config_into(ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO, &ACBTSET->robot->ROBOT_POS);
+		*/
+		////return 1;
+		if ( put_into_success==1 )
+		{
+//                         int j1=0;
+// 			 for(j1=0;j1< nbPositions;j1++)
+//                                                 {
+//                                                 manipulation->setArmQ(positions[j1].q1, positions[j1].q2, positions[j1].q3, positions[j1].q4, positions[j1].q5, positions[j1].q6);
+// 						g3d_draw_allwin_active();
+//                                                 }
+			manipulation->releaseObject();
+
+			/*p3d_set_and_update_this_robot_conf(ACBTSET->robot,rob_cur_pos);
+			traj_play = TRUE;
+			ACBTSET->robot->tcur=current_new_trajPt;
+			   g3d_show_tcur_rob(ACBTSET->robot,default_drawtraj_fct);
+			 */
+			/*
+			            if ( manipulation->grabObject ( obj_to_manipulate[i] ) !=0 )
+					{
+					////FORMGENOM_OBJECTGRABED = 0;
+					printf ( " AKP WARNING: CAN NOT GRAB THE OBJECT\n" );
+					return 0;
+					}
+
+
+			manipulation->releaseObject();
+			            */
+			
+			
+			
+			printf ( " %d th place to putinto trashbin is final place to release %s\n", i1, envPt->robot[obj_index]->name );
+			g3d_draw_allwin_active();
+			////return 1;
+			break;
+		}
+	}//End for(i1)
+
+
+}
+
+int simulate_object_falling(char obj_name[50])
+{
+   int obj_index=get_index_of_robot_by_name ( obj_name );
+
+// 	configPt obj_actual_pos = MY_ALLOC ( double,envPt->robot[obj_index]->nb_dof );
+// 	p3d_get_robot_config_into ( envPt->robot[obj_index],&obj_actual_pos );
+
+        
+        configPt obj_tmp_pos = MY_ALLOC ( double,envPt->robot[obj_index]->nb_dof );
+	p3d_get_robot_config_into ( envPt->robot[obj_index],&obj_tmp_pos );
+
+			int obj_pos_ctr=0;
+                        p3d_get_robot_config_into ( envPt->robot[obj_index],&obj_tmp_pos );
+			for ( obj_pos_ctr=0;obj_pos_ctr<15;obj_pos_ctr++ )
+			{
+				////printf(" Setting %s, as (x,y,z) =(%lf, %lf, %lf)\n", envPt->robot[obj_index]->name,obj_tmp_pos[6], obj_tmp_pos[7], obj_tmp_pos[8]);
+				obj_tmp_pos[8]-=0.02;
+				p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_tmp_pos );
+				g3d_draw_allwin_active();
+
+				int kcd_with_report=0;
+				int res  = p3d_col_test_robot ( envPt->robot[obj_index],kcd_with_report );
+				if ( res>0 )
+				{
+					printf ( " While falling There is collision for %s , res=%d \n",  envPt->robot[obj_index]->name, res );
+					pqp_print_colliding_pair();
+					////p3d_set_and_update_this_robot_conf(envPt->robot[obj_index],obj_actual_pos);
+					////falling_collides=1;
+					////continue;
+					////break;
+					//return 0;
+				}
+
+			}
+      p3d_get_robot_config_into ( envPt->robot[obj_index],&envPt->robot[obj_index]->ROBOT_POS );
+      MY_FREE (obj_tmp_pos, double,envPt->robot[obj_index]->nb_dof );
+
+}
+
+int JIDO_put_obj_in_hand_into_trashbin_old ( char trashbin_name[50], char obj_to_manipulate[50] )
+{
+  int traj_ctr=0;
+  p3d_traj* current_new_trajPt[20];
+
+       	p3d_copy_config_into ( ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO, &ACBTSET->robot->ROBOT_POS );
+	envPt = ( p3d_env * ) p3d_get_desc_curid ( P3D_ENV );
+
+        int obj_index=get_index_of_robot_by_name ( obj_to_manipulate );
+
+	configPt obj_actual_pos = MY_ALLOC ( double,envPt->robot[obj_index]->nb_dof );
+	p3d_get_robot_config_into ( envPt->robot[obj_index],&obj_actual_pos );
+
+        
+        configPt obj_tmp_pos = MY_ALLOC ( double,envPt->robot[obj_index]->nb_dof );
+	p3d_get_robot_config_into ( envPt->robot[obj_index],&obj_tmp_pos );
+
+	int by_agent=3;//For jido
+        configPt JIDO_actual_pos = MY_ALLOC ( double,ACBTSET->robot->nb_dof ); /* Allocation of temporary robot configuration */
+        p3d_get_robot_config_into ( ACBTSET->robot,&JIDO_actual_pos ); 
+	int container_index=get_index_of_robot_by_name ( "BLUE_TRASHBIN" );
+	find_candidate_points_for_putinto ( by_agent, container_index );
+	int candi_pts_ctr=0;
+
+	for ( candi_pts_ctr=0;candi_pts_ctr<candidate_points_to_putinto_by_jido.no_points;candi_pts_ctr++ )
+	{
+		candidate_points_to_putinto_blue_trashbin_by_jido.point[candi_pts_ctr].x=candidate_points_to_putinto_by_jido.point[candi_pts_ctr].x;
+		candidate_points_to_putinto_blue_trashbin_by_jido.point[candi_pts_ctr].y=candidate_points_to_putinto_by_jido.point[candi_pts_ctr].y;
+		candidate_points_to_putinto_blue_trashbin_by_jido.point[candi_pts_ctr].z=candidate_points_to_putinto_by_jido.point[candi_pts_ctr].z;
+		candidate_points_to_putinto_blue_trashbin_by_jido.weight[candi_pts_ctr]=candidate_points_to_putinto_by_jido.weight[candi_pts_ctr];
+	}
+	candidate_points_to_putinto_blue_trashbin_by_jido.no_points=candidate_points_to_putinto_by_jido.no_points;
+
+	container_index=get_index_of_robot_by_name ( "PINK_TRASHBIN" );
+	find_candidate_points_for_putinto ( by_agent, container_index );
+	candi_pts_ctr=0;
+
+	for ( candi_pts_ctr=0;candi_pts_ctr<candidate_points_to_putinto_by_jido.no_points;candi_pts_ctr++ )
+	{
+		candidate_points_to_putinto_pink_trashbin_by_jido.point[candi_pts_ctr].x=candidate_points_to_putinto_by_jido.point[candi_pts_ctr].x;
+		candidate_points_to_putinto_pink_trashbin_by_jido.point[candi_pts_ctr].y=candidate_points_to_putinto_by_jido.point[candi_pts_ctr].y;
+		candidate_points_to_putinto_pink_trashbin_by_jido.point[candi_pts_ctr].z=candidate_points_to_putinto_by_jido.point[candi_pts_ctr].z;
+		candidate_points_to_putinto_pink_trashbin_by_jido.weight[candi_pts_ctr]=candidate_points_to_putinto_by_jido.weight[candi_pts_ctr];
+	}
+	candidate_points_to_putinto_pink_trashbin_by_jido.no_points=candidate_points_to_putinto_by_jido.no_points;
+
+	if ( strcasestr ( trashbin_name,"BLUE_TRASHBIN" ) )
+	{
+		container_index=get_index_of_robot_by_name ( "BLUE_TRASHBIN" );
+		int candi_pts_ctr=0;
+		for ( candi_pts_ctr=0;candi_pts_ctr<candidate_points_to_putinto_blue_trashbin_by_jido.no_points;candi_pts_ctr++ )
+		{
+			current_candidate_points_to_putinto.point[candi_pts_ctr].x=candidate_points_to_putinto_blue_trashbin_by_jido.point[candi_pts_ctr].x;
+			current_candidate_points_to_putinto.point[candi_pts_ctr].y=candidate_points_to_putinto_blue_trashbin_by_jido.point[candi_pts_ctr].y;
+			current_candidate_points_to_putinto.point[candi_pts_ctr].z=candidate_points_to_putinto_blue_trashbin_by_jido.point[candi_pts_ctr].z;
+			current_candidate_points_to_putinto.weight[candi_pts_ctr]=candidate_points_to_putinto_blue_trashbin_by_jido.weight[candi_pts_ctr];
+		}
+		current_candidate_points_to_putinto.no_points=candidate_points_to_putinto_blue_trashbin_by_jido.no_points;
+	}
+
+
+	if ( strcasestr ( trashbin_name,"PINK_TRASHBIN" ) )
+	{
+		container_index=get_index_of_robot_by_name ( "PINK_TRASHBIN" );
+		int candi_pts_ctr=0;
+		for ( candi_pts_ctr=0;candi_pts_ctr<candidate_points_to_putinto_blue_trashbin_by_jido.no_points;candi_pts_ctr++ )
+		{
+			current_candidate_points_to_putinto.point[candi_pts_ctr].x=candidate_points_to_putinto_pink_trashbin_by_jido.point[candi_pts_ctr].x;
+			current_candidate_points_to_putinto.point[candi_pts_ctr].y=candidate_points_to_putinto_pink_trashbin_by_jido.point[candi_pts_ctr].y;
+			current_candidate_points_to_putinto.point[candi_pts_ctr].z=candidate_points_to_putinto_pink_trashbin_by_jido.point[candi_pts_ctr].z;
+			current_candidate_points_to_putinto.weight[candi_pts_ctr]=candidate_points_to_putinto_pink_trashbin_by_jido.weight[candi_pts_ctr];
+		}
+		current_candidate_points_to_putinto.no_points=candidate_points_to_putinto_pink_trashbin_by_jido.no_points;
+	}
+
+
+	reverse_sort_weighted_candidate_points_to_putinto_obj();
+	//////////printf ( " >>>> No. of point to putinto =%d for the object %s \n", object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.no_points,obj_to_manipulate[i] );
+
+	printf ( " >>>> No. of point to putinto =%d, for %s \n", current_candidate_points_to_putinto.no_points,obj_to_manipulate );
+
+	double x,y,z,rx,ry,rz;
+	manipulation->getArmX ( &x, &y, &z, &rx, &ry, &rz );
+
+	p3d_get_robot_config_into ( ACBTSET->robot,&JIDO_actual_pos );
+
+	point_co_ordi goal_pos;
+	int put_into_success=0;
+
+	int i1=0;
+	for ( i1=0;i1<current_candidate_points_to_putinto.no_points;i1++ )
+	{
+		printf ( " **** Testing for %d th place to put into the trashbin for %s\n", i1, obj_to_manipulate );
+		////g3d_drawDisc(object_MM.object[rob_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i].x, object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[i].y, object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[i].z, grid_around_HRP2.GRID_SET->pace/2.0, Red, NULL);
+
+		/*rob_tmp_pos[6]=object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i1].x;
+		rob_tmp_pos[7]=object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i1].y;
+		rob_tmp_pos[8]=object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i1].z+0.15;
+		 
+		g3d_drawDisc(rob_tmp_pos[6],rob_tmp_pos[7],rob_tmp_pos[8],0.1, Green, NULL);
+
+		point_to_put.x=rob_tmp_pos[6];
+		point_to_put.y=rob_tmp_pos[7];
+		point_to_put.z=rob_tmp_pos[8];
+		*/
+
+		/*point_to_put.x=x+0.1;
+		point_to_put.y=y+0.1;
+		point_to_put.z=z+0.1;
+		*/
+
+		/*goal_pos.x=object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i1].x;
+		goal_pos.y=object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i1].y;
+		goal_pos.z=object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.point[i1].z+0.15;
+		                */
+
+		goal_pos.x=current_candidate_points_to_putinto.point[i1].x;
+		goal_pos.y=current_candidate_points_to_putinto.point[i1].y;
+		goal_pos.z=current_candidate_points_to_putinto.point[i1].z+0.15;
+
+		point_to_put.x=goal_pos.x;
+		point_to_put.y=goal_pos.y;
+		point_to_put.z=goal_pos.z;
+
+		obj_tmp_pos[6]=point_to_put.x;
+		obj_tmp_pos[7]=point_to_put.y;
+		obj_tmp_pos[8]=point_to_put.z-0.25;
+		p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_tmp_pos );
+		g3d_draw_allwin_active();
+		p3d_col_deactivate_rob_rob ( envPt->robot[obj_index],ACBTSET->robot );
+
+		int kcd_with_report=0;
+		int res = p3d_col_test_robot ( envPt->robot[obj_index],kcd_with_report );
+		if ( res>0 )
+		{
+			printf ( " There is collision at %d th place to put %s , res=%d \n", i1, obj_to_manipulate, res );
+			pqp_print_colliding_pair();
+			continue;
+			//return 0;
+		}
+		p3d_col_activate_rob_rob ( envPt->robot[obj_index],ACBTSET->robot );
+
+		p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_actual_pos );
+
+		////manipulation->setArmX(rob_tmp_pos[6],rob_tmp_pos[7], rob_tmp_pos[8], rx, ry, rz);
+		////int arm_set_res=manipulation->setArmX(rob_tmp_pos[6],rob_tmp_pos[7], rob_tmp_pos[8], 500);
+		int maxi_no_rand_samples=50;
+		double rx_tmp, ry_tmp, rz_tmp;
+		int setArmX_ctr=0;
+		for ( setArmX_ctr=0; setArmX_ctr<maxi_no_rand_samples; setArmX_ctr++ )
+		{
+			rx_tmp= p3d_random ( -M_PI, M_PI );
+			ry_tmp= p3d_random ( -M_PI, M_PI );
+			rz_tmp= p3d_random ( -M_PI, M_PI );
+
+			int arm_set_res= manipulation->setArmX ( goal_pos.x, goal_pos.y, goal_pos.z, rx_tmp, ry_tmp, rz_tmp );
+
+			if ( arm_set_res==0 && !p3d_col_test_robot ( ACBTSET->robot, 0 ) )
+			{
+				////p3d_destroy_config(_robotPt, qcur);
+				////return 0;
+			}
+			else
+			{
+				printf ( " AKP Warning : Fail to setArmX\n" );
+				p3d_set_and_update_this_robot_conf ( ACBTSET->robot,JIDO_actual_pos );
+				continue;
+			}
+
+			////////////int arm_set_res=manipulation->setArmX(goal_pos.x,goal_pos.y, goal_pos.z, 5000);
+
+			g3d_draw_allwin_active();
+			/* if(arm_set_res==1)//Fail
+			 {
+			  printf(" AKP Warning : Fail to setArmX\n");
+			  p3d_set_and_update_this_robot_conf(ACBTSET->robot,JIDO_actual_pos);
+			  ////return 1;
+			  continue;
+			 }
+
+			  g3d_draw_allwin_active();
+			 */
+
+			p3d_get_robot_config_into ( ACBTSET->robot,&ACBTSET->robot->ROBOT_GOTO );
+			p3d_set_and_update_this_robot_conf ( ACBTSET->robot,JIDO_actual_pos );
+			p3d_get_robot_config_into ( ACBTSET->robot,&ACBTSET->robot->ROBOT_POS );
+			////////p3d_set_and_update_this_robot_conf(envPt->robot[rob_index],rob_tmp_pos);
+
+			g3d_draw_allwin_active();
+			int path_res=0;
+			if ( manipulation->grabObject ( obj_to_manipulate ) !=0 )
+			{
+				////FORMGENOM_OBJECTGRABED = 0;
+				printf ( " AKP WARNING: CAN NOT GRAB THE OBJECT\n" );
+				return 0;
+			}
+
+			//// }
+			path_res=plan_JIDO_arm_path_to_grasp ( obj_to_manipulate, ARM_PICK_TAKE_TO_FREE );
+			////////pqp_print_colliding_pair();
+
+			if ( path_res==1 )
+			{
+
+				configPt* curr_traj_configs;
+				int no_configs=0;
+				////curr_traj_configs= GP_GetAllTrajectoriesAsOne ( ACBTSET->robot,  no_configs );
+
+				curr_traj_configs= GP_GetTrajectory ( ACBTSET->robot,  ACBTSET->robot->t[0], no_configs );
+
+				printf ( " <<<< no_configs for putinto %d >>>>\n",no_configs );
+				/*int j=0;
+				for ( j=0;j<no_configs;j++ )
+				{
+					p3d_set_and_update_this_robot_conf ( ACBTSET->robot,curr_traj_configs[j] );
+					g3d_draw_allwin_active();
+				}*/
+				p3d_set_and_update_this_robot_conf ( ACBTSET->robot,curr_traj_configs[no_configs-1] );
+				g3d_draw_allwin_active();
+				p3d_get_robot_config_into ( envPt->robot[obj_index],&obj_tmp_pos );
+
+				p3d_col_deactivate_rob_rob ( envPt->robot[obj_index],ACBTSET->robot );
+
+//                                                 //****TO SHOW ARM MOTION
+//
+//                                                 for(j=0;j< nbPositions;j++)
+//                                                 {
+//                                                 manipulation->setArmQ(positions[j].q1, positions[j].q2, positions[j].q3, positions[j].q4, positions[j].q5, positions[j].q6);
+// 						g3d_draw_allwin_active();
+//                                                  fl_check_forms();
+//                                                 }
+//                                                 manipulation->setArmQ(positions[0].q1, positions[0].q2, positions[0].q3, positions[0].q4, positions[0].q5, positions[0].q6);
+//                                                 //p3d_set_and_update_this_robot_conf ( ACBTSET->robot,ACBTSET->robot->ROBOT_POS );
+// 						////p3d_get_robot_config_into ( ACBTSET->robot,&ACBTSET->robot->ROBOT_POS );
+//                                                 g3d_draw_allwin_active();
+// 					        //****END TO SHOW ARM MOTION
+
+				////manipulation->releaseObject();
+				////Just to test of falling of the object after releasing
+				int falling_collides=0;
+				////////p3d_get_robot_config_into ( envPt->robot[obj_index],&obj_tmp_pos );
+
+				////////p3d_col_deactivate_rob_rob ( envPt->robot[obj_index],ACBTSET->robot );
+
+				manipulation->releaseObject();
+
+				obj_tmp_pos[8]-=0.15;
+				p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_tmp_pos );
+				g3d_draw_allwin_active();
+				kcd_with_report=0;
+				res = p3d_col_test_robot ( envPt->robot[obj_index],kcd_with_report );
+				if ( res>0 )
+				{
+					printf ( " If freefall, There will be collision at %d th place to put %s , res=%d \n", i1, envPt->robot[obj_index]->name, res );
+					pqp_print_colliding_pair();
+
+					p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_actual_pos );
+					falling_collides=1;
+					p3d_col_activate_rob_rob ( envPt->robot[obj_index],ACBTSET->robot );
+
+					if ( manipulation->grabObject ( obj_to_manipulate ) !=0 )
+					{
+						////FORMGENOM_OBJECTGRABED = 0;
+						printf ( " **** There was free fall collosion. AKP WARNING: CAN NOT GRAB THE OBJECT\n" );
+						return 0;
+					}
+					p3d_set_and_update_this_robot_conf ( ACBTSET->robot,JIDO_actual_pos );
+					g3d_draw_allwin_active();
+					continue;
+				}
+				else
+				{
+					p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_actual_pos );
+					manipulation->setArmQ ( positions[0].q1, positions[0].q2, positions[0].q3, positions[0].q4, positions[0].q5, positions[0].q6 );
+
+					if ( manipulation->grabObject ( obj_to_manipulate ) !=0 )
+					{
+						////FORMGENOM_OBJECTGRABED = 0;
+						printf ( " AKP WARNING: CAN NOT GRAB THE OBJECT\n" );
+						return 0;
+					}
+					/*
+                                        current_new_trajPt[traj_ctr] = p3d_create_traj_by_copy ( ACBTSET->robot->t[0] );
+					ACBTSET->robot->tcur=ACBTSET->robot->t[0];
+					traj_play = TRUE;
+					g3d_show_tcur_rob(ACBTSET->robot,default_drawtraj_fct);
+					traj_ctr++;
+					*/	
+ 					
+                                        printf(" ***** TOTAL no. of Configs = %d \n",nbPositions);
+					int j=0;
+					for ( j=0;j< nbPositions;j++ )
+					{
+						manipulation->setArmQ ( positions[j].q1, positions[j].q2, positions[j].q3, positions[j].q4, positions[j].q5, positions[j].q6 );
+						g3d_draw_allwin_active();
+						fl_check_forms();
+					}
+					//manipulation->releaseObject();
+					
+					printf ( " Putting the %s into trashbin is successfull \n",obj_to_manipulate );
+					//p3d_set_and_update_this_robot_conf ( ACBTSET->robot,JIDO_actual_pos );
+					/*
+					p3d_get_robot_config_into ( ACBTSET->robot,&JIDO_actual_pos );
+					p3d_get_robot_config_into ( ACBTSET->robot,&ACBTSET->robot->ROBOT_POS );
+					obj_tmp_pos[8]+=0.15;
+					p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_tmp_pos );
+					//////p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_actual_pos );
+					p3d_col_activate_rob_rob ( envPt->robot[obj_index],ACBTSET->robot );
+					g3d_draw_allwin_active();
+					*/
+// 						if ( manipulation->grabObject ( obj_to_manipulate[i] ) !=0 )
+// 						{
+// 					////FORMGENOM_OBJECTGRABED = 0;
+// 						printf ( " AKP WARNING: CAN NOT GRAB THE OBJECT\n" );
+// 						return 0;
+// 						}
+//
+// 				                 for(j=0;j< nbPositions;j++)
+//                                                 {
+//                                                 manipulation->setArmQ(positions[j].q1, positions[j].q2, positions[j].q3, positions[j].q4, positions[j].q5, positions[j].q6);
+// 						g3d_draw_allwin_active();
+//                                                  fl_check_forms();
+//                                                 }
+					//manipulation->releaseObject();
+					/*current_new_trajPt[traj_ctr] = p3d_create_traj_by_copy ( ACBTSET->robot->t[0] );
+					ACBTSET->robot->tcur=ACBTSET->robot->t[0];
+					traj_play = TRUE;
+					g3d_show_tcur_rob(ACBTSET->robot,default_drawtraj_fct);
+					traj_ctr++;
+                                        
+					p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_tmp_pos );
+                                        */ 
+					////current_new_trajPt = p3d_create_traj_by_copy(ACBTSET->robot->t[0]);
+					////CB_showtraj_obj(NULL,0);
+
+					put_into_success=1;
+				}
+				////continue;
+				//////////p3d_col_activate_rob_rob ( envPt->robot[obj_index],ACBTSET->robot );
+
+				////////if ( falling_collides==1 )
+				////////continue;
+
+				//return 0;
+
+				/*
+				int obj_pos_ctr=0;
+				for ( obj_pos_ctr=0;obj_pos_ctr<15;obj_pos_ctr++ )
+				{
+				printf(" Setting %s, as (x,y,z) =(%lf, %lf, %lf)\n", envPt->robot[obj_index]->name,obj_tmp_pos[6], obj_tmp_pos[7], obj_tmp_pos[8]);
+				obj_tmp_pos[8]-=0.02;
+				p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_tmp_pos );
+				g3d_draw_allwin_active();
+				        g3d_draw_allwin_active();
+				////kcd_with_report=0;
+				////res = p3d_col_test_robot(envPt->robot[obj_index],kcd_with_report);
+				////if(res>0)
+				////{
+				////printf(" While falling There is collision at %d th place to put %s , res=%d \n", i1, envPt->robot[obj_index]->name, res);
+				////pqp_print_colliding_pair();
+				////p3d_set_and_update_this_robot_conf(envPt->robot[obj_index],obj_actual_pos);
+				////falling_collides=1;
+				////continue;
+				////break;
+				//return 0;
+				////}
+
+				}
+				*/
+				////p3d_col_activate_rob_rob(envPt->robot[obj_index],ACBTSET->robot);
+
+				////if(falling_collides==1)
+				////continue;
+				////else
+				////break;
+				break; //It will break the for ( setArmX_ctr=0) loop
+
+			}
+
+		}//end for ( setArmX_ctr=0
+
+
+
+		/*
+		p3d_copy_config_into(ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO, &ACBTSET->robot->ROBOT_POS);
+
+		plan_JIDO_arm_path_to_grasp(obj_to_manipulate[i], ARM_PICK_TAKE_TO_FREE);
+		pqp_print_colliding_pair();
+
+		////curr_traj_configs= GP_GetAllTrajectoriesAsOne ( ACBTSET->robot,  no_configs );
+		curr_traj_configs= GP_GetTrajectory ( ACBTSET->robot,  ACBTSET->robot->t[0], no_configs );
+
+		printf(" <<<< no_configs %d >>>>\n",no_configs);
+		j=0;
+		for(j=0;j<no_configs;j++)
+		 {
+		 p3d_set_and_update_this_robot_conf(ACBTSET->robot,curr_traj_configs[j]);
+		 g3d_draw_allwin_active();
+		 }
+		////p3d_get_robot_config_into(ACBTSET->robot,&rob_cur_pos);
+		p3d_copy_config_into(ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO, &ACBTSET->robot->ROBOT_POS);
+		*/
+		////return 1;
+		if ( put_into_success==1 )
+		{
+//                         int j1=0;
+// 			 for(j1=0;j1< nbPositions;j1++)
+//                                                 {
+//                                                 manipulation->setArmQ(positions[j1].q1, positions[j1].q2, positions[j1].q3, positions[j1].q4, positions[j1].q5, positions[j1].q6);
+// 						g3d_draw_allwin_active();
+//                                                 }
+			manipulation->releaseObject();
+
+			/*p3d_set_and_update_this_robot_conf(ACBTSET->robot,rob_cur_pos);
+			traj_play = TRUE;
+			ACBTSET->robot->tcur=current_new_trajPt;
+			   g3d_show_tcur_rob(ACBTSET->robot,default_drawtraj_fct);
+			 */
+			/*
+			            if ( manipulation->grabObject ( obj_to_manipulate[i] ) !=0 )
+					{
+					////FORMGENOM_OBJECTGRABED = 0;
+					printf ( " AKP WARNING: CAN NOT GRAB THE OBJECT\n" );
+					return 0;
+					}
+
+
+			manipulation->releaseObject();
+			            */
+			p3d_set_and_update_this_robot_conf ( ACBTSET->robot,ACBTSET->robot->ROBOT_GOTO );
+			p3d_get_robot_config_into ( ACBTSET->robot,&JIDO_actual_pos );
+
+			p3d_copy_config_into ( ACBTSET->robot, JIDO_actual_pos, &ACBTSET->robot->ROBOT_POS );
+			image_rate=1;
+			int obj_pos_ctr=0;
+                        p3d_get_robot_config_into ( envPt->robot[obj_index],&obj_tmp_pos );
+			for ( obj_pos_ctr=0;obj_pos_ctr<15;obj_pos_ctr++ )
+			{
+				////printf(" Setting %s, as (x,y,z) =(%lf, %lf, %lf)\n", envPt->robot[obj_index]->name,obj_tmp_pos[6], obj_tmp_pos[7], obj_tmp_pos[8]);
+				obj_tmp_pos[8]-=0.02;
+				p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_tmp_pos );
+				g3d_draw_allwin_active();
+
+				kcd_with_report=0;
+				res = p3d_col_test_robot ( envPt->robot[obj_index],kcd_with_report );
+				if ( res>0 )
+				{
+					printf ( " While falling There is collision at %d th place to put %s , res=%d \n", i1, envPt->robot[obj_index]->name, res );
+					pqp_print_colliding_pair();
+					////p3d_set_and_update_this_robot_conf(envPt->robot[obj_index],obj_actual_pos);
+					////falling_collides=1;
+					////continue;
+					////break;
+					//return 0;
+				}
+
+			}
+
+			image_rate=100;
+			printf ( " %d th place to putinto trashbin is final place to release %s\n", i1, envPt->robot[obj_index]->name );
+			g3d_draw_allwin_active();
+			////return 1;
+			break;
+		}
+	}//End for(i1)
+
+
+}
+
+
+int execute_JIDO_trajectory()
+{
+
+                                        int skip=10;
+                                        printf(" ***** TOTAL no. of Configs = %d \n",nbPositions);
+					int j=0;
+					for ( j=0;j< nbPositions;j+=skip )
+					{
+						manipulation->setArmQ ( positions[j].q1, positions[j].q2, positions[j].q3, positions[j].q4, positions[j].q5, positions[j].q6 );
+						g3d_draw_allwin_active();
+						fl_check_forms();
+					}
+                                        if(skip>1) //To set the last configuration
+                                        {
+                                        j=nbPositions-1;
+                                      	manipulation->setArmQ ( positions[j].q1, positions[j].q2, positions[j].q3, positions[j].q4, positions[j].q5, positions[j].q6 );
+					g3d_draw_allwin_active();
+					fl_check_forms();
+					}
+                         configPt JIDO_actual_pos = MY_ALLOC ( double,ACBTSET->robot->nb_dof ); /* Allocation of temporary robot configuration */
+                        p3d_get_robot_config_into ( ACBTSET->robot,&JIDO_actual_pos ); 
+                        p3d_set_and_update_this_robot_conf ( ACBTSET->robot,ACBTSET->robot->ROBOT_GOTO );
+			p3d_get_robot_config_into ( ACBTSET->robot,&JIDO_actual_pos );
+
+			p3d_copy_config_into ( ACBTSET->robot, JIDO_actual_pos, &ACBTSET->robot->ROBOT_POS );
+                          MY_FREE (JIDO_actual_pos, double,ACBTSET->robot->nb_dof );
+
+}
+
+int plan_JIDO_arm_path_to_grasp(char* obj_to_grasp, MANIPULATION_TASK_TYPE_STR type)
+{
+
+////UPDATE_MIGHTABILITY_MAP_INFO=0;
+////SHOW_MIGHTABILITY_MAP_INFO=0;   
+
+char support_name[50]="HRP2TABLE";
+      
+
+      double distance = 0.1;
+      double pre_q1, pre_q2, pre_q3,pre_q4, pre_q5, pre_q6, q1, q2, q3, q4, q5, q6;
+
+      if (manipulation== NULL) {
+	  ////initManipulationGenom(); //AKP : This is decleared static in FORMGenom.c, so below we define our own function
+          init_Manipulation_params();
+      }
+       ////manipulation->setObjectToManipulate((char*)OBJECT_NAME);
+ 
+       
+       manipulation->setArmCartesian(true);
+#define CAMERA_JNT_NAME "Tilt"
+#define CAMERA_FOV 80.0
+       manipulation->setObjectToManipulate(obj_to_grasp);
+//         manipulation->setCameraJnt((char*)CAMERA_JNT_NAME);
+        manipulation->setCameraFOV(CAMERA_FOV);
+        manipulation->setCameraImageSize(200, 200);
+       ////if(manipulation->isObjectGraspable((char*)OBJECT_NAME) == false) 
+       /*if(manipulation->isObjectGraspable(obj_to_grasp) == false) 
+       {
+	  ////std::cout << "this object is not graspable " << std::endl;
+          printf(" The %s is not graspable \n",obj_to_grasp);
+ 	  return 0;
+       }
+       else
+       {
+         printf(" The %s is graspable \n",obj_to_grasp);
+       }
+      */
+       ////printf(" AKP 1\n");
+      // configPt qresult= NULL;
+//qresult= gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &handProp);
+    //   if(qresult==NULL)
+//       configPt qPOS= NULL, qGOTO= NULL;
+//      qPOS= p3d_alloc_config(ACBTSET->robot);
+//      qGOTO= p3d_alloc_config(ACBTSET->robot);
+// 
+//   p3d_copy_config_into(ACBTSET->robot, ACBTSET->robot->ROBOT_POS, &qPOS);
+//   p3d_copy_config_into(ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO, &qGOTO);
+
+//   p3d_set_and_update_this_robot_conf(_robotPt, qcur);
+//   p3d_get_robot_config_into(_robotPt, &_robotPt->ROBOT_POS);
+
+/////////////// Finding different grsaps
+/*
+   plan_JIDO_arm_path_to_grasp(obj_to_manipulate[i], ARM_PICK_GOTO);
+   pqp_print_colliding_pair();
+
+   ////curr_traj_configs= GP_GetAllTrajectoriesAsOne ( ACBTSET->robot,  no_configs );
+   curr_traj_configs= GP_GetTrajectory ( ACBTSET->robot,  ACBTSET->robot->t[0], no_configs );
+
+   printf(" <<<< no_configs %d >>>>\n",no_configs);
+   int j=0;
+   for(j=0;j<no_configs;j++)
+    {
+    p3d_set_and_update_this_robot_conf(ACBTSET->robot,curr_traj_configs[j]);
+    g3d_draw_allwin_active();
+    }
+
+
+std::list<gpGrasp> grasp_list;
+
+int result= gpGet_grasp_list_gripper(obj_to_grasp, grasp_list);
+
+ if(result==GP_ERROR)
+  {  
+   printf("AKP Warning : Not able to get grasp list\n");
+   return 0;  
+  }
+
+ static p3d_rob *object= NULL;
+  object= p3d_get_robot_by_name(obj_to_grasp);
+  configPt qcur= NULL, qgrasp= NULL, qend= NULL;
+  qcur= p3d_alloc_config(ACBTSET->robot);
+  p3d_get_robot_config_into(ACBTSET->robot, &qcur);
+  gpGrasp valid_grasp;   // the current grasp
+
+
+ gpHand_properties hand_prop;
+ hand_prop.initialize(grasp_list.front().hand_type);
+
+
+show_all_grasps(ACBTSET->robot,object, grasp_list, GP_PA10, qcur, valid_grasp, hand_prop);
+
+p3d_set_and_update_this_robot_conf ( ACBTSET->robot, qcur );
+ 
+g3d_draw_allwin_active();
+
+*/
+///////FINDING PATH
+
+       
+       MANIPULATION_TASK_MESSAGE message;
+
+      manipulation->setSupport(support_name);
+      
+      ////message= manipulation->armPlanTask(ARM_PICK_GOTO,manipulation->robotStart(), manipulation->robotGoto(), obj_to_grasp, lp, positions, &nbPositions);
+      printf(" After manipulation->setSupport(%s);\n", support_name);
+    
+      message= manipulation->armPlanTask(type,manipulation->robotStart(), manipulation->robotGoto(), obj_to_grasp, lp, positions, &nbPositions);
+      if(message!=MANIPULATION_TASK_OK)
+      {
+       printf(" ***** AKP WARNING: Can not find jido arm path \n");
+       return 0;
+      }  
+
+printManipulationMessage(message);
+printf("armPlanTask OK\n");
+       int i=0;
+//        for(i=0;i<nbPositions;i++)
+//        {
+//        manipulation->setArmQ(positions[i].q1, positions[i].q2, positions[i].q3, positions[i].q4, positions[i].q5, positions[i].q6);
+//        
+//        g3d_draw_allwin_active();
+//        }
+
+     ////  UPDATE_MIGHTABILITY_MAP_INFO=1;
+   ////    SHOW_MIGHTABILITY_MAP_INFO=1;   
+       ////printf(" 4\n");
+      if(nbPositions>0) 
+        return 1;
+      else
+        return 0;
+ 
+}
+
+
+int is_object_graspable()
+{
+
+UPDATE_MIGHTABILITY_MAP_INFO=0;
+SHOW_MIGHTABILITY_MAP_INFO=0;   
+
+char obj_to_grasp[50]="RED_BOTTLE";//"GREY_TAPE";//"BLACK_TAPE";//"GREY_TAPE";//"YELLOW_BOTTLE";
+char support_name[50]="HRP2TABLE";
+      printf(" Checking graspability of %s  \n",obj_to_grasp);
+
+      double distance = 0.1;
+      double pre_q1, pre_q2, pre_q3,pre_q4, pre_q5, pre_q6, q1, q2, q3, q4, q5, q6;
+
+      if (manipulation== NULL) {
+	  ////initManipulationGenom(); //AKP : This is decleared static in FORMGenom.c, so below we define our own function
+          init_Manipulation_params();
+      }
+       ////manipulation->setObjectToManipulate((char*)OBJECT_NAME);
+ 
+       
+       manipulation->setArmCartesian(true);
+#define CAMERA_JNT_NAME "Tilt"
+#define CAMERA_FOV 80.0
+       manipulation->setObjectToManipulate(obj_to_grasp);
+//         manipulation->setCameraJnt((char*)CAMERA_JNT_NAME);
+        manipulation->setCameraFOV(CAMERA_FOV);
+        manipulation->setCameraImageSize(200, 200);
+       ////if(manipulation->isObjectGraspable((char*)OBJECT_NAME) == false) 
+       /*if(manipulation->isObjectGraspable(obj_to_grasp) == false) 
+       {
+	  ////std::cout << "this object is not graspable " << std::endl;
+          printf(" The %s is not graspable \n",obj_to_grasp);
+ 	  return 0;
+       }
+       else
+       {
+         printf(" The %s is graspable \n",obj_to_grasp);
+       }
+      */
+       printf(" 1\n");
+      // configPt qresult= NULL;
+//qresult= gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &handProp);
+    //   if(qresult==NULL)
+//       configPt qPOS= NULL, qGOTO= NULL;
+//      qPOS= p3d_alloc_config(ACBTSET->robot);
+//      qGOTO= p3d_alloc_config(ACBTSET->robot);
+// 
+//   p3d_copy_config_into(ACBTSET->robot, ACBTSET->robot->ROBOT_POS, &qPOS);
+//   p3d_copy_config_into(ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO, &qGOTO);
+
+//   p3d_set_and_update_this_robot_conf(_robotPt, qcur);
+//   p3d_get_robot_config_into(_robotPt, &_robotPt->ROBOT_POS);
+
+
+
+       int res=manipulation->findPregraspAndGraspConfiguration(distance, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6);
+       if(res==1)
+       {
+        printf(" The %s is not graspable \n",obj_to_grasp);
+        
+ 	return 0;
+       }  
+       else
+       {
+        if(res==0) //Success
+        {
+        printf(" The %s is graspable \n",obj_to_grasp);
+        }
+       }
+
+//  p3d_set_and_update_this_robot_conf(ACBTSET->robot, qPOS);
+//   p3d_copy_config_into(ACBTSET->robot, qPOS, &ACBTSET->robot->ROBOT_POS);
+//   p3d_copy_config_into(ACBTSET->robot, qGOTO, &ACBTSET->robot->ROBOT_GOTO);
+       ////printf(" 2\n");
+       //////////manipulation->setArmQ(q1, q2, q3, q4, q5, q6);
+       /////manipulation->setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
+       ////printf(" 3\n");
+
+/////////////// Finding differenr grsaps
+
+std::list<gpGrasp> grasp_list;
+
+int result= gpGet_grasp_list_gripper(obj_to_grasp, grasp_list);
+
+ if(result==GP_ERROR)
+  {  
+   printf("AKP Warning : Not able to get grasp list\n");
+   return 0;  
+  }
+
+ static p3d_rob *object= NULL;
+  object= p3d_get_robot_by_name(obj_to_grasp);
+  configPt qcur= NULL, qgrasp= NULL, qend= NULL;
+  qcur= p3d_alloc_config(ACBTSET->robot);
+  p3d_get_robot_config_into(ACBTSET->robot, &qcur);
+  gpGrasp valid_grasp;   // the current grasp
+
+
+ gpHand_properties hand_prop;
+ hand_prop.initialize(grasp_list.front().hand_type);
+
+
+show_all_grasps(ACBTSET->robot,object, grasp_list, GP_PA10, qcur, valid_grasp, hand_prop);
+
+p3d_set_and_update_this_robot_conf ( ACBTSET->robot, qcur );
+ 
+g3d_draw_allwin_active();
+
+////////////// END finding different grasps
+
+
+///////FINDING PATH
+
+       int lp[10000];
+       Gb_q6 positions[10000];
+       int nbPositions = 0;
+       MANIPULATION_TASK_MESSAGE message;
+
+      manipulation->setSupport(support_name);
+      message= manipulation->armPlanTask(ARM_PICK_GOTO,manipulation->robotStart(), manipulation->robotGoto(), obj_to_grasp, lp, positions, &nbPositions);
+printManipulationMessage(message);
+printf("armPlanTask OK\n");
+       int i=0;
+//        for(i=0;i<nbPositions;i++)
+//        {
+//        manipulation->setArmQ(positions[i].q1, positions[i].q2, positions[i].q3, positions[i].q4, positions[i].q5, positions[i].q6);
+//        
+//        g3d_draw_allwin_active();
+//        }
+
+       UPDATE_MIGHTABILITY_MAP_INFO=1;
+       SHOW_MIGHTABILITY_MAP_INFO=1;   
+       ////printf(" 4\n");
+       return 1;
+
+}
+
+
+
+//! @ingroup graspPlanning
+//! Finds, for a given mobile base configuration of the robot, a grasp from the given grasp list, that is
+//! reachable by the arm and hand, and computes for the grasp a grasping configuration for the whole arm.
+//! \param robot the robot
+//! \param object the object to grasp (a freeflyer robot)
+//! \param graspList a list of grasps
+//! \param arm_type the robot arm type
+//! \param qbase a configuration of the robot (only the part corresponding to the mobile base will be used)
+//! \param grasp a copy of the grasp that has been found, in case of success
+//! \param hand parameters of the hand
+//! \return a pointer to the computed grasping configuration of the whole robot in case of success, NULL otherwise
+configPt show_all_grasps ( p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand )
+{
+#ifdef GP_DEBUG
+	if ( robot==NULL )
+	{
+		printf ( "%s: %d: gpFind_robot_config_from_grasp(): robot is NULL.\n",__FILE__,__LINE__ );
+		return NULL;
+	}
+	if ( object==NULL )
+	{
+		printf ( "%s: %d: gpFind_robot_config_from_grasp(): object is NULL.\n",__FILE__,__LINE__ );
+		return NULL;
+	}
+#endif
+
+	std::list<gpGrasp>::iterator igrasp;
+
+	p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object, gframe_world, gframe_robot, gframe_robot2;
+	p3d_matrix4 T, Thand, Twrist;
+	configPt q0= NULL; //pour memoriser la configuration courante du robot
+	configPt result= NULL;
+
+
+	q0= p3d_get_robot_config ( robot );
+
+	//////////XYZ_ENV->cur_robot= robot;
+
+	//On met à jour la configuration du robot pour que sa base soit dans la configuration
+	//souhaitée:
+	p3d_set_and_update_this_robot_conf ( robot, qbase );
+	result= p3d_alloc_config ( robot );
+
+	gpGet_arm_base_frame ( robot, base_frame ); //on récupère le repere de la base du bras
+	p3d_matInvertXform ( base_frame, inv_base_frame );
+
+	//pour chaque prise de la liste:
+	for ( igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++ )
+	{
+		p3d_mat4Copy ( igrasp->frame, gframe_object );
+		p3d_get_body_pose ( object, igrasp->body_index, object_frame );
+
+		p3d_mat4Mult ( object_frame, gframe_object, gframe_world ); //passage repere objet -> repere monde
+		p3d_mat4Mult ( gframe_world, hand.Tgrasp_frame_hand, Thand );
+		p3d_mat4Mult ( Thand, hand.Thand_wrist, Twrist );
+
+		p3d_mat4Mult ( inv_base_frame, gframe_world, gframe_robot ); //passage repere monde -> repere robot
+		p3d_mat4Mult ( inv_base_frame, T, Twrist );
+
+//     gpDeactivate_object_fingertips_collisions(robot, object, hand);
+		switch ( arm_type )
+		{
+			case GP_PA10:
+				p3d_mat4Mult ( gframe_robot, hand.Tgrasp_frame_hand, gframe_robot2 );
+				p3d_mat4Mult ( gframe_robot2, hand.Thand_wrist, gframe_robot );
+
+				p3d_copy_config_into ( robot, qbase, &result );
+
+				if ( gpInverse_geometric_model_PA10 ( robot, gframe_robot, result ) ==GP_OK )
+				{
+#ifdef LIGHT_PLANNER
+// 	   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, result);
+//            p3d_set_and_update_this_robot_conf(robot, result);
+#endif
+					p3d_set_and_update_this_robot_conf ( robot, result );
+
+                                        
+					gpSet_grasp_configuration ( robot, *igrasp );
+
+                                        g3d_draw_allwin_active();
+
+//            if(!p3d_col_test()) //if no collision
+					if ( !p3d_col_test_robot_statics ( robot, 0 ) && !p3d_col_test_self_collision ( robot, 0 ) ) //if no collision
+					{
+						p3d_get_robot_config_into ( robot, &result );
+						////igrasp->collision_state= COLLISION_FREE;
+						grasp= *igrasp;
+
+						//p3d_set_and_update_this_robot_conf ( robot, q0 );
+						//p3d_destroy_config ( robot, q0 );
+
+						////return result;
+					}
+				}
+				break;
+			default:
+				printf ( "%s: %d: gpFind_grasp_from_base_configuration(): undefined or unimplemented arm type.\n",__FILE__,__LINE__ );
+				p3d_set_and_update_this_robot_conf ( robot, q0 );
+				p3d_destroy_config ( robot, q0 );
+				return NULL;
+				break;
+		}
+
+	}
+
+	p3d_set_and_update_this_robot_conf ( robot, q0 );
+	p3d_destroy_config ( robot, q0 );
+
+	return NULL;
+}
+
+/////// END Graspability of obejct test

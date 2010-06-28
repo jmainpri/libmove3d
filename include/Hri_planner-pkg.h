@@ -55,6 +55,7 @@
 
 #ifdef USE_HRP2_GIK
 #include "../hri_planner/include/hrp2_gik.h"
+#include "../hri_planner/include/Geo_Sym_Sys.h"
 #endif
 //
 //#undef HRI_GIK
@@ -78,22 +79,9 @@
 
 
 #ifdef USE_MIGHTABILITY_MAPS
-
-  //AKP
-
-extern p3d_vector3 to_reach_target;
-extern struct grid_3D grid_around_HRP2;
-extern int HRP2_GIK_MANIP;// Just to set the type of the bitmap
-extern int HRP2_GIK_path_calculated;
-extern int Affordances_Found; 
-extern hri_bitmapset * ACBTSET;
-extern int grid_3d_affordance_calculated;
-extern int HRP2_CURRENT_STATE;//1 for sitting, 2 for half sitting
-extern int SHOW_OBSTACLE_CELLS;
-extern int CANDIDATE_POINTS_FOR_TASK_FOUND;
-
-extern p3d_vector3 point_to_look;
-
+ extern int SHOW_MM_BASED_OBJECT_REACHABLE;
+ extern int SHOW_MM_BASED_OBJECT_VISIBLE;
+ extern hri_bitmapset * ACBTSET;
 #endif
 
 #ifdef USE_HRP2_GIK
