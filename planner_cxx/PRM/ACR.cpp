@@ -36,7 +36,7 @@ ACR::~ACR()
 	
 	shared_ptr<Configuration> q = _Robot->shoot();
 		
-	if ( q->setConstraintsWithSideEffect() && (!q->IsInCollision()))
+	if ( q->setConstraintsWithSideEffect() && (!q->isInCollision()))
 	{
 		p3d_node *N = NULL;
 		
@@ -72,7 +72,7 @@ void ACR::expandOneStep()
 {
 	shared_ptr<Configuration> q = _Robot->shoot();
 	
-	if ( q->setConstraintsWithSideEffect() && (!q->IsInCollision()))
+	if ( q->setConstraintsWithSideEffect() && (!q->isInCollision()))
 	{
 		Node* newNode = new Node(_Graph,q,false);
 		

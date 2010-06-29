@@ -22,8 +22,7 @@ using namespace Eigen;
 RRT::RRT(Robot* R, Graph* G) :
         TreePlanner(R,G)
 {
-    _nbConscutiveFailures = 0;
-    cout << "RRT Constructor " << endl;
+    cout << "RRT::RRT(R,G)" << endl;
 }
 
 RRT::~RRT()
@@ -92,6 +91,7 @@ int  RRT::init()
 
 /**
  * Three phases One Step Expansion
+ *
  *  - Direction
  *  - Node
  *  - Process
@@ -101,14 +101,8 @@ int  RRT::init()
  */
 int RRT::expandOneStep(Node* fromComp, Node* toComp)
 {
-    // ML-RRT expansion case
-    /*	if (ENV.getBool(Env::isManhattan) && !(this->manhattanSamplePassive()))
-        {
-                return passiveExpandOneStep(fromComp, toComp);
-        }
-        // Standard expansion case
-        else
-        {*/
+	_expan->setFromComp(fromComp);
+	_expan->setToComp(toComp);
 //	cout << "---------------------------------------------------" << endl;
 //	cout <<"Robot Name = " << _Robot->getName() << endl;
 //	cout << _Robot->getRobotStruct() << endl;
@@ -117,13 +111,11 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
     Node* expansionNode(NULL);
     shared_ptr<Configuration> directionConfig;
 
-    mNbExpansion++;
-
     // get direction
-    directionConfig = _expan->getExpansionDirection(fromComp, toComp, false,
+    directionConfig = _expan->getExpansionDirection(fromComp, 
+													toComp, 
+													false,
                                                     directionNode);
-//    directionConfig->setConstraints();
-//
 #ifdef LIGTH_PLANNER
     if(ENV.getBool(Env::drawPoints))
     {
@@ -143,9 +135,18 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
 //    cout << "expansionNode->print()"  << endl;
 //    expansionNode->getConfiguration()->print();
 
-    // expansion
-    return _expan->expandProcess(expansionNode, directionConfig, directionNode,
+    // expansion in one direction
+    int nbNodeCreated = _expan->expandProcess(expansionNode, 
+								 directionConfig, 
+								 directionNode,
                                  ENV.getExpansionMethod());
+	
+	if (nbNodeCreated==0) 
+	{
+		m_nbFailedExpansion++;
+	}
+	
+	return nbNodeCreated;
     //	}
 }
 

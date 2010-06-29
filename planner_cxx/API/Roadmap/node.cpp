@@ -90,7 +90,7 @@ _nbExpan(0)
 
 bool Node::operator==(Node& N)
 {
-    return this->_Configuration->equal(*(N._Configuration.get()));
+    return *_Configuration == *N._Configuration;
 }
 
 Node::~Node()
@@ -177,6 +177,11 @@ p3d_compco* Node::getCompcoStruct()
 p3d_compco** Node::getCompcoStructPt()
 {
     return (&(_Node->comp));
+}
+
+unsigned int Node::getNumberOfNodesInCompco()
+{
+	return _Node->comp->nnode;
 }
 
 double Node::getCost()
@@ -293,6 +298,7 @@ bool Node::connectNodeToCompco(Node* N, double step)
 //place la compco dans la CompCo presente
 void Node::merge(Node* compco)
 {
+	cout << "Node::merge compco " << this->getCompcoStruct()->num << " with " << compco->getCompcoStruct()->num << endl;
     p3d_merge_comp(_Graph->getGraphStruct(), 
 				   compco->getCompcoStruct(),
                    &(_Node->comp));

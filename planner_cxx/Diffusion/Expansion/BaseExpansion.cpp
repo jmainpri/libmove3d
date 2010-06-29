@@ -21,8 +21,12 @@ BaseExpansion::BaseExpansion() :
 	m_MaxExpandNodeFailure(10),
 	m_kNearestPercent(10),
 	m_ExpansionDirectionMethod(GLOBAL_CS_EXP),
-	m_IsDirSampleWithRlg(false)
-	{ cout << "no graph in expansion method" << endl; }
+	m_IsDirSampleWithRlg(false),
+	m_fromComp(NULL),
+	m_toComp(NULL)
+{ 
+	cout << "no graph in expansion method" << endl; 
+}
 
 BaseExpansion::BaseExpansion(Graph* ptrGraph) :
 
@@ -31,7 +35,10 @@ BaseExpansion::BaseExpansion(Graph* ptrGraph) :
 	m_kNearestPercent(10),
 	m_ExpansionDirectionMethod(GLOBAL_CS_EXP),
 	m_IsDirSampleWithRlg(false),
-	mGraph(ptrGraph) {}
+	mGraph(ptrGraph),
+	m_fromComp(NULL),
+	m_toComp(NULL)
+{}
 
 BaseExpansion::~BaseExpansion(){}
 
@@ -109,19 +116,21 @@ void BaseExpansion::expansionFailed(Node& node) {
 	}
 }
 
-Node* BaseExpansion::addNode(Node* currentNode, LocalPath& path, double pathDelta,
-		Node* directionNode, int& nbCreatedNodes)
+Node* BaseExpansion::addNode(Node* currentNode, 
+							 LocalPath& path, 
+							 double pathDelta,
+							 Node* directionNode, 
+							 int& nbCreatedNodes)
 {
 	if ((pathDelta == 1. && directionNode))
 	{
 		cout << "MergeComp" << endl;
-		mGraph->mergeComp(currentNode, directionNode, path.getParamMax());
+		mGraph->linkNodeAndMerge(currentNode,directionNode);
 		return (directionNode);
 	}
 	else
 	{
 		Node* newNode = mGraph->insertNode( currentNode, path );
-
 		nbCreatedNodes++;
 		return (newNode);
 	}
@@ -151,7 +160,7 @@ bool BaseExpansion::nextStep(LocalPath& path,
 	}
 	else
 	{
-                pathDelta = path.getParamMax() == 0. ? 1. : MIN(1., step() / path.getParamMax());
+		pathDelta = path.getParamMax() == 0. ? 1. : MIN(1., step() / path.getParamMax());
 
 		shared_ptr<Configuration> ptrEnd;
 

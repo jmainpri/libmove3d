@@ -9,7 +9,7 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#include "../planningAPI.hpp"
+#include "planningAPI.hpp"
 
 #include "P3d-pkg.h"
 #include "Collision-pkg.h"
@@ -312,7 +312,7 @@ double Configuration::dist(Configuration& q, int distChoice)
     }
 }
 
-bool Configuration::IsInCollision()
+bool Configuration::isInCollision()
 {
     if(!_CollisionTested)
     {
@@ -326,6 +326,11 @@ bool Configuration::IsInCollision()
     {
         return _InCollision;
     }
+}
+
+bool Configuration::isOutOfBounds()
+{
+	return(p3d_isOutOfBounds(_Robot->getRobotStruct(), _Configuration, false));
 }
 
 void Configuration::setAsNotTested()
@@ -398,14 +403,9 @@ void Configuration::copyPassive(Configuration& C)
             int k = joint->index_dof + j;
             if ((!p3d_jnt_get_dof_is_user(joint, j))
                 || (!p3d_jnt_get_dof_is_active_for_planner(joint, j)))
-                C.getConfigStruct()[k] = this->getConfigStruct()[k];
+                C[k] = (*this)[k];
         }
     }
-}
-
-bool Configuration::isOutOfBands()
-{
-  return(p3d_isOutOfBands(_Robot->getRobotStruct(), _Configuration, false));
 }
 
 shared_ptr<Configuration> Configuration::add(Configuration& C)
@@ -416,6 +416,64 @@ shared_ptr<Configuration> Configuration::add(Configuration& C)
                   C.getConfigStruct(), ptrQ->getConfigStruct() );
 
     return ptrQ;
+}
+
+shared_ptr<Configuration> Configuration::sub(Configuration& C)
+{
+	shared_ptr<Configuration> ptrQ(new Configuration(_Robot));
+	
+    p3d_subConfig(_Robot->getRobotStruct(), _Configuration,
+                  C.getConfigStruct(), ptrQ->getConfigStruct() );
+	
+    return ptrQ;
+}
+
+Configuration& Configuration::mult(double coeff)
+{
+	Configuration* q = new Configuration(*this);
+	
+	int njnt = _Robot->getRobotStruct()->njoints;
+	int k = 0;
+	for (int i = 0; i <= njnt; i++) 
+	{
+		p3d_jnt *jntPt = _Robot->getRobotStruct()->joints[i];
+		for (int j = 0; j < jntPt->dof_equiv_nbr; j++) 
+		{
+			(*q)[k] *= coeff;
+			k ++;
+		}
+	}
+	
+	return (*q);
+}
+
+Eigen::VectorXd Configuration::getEigenVector()
+{
+	unsigned int nbDof=0;
+	unsigned int njnt = _Robot->getNumberOfJoints();
+
+	// Get  number of Dofs
+	for (unsigned int i = 0; i < njnt; i++) 
+		nbDof += _Robot->getJoint(i)->getNumberOfDof();
+	
+	VectorXd q(nbDof);
+
+	// Get the values of the dofs
+	for (unsigned int i = 0; i < nbDof; i++) 
+	{
+		q(i) = _Configuration[i];
+	}
+	
+	return q;
+}
+
+void Configuration::setFromEigenVector(const Eigen::VectorXd& conf)
+{	
+	// Get the values of the dofs
+	for (int i = 0; i < conf.size(); i++) 
+	{
+		_Configuration[i] = conf(i);
+	}
 }
 
 bool Configuration::setConstraintsWithSideEffect()
@@ -476,6 +534,11 @@ double Configuration::cost()
     }
 	
 	return _Cost;
+}
+
+void Configuration::setCostAsNotTested()
+{
+	_CostTested = false;
 }
 
 void Configuration::print(bool withPassive)

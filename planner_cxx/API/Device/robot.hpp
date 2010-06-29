@@ -9,6 +9,8 @@
 #include "Device/joint.h"
 #include "ConfigSpace/configuration.hpp"
 
+class Trajectory;
+
 #ifndef _DEVICE_H
 typedef struct rob;
 typedef struct jnt;
@@ -64,6 +66,11 @@ public:
      * @return pointer to structure p3d_traj
      */
     traj* getTrajStruct();
+	
+	/**
+	 * Gets the current trajectory
+	 */
+	Trajectory getCurrentTraj();
 	
 	/**
 	 * Get the number of Joints
@@ -127,12 +134,23 @@ public:
      * @param q la Configuration dans laquelle le Robot sera placé
      */
      void setAndUpdateWithoutConstraints(Configuration& q);
+	
+	/**
+	 * set and update Human Arms
+	 */
+	bool setAndUpdateHumanArms(Configuration& q);
 
     /**
      * obtient la Configuration current du Robot
      * @return la Configuration current du Robot
      */
     std::tr1::shared_ptr<Configuration> getInitialPosition();
+	
+	/**
+	 * Returns true if the robot is 
+	 * in colision with obstacles
+	 */
+	bool isInCollision();
 	
 	/**
 	 * Sets the Initial Position of the Robot
@@ -169,12 +187,20 @@ public:
      * Get the Robot joint Position
      */
     Eigen::Vector3d getJointPos(int id);
+	
+	
 
 #ifdef LIGHT_PLANNER
     /**
       * Returns the Virtual object dof
       */
     int getObjectDof();
+	
+	/**
+	 * Returns Wether the closed chain constraint
+	 * is active
+	 */ 
+	bool isActiveCcConstraint();
 	
 	/**
 	 * Activate Constraint
@@ -195,6 +221,11 @@ public:
 	 * Shoots the base Joint of the robot
 	 */
 	std::tr1::shared_ptr<Configuration> shootBase();
+	
+	/**
+	 *
+	 */
+	std::tr1::shared_ptr<Configuration> shootBaseWithoutCC();
 	
 	/**
 	 * Shoots the base Joint of the robot

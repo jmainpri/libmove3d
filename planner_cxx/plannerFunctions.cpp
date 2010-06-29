@@ -10,9 +10,8 @@
 #include "API/Trajectory/CostOptimization.hpp"
 
 #ifdef HRI_COSTSPACE
-#include "HRI_CostSpace/HRICS_Workspace.h"
+#include "HRI_CostSpace/HRICS_costspace.h"
 #include "HRI_CostSpace/RRT/HRICS_rrt.h"
-#include "HRI_CostSpace/HRICS_ConfigSpace.h"
 #include "HRI_CostSpace/RRT/HRICS_rrtPlan.h"
 #endif
 
@@ -37,7 +36,7 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
 #ifdef LIST_OF_PLANNERS
     RRT* rrt = (RRT*)plannerlist[0];
 #else
-    Robot* _Robot = new Robot(GraphPt->rob);
+    Robot* _Robot = global_Project->getActiveScene()->getActiveRobot();
     Graph* _Graph = new Graph(_Robot,GraphPt);
 
     RRT* rrt;
@@ -47,6 +46,14 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
     {
         rrt = new ManhattanLikeRRT(_Robot,_Graph);
     }
+	else if(ENV.getBool(Env::isCostSpace) && ENV.getBool(Env::isMultiRRT) )
+    {
+        rrt = new MultiTRRT(_Robot,_Graph);
+    }
+	else if(ENV.getBool(Env::isMultiRRT))
+	{
+		rrt = new MultiRRT(_Robot,_Graph);
+	}
 #ifdef HRI_COSTSPACE
     else if(ENV.getBool(Env::HRIPlannerWS) && ENV.getBool(Env::HRIPlannerTRRT))
     {
@@ -123,8 +130,14 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
     }
 
     ENV.setBool(Env::isRunning,false);
-
-    delete _Robot;
+	
+	if ((rrt->getNumberOfExpansion() - rrt->getNumberOfFailedExpansion()) != _Graph->getNumberOfNodes() ) 
+	{
+		cout << "Nb of nodes differ from number of expansion succes " << endl;
+		cout << " - m_nbExpansion = " << rrt->getNumberOfExpansion() << endl;
+		cout << " - m_nbExpansion - m_nbExpansionFailed =  " << (rrt->getNumberOfExpansion() - rrt->getNumberOfFailedExpansion()) << endl;
+		cout << " - _Graph->getNumberOfNodes() = " << _Graph->getNumberOfNodes() << endl;
+	}
 
 #ifndef LIST_OF_PLANNERS
     delete rrt;

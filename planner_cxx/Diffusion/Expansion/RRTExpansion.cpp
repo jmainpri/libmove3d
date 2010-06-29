@@ -241,7 +241,8 @@ int RRTExpansion::expandProcess(Node* expansionNode, shared_ptr<
         directionLocalpath = shared_ptr<LocalPath> (new LocalPath(
                 fromNode.getConfiguration(), directionConfig));
 
-        extensionSucceeded = this->nextStep(*directionLocalpath, directionNode,
+		// Expand one step along the local path "extensionLocalpath"
+        extensionSucceeded = nextStep(*directionLocalpath, directionNode,
                                             positionAlongDirection, extensionLocalpath, method);
 
 //        cout << directionLocalpath->length() << endl;
@@ -275,7 +276,7 @@ int RRTExpansion::expandProcess(Node* expansionNode, shared_ptr<
         }
         if (firstIteration && failed)
         {
-            this->expansionFailed(*expansionNode);
+            expansionFailed(*expansionNode);
         }
 
         if (!failed)

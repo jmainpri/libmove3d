@@ -96,7 +96,7 @@ bool CostOptimization::oneLoopDeform(double step)
         step /= 2;
         maxDiv++;
     }
-    while( qNewPt->isOutOfBands() && maxDiv<10);
+    while( qNewPt->isOutOfBounds() && maxDiv<10);
 
     if(maxDiv==10)
     {
@@ -108,7 +108,7 @@ bool CostOptimization::oneLoopDeform(double step)
 
     // If qNew is free then
     // Check the triangle localPath
-    if (!qNewPt->IsInCollision())
+    if (!qNewPt->isInCollision())
     {
         LocalPath* FirstHalf = new LocalPath(qPrevPt, qNewPt);
         LocalPath* SecondHalf = new LocalPath(qNewPt, qNextPt);
@@ -317,7 +317,7 @@ bool CostOptimization::oneLoopDeformRecompute(double step)
         step /= 2;
         maxDiv++;
     }
-    while( qNewPt->isOutOfBands() && maxDiv<10);
+    while( qNewPt->isOutOfBounds() && maxDiv<10);
 
     if(maxDiv==10)
     {
@@ -329,7 +329,7 @@ bool CostOptimization::oneLoopDeformRecompute(double step)
 
     // If qNew is free then
     // Check the triangle localPath
-    if (!qNewPt->IsInCollision())
+    if (!qNewPt->isInCollision())
     {
         LocalPath* FirstHalf = new LocalPath(qPrevPt, qNewPt);
         LocalPath* SecondHalf = new LocalPath(qNewPt, qNextPt);

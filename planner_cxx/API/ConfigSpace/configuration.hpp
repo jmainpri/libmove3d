@@ -61,6 +61,11 @@ public:
 	 * Acces the configuration
 	 */
 	double& operator [] ( const int &i ) const { return _Configuration[i]; }
+	
+	/**
+	 * Acces the configuration
+	 */
+	double& operator () ( const int &i ) const { return _Configuration[i]; }
 
     /**
      * détruie la configPt stockée
@@ -147,7 +152,13 @@ public:
      * indique si la Configuration est en collision
      * @return la Configuration est en collision
      */
-    bool IsInCollision();
+    bool isInCollision();
+	
+	/**
+	 * True is the configuration respects 
+	 * DoFs bounds
+	 */
+    bool isOutOfBounds();
 	
 	/**
 	 * Set the configuration as not tested
@@ -191,6 +202,11 @@ public:
      * @return le cout de la Configuration
      */
     double cost();
+	
+	/**
+	 * Set the configuration as not tested
+	 */
+	void setCostAsNotTested();
 
 	/**
 	 * Sets the configuration to respect robot constraints
@@ -220,11 +236,36 @@ public:
       * Adds tow configurations
       */
     std::tr1::shared_ptr<Configuration> operator+(Configuration& Conf) { return this->add(Conf); }
-
-    /**
-     * Checks that Configruation is not out of bands
+	
+	/**
+     *
      */
-    bool isOutOfBands();
+    std::tr1::shared_ptr<Configuration> sub(Configuration& C);
+	
+	/**
+	 * Adds tow configurations
+	 */
+    std::tr1::shared_ptr<Configuration> operator-(Configuration& Conf) { return this->sub(Conf); }
+	
+	/**
+	 *
+	 */
+	Configuration& mult(double coeff);
+	
+	/**
+	 *
+	 */
+	Configuration& operator*(double coeff) { return this->mult(coeff); }
+	
+	/**
+	 * Get the Eigen Vector of the configuration
+	 */
+	Eigen::VectorXd getEigenVector(); 
+	
+	/**
+	 * set the Eigen Vector of the configuration
+	 */
+	void setFromEigenVector(const Eigen::VectorXd& conf); 
 	
     /**
      *

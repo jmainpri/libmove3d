@@ -9,6 +9,22 @@
 #include "ConfigSpace/localpath.hpp"
 #include "Roadmap/graph.hpp"
 
+/*!
+ * Delta step cost method enum
+ */
+enum CostSpaceDeltaStepMethod 
+{
+	cs_mechanical_work,
+	cs_integral,
+	cs_visibility,
+	cs_average,
+	cs_config_cost_and_dist,
+	cs_boltzman_cost
+};
+
+/*!
+ * Class thats holding the CostSpace
+ */
 class CostSpace
 {
 public:
@@ -35,6 +51,9 @@ public:
 	
   // Initializes the Cost space motion planning problem
   void initMotionPlanning(Graph* graph, Node* start, Node* goal);
+	
+  // Set DeltaStepCost
+  void setDeltaStepMethod(CostSpaceDeltaStepMethod method) { m_deltaMethod = method; }
   
 protected:
   boost::function<double(Configuration&)> mSelectedCost;
@@ -43,20 +62,15 @@ protected:
 private:
   // Compute the delta step cost
   double deltaStepCost(double cost1, double cost2, double length);
-  
-  enum DeltaStep 
-  {
-	  mechanical_work,
-	  integral,
-      visibility,
-	  average,
-	  config_cost_and_dist,
-	  boltzman_cost
-  } m_deltaMethod;
+	
+  // Delta
+  enum CostSpaceDeltaStepMethod m_deltaMethod;
 	
 };
 
 extern CostSpace* global_costSpace;
+
 double computeIntersectionWithGround(Configuration& conf);
+double computeBasicCost(Configuration& conf);
 
 #endif

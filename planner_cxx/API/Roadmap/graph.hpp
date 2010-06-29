@@ -126,6 +126,11 @@ public:
      */
     unsigned int getNumberOfNodes() { return _Nodes.size(); }
 	
+	/*
+	 * Get the number of compco in the grap
+	 */
+	unsigned int getNumberOfCompco();
+	
     /**
      * obtient le Node correspondant au p3d_node
      * @param N le p3d_node
@@ -321,6 +326,11 @@ public:
      */
     bool linkToAllNodes(Node* N);
 
+	/**
+	 * Link 2 nodes and merge them
+	 */
+	bool linkNodeAndMerge(Node* node1, Node* node2);
+	
     /**
      * crée des Node à des Configurations aléatoires
      * @param NMAX le nombre de Node à crér
@@ -334,6 +344,12 @@ public:
 	 */
     Node* randomNodeFromComp(Node* comp);
 
+	/**
+	 * Function that trys to connect 
+	 * a node to a given connected component
+	 */
+	bool connectNodeToCompco(Node* node, Node* compco);
+	
     /**
      * obtient le plus proche voisin d'une composante connexe
      * @param compco la composante connexe dans laquelle on cherche le Node
@@ -345,9 +361,15 @@ public:
     Node* nearestWeightNeighbour(Node* compco, std::tr1::shared_ptr<Configuration> C, bool weighted, int distConfigChoice);
 
     /**
+	 * Get Ith Compco
+	 */
+	Node* getCompco(unsigned int ith);
+	
+	/**
       * Vector of nodes in the same compco
       */
     std::vector<Node*> getNodesInTheCompCo(Node* node);
+	
 
     /**
      * ajoute des Edges formant des cycles dans le Graph

@@ -227,7 +227,7 @@ bool LocalPath::isValid()
 {
 	if (!_Evaluated)
 	{
-		if (_End->IsInCollision())
+		if (_End->isInCollision())
 		{
 			_Valid = false;
 //                        cout << "End in collision" << endl;

@@ -47,6 +47,26 @@ public:
 	 */
 	void setNodeMethod(int nodeExpansion) { m_ExpansionNodeMethod = nodeExpansion; }
 	
+	/**
+	 * Set the From Connected Component
+	 */
+	void setFromComp(Node* fromComp) { m_fromComp = fromComp; }  
+	
+	/**
+	 * Get the From Connected Component
+	 */
+	Node* getFromComp() { return m_fromComp; }
+	
+	/**
+	 * Set the To Connected Component
+	 */
+	void setToComp(Node* toComp) { m_toComp = toComp; }  
+	
+	/**
+	 * Get the To Connected Component
+	 */
+	Node* getToComp() { return m_toComp; }
+	
     /**
       * Expansion Step (Delta)
       */
@@ -114,6 +134,9 @@ protected:
     bool m_IsDirSampleWithRlg; //= FALSE;
 
     Graph* mGraph;
+	
+	Node* m_fromComp;
+	Node* m_toComp;
 };
 
 #endif

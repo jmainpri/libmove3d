@@ -334,6 +334,11 @@ map<p3d_node*, Node*> Graph::getNodesTable()
     return _NodesTable;
 }
 
+unsigned int Graph::getNumberOfCompco()
+{
+	return _Graph->ncomp;
+}
+
 Node* Graph::getNode(p3d_node* N)
 {
     map<p3d_node*, Node*>::iterator it = _NodesTable.find(N);
@@ -405,14 +410,6 @@ Node* Graph::searchConf(Configuration& q)
 {
     p3d_node* node(p3d_TestConfInGraph(_Graph,q.getConfigStruct()));
     return (node ? _NodesTable[node] : NULL);
-}
-
-/**
- * Create a Compco
- */
-void Graph::createCompco(Node* node)
-{
-	p3d_create_compco(_Graph, node->getNodeStruct() );
 }
 
 /**
@@ -728,6 +725,45 @@ bool Graph::linkToAllNodes(Node* newN)
 }
 
 /**
+ * Link Node and Merge
+ */
+ bool Graph::linkNodeAndMerge(Node* node1, Node* node2)
+{
+	p3d_node* Node1Pt = node1->getNodeStruct();
+	p3d_node* Node2Pt = node2->getNodeStruct();
+	
+	int  IsLinkedAndMerged = FALSE;
+	double DistNodes = 0.;
+	
+	if ((Node1Pt == NULL) || (Node2Pt == NULL)) {
+		PrintInfo(("Warning: Try to link two nodes with NULL structures \n"));
+		return FALSE;
+	}
+	p3d_compco* CompNode1Pt = Node1Pt->comp;
+	p3d_compco* CompNode2Pt = Node2Pt->comp;
+	
+	if (p3d_APInode_linked(_Graph, Node1Pt, Node2Pt, &DistNodes)) 
+	{
+		if (CompNode1Pt->num < CompNode2Pt->num)
+			p3d_merge_comp(_Graph, CompNode1Pt, &CompNode2Pt);
+		else if (CompNode1Pt->num > CompNode2Pt->num) {
+			p3d_merge_comp(_Graph, CompNode2Pt, &CompNode1Pt);
+		}
+				
+		p3d_create_edges(_Graph, Node1Pt, Node2Pt, DistNodes);
+		//    PrintInfo(("dist: %f\n",DistNodes));
+		
+		this->addEdges(node1, node2, DistNodes);
+		
+		IsLinkedAndMerged = TRUE;
+	}
+	
+	return IsLinkedAndMerged;
+}
+ 
+ 
+
+ /**
   * Create Random Configurations
   */
 void Graph::createRandConfs(int NMAX)
@@ -747,7 +783,7 @@ void Graph::createRandConfs(int NMAX)
     while (inode < NMAX)
     {
         shared_ptr<Configuration> C = _Robot->shoot();
-        if (!C->IsInCollision())
+        if (!C->isInCollision())
         {
             this->insertNode(new Node(this, C));
             inode = inode + 1;
@@ -784,6 +820,100 @@ void Graph::createRandConfs(int NMAX)
 Node* Graph::randomNodeFromComp(Node* comp)
 {
     return (this->getNode(p3d_RandomNodeFromComp(comp->getCompcoStruct())));
+}
+
+/**
+ * Intempts to connect a node to a compco
+ */
+bool Graph::connectNodeToCompco(Node* node1, Node* compco)
+{
+	Node* node2 = NULL;
+	
+	bool IsConnectSuccess = false;
+	
+	p3d_compco* CompToConnectPt = compco->getCompcoStruct();
+	
+	bool SavedIsMaxDis = false;
+	bool SavedIsWeightChoice = FALSE;
+	//  double ratio = 1./5.;
+	
+	if ((node1 == NULL) || (compco->getCompcoStruct() == NULL)) 
+	{
+		cout << "Warning: Try to connect a node to a comp \
+				   with NULL structures" << endl;
+		return false;
+	}
+	
+	if (node1->getCompcoStruct()->num == compco->getCompcoStruct()->num) 
+	{
+		cout << "Warning: Try to connect a Node to its own componant" << endl;
+		return true;
+	}
+	
+	switch (p3d_GetNodeCompStrategy()) 
+	{
+		case NEAREST_NODE_COMP:
+			/* Connect the node to the nearest node of the comp */
+			
+			SavedIsMaxDis =  p3d_GetIsMaxDistNeighbor();
+			SavedIsWeightChoice = p3d_GetIsWeightedChoice();
+			p3d_SetIsMaxDistNeighbor(false);
+			p3d_SetIsWeightedChoice(false);
+			node2 =  nearestWeightNeighbour(compco,
+											node1->getConfiguration(),
+											false,
+											GENERAL_CSPACE_DIST);
+			
+			p3d_SetIsMaxDistNeighbor(SavedIsMaxDis);
+			p3d_SetIsWeightedChoice(SavedIsWeightChoice);
+			
+			if (node2->getCompcoStruct() == NULL) 
+			{
+				cout << "Warning: Failed to find a nearest node in \
+						   the Componant to connect\n" << endl;
+				return false;
+			}
+			
+			/*     if(SelectedDistConfig(GraphPt->rob, Node1ToConnectPt->q, Node2ToConnectPt->q) >  */
+			/*        ratio*SelectedDistConfig(GraphPt->rob, GraphPt->search_start->q, GraphPt->search_goal->q)){ */
+			/*       return FALSE; */
+			/*     } */
+			IsConnectSuccess = linkNodeAndMerge(node2,node1);
+			break;
+			
+		case K_NEAREST_NODE_COMP:
+			/*Connect randomly to one of the k nearest
+			 nodes of the componant */
+			/*todo*/
+			break;
+		default:
+			/* By default  try to
+			 connect to the node to the nearest node of the componant */
+			SavedIsMaxDis =  p3d_GetIsMaxDistNeighbor();
+			SavedIsWeightChoice = p3d_GetIsWeightedChoice();
+			p3d_SetIsMaxDistNeighbor(false);
+			p3d_SetIsWeightedChoice(false);
+			node2 =  nearestWeightNeighbour(compco,
+											node1->getConfiguration(),
+											false,
+											GENERAL_CSPACE_DIST);
+			
+			p3d_SetIsMaxDistNeighbor(SavedIsMaxDis);
+			p3d_SetIsWeightedChoice(SavedIsWeightChoice);
+			
+			if (node2->getCompcoStruct() == NULL) 
+			{
+				cout << "Warning: Failed to find a nearest node in \
+						   the Componant to connect" << endl;
+				return false;
+			}
+			/*    if(SelectedDistConfig(GraphPt->rob, Node1ToConnectPt->q, Node2ToConnectPt->q) >  */
+			/*        ratio*SelectedDistConfig(GraphPt->rob, GraphPt->search_start->q, GraphPt->search_goal->q)){ */
+			/*       return FALSE; */
+			/*    } */
+			IsConnectSuccess = linkNodeAndMerge(node2,node1);
+	}
+	return IsConnectSuccess;
 }
 
 /**
@@ -894,7 +1024,6 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> conf
   */
 int Graph::mergeComp(Node* CompCo1, Node* CompCo2, double DistNodes)
 {
-
     if ((CompCo1 == NULL) || (CompCo2 == NULL))
     {
         PrintInfo (("Warning: Try to link two nodes with NULL structures \n"));
@@ -916,10 +1045,40 @@ int Graph::mergeComp(Node* CompCo1, Node* CompCo2, double DistNodes)
                      CompCo1->getNodeStruct(),
                      CompCo2->getNodeStruct(),
                      DistNodes);
-
+	
     return true;
 }
 
+/**
+ * Create a Compco
+ */
+void Graph::createCompco(Node* node)
+{
+	p3d_create_compco(_Graph, node->getNodeStruct() );
+	m_Comp.push_back(new ConnectedComponent(this,node->getNodeStruct()->comp));
+}
+
+/**
+ * Returns the ith compco
+ */
+Node* Graph::getCompco(unsigned int ith)
+{
+	p3d_compco* component = _Graph->comp;
+	
+	for(unsigned int i=0;i<getNumberOfCompco();i++)
+	{
+		if (i==ith) 
+		{
+//			cout << "component = " << component << endl;
+			return getNode(component->nodes->N);
+		}
+		
+		component = component->suiv;
+	}
+	
+	cout << "Error in Graph::" << __func__ << endl;
+	return NULL;
+}
 
 /**
   * Get Nodes in the same compco
@@ -1050,7 +1209,7 @@ void Graph::extractBestTraj(shared_ptr<Configuration> qi,shared_ptr<Configuratio
 	// start and goal config creation
 //	qi = _Robot->getInitialPosition();
 //	qf = _Robot->getGoTo();
-	if(qf->IsInCollision()) {
+	if(qf->isInCollision()) {
 		(_Graph->nb_test_coll)++;
 		cout << "Computation of approximated optimal cost stopped: \
 				   Goal configuration in collision" << endl;
@@ -1103,7 +1262,7 @@ void Graph::extractBestTraj(shared_ptr<Configuration> qi,shared_ptr<Configuratio
 		// on construit la trajectoire entre les points etapes
 		(_Graph->nb_test_coll)++;
 		cout << "Connection of the extremal nodes succeeded\n" << endl;
-		cout << _Graph->ncomp << endl;
+		//cout << _Graph->ncomp << endl;
 		trajPt = p3d_graph_to_traj(_Robot->getRobotStruct());
 	}
 	

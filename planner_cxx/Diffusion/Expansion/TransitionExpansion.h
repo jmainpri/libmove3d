@@ -20,16 +20,27 @@ public:
 	TransitionExpansion(Graph* G);
 
 	~TransitionExpansion();
+	
+	/**
+	 * Compute the gradient of the 2D cost sapce at a configuration q
+	 */
+	std::tr1::shared_ptr<Configuration> computeGradient(std::tr1::shared_ptr<Configuration> q);
+	
+	/**
+	 * Mix the direction with the gradient 
+	 * direction
+	 */
+	bool mixWithGradient(Node* expansionNode,std::tr1::shared_ptr<Configuration> directionConfig);
 
-        /**
-         * Shoots a direction (includes the biasing)
-         *
-         * @param Expanding component
-         * @param Goal Component
-         * @param Sampling passive mode
-         * @param Direction node
-         */
-        virtual std::tr1::shared_ptr<Configuration> getExpansionDirection(
+   /**
+	* Shoots a direction (includes the biasing)
+    *
+    * @param Expanding component
+    * @param Goal Component
+    * @param Sampling passive mode
+    * @param Direction node
+    */
+	virtual std::tr1::shared_ptr<Configuration> getExpansionDirection(
             Node* expandComp, Node* goalComp, bool samplePassive,
             Node*& directionNode);
 
