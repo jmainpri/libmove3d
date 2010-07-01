@@ -1641,7 +1641,7 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
   double radius,height,stretch_back;
   double val = 0,res =0;
   double realx, realy;
-  double angle,angle_deviation,angle_influence,deltax,deltay, orient,distance_cosine;
+  double angle,angle_deviation,deltax,deltay, orient,distance_cosine;
   double humanx, humany;
   double distance;
 
@@ -1674,22 +1674,18 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
       deltay = realy-humany;
       angle = atan2(deltay, deltax);
       // orient goes from -PI to PI, angle goes from - PI to PI
-      // get the angle deviation between -PI and PI
-      angle_deviation = getAngleDeviation(orient, angle);
-      angle_influence = ABS(angle_deviation); // value between 0 and PI for positive angle difference
+      // get the absolute angle deviation between 0 and PI
+      angle_deviation = ABS(getAngleDeviation(orient, angle));
 
       // leave open area in front of human
-      angle_influence = angle_influence - M_PI_4;
-      if (angle_influence < 0) {
+      if (angle_deviation < M_PI_4) {
         val = 0;
       } else {
         // cosine function is 0 at borders of radius
-        distance_cosine = cos(distance / radius * M_PI_2 ); // value between 0 and 1 depending on distance and radius
+        distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
 
         // use stretch to increase / decrease weight more on more backward angles
-        angle_influence += (ABS(angle_deviation) - M_PI_2) * stretch_back * distance_cosine;
-
-        val = height * distance_cosine* angle_influence;
+        val = distance_cosine * (height + (angle_deviation - M_PI_4) * stretch_back);
       }
     }
     if(res < val) {
