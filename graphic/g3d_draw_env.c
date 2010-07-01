@@ -816,8 +816,9 @@ void g3d_sky_box(double x, double y, double z)
 
 //! @ingroup graphic 
 //! This function is the main display function called each time an OpenGL window is refreshed.
-//! It is preferable to keep only what is really necessary inside it.
-//! Define your own win->fct_draw2() and put your additional display inside.
+//! KEEP ONLY WHAT IS NECESSARY INSIDE IT!!:
+//! DEFINE YOUR OWN win->fct_draw2() AND PUT YOUR ADDITIONAL DISPLAY INSIDE.
+//! OR USE g3d_draw_env_custom() just below this function.
 void g3d_draw_env(void) {
   static int firstTime= TRUE;
   pp3d_env e;
@@ -908,12 +909,6 @@ void g3d_draw_env(void) {
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
 	  
-
-#ifdef HRI_COSTSPACE
-    g3d_draw_costspace();
-    g3d_draw_hrics();
-#endif
-	g3d_draw_grids();
 
    //g3d_sky_box(win->vs.x, win->vs.y, win->vs.z);
 
@@ -1077,32 +1072,13 @@ void g3d_draw_env(void) {
     //g3d_draw_robot_kinematic_chain(XYZ_ENV->cur_robot);
   }
  
+  g3d_draw_collision_cloud();
+
+  g3d_draw_env_custom();
 
 
-#ifdef HRI_PLANNER
-  gpsp_draw_robots_fov(win);
-  psp_draw_elements(win);
-#endif
-	
 #ifdef P3D_COLLISION_CHECKING
 
-// printf("psp\n");
-//  {-0.100170963, -0.972703815, -0.209316134, 10.4761086},
-//  {-0.631904542, 0.746246278, -0.20931612, 17.3667202},
-//  {-0.717136264, -0.221836269, 0.660684645, 11.4558439},
-//  {0.143646017, 0.0444349162, -0.98863107, 10.3555546},
-//  {0.839170814, 0.260432333, 0.477459252, 13409.1396},
-//  {-0.838386714, -0.259343415, -0.479425579, 31.8722878}
-
-// g3d_extract_frustum(win);
-// printf("frustum\n");
-// printf(" %f %f %f %f \n",win->vs.frustum[0][0],win->vs.frustum[0][1],win->vs.frustum[0][2],win->vs.frustum[0][3]);
-// printf(" %f %f %f %f \n",win->vs.frustum[1][0],win->vs.frustum[1][1],win->vs.frustum[1][2],win->vs.frustum[1][3]);
-// printf(" %f %f %f %f \n",win->vs.frustum[2][0],win->vs.frustum[2][1],win->vs.frustum[2][2],win->vs.frustum[2][3]);
-// printf(" %f %f %f %f \n",win->vs.frustum[3][0],win->vs.frustum[3][1],win->vs.frustum[3][2],win->vs.frustum[3][3]);
-// printf(" %f %f %f %f \n",win->vs.frustum[4][0],win->vs.frustum[4][1],win->vs.frustum[4][2],win->vs.frustum[4][3]);
-// printf(" %f %f %f %f \n",win->vs.frustum[5][0],win->vs.frustum[5][1],win->vs.frustum[5][2],win->vs.frustum[5][3]);
-	
   g3d_kcd_draw_all_aabbs();     // draw AABBs around static primitives
   g3d_kcd_draw_aabb_hier();     // draw AABB tree on static objects
   g3d_kcd_draw_robot_obbs();    // draw all obbs of current robot
@@ -1111,11 +1087,6 @@ void g3d_draw_env(void) {
   g3d_kcd_draw_closest_points();
 #endif
 	
-  #ifdef DPG
-  if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
-     XYZ_GRAPH->dpgGrid->draw();
-   }
-  #endif
 
   /* Debut Modification Thibaut */
   if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win);
@@ -1130,6 +1101,7 @@ void g3d_draw_env(void) {
   if (ENV.getBool(Env::drawTraj)) {
     g3d_draw_all_tcur();
   }
+
   if (G3D_DRAW_TRACE) {
     p3d_set_and_update_robot_conf(robotPt->ROBOT_POS);
     /* collision checking */
@@ -1148,7 +1120,6 @@ void g3d_draw_env(void) {
     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_trace_all_tcur();
   }
-
 
 //     //On dessine la source de lumière sous la forme d'une sphère:
 //   glDisable( GL_LIGHTING );
@@ -1171,29 +1142,6 @@ void g3d_draw_env(void) {
 	}
     glPopMatrix();
   }
-  p3d_drawRobotMoveMeshs();
-
-
-
-#ifdef HRI_PLANNER
-if (!win->win_perspective) {
-   //hri_hri_inter_point_test();
-   g3d_hri_bt_draw_active_bitmaps(BTSET);
-   g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
-   g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
-   g3d_hri_bt_draw_targets(BTSET);
-   hri_exp_draw_ordered_points();
-   //g3d_hri_display_test();
-   if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
-#ifdef USE_MIGHTABILITY_MAPS
-    execute_Mightability_Map_functions();
-#endif
- } else {
-   if (win->draw_mode!=NORMAL)
-     g3d_set_light_persp();
-   psp_draw_in_perspwin();
- }
-#endif
 
 
   if(ENV.getBool(Env::drawLightSource))
@@ -1212,6 +1160,52 @@ if (!win->win_perspective) {
 }
 
 
+void g3d_draw_env_custom()
+{
+  G3D_Window *win;
+
+  win = g3d_get_cur_win();
+
+  p3d_drawRobotMoveMeshs();
+
+  #ifdef HRI_COSTSPACE
+      g3d_draw_costspace();
+      g3d_draw_hrics();
+  #endif
+      g3d_draw_grids();
+  
+  #ifdef HRI_PLANNER
+    gpsp_draw_robots_fov(win);
+    psp_draw_elements(win);
+  #endif
+  
+    #ifdef DPG
+    if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
+      XYZ_GRAPH->dpgGrid->draw();
+    }
+    #endif
+  
+  
+  #ifdef HRI_PLANNER
+  if (!win->win_perspective) {
+    //hri_hri_inter_point_test();
+    g3d_hri_bt_draw_active_bitmaps(BTSET);
+    g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
+    g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
+    g3d_hri_bt_draw_targets(BTSET);
+    hri_exp_draw_ordered_points();
+    //g3d_hri_display_test();
+    if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
+  #ifdef USE_MIGHTABILITY_MAPS
+      execute_Mightability_Map_functions();
+  #endif
+  } else {
+    if (win->draw_mode!=NORMAL)
+      g3d_set_light_persp();
+    psp_draw_in_perspwin();
+  }
+  #endif
+}
 
 
 /**********************************************************/

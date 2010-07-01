@@ -22,6 +22,10 @@ hri_bitmap_cell* hri_bt_get_cell(hri_bitmap* bitmap, int x, int y, int z);
 
 hri_bitmap_cell* hri_bt_get_closest_cell(hri_bitmapset * btset, hri_bitmap* bitmap, double x, double y, double z);
 
+hri_bitmap_cell* hri_bt_get_closest_free_cell(hri_bitmapset * btset, hri_bitmap* bitmap, double x, double y, double z, double orientation, int max_grid_tolerance);
+
+int hri_bt_isRobotOnCellInCollision(hri_bitmapset * btset, hri_bitmap* bitmap, hri_bitmap_cell* cell, double orientation, int checkHumanCollision);
+
 hri_bitmap_cell* hri_bt_getCellOnPath(hri_bitmapset * btset, hri_bitmap* bitmap, double x, double y, double z);
 
 void hri_bt_copy_bitmap_values(hri_bitmap* bitmap_source, hri_bitmap* bitmap_target);

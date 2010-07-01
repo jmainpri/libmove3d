@@ -2,7 +2,7 @@
 #define __DPGGRID_H__
 #include "Planner-pkg.h"
 #include "P3d-pkg.h"
-#include "../planner/dpg/proto/DpgCell.h"
+#include "DpgCell.h"
 #include <vector>
 
 class DpgGrid {

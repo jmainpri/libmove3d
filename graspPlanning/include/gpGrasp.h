@@ -50,12 +50,14 @@ class gpGrasp
   enum gpHand_type hand_type;  /*!< type of the hand realizing the grasp */
   std::vector<double> config; /*!< configuration vector of the hand for the associated grasp */
   std::vector<double> openConfig; /*!< configuration vector of the hand slightly open from its grasp configuration (is used for the hand approach phase) */
-  enum gpGrasp_collision_state collision_state; 
+  bool tested; /*!< used to mark the grasps that have been tested in some path planning function  */
+  
 
   gpGrasp();
   gpGrasp(const gpGrasp &grasp);
   ~gpGrasp();
   gpGrasp & operator = (const gpGrasp &grasp);
+  bool operator == (const gpGrasp &grasp);
   bool operator < (const gpGrasp &grasp);
   bool operator > (const gpGrasp &grasp);
   int print();
@@ -65,9 +67,9 @@ class gpGrasp
   int computeQuality();
   double configCost();
   bool areContactsTooCloseToEdge(double angleThreshold, double distancethreshold);
-  double distance(const gpGrasp &grasp);
+  friend double gpGraspDistance(const gpGrasp &grasp1, const gpGrasp &grasp2);
   int contactCentroid(p3d_vector3 centroid);
-  int direction(p3d_vector3 direction);
+  int direction(p3d_vector3 direction) const;
   double similarity(const gpGrasp &grasp);
 };
 

@@ -1892,6 +1892,8 @@ void *p3d_beg_env(char* name) {
   e->background_color[0]= 1.0;
   e->background_color[1]= 1.0;
   e->background_color[2]= 1.0;
+  e->collisionCloud= NULL;
+  e->cloudSize= 0;
 
   return((void *)(XYZ_ENV = e));
 }
@@ -2851,9 +2853,10 @@ int p3d_print_env_info()
   return 0;
 }
 
-//! Construit un plan (p3d_plane) a partir des coordonnees de trois points.
-//! Les parametres de l'equation du plan sont definis tels que:
-//! normale.p + d = 0 pour tout point p appartenant au plan (avec "." le produit scalaire).
+
+//! Builds a plane (p3d_plane) from the coordinates of three points.
+//! The equation parameters are defined as:
+//! normale.p + d = 0 for every point belonging to the point (with "." the dot product).
 p3d_plane p3d_plane_from_points(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
 {
   p3d_plane plane;
@@ -2868,12 +2871,40 @@ p3d_plane p3d_plane_from_points(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
   return plane;
 }
  
-//! Retourne 1 si le point est au-dessus du plan (i.e. du côte vers lequel pointe la normale du plan),
-//! 0 sinon.
+
+//! Returns 1 if the point is above the plane (i.e. the side where is pointing the normal)
+//! 0 otherwise
 int p3d_is_point_above_plane(p3d_vector3 point, p3d_plane plane)
 {
   if( p3d_vectDotProd(plane.normale, point) + plane.d > 0 )
     return 1;
   else
     return 0;
+}
+
+//! Sets the current collision cloud of the environment from an array of p3d_vector3.
+//! \return 0 in case of success, 1 otherwise
+ int p3d_set_collision_cloud(p3d_vector3* points, int nbPoints)
+{
+  if(points==NULL)
+  {
+    printf("%s: %d: p3d_set_collision_cloud(): input p3d_vector3* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+  int i; 
+
+  if(XYZ_ENV->collisionCloud!=NULL)
+  {
+    free(XYZ_ENV->collisionCloud);
+  }
+ 
+  XYZ_ENV->collisionCloud= (p3d_vector3*) malloc(sizeof(p3d_vector3)*nbPoints);
+  XYZ_ENV->cloudSize= nbPoints;
+
+  for(i=0; i<XYZ_ENV->cloudSize; ++i)
+  {
+    p3d_vectCopy(points[i], XYZ_ENV->collisionCloud[i]);
+  }
+
+  return 0;
 }

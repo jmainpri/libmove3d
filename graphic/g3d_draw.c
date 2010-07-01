@@ -3603,3 +3603,25 @@ void g3d_draw_wire_ellipsoid(double a, double b, double c)
 }
 
 
+//! Draws the collision cloud contained in XYZ_ENV.
+//! \return 0 in case of success, 1 otherwise
+int g3d_draw_collision_cloud()
+{
+  int i;
+
+  glPushAttrib(GL_POINT_BIT | GL_LIGHTING_BIT);
+  glPointSize(4);
+  glDisable(GL_LIGHTING);
+  glColor3f(1, 0, 0);
+  glBegin(GL_POINTS); 
+    for(i=0; i<XYZ_ENV->cloudSize; ++i)
+    {
+      glVertex3dv(XYZ_ENV->collisionCloud[i]);
+    }
+  glEnd();
+
+  glPopAttrib();
+
+  return 0;
+}
+

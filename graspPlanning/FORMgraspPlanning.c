@@ -355,6 +355,14 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 
 void draw_grasp_planner()
 {
+  //display all the grasps from the list:
+  if( display_grasps )
+  {
+    for ( std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++ )
+    { ( *iter ).draw ( 0.005 );    }
+  }
+  GRASP.draw(0.05);
+return;
 p3d_rob *jido= p3d_get_robot_by_name("HRP2TABLE");
 p3d_rob *GREY_TAPE= p3d_get_robot_by_name("GREY_TAPE");
   p3d_vector3 a, b, amin, bmin;
@@ -404,13 +412,7 @@ g3d_does_robot_hide_object(tilt->abs_pos, 60, jido, GREY_TAPE, &result);
 //dynamic_grasping();
 //contact_points(); return;
 
-   //display all the grasps from the list:
-   if( display_grasps )
-	{
-	  for ( std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++ )
-	 { ( *iter ).draw ( 0.005 );    }
-	}
-    GRASP.draw(0.05);
+
    // g3d_screenshot();
 	return;
 	
@@ -668,7 +670,7 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   std::list<gpGrasp>::iterator igrasp;
 
   //result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
-   result= gpGet_grasp_list_gripper(ObjectName, GRASPLIST);
+  result= gpGet_grasp_list_gripper(ObjectName, GRASPLIST);
 
   if(result==GP_ERROR)
   {  return;  }
@@ -1375,6 +1377,49 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+ static int firstTime= 1;
+ std::list<gpGrasp>::iterator igrasp;
+ if(firstTime)
+ {
+  gpGet_grasp_list_gripper("GREY_TAPE", GRASPLIST);
+  igrasp= GRASPLIST.begin();
+  while(igrasp!=GRASPLIST.end()) {
+   if( igrasp->areContactsTooCloseToEdge(30*DEGTORAD, 0.02) ) {
+     igrasp= GRASPLIST.erase(igrasp);
+     continue;
+   }
+   igrasp++;
+  }
+  std::cout << GRASPLIST.size() << std::endl;
+  firstTime= 0;
+  redraw();
+ }
+ else
+ {
+  gpReduce_grasp_list_size(GRASPLIST, GRASPLIST, 10);
+  std::cout << GRASPLIST.size() << std::endl;
+  redraw();
+ }
+
+  return; 
+
+  p3d_vector3 points[5000];
+  for(int i=0; i<5000; ++i)
+  {
+//     points[i][0]= p3d_random(-0.2, 0.2);
+//     points[i][1]= p3d_random(0.3, 0.6);
+//     points[i][2]= p3d_random(0.65, 0.95);
+
+    points[i][0]= p3d_random(100, 350);
+    points[i][1]= p3d_random(350, 450);
+    points[i][2]= p3d_random(0, 0);
+  }
+  p3d_set_collision_cloud( points, 5000);
+
+return;
+
+redraw();
+return;
 
 g3d_win *win= NULL;
 win= g3d_get_cur_win();
@@ -1515,7 +1560,6 @@ return;
   redraw();
   return;*/
   static Manipulation *manipulation= NULL;
-  static int firstTime= TRUE;
 
   p3d_rob *justin= NULL, *object= NULL;
 

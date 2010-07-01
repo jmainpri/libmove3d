@@ -6,7 +6,7 @@ extern int show_gik_sol( void );
 extern int HRP2_hand_reach(p3d_vector3 target_in_global_frame, int hand_by_reach, double task_duration, int state, int thumb_up_constraint, int use_body_part);
 extern double* get_HRP2_hand_center_in_global_frame(int for_hand);//1 for left, 2 for right hand
 extern int create_HRP2_robot(int state);
-extern int get_index_of_robot_by_name(char *rob_name);
+
 extern int Hand_Clench ( int for_hand, double clench );
 extern int show_3d_grid_Bounding_box_for_HRP2_GIK();
 extern int create_HRP2_robot_for_GIK_in_Move3d(int state);

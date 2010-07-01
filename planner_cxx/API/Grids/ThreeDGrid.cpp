@@ -157,7 +157,6 @@ void ThreeDGrid::createAllCells()
     {
 
 		//cout << "("<< x << "," << y << "," << z << ")" << endl;
-		
         ThreeDCell* ptrCell = createNewCell(i,x,y,z);
         _cells[i] = ptrCell;
 		
@@ -259,21 +258,8 @@ ThreeDCell* ThreeDGrid::getCell(const Vector3d& point)
  */
 ThreeDCell* ThreeDGrid::getCell(double* pos)
 {
-	cout << "PROBLEM" << endl;
-	
-    unsigned int x = (unsigned int)((pos[0]-_originCorner[0])/_cellSize[0]);
-    unsigned int y = (unsigned int)((pos[1]-_originCorner[1])/_cellSize[1]);
-    unsigned int z = (unsigned int)((pos[2]-_originCorner[2])/_cellSize[2]);
-	
-//    cout << "( "<<x<<" , "<<y<<" , "<<z<<" ) "<< endl;
-	
-    if( x>=_nbCellsX ||  y>=_nbCellsY || z>=_nbCellsZ || x<0 || y<0 || z<0 )
-    {
-        cout << "ThreeDGrid:: OutBands " << endl;
-        return 0x0;
-    }
-	
-    return getCell(x,y,z);
+  Vector3d vect(pos[0],pos[1],pos[2]);
+  return getCell(vect);
 }
 
 /*!

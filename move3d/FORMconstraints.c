@@ -54,10 +54,11 @@ static void g3d_car_front_wheels_form(p3d_cntrt *ct, int x, int y);
 static void g3d_planar_closed_chain_form(p3d_cntrt *ct, int x, int y);
 static void g3d_R6_arm_ik(p3d_cntrt *ct, int x, int y);
 static void g3d_3R_arm_ik_form(p3d_cntrt *ct, int x, int y);
+static void g3d_kuka_arm_ik(p3d_cntrt *ct, int x, int y);
 
 static int ncntrt_st;         /* nombre des contraintes dans le robot dans la creation de la form */
 static int ncntrt_af;         /* nombre des contraintes dans le robot (affichage) */
-static int ncntrt_tp = 9;     /* nombre des types de contraintes dans le setting */
+static int ncntrt_tp = 10;     /* nombre des types de contraintes dans le setting */
 
 static int xCF,yCF,ftCF=1;
 static int CSF = 0;
@@ -383,46 +384,49 @@ static void g3d_create_constraints_setting_form(void)
 
 static void CB_cntrt_set_list_obj(FL_OBJECT *ob, long arg)
 {int val =  fl_get_button(ob);
- int x,y;
-
- if(val) {
-   fl_get_winorigin(FL_ObjWin(ob),&x,&y);
-   fl_deactivate_form(CONSTRAINTS_SETTING_FORM->CNTRT_SET_FORM); 
-   fl_deactivate_form(CONSTRAINTS_FORM->CNTRT_FORM);
-   switch(arg) {
-   case 0:
-     g3d_fixed_jnt_form(NULL,x,y);
-     break;
-   case 1:
-     g3d_lin_rel_dofs_form(NULL,x,y);
-     break;
-   case 2:
-     g3d_RRPRlnk_form(NULL,x,y);
-     break;
-   case 3:
-     g3d_4Rlnk_form(NULL,x,y);
-     break;
-   case 4:
-     g3d_3RPRlnk_form(NULL,x,y);
-     break;
-   case 5:
-     g3d_jnt_on_ground_form(NULL,x,y);
-     break;
-   case 6:
-     g3d_car_front_wheels_form(NULL,x,y);
-     break;
-   case 7:
-     g3d_planar_closed_chain_form(NULL,x,y);
-     break;
-   case 8:
-     g3d_R6_arm_ik(NULL,x,y);
-     break;
-   default:
-     printf("CB_cntrt_set_list_obj : ERROR : case is not in switch\n");
-     return;
-   }
-   fl_set_button(ob,0);
- }
+  int x,y;
+  
+  if(val) {
+    fl_get_winorigin(FL_ObjWin(ob),&x,&y);
+    fl_deactivate_form(CONSTRAINTS_SETTING_FORM->CNTRT_SET_FORM); 
+    fl_deactivate_form(CONSTRAINTS_FORM->CNTRT_FORM);
+    switch(arg) {
+      case 0:
+        g3d_fixed_jnt_form(NULL,x,y);
+        break;
+      case 1:
+        g3d_lin_rel_dofs_form(NULL,x,y);
+        break;
+      case 2:
+        g3d_RRPRlnk_form(NULL,x,y);
+        break;
+      case 3:
+        g3d_4Rlnk_form(NULL,x,y);
+        break;
+      case 4:
+        g3d_3RPRlnk_form(NULL,x,y);
+        break;
+      case 5:
+        g3d_jnt_on_ground_form(NULL,x,y);
+        break;
+      case 6:
+        g3d_car_front_wheels_form(NULL,x,y);
+        break;
+      case 7:
+        g3d_planar_closed_chain_form(NULL,x,y);
+        break;
+      case 8:
+        g3d_R6_arm_ik(NULL,x,y);
+        break;
+      case 9:
+        g3d_kuka_arm_ik(NULL,x,y);
+        break;
+      default:
+        printf("CB_cntrt_set_list_obj : ERROR : case is not in switch\n");
+        return;
+    }
+    fl_set_button(ob,0);
+  }
 }
 
 static void g3d_create_cntrt_set_list_obj(void)
@@ -521,6 +525,9 @@ static void g3d_one_cntrt_form(p3d_cntrt *ct, int x, int y)
   }
   else if(strcmp(ct->namecntrt,"p3d_3R_arm_ik")==0) {
     g3d_3R_arm_ik_form(ct,x,y);
+  }
+  else if(strcmp(ct->namecntrt,"p3d_kuka_arm_ik")==0) {
+    g3d_kuka_arm_ik(ct,x,y);
   }
   else {
     PrintInfo(("No control window available for this constraint"));
@@ -1924,6 +1931,7 @@ static void g3d_R6_arm_ik(p3d_cntrt *ct, int x, int y)
   fl_show_form(CNTRT_TP8_FORM,FL_PLACE_SIZE,TRUE,"");
 }
 
+
 static void g3d_create_cntrt_tp8_form(p3d_cntrt *ct)
 { char inval[20];
   p3d_rob *r = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
@@ -2540,3 +2548,284 @@ static int CB_cntrt_tp9_OnClose(FL_FORM *form, void *arg){
 
 /* ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ */
+
+/* cntrt_tp10 */
+static void g3d_create_cntrt_tp10_form(p3d_cntrt *ct);
+static void g3d_delete_cntrt_tp10_form(void);
+static void CB_inputs_tp10_obj(FL_OBJECT *ob, long arg);
+static void CB_ok_tp10_obj(FL_OBJECT *ob, long arg);
+static void CB_cancel_tp10_obj(FL_OBJECT *ob, long arg);
+static int CB_cntrt_tp10_OnClose(FL_FORM *form, void *arg);
+
+static FL_FORM   *CNTRT_TP10_FORM;
+static FL_OBJECT *MAIN_FRAME_TP10;
+static FL_OBJECT *VALID_FRAME_TP10;
+static FL_OBJECT *INPUTS_TP10[10];
+static FL_OBJECT *OK_TP10;
+static FL_OBJECT *CANCEL_TP10;
+
+static void g3d_kuka_arm_ik(p3d_cntrt *ct, int x, int y)
+{
+  g3d_create_cntrt_tp10_form(ct);
+  fl_set_form_position(CNTRT_TP10_FORM,x,y);
+  fl_show_form(CNTRT_TP10_FORM,FL_PLACE_SIZE,TRUE,"");
+}
+
+static void g3d_create_cntrt_tp10_form(p3d_cntrt *ct)
+{ char inval[20];
+  g3d_create_form(&CNTRT_TP10_FORM,160,280,FL_UP_BOX);
+  g3d_create_frame(&MAIN_FRAME_TP10,FL_ENGRAVED_FRAME,-1,-1,"",(void**)&CNTRT_TP10_FORM,1);
+  
+  //Passive joint1
+  g3d_create_input(&INPUTS_TP10[0],FL_NORMAL_INPUT,33,20,"PasJnt 1",(void**)&MAIN_FRAME_TP10,0);
+  fl_set_call_back(INPUTS_TP10[0],CB_inputs_tp10_obj,0);
+  if(ct != NULL) {
+    sprintf(inval,"%d",ct->pasjnts[0]->num);
+    fl_set_input(INPUTS_TP10[0],inval);
+    fl_deactivate_object(INPUTS_TP10[0]);
+    Jpasiv[0] = ct->pasjnts[0]->num;
+  }else{
+    fl_set_object_color(INPUTS_TP10[0],FL_CYAN,FL_CYAN);
+  }
+  
+  //Passive joint2
+  g3d_create_input(&INPUTS_TP10[1],FL_NORMAL_INPUT,33,20,"PasJnt 2",(void**)&MAIN_FRAME_TP10,0);
+  fl_set_call_back(INPUTS_TP10[1],CB_inputs_tp10_obj,1);
+  if(ct != NULL) {
+    sprintf(inval,"%d",ct->pasjnts[1]->num);
+    fl_set_input(INPUTS_TP10[1],inval);
+    fl_deactivate_object(INPUTS_TP10[1]);
+    Jpasiv[1] = ct->pasjnts[1]->num;
+  }else{
+    fl_set_object_color(INPUTS_TP10[1],FL_CYAN,FL_CYAN);
+  }
+  
+  //Passive joint3
+  g3d_create_input(&INPUTS_TP10[2],FL_NORMAL_INPUT,33,20,"PasJnt 3",(void**)&MAIN_FRAME_TP10,0);
+  fl_set_call_back(INPUTS_TP10[2],CB_inputs_tp10_obj,2);
+  if(ct != NULL) {
+    sprintf(inval,"%d",ct->pasjnts[2]->num);
+    fl_set_input(INPUTS_TP10[2],inval);
+    fl_deactivate_object(INPUTS_TP10[2]);
+    Jpasiv[2] = ct->pasjnts[2]->num;
+  }else{
+    fl_set_object_color(INPUTS_TP10[2],FL_CYAN,FL_CYAN);
+  }
+
+  //Passive joint4
+  g3d_create_input(&INPUTS_TP10[3],FL_NORMAL_INPUT,33,20,"PasJnt 4",(void**)&MAIN_FRAME_TP10,0);
+  fl_set_call_back(INPUTS_TP10[3],CB_inputs_tp10_obj,3);
+  if(ct != NULL) {
+    sprintf(inval,"%d",ct->pasjnts[3]->num);
+    fl_set_input(INPUTS_TP10[3],inval);
+    fl_deactivate_object(INPUTS_TP10[3]);
+    Jpasiv[3] = ct->pasjnts[3]->num;
+  }else{
+    fl_set_object_color(INPUTS_TP10[3],FL_CYAN,FL_CYAN);
+  }
+
+  
+  //Passive joint5
+  g3d_create_input(&INPUTS_TP10[4],FL_NORMAL_INPUT,33,20,"PasJnt 5",(void**)&MAIN_FRAME_TP10,0);
+  fl_set_call_back(INPUTS_TP10[4],CB_inputs_tp10_obj,4);
+  if(ct != NULL) {
+    sprintf(inval,"%d",ct->pasjnts[4]->num);
+    fl_set_input(INPUTS_TP10[4],inval);
+    fl_deactivate_object(INPUTS_TP10[4]);
+    Jpasiv[4] = ct->pasjnts[4]->num;
+  }else{
+    fl_set_object_color(INPUTS_TP10[4],FL_CYAN,FL_CYAN);
+  }
+
+  //Passive joint6
+  g3d_create_input(&INPUTS_TP10[5],FL_NORMAL_INPUT,33,20,"PasJnt 6",(void**)&MAIN_FRAME_TP10,0);
+  fl_set_call_back(INPUTS_TP10[5],CB_inputs_tp10_obj,5);
+  if(ct != NULL) {
+    sprintf(inval,"%d",ct->pasjnts[5]->num);
+    fl_set_input(INPUTS_TP10[5],inval);
+    fl_deactivate_object(INPUTS_TP10[5]);
+    Jpasiv[5] = ct->pasjnts[5]->num;
+  }else{
+    fl_set_object_color(INPUTS_TP10[5],FL_CYAN,FL_CYAN);
+  }
+
+  //Sampled joint
+  g3d_create_input(&INPUTS_TP10[6],FL_NORMAL_INPUT,33,20,"Sampled",(void**)&MAIN_FRAME_TP10,0);
+  fl_set_call_back(INPUTS_TP10[6],CB_inputs_tp10_obj,6);
+  if(ct != NULL) {
+    sprintf(inval,"%d",ct->argu_i[0]);
+    fl_set_input(INPUTS_TP10[6],inval);
+    fl_deactivate_object(INPUTS_TP10[6]);
+    Ival[0] = ct->argu_i[0];
+  }else{
+    fl_set_object_color(INPUTS_TP10[6],FL_CYAN,FL_CYAN);
+  }
+  
+  //Active joint
+  g3d_create_input(&INPUTS_TP10[7],FL_NORMAL_INPUT,33,20,"ActJnt",(void**)&MAIN_FRAME_TP10,0);
+  fl_set_call_back(INPUTS_TP10[7],CB_inputs_tp10_obj,7);
+  if(ct != NULL) {
+    sprintf(inval,"%d",ct->actjnts[0]->num);
+    fl_set_input(INPUTS_TP10[7],inval);
+    fl_deactivate_object(INPUTS_TP10[7]);
+    Jactiv[0] = ct->actjnts[0]->num;
+  }else{
+    fl_set_object_color(INPUTS_TP10[7],FL_CYAN,FL_CYAN);
+  }
+  
+  //Which Arm
+  g3d_create_input(&INPUTS_TP10[8],FL_NORMAL_INPUT,33,20,"Which Arm",(void**)&MAIN_FRAME_TP10,0);
+  fl_set_call_back(INPUTS_TP10[8],CB_inputs_tp10_obj,4);
+  if(ct != NULL) {
+    sprintf(inval,"%d",ct->argu_i[1]);
+    fl_set_input(INPUTS_TP10[8],inval);
+    fl_deactivate_object(INPUTS_TP10[8]);
+    Ival[1] = ct->argu_i[1];
+  }else{
+    fl_set_object_color(INPUTS_TP10[8],FL_CYAN,FL_CYAN);
+  }
+  
+  //IkSol
+  g3d_create_input(&INPUTS_TP10[9],FL_NORMAL_INPUT,33,20,"Solution",(void**)&MAIN_FRAME_TP10,0);
+  fl_set_call_back(INPUTS_TP10[9],CB_inputs_tp10_obj,9);
+  if(ct != NULL) {
+    sprintf(inval,"%d",ct->argu_i[2]);
+    fl_set_input(INPUTS_TP10[9],inval);
+    //fl_deactivate_object(INPUTS_TP10[9]);
+    Ival[2] = ct->argu_i[2];
+  }else{
+    fl_set_object_color(INPUTS_TP10[9],FL_CYAN,FL_CYAN);
+  }
+  
+  g3d_create_frame(&VALID_FRAME_TP10,FL_NO_FRAME,-1,-1,"",(void**)&CNTRT_TP10_FORM,1);
+  //Ok button
+  g3d_create_button(&OK_TP10,FL_PUSH_BUTTON,40,20,"Ok",(void**)&VALID_FRAME_TP10,0);
+  if(ct == NULL) fl_set_call_back(OK_TP10,CB_ok_tp10_obj,-1);
+  else fl_set_call_back(OK_TP10,CB_ok_tp10_obj,ct->num);
+  
+  //Cancel button
+  g3d_create_button(&CANCEL_TP10,FL_PUSH_BUTTON,40,20,"Cancel",(void**)&VALID_FRAME_TP10,0);
+  if(ct == NULL) fl_set_call_back(CANCEL_TP10,CB_cancel_tp10_obj,-1);
+  else fl_set_call_back(CANCEL_TP10,CB_cancel_tp10_obj,ct->num);
+  
+  fl_end_form();
+  fl_set_form_icon(CNTRT_TP10_FORM, GetApplicationIcon(), 0);
+  fl_set_form_atclose(CNTRT_TP10_FORM, CB_cntrt_tp10_OnClose, NULL);
+}
+
+static void g3d_delete_cntrt_tp10_form(void)
+{
+  int i = 0;
+  
+  fl_hide_form(CNTRT_TP10_FORM);
+  for(i = 0; i < 10; i++){
+    g3d_fl_free_object(INPUTS_TP10[i]);
+  }
+  g3d_fl_free_object(MAIN_FRAME_TP10);
+  g3d_fl_free_form(CNTRT_TP10_FORM);
+}
+
+static void CB_inputs_tp10_obj(FL_OBJECT *ob, long arg)
+{
+  switch(arg) {
+    case 0:{
+      Jpasiv[0] = atoi(fl_get_input(ob));
+      break;
+    }
+    case 1:{
+      Jpasiv[1] = atoi(fl_get_input(ob));
+      break;
+    }
+    case 2:{
+      Jpasiv[2] = atoi(fl_get_input(ob));
+      break;
+    } 
+    case 3:{
+      Jpasiv[3] = atoi(fl_get_input(ob));
+      break;
+    } 
+    case 4:{
+      Jpasiv[4] = atoi(fl_get_input(ob));
+      break;
+    } 
+    case 5:{
+      Jpasiv[5] = atoi(fl_get_input(ob));
+      break;
+    } 
+    case 6:{
+      Ival[0] = atoi(fl_get_input(ob));
+      break;
+    } 
+    case 7:{
+      Jactiv[0] = atoi(fl_get_input(ob));
+      break;
+    }
+    case 8:{
+      Ival[1] = atof(fl_get_input(ob));
+      break;
+    }
+    case 9:{
+      Ival[2] = atof(fl_get_input(ob));
+      break;
+    }
+  }
+}
+
+static void CB_ok_tp10_obj(FL_OBJECT *ob, long arg)
+{ p3d_rob *r;
+  /*   p3d_cntrt *ct; */
+  
+  if(arg == -1) {
+    if(p3d_constraint("p3d_kuka_arm_ik", -1, Jpasiv, -1, Jactiv,
+                      -1, Dval, -1, Ival, -1, 1)) {
+      g3d_delete_cntrt_tp10_form();
+      g3d_delete_constraints_form();
+      free(CONSTRAINTS_FORM);
+      g3d_kin_constraints_form();
+      fl_activate_all_forms();
+      fl_activate_form(CONSTRAINTS_SETTING_FORM->CNTRT_SET_FORM);
+    }
+    else {
+      fl_set_button(ob,0);
+    }
+  }
+  else {
+    r = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+    p3d_update_jnts_state(r->cntrt_manager,r->cntrt_manager->cntrts[arg], 0);
+    if(p3d_constraint("p3d_kuka_arm_ik", -1, Jpasiv, -1, Jactiv,
+                      -1, Dval, -1, Ival, arg, 1)) {
+      p3d_update_jnts_state(r->cntrt_manager,r->cntrt_manager->cntrts[arg], 1);
+      g3d_delete_cntrt_tp10_form();
+      if(!fl_get_button(CONSTRAINTS_FORM->LIST_OBJ[r->cntrt_manager->cntrts[arg]->num])) {
+        fl_set_button(CONSTRAINTS_FORM->LIST_OBJ[r->cntrt_manager->cntrts[arg]->num],1);
+      }
+      fl_activate_form(CONSTRAINTS_FORM->CNTRT_FORM);
+    }
+    else {
+      fl_set_button(ob,0);
+    }
+  }
+}
+
+static void CB_cancel_tp10_obj(FL_OBJECT *ob, long arg)
+{
+  g3d_delete_cntrt_tp10_form();
+  if(arg == -1) {
+    fl_activate_form(CONSTRAINTS_SETTING_FORM->CNTRT_SET_FORM);
+    fl_activate_form(CONSTRAINTS_FORM->CNTRT_FORM);
+  }
+  else {
+    fl_activate_form(CONSTRAINTS_FORM->CNTRT_FORM);
+  }
+}
+
+static int CB_cntrt_tp10_OnClose(FL_FORM *form, void *arg){
+  g3d_delete_cntrt_tp10_form();
+  //If we return FL_OK, the application will continue to try to shut down itself
+  //   if however we return FL_IGNORE, the application will not continue this event
+  return FL_IGNORE;
+}
+/* fin cntrt_tp10 */
+
+/* ------------------------------------------------------------------ */

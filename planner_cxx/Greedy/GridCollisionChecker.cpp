@@ -322,4 +322,17 @@ CellCollisionChecker* GridCollisionChecker::createNewCell(unsigned int index,uns
     return newCell;
 }
 
+bool GridCollisionChecker::collisionCheck()
+{
+  updateRobotOccupationCells(m_Robot);
+
+  for(unsigned int i=0; i<m_OccupationCells.size(); ++i)
+  {
+    if(!m_OccupationCells[i]->isValid())
+    {  return true; }
+  }
+
+  return false;
+}
+
 #endif

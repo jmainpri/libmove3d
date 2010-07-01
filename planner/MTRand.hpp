@@ -72,7 +72,6 @@
 #include <math.h>
 #include <limits.h>
 
-using namespace std;
 class MTRand {
   // Data
  public:

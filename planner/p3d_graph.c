@@ -15,7 +15,7 @@
 #include "../planner_cxx/plannerFunctions.hpp"
 #endif
 #ifdef DPG
-#include "../planner/dpg/proto/DpgGrid.h"
+#include "DpgGrid.h"
 #endif
 
 pp3d_graph XYZ_GRAPH = NULL;
@@ -1394,7 +1394,7 @@ int p3d_add_isolate_or_linking_node(p3d_graph *G, int (*fct_stop)(void),
   double dist = 0.0;
   p3d_compco * CompScan;
   p3d_list_node * NodeScan;
-  int ValidForward, ValidBackward, nbNodes, *ikSol = NULL;
+  int ValidForward, ValidBackward, nbNodes, *ikSol = NULL, nbMaxSol = 0;
   //start path deform
   p3d_node * node1Pt, * node2Pt;
   p3d_list_edge *list_edge, *list_edge2;
@@ -1414,9 +1414,9 @@ int p3d_add_isolate_or_linking_node(p3d_graph *G, int (*fct_stop)(void),
       }
     }
     //We shoot a singularity or not?
-    if ((G->rob->cntrt_manager->ncntrts != 0) && p3d_get_ik_choice() != IK_NORMAL) {
-      test = (int)p3d_random(0, 5);//5
-      if (test == 0 && G->ncomp > 1) {// 1/20 to shoot a singularity
+    if ((G->rob->cntrt_manager->ncntrts != 0) && p3d_is_multisol(G->rob->cntrt_manager, &nbMaxSol) &&p3d_get_ik_choice() != IK_NORMAL) {
+      test = (int)p3d_random(0, 6-EPS6);//5
+      if (test == 0 && G->ncomp > 1) {// 1/5 to shoot a singularity
         singularityCheck = 1;
       }
     }
@@ -1530,7 +1530,6 @@ int p3d_add_isolate_or_linking_node(p3d_graph *G, int (*fct_stop)(void),
         }
         CompScan = CompScan->suiv;
       }
-
       /* We know how many connection can be realised. A real insertion is done if the node
         is ISOLATED or LINKING */
 

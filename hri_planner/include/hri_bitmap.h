@@ -221,8 +221,12 @@ typedef struct astar_parameters{
   int path_reuse_cell_startcell_tolerance;
   /* how much better in % of costs a new path must be to beat an old path */
   int path_reuse_threshold;
-  /* flag to activate reluctance behavior, which prefers an existing path if the new one is not much better */
+  /* flag to activate reluctance behavior, which prefers an
+   * existing path if the new one is not much better.
+   * This could in some cases help for later algorithms */
   int use_changepath_reluctance;
+  /* how many grid steps away a free start cell may be found from the robot real position */
+  int start_cell_tolerance;
 
   int use_corridors;
 
@@ -250,7 +254,7 @@ struct bitmap_set{
 
   hri_human ** human;
   p3d_rob * robot;
-  p3d_rob * secondary_robot; //AKP: To have two robots
+  
   p3d_rob * visball;        // virtual move3d object for calculating hidden zones
   p3d_rob * object;         // for grasping
 

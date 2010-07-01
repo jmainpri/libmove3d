@@ -1,4 +1,5 @@
-#include "../planner/dpg/proto/DpgGrid.h"
+#include "DpgGrid.h"
+#include "ThreeDCell.h"
 
 using namespace std;
 
@@ -80,7 +81,7 @@ vector<DpgCell*> DpgGrid::getCellListForObject(p3d_obj* obj, p3d_matrix4 pointTr
   for(unsigned int i = 0; i < obj->nbPointCloud; i++){
     p3d_vector3 point;
     p3d_xformPoint(pointTransform, obj->pointCloud[i], point);
-    DpgCell* cell = dynamic_cast<DpgCell*>(getCell(point));
+    DpgCell* cell = (DpgCell*)(getCell(point));
     if(!cell->isVisited()){
       cell->setVisited(true);
       objectCells.push_back(cell);
@@ -93,14 +94,14 @@ vector<DpgCell*> DpgGrid::getCellListForObject(p3d_obj* obj, p3d_matrix4 pointTr
 }
 
 void DpgGrid::draw(){
-  for(int i=0; i < getNumberOfCells(); i++){
-    DpgCell* cell = static_cast<DpgCell*>(BaseGrid::getCell(i));
+  for(unsigned int i=0; i < getNumberOfCells(); i++){
+    DpgCell* cell = dynamic_cast<DpgCell*>(BaseGrid::getCell(i));
     if(!cell->isValid()){
       cell->draw();
     }
   }
-  for(int i=0; i < getNumberOfCells(); i++){
-    DpgCell* cell = static_cast<DpgCell*>(BaseGrid::getCell(i));
+  for(unsigned int i=0; i < getNumberOfCells(); i++){
+    DpgCell* cell = dynamic_cast<DpgCell*>(BaseGrid::getCell(i));
     if(cell->isValid()){
       cell->draw();
     }
@@ -116,7 +117,7 @@ void DpgGrid::draw(){
  * \param y The position of the cell over y
  * \param z The position of the cell over z
  */
-DpgCell* DpgGrid::createNewCell(int index, int x, int y, int z ){
+API::ThreeDCell* DpgGrid::createNewCell(unsigned int index, unsigned int x, unsigned int y, unsigned int z ){
     DpgCell* newCell = new DpgCell( index, computeCellCorner(x,y,z) , this );
     return newCell;
 }

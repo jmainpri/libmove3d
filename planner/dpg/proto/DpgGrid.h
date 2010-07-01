@@ -6,7 +6,7 @@
 #include "ThreeDGrid.h"
 
 class DpgGrid : public API::ThreeDGrid{
-  public:
+  public:  
     //constructors and destructors
     DpgGrid(p3d_env* env);
     virtual ~DpgGrid();
@@ -24,7 +24,7 @@ class DpgGrid : public API::ThreeDGrid{
     void unvalidObjectCells(p3d_obj* obj);
     void draw();
   protected:
-     DpgCell* createNewCell(int index, int x, int y, int z );
+  virtual API::ThreeDCell* createNewCell(unsigned int index, unsigned int x, unsigned int y, unsigned int z );
   private:
     p3d_env* _env;
     //The position of the origin of the grid regarding th eorigin of the world

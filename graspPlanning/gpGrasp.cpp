@@ -209,7 +209,7 @@ gpGrasp::gpGrasp()
   body_index      = 0;
   object_name     = "none";
   hand_type       = GP_HAND_NONE;
-  collision_state = NOT_TESTED;
+  tested          = false;
 }
 
 gpGrasp::gpGrasp(const gpGrasp &grasp)
@@ -233,7 +233,7 @@ gpGrasp::gpGrasp(const gpGrasp &grasp)
   body_index= grasp.body_index;
   object_name= grasp.object_name;
   hand_type= grasp.hand_type;
-  collision_state= grasp.collision_state;
+  tested= grasp.tested;
 
   contacts.resize(grasp.contacts.size());
   for(i=0; i<contacts.size(); i++)
@@ -281,7 +281,7 @@ gpGrasp & gpGrasp::operator = (const gpGrasp &grasp)
     body_index= grasp.body_index;
     object_name= grasp.object_name;
     hand_type= grasp.hand_type;
-    collision_state= grasp.collision_state;
+    tested= grasp.tested;
 
     config.resize(grasp.config.size());  
     for(i=0; i<config.size(); i++)
@@ -295,6 +295,11 @@ gpGrasp & gpGrasp::operator = (const gpGrasp &grasp)
   return *this;
 }
 
+
+bool gpGrasp::operator == (const gpGrasp &grasp)
+{
+  return ID==grasp.ID;
+}
 
 
 //! Draws all the contacts of a grasp.
@@ -334,7 +339,7 @@ int gpGrasp::draw(double length, int nb_slices)
       contacts[i].draw(length, nb_slices);
     }
 
-//     g3d_draw_frame(frame, 4*length);
+    g3d_draw_frame(frame, 4*length);
 
 //     if(hand_type==GP_SAHAND_RIGHT)
 //     { 
@@ -404,17 +409,52 @@ double gpGrasp::configCost()
 
 
 //! Computes the distance between two grasps.
-//! \param grasp
+//! This is based on the distance between their two frames.
+//! For now, it is the euclidean distance between the two frame centers.
+//! \param grasp1 the first grasp
+//! \param grasp2 the second grasp
 //! \return the computed distance 
-double gpGrasp::distance(const gpGrasp &grasp)
+double gpGraspDistance(const gpGrasp &grasp1, const gpGrasp &grasp2)
 {
-  if(this==NULL)
+  double d, alpha, beta;
+  p3d_vector3 pos1, pos2, diff, cmass;
+  p3d_vector3 ray1, ray2, direction1, direction2;
+
+  p3d_mat4ExtractTrans((p3d_matrix_type(*)[4]) grasp1.frame, pos1);
+  p3d_mat4ExtractTrans((p3d_matrix_type(*)[4]) grasp2.frame, pos2);
+
+  p3d_vectSub(pos1, pos2, diff);
+  d= p3d_vectNorm(diff);
+  return d;
+/*
+  double threshold= 0.02;
+  p3d_vectCopy(grasp1.object->o[grasp1.body_index]->pol[0]->poly->cmass, cmass);
+
+  p3d_vectSub(pos1, cmass, ray1);
+  p3d_vectNormalize(ray1, ray1);
+  p3d_vectSub(pos2, cmass, ray2);
+  p3d_vectNormalize(ray2, ray2);
+  alpha= acos(p3d_vectDotProd(ray1, ray2));
+
+  grasp1.direction(direction1);
+  grasp2.direction(direction2);
+  beta= acos(p3d_vectDotProd(direction1, direction2));
+
+  return (fabs(beta));
+  return (fabs(alpha) + fabs(beta));
+
+  if(d > threshold)
   {
-    printf("%s: %d: gpGrasp::distance(): the calling instance is NULL.\n",__FILE__,__LINE__);
-    return 0;
+    return d;
+  }
+  else
+  {
+    d= p3d_mat4Distance((p3d_matrix_type(*)[4]) grasp1.frame, (p3d_matrix_type(*)[4]) grasp2.frame, 0.0, 1.0);
+    d*= threshold/M_PI; // to ensure the continuity
+    return d;
   }
 
-  return p3d_mat4Distance(frame, (p3d_matrix_type(*)[4]) grasp.frame, 1.0, 10.0);
+  return p3d_mat4Distance((p3d_matrix_type(*)[4]) grasp1.frame, (p3d_matrix_type(*)[4]) grasp2.frame, 1.0, 10.0);*/
 }
 
 
@@ -867,7 +907,7 @@ int gpGrasp::printInFile(const char *filename)
 //! Gives the direction of the wrist associated to the gpGrasp.
 //! \param direction a p3d_vector3 that will be filled with the wrist direction
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpGrasp::direction(p3d_vector3 direction)
+int gpGrasp::direction(p3d_vector3 direction) const
 {
   if(this==NULL)
   {
@@ -880,7 +920,7 @@ int gpGrasp::direction(p3d_vector3 direction)
 
   handProp.initialize(hand_type);
 
-  p3d_mat4Mult(frame, handProp.Tgrasp_frame_hand, hand_frame);
+  p3d_mat4Mult((p3d_matrix_type(*)[4]) frame, handProp.Tgrasp_frame_hand, hand_frame);
 
   //the direction of the hand is the Z axis:
   direction[0]= hand_frame[0][2];

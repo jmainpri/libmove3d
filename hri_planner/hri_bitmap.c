@@ -450,12 +450,17 @@ void  hri_bt_show_bitmapset(hri_bitmapset* bitmapset)
 void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
 {
   bitmapset->parameters = MY_ALLOC(hri_astar_parameters, 1);
-  bitmapset->parameters->path_length_weight = 60;
+  bitmapset->parameters->path_length_weight = 40;
   bitmapset->parameters->soft_collision_distance_weight = 8;
   bitmapset->parameters->soft_collision_base_cost = 15;
+  bitmapset->parameters->start_cell_tolerance = 2;
+  /** reluctance is an experimental feature to prefer previously planned
+   * paths to new ones, that does not seem to change the robot behavior much (maybe in special cases?).
+   * Also might be buggy as result path start is not request start */
+  bitmapset->parameters->use_changepath_reluctance = FALSE;
   bitmapset->parameters->path_reuse_cell_startcell_tolerance = 3;
   bitmapset->parameters->path_reuse_threshold = 30;
-  bitmapset->parameters->use_changepath_reluctance = FALSE;
+  /** corridors is an experimental feature to increase costs in the middle of corridors, benefit was not proved yet.*/
   bitmapset->parameters->use_corridors = FALSE;
   bitmapset->parameters->corridor_Costs = 50;
 }
@@ -587,141 +592,105 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   human->state = MY_ALLOC(hri_human_state, BT_STATE_NO);
   human->states_no = BT_STATE_NO;
   human->exists = FALSE; /* HUMAN EXIST */
-  human->transparent = FALSE; /* HRI_PLANNER may move through juman */
+  human->transparent = FALSE; /* HRI_PLANNER may move through human */
   human->id = -1;
 
-  if(strcasestr(robot->name,"SUPERMAN")){
-    
-    strcpy(human->state[BT_SITTING].name,"SITTING");
-    
-    human->state[BT_SITTING].dheight = 360;
-    human->state[BT_SITTING].dradius = 2.5;
-    human->state[BT_SITTING].vheight = 50;
-    human->state[BT_SITTING].vback = 1.3;
-    human->state[BT_SITTING].vradius = 2.4;
-    human->state[BT_SITTING].hradius = 2.8;
-    
-    human->state[BT_SITTING].c1 =  DTOR(-14.08);// left hip
-    human->state[BT_SITTING].c2 =  DTOR( 90);// left leg
-    human->state[BT_SITTING].c3 =  DTOR( 14.08);// right hip
-    human->state[BT_SITTING].c4 =  DTOR( 90);// right leg
-    human->state[BT_SITTING].c5 =  DTOR(-90);// left knee
-    human->state[BT_SITTING].c6 =  DTOR(-90);// right knee
-    human->state[BT_SITTING].c7 =  0.46;// torso height
-    
-    strcpy(human->state[BT_STANDING_TRANSPARENT].name,"STANDING TRANS");
-    
-    human->state[BT_STANDING_TRANSPARENT].dheight = 300;
-    human->state[BT_STANDING_TRANSPARENT].dradius = 1.6;
-    human->state[BT_STANDING_TRANSPARENT].vheight = 40;
-    human->state[BT_STANDING_TRANSPARENT].vback = 1.2;
-    human->state[BT_STANDING_TRANSPARENT].vradius = 2;
-    human->state[BT_STANDING_TRANSPARENT].hradius = 1.5;
-    
-    human->state[BT_STANDING_TRANSPARENT].c1 = 0;// left hip
-    human->state[BT_STANDING_TRANSPARENT].c2 = 0;// left leg
-    human->state[BT_STANDING_TRANSPARENT].c3 = 0;// right hip
-    human->state[BT_STANDING_TRANSPARENT].c4 = 0;// right leg
-    human->state[BT_STANDING_TRANSPARENT].c5 = 0;// left knee
-    human->state[BT_STANDING_TRANSPARENT].c6 = 0;// right knee
-    human->state[BT_STANDING_TRANSPARENT].c7 = 0.85;// torso height
-    
-    strcpy(human->state[BT_STANDING].name,"STANDING");
-    
-    human->state[BT_STANDING].dheight = 300;
-    human->state[BT_STANDING].dradius = 1.6;
-    human->state[BT_STANDING].vheight = 40;
-    human->state[BT_STANDING].vback = 1.2;
-    human->state[BT_STANDING].vradius = 2;
-    human->state[BT_STANDING].hradius = 1.5;
-    
-    human->state[BT_STANDING].c1 = 0;// left hip
-    human->state[BT_STANDING].c2 = 0;// left leg
-    human->state[BT_STANDING].c3 = 0;// right hip
-    human->state[BT_STANDING].c4 = 0;// right leg
-    human->state[BT_STANDING].c5 = 0;// left knee
-    human->state[BT_STANDING].c6 = 0;// right knee
-    human->state[BT_STANDING].c7 = 0.85;// torso height
-    
-    strcpy(human->state[BT_MOVING].name,"MOVING");
-    
-    human->state[BT_MOVING].dheight = 360;
-    human->state[BT_MOVING].dradius = 1.8;
-    human->state[BT_MOVING].vheight = 40;
-    human->state[BT_MOVING].vback = 1.0;
-    human->state[BT_MOVING].vradius = 1.5;
-    human->state[BT_MOVING].hradius = 1.8;
-    
-    human->state[BT_MOVING].c1 =  0;// left hip
-    human->state[BT_MOVING].c2 =  DTOR(-5);// left leg
-    human->state[BT_MOVING].c3 =  0;// right hip
-    human->state[BT_MOVING].c4 =  DTOR( 20);// right leg
-    human->state[BT_MOVING].c5 = DTOR(-10);// left knee
-    human->state[BT_MOVING].c6 = DTOR(-10);// right knee
-    human->state[BT_MOVING].c7 = 0.85;// torso height
-  }
-  else{
-    strcpy(human->state[BT_SITTING].name,"SITTING");
-    
-    human->state[BT_SITTING].dheight = 360;
-    human->state[BT_SITTING].dradius = 2.5;
-    human->state[BT_SITTING].vheight = 50;
-    human->state[BT_SITTING].vback = 1.3;
-    human->state[BT_SITTING].vradius = 2.4;
-    human->state[BT_SITTING].hradius = 2.8;
-    
-    human->state[BT_SITTING].c1 =  DTOR(-90);// left hip
-    human->state[BT_SITTING].c2 =  DTOR( 90);// left knee
-    human->state[BT_SITTING].c3 =  DTOR(-90);// right hip
-    human->state[BT_SITTING].c4 =  DTOR( 90);// right knee
-    human->state[BT_SITTING].c7 =  0.60;// torso height
-    
-    strcpy(human->state[BT_STANDING_TRANSPARENT].name,"STANDING TRANS");
-    
-    human->state[BT_STANDING_TRANSPARENT].dheight = 300;
-    human->state[BT_STANDING_TRANSPARENT].dradius = 1.6;
-    human->state[BT_STANDING_TRANSPARENT].vheight = 40;
-    human->state[BT_STANDING_TRANSPARENT].vback = 1.2;
-    human->state[BT_STANDING_TRANSPARENT].vradius = 2;
-    human->state[BT_STANDING_TRANSPARENT].hradius = 1.5;
-    
-    human->state[BT_STANDING_TRANSPARENT].c1 = 0;// left hip
-    human->state[BT_STANDING_TRANSPARENT].c2 = 0;// left leg
-    human->state[BT_STANDING_TRANSPARENT].c3 = 0;// right hip
-    human->state[BT_STANDING_TRANSPARENT].c4 = 0;// right leg
-    human->state[BT_STANDING_TRANSPARENT].c7 = 1;// torso height
-    
-    strcpy(human->state[BT_STANDING].name,"STANDING");
-    
-    human->state[BT_STANDING].dheight = 300;
-    human->state[BT_STANDING].dradius = 1.6;
-    human->state[BT_STANDING].vheight = 40;
-    human->state[BT_STANDING].vback = 1.2;
-    human->state[BT_STANDING].vradius = 2;
-    human->state[BT_STANDING].hradius = 1.5;
-    
-    human->state[BT_STANDING].c1 = 0;// left hip
-    human->state[BT_STANDING].c2 = 0;// left leg
-    human->state[BT_STANDING].c3 = 0;// right hip
-    human->state[BT_STANDING].c4 = 0;// right leg
-    human->state[BT_STANDING].c7 = 1;// torso height
-    
-    strcpy(human->state[BT_MOVING].name,"MOVING");
-    
-    human->state[BT_MOVING].dheight = 360;
-    human->state[BT_MOVING].dradius = 1.8;
-    human->state[BT_MOVING].vheight = 40;
-    human->state[BT_MOVING].vback = 1.0;
-    human->state[BT_MOVING].vradius = 1.5;
-    human->state[BT_MOVING].hradius = 1.8;
-    
-    human->state[BT_MOVING].c1 =  0;// left hip
-    human->state[BT_MOVING].c2 =  DTOR(-5);// left leg
-    human->state[BT_MOVING].c3 =  0;// right hip
-    human->state[BT_MOVING].c4 =  DTOR( 20);// right leg
-    human->state[BT_MOVING].c5 = DTOR(-10);// left knee
-    human->state[BT_MOVING].c6 = DTOR(-10);// right knee
-    human->state[BT_MOVING].c7 = 1;// torso height
+  // human aware navigation costs
+
+  strcpy(human->state[BT_SITTING].name,"SITTING");
+  human->state[BT_SITTING].dheight = 8;
+  human->state[BT_SITTING].dradius = 1.3;
+  human->state[BT_SITTING].vheight = 50;
+  human->state[BT_SITTING].vback = 50;
+  human->state[BT_SITTING].vradius = 2.4;
+  human->state[BT_SITTING].hradius = 0.0;
+
+  strcpy(human->state[BT_STANDING_TRANSPARENT].name,"STANDING TRANS");
+  human->state[BT_STANDING_TRANSPARENT].dheight = 8;
+  human->state[BT_STANDING_TRANSPARENT].dradius = 1.3;
+  human->state[BT_STANDING_TRANSPARENT].vheight = 40;
+  human->state[BT_STANDING_TRANSPARENT].vback = 50;
+  human->state[BT_STANDING_TRANSPARENT].vradius = 2;
+  human->state[BT_STANDING_TRANSPARENT].hradius = 0.0;
+
+  strcpy(human->state[BT_STANDING].name,"STANDING");
+  human->state[BT_STANDING].dheight = 8;
+  human->state[BT_STANDING].dradius = 1.3;
+  human->state[BT_STANDING].vheight = 40;
+  human->state[BT_STANDING].vback = 50;
+  human->state[BT_STANDING].vradius = 2;
+  human->state[BT_STANDING].hradius = 0.0;
+
+  strcpy(human->state[BT_MOVING].name,"MOVING");
+  human->state[BT_MOVING].dheight = 8;
+  human->state[BT_MOVING].dradius = 1.5;
+  human->state[BT_MOVING].vheight = 40;
+  human->state[BT_MOVING].vback = 40;
+  human->state[BT_MOVING].vradius = 1.6;
+  human->state[BT_MOVING].hradius = 0.0;
+
+
+  // joint states for ACHILLE and BATMAN models of human
+  if(strcasestr(robot->name,"SUPERMAN")) {
+      // ACHILLE
+      human->state[BT_SITTING].c1 =  DTOR(-14.08);// left hip
+      human->state[BT_SITTING].c2 =  DTOR( 90);// left leg
+      human->state[BT_SITTING].c3 =  DTOR( 14.08);// right hip
+      human->state[BT_SITTING].c4 =  DTOR( 90);// right leg
+      human->state[BT_SITTING].c5 =  DTOR(-90);// left knee
+      human->state[BT_SITTING].c6 =  DTOR(-90);// right knee
+      human->state[BT_SITTING].c7 =  0.46;// torso height
+
+      human->state[BT_STANDING_TRANSPARENT].c1 = 0;// left hip
+      human->state[BT_STANDING_TRANSPARENT].c2 = 0;// left leg
+      human->state[BT_STANDING_TRANSPARENT].c3 = 0;// right hip
+      human->state[BT_STANDING_TRANSPARENT].c4 = 0;// right leg
+      human->state[BT_STANDING_TRANSPARENT].c5 = 0;// left knee
+      human->state[BT_STANDING_TRANSPARENT].c6 = 0;// right knee
+      human->state[BT_STANDING_TRANSPARENT].c7 = 0.85;// torso height
+
+      human->state[BT_STANDING].c1 = 0;// left hip
+      human->state[BT_STANDING].c2 = 0;// left leg
+      human->state[BT_STANDING].c3 = 0;// right hip
+      human->state[BT_STANDING].c4 = 0;// right leg
+      human->state[BT_STANDING].c5 = 0;// left knee
+      human->state[BT_STANDING].c6 = 0;// right knee
+      human->state[BT_STANDING].c7 = 0.85;// torso height
+
+      human->state[BT_MOVING].c1 =  0;// left hip
+      human->state[BT_MOVING].c2 =  DTOR(-5);// left leg
+      human->state[BT_MOVING].c3 =  0;// right hip
+      human->state[BT_MOVING].c4 =  DTOR( 20);// right leg
+      human->state[BT_MOVING].c5 = DTOR(-10);// left knee
+      human->state[BT_MOVING].c6 = DTOR(-10);// right knee
+      human->state[BT_MOVING].c7 = 0.85;// torso height
+  } else{
+      // BATMAN joints
+      human->state[BT_SITTING].c1 =  DTOR(-90);// left hip
+      human->state[BT_SITTING].c2 =  DTOR( 90);// left knee
+      human->state[BT_SITTING].c3 =  DTOR(-90);// right hip
+      human->state[BT_SITTING].c4 =  DTOR( 90);// right knee
+      human->state[BT_SITTING].c7 =  0.60;// torso height
+
+      human->state[BT_STANDING_TRANSPARENT].c1 = 0;// left hip
+      human->state[BT_STANDING_TRANSPARENT].c2 = 0;// left leg
+      human->state[BT_STANDING_TRANSPARENT].c3 = 0;// right hip
+      human->state[BT_STANDING_TRANSPARENT].c4 = 0;// right leg
+      human->state[BT_STANDING_TRANSPARENT].c7 = 1;// torso height
+
+      human->state[BT_STANDING].c1 = 0;// left hip
+      human->state[BT_STANDING].c2 = 0;// left leg
+      human->state[BT_STANDING].c3 = 0;// right hip
+      human->state[BT_STANDING].c4 = 0;// right leg
+      human->state[BT_STANDING].c7 = 1;// torso height
+
+      human->state[BT_MOVING].c1 =  0;// left hip
+      human->state[BT_MOVING].c2 =  DTOR(-5);// left leg
+      human->state[BT_MOVING].c3 =  0;// right hip
+      human->state[BT_MOVING].c4 =  DTOR( 20);// right leg
+      human->state[BT_MOVING].c5 = DTOR(-10);// left knee
+      human->state[BT_MOVING].c6 = DTOR(-10);// right knee
+      human->state[BT_MOVING].c7 = 1;// torso height
   }
   
   // default state, even for ghosts
@@ -874,9 +843,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   hri_bitmap_cell* new_search_goal;
   double oldcost;
 
-  int i;
   double result;
-  configPt qc;
 
   if(bitmapset==NULL || bitmapset->bitmap[BT_PATH]==NULL || bitmapset->bitmap[BT_OBSTACLES]==NULL || bitmapset->bitmap[BT_COMBINED] == NULL){
     PrintError(("Trying to find a path in a non existing bitmap or bitmapset\n"));
@@ -892,41 +859,57 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
 
   // get new goal cell and compare to old goal cell, to see whether we still want to go to same place
   new_search_goal  =
-  hri_bt_get_closest_cell(bitmapset, bitmap,
-                          qf[0],
-                          qf[1],
-                          qf[2]);
+      hri_bt_get_closest_cell(bitmapset, bitmap,
+          qf[0],
+          qf[1],
+          qf[2]);
 
-  // if we searched in this bitmap before,
-  // and we search going to the same goal as last time,
-  // then we look for a start cell on the path if possible to be able to compare paths costs.
-  if (bitmap->search_goal != NULL
+
+  if (bitmapset->parameters->use_changepath_reluctance
+      && bitmap->search_goal != NULL
       && DISTANCE3D(bitmap->search_goal->x,
           bitmap->search_goal->y,
           bitmap->search_goal->z,
           new_search_goal->x,
           new_search_goal->y,
           new_search_goal->z) <= bitmapset->pace) {
-    // choose cell to start from, closest cell on previous path if close enough else closest cell to xyz
+    // if we searched in this bitmap before,
+    // and we search going to the same goal as last time,
+    // then we look for a start cell on the path if possible to be able to compare paths costs.
     new_search_start = hri_bt_getCellOnPath(bitmapset, bitmap,
         qs[0],
         qs[1],
         qs[2]);
   } else {
-    // choose the closest grid cell
-    new_search_start =
-        hri_bt_get_closest_cell(bitmapset, bitmap,
-            qs[0],
-            qs[1],
-            qs[2]);
+    if (!manip) {
+      // choose the closest grid cell
+      new_search_start =
+          hri_bt_get_closest_free_cell(bitmapset, bitmap,
+              qs[0],
+              qs[1],
+              qs[2],
+              bitmapset->robot->ROBOT_POS[11],
+              bitmapset->parameters->start_cell_tolerance);
+      if(new_search_start == NULL) {
+        bitmapset->pathexist = FALSE;
+        return HRI_PATH_SEARCH_ERROR_NAV_START_IN_OBSTACLE;
+      }
+    } else {
+      // choose the closest grid cell
+      new_search_start =
+          hri_bt_get_closest_cell(bitmapset, bitmap,
+              qs[0],
+              qs[1],
+              qs[2]);
+      if(new_search_start == NULL) {
+        PrintWarning(("Search start cell does not exist for (%f, %f) \n", qs[0], qs[1]));
+        bitmapset->pathexist = FALSE;
+        return HRI_PATH_SEARCH_ERROR_NAV_INTERNAL_ERROR;
+      }
+    }
   }
 
 
-  if(new_search_start == NULL) {
-    PrintWarning(("Search start cell does not exist for (%f, %f) \n", qs[0], qs[1]));
-    bitmapset->pathexist = FALSE;
-    return HRI_PATH_SEARCH_ERROR_NAV_INTERNAL_ERROR;
-  }
   if(new_search_goal == NULL ){
     PrintWarning(("Search goal cell does not exist for (%f, %f)\n", qf[0], qf[1]));
     bitmapset->pathexist = FALSE;
@@ -938,77 +921,20 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
 
   // the following checks are all just relevant for navigation, not for manipulation
   if (!manip) {
-    for (i=0; i<bitmapset->human_no; i++) {
-      if (bitmapset->human[i]->exists) {
-        qc = p3d_get_robot_config(bitmapset->robot);
-        qc[6]  = new_search_start->x*bitmapset->pace+bitmapset->realx;
-        qc[7]  = new_search_start->y*bitmapset->pace+bitmapset->realy;
-        qc[11] = bitmapset->robot->ROBOT_POS[11];
-        p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
-        if (p3d_col_test_robot_other(bitmapset->robot,bitmapset->human[i]->HumanPt, FALSE)) {
-          p3d_destroy_config(bitmapset->robot, qc);
-          PrintWarning(("Human too close to start position (%f, %f) \n", qs[0], qs[1]));
-          return HRI_PATH_SEARCH_ERROR_NAV_HUMAN_TOO_CLOSE;
-        }
-        p3d_destroy_config(bitmapset->robot, qc);
-      }
-    }
 
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val < -1) {
-      PrintWarning(("Goal Position is in an obstacle or human (%f, %f) \n", qs[0], qs[1]));
-      return HRI_PATH_SEARCH_ERROR_NAV_START_IN_OBSTACLE;
-    }
-
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val < 0 ){
-      //|| bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_start->x, new_search_start->y, new_search_start->z) < 0){
-
-      qc = p3d_get_robot_config(bitmapset->robot);
-      qc[6]  = new_search_start->x*bitmapset->pace+bitmapset->realx;
-      qc[7]  = new_search_start->y*bitmapset->pace+bitmapset->realy;
-      qc[11] = bitmapset->robot->ROBOT_POS[11];
-      p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
-      if (!p3d_col_test_robot_statics(bitmapset->robot, FALSE)){
-        bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val = 1;
-        p3d_destroy_config(bitmapset->robot, qc);
-      } else {
-        p3d_destroy_config(bitmapset->robot, qc);
-        PrintWarning(("Start Position is in an obstacle (%f, %f) \n", qs[0], qs[1]));
-        return HRI_PATH_SEARCH_ERROR_NAV_START_IN_OBSTACLE;
-      }
-    }
-
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val < -1) {
+    if(hri_bt_isRobotOnCellInCollision(bitmapset, bitmap, new_search_goal, bitmapset->robot->ROBOT_GOTO[11], FALSE)) {
       PrintError(("Goal Position is in an obstacle or human (%f, %f) \n", qf[0], qf[1]));
       return HRI_PATH_SEARCH_ERROR_NAV_GOAL_IN_OBSTACLE;
     }
-
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val < 0 ||
-       bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_goal->x, new_search_goal->y, new_search_goal->z) < 0) {
-
-      qc = p3d_get_robot_config(bitmapset->robot);
-      qc[6]  = new_search_goal->x*bitmapset->pace+bitmapset->realx;
-      qc[7]  = new_search_goal->y*bitmapset->pace+bitmapset->realy;
-      qc[11] = bitmapset->robot->ROBOT_GOTO[11];
-      p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
-      if(!p3d_col_test_robot_statics(bitmapset->robot,FALSE)){
-        bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val = 1;
-        p3d_destroy_config(bitmapset->robot, qc);
-      } else {
-        p3d_destroy_config(bitmapset->robot, qc);
-        PrintError(("Goal Position is in an obstacle (%f, %f) \n", qf[0], qf[1]));
-        return HRI_PATH_SEARCH_ERROR_NAV_GOAL_IN_OBSTACLE;
-      }
-    }
   } // endif not manip
 
-  if (bitmapset->pathexist) {
-    if (bitmapset->parameters->use_changepath_reluctance) {
-      /* reluctance to change means the robot will stay on an old path */
-      // check whether new request is for the same goal as old in bitmap
-      if (bitmap->search_goal == new_search_goal) {
-        // store old path in case we want to keep it
-        bitmap_oldpath = hri_bt_create_copy(bitmap); /* ALLOC */
-      }
+  if (bitmapset->parameters->use_changepath_reluctance
+      && bitmapset->pathexist) {
+    /* reluctance to change means the robot will stay on an old path */
+    // check whether new request is for the same goal as old in bitmap
+    if (bitmap->search_goal == new_search_goal) {
+      // store old path in case we want to keep it
+      bitmap_oldpath = hri_bt_create_copy(bitmap); /* ALLOC */
     }
   }
 
@@ -1022,7 +948,8 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   /******** calculating the path costs *************/
   result = hri_bt_astar_bh(bitmapset, bitmap);
 
-  if (bitmap_oldpath != NULL) {
+  if (bitmapset->parameters->use_changepath_reluctance
+      && bitmap_oldpath != NULL) {
     oldcost = hri_bt_keep_old_path(bitmapset, bitmap_oldpath, bitmap, result, new_search_start);
     // check whether the robot should prefer to stay on the old path
     if (oldcost > 0) {
@@ -1558,7 +1485,7 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int rob_grid_x, int rob_grid_
       temp_env_dmax = p3d_get_env_dmax();
       p3d_set_env_dmax(0);
 
-      // calulate a localpath object for visball from human to goal
+      // calculate a localpath object for visball from human to goal
       path = p3d_local_planner(btset->visball, qtarget, qhuman);
 
       val = -1;
@@ -1635,7 +1562,7 @@ double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
 {
   int i;
   double radius,height;
-  double val = 0,res =0;
+  double val = 0, sigmoid = 0, quot = 0, res =0;
   double realx, realy;
   double humanx, humany;
   double distance;
@@ -1661,7 +1588,10 @@ double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
     if(distance > radius) {
       val = 0;
     } else {
-      val = height * pow((cos(distance/radius*M_PI_2)+0), 2);
+      // sigmoid function up to radius
+      sigmoid = cos(distance / radius * M_PI_2) + 0;
+      quot = 1 / (0.6 + distance );
+      val = pow(height * (sigmoid * quot), 3);
     }
     if(res < val) {
       res = val;
@@ -1711,7 +1641,7 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
   double radius,height,stretch_back;
   double val = 0,res =0;
   double realx, realy;
-  double angle,angle_deviation,angle_influence,deltax,deltay, orient,distance_cosine;
+  double angle,angle_deviation,deltax,deltay, orient,distance_cosine;
   double humanx, humany;
   double distance;
 
@@ -1744,22 +1674,18 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
       deltay = realy-humany;
       angle = atan2(deltay, deltax);
       // orient goes from -PI to PI, angle goes from - PI to PI
-      // get the angle deviation between -PI and PI
-      angle_deviation = getAngleDeviation(orient, angle);
-      angle_influence = ABS(angle_deviation); // value between 0 and PI for positive angle difference
+      // get the absolute angle deviation between 0 and PI
+      angle_deviation = ABS(getAngleDeviation(orient, angle));
 
       // leave open area in front of human
-      angle_influence = angle_influence - M_PI_4;
-      if (angle_influence < 0) {
+      if (angle_deviation < M_PI_4) {
         val = 0;
       } else {
         // cosine function is 0 at borders of radius
-        distance_cosine = cos(distance / radius * M_PI_2 ); // value between 0 and 1 depending on distance and radius
+        distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
 
         // use stretch to increase / decrease weight more on more backward angles
-        angle_influence += (ABS(angle_deviation) - M_PI_2) * stretch_back * distance_cosine;
-
-        val = height * distance_cosine* angle_influence;
+        val = distance_cosine * (height + (angle_deviation - M_PI_4) * stretch_back);
       }
     }
     if(res < val) {

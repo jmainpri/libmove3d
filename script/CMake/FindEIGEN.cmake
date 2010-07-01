@@ -10,7 +10,7 @@
 ## Check for the header files
 
 find_path (Eigen_INCLUDE_DIR Eigen/Cholesky
- PATHS /usr/local/include /usr/include /sw/include /opt/local/include /usr/local/motion
+ PATHS /home/akpandey/bin/eigen /usr/local/include /usr/include /sw/include /opt/local/include /usr/local/motion
  PATH_SUFFIXES eigen2 eigen
  )
 
