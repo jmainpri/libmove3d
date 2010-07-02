@@ -1677,15 +1677,27 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
       // get the absolute angle deviation between 0 and PI
       angle_deviation = ABS(getAngleDeviation(orient, angle));
 
-      // leave open area in front of human
-      if (angle_deviation < M_PI_4) {
-        val = 0;
-      } else {
-        // cosine function is 0 at borders of radius
-        distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
+      if (btset->human[i]->actual_state != BT_MOVING) {
+      	if ((angle_deviation < M_PI_4 )) {
+      		// leave open area in front of human
+      		val =0;
+      	} else {
+      		// cosine function is 0 at borders of radius
+      		distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
 
-        // use stretch to increase / decrease weight more on more backward angles
-        val = distance_cosine * (height + (angle_deviation - M_PI_4) * stretch_back);
+      		// use stretch to increase / decrease weight more on more backward angles
+      		val = distance_cosine * (height + (angle_deviation - M_PI_4) * stretch_back);
+      	}
+      } else {
+      	if (angle_deviation < M_PI_4 ) {
+      		// predictive costs
+      		distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
+
+      		// use stretch to increase / decrease weight more on more backward angles
+      		val = distance_cosine * (height + (M_PI - angle_deviation) * stretch_back);
+      	} else {
+      		val = 0;
+      	}
       }
     }
     if(res < val) {
