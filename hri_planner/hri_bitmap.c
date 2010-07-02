@@ -632,65 +632,65 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
 
   // joint states for ACHILLE and BATMAN models of human
   if(strcasestr(robot->name,"SUPERMAN")) {
-      // ACHILLE
-      human->state[BT_SITTING].c1 =  DTOR(-14.08);// left hip
-      human->state[BT_SITTING].c2 =  DTOR( 90);// left leg
-      human->state[BT_SITTING].c3 =  DTOR( 14.08);// right hip
-      human->state[BT_SITTING].c4 =  DTOR( 90);// right leg
-      human->state[BT_SITTING].c5 =  DTOR(-90);// left knee
-      human->state[BT_SITTING].c6 =  DTOR(-90);// right knee
-      human->state[BT_SITTING].c7 =  0.46;// torso height
+  	// ACHILLE
+  	human->state[BT_SITTING].c1 =  DTOR(-14.08);// left hip
+  	human->state[BT_SITTING].c2 =  DTOR( 90);// left leg
+  	human->state[BT_SITTING].c3 =  DTOR( 14.08);// right hip
+  	human->state[BT_SITTING].c4 =  DTOR( 90);// right leg
+  	human->state[BT_SITTING].c5 =  DTOR(-90);// left knee
+  	human->state[BT_SITTING].c6 =  DTOR(-90);// right knee
+  	human->state[BT_SITTING].c7 =  0.46;// torso height
 
-      human->state[BT_STANDING_TRANSPARENT].c1 = 0;// left hip
-      human->state[BT_STANDING_TRANSPARENT].c2 = 0;// left leg
-      human->state[BT_STANDING_TRANSPARENT].c3 = 0;// right hip
-      human->state[BT_STANDING_TRANSPARENT].c4 = 0;// right leg
-      human->state[BT_STANDING_TRANSPARENT].c5 = 0;// left knee
-      human->state[BT_STANDING_TRANSPARENT].c6 = 0;// right knee
-      human->state[BT_STANDING_TRANSPARENT].c7 = 0.85;// torso height
+  	human->state[BT_STANDING_TRANSPARENT].c1 = 0;// left hip
+  	human->state[BT_STANDING_TRANSPARENT].c2 = 0;// left leg
+  	human->state[BT_STANDING_TRANSPARENT].c3 = 0;// right hip
+  	human->state[BT_STANDING_TRANSPARENT].c4 = 0;// right leg
+  	human->state[BT_STANDING_TRANSPARENT].c5 = 0;// left knee
+  	human->state[BT_STANDING_TRANSPARENT].c6 = 0;// right knee
+  	human->state[BT_STANDING_TRANSPARENT].c7 = 0.85;// torso height
 
-      human->state[BT_STANDING].c1 = 0;// left hip
-      human->state[BT_STANDING].c2 = 0;// left leg
-      human->state[BT_STANDING].c3 = 0;// right hip
-      human->state[BT_STANDING].c4 = 0;// right leg
-      human->state[BT_STANDING].c5 = 0;// left knee
-      human->state[BT_STANDING].c6 = 0;// right knee
-      human->state[BT_STANDING].c7 = 0.85;// torso height
+  	human->state[BT_STANDING].c1 = 0;// left hip
+  	human->state[BT_STANDING].c2 = 0;// left leg
+  	human->state[BT_STANDING].c3 = 0;// right hip
+  	human->state[BT_STANDING].c4 = 0;// right leg
+  	human->state[BT_STANDING].c5 = 0;// left knee
+  	human->state[BT_STANDING].c6 = 0;// right knee
+  	human->state[BT_STANDING].c7 = 0.85;// torso height
 
-      human->state[BT_MOVING].c1 =  0;// left hip
-      human->state[BT_MOVING].c2 =  DTOR(-5);// left leg
-      human->state[BT_MOVING].c3 =  0;// right hip
-      human->state[BT_MOVING].c4 =  DTOR( 20);// right leg
-      human->state[BT_MOVING].c5 = DTOR(-10);// left knee
-      human->state[BT_MOVING].c6 = DTOR(-10);// right knee
-      human->state[BT_MOVING].c7 = 0.85;// torso height
+  	human->state[BT_MOVING].c1 =  0;// left hip
+  	human->state[BT_MOVING].c2 =  DTOR(-5);// left leg
+  	human->state[BT_MOVING].c3 =  0;// right hip
+  	human->state[BT_MOVING].c4 =  DTOR( 20);// right leg
+  	human->state[BT_MOVING].c5 = DTOR(-10);// left knee
+  	human->state[BT_MOVING].c6 = DTOR(-10);// right knee
+  	human->state[BT_MOVING].c7 = 0.85;// torso height
   } else{
-      // BATMAN joints
-      human->state[BT_SITTING].c1 =  DTOR(-90);// left hip
-      human->state[BT_SITTING].c2 =  DTOR( 90);// left knee
-      human->state[BT_SITTING].c3 =  DTOR(-90);// right hip
-      human->state[BT_SITTING].c4 =  DTOR( 90);// right knee
-      human->state[BT_SITTING].c7 =  0.60;// torso height
+  	// BATMAN joints
+  	human->state[BT_SITTING].c1 =  DTOR(-90);// left hip
+  	human->state[BT_SITTING].c2 =  DTOR( 90);// left knee
+  	human->state[BT_SITTING].c3 =  DTOR(-90);// right hip
+  	human->state[BT_SITTING].c4 =  DTOR( 90);// right knee
+  	human->state[BT_SITTING].c7 =  0.60;// torso height
 
-      human->state[BT_STANDING_TRANSPARENT].c1 = 0;// left hip
-      human->state[BT_STANDING_TRANSPARENT].c2 = 0;// left leg
-      human->state[BT_STANDING_TRANSPARENT].c3 = 0;// right hip
-      human->state[BT_STANDING_TRANSPARENT].c4 = 0;// right leg
-      human->state[BT_STANDING_TRANSPARENT].c7 = 1;// torso height
+  	human->state[BT_STANDING_TRANSPARENT].c1 = 0;// left hip
+  	human->state[BT_STANDING_TRANSPARENT].c2 = 0;// left leg
+  	human->state[BT_STANDING_TRANSPARENT].c3 = 0;// right hip
+  	human->state[BT_STANDING_TRANSPARENT].c4 = 0;// right leg
+  	human->state[BT_STANDING_TRANSPARENT].c7 = 1;// torso height
 
-      human->state[BT_STANDING].c1 = 0;// left hip
-      human->state[BT_STANDING].c2 = 0;// left leg
-      human->state[BT_STANDING].c3 = 0;// right hip
-      human->state[BT_STANDING].c4 = 0;// right leg
-      human->state[BT_STANDING].c7 = 1;// torso height
+  	human->state[BT_STANDING].c1 = 0;// left hip
+  	human->state[BT_STANDING].c2 = 0;// left leg
+  	human->state[BT_STANDING].c3 = 0;// right hip
+  	human->state[BT_STANDING].c4 = 0;// right leg
+  	human->state[BT_STANDING].c7 = 1;// torso height
 
-      human->state[BT_MOVING].c1 =  0;// left hip
-      human->state[BT_MOVING].c2 =  DTOR(-5);// left leg
-      human->state[BT_MOVING].c3 =  0;// right hip
-      human->state[BT_MOVING].c4 =  DTOR( 20);// right leg
-      human->state[BT_MOVING].c5 = DTOR(-10);// left knee
-      human->state[BT_MOVING].c6 = DTOR(-10);// right knee
-      human->state[BT_MOVING].c7 = 1;// torso height
+  	human->state[BT_MOVING].c1 =  0;// left hip
+  	human->state[BT_MOVING].c2 =  DTOR(-5);// left leg
+  	human->state[BT_MOVING].c3 =  0;// right hip
+  	human->state[BT_MOVING].c4 =  DTOR( 20);// right leg
+  	human->state[BT_MOVING].c5 = DTOR(-10);// left knee
+  	human->state[BT_MOVING].c6 = DTOR(-10);// right knee
+  	human->state[BT_MOVING].c7 = 1;// torso height
   }
   
   // default state, even for ghosts
