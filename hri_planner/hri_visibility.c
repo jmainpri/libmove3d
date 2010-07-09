@@ -218,7 +218,7 @@ int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, 
     *result= ((double) visiblepixels)/((double) idealpixels);
   }
   else{
-    printf("Not looking at the object\n");
+    //printf("Not looking at the object: %s\n",object->name);
     *result = -1;
   }
   
@@ -281,7 +281,7 @@ int g3d_object_visibility_placement(p3d_matrix4 camera_frame, p3d_rob *object, d
   
   p3d_cartesian2spherical(objectCenterCamFr[0],objectCenterCamFr[1],objectCenterCamFr[2],
                           &rho,&phi,&theta);
-  // printf("Distance:%f, Elevation: %f, Azimuth: %f\n",rho,RTOD(phi),RTOD(theta));
+  //printf("Distance:%f, Elevation: %f, Azimuth: %f\n",rho,RTOD(phi),RTOD(theta));
   
   *phi_result = phi; // Elevation
   *theta_result = theta; // Azimuth
