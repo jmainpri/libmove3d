@@ -27,7 +27,7 @@ p3d_node* p3d_APInode_shoot(p3d_graph *graphPt) {
   while (ADM == 0) {
     //if we have to shoot a singularity. No singularity shoot if we are is normal mode
     if(singularityCheck && p3d_get_ik_choice() != IK_NORMAL){
-      p3d_APInode_shoot_singularity(graphPt->rob, &q, & speVal, &singularityCt);
+      p3d_APInode_shoot_singularity(graphPt->rob, &q, & speVal, &singularityCt, NULL, NULL);
     }else{
       p3d_APInode_shoot_normal(graphPt, &q, TRUE);
     }
@@ -117,7 +117,7 @@ p3d_node** p3d_APInode_shoot_multisol(p3d_graph *graphPt, int* nbNodes) {
         while (adm == 0) {
           p3d_reset_iksol(robotPt->cntrt_manager);
           if(singularityCheck){
-            p3d_APInode_shoot_singularity(graphPt->rob, &q, &speVal, &singularityCt);
+            p3d_APInode_shoot_singularity(graphPt->rob, &q, &speVal, &singularityCt, NULL, NULL);
           }else{
             p3d_APInode_shoot_normal(graphPt, &q, TRUE);
           }
@@ -237,9 +237,11 @@ void p3d_APInode_shoot_normal(p3d_graph *graphPt, configPt* q, int shootPassive)
  * @param q the sampled configuration
  * @param singNum the choosen singularity
  * @param cntrtNum the choosen constraint
+ * @param rootConfig a config form whitch the singular configuration will be built. To be set to null if random shoot wanted
+ * @param rootIkSol the inverse kinematic solutions for the given rootConfig. To be set to null if random shoot wanted
  * @return 0 on error 1 on success
  */
-int p3d_APInode_shoot_singularity(p3d_rob *rob, configPt* q, int *singNum, int *cntrtNum){
+int p3d_APInode_shoot_singularity(p3d_rob *rob, configPt* q, int *singNum, int *cntrtNum, configPt rootConfig, int * rootIkSol){
   p3d_cntrt_management * cntrt_manager = rob->cntrt_manager;
 
   if(cntrt_manager->ncntrts == 0){
@@ -257,13 +259,29 @@ int p3d_APInode_shoot_singularity(p3d_rob *rob, configPt* q, int *singNum, int *
   int *ikSol = MY_ALLOC(int, rob->cntrt_manager->ncntrts);
   int result = 0;
   do {
-    p3d_shoot(rob, *q, 1);
+    if (rootConfig) {
+      //p3d_copy_config_into(rob, rootConfig, q);
+      double robotSize = 0, translationFactor = 0, rotationFactor = 0;
+      p3d_get_BB_rob_max_size(rob, &robotSize);
+      translationFactor = robotSize/10;
+      rotationFactor = robotSize/30;
+      p3d_gaussian_config2_specific(rob, rootConfig, *q, translationFactor, rotationFactor, true);
+      
+      MY_FREE(ikSol, int, rob->cntrt_manager->ncntrts);
+      p3d_copy_iksol(rob->cntrt_manager, rootIkSol, &ikSol);
+      //rootConfig = NULL; //if the singular config obtained from root Config does not satisfy the constraints sample random
+      if (DEBUG_GRAPH_API){
+        printf("User Singular Config\n");
+      }
+    }else {
+      p3d_shoot(rob, *q, 1);
+      for (int i = 0; i < rob->cntrt_manager->ncntrts; i++) {
+        ikSol[i] = p3d_get_random_ikSol(rob->cntrt_manager, i);
+      }
+    }
     p3d_set_robot_config(rob, *q);
     result = p3d_set_robot_singularity(rob, *cntrtNum, singNum);
     p3d_get_robot_config_into(rob, q);
-    for (int i = 0; i < rob->cntrt_manager->ncntrts; i++) {
-      ikSol[i] = p3d_get_random_ikSol(rob->cntrt_manager, i);
-    }
   } while (!result || (!p3d_set_and_update_this_robot_conf_multisol(rob, *q, NULL, 0, ikSol)));//shoot until we have a valid configuration
   p3d_set_iksol_elem(*cntrtNum, -(*singNum) - 1);
   
@@ -287,7 +305,7 @@ p3d_node* p3d_APInode_shoot_nocolltest(p3d_graph *graphPt) {
   while (ADM == 0) {
     //if we have to shoot a singularity. No singularity shoot if we are is normal mode
     if(singularityCheck && p3d_get_ik_choice() != IK_NORMAL){
-      p3d_APInode_shoot_singularity(graphPt->rob, &q, & speVal, &singularityCt);
+      p3d_APInode_shoot_singularity(graphPt->rob, &q, & speVal, &singularityCt, NULL, NULL);
     }else{
       p3d_APInode_shoot_normal(graphPt, &q, TRUE);
     }

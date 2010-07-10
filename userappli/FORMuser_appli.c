@@ -405,33 +405,24 @@ static void callbacks(FL_OBJECT *ob, long arg){
       }
       manip.printStatDatas();
 #endif
-/*      configPt config = p3d_alloc_config(XYZ_ROBOT);
+      configPt config = p3d_alloc_config(XYZ_ROBOT), rootConfig = p3d_get_robot_config(XYZ_ROBOT);
       int singularity = -1, cntrt = -1;
-      for (int i = 0; i < 1000; i++) {
-        cntrt = p3d_APInode_shoot_singularity(XYZ_ROBOT, &config, &singularity);
+      
+      cntrt = p3d_isCloseToSingularityConfig(XYZ_ROBOT, XYZ_ROBOT->cntrt_manager, rootConfig , &singularity);
+      if (cntrt != -1) {
+        
+        p3d_APInode_shoot_singularity(XYZ_ROBOT, &config, &singularity, &cntrt, rootConfig, XYZ_ROBOT->ikSol);
         g3d_draw_allwin_active();
         p3d_unmark_for_singularity(XYZ_ROBOT->cntrt_manager, cntrt);
+        
+        p3d_destroy_config(XYZ_ROBOT, config);
+        p3d_destroy_config(XYZ_ROBOT, rootConfig);
       }
-      p3d_destroy_config(XYZ_ROBOT, config);*/
+      
 
-      ENV.setBool(Env::UseDPGGrids, true);
-//      int ikSol[2];
-//      ikSol[cntrt] = -1;
- //     ikSol[1 - cntrt] = 1;
-//      int can = p3d_set_and_update_this_robot_conf_multisol(XYZ_ROBOT, config, NULL, 0, ikSol);
-//      g3d_draw_allwin_active();//
-//      if (!can) {
-//        printf("Error\n");
-//      }
-//      sleep(2);
-//      ikSol[1 - cntrt] = 2;
-//      can = p3d_set_and_update_this_robot_conf_multisol(XYZ_ROBOT, config, NULL, 0, ikSol);
-//      g3d_draw_allwin_active();
-//      if (!can) {
-//        printf("Error\n");
-//      }
-//      p3d_unmark_for_singularity(XYZ_ROBOT->cntrt_manager, cntrt);
-//      p3d_destroy_config(XYZ_ROBOT, config);
+//      ENV.setBool(Env::UseDPGGrids, true);
+
+
       break;
     }
     case 17:{

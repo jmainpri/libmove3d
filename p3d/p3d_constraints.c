@@ -9278,14 +9278,15 @@ int p3d_isCloseToSingularityConfig(p3d_rob* robot, p3d_cntrt_management *cntrt_m
         for(int h = 0; h < jnt->dof_equiv_nbr; h++){
           // compute dof range
           double range = jnt->dof_data[h].vmax - jnt->dof_data[h].vmin;
-          if (ABS(config[jnt->index_dof + h] - sing->singJntVal[k]->val[h]) > 5 * range / 100) {
+          if (ABS(config[jnt->index_dof + h] - sing->singJntVal[k]->val[h]) > 30 * range / 100) {
             near = FALSE;
             break;
+          }else {
+            //printf("near config = %f, sing = %f, range = %f\n", config[jnt->index_dof + h], sing->singJntVal[k]->val[h], 2 * range * 180 / (100*M_PI));
           }
+
         }
         if(near){
-          printf("Near to singular config c = %d, s = %d\n", i, j);
-          ChronoPrint("near");
           *singNum = j;
           return i;
         }

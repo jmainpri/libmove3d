@@ -250,7 +250,6 @@ int p3d_set_robot_singularity(p3d_rob *robotPt, int cntrtNum, int *singNum) {
   if(*singNum == -1){
     *singNum = p3d_get_random_singularity(ct);
   }
-
 #endif
   singularity = ct->singularities[*singNum];
   for(i = 0; i < singularity->nJnt; i++){
