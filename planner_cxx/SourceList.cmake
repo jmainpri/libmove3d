@@ -6,10 +6,10 @@ planner.cpp
 plannerFunctions.cpp 
 untitled.cpp 
 cost_space.cpp
-test_functions.cpp)
+)
 include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/API/SourceList.cmake)
 include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/Diffusion/SourceList.cmake)
-include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/Greedy/SourceList.cmake)
+#include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/Greedy/SourceList.cmake)
 include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/PRM/SourceList.cmake)
 IF(HRI_COSTSPACE)
 include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/HRI_CostSpace/SourceList.cmake)
