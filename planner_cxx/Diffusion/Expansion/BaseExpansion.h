@@ -10,10 +10,15 @@
 #include "planningAPI.hpp"
 
 /**
-  @ingroup Diffusion
-  */
-class BaseExpansion {
-
+ * @ingroup Diffusion
+ * 
+ * The expansion class holds the method and local variables
+ * allowing to expand a Tree in a given configuration space
+ * methods such as chose a direction, check the validity in that direction and 
+ * add nodes to the tree
+ */
+class BaseExpansion 
+{
 public:
 
     /**
@@ -26,6 +31,16 @@ public:
       * Destructor
       */
     ~BaseExpansion();
+	
+	/**
+	 * Set the graph that is beeing expanded
+	 */
+	void setGraph(Graph* G) { mGraph = G; }
+	
+	/**
+	 * Get the graph that is beeing expanded
+	 */
+	Graph* getGraph() { return mGraph; }
 
 	/**
 	 * Get Node Expansion Method
@@ -93,7 +108,7 @@ public:
                        Node& compNode);
 
     /**
-      * Returns a configuration on the local path
+      * Returns a valid configuration on the local path
       */
     bool nextStep(LocalPath& path,
                   std::tr1::shared_ptr<Configuration>& directionConfig,
@@ -102,7 +117,7 @@ public:
                   Env::expansionMethod method);
 
     /**
-      * Returns a configuration on the local path
+      * Returns a valid configuration on the local path
       */
     bool nextStep(LocalPath& path,
                   Node* directionNode,
@@ -110,14 +125,19 @@ public:
                   std::tr1::shared_ptr<LocalPath>& newPath,
                   Env::expansionMethod method);
 
-    /**
-     * expandProcess
-     * @param expansionNode
-     * @param directionConfig
-     * @param directionNode
-     * @param method
-     * @return
-     */
+	/** 
+	 * expandProcess
+	 *
+	 * checks the validity of the local path in one direction and adds nodes 
+	 * to the trees with a different behaviour depending on the method variable
+	 *
+	 * @param expansionNode
+	 * @param directionConfig
+	 * @param directionNode
+	 * @param method
+	 *
+	 * @return the number of nodes created
+	 */
     virtual int expandProcess(Node* expansionNode,
                               std::tr1::shared_ptr<Configuration> directionConfig,
                               Node* directionNode, Env::expansionMethod method) = 0;

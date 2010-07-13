@@ -68,26 +68,39 @@ public:
 	 */
 	bool expandToGoal(Node* expansionNode,
 			std::tr1::shared_ptr<Configuration> directionConfig);
-
+	/**
+	 *
+	 */
+	void adjustTemperature(bool accepted, Node* node);
+	
 	/**
 	 *
 	 */
 	bool expandCostConnect(Node& expansionNode, std::tr1::shared_ptr<Configuration> directionConfig,
 			Node* directionNode, bool toGoal);
-
+	
 	/**
 	 *
 	 */
-	void adjustTemperature(bool accepted, Node* node);
+	int extendExpandProcess(Node* expansionNode,
+						 std::tr1::shared_ptr<Configuration> directionConfig,
+						 Node* directionNode);
+	
 
-	/** expandProcess
+	/** 
+	 * expandProcess 
+	 *
+	 * checks the validity of the local path in one direction and adds nodes 
+	 * to the trees with a different behaviour depending on the method variable
+	 *
 	 * @param expansionNode
 	 * @param directionConfig
 	 * @param directionNode
 	 * @param method
-	 * @return
+	 *
+	 * @return the number of nodes created
 	 */
-        int expandProcess(Node* expansionNode,
+	int expandProcess(Node* expansionNode,
 			std::tr1::shared_ptr<Configuration> directionConfig, Node* directionNode,
 			Env::expansionMethod method);
 

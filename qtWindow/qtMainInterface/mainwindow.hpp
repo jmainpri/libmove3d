@@ -3,15 +3,14 @@
 
 #include "p3d_sys.h"
 #include "kcdpropertieswindow.hpp"
-#include "../../p3d/env.hpp"
+#include "p3d/env.hpp"
 
+#include "qtFormRobot/moverobot.hpp"
 #ifdef QWT
-#include "../qtPlot/histoWin.hpp"
+#include "qtPlot/histoWin.hpp"
 #endif
-
-#include "../qtBase/qt_widgets.hpp"
-
-#include "../qtOpenGL/glwidget.hpp"
+#include "qtBase/qt_widgets.hpp"
+#include "qtOpenGL/glwidget.hpp"
 
 #include <vector>
 
@@ -64,8 +63,7 @@ public:
 	
 	void connectCheckBoxToEnv(QCheckBox* box, Env::boolParameter p);
 	
-	GLWidget* getOpenGL();
-	
+	GLWidget*		getOpenGL();
 	
 public slots:
 	void drawAllWinActive();
@@ -81,6 +79,7 @@ public slots:
     void setBoolShadows(bool value);
     void setBoolFilaire(bool value);
 	void setBoolJoints(bool value);
+	void setBoolContour(bool value);
 	void setBoolEnableLight(bool value);
 	
 	void setJointToDraw(int joint);
@@ -92,11 +91,18 @@ protected:
 	
 private slots:
 	
+	void initRobotsMenu();
+	void setRobotAsCurrent();
+	
 	void openScenario();
 	void saveScenario();
 	
 	void loadGraph();
 	void saveGraph();
+	void saveXYZGraphToDot();
+	
+	void loadTraj();
+	void saveTraj();
 	
     void changeLightPosX();
     void changeLightPosY();
@@ -110,6 +116,7 @@ private slots:
     void ResetGraph();
     void showTraj();
     void restoreView();
+	void mobileCamera();
 
     // Global
 //    void setLineEditWithNumber(Env::intParameter p , int val );
@@ -120,15 +127,20 @@ private slots:
     void greedyPlan();
     void biasPos();
 
+	void test1();
+	void test2();
+	void test3();
 
 private:
 	
-    Ui::MainWindow *m_ui;
+    Ui::MainWindow*				m_ui;
 	
-    KCDpropertiesWindow*    mKCDpropertiesWindow;
+    KCDpropertiesWindow*		mKCDpropertiesWindow;
 
     void connectCheckBoxes();
 
+	std::vector<QAction*>		m_RobotsInMenu;
+	
     QPushButton* greedy;
 	LabeledSlider* createSlider(QString s, Env::intParameter p,int lower, int upper);
     LabeledDoubleSlider* createDoubleSlider(QString s,Env::doubleParameter p, double lower, double upper);
@@ -139,6 +151,7 @@ private:
     void initUtil();
     void initOptim();
     void initModel();
+	void initTests();
 };
 
 /**

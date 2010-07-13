@@ -108,9 +108,9 @@ p3d_traj* Robot::getTrajStruct()
 	return _Robot->tcur;
 }
 
-Trajectory Robot::getCurrentTraj()
+API::Trajectory Robot::getCurrentTraj()
 {
-	Trajectory traj(this,_Robot->tcur);
+	API::Trajectory traj(this,_Robot->tcur);
 	return traj;
 }
 
@@ -333,7 +333,7 @@ shared_ptr<Configuration> Robot::shootAllExceptBase()
 
 bool Robot::setAndUpdateAllExceptBase(Configuration& q)
 {
-	for(int i=0; i<m_Joints.size(); i++) 
+	for(int i=0; i<(int)m_Joints.size(); i++) 
 	{
 		p3d_jnt* jntPt = m_Joints[i]->getJointStruct();
 		
@@ -540,4 +540,31 @@ Vector3d Robot::getJointPos(int id)
     return vect;
 }
 
+/**
+ * Returns the number of DoF active in the planning phase
+ * @return Number of Active DoFs
+ */
+unsigned int Robot::getNumberOfActiveDoF()
+{
+	unsigned int nbDoF(0);
+	
+	for(unsigned int i=0;i<m_Joints.size();i++)
+	{
+		p3d_jnt* jntPt = m_Joints[i]->getJointStruct();
+		
+		for(int j=0; j<jntPt->dof_equiv_nbr; j++) 
+		{
+			int k = jntPt->index_dof + j;
+			
+			if (
+					(p3d_jnt_get_dof_is_user(jntPt, j) && p3d_jnt_get_dof_is_active_for_planner(jntPt,j)) &&
+					(_Robot->cntrt_manager->in_cntrt[k] != 2) ) 
+			{
+				nbDoF++;
+			}
+		}
+	}
+	
+	return nbDoF;
+}
 

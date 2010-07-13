@@ -234,11 +234,36 @@ void qt_calc_cam_param()
     Jimup[2] = up[2];
 }
 
+void qt_change_mob_frame(G3D_Window* win,pp3d_matrix4 frame)
+{
+	p3d_matrix4 matr;
+	p3d_vector4 Xc,Xcnew,Xw,Xwnew;
+	
+	calc_cam_param(win,Xc,Xw);
+	win->cam_frame = frame;
+	p3d_matInvertXform(*win->cam_frame, matr);
+	p3d_matvec4Mult(matr, Xc, Xcnew);
+	p3d_matvec4Mult(matr, Xw, Xwnew);
+	recalc_mouse_param(win->vs,Xcnew,Xwnew);
+	recalc_cam_up(win->vs,matr);
+}
+
+void qt_reset_mob_frame(G3D_Window* win)
+{
+	p3d_vector4 Xc,Xw;
+	
+	calc_cam_param(win,Xc,Xw);
+	recalc_mouse_param(win->vs,Xc,Xw);
+	recalc_cam_up(win->vs,*win->cam_frame);
+	win->cam_frame = &Id;
+}
+
+
 void qt_canvas_viewing(int mouse_press, int button)
 {
     G3D_Window *g3dwin = G3D_WIN;
     int w = G3D_WINSIZE_WIDTH;
-    int h = G3D_WINSIZE_HEIGHT;
+    //int h = G3D_WINSIZE_HEIGHT;
     unsigned int key;
 
     static int i0, j0;//,idr=-1;

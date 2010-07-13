@@ -6,7 +6,14 @@
  *  Copyright 2010 __MyCompanyName__. All rights reserved.
  *
  */
+#ifndef GRID_API_H
+#define GRID_API_H
+
 #include "Grids/BaseGrid.hpp"
 #include "Grids/TwoDGrid.hpp"
 #include "Grids/ThreeDGrid.h"
 #include "Grids/ThreeDPoints.h"
+
+extern API::BaseGrid* API_activeGrid;
+
+#endif

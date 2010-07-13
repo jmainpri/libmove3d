@@ -190,6 +190,7 @@ public:
         // expanding  only the passive parameters which were in collision
         // during the previsous expansion
         isManhattan,
+		isMultiRRT,
         drawDisabled,
         drawFrame,
         drawGraph,
@@ -203,6 +204,7 @@ public:
 		drawGaze,
 		drawBox,
 		drawOnlyOneLine,
+		drawVectorField,
         // Variables Hri
         useHriDis,
         useHriPen,
@@ -217,6 +219,7 @@ public:
 		HRIleftArmVsRightArm,
 		HRIcameraBehindHuman,
 		HRINoRobot,
+		HRIComputeOTP,
         // Variable Visualisation
         printTemp,
         printRadius,
@@ -236,6 +239,8 @@ public:
         useDist,
         costBeforeColl,
         costExpandToGoal,
+		costThresholdRRT,
+		costThresholdPlanner,
         withSmoothing,
         withShortCut,
         withDeformation,
@@ -249,6 +254,7 @@ public:
         randomConnectionToGoal,
         tryClosest,
         StopMultiRun,
+		tRrtComputeGradient,
         FKShoot,
         FKDistance,
         RecomputeCellCost,
@@ -272,6 +278,7 @@ public:
         // the MAXIMAL_THRESHOLD variant
         // - Set the temperature in the MONTE_CARLO_SEARCH
         PRMType,
+		nbOfSeeds,
         maxCostOptimFailures,
         nbQRand,
         nbCostTransFailed,
@@ -300,7 +307,8 @@ public:
 		hriShownGridLine,
         tRrtNbtry,
 		cellToShow,
-		lineToShow
+		lineToShow,
+		nbCells
     };
 
     enum doubleParameter {
@@ -313,6 +321,7 @@ public:
         // mExtensionStep*Dmax
         extensionStep,
         costStep,
+		costThreshold,
 
         // Controls the increasement of the temperature in Cost Spaces.
         temperatureRate,

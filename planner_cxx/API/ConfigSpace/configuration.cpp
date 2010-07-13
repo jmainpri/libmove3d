@@ -366,6 +366,64 @@ double Configuration::distEnv()
     return distances[i];
 }
 
+
+double Configuration::getActiveDoF(unsigned int ith)
+{
+	unsigned int nbDoF(0);
+	
+	for(unsigned int i=0;i<_Robot->getNumberOfJoints();i++)
+	{
+		p3d_jnt* jntPt = _Robot->getJoint(i)->getJointStruct();
+		
+		for(int j=0; j<jntPt->dof_equiv_nbr; j++) 
+		{
+			int k = jntPt->index_dof + j;
+			
+			if (
+					(p3d_jnt_get_dof_is_user(jntPt, j) && p3d_jnt_get_dof_is_active_for_planner(jntPt,j)) &&
+					(_Robot->getRobotStruct()->cntrt_manager->in_cntrt[k] != 2) ) 
+			{
+				if( ith == nbDoF)
+				{
+					//cout << "ith = " << k << endl;
+					return _Configuration[k];
+				}
+				nbDoF++;
+			}
+		}
+	}
+	
+	return nbDoF;
+}
+
+void Configuration::setActiveDoF(unsigned int ith, double value)
+{
+	unsigned int nbDoF(0);
+	
+	for(unsigned int i=0;i<_Robot->getNumberOfJoints();i++)
+	{
+		p3d_jnt* jntPt = _Robot->getJoint(i)->getJointStruct();
+		
+		for(int j=0; j<jntPt->dof_equiv_nbr; j++) 
+		{
+			int k = jntPt->index_dof + j;
+			
+			if (
+					(p3d_jnt_get_dof_is_user(jntPt, j) && p3d_jnt_get_dof_is_active_for_planner(jntPt,j)) &&
+					(_Robot->getRobotStruct()->cntrt_manager->in_cntrt[k] != 2) ) 
+			{
+				if( ith == nbDoF)
+				{
+					//cout << "ith = " << k << endl;
+					_Configuration[k] = value;
+					return;
+				}
+				nbDoF++;
+			}
+		}
+	}
+}
+
 bool Configuration::equal(Configuration& Conf)
 {
     if(_Configuration==Conf.getConfigStruct())

@@ -12,6 +12,7 @@
 #include "scene.h"
 
 #include "P3d-pkg.h"
+#include "Planner-pkg.h"
 
 using namespace std;
 
@@ -97,6 +98,12 @@ Robot* Scene::getRobotByNameContaining(string str)
 void Scene::insertRobot(Robot* R)
 {
   m_Robot.push_back(R);
+}
+
+Graph* Scene::getActiveGraph()
+{
+	Robot* rob = getRobotByName(XYZ_GRAPH->rob->name);
+	return new Graph(rob,XYZ_GRAPH);
 }
 
 

@@ -34,7 +34,7 @@ public:
 
 public slots:
 	void saveView();
-        void reinitGraphics();
+	void reinitGraphics();
 
 	void addCurrentImage();
 	void saveImagesToDisk();

@@ -82,12 +82,12 @@ public :
 	/**
 	 * Extract Trajectory beetween two Configurations
 	 */
-	Trajectory* extractTrajectory(std::tr1::shared_ptr<Configuration> init, std::tr1::shared_ptr<Configuration> goal);
+	API::Trajectory* extractTrajectory(std::tr1::shared_ptr<Configuration> init, std::tr1::shared_ptr<Configuration> goal);
 
 	/**
 	 * Extract Trajectory beetween two Nodes
 	 */
-	Trajectory* extractTrajectory(vertex_t source,vertex_t target);
+	API::Trajectory* extractTrajectory(vertex_t source,vertex_t target);
 
 
 private :

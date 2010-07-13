@@ -7,31 +7,28 @@
 
 #ifndef CPPTOQT_HPP_
 #define CPPTOQT_HPP_
-#include "../qtWindow/qtLibrary.h"
+
+#include "qtLibrary.h"
 
 #ifdef ENERGY
-#include "../bio/BioEnergy/include/Energy-pkg.h"
+#include "bio/BioEnergy/include/Energy-pkg.h"
 #endif
-#ifdef GRASP_PLANNING
-#include "GraspPlanning-pkg.h"
-#endif
-
 
 #ifdef CXX_PLANNER
-#include "../planner_cxx/plannerFunctions.hpp"
-#include "../planner_cxx/API/Trajectory/Smoothing.hpp"
-#include "../planner_cxx/API/Trajectory/CostOptimization.hpp"
-#include "../planner_cxx/Greedy/GreedyCost.hpp"
-#include "../planner_cxx/API/Search/Dijkstra/dijkstra.hpp"
-#include "../util/CppApi/MultiRun.hpp"
+#include "planner_cxx/plannerFunctions.hpp"
+#include "planner_cxx/API/Trajectory/Smoothing.hpp"
+#include "planner_cxx/API/Trajectory/CostOptimization.hpp"
+#include "planner_cxx/Greedy/GreedyCost.hpp"
+#include "planner_cxx/API/Search/Dijkstra/dijkstra.hpp"
+#include "util/CppApi/MultiRun.hpp"
 #endif
 
 #ifdef HRI_COSTSPACE
-#include "../planner_cxx/HRI_CostSpace/HRICS_Workspace.h"
+#include "planner_cxx/HRI_CostSpace/HRICS_Workspace.h"
 #endif
 
 #ifdef HRI_PLANNER
-#include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
+#include "planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #endif
 
 #include "Graphic-pkg.h"
@@ -45,9 +42,15 @@ void qt_resetGraph();
 void qt_drawAllWinActive();
 void qt_runDiffusion();
 void qt_runPRM();
+void qt_runThresholdPlanner();
 void qt_shortCut();
+void qt_optimize();
 void qt_readScenario();
 void qt_saveScenario();
+void qt_readTraj();
+#ifdef HRI_COSTSPACE
+void qt_load_HRICS_Grid(std::string gridName);
+#endif
 
   /**
     * @ingroup qtWindow

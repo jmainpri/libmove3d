@@ -1,14 +1,14 @@
 #ifndef MOVEROBOT_HPP
 #define MOVEROBOT_HPP
 
-#include "../qtLibrary.h"
-#include "../qtBase/SpinBoxSliderConnector_p.hpp"
+#include "qtLibrary.h"
+#include "qtBase/SpinBoxSliderConnector_p.hpp"
 
 #ifdef CXX_PLANNER
-#include "../../planner_cxx/API/planningAPI.hpp"
+#include "planner_cxx/API/planningAPI.hpp"
 #endif
 
-#include "../qtOpenGL/glwidget.hpp"
+#include "qtOpenGL/glwidget.hpp"
 
 namespace Ui {
     class MoveRobot;
@@ -69,7 +69,7 @@ private:
 
 /**--------------------------------------------------------------
  * @ingroup qtMainWindow
- * @brief Creates the sliders structure
+ * @brief Creates the sliders structure contains a vector of DofSlider
  */
 class FormRobot : public QObject {
     
@@ -98,7 +98,12 @@ public:
     void setSliders(Configuration& ptrConf);
 	
 	/**
-	 *
+	 * Resets the constrained DoFs
+	 */
+	void resetConstraintedDoFs();
+	
+	/**
+	 * Returns the robot structure
 	 */
 	Robot* getRobot() { return mRobot; }
 	
@@ -124,25 +129,43 @@ private:
 	
 	Robot*						mRobot;
 	std::vector<DofSlider*>		mSliders;
-	QComboBox*					mPositions;
 	QGridLayout*				mGridLayout;
+	QComboBox*					mPositions;
 	GLWidget*					mOpenGl;
 };
 
 
 /**--------------------------------------------------------------
   * @ingroup qtMainWindow
-  * @brief Creates the FormRobots Stucture
+  * @brief Creates the FormRobots Stucture, Contains a vector of FormRobot
   */
-class MoveRobot : public QWidget {
+class MoveRobot : public QWidget 
+{
     Q_OBJECT
+	
 public:
     MoveRobot(QWidget *parent = 0);
     ~MoveRobot();
 	
+	/**
+	 * Initilizes all forms
+	 */
 	void initAllForms(GLWidget* ptrOpenGl);
 	
+	/**
+	 * Updates all robot pos
+	 */
 	void updateAllRobotInitPos();
+	
+	/**
+	 * Get the robot form by names
+	 */
+	FormRobot* getRobotFormByName(std::string name);
+	
+	/**
+	 * Sets the constraints
+	 */
+	void setRobotConstraintedDof(Robot* ptrRob);
 
 protected:
     void changeEvent(QEvent *e);

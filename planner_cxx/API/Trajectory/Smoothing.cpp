@@ -9,6 +9,8 @@
 using namespace std;
 using namespace tr1;
 
+using namespace API;
+
 #include "Util-pkg.h"
 #include "Planner-pkg.h"
 

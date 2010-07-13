@@ -219,6 +219,13 @@ Node* RRTExpansion::getExpansionNode(Node* compNode, shared_ptr<Configuration> d
     }
 }
 
+bool RRTExpansion::expandToGoal(Node* expansionNode,
+                                std::tr1::shared_ptr<Configuration> directionConfig)
+{
+    return false;
+}
+
+
 int RRTExpansion::expandProcess(Node* expansionNode, shared_ptr<
                                 Configuration> directionConfig, Node* directionNode,
                                 Env::expansionMethod method)
@@ -288,10 +295,4 @@ int RRTExpansion::expandProcess(Node* expansionNode, shared_ptr<
     }
     directionNode = extensionNode;
     return nbCreatedNodes;
-}
-
-bool RRTExpansion::expandToGoal(Node* expansionNode,
-                                std::tr1::shared_ptr<Configuration> directionConfig)
-{
-    return false;
 }

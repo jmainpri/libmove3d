@@ -12,19 +12,22 @@
 
 #include <iostream>
 #include <tr1/memory>
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
 
-#include "../qtBase/SpinBoxSliderConnector_p.hpp"
+#include "qtBase/SpinBoxSliderConnector_p.hpp"
 
 #include "cppToQt.hpp"
 
+#include "planner_cxx/cost_space.hpp"
 #if defined(HRI_COSTSPACE)
-#include "../planner_cxx/HRI_CostSpace/HRICS_costspace.h"
+#include "planner_cxx/HRI_CostSpace/HRICS_costspace.h"
 #endif
 
 #ifdef QWT
-#include "../qtPlot/basicPlot.hpp"
-#include "../qtPlot/doublePlot.hpp"
-#include "../qtPlot/tempWin.hpp"
+#include "qtWindow/qtPlot/basicPlot.hpp"
+#include "qtWindow/qtPlot/doublePlot.hpp"
+#include "qtWindow/qtPlot/tempWin.hpp"
 #endif
 
 #include "mainwindow.hpp"
@@ -36,6 +39,10 @@
 
 using namespace std;
 using namespace tr1;
+
+// import most common Eigen types 
+//USING_PART_OF_NAMESPACE_EIGEN
+using namespace Eigen;
 
 CostWidget::CostWidget(QWidget *parent) :
 QWidget(parent),
@@ -56,454 +63,21 @@ CostWidget::~CostWidget()
 //#endif
 }
 
-#ifdef HRI_COSTSPACE
-//---------------------------------------------------------------------
-// HRI
-//---------------------------------------------------------------------
-void CostWidget::initHRI()
-{
-    m_mainWindow->connectCheckBoxToEnv(m_ui->enableHri_2,					Env::enableHri);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->enableHriTS,					Env::HRIPlannerTS);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxDrawGrid,				Env::drawGrid);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxDrawDistance,			Env::drawDistance);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxDrawRandPoints,		Env::drawPoints);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxHRICS_MOPL,			Env::HRIPlannerWS);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxBBDist,				Env::useBoxDist);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxBallDist,				Env::useBallDist);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxHRIGoalBiased,			Env::isGoalBiased);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxInverseKinematics,		Env::isInverseKinematics);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxEnableHRIConfigSpace,  Env::HRIPlannerCS);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxHriPlannerTRRT,		Env::HRIPlannerTRRT);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxHriPathDistance,		Env::HRIPathDistance);
-	
-    connect(m_ui->checkBoxDrawGrid,SIGNAL(clicked()),m_mainWindow,SLOT(drawAllWinActive()));
-	
-    connect(m_ui->pushButtonHRITS,SIGNAL(clicked()),this,SLOT(enableHriSpace()));
-	
-    // Wich Test
-    connect(m_ui->whichTestBox, SIGNAL(currentIndexChanged(int)),ENV.getObject(Env::hriCostType), SLOT(set(int)), Qt::DirectConnection);
-    connect(ENV.getObject(Env::hriCostType), SIGNAL(valueChanged(int)),this, SLOT(setWhichTestSlot(int)), Qt::DirectConnection);
-    m_ui->whichTestBox->setCurrentIndex(ENV.getInt(Env::hriCostType));
-	
-    connect(m_ui->spinBoxJoint, SIGNAL(valueChanged(int)),ENV.getObject(Env::akinJntId), SLOT(set(int)), Qt::DirectConnection);
-    connect(ENV.getObject(Env::akinJntId), SIGNAL(valueChanged(int)),m_ui->spinBoxJoint, SLOT(setValue(int)), Qt::DirectConnection);
-    m_ui->spinBoxJoint->setValue(ENV.getInt(Env::akinJntId));
-	
-    connect(m_ui->pushButtonWorkspacePath, SIGNAL(clicked()),this, SLOT(computeWorkspacePath()), Qt::DirectConnection);
-    connect(m_ui->pushButtonHoleMotion, SIGNAL(clicked()),this, SLOT(computeHoleMotion()), Qt::DirectConnection);
-	
-	//-----------------------
-	// Task Space
-	//-----------------------
-    m_ui->HRITaskSpace->setDisabled(true);
-	
-    QtShiva::SpinBoxSliderConnector *connectorD = new QtShiva::SpinBoxSliderConnector(
-																					  this, m_ui->doubleSpinBoxDistance, m_ui->horizontalSliderDistance, Env::Kdistance);
-    QtShiva::SpinBoxSliderConnector *connectorV = new QtShiva::SpinBoxSliderConnector(
-																					  this, m_ui->doubleSpinBoxVisibility, m_ui->horizontalSliderVisibility, Env::Kvisibility );
-	
-    connect(connectorD,SIGNAL(valueChanged(double)),this,SLOT(KDistance(double)));
-    connect(connectorV,SIGNAL(valueChanged(double)),this,SLOT(KVisibility(double)));
-	
-	
-    connect(m_ui->pushButtonMake2DGrid,SIGNAL(clicked()),this,SLOT(make2DGrid()));
-	
-    connect(m_ui->pushButtonMakeGrid,SIGNAL(clicked()),this,SLOT(make3DHriGrid()));
-    connect(m_ui->pushButtonDeleteGrid,SIGNAL(clicked()),this,SLOT(delete3DHriGrid()));
-    m_ui->pushButtonDeleteGrid->setDisabled(true);
-	
-    connect(m_ui->pushButtonComputeCost,SIGNAL(clicked()),this,SLOT(computeGridCost()));
-    connect(m_ui->pushButtonResetCost,SIGNAL(clicked()),this,SLOT(resetGridCost()));
-	
-    connect(m_ui->pushButtonAStarIn3DGrid,SIGNAL(clicked()),this,SLOT(AStarIn3DGrid()));
-    connect(m_ui->pushButtonHRICSRRT,SIGNAL(clicked()),this,SLOT(HRICSRRT()));
-	
-    QtShiva::SpinBoxSliderConnector* connectorZoneSize  = new QtShiva::SpinBoxSliderConnector(
-																							  this, m_ui->doubleSpinBoxZoneSize, m_ui->horizontalSliderZoneSize ,Env::zone_size );
-    connect(connectorZoneSize,SIGNAL(valueChanged(double)),this,SLOT(zoneSizeChanged()),Qt::DirectConnection);
-	
-    new QtShiva::SpinBoxSliderConnector(
-										this, m_ui->doubleSpinBoxCellSize, m_ui->horizontalSliderCellSize ,Env::CellSize );
-	
-    new QtShiva::SpinBoxSliderConnector(
-										this, m_ui->doubleSpinBoxPlanCellSize, m_ui->horizontalSliderPlanCellSize ,Env::PlanCellSize );
-	
-    m_ui->HRICSPlanner->setDisabled(true);
-	
-    connect(m_ui->pushButtonResetRandPoints,SIGNAL(clicked()),this,SLOT(resetRandomPoints()));
-	
-	//-----------------------
-	// Config Space
-	//-----------------------
-    m_ui->HRIConfigSpace->setDisabled(true);
-	
-    connect(m_ui->pushButtonNewHRIConfigSpace,SIGNAL(clicked()),this,SLOT(newHRIConfigSpace()));
-    connect(m_ui->pushButtonDeleteHRICSpace,SIGNAL(clicked()),this,SLOT(deleteHRIConfigSpace()));
-    m_ui->pushButtonDeleteHRICSpace->setDisabled(true);
-	
-    connect(m_ui->pushButtonCreateGrid,SIGNAL(clicked()),this,SLOT(makeGridHRIConfigSpace()));
-    connect(m_ui->pushButtonCreatePlan,SIGNAL(clicked()),this,SLOT(makePlanHRIConfigSpace()));
-    connect(m_ui->pushButtonAStarIn2DGrid,SIGNAL(clicked()),this,SLOT(AStarInPlanHRIConfigSpace()));
-	
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxRecomputeCost, Env::RecomputeCellCost);
-	
-    QtShiva::SpinBoxSliderConnector* connectorColor1 = new QtShiva::SpinBoxSliderConnector(
-														this, m_ui->doubleSpinBoxColor1, m_ui->horizontalSliderColor1 , Env::colorThreshold1 );
-    QtShiva::SpinBoxSliderConnector* connectorColor2 = new QtShiva::SpinBoxSliderConnector(
-														this, m_ui->doubleSpinBoxColor2, m_ui->horizontalSliderColor2 , Env::colorThreshold2 );
-	
-    connect(connectorColor1,SIGNAL(valueChanged(double)),m_mainWindow,SLOT(drawAllWinActive()),Qt::DirectConnection);
-    connect(connectorColor2,SIGNAL(valueChanged(double)),m_mainWindow,SLOT(drawAllWinActive()),Qt::DirectConnection);
-	
-    connect(m_ui->pushButtonWriteToObPlane,SIGNAL(clicked()),this,SLOT(writeToOBPlane()));
-    connect(m_ui->pushButtonHRIPlanRRT,SIGNAL(clicked()),this,SLOT(hriPlanRRT()));
-	
-	//-----------------------
-	// Natural Cost Space
-	//-----------------------
-	m_ui->HRICSNatural->setDisabled(true);
-	
-	connect(m_ui->pushButtonNewNaturalCostSpace,SIGNAL(clicked()),this,SLOT(newNaturalCostSpace()));
-	connect(m_ui->pushButtonDeleteNaturalCostSpace,SIGNAL(clicked()),this,SLOT(deleteNaturalCostSpace()));
-	
-	new QtShiva::SpinBoxSliderConnector(
-		this, m_ui->doubleSpinBoxNatural, m_ui->horizontalSliderNatural , Env::coeffNat );
-	
-    new QtShiva::SpinBoxSliderConnector(
-		this, m_ui->doubleSpinBoxJointLimit, m_ui->horizontalSliderJointLimit , Env::coeffLim );
-	
-    new QtShiva::SpinBoxSliderConnector(
-		this, m_ui->doubleSpinBoxTaskDist, m_ui->horizontalSliderTaskDist , Env::coeffTas );
-	
-    new QtShiva::SpinBoxSliderConnector(
-		this, m_ui->doubleSpinBoxHeight, m_ui->horizontalSliderHeight , Env::coeffHei );
-}
-
-void CostWidget::setWhichTestSlot(int test)
-{
-    cout << "Change test to :" << test << endl;
-	
-	if(ENV.getBool(Env::HRIPlannerTS))
-    {
-#ifdef HRI_PLANNER
-        //hriSpace->changeTest(test);
-		cout << "CostWidget::setWhichTestSlot::WARNING" << endl;
-#else
-		cout << "HRI Planner not compiled nor linked" << endl;
-#endif
-    }
-}
-
-//-------------------------------------------------------------
-// Natural Cost Space (HRICS_Natural)
-//-------------------------------------------------------------
-void CostWidget::newNaturalCostSpace()
-{
-	HRICS_Natural  = new HRICS::Natural(new Robot(XYZ_ROBOT));
-	API_activeGrid = HRICS_Natural->getGrid();
-	ENV.setBool(Env::drawGrid,true);
-	
-	m_ui->HRICSNatural->setDisabled(false);
-	m_ui->pushButtonNewNaturalCostSpace->setDisabled(true);
-	
-	m_mainWindow->drawAllWinActive();
-	
-//	for (int i=0 ; i<HRICS_Natural->getGrid()->getNumberOfCells(); i++) 
-//	{
-//		int config = HRICS_Natural->getGrid()->robotConfigInCell(i);
-//		
-//		if (config != -1) 
-//		{
-//			cout << "Respect Constraint = " << config << endl;
-//		}
-//		
-//		//m_mainWindow->drawAllWinActive();
-//	}
-}
-
-void CostWidget::deleteNaturalCostSpace()
-{
-	ENV.setBool(Env::drawGrid,false);
-	API_activeGrid = NULL;
-	delete HRICS_Natural;
-	
-	m_ui->HRICSNatural->setDisabled(true);
-	m_ui->pushButtonNewNaturalCostSpace->setDisabled(false);
-	
-	m_mainWindow->drawAllWinActive();
-}
-
-
-//-------------------------------------------------------------
-// Config Cost Space HRICS_CSpaceMPL
-//-------------------------------------------------------------
-void CostWidget::newHRIConfigSpace()
-{
-    m_ui->HRIConfigSpace->setDisabled(false);
-    HRICS_CSpaceMPL  = new HRICS::ConfigSpace;
-    HRICS_activeDist = HRICS_CSpaceMPL->getDistance();
-	
-    ENV.setBool(Env::HRIPlannerCS,true);
-    ENV.setBool(Env::enableHri,true);
-    ENV.setBool(Env::isCostSpace,true);
-	
-    ENV.setBool(Env::useBallDist,false);
-    ENV.setBool(Env::useBoxDist,true);
-	
-    m_ui->pushButtonNewHRIConfigSpace->setDisabled(true);
-    m_ui->pushButtonDeleteHRICSpace->setDisabled(false);
-	
-    m_mainWindow->drawAllWinActive();
-}
-
-void CostWidget::deleteHRIConfigSpace()
-{
-    ENV.setBool(Env::drawGrid,false);
-    ENV.setBool(Env::HRIPlannerCS,false);
-	
-    delete HRICS_CSpaceMPL;
-	
-    m_ui->pushButtonDeleteHRICSpace->setDisabled(true);
-    m_ui->pushButtonNewHRIConfigSpace->setDisabled(false);
-    m_ui->HRIConfigSpace->setDisabled(true);
-    m_mainWindow->drawAllWinActive();
-}
-
-void CostWidget::makeGridHRIConfigSpace()
-{
-    if(ENV.getBool(Env::HRIPlannerCS))
-    {
-        if(ENV.getInt(Env::hriCostType)==0)
-        {
-            cout << " Compute Distance Grid"  << endl;
-            HRICS_CSpaceMPL->computeDistanceGrid();
-            API_activeGrid = HRICS_CSpaceMPL->getGrid();
-            ENV.setBool(Env::drawGrid,true);
-            m_mainWindow->drawAllWinActive();
-        }
-        if(ENV.getInt(Env::hriCostType)==1)
-        {
-            cout << " Compute Visibility Grid"  << endl;
-            HRICS_CSpaceMPL->computeVisibilityGrid();
-            API_activeGrid = HRICS_CSpaceMPL->getGrid();
-            ENV.setBool(Env::drawGrid,true);
-            m_mainWindow->drawAllWinActive();
-        }
-        else
-        {
-            cout << "Warning : Only Distance or Visib in Env::hriCostType : No grid made" << endl;
-        }
-    }
-}
-
-//-------------------------------------------------------------
-// Plan Grid in HRICS_CSpaceMPL
-//-------------------------------------------------------------
-void CostWidget::makePlanHRIConfigSpace()
-{
-    if(ENV.getBool(Env::HRIPlannerCS))
-    {
-        API_activeGrid = HRICS_CSpaceMPL->getPlanGrid();
-        ENV.setBool(Env::drawGrid,true);
-        m_mainWindow->setBoolFloor(false);
-        m_mainWindow->drawAllWinActive();
-    }
-}
-
-void CostWidget::AStarInPlanHRIConfigSpace()
-{
-    cout << "Computing 2D HRI A*" << endl;
-    if(ENV.getBool(Env::HRIPlannerCS))
-    {
-        HRICS_CSpaceMPL->computeAStarIn2DGrid();
-        ENV.setBool(Env::drawTraj,true);
-    }
-}
-
-void CostWidget::writeToOBPlane()
-{
-    if( ENV.getBool(Env::HRIPlannerCS) && HRICS_CSpaceMPL->getPlanGrid() )
-    {
-        HRICS_CSpaceMPL->getPlanGrid()->writeToOBPlane();
-    }
-}
-
-void CostWidget::hriPlanRRT()
-{
-    HRICS_CSpaceMPL->initHriRRT();
-    m_mainWindow->drawAllWinActive();
-}
-
-//-------------------------------------------------------------
-// Plan Workspace HRI
-//-------------------------------------------------------------
-void CostWidget::make3DHriGrid()
-{
-    HRICS_WorkspaceMPL = new HRICS::Workspace;
-    HRICS_WorkspaceMPL->initGrid();
-    HRICS_WorkspaceMPL->initDistance();
-	
-    m_ui->HRICSPlanner->setDisabled(false);
-    ENV.setBool(Env::HRIPlannerWS,true);
-    //    ENV.setBool(Env::biDir,false);
-    ENV.setDouble(Env::zone_size,0.5);
-    HRICS_activeDist = HRICS_WorkspaceMPL->getDistance();
-	//    enableHriSpace();
-	
-    m_ui->pushButtonMakeGrid->setDisabled(true);
-    m_ui->pushButtonDeleteGrid->setDisabled(false);
-	
-    ENV.setBool(Env::enableHri,true);
-    ENV.setBool(Env::isCostSpace,true);
-	
-    m_mainWindow->drawAllWinActive();
-}
-
-void CostWidget::delete3DHriGrid()
-{
-    ENV.setBool(Env::drawGrid,false);
-    ENV.setBool(Env::HRIPlannerWS,false);
-	
-    delete HRICS_WorkspaceMPL;
-    m_ui->HRICSPlanner->setDisabled(true);
-	
-    m_mainWindow->drawAllWinActive();
-	
-    m_ui->pushButtonMakeGrid->setDisabled(false);
-    m_ui->pushButtonDeleteGrid->setDisabled(true);
-}
-
-//-------------------------------------------------------------
-// OTHERS
-//-------------------------------------------------------------
-void CostWidget::zoneSizeChanged()
-{
-    if(ENV.getBool(Env::HRIPlannerWS))
-    {
-        HRICS_activeDist = HRICS_WorkspaceMPL->getDistance();
-        HRICS_activeDist->parseHumans();
-    }
-    else if(ENV.getBool(Env::HRIPlannerCS))
-    {
-        HRICS_activeDist = HRICS_CSpaceMPL->getDistance();
-        HRICS_activeDist->parseHumans();
-    }
-	
-    m_mainWindow->drawAllWinActive();
-    cout << "Zone Size Changed" << endl;
-}
-
-void CostWidget::resetRandomPoints()
-{
-    ENV.setBool(Env::drawPoints,false);
-    if(PointsToDraw != NULL)
-    {
-        delete PointsToDraw;
-    }
-}
-
-void CostWidget::computeGridCost()
-{
-    HRICS_WorkspaceMPL->getGrid()->computeAllCellCost();
-    API_activeGrid = HRICS_WorkspaceMPL->getGrid();
-}
-
-void CostWidget::resetGridCost()
-{
-    HRICS_WorkspaceMPL->getGrid()->resetCellCost();
-}
-
-void CostWidget::AStarIn3DGrid()
-{
-    HRICS_WorkspaceMPL->computeAStarIn3DGrid();
-    ENV.setBool(Env::drawTraj,true);
-    m_mainWindow->drawAllWinActive();
-}
-
-void CostWidget::HRICSRRT()
-{
-	//    std::string str = "runHRICSRRT";
-	//    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-
-    HRICS_WorkspaceMPL->initHriRRT();
-    ENV.setBool(Env::drawTraj,true);
-    m_mainWindow->drawAllWinActive();
-}
-
-//-------------------------------------------------------------
-// Akin Hamp
-//-------------------------------------------------------------
-void CostWidget::computeWorkspacePath()
-{
-    std::string str = "computeWorkspacePath";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-}
-
-void CostWidget::computeHoleMotion()
-{
-    std::string str = "computeHoleManipulationPath";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-}
-
-void CostWidget::make2DGrid()
-{
-    vector<double>  envSize(4);
-    envSize[0] = XYZ_ENV->box.x1; envSize[1] = XYZ_ENV->box.x2;
-    envSize[2] = XYZ_ENV->box.y1; envSize[3] = XYZ_ENV->box.y2;
-	
-    ENV.setBool(Env::drawGrid,false);
-    API::TwoDGrid* grid = new API::TwoDGrid(ENV.getDouble(Env::CellSize),envSize);
-    grid->createAllCells();
-    ENV.setBool(Env::drawGrid,true);
-    API_activeGrid = grid;
-}
-
-void CostWidget::KDistance(double value)
-{
-#ifdef HRI_PLANNER
-    //    cout << "HRI_WEIGHTS[0] = " <<  ENV.getDouble(Env::Kdistance) << endl;
-    HRI_WEIGHTS[0] = ENV.getDouble(Env::Kdistance);
-#endif
-}
-
-void CostWidget::KVisibility(double value)
-{
-#ifdef HRI_PLANNER
-    //    cout << "HRI_WEIGHTS[1] = " <<  ENV.getDouble(Env::Kvisibility) << endl;
-    HRI_WEIGHTS[1] = ENV.getDouble(Env::Kvisibility);
-#endif
-}
-
-///////////////////////////////////////////////////////////////
-void CostWidget::enableHriSpace()
-{
-    //    if(hriSpace)
-    //    {
-    //        delete hriSpace;
-    //    }
-    //    hriSpace = new HriSpaceCost(XYZ_ROBOT,ENV.getInt(Env::akinJntId));
-    cout << "HRI Planner not compiled nor linked" << endl;
-	
-#ifdef HRI_COSTSPACE
-    ENV.setBool(Env::isCostSpace,true);
-    ENV.setBool(Env::enableHri,true);
-    ENV.setBool(Env::HRIPlannerTS,true);
-    cout << "Env::enableHri is set to true, joint number is :"<< ENV.getInt(Env::akinJntId) << endl;
-    cout << "Robot is :" << XYZ_ROBOT->name << endl;
-    m_ui->HRITaskSpace->setDisabled(false);
-#endif
-}
-
-#endif
+HricsWidget* CostWidget::getHriWidget()
+ { 
+	 return m_ui->tabHri; 
+ } 
 
 //---------------------------------------------------------------------
 // COST
 //---------------------------------------------------------------------
 void CostWidget::initCost()
 {
-    m_mainWindow->connectCheckBoxToEnv(m_ui->isCostSpaceCopy,         Env::isCostSpace);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxCostBefore,      Env::costBeforeColl);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxCostExpandToGoal, Env::costExpandToGoal);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->isCostSpaceCopy,			Env::isCostSpace);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxCostBefore,		Env::costBeforeColl);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxCostExpandToGoal,	Env::costExpandToGoal);
+	m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxCostWithGradient,	Env::tRrtComputeGradient);
+	
 	
     new QtShiva::SpinBoxSliderConnector(
 										this, m_ui->doubleSpinBoxInitTemp, m_ui->horizontalSliderInitTemp , Env::initialTemperature );
@@ -545,11 +119,43 @@ void CostWidget::initCost()
     connect(m_ui->pushButtonExtractBestPath,SIGNAL(clicked()),this,SLOT(extractBestPath()));
 	connect(m_ui->pushButtonStonesGraph,SIGNAL(clicked()),this,SLOT(stonesGraph()));
 	
+	std::cout << "Initializing the basic cost function" << std::endl;
+	global_costSpace->addCost("NoCost",boost::bind(computeBasicCost, _1));
+}
+
+void CostWidget::initCostFunctions()
+{
+	vector<string> AllCost = global_costSpace->getAllCost();
+	m_ui->comboBoxCostFunctions->clear();
+	
+	for (unsigned int i=0; i<AllCost.size(); i++) 
+	{
+		QString name(AllCost[i].c_str());
+		m_ui->comboBoxCostFunctions->addItem(name);
+	}
+	
+	connect(m_ui->comboBoxCostFunctions, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostFunction(int)));
+    m_ui->comboBoxCostFunctions->setCurrentIndex( 0 );
+	global_costSpace->setCost("NoCost");
+//	
+//	connect(m_ui->pushButtonSetCostFunctions,SIGNAL(clicked()),this,SLOT(setCostFunction(int)));
+}
+
+void CostWidget::setCostFunction(int costFunctionId)
+{
+	vector<string> AllCost = global_costSpace->getAllCost();
+	global_costSpace->setCost(AllCost[costFunctionId]);
+	cout << "Cost Function is now :  " << AllCost[costFunctionId] << endl;	
 }
 
 void CostWidget::extractBestPath()
 {
-	p3d_ExtractBestTraj(XYZ_GRAPH);
+//	p3d_ExtractBestTraj(XYZ_GRAPH);
+	Graph* myGraph = new Graph(XYZ_GRAPH);
+	Robot* myRobot = myGraph->getRobot();
+	
+	myGraph->extractBestTraj(myRobot->getInitialPosition(),myRobot->getGoTo());
+	
 	m_mainWindow->drawAllWinActive();
 }
 
@@ -614,7 +220,7 @@ void CostWidget::graphSearchTest()
     Dijkstra graphSearch(ptrGraph);
 	
     cout << "graphSearch.extractTrajectory" << endl;
-    Trajectory* traj = graphSearch.extractTrajectory(Init,Goal);
+    API::Trajectory* traj = graphSearch.extractTrajectory(Init,Goal);
 	
     cout << "-------------------------------" << endl;
     cout << "Trajectory Cost = "<< traj->cost() << endl;
@@ -644,7 +250,7 @@ void CostWidget::showTrajCost()
     myPlot->setGeometry(this->plot->getPlot()->geometry());
     int nbSample = myPlot->getPlotSize();
 	
-    Trajectory traj(new Robot(robotPt),CurrentTrajPt);
+    API::Trajectory traj(new Robot(robotPt),CurrentTrajPt);
 	
     double step = traj.getRangeMax() / (double) nbSample;
 	
@@ -660,7 +266,7 @@ void CostWidget::showTrajCost()
     {
         shared_ptr<Configuration> ptr = traj.configAtParam(param);
         cost.push_back(ptr->cost());
-        //        cout << cost.back() << endl;
+        //cout << cost.back() << endl;
     }
 	
     myPlot->setData(cost);
@@ -683,7 +289,7 @@ void CostWidget::showHRITrajCost()
     int nbSample = myPlot->getPlotSize();
 	
     Robot* thisRob = new Robot(robotPt);
-    Trajectory traj(thisRob,CurrentTrajPt);
+    API::Trajectory traj(thisRob,CurrentTrajPt);
 	
     cout << "Traj cost = " << traj.costDeltaAlongTraj() << endl;
 	
@@ -733,8 +339,8 @@ void CostWidget::showHRITrajCost()
         {
             ptr->cost();
 			
-            double dCost = HRICS_CSpaceMPL->getLastDistanceCost();
-            double vCost = HRICS_CSpaceMPL->getLastVisibiliCost();
+            double dCost = dynamic_cast<HRICS::ConfigSpace*>(HRICS_MotionPL)->getLastDistanceCost();
+            double vCost = dynamic_cast<HRICS::ConfigSpace*>(HRICS_MotionPL)->getLastVisibiliCost();
             costDistance.push_back(dCost);
             costVisibili.push_back(vCost);
         }
@@ -742,9 +348,9 @@ void CostWidget::showHRITrajCost()
         {
             thisRob->setAndUpdate(*ptr);
 			
-            double dCost = HRICS_WorkspaceMPL->getDistance()->getDistToZones()[0];
+            double dCost = HRICS_MotionPL->getDistance()->getDistToZones()[0];
 			
-            int object = HRICS_WorkspaceMPL->getIndexObjectDof();
+            int object = dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->getIndexObjectDof();
 			
             Vector3d cellCenter;
 			
@@ -752,7 +358,7 @@ void CostWidget::showHRITrajCost()
             cellCenter[1] = ptr->at(object+1);
             cellCenter[2] = ptr->at(object+2);
 			
-            double vCost = HRICS_WorkspaceMPL->getVisibilityCost(cellCenter);
+            double vCost = HRICS_MotionPL->getVisibility()->getCost(cellCenter);
 			
             costDistance.push_back(ENV.getDouble(Env::Kdistance)*dCost);
             costVisibili.push_back(ENV.getDouble(Env::Kvisibility)*vCost);
@@ -828,7 +434,7 @@ void CostWidget::computeAStar()
             return;
         }
 		
-        Trajectory* traj = new Trajectory(new Robot(XYZ_ROBOT));
+        API::Trajectory* traj = new API::Trajectory(new Robot(XYZ_ROBOT));
 		
         for (unsigned int i=0;i<path.size();i++)
         {
@@ -882,3 +488,50 @@ void CostWidget::putGridInGraph()
 	
     m_mainWindow->drawAllWinActive();
 }
+
+/**
+ * @ingroup qtWindow
+ * @brief Planner thread class
+ */
+//-----------------------------------------------
+TestPlannerthread::TestPlannerthread(QObject* parent) :
+QThread(parent)
+{
+	
+}
+
+void TestPlannerthread::run()
+{	
+	qt_runThresholdPlanner();
+	//	exec();
+    cout << "Ends Planner Thread" << endl;
+}
+
+//-----------------------------------------------
+
+void CostWidget::initThreshold()
+{
+	m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxIsCostThreshold,	Env::costThresholdRRT);
+	
+	new QtShiva::SpinBoxSliderConnector(
+		this, m_ui->doubleSpinBoxCostThresh, m_ui->horizontalSliderCostThresh , Env::costThreshold );
+	
+	connect(m_ui->pushButtonThresholdPlanner,SIGNAL(clicked()),this,SLOT(runThresholdPlanner()));
+
+}
+
+void CostWidget::runThresholdPlanner()
+{
+	cout << "MainWindow::run" << endl;
+	m_mainWindow->isPlanning();
+#ifdef WITH_XFORMS
+	std::string str = "RunDiffusion";
+	write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+	ENV.setBool(Env::isRunning,true);
+#else
+    TestPlannerthread* ptrPlan = new TestPlannerthread;
+	cout << "Start Test Planning Thread" << endl;
+    ptrPlan->start();
+#endif
+}
+

@@ -1,10 +1,10 @@
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
 
-
-#include "../cppToQt.hpp"
-#include "../qtOpenGL/glwidget.hpp"
-#include "../qtBase/SpinBoxSliderConnector_p.hpp"
+#include "cppToQt.hpp"
+#include "qtBase/SpinBoxSliderConnector_p.hpp"
+#include "qtOpenGL/glwidget.hpp"
+#include "qtOpenGL/qtMobileCamera.h"
 
 #include "P3d-pkg.h"
 #include "Util-pkg.h"
@@ -16,25 +16,26 @@
 #include <vector>
 
 #ifdef CXX_PLANNER
-#include "../../util/CppApi/testModel.hpp"
-#include "../../util/CppApi/SaveContext.hpp"
-#include "../../planner_cxx/API/planningAPI.hpp"
-#include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"
-#include "../../planner_cxx/API/Trajectory/Smoothing.hpp"
-#include "../../planner_cxx/API/Grids/GridToGraph/gridtograph.h"
-#include "../../planner_cxx/API/Search/GraphState.h"
-#include "../../planner_cxx/API/Grids/ThreeDPoints.h"
-#include "../../planner_cxx/API/Grids/BaseGrid.hpp"
-#include "../../planner_cxx/API/Grids/TwoDGrid.hpp"
+#include "util/CppApi/testModel.hpp"
+#include "util/CppApi/SaveContext.hpp"
+#include "planner_cxx/API/planningAPI.hpp"
+#include "planner_cxx/API/Trajectory/trajectory.hpp"
+#include "planner_cxx/API/Trajectory/Smoothing.hpp"
+//Warning contains boos function that conlicts with Qt
+#include "planner_cxx/API/Trajectory/RoboptimTrajectory.h"
+#include "planner_cxx/API/Trajectory/CostOptimization.hpp"
+#include "planner_cxx/API/Grids/GridToGraph/gridtograph.h"
+#include "planner_cxx/API/Search/GraphState.h"
+#include "planner_cxx/API/Grids/ThreeDPoints.h"
+#include "planner_cxx/API/Grids/BaseGrid.hpp"
+#include "planner_cxx/API/Grids/TwoDGrid.hpp"
+#include "planner_cxx/API/Roadmap2/BoostGraphTest.h"
+#include "planner_cxx/cost_space.hpp"
 #endif
 
 #ifdef HRI_COSTSPACE
-#include "../../planner_cxx/HRI_CostSpace/HRICS_costspace.h"
-#include "../../planner_cxx/HRI_CostSpace/Grid/HRICS_Grid.h"
-#include "../../planner_cxx/HRI_CostSpace/Grid/HRICS_GridState.h"
-#ifdef HRI_PLANNER
-#include "../../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
-#endif
+#include "ui_qtHrics.h"
+#include "planner_cxx/HRI_CostSpace/HRICS_costspace.h"
 #endif
 
 Move3D2OpenGl* pipe2openGl;
@@ -44,75 +45,74 @@ using namespace std;
 using namespace tr1;
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), m_ui(new Ui::MainWindow)
+: QMainWindow(parent), m_ui(new Ui::MainWindow)
 {
-    m_ui->setupUi(this);
+	m_ui->setupUi(this);
 	
 	m_ui->tabMotionPlanner->setMainWindow(this);
-	m_ui->tabCost->setMainWindow(this);
-	m_ui->tabRobot->setMainWindow(this);
 	
+	m_ui->tabCost->setMainWindow(this);
 	m_ui->tabCost->setMotionWidget(this->m_ui->tabMotionPlanner);
 	m_ui->tabCost->initCost();
+	m_ui->tabCost->initThreshold();
 	
 #ifdef HRI_COSTSPACE
-	m_ui->tabCost->initHRI();
+	m_ui->tabCost->getHriWidget()->setMainWindow(this);
+	m_ui->tabCost->getHriWidget()->setMotionWidget(this->m_ui->tabMotionPlanner);	
+	m_ui->tabCost->getHriWidget()->initHRI();
 #endif
 	
+	m_ui->tabCost->initCostFunctions();
+	
+	m_ui->tabRobot->setMainWindow(this);
 	m_ui->tabRobot->initRobot();
-
-    mKCDpropertiesWindow = new KCDpropertiesWindow();
-
-    //    m_ui->OpenGL->setWinSize(G3D_WIN->size);
-    m_ui->OpenGL->setWinSize(600);
-    pipe2openGl = new Move3D2OpenGl(m_ui->OpenGL);
-
-    //    m_ui->sidePannel->setMainWindow(this);
-
-    //UITHINGQPalette pal(m_ui->centralWidget->palette()); // copy widget's palette to non const QPalette
-    //UITHINGQColor myColor(Qt::darkGray);
-    //UITHINGpal.setColor(QPalette::Window,myColor);
-    //UITHINGm_ui->centralWidget->setPalette( pal );        // set the widget's palette
-
-    cout << "pipe2openGl = new Move3D2OpenGl(m_ui->OpenGL)" << endl;
-
-    //    connect(m_ui->actionOpen,SIGNAL(triggered()),this,SLOT(open()));
-    connect(m_ui->actionOpenScenario,SIGNAL(triggered()),this,SLOT(openScenario()));
+	
+	mKCDpropertiesWindow = new KCDpropertiesWindow();
+	
+	//    m_ui->OpenGL->setWinSize(G3D_WIN->size);
+	m_ui->OpenGL->setWinSize(600);
+	pipe2openGl = new Move3D2OpenGl(m_ui->OpenGL);
+	
+	//    m_ui->sidePannel->setMainWindow(this);
+	
+	//UITHINGQPalette pal(m_ui->centralWidget->palette()); // copy widget's palette to non const QPalette
+	//UITHINGQColor myColor(Qt::darkGray);
+	//UITHINGpal.setColor(QPalette::Window,myColor);
+	//UITHINGm_ui->centralWidget->setPalette( pal );        // set the widget's palette
+	
+	cout << "pipe2openGl = new Move3D2OpenGl(m_ui->OpenGL)" << endl;
+	
+	//    connect(m_ui->actionOpen,SIGNAL(triggered()),this,SLOT(open()));
+	connect(m_ui->actionOpenScenario,SIGNAL(triggered()),this,SLOT(openScenario()));
 	connect(m_ui->actionSaveScenario,SIGNAL(triggered()),this,SLOT(saveScenario()));
-    connect(m_ui->actionKCDPropietes,SIGNAL(triggered()),mKCDpropertiesWindow,SLOT(show()));
+	connect(m_ui->actionKCDPropietes,SIGNAL(triggered()),mKCDpropertiesWindow,SLOT(show()));
 	
 	connect(m_ui->actionLoadGraph,SIGNAL(triggered()),this,SLOT(loadGraph()));
 	connect(m_ui->actionSaveGraph_2,SIGNAL(triggered()),this,SLOT(saveGraph()));
-
-    //    connect(m_ui->pagesOfStakedWidget, SIGNAL(activated(int)),m_ui->stackedWidget, SLOT(setCurrentIndex(int)));
-
-    connectCheckBoxes();
-
-    // MainWindow
-    initRunButtons();
-    initViewerButtons();
-    initLightSource();
+	connect(m_ui->actionSaveToDot,SIGNAL(triggered()),this,SLOT(saveXYZGraphToDot()));
+	
+	connect(m_ui->actionLoadTrajectory,SIGNAL(triggered()),this,SLOT(loadTraj()));
+	connect(m_ui->actionSaveTrajectory,SIGNAL(triggered()),this,SLOT(saveTraj()));
+	
+	//    connect(m_ui->pagesOfStakedWidget, SIGNAL(activated(int)),m_ui->stackedWidget, SLOT(setCurrentIndex(int)));
+	
+	connectCheckBoxes();
+	
+	// MainWindow
+	initRunButtons();
+	initViewerButtons();
+	initLightSource();
 	
 	initUtil();
-
-    // Side Window
-
-//    initDiffusion();
-//    initPRM();
-//    initOptim();
-//    initMultiRun();	
 	
-//    initCost();
-//    initHRI();
-//    initHumanLike();
-	
-//    initModel();
+	initRobotsMenu();
+	initTests();
 }
 
 MainWindow::~MainWindow()
 {
-    delete mKCDpropertiesWindow;
-    delete m_ui;
+	delete mKCDpropertiesWindow;
+	delete m_ui;
 }
 
 GLWidget* MainWindow::getOpenGL()
@@ -120,158 +120,213 @@ GLWidget* MainWindow::getOpenGL()
 	return m_ui->OpenGL; 
 }
 
-const char *qt_fileName = NULL;
+void MainWindow::initRobotsMenu()
+{
+	QActionGroup* robotActionGroup = new QActionGroup(this); 
+	
+	for (int i=0; i<XYZ_ENV->nr; i++) 
+	{
+		QString name(XYZ_ENV->robot[i]->name);
+		QAction* robotAction = new QAction(name,this);
+		robotAction->setCheckable(true);
+		robotAction->setActionGroup(robotActionGroup);
+		m_RobotsInMenu.push_back( robotAction );
+		connect(robotAction,SIGNAL(triggered()),this,SLOT(setRobotAsCurrent()));
+		m_ui->menuRobot->addAction(robotAction);
+	}
+}
+
+void MainWindow::setRobotAsCurrent()
+{
+	for (int i=0; i<XYZ_ENV->nr; i++) 
+	{
+		if( m_RobotsInMenu[i]->isChecked() )
+		{
+			p3d_sel_desc_id(P3D_ROBOT,XYZ_ENV->robot[i]);
+		}
+	}
+}
 
 void MainWindow::openScenario()
 {
-    QString fileName = QFileDialog::getOpenFileName(this);
-
-    if (!fileName.isEmpty())
-    {
-        qt_fileName = fileName.toStdString().c_str();
-
-#ifdef WITH_XFORMS
-        std::string str = "readP3DScenarion";
-        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-		cout << "Open scenario " << fileName.toStdString() << endl;
-#else
+	QString fileName = QFileDialog::getOpenFileName(this);
+	
+	if (!fileName.isEmpty())
+	{
+		qt_fileName = fileName.toStdString().c_str();
 		qt_readScenario();
-		//m_ui->formRobot->updateAllRobotInitPos();
+		m_ui->tabRobot->getFormRobot()->updateAllRobotInitPos();
 		this->drawAllWinActive();
-#endif
-        
-    }
+	}
 }
 
 void MainWindow::saveScenario()
 {
-    QString fileName = QFileDialog::getSaveFileName(this);
+	QString fileName = QFileDialog::getSaveFileName(this);
 	
-    if (!fileName.isEmpty())
-    {
-        qt_fileName = fileName.toStdString().c_str();
+	if (!fileName.isEmpty())
+	{
+		qt_fileName = fileName.toStdString().c_str();
 		
 #ifdef WITH_XFORMS
-        std::string str = "saveP3DScenarion";
-        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+		std::string str = "saveScenario";
+		write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 		cout << "Open scenario " << fileName.toStdString() << endl;
 #else
 		qt_saveScenario();
 		//m_ui->formRobot->updateAllRobotInitPos();
 		this->drawAllWinActive();
 #endif
-    }
+	}
 }
 
 void MainWindow::loadGraph()
 {
 	QString fileName = QFileDialog::getOpenFileName(this);
 	
-    if (!fileName.isEmpty())
-    {
-        qt_fileName = fileName.toStdString().c_str();
+	if (!fileName.isEmpty())
+	{
+		qt_fileName = fileName.toStdString().c_str();
 		char file[256];
-		sprintf(file,qt_fileName);
+		sprintf(file,"%s",qt_fileName);
 		cout << "Loading graph at : " << file << endl;
 		p3d_readGraph(qt_fileName, DEFAULTGRAPH);
 		this->drawAllWinActive();
-    }
+	}
 }
 
 
 void MainWindow::saveGraph()
 {
-    QString fileName = QFileDialog::getSaveFileName(this);
+	QString fileName = QFileDialog::getSaveFileName(this);
 	
-    if (!fileName.isEmpty())
-    {
-        qt_fileName = fileName.toStdString().c_str();
+	if (!fileName.isEmpty())
+	{
+		qt_fileName = fileName.toStdString().c_str();
 		char file[256];
-		sprintf(file,qt_fileName);
+		sprintf(file,"%s",qt_fileName);
 		cout <<"Saving Graph at " << file << endl;
 		p3d_writeGraph(XYZ_GRAPH, file, DEFAULTGRAPH);//Mokhtar Using XML Format
 		this->drawAllWinActive();
-    }
+	}
+}
+
+void MainWindow::saveXYZGraphToDot()
+{
+	if (!ENV.getBool(Env::isRunning)) 
+	{
+		p3d_saveGraphToDotFormat(0);
+	}
+}
+
+void MainWindow::loadTraj()
+{	
+	QString fileName = QFileDialog::getOpenFileName(this);
+	
+	if (!fileName.isEmpty())
+	{
+		qt_fileName = fileName.toStdString().c_str();
+		char file[256];
+		sprintf(file,"%s",qt_fileName);
+		qt_readTraj();
+		cout << "Loading traj at : " << file << endl;
+		this->drawAllWinActive();
+	}
+}
+
+void MainWindow::saveTraj()
+{
+	QString fileName = QFileDialog::getSaveFileName(this);
+	
+	if (!fileName.isEmpty())
+	{
+		qt_fileName = fileName.toStdString().c_str();
+		char file[256];
+		sprintf(file,"%s",qt_fileName);
+		cout <<"Saving traj at " << file << endl;
+		p3d_save_traj(file,(p3d_traj *) p3d_get_desc_curid(P3D_TRAJ));
+		this->drawAllWinActive();
+	}
 }
 
 void MainWindow::connectCheckBoxToEnv(QCheckBox* box, Env::boolParameter p)
 {
-    connect(ENV.getObject(p), SIGNAL(valueChanged(bool)), box, SLOT(setChecked(bool)), Qt::DirectConnection);
-    connect(box, SIGNAL(toggled(bool)), ENV.getObject(p), SLOT(set(bool)), Qt::DirectConnection);
-    box->setChecked(ENV.getBool(p));
+	connect(ENV.getObject(p), SIGNAL(valueChanged(bool)), box, SLOT(setChecked(bool)), Qt::DirectConnection);
+	connect(box, SIGNAL(toggled(bool)), ENV.getObject(p), SLOT(set(bool)), Qt::DirectConnection);
+	box->setChecked(ENV.getBool(p));
 }
 
 // Light sliders ------------------------------------------------
 // --------------------------------------------------------------
 void MainWindow::initLightSource()
 {
-    connectCheckBoxToEnv(m_ui->checkBoxDrawLightSource,      Env::drawLightSource);
-
-    vector<double>  envSize(6);
-    envSize[0] = XYZ_ENV->box.x1; envSize[1] = XYZ_ENV->box.x2;
-    envSize[2] = XYZ_ENV->box.y1; envSize[3] = XYZ_ENV->box.y2;
-    envSize[4] = XYZ_ENV->box.z1; envSize[5] = XYZ_ENV->box.z2;
-
-    m_ui->doubleSpinBoxLightX->setMinimum(2*envSize[0]);
-    m_ui->doubleSpinBoxLightX->setMaximum(2*envSize[1]);
-    m_ui->doubleSpinBoxLightY->setMinimum(2*envSize[2]);
-    m_ui->doubleSpinBoxLightY->setMaximum(2*envSize[3]);
-    m_ui->doubleSpinBoxLightZ->setMinimum(2*envSize[4]);
-    m_ui->doubleSpinBoxLightZ->setMaximum(2*envSize[5]);
-
-    QtShiva::SpinBoxSliderConnector *connectorLightX = new QtShiva::SpinBoxSliderConnector(
-            this, m_ui->doubleSpinBoxLightX, m_ui->horizontalSliderLightX);
-    QtShiva::SpinBoxSliderConnector *connectorLightY = new QtShiva::SpinBoxSliderConnector(
-            this, m_ui->doubleSpinBoxLightY, m_ui->horizontalSliderLightY);
-    QtShiva::SpinBoxSliderConnector *connectorLightZ = new QtShiva::SpinBoxSliderConnector(
-            this, m_ui->doubleSpinBoxLightZ, m_ui->horizontalSliderLightZ);
-
-    connect(connectorLightX,SIGNAL(valueChanged(double)),this,SLOT(changeLightPosX()));
-    connect(connectorLightY,SIGNAL(valueChanged(double)),this,SLOT(changeLightPosY()));
-    connect(connectorLightZ,SIGNAL(valueChanged(double)),this,SLOT(changeLightPosZ()));
-
-    connect(connectorLightX,SIGNAL(valueChanged(double)),this,SLOT(drawAllWinActive()));
-    connect(connectorLightY,SIGNAL(valueChanged(double)),this,SLOT(drawAllWinActive()));
-    connect(connectorLightZ,SIGNAL(valueChanged(double)),this,SLOT(drawAllWinActive()));
-
-    m_ui->doubleSpinBoxLightX->setValue(G3D_WIN->vs.lightPosition[0]);
-    m_ui->doubleSpinBoxLightY->setValue(G3D_WIN->vs.lightPosition[1]);
-    m_ui->doubleSpinBoxLightZ->setValue(G3D_WIN->vs.lightPosition[2]);
+	connectCheckBoxToEnv(m_ui->checkBoxDrawLightSource,      Env::drawLightSource);
+	
+	vector<double>  envSize(6);
+	envSize[0] = XYZ_ENV->box.x1; envSize[1] = XYZ_ENV->box.x2;
+	envSize[2] = XYZ_ENV->box.y1; envSize[3] = XYZ_ENV->box.y2;
+	envSize[4] = XYZ_ENV->box.z1; envSize[5] = XYZ_ENV->box.z2;
+	
+	m_ui->doubleSpinBoxLightX->setMinimum(2*envSize[0]);
+	m_ui->doubleSpinBoxLightX->setMaximum(2*envSize[1]);
+	m_ui->doubleSpinBoxLightY->setMinimum(2*envSize[2]);
+	m_ui->doubleSpinBoxLightY->setMaximum(2*envSize[3]);
+	m_ui->doubleSpinBoxLightZ->setMinimum(2*envSize[4]);
+	m_ui->doubleSpinBoxLightZ->setMaximum(2*envSize[5]);
+	
+	QtShiva::SpinBoxSliderConnector *connectorLightX = new QtShiva::SpinBoxSliderConnector(
+																																												 this, m_ui->doubleSpinBoxLightX, m_ui->horizontalSliderLightX);
+	QtShiva::SpinBoxSliderConnector *connectorLightY = new QtShiva::SpinBoxSliderConnector(
+																																												 this, m_ui->doubleSpinBoxLightY, m_ui->horizontalSliderLightY);
+	QtShiva::SpinBoxSliderConnector *connectorLightZ = new QtShiva::SpinBoxSliderConnector(
+																																												 this, m_ui->doubleSpinBoxLightZ, m_ui->horizontalSliderLightZ);
+	
+	connect(connectorLightX,SIGNAL(valueChanged(double)),this,SLOT(changeLightPosX()));
+	connect(connectorLightY,SIGNAL(valueChanged(double)),this,SLOT(changeLightPosY()));
+	connect(connectorLightZ,SIGNAL(valueChanged(double)),this,SLOT(changeLightPosZ()));
+	
+	connect(connectorLightX,SIGNAL(valueChanged(double)),this,SLOT(drawAllWinActive()));
+	connect(connectorLightY,SIGNAL(valueChanged(double)),this,SLOT(drawAllWinActive()));
+	connect(connectorLightZ,SIGNAL(valueChanged(double)),this,SLOT(drawAllWinActive()));
+	
+	m_ui->doubleSpinBoxLightX->setValue(G3D_WIN->vs.lightPosition[0]);
+	m_ui->doubleSpinBoxLightY->setValue(G3D_WIN->vs.lightPosition[1]);
+	m_ui->doubleSpinBoxLightZ->setValue(G3D_WIN->vs.lightPosition[2]);
 }
 
 void MainWindow::changeLightPosX()
 {
-    float* lightPosition = G3D_WIN->vs.lightPosition;
-    lightPosition[0] = m_ui->doubleSpinBoxLightX->value();
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-    g3d_build_shadow_matrices(G3D_WIN->vs);
-    //    cout << "Change X value" << endl;
+	float* lightPosition = G3D_WIN->vs.lightPosition;
+	lightPosition[0] = m_ui->doubleSpinBoxLightX->value();
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+	g3d_build_shadow_matrices(G3D_WIN->vs);
+	//    cout << "Change X value" << endl;
 #ifndef WITH_XFORMS
-    this->drawAllWinActive();
+	this->drawAllWinActive();
 #endif
 }
 
 void MainWindow::changeLightPosY()
 {
-    float* lightPosition = G3D_WIN->vs.lightPosition;
-    lightPosition[1] = m_ui->doubleSpinBoxLightY->value();
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-    g3d_build_shadow_matrices(G3D_WIN->vs);
-    //    cout << "Change Y value" << endl;
+	float* lightPosition = G3D_WIN->vs.lightPosition;
+	lightPosition[1] = m_ui->doubleSpinBoxLightY->value();
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+	g3d_build_shadow_matrices(G3D_WIN->vs);
+	//    cout << "Change Y value" << endl;
 #ifndef WITH_XFORMS
-    this->drawAllWinActive();
+	this->drawAllWinActive();
 #endif
 }
 
 void MainWindow::changeLightPosZ()
 {
-    float* lightPosition = G3D_WIN->vs.lightPosition;
-    lightPosition[2] = m_ui->doubleSpinBoxLightZ->value();
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-    g3d_build_shadow_matrices(G3D_WIN->vs);
-    //    cout << "Change Z value" << endl;
+	float* lightPosition = G3D_WIN->vs.lightPosition;
+	lightPosition[2] = m_ui->doubleSpinBoxLightZ->value();
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+	g3d_build_shadow_matrices(G3D_WIN->vs);
+	//    cout << "Change Z value" << endl;
 #ifndef WITH_XFORMS
-    this->drawAllWinActive();
+	this->drawAllWinActive();
 #endif
 }
 
@@ -279,36 +334,44 @@ void MainWindow::changeLightPosZ()
 // --------------------------------------------------------------
 void MainWindow::initViewerButtons()
 {
-    connect(m_ui->checkBoxDrawGraph,SIGNAL(toggled(bool)),this,SLOT(drawAllWinActive()),Qt::QueuedConnection);
-    connect(m_ui->checkBoxDrawTraj,SIGNAL(toggled(bool)),this,SLOT(drawAllWinActive()),Qt::QueuedConnection);
-
-    connectCheckBoxToEnv(m_ui->checkBoxDisableDraw,Env::drawDisabled);
-    connectCheckBoxToEnv(m_ui->checkBoxDrawGraph,Env::drawGraph);
-    connectCheckBoxToEnv(m_ui->checkBoxDrawTraj,Env::drawTraj);
+	connect(m_ui->checkBoxDrawGraph,SIGNAL(toggled(bool)),this,SLOT(drawAllWinActive()),Qt::QueuedConnection);
+	connect(m_ui->checkBoxDrawTraj,SIGNAL(toggled(bool)),this,SLOT(drawAllWinActive()),Qt::QueuedConnection);
+	
+	connectCheckBoxToEnv(m_ui->checkBoxDisableDraw,Env::drawDisabled);
+	connectCheckBoxToEnv(m_ui->checkBoxDrawGraph,Env::drawGraph);
+	connectCheckBoxToEnv(m_ui->checkBoxDrawTraj,Env::drawTraj);
 	connectCheckBoxToEnv(m_ui->checkBoxDrawTrajVector,Env::drawTrajVector);
 	connectCheckBoxToEnv(m_ui->checkBoxDrawDebug,Env::debugCostOptim);
-    m_ui->checkBoxDrawGraph->setCheckState(Qt::Checked);
+	m_ui->checkBoxDrawGraph->setCheckState(Qt::Checked);
 	
 	connect(m_ui->spinBoxJointToDraw,SIGNAL(valueChanged(int)),this,SLOT(setJointToDraw(int)));
 	//int index = get_robot_jnt_index_by_name(XYZ_ROBOT,XYZ_ROBOT->o[XYZ_ROBOT->no-1]->jnt->name);
 	m_ui->spinBoxJointToDraw->setValue(XYZ_ROBOT->o[XYZ_ROBOT->no-1]->jnt->num);
-
-    connect(m_ui->pushButtonShowTraj,SIGNAL(clicked(bool)),this,SLOT(showTraj()),Qt::DirectConnection);
+	
+	connect(m_ui->pushButtonShowTraj,SIGNAL(clicked(bool)),this,SLOT(showTraj()),Qt::DirectConnection);
 	new QtShiva::SpinBoxSliderConnector(
-										this, m_ui->doubleSpinBoxTrajSpeed, m_ui->horizontalSliderTrajSpeed , Env::showTrajFPS );
-
-    connect(m_ui->pushButtonRestoreView,SIGNAL(clicked(bool)),this,SLOT(restoreView()),Qt::DirectConnection);
-    connect(m_ui->pushButtonResetGraph,SIGNAL(clicked()),this,SLOT(ResetGraph()));
+																			this, m_ui->doubleSpinBoxTrajSpeed, m_ui->horizontalSliderTrajSpeed , Env::showTrajFPS );
+	
+	connect(m_ui->pushButtonRestoreView,SIGNAL(clicked(bool)),this,SLOT(restoreView()),Qt::DirectConnection);
+	connect(m_ui->pushButtonResetGraph,SIGNAL(clicked()),this,SLOT(ResetGraph()));
 	
 	connect(m_ui->pushButtonAddTraj,SIGNAL(clicked()),this,SLOT(addTrajToDraw()));
 	connect(m_ui->pushButtonClearTraj,SIGNAL(clicked()),this,SLOT(clearTrajToDraw()));
 	
 	connect(m_ui->comboBoxColorTraj, SIGNAL(currentIndexChanged(int)),this,SLOT(colorTrajChange(int)));
+	
+	connect(m_ui->pushButtonMobileCamera,SIGNAL(clicked()),this,SLOT(mobileCamera()));
 }
 
 void MainWindow::setJointToDraw(int joint)
 {
 	p3d_set_user_drawnjnt(joint);
+}
+
+void MainWindow::mobileCamera()
+{
+	qtMobileCamera* dialog = new qtMobileCamera;
+	dialog->show();
 }
 
 // Show Trajectory ----------------------------------------------
@@ -320,20 +383,20 @@ static int default_drawtraj_fct_qt_pipe(p3d_rob* robot, p3d_localpath* curLp)
 {
 #ifdef WITH_XFORMS
 	std::string str = "g3d_draw_allwin_active";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+	write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 #else
 	g3d_draw_allwin_active();
 #endif
-    usleep(20000);
+	usleep(20000);
 	//cout << "ENV.getDouble(Env::showTrajFPS) = " << ENV.getDouble(Env::showTrajFPS) << endl;
-    return TRUE;
+	return TRUE;
 }
 
 void MainWindow::showTraj()
 {
 	cout << "Show Traj....."<< endl;
 	//m_ui->pushButtonShowTraj->disable(true);
-    ptrOpenGL = m_ui->OpenGL;
+	ptrOpenGL = m_ui->OpenGL;
 	this->isPlanning();
 	Showtrajthread* showTrajThread = new Showtrajthread;
 	showTrajThread->start();
@@ -347,101 +410,112 @@ QThread(parent)
 
 void Showtrajthread::run()
 {	
-    p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
-    g3d_show_tcur_rob(robotPt,default_drawtraj_fct_qt_pipe);
+	p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+	g3d_show_tcur_rob(robotPt,default_drawtraj_fct_qt_pipe);
 	ENV.setBool(Env::isRunning,false);
 }
 
 // --------------------------------------------------------------
 void MainWindow::connectCheckBoxes()
 {
-    connect(m_ui->checkBoxGhosts, SIGNAL(toggled(bool)), this , SLOT(setBoolGhost(bool)), Qt::DirectConnection);
-    connect(m_ui->checkBoxGhosts, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
+	connect(m_ui->checkBoxGhosts, SIGNAL(toggled(bool)), this , SLOT(setBoolGhost(bool)), Qt::DirectConnection);
+	connect(m_ui->checkBoxGhosts, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
 	
-    connect(m_ui->checkBoxBB, SIGNAL(toggled(bool)), this , SLOT(setBoolBb(bool)), Qt::DirectConnection);
-    connect(m_ui->checkBoxBB, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
+	connect(m_ui->checkBoxBB, SIGNAL(toggled(bool)), this , SLOT(setBoolBb(bool)), Qt::DirectConnection);
+	connect(m_ui->checkBoxBB, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
 	
-    connect(m_ui->checkBoxFloor, SIGNAL(toggled(bool)), this , SLOT(setBoolFloor(bool)), Qt::DirectConnection);
-    connect(m_ui->checkBoxFloor, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
+	connect(m_ui->checkBoxFloor, SIGNAL(toggled(bool)), this , SLOT(setBoolFloor(bool)), Qt::DirectConnection);
+	connect(m_ui->checkBoxFloor, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
 	if(G3D_WIN->vs.displayFloor){
 		m_ui->checkBoxFloor->setCheckState(Qt::Checked);
 	}
-    
-    connect(m_ui->checkBoxTiles, SIGNAL(toggled(bool)), this , SLOT(setBoolTiles(bool)), Qt::DirectConnection);
-    connect(m_ui->checkBoxTiles, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
+	
+	connect(m_ui->checkBoxTiles, SIGNAL(toggled(bool)), this , SLOT(setBoolTiles(bool)), Qt::DirectConnection);
+	connect(m_ui->checkBoxTiles, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
 	if(G3D_WIN->vs.displayTiles){
 		m_ui->checkBoxTiles->setCheckState(Qt::Checked);
 	}
 	
-    connect(m_ui->checkBoxWalls, SIGNAL(toggled(bool)), this , SLOT(setBoolWalls(bool)), Qt::DirectConnection);
-    connect(m_ui->checkBoxWalls, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
+	connect(m_ui->checkBoxWalls, SIGNAL(toggled(bool)), this , SLOT(setBoolWalls(bool)), Qt::DirectConnection);
+	connect(m_ui->checkBoxWalls, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
 	
-    connect(m_ui->checkBoxShadows, SIGNAL(toggled(bool)), this , SLOT(setBoolShadows(bool)), Qt::DirectConnection);
-    connect(m_ui->checkBoxShadows, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
+	connect(m_ui->checkBoxShadows, SIGNAL(toggled(bool)), this , SLOT(setBoolShadows(bool)), Qt::DirectConnection);
+	connect(m_ui->checkBoxShadows, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
 	
-    connect(m_ui->checkBoxSmooth, SIGNAL(toggled(bool)), this , SLOT(setBoolSmooth(bool)), Qt::DirectConnection);
-    connect(m_ui->checkBoxSmooth, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
+	connect(m_ui->checkBoxSmooth, SIGNAL(toggled(bool)), this , SLOT(setBoolSmooth(bool)), Qt::DirectConnection);
+	connect(m_ui->checkBoxSmooth, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
+	if(G3D_WIN->vs.GOURAUD){
+		m_ui->checkBoxSmooth->setCheckState(Qt::Checked);
+	}
 	
-    connect(m_ui->checkBoxFilaire, SIGNAL(toggled(bool)), this , SLOT(setBoolFilaire(bool)), Qt::DirectConnection);
-    connect(m_ui->checkBoxFilaire, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
+	connect(m_ui->checkBoxFilaire, SIGNAL(toggled(bool)), this , SLOT(setBoolFilaire(bool)), Qt::DirectConnection);
+	connect(m_ui->checkBoxFilaire, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
 	
 	connect(m_ui->checkBoxJoints, SIGNAL(toggled(bool)), this , SLOT(setBoolJoints(bool)), Qt::DirectConnection);
-    connect(m_ui->checkBoxJoints, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
+	connect(m_ui->checkBoxJoints, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
+	
+	connect(m_ui->checkBoxContour, SIGNAL(toggled(bool)), this , SLOT(setBoolContour(bool)), Qt::DirectConnection);
+	connect(m_ui->checkBoxContour, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
 	
 	connect(m_ui->checkBoxEnableLight, SIGNAL(toggled(bool)), this , SLOT(setBoolEnableLight(bool)), Qt::DirectConnection);
-    connect(m_ui->checkBoxEnableLight, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
+	connect(m_ui->checkBoxEnableLight, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
 	
-    connectCheckBoxToEnv(m_ui->checkBoxAxis, Env::drawFrame);
-    connect(m_ui->checkBoxAxis, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
+	connectCheckBoxToEnv(m_ui->checkBoxAxis, Env::drawFrame);
+	connect(m_ui->checkBoxAxis, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
 }
 
 void MainWindow::setBoolGhost(bool value)
 {
-    G3D_WIN->vs.GHOST = value;
+	G3D_WIN->vs.GHOST = value;
 }
 
 void MainWindow::setBoolBb(bool value)
 {
-    G3D_WIN->vs.BB = value;
+	G3D_WIN->vs.BB = value;
 }
 
 
 void MainWindow::setBoolFloor(bool value)
 {
-    G3D_WIN->vs.displayFloor = value;
+	G3D_WIN->vs.displayFloor = value;
 }
 
 
 void MainWindow::setBoolTiles(bool value)
 {
-    G3D_WIN->vs.displayTiles = value;
+	G3D_WIN->vs.displayTiles = value;
 }
 
 
 void MainWindow::setBoolWalls(bool value)
 {
-    G3D_WIN->vs.displayWalls = value;
+	G3D_WIN->vs.displayWalls = value;
 }
 
 void MainWindow::setBoolShadows(bool value)
 {
-    G3D_WIN->vs.displayShadows = value;
+	G3D_WIN->vs.displayShadows = value;
 }
 
 void MainWindow::setBoolJoints(bool value)
 {
-    G3D_WIN->vs.displayJoints = value;
+	G3D_WIN->vs.displayJoints = value;
 }
 
 
 void MainWindow::setBoolSmooth(bool value)
 {
-    G3D_WIN->vs.GOURAUD = value;
+	G3D_WIN->vs.GOURAUD = value;
 }
 
 void MainWindow::setBoolFilaire(bool value)
 {
 	G3D_WIN->vs.FILAIRE = value;
+}
+
+void MainWindow::setBoolContour(bool value)
+{
+	G3D_WIN->vs.CONTOUR = value;
 }
 
 void MainWindow::setBoolEnableLight(bool value)
@@ -451,16 +525,16 @@ void MainWindow::setBoolEnableLight(bool value)
 
 void MainWindow::restoreView()
 {
-    g3d_restore_win_camera(G3D_WIN->vs);
-    drawAllWinActive();
+	g3d_restore_win_camera(G3D_WIN->vs);
+	drawAllWinActive();
 }
 
 void MainWindow::addTrajToDraw()
 {
 	p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-    p3d_traj* CurrentTrajPt = robotPt->tcur;
+	p3d_traj* CurrentTrajPt = robotPt->tcur;
 #ifdef CXX_PLANNER
-	Trajectory traj(new Robot(robotPt),CurrentTrajPt);
+	API::Trajectory traj(new Robot(robotPt),CurrentTrajPt);
 	trajToDraw.push_back(traj);
 #endif
 }
@@ -491,22 +565,22 @@ void MainWindow::colorTrajChange(int color)
 
 void MainWindow::initRunButtons()
 {
-    connect(m_ui->pushButtonRun,SIGNAL(clicked(bool)),this,SLOT(run()),Qt::DirectConnection);
-
-    connect(m_ui->pushButtonReset,SIGNAL(clicked(bool)),this,SLOT(reset()),Qt::DirectConnection);
-    connect(m_ui->pushButtonStop,SIGNAL(clicked(bool)),this,SLOT(stop()),Qt::DirectConnection);
-
-    m_ui->pushButtonRun->setDisabled(false);
-    m_ui->pushButtonStop->setDisabled(true);
-    m_ui->pushButtonReset->setDisabled(true);
-
-    connect(ENV.getObject(Env::isPRMvsDiffusion), SIGNAL(valueChanged(bool)), m_ui->radioButtonPRM, SLOT(setChecked(bool)), Qt::DirectConnection);
-    connect(m_ui->radioButtonPRM, SIGNAL(toggled(bool)), ENV.getObject(Env::isPRMvsDiffusion), SLOT(set(bool)), Qt::DirectConnection);
-    m_ui->radioButtonDiff->setChecked(!ENV.getBool(Env::isPRMvsDiffusion));
-
-    connectCheckBoxToEnv(m_ui->checkBoxWithSmoothing,      Env::withSmoothing);
-
-    connect( ENV.getObject(Env::isRunning), SIGNAL(valueChanged(bool)), this, SLOT(planningFinished(void)) , Qt::DirectConnection );
+	connect(m_ui->pushButtonRun,SIGNAL(clicked(bool)),this,SLOT(run()),Qt::DirectConnection);
+	
+	connect(m_ui->pushButtonReset,SIGNAL(clicked(bool)),this,SLOT(reset()),Qt::DirectConnection);
+	connect(m_ui->pushButtonStop,SIGNAL(clicked(bool)),this,SLOT(stop()),Qt::DirectConnection);
+	
+	m_ui->pushButtonRun->setDisabled(false);
+	m_ui->pushButtonStop->setDisabled(true);
+	m_ui->pushButtonReset->setDisabled(true);
+	
+	connect(ENV.getObject(Env::isPRMvsDiffusion), SIGNAL(valueChanged(bool)), m_ui->radioButtonPRM, SLOT(setChecked(bool)), Qt::DirectConnection);
+	connect(m_ui->radioButtonPRM, SIGNAL(toggled(bool)), ENV.getObject(Env::isPRMvsDiffusion), SLOT(set(bool)), Qt::DirectConnection);
+	m_ui->radioButtonDiff->setChecked(!ENV.getBool(Env::isPRMvsDiffusion));
+	
+	connectCheckBoxToEnv(m_ui->checkBoxWithSmoothing,      Env::withSmoothing);
+	
+	connect( ENV.getObject(Env::isRunning), SIGNAL(valueChanged(bool)), this, SLOT(planningFinished(void)) , Qt::QueuedConnection );
 }
 
 /**
@@ -523,16 +597,16 @@ QThread(parent)
 void Plannerthread::run()
 {	
 	if(!ENV.getBool(Env::isPRMvsDiffusion))
-    {
+	{
 		qt_runDiffusion();
-    }
-    else
-    {
-        qt_runPRM();
-    }
+	}
+	else
+	{
+		qt_runPRM();
+	}
 	
-//	exec();
-    cout << "Ends Planner Thread" << endl;
+	//	exec();
+	cout << "Ends Planner Thread" << endl;
 }
 
 //-----------------------------------------------
@@ -542,45 +616,46 @@ void MainWindow::run()
 	cout << "MainWindow::run" << endl;
 	this->isPlanning();
 #ifdef WITH_XFORMS
-    if(!ENV.getBool(Env::isPRMvsDiffusion))
-    {
-        std::string str = "RunDiffusion";
-        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-    }
-    else
-    {
-        std::string str = "RunPRM";
-        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-    }
+	if(!ENV.getBool(Env::isPRMvsDiffusion))
+	{
+		std::string str = "RunDiffusion";
+		write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+	}
+	else
+	{
+		std::string str = "RunPRM";
+		write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+	}
 	ENV.setBool(Env::isRunning,true);
 #else
-    Plannerthread* ptrPlan = new Plannerthread;
+	Plannerthread* ptrPlan = new Plannerthread;
 	cout << "Start Planning Thread" << endl;
-    ptrPlan->start();
+	ptrPlan->start();
 #endif
 }
 
 void MainWindow::stop()
 {
 #ifdef P3D_PLANNER
-    p3d_SetStopValue(true);
+	p3d_SetStopValue(true);
 #endif
-    ENV.setBool(Env::isRunning,false);
+	ENV.setBool(Env::isRunning,false);
+	m_ui->pushButtonRun->setDisabled(false);
 }
 
 void MainWindow::reset()
 {
 #ifdef WITH_XFORMS
-    std::string str = "ResetGraph";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+	std::string str = "ResetGraph";
+	write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 #else
 	qt_resetGraph();
 #endif
-    m_ui->pushButtonRun->setDisabled(false);
-    m_ui->pushButtonStop->setDisabled(true);
-    m_ui->pushButtonReset->setDisabled(true);
+	m_ui->pushButtonRun->setDisabled(false);
+	m_ui->pushButtonStop->setDisabled(true);
+	m_ui->pushButtonReset->setDisabled(true);
 #ifdef P3D_PLANNER
-    p3d_SetStopValue(false);
+	p3d_SetStopValue(false);
 #endif
 	this->drawAllWinActive();
 }
@@ -588,8 +663,8 @@ void MainWindow::reset()
 void MainWindow::ResetGraph()
 {
 #ifdef WITH_XFORMS
-    std::string str = "ResetGraph";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+	std::string str = "ResetGraph";
+	write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 #else
 	qt_resetGraph();
 #endif
@@ -598,57 +673,57 @@ void MainWindow::ResetGraph()
 
 void MainWindow::isPlanning()
 {
-    m_ui->pushButtonRun->setDisabled(true);
-    m_ui->pushButtonReset->setDisabled(true);
-    m_ui->pushButtonStop->setDisabled(false);
-
-    ENV.setBool(Env::isRunning,true);
-
-    QPalette pal(Qt::red);
-    m_ui->labelRunning->setPalette( pal );
-    m_ui->labelRunning->setText("RUNNING" );
-
-    //UITHINGQPalette pal(Qt::lightGray); // copy widget's palette to non const QPalette
-    //UITHINGm_ui->toolBox->setPalette( pal );        // set the widget's palette
-
-    m_ui->labelRunning->setText(QApplication::translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-    "p, li { white-space: pre-wrap; }\n"
-    "</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; font-weight:400; font-style:normal;\">\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#FF0000;\">Running</span></p></body></html>",
-    0, QApplication::UnicodeUTF8));
-
+	m_ui->pushButtonRun->setDisabled(true);
+	m_ui->pushButtonReset->setDisabled(true);
+	m_ui->pushButtonStop->setDisabled(false);
+	
+	ENV.setBool(Env::isRunning,true);
+	
+	QPalette pal(Qt::red);
+	m_ui->labelRunning->setPalette( pal );
+	m_ui->labelRunning->setText("RUNNING" );
+	
+	//UITHINGQPalette pal(Qt::lightGray); // copy widget's palette to non const QPalette
+	//UITHINGm_ui->toolBox->setPalette( pal );        // set the widget's palette
+	
+	m_ui->labelRunning->setText(QApplication::translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+																											"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+																											"p, li { white-space: pre-wrap; }\n"
+																											"</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; font-weight:400; font-style:normal;\">\n"
+																											"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#FF0000;\">Running</span></p></body></html>",
+																											0, QApplication::UnicodeUTF8));
+	
 }
 
 void MainWindow::planningFinished()
 {
-    if( ENV.getBool(Env::isRunning) == false )
-    {
-        m_ui->pushButtonStop->setDisabled(true);
-        m_ui->pushButtonReset->setDisabled(false);
-
-//        m_ui->labelRunning->setText("Not Running" );
-
-        m_ui->labelRunning->setText(QApplication::translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-        "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-        "p, li { white-space: pre-wrap; }\n"
-        "</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; font-weight:400; font-style:normal;\">\n"
-        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#008d00;\">Not Running</span></p></body></html>",
-        0, QApplication::UnicodeUTF8));
-
-                // set the widget's palette
-    }
-    else
-    {
-        this->isPlanning();
-    }
+	if( ENV.getBool(Env::isRunning) == false )
+	{
+		m_ui->pushButtonStop->setDisabled(true);
+		m_ui->pushButtonReset->setDisabled(false);
+		
+		//        m_ui->labelRunning->setText("Not Running" );
+		
+		m_ui->labelRunning->setText(QApplication::translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+																												"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+																												"p, li { white-space: pre-wrap; }\n"
+																												"</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; font-weight:400; font-style:normal;\">\n"
+																												"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#008d00;\">Not Running</span></p></body></html>",
+																												0, QApplication::UnicodeUTF8));
+		
+		// set the widget's palette
+	}
+	else
+	{
+		this->isPlanning();
+	}
 }
 
 void MainWindow::drawAllWinActive()
 {
 #ifdef WITH_XFORMS
 	std::string str = "g3d_draw_allwin_active";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+	write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 #else
 	if(!ENV.getBool(Env::isRunning))
 	{
@@ -664,32 +739,32 @@ void MainWindow::drawAllWinActive()
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
-    //    cout << "Key pressed" << endl;
-    switch(event->key())
-    {
+	//    cout << "Key pressed" << endl;
+	switch(event->key())
+	{
     case Qt::Key_X:
-        mouse_mode = 1;
-        //cout << "Switch to second" << endl;
-        break;
-
+			mouse_mode = 1;
+			//cout << "Switch to second" << endl;
+			break;
+			
     case Qt::Key_C:
-        mouse_mode = 2;
-        //cout << "Switch to third" << endl;
-        break;
-
-        //            if(mouse_mode == 2)
-        //            {
-        //                mouse_mode = 0;
-        //                cout << "Switch to normal" << endl;
-        //                return;
-        //            }
-        //                break;
-    }
+			mouse_mode = 2;
+			//cout << "Switch to third" << endl;
+			break;
+			
+			//            if(mouse_mode == 2)
+			//            {
+			//                mouse_mode = 0;
+			//                cout << "Switch to normal" << endl;
+			//                return;
+			//            }
+			//                break;
+	}
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent *e)
 {
-    mouse_mode = 0;
+	mouse_mode = 0;
 }
 
 
@@ -699,37 +774,37 @@ void MainWindow::keyReleaseEvent(QKeyEvent *e)
 LabeledSlider* MainWindow::createSlider(QString s, Env::intParameter p,
                                         int lower, int upper)
 {
-    LabeledSlider* slider = new LabeledSlider(lower, upper, lower, s);
-    connect(ENV.getObject(p), SIGNAL(valueChanged(int)), slider,
-            SLOT(setValue(int)), Qt::DirectConnection);
-    connect(slider, SIGNAL(valueChanged(int)), ENV.getObject(p),
-            SLOT(set(int)), Qt::DirectConnection);
-    slider->setValue(ENV.getInt(p));
-    return (slider);
+	LabeledSlider* slider = new LabeledSlider(lower, upper, lower, s);
+	connect(ENV.getObject(p), SIGNAL(valueChanged(int)), slider,
+					SLOT(setValue(int)), Qt::DirectConnection);
+	connect(slider, SIGNAL(valueChanged(int)), ENV.getObject(p),
+					SLOT(set(int)), Qt::DirectConnection);
+	slider->setValue(ENV.getInt(p));
+	return (slider);
 }
 
 LabeledDoubleSlider* MainWindow::createDoubleSlider(QString s,
                                                     Env::doubleParameter p, double lower, double upper)
 {
-    LabeledDoubleSlider* slider = new LabeledDoubleSlider(lower, upper, lower,s);
-    connect(ENV.getObject(p), SIGNAL(valueChanged(double)), slider,
-            SLOT(setValue(double)), Qt::DirectConnection);
-    connect(slider, SIGNAL(valueChanged(double)), ENV.getObject(p),
-            SLOT(set(double)), Qt::DirectConnection);
-    slider->setValue(ENV.getDouble(p));
-    return (slider);
+	LabeledDoubleSlider* slider = new LabeledDoubleSlider(lower, upper, lower,s);
+	connect(ENV.getObject(p), SIGNAL(valueChanged(double)), slider,
+					SLOT(setValue(double)), Qt::DirectConnection);
+	connect(slider, SIGNAL(valueChanged(double)), ENV.getObject(p),
+					SLOT(set(double)), Qt::DirectConnection);
+	slider->setValue(ENV.getDouble(p));
+	return (slider);
 }
 
 void MainWindow::changeEvent(QEvent *e)
 {
-    QWidget::changeEvent(e);
-    switch (e->type()) {
+	QWidget::changeEvent(e);
+	switch (e->type()) {
     case QEvent::LanguageChange:
-        m_ui->retranslateUi(this);
-        break;
+			m_ui->retranslateUi(this);
+			break;
     default:
-        break;
-    }
+			break;
+	}
 }
 
 
@@ -739,67 +814,149 @@ void MainWindow::changeEvent(QEvent *e)
 //---------------------------------------------------------------------
 void MainWindow::initUtil()
 {
-    // Greedy
-    greedy = new QPushButton("Greedy Planner");
-    connect(greedy, SIGNAL(clicked()),this, SLOT(greedyPlan()),Qt::DirectConnection);
-
-    connectCheckBoxToEnv(m_ui->checkBoxDebug,               Env::debugCostOptim);
-    connectCheckBoxToEnv(m_ui->checkBoxRecomputeTrajCost,   Env::trajCostRecompute);
-//    connectCheckBoxToEnv(m_ui->checkBoxWithShortCut,        Env::withShortCut);
-    connectCheckBoxToEnv(m_ui->checkBoxUseTRRT,             Env::useTRRT);
-
-    LabeledSlider* nbGreedyTraj = createSlider(tr("Number of trajectories"), Env::nbGreedyTraj, 1, 10 );
-    LabeledSlider* hight = createSlider(tr("Height Factor"), Env::heightFactor, 1, 10 );
-    LabeledSlider* numberIterations = createSlider(tr("Number of iteration"), Env::nbCostOptimize, 0, 500 );
-    LabeledDoubleSlider* maxFactor = createDoubleSlider(tr("Start Factor"), Env::MaxFactor, 0, 2000 );
-    LabeledDoubleSlider* minStep = createDoubleSlider(tr("Min step"), Env::MinStep, 0, 1000 );
-    LabeledDoubleSlider* costStep = createDoubleSlider(tr("Cost Step"), Env::costStep, 0.01, 10 );
-
-    //	double dmax=0;
-    //	p3d_col_get_dmax(&dmax);
-    //
-    //	minStep->setValue(dmax);
-    numberIterations->setValue(ENV.getInt(Env::nbCostOptimize));
-
-//    QPushButton* biasPos = new QPushButton("Biased Pos");
-//    connect(biasPos, SIGNAL(clicked()),this, SLOT(biasPos()),Qt::DirectConnection);
-
-//    QComboBox* costCriterium = new QComboBox();
-//    costCriterium->insertItem(INTEGRAL, "Integral");
-//    costCriterium->insertItem(MECHANICAL_WORK, "Mechanical Work");
-//    costCriterium->insertItem(VISIBILITY, "Visibility");
-//    costCriterium->setCurrentIndex((int)(INTEGRAL));
-//
-//    connect(costCriterium, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)), Qt::DirectConnection);
-
-    m_ui->greedyLayout->addWidget(greedy);
-    m_ui->greedyLayout->addWidget(nbGreedyTraj);
-    m_ui->greedyLayout->addWidget(numberIterations);
-    m_ui->greedyLayout->addWidget(hight);
-    m_ui->greedyLayout->addWidget(maxFactor);
-    m_ui->greedyLayout->addWidget(minStep);
-    m_ui->greedyLayout->addWidget(costStep);
-//    m_ui->greedyLayout->addWidget(costCriterium);
-//    m_ui->greedyLayout->addWidget(biasPos);
-
+	// Greedy
+	greedy = new QPushButton("Greedy Planner");
+	connect(greedy, SIGNAL(clicked()),this, SLOT(greedyPlan()),Qt::DirectConnection);
+	
+	connectCheckBoxToEnv(m_ui->checkBoxDebug,               Env::debugCostOptim);
+	connectCheckBoxToEnv(m_ui->checkBoxRecomputeTrajCost,   Env::trajCostRecompute);
+	//    connectCheckBoxToEnv(m_ui->checkBoxWithShortCut,        Env::withShortCut);
+	connectCheckBoxToEnv(m_ui->checkBoxUseTRRT,             Env::useTRRT);
+	
+	LabeledSlider* nbGreedyTraj = createSlider(tr("Number of trajectories"), Env::nbGreedyTraj, 1, 10 );
+	LabeledSlider* hight = createSlider(tr("Height Factor"), Env::heightFactor, 1, 10 );
+	LabeledSlider* numberIterations = createSlider(tr("Number of iteration"), Env::nbCostOptimize, 0, 500 );
+	LabeledDoubleSlider* maxFactor = createDoubleSlider(tr("Start Factor"), Env::MaxFactor, 0, 2000 );
+	LabeledDoubleSlider* minStep = createDoubleSlider(tr("Min step"), Env::MinStep, 0, 1000 );
+	LabeledDoubleSlider* costStep = createDoubleSlider(tr("Cost Step"), Env::costStep, 0.01, 10 );
+	
+	//	double dmax=0;
+	//	p3d_col_get_dmax(&dmax);
+	//
+	//	minStep->setValue(dmax);
+	numberIterations->setValue(ENV.getInt(Env::nbCostOptimize));
+	
+	//    QPushButton* biasPos = new QPushButton("Biased Pos");
+	//    connect(biasPos, SIGNAL(clicked()),this, SLOT(biasPos()),Qt::DirectConnection);
+	
+	//    QComboBox* costCriterium = new QComboBox();
+	//    costCriterium->insertItem(INTEGRAL, "Integral");
+	//    costCriterium->insertItem(MECHANICAL_WORK, "Mechanical Work");
+	//    costCriterium->insertItem(VISIBILITY, "Visibility");
+	//    costCriterium->setCurrentIndex((int)(INTEGRAL));
+	//
+	//    connect(costCriterium, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)), Qt::DirectConnection);
+	
+	m_ui->greedyLayout->addWidget(greedy);
+	m_ui->greedyLayout->addWidget(nbGreedyTraj);
+	m_ui->greedyLayout->addWidget(numberIterations);
+	m_ui->greedyLayout->addWidget(hight);
+	m_ui->greedyLayout->addWidget(maxFactor);
+	m_ui->greedyLayout->addWidget(minStep);
+	m_ui->greedyLayout->addWidget(costStep);
+	//    m_ui->greedyLayout->addWidget(costCriterium);
+	//    m_ui->greedyLayout->addWidget(biasPos);
+	
 }
 
 void MainWindow::biasPos() {
-//    Robot* R = new Robot(XYZ_ROBOT);
-//    CostOptimization* costOptim = new CostOptimization(R,R->getTrajStruct());
-//    tr1::shared_ptr<Configuration> q = costOptim->cheat();
-//    costOptim->getRobot()->setAndUpdate(*q);
-//    this->drawAllWinActive();
+	//    Robot* R = new Robot(XYZ_ROBOT);
+	//    CostOptimization* costOptim = new CostOptimization(R,R->getTrajStruct());
+	//    tr1::shared_ptr<Configuration> q = costOptim->cheat();
+	//    costOptim->getRobot()->setAndUpdate(*q);
+	//    this->drawAllWinActive();
 }
 
 void MainWindow::greedyPlan() {
-    //	  runButton->setDisabled(true);
-    //	  resetButton->setDisabled(true);
-    std::string str = "p3d_RunGreedy";
-
-    isPlanning();
-
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+	//	  runButton->setDisabled(true);
+	//	  resetButton->setDisabled(true);
+	std::string str = "p3d_RunGreedy";
+	
+	isPlanning();
+	
+	write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 }
 
+//-----------------------------------------------------------------
+// Tests
+//-----------------------------------------------------------------
+void MainWindow::initTests()
+{
+	connect(m_ui->pushButtonTest1,SIGNAL(clicked()),this,SLOT(test1()));
+	connect(m_ui->pushButtonTest2,SIGNAL(clicked()),this,SLOT(test2()));
+	connect(m_ui->pushButtonTest3,SIGNAL(clicked()),this,SLOT(test3()));
+}
+
+void MainWindow::test1()
+{
+	ENV.setBool(Env::tRrtComputeGradient,true);
+	ENV.setDouble(Env::extensionStep,3.0);
+	global_costSpace->setCost("costMap2D");
+}
+
+void MainWindow::test2()
+{
+#ifdef HRI_COSTSPACE
+	ENV.setDouble(Env::Knatural,0.0);
+	ENV.setDouble(Env::Kreachable,0.0);
+	ENV.setDouble(Env::extensionStep,3.0);
+	ENV.setDouble(Env::CellSize,0.2);
+	ENV.setDouble(Env::zone_size,0.0);
+	
+#ifdef LIGHT_PLANNER
+	Robot* rob = global_Project->getActiveScene()->getRobotByNameContaining("ROBOT");
+	if(rob)
+	{
+		rob->activateCcConstraint();
+	}
+#endif
+	
+	if (HRICS_MotionPL) {
+		delete HRICS_MotionPL;
+		HRICS_MotionPL= NULL;
+	}
+	
+	HRICS_MotionPL = new HRICS::Workspace;
+	dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->initGrid();
+	dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->initDistance();
+	dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->initVisibility();
+	dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->initNatural();
+	dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->initReachable();
+	
+	PointsToDraw = new ThreeDPoints;
+	
+	m_ui->tabCost->getHriWidget()->getUi()->HRICSPlanner->setDisabled(false);
+	ENV.setBool(Env::HRIPlannerWS,true);
+	ENV.setDouble(Env::zone_size,0.5);
+	HRICS_activeDist = HRICS_MotionPL->getDistance();
+	
+	API_activeGrid = dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->getGrid();
+	
+	m_ui->tabCost->getHriWidget()->getUi()->pushButtonMakeGrid->setDisabled(true);
+	m_ui->tabCost->getHriWidget()->getUi()->pushButtonDeleteGrid->setDisabled(false);
+	
+	ENV.setBool(Env::enableHri,true);
+	ENV.setBool(Env::isCostSpace,true);
+	ENV.setBool(Env::drawGrid,true);
+	drawAllWinActive();
+	
+	
+	/*dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->getGrid()->computeVectorField();
+	 ENV.setBool(Env::drawGrid,true);
+	 ENV.setBool(Env::drawVectorField,true);
+	 drawAllWinActive();*/
+#endif
+}
+
+void MainWindow::test3()
+{
+	roboptim::RoboptimTrajectory OptimTraj;
+	OptimTraj.run_CostMap();
+	
+	//boost_test_1();
+	//boost_test_2();
+	//boost_test_3();
+	///boost_test_4();
+
+}
 

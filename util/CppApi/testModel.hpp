@@ -8,7 +8,7 @@
 #ifndef TESTMODEL_HPP_
 #define TESTMODEL_HPP_
 
-#include "../planner_cxx/API/planningAPI.hpp"
+#include "planner_cxx/API/planningAPI.hpp"
 
 /**
   * @defgroup USER_APPLI User Applications
@@ -26,6 +26,7 @@ public:
 	TestModel();
 
 	int nbOfColisionsPerSeconds();
+	int nbOfVoxelCCPerSeconds();
 	int nbOfCostPerSeconds();
 	int nbOfLocalPathsPerSeconds();
 

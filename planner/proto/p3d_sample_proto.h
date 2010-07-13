@@ -31,7 +31,7 @@ extern int p3d_shoot_inside_box(p3d_rob *robotPt, configPt q, configPt box_env_s
 
 int p3d_RandDirShoot(p3d_rob* robotPt, configPt q, int sample_passive);
 int p3d_RandNShpereDirShoot(p3d_rob* robotPt, configPt q, int sample_passive);
-bool p3d_isOutOfBands(p3d_rob* robotPt, configPt q, int sample_passive);
+bool p3d_isOutOfBounds(p3d_rob* robotPt, configPt q, int sample_passive);
 void p3d_FreeFlyerShoot(p3d_rob* robotPt, configPt q, double* box );
 void p3d_shoot_justin_left_arm(p3d_rob *robotPt, configPt q, int sample_passive);
 void p3d_JointFreeFlyerShoot(p3d_rob* robotPt, p3d_jnt* jntPt, configPt q, double* box );

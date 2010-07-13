@@ -136,5 +136,6 @@ extern p3d_node * p3d_getNodeInGraphByNum(p3d_graph* graph, int nodeId);
 extern void p3d_unvalid_edge(p3d_graph* graph, p3d_edge* edge);
 extern void p3d_valid_edge(p3d_graph* graph, p3d_edge* edge);
 extern void p3d_separate_graph_for_unvalid_edges(p3d_graph* graph);
+extern void p3d_saveGraphToDotFormat(int ithGraph);
 
 #endif /* __CEXTRACT__ */

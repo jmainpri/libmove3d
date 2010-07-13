@@ -693,17 +693,11 @@ bool TransitionExpansion::transitionTest(Node& fromNode,
     }
 }
 
-int TransitionExpansion::expandProcess(Node* expansionNode,
+
+int TransitionExpansion::extendExpandProcess(Node* expansionNode,
                                        shared_ptr<Configuration> directionConfig,
-                                       Node* directionNode,
-                                       Env::expansionMethod method)
+                                       Node* directionNode)
 {
-	
-	if (method == Env::costConnect)
-    {
-        return expandCostConnect(*expansionNode, directionConfig,
-                                 directionNode, true);
-    }
 
     bool failed(false);
     int nbCreatedNodes(0);
@@ -824,3 +818,27 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
     return nbCreatedNodes;
 }
 
+/** 
+ * expandProcess
+ */
+int TransitionExpansion::expandProcess(Node* expansionNode,
+									  shared_ptr<Configuration> directionConfig,
+									  Node* directionNode,
+									  Env::expansionMethod method)
+{
+	
+	switch (method) 
+	{
+		case Env::Connect:
+		case Env::costConnect:
+			return expandCostConnect(*expansionNode, directionConfig,directionNode, true);
+
+			
+		case Env::Extend:
+			return extendExpandProcess(expansionNode,directionConfig,directionNode);
+
+		default:
+			cerr << "Error : expand process not omplemented" << endl;
+			return 0;
+	} 
+}

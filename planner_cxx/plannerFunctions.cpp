@@ -33,64 +33,75 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
 
     GraphPt = GraphPt ? GraphPt : p3d_create_graph();
 
-#ifdef LIST_OF_PLANNERS
-    RRT* rrt = (RRT*)plannerlist[0];
-#else
-    Robot* _Robot = global_Project->getActiveScene()->getActiveRobot();
-    Graph* _Graph = new Graph(_Robot,GraphPt);
+//#ifdef LIST_OF_PLANNERS
+//    RRT* rrt = (RRT*)plannerlist[0];
+//#else
+    Robot* rob = global_Project->getActiveScene()->getActiveRobot();
+    Graph* graph = new Graph(rob,GraphPt);
+	
+	cout << "Planning for robot : " << rob->getName() << endl;
 
     RRT* rrt;
 
     // Initialize all RRTs
+	// -------------------------------------------------------------------------
     if(ENV.getBool(Env::isManhattan))
     {
-        rrt = new ManhattanLikeRRT(_Robot,_Graph);
+        rrt = new ManhattanLikeRRT(rob,graph);
     }
-	else if(ENV.getBool(Env::isCostSpace) && ENV.getBool(Env::isMultiRRT) )
+	else if(ENV.getBool(Env::isMultiRRT) && ENV.getBool(Env::isCostSpace)  )
     {
-        rrt = new MultiTRRT(_Robot,_Graph);
+        rrt = new MultiTRRT(rob,graph);
     }
 	else if(ENV.getBool(Env::isMultiRRT))
 	{
-		rrt = new MultiRRT(_Robot,_Graph);
+		rrt = new MultiRRT(rob,graph);
 	}
 #ifdef HRI_COSTSPACE
     else if(ENV.getBool(Env::HRIPlannerWS) && ENV.getBool(Env::HRIPlannerTRRT))
     {
-        rrt = new HRICS_RRT(_Robot,_Graph);
+        rrt = new HRICS_RRT(rob,graph);
     }
     else if(ENV.getBool(Env::HRIPlannerCS) && ENV.getBool(Env::HRIPlannerTRRT))
     {
-        rrt = new HRICS_RRTPlan(_Robot,_Graph);
+        rrt = new HRICS_RRTPlan(rob,graph);
     }
 #endif
+	else if(ENV.getBool(Env::isCostSpace) && ENV.getBool(Env::costThresholdRRT) )
+    {
+        rrt = new ThresholdRRT(rob,graph);
+    }
     else if(ENV.getBool(Env::isCostSpace) && ENV.getBool(Env::useTRRT) )
     {
-        rrt = new TransitionRRT(_Robot,_Graph);
+        rrt = new TransitionRRT(rob,graph);
     }
     else
     {
-        if( ENV.getBool(Env::isCostSpace) && (!ENV.getBool(Env::useTRRT)) )
-        {
-            ENV.setBool(Env::isCostSpace,false);
-        }
-
-        rrt = new RRT(_Robot,_Graph);
+		if( ENV.getBool(Env::isCostSpace) && (!ENV.getBool(Env::useTRRT)) )
+		{
+			ENV.setBool(Env::isCostSpace,false);
+		}
+		
+        rrt = new RRT(rob,graph);
     }
-#endif
+//#endif
 
     int nb_added_nodes = rrt->init();
 
-    _Graph = rrt->getActivGraph();
-
+	// -------------------------------------------------------------------------
     // Main Run functions of all RRTs
+	// -------------------------------------------------------------------------
     nb_added_nodes += rrt->run();
 
-    ChronoTimes(&(_Graph->getGraphStruct()->rrtTime), &ts);
-    printf("graph time = %f\n",_Graph->getGraphStruct()->rrtTime);
+	// Gets the graph pointer
+	// in case it has been modified by the planner
+	graph = rrt->getActivGraph();
+	
+    ChronoTimes(&(graph->getGraphStruct()->rrtTime), &ts);
+    printf("graph time = %f\n",graph->getGraphStruct()->rrtTime);
     printf("nb added nodes %d\n", nb_added_nodes);
-    printf("nb nodes (Wrapper) %d\n",(int)_Graph->getNodes().size());
-    printf("nb nodes %d\n",_Graph->getGraphStruct()->nnode);
+    printf("nb nodes (Wrapper) %d\n",(int)graph->getNodes().size());
+    printf("nb nodes %d\n",graph->getGraphStruct()->nnode);
 
     bool res = rrt->trajFound();
 
@@ -100,17 +111,17 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
     }
 
     // Smoothing phaze
+	// -------------------------------------------------------------------------
     if(res)
     {
         ENV.setBool(Env::isRunning,true);
-        _Graph->extractBestTraj(_Robot->getInitialPosition(),_Robot->getGoTo());
+        graph->extractBestTraj(rob->getInitialPosition(),rob->getGoTo());
 
         if(ENV.getBool(Env::withSmoothing))
         {
-			p3d_rob* robotPt = p3d_get_robot_by_name(_Robot->getRobotStruct()->name);
-            CostOptimization optimTrj(_Robot,robotPt->tcur);
+						API::CostOptimization optimTrj(rob,rob->getTrajStruct());
 
-            _Graph->getGraphStruct()->rrtCost1 = optimTrj.cost();
+            graph->getGraphStruct()->rrtCost1 = optimTrj.cost();
 
             if(ENV.getBool(Env::withDeformation))
             {
@@ -119,7 +130,7 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
                 ENV.setBool(Env::FKShoot,false);
             }
 
-            _Graph->getGraphStruct()->rrtCost2 = optimTrj.cost();
+            graph->getGraphStruct()->rrtCost2 = optimTrj.cost();
 
             if(ENV.getBool(Env::withShortCut))
             {
@@ -131,19 +142,21 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
 
     ENV.setBool(Env::isRunning,false);
 	
-	if ((rrt->getNumberOfExpansion() - rrt->getNumberOfFailedExpansion()) != _Graph->getNumberOfNodes() ) 
+	if ((rrt->getNumberOfExpansion() - rrt->getNumberOfFailedExpansion() + rrt->getNumberOfInitialNodes()) 
+		!= graph->getNumberOfNodes() ) 
 	{
 		cout << "Nb of nodes differ from number of expansion succes " << endl;
 		cout << " - m_nbExpansion = " << rrt->getNumberOfExpansion() << endl;
-		cout << " - m_nbExpansion - m_nbExpansionFailed =  " << (rrt->getNumberOfExpansion() - rrt->getNumberOfFailedExpansion()) << endl;
-		cout << " - _Graph->getNumberOfNodes() = " << _Graph->getNumberOfNodes() << endl;
+		cout << " - m_nbInitNodes = " << rrt->getNumberOfInitialNodes() << endl;
+		cout << " - m_nbExpansion + m_nbInitNodes - m_nbExpansionFailed  =  " << (rrt->getNumberOfExpansion() + rrt->getNumberOfInitialNodes() - rrt->getNumberOfFailedExpansion() ) << endl;
+		cout << " - _Graph->getNumberOfNodes() = " << graph->getNumberOfNodes() << endl;
 	}
 
-#ifndef LIST_OF_PLANNERS
-    delete rrt;
-#endif
+//#ifndef LIST_OF_PLANNERS
+//    delete rrt;
+//#endif
     if(res)
-        return _Graph->getGraphStruct()->nnode;
+        return graph->getGraphStruct()->nnode;
     else
         return false;
 }

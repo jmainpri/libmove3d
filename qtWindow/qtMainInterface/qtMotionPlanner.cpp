@@ -13,12 +13,15 @@
 #include <iostream>
 #include <tr1/memory>
 
-#include "../qtBase/SpinBoxSliderConnector_p.hpp"
+#include "qtBase/SpinBoxSliderConnector_p.hpp"
 
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"
 
 #include "cppToQt.hpp"
+#include "planner_cxx/cost_space.hpp"
+
+#include "util/CppApi/SaveContext.hpp"
 
 using namespace std;
 using namespace tr1;
@@ -34,6 +37,7 @@ m_ui(new Ui::MotionPlanner)
 	initOptim();
 	initMultiRun();
 	initGeneral();
+	initShowGraph();
 }
 
 MotionPlanner::~MotionPlanner()
@@ -47,21 +51,34 @@ MotionPlanner::~MotionPlanner()
 void MotionPlanner::initGeneral()
 {
 	connect(m_ui->pushButtonCheckAllEdges,SIGNAL(clicked()),this,SLOT(checkAllEdges()));
+	
+	// Connecting the Dmax Env variable
+	m_ui->doubleSpinBoxDMax->setValue(p3d_get_env_dmax());
+    connect(m_ui->doubleSpinBoxDMax, SIGNAL(valueChanged( double )), SLOT(envDmaxSpinBoxValueChanged( double ) ) );
+	connect(m_ui->doubleSpinBoxDMax, SIGNAL(valueChanged( double )), ENV.getObject(Env::dmax),SLOT(set(double)));
+    connect(ENV.getObject(Env::dmax), SIGNAL(valueChanged(double)),m_ui->doubleSpinBoxDMax, SLOT(setValue(double)));
+	
 }
 
 void MotionPlanner::checkAllEdges()
 {
 	Graph* tmpGraph = new Graph(XYZ_GRAPH);
 	
-	//if(tmpGraph->checkAllEdgesValid())
-//	{
-//		cout << "Graph valid" << endl;
-//	}
-//	else {
-//		cout << "Graph Not valid" << endl;
-//	}
+	if(tmpGraph->checkAllEdgesValid())
+	{
+		cout << "Graph valid" << endl;
+	}
+	else {
+		cout << "Graph Not valid" << endl;
+	}
 
 }
+
+void MotionPlanner::envDmaxSpinBoxValueChanged( double dmax )
+{
+	p3d_set_env_dmax(dmax);
+}
+
 
 //---------------------------------------------------------------------
 // DIFFUSION
@@ -104,8 +121,17 @@ void MotionPlanner::initDiffusion()
 	
     new QtShiva::SpinBoxSliderConnector(
 										this, m_ui->doubleSpinBoxBias, m_ui->horizontalSliderBias , Env::Bias );
+	
+	initMultiRRT();
 }
 
+void MotionPlanner::initMultiRRT()
+{
+	m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxMultiRRT,         Env::isMultiRRT);
+	
+	connect(m_ui->spinBoxNumberOfSeeds,SIGNAL(valueChanged(int)),ENV.getObject(Env::nbOfSeeds),SLOT(set(int)));
+	connect(ENV.getObject(Env::nbOfSeeds),SIGNAL(valueChanged(int)),m_ui->spinBoxNumberOfSeeds,SLOT(setValue(int)));	
+}
 //void MainWindow::setLineEditWithNumber(Env::intParameter p,int num)
 //{
 //    if(p == Env::maxNodeCompco)
@@ -211,6 +237,16 @@ void MotionPlanner::setCostCriterium(int choice) {
 #ifdef P3D_PLANNER
     p3d_SetDeltaCostChoice(choice);
 #endif
+	map<int,CostSpaceDeltaStepMethod> methods;
+	
+	methods.insert ( pair<int,CostSpaceDeltaStepMethod>(0,cs_mechanical_work) );
+	methods.insert ( pair<int,CostSpaceDeltaStepMethod>(1,cs_integral) );
+	methods.insert ( pair<int,CostSpaceDeltaStepMethod>(2,cs_visibility) );
+	methods.insert ( pair<int,CostSpaceDeltaStepMethod>(3,cs_average) );
+	methods.insert ( pair<int,CostSpaceDeltaStepMethod>(4,cs_config_cost_and_dist) );
+	
+	global_costSpace->setDeltaStepMethod( methods[choice] );
+	
     ENV.setInt(Env::costDeltaMethod,choice);
 }
 
@@ -238,38 +274,56 @@ void MotionPlanner::runMultiSmooth()
  * @brief Planner thread class
  */
 //-----------------------------------------------
-SmoothThread::SmoothThread(QObject* parent) :
-QThread(parent)
+SmoothThread::SmoothThread(bool isShortCut, QObject* parent) :
+QThread(parent),
+m_isShortCut(isShortCut)
 {
 	
 }
 
 void SmoothThread::run()
 {	
-	qt_shortCut();
+	if (m_isShortCut) 
+	{
+		qt_shortCut();
+	}
+	else {
+		qt_optimize();
+	}
+
     cout << "Ends Smooth Thread" << endl;
 }
 //-----------------------------------------------
 
 void MotionPlanner::optimizeCost()
 {
+	if( ENV.getBool(Env::isRunning) )
+		return;
+	
 #ifdef WITH_XFORMS
     std::string str = "optimize";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 #else
-	cout << "Not implemented" << endl;
+	m_mainWindow->isPlanning();
+    SmoothThread* ptrSmooth = new SmoothThread(false);
+	cout << "Start Smooth Thread" << endl;
+    ptrSmooth->start();
 #endif
 	
 }
 
 void MotionPlanner::shortCutCost()
 {
+	if( ENV.getBool(Env::isRunning) )
+		return;
+	
+	ENV.setBool(Env::isRunning,true);
 #ifdef WITH_XFORMS
     std::string str = "shortCut";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 #else
 	m_mainWindow->isPlanning();
-    SmoothThread* ptrSmooth = new SmoothThread;
+    SmoothThread* ptrSmooth = new SmoothThread(true);
 	cout << "Start Smooth Thread" << endl;
     ptrSmooth->start();
 #endif
@@ -278,6 +332,7 @@ void MotionPlanner::shortCutCost()
 
 void MotionPlanner::removeRedundant()
 {
+	ENV.setBool(Env::isRunning,true);
 #ifdef WITH_XFORMS
     std::string str = "removeRedunantNodes";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
@@ -335,14 +390,12 @@ void MotionPlanner::saveContext()
     itemList.push_back(item);
     itemList.back()->setText(m_ui->lineEditContext->text());
 	
-#ifdef CXX_PLANNNER
     storedContext.saveCurrentEnvToStack();
-#endif
+
 }
 
 void MotionPlanner::printAllContext()
 {
-#ifdef CXX_PLANNNER
     if( storedContext.getNumberStored()>0){
 		
         for(uint i=0;i<storedContext.getNumberStored();i++){
@@ -356,12 +409,10 @@ void MotionPlanner::printAllContext()
     else{
         std::cout << "Warning: no context in stack" << std::endl;
     }
-#endif
 }
 
 void MotionPlanner::printContext()
 {
-#ifdef CXX_PLANNNER
     if( storedContext.getNumberStored() > 0 )
     {
         int i =  contextList->currentRow();
@@ -372,12 +423,10 @@ void MotionPlanner::printContext()
     {
         std::cout << "Warning: no context in stack" << std::endl;
     }
-#endif
 }
 
 void MotionPlanner::setToSelected()
 {
-#ifdef CXX_PLANNNER
     if( storedContext.getNumberStored()>0)
     {
         int i =  contextList->currentRow();
@@ -386,12 +435,10 @@ void MotionPlanner::setToSelected()
     else{
         std::cout << "Warning: no context in stack" << std::endl;
     }
-#endif
 }
 
 void MotionPlanner::resetContext()
 {
-#ifdef CXX_PLANNNER
     storedContext.clear();
     //	setContextUserApp(context);
     for(uint i=0;i<itemList.size();i++)
@@ -399,15 +446,46 @@ void MotionPlanner::resetContext()
         delete itemList.at(i);
     }
     itemList.clear();
-#endif
 }
+
+/**
+ * @ingroup qtWindow
+ * @brief Multi Planner thread class
+ */
+//-----------------------------------------------
+MultiThread::MultiThread(bool isRRT, QObject* parent) :
+QThread(parent),
+m_isRRT(isRRT)
+{
+	
+}
+
+void MultiThread::run()
+{	
+	if (m_isRRT) 
+	{
+		MultiRun multiRRTs;
+		multiRRTs.runMutliRRT();
+	}
+	else {
+
+	}
+	
+    cout << "Ends Multi Thread" << endl;
+}
+//-----------------------------------------------
 
 void MotionPlanner::runAllRRT()
 {
     //	runAllRounds->setDisabled(true);
+#ifdef WITH_XFORMS
     std::string str = "MultiRRT";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#else
+	MultiThread* ptrPlan = new MultiThread(true);
+	ptrPlan->start();
 	
+#endif
 }
 
 void MotionPlanner::runAllGreedy()
@@ -424,3 +502,40 @@ void MotionPlanner::showHistoWindow()
     histoWin->startWindow();
 #endif
 }
+
+//-----------------------------------------------
+// Show Graph
+//-----------------------------------------------
+void MotionPlanner::initShowGraph()
+{
+	//connect(m_ui->spinBoxNodeToShow, SIGNAL(valueChanged(int)),ENV.getObject(Env::cellToShow),SLOT(set(int)), Qt::DirectConnection);
+	connect(m_ui->spinBoxNodeToShow, SIGNAL(valueChanged(int)),this,SLOT(nodeToShowChanged()), Qt::QueuedConnection);
+}
+
+
+void MotionPlanner::nodeToShowChanged()
+{
+	Graph* graph = global_Project->getActiveScene()->getActiveGraph();
+	vector<Node*> nodes = graph->getNodes();
+	
+	if (nodes.empty()) {
+		cout << "Warning :: nodes is empty!!!" << endl;
+	}
+	
+	int ith = m_ui->spinBoxNodeToShow->value();
+	
+	cout << "Showing node nb : " << ith << endl;
+	cout << "graph size nb : " << nodes.size() << endl;
+
+	if ( (ith >= 0) && ( ((int)nodes.size()) > ith) ) 
+	{
+		graph->getRobot()->setAndUpdate(*nodes[ith]->getConfiguration());
+	}
+	else {
+		shared_ptr<Configuration> q_init = graph->getRobot()->getInitialPosition();
+		graph->getRobot()->setAndUpdate(*q_init);
+		cout << "Exede the number of nodes" << endl;
+	}
+	m_mainWindow->drawAllWinActive();
+}
+

@@ -87,8 +87,7 @@ Edge::Edge(Graph* G, Node* N1, Node* N2, double Long)
 
 Edge::~Edge()
 {
-    _Start->~Node();
-    _End->~Node();
+	delete _Edge;
 }
 
 //Accessors

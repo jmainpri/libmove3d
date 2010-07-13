@@ -19,6 +19,8 @@ extern void* GroundCostObj;
 using namespace std;
 using namespace tr1;
 
+using namespace API;
+
 CostOptimization::CostOptimization() :
         _cheat(false),
         mincost(numeric_limits<double>::max()),

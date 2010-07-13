@@ -26,6 +26,7 @@ public:
 	compco* getCompcoStruct() { return m_compco; }
 	
 private:
-	compco* m_compco;
+	compco*			m_compco;
+	Graph*			m_graph;
 };
 #endif

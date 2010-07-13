@@ -11,6 +11,7 @@
 #define QT_ROBOT_H
 
 #include "../qtLibrary.h"
+#include "qtFormRobot/moverobot.hpp"
 #include "mainwindow.hpp"
 
 namespace Ui
@@ -34,6 +35,8 @@ public:
 	
 	void initRobot();
 	
+	MoveRobot* getFormRobot();
+	
 private slots:
 	
 // Test Model -------------------------
@@ -43,11 +46,31 @@ private slots:
     void allTests();
     void setAttMatrix();
 
+// Hri Planner ------------------------
+#if defined (HRI_GENERALIZED_IK)
+	void computeHriGikLARM() { this->computeHriGik(true); }
+	void computeHriGikRARM() { this->computeHriGik(false); }
+#endif
+	
 // Grab Object ------------------------
+	
     void GrabObject();
     void ReleaseObject();
     void currentObjectChange(int i);
     void SetObjectToCarry();
+	
+// MISC -------------------------------
+	void printCurrentPos();
+	
+#ifdef LIGHT_PLANNER
+	void switchFKIK();
+#endif
+	
+	void initVoxelCollisionChecker();
+	void createVoxelCC();
+	void deleteVoxelCC();
+	
+	void voxelCCTest();
 	
 private:
     Ui::RobotWidget *m_ui;
@@ -57,6 +80,11 @@ private:
 	std::vector<QString> mFreeFlyers;
 	
 	void initModel();
+	
+#if defined (HRI_GENERALIZED_IK)
+	void computeHriGik(bool leftArm);
+#endif
+	
 	
 };
 

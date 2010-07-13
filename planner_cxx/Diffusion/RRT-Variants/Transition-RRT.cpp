@@ -6,10 +6,10 @@
  */
 
 #include "Transition-RRT.hpp"
-#include "../Expansion/TransitionExpansion.h"
+#include "Expansion/TransitionExpansion.h"
 
 #ifdef HRI_COSTSPACE
-#include "../../HRI_CostSpace/HRICS_Workspace.h"
+#include "HRI_CostSpace/HRICS_Workspace.h"
 #endif
 
 #include "Planner-pkg.h"
