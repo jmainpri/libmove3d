@@ -181,20 +181,6 @@ void qt_runPRM()
 }
 
 /**
- * Run the Threshold Planner
- */
-void qt_runThresholdPlanner()
-{
-	Robot* rob = global_Project->getActiveScene()->getActiveRobot();
-	Graph* graph = new Graph(rob);
-	
-	ThresholdPlanner* _planner = new ThresholdPlanner(rob,graph);
-	
-	_planner->init();
-	_planner->run();
-}
-
-/**
  * Short Cut
  */
 void qt_shortCut()
@@ -433,7 +419,7 @@ void read_pipe(int fd, void* data)
 		return;
     }
 	
-    if (bufferStr.compare("p3d_RunGreedy") == 0)
+    /*if (bufferStr.compare("p3d_RunGreedy") == 0)
     {
 #ifdef P3D_PLANNER
         p3d_SetStopValue(FALSE);
@@ -442,7 +428,7 @@ void read_pipe(int fd, void* data)
 #endif
 #endif
         return;
-    }
+    }*/
 	
     if (bufferStr.compare("MultiSmooth") == 0)
     {

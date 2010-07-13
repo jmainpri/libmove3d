@@ -18,7 +18,7 @@
 #include "planner_cxx/plannerFunctions.hpp"
 #include "planner_cxx/API/Trajectory/Smoothing.hpp"
 #include "planner_cxx/API/Trajectory/CostOptimization.hpp"
-#include "planner_cxx/Greedy/GreedyCost.hpp"
+//#include "planner_cxx/Greedy/GreedyCost.hpp"
 #include "planner_cxx/API/Search/Dijkstra/dijkstra.hpp"
 #include "util/CppApi/MultiRun.hpp"
 #endif
@@ -42,7 +42,6 @@ void qt_resetGraph();
 void qt_drawAllWinActive();
 void qt_runDiffusion();
 void qt_runPRM();
-void qt_runThresholdPlanner();
 void qt_shortCut();
 void qt_optimize();
 void qt_readScenario();

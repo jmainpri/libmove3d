@@ -950,8 +950,8 @@ void MainWindow::test2()
 
 void MainWindow::test3()
 {
-	roboptim::RoboptimTrajectory OptimTraj;
-	OptimTraj.run_CostMap();
+	/*roboptim::RoboptimTrajectory OptimTraj;
+	OptimTraj.run_CostMap();*/
 	
 	//boost_test_1();
 	//boost_test_2();

@@ -37,7 +37,7 @@ m_ui(new Ui::RobotWidget)
     m_ui->setupUi(this);
 	
 	initModel();
-	initVoxelCollisionChecker();
+	//initVoxelCollisionChecker();
 	
 }
 
@@ -373,7 +373,7 @@ void RobotWidget::switchFKIK()
 }
 #endif
 
-void RobotWidget::initVoxelCollisionChecker()
+/*void RobotWidget::initVoxelCollisionChecker()
 {
 	m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxDrawVoxelGrid,				Env::drawGrid);
 	
@@ -406,4 +406,4 @@ void RobotWidget::voxelCCTest()
     TestModel tests;
     tests.nbOfVoxelCCPerSeconds();
 #endif
-}
+}*/

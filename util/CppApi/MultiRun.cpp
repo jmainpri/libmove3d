@@ -258,7 +258,9 @@ void MultiRun::runMutliGreedy()
 			ChronoOn();
 			
 			p3d_SetStopValue(FALSE);
-			/*int res = */p3d_RunGreedyCost(XYZ_GRAPH, fct_stop, fct_draw);
+			/*int res = */
+			//p3d_RunGreedyCost(XYZ_GRAPH, fct_stop, fct_draw);
+			cout << "Attention p3d_RunGreedyCost pas implémenté!!!!" << endl;
 			ChronoPrint("");
 			ChronoTimes(&tu, &ts);
 			ChronoOff();

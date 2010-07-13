@@ -67,10 +67,6 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
         rrt = new HRICS_RRTPlan(rob,graph);
     }
 #endif
-	else if(ENV.getBool(Env::isCostSpace) && ENV.getBool(Env::costThresholdRRT) )
-    {
-        rrt = new ThresholdRRT(rob,graph);
-    }
     else if(ENV.getBool(Env::isCostSpace) && ENV.getBool(Env::useTRRT) )
     {
         rrt = new TransitionRRT(rob,graph);

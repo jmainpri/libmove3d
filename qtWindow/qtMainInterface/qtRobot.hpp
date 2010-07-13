@@ -66,11 +66,11 @@ private slots:
 	void switchFKIK();
 #endif
 	
-	void initVoxelCollisionChecker();
+	/*void initVoxelCollisionChecker();
 	void createVoxelCC();
 	void deleteVoxelCC();
 	
-	void voxelCCTest();
+	void voxelCCTest();*/
 	
 private:
     Ui::RobotWidget *m_ui;

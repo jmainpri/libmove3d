@@ -63,10 +63,12 @@ CostWidget::~CostWidget()
 //#endif
 }
 
+#ifdef HRI_COSTSPACE
 HricsWidget* CostWidget::getHriWidget()
  { 
 	 return m_ui->tabHri; 
- } 
+ }
+#endif
 
 //---------------------------------------------------------------------
 // COST
@@ -502,7 +504,6 @@ QThread(parent)
 
 void TestPlannerthread::run()
 {	
-	qt_runThresholdPlanner();
 	//	exec();
     cout << "Ends Planner Thread" << endl;
 }

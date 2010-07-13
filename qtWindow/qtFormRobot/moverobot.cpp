@@ -9,6 +9,8 @@
 #include "P3d-pkg.h"
 #include "Collision-pkg.h"
 
+#include "planner_cxx/cost_space.hpp"
+
 #ifdef HRI_COSTSPACE
 #include "HRICS_costspace.h"
 #endif
