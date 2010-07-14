@@ -9,7 +9,7 @@
 #include "Util-pkg.h"
 #include "Collision-pkg.h"
 
-#include "planner_cxx/Greedy/GridCollisionChecker.h"
+//#include "planner_cxx/Greedy/GridCollisionChecker.h"
 
 using namespace std;
 using namespace tr1;
