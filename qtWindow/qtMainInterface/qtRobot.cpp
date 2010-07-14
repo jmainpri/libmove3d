@@ -16,7 +16,7 @@
 #include "util/CppApi/MultiRun.hpp"
 #include "util/CppApi/SaveContext.hpp"
 #include "util/CppApi/testModel.hpp"
-#include "planner_cxx/Greedy/GridCollisionChecker.h"
+//#include "planner_cxx/Greedy/GridCollisionChecker.h"
 #endif
 
 #ifdef HRI_GENERALIZED_IK
