@@ -46,7 +46,9 @@ public:
 	void setMainWindow(MainWindow *ptrMW) { m_mainWindow = ptrMW; }
 	void setMotionWidget(MotionPlanner* ptrMLPW) { m_motionWidget = ptrMLPW; }
 	
+#ifdef HRI_COSTSPACE
 	HricsWidget* getHriWidget();
+#endif
 	
 private slots:
 	
