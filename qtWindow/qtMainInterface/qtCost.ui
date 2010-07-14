@@ -23,7 +23,7 @@
       <bool>true</bool>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <property name="documentMode">
       <bool>true</bool>
@@ -45,7 +45,7 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-333</y>
+            <y>0</y>
             <width>426</width>
             <height>1052</height>
            </rect>
@@ -535,7 +535,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="HricsWidget" name="tabHri" native="true"/>
+        <widget class="QWidget" name="tabHri" native="true"/>
        </item>
       </layout>
      </widget>
@@ -543,14 +543,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>HricsWidget</class>
-   <extends>QWidget</extends>
-   <header>qtHrics.hpp</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

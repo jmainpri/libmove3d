@@ -43,9 +43,9 @@
 #include "util/CppApi/SaveContext.hpp"
 #endif
 
-#ifdef HRI_PLANNER
-#include "HRICS_costspace.h"
-#endif
+//#ifdef HRI_PLANNER
+//#include "HRICS_costspace.h"
+//#endif
 #ifdef HRI_COSTSPACE
 #include "planner_cxx/HRI_CostSpace/HRICS_costspace.h"
 #endif

@@ -22,7 +22,7 @@
 #include "planner_cxx/API/Trajectory/trajectory.hpp"
 #include "planner_cxx/API/Trajectory/Smoothing.hpp"
 //Warning contains boos function that conlicts with Qt
-#include "planner_cxx/API/Trajectory/RoboptimTrajectory.h"
+//#include "planner_cxx/API/Trajectory/RoboptimTrajectory.h"
 #include "planner_cxx/API/Trajectory/CostOptimization.hpp"
 #include "planner_cxx/API/Grids/GridToGraph/gridtograph.h"
 #include "planner_cxx/API/Search/GraphState.h"
