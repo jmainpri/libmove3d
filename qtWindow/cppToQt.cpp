@@ -41,7 +41,6 @@
 
 #ifdef CXX_PLANNER
 #include "util/CppApi/SaveContext.hpp"
-#include "Greedy/ThresholdPlanner.h"
 #endif
 
 #ifdef HRI_PLANNER
