@@ -13,7 +13,10 @@
 #include "../qtLibrary.h"
 #include "mainwindow.hpp"
 #include "qtMotionPlanner.hpp"
+
+#ifdef HRI_COSTSPACE
 #include "qtHrics.hpp"
+#endif
 
 #ifdef QWT
 #include "../qtPlot/basicPlotWindow.hpp"
