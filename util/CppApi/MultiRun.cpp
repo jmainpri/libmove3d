@@ -2,7 +2,7 @@
 #include "SaveContext.hpp"
 #include "planner_cxx/planners_cxx.hpp"
 #include "planner_cxx/plannerFunctions.hpp"
-#include "planner_cxx/Greedy/GreedyCost.hpp"
+//#include "planner_cxx/Greedy/GreedyCost.hpp"
 #include "cppToQt.hpp"
 //#include "PlanningThread.h"
 
