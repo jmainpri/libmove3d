@@ -92,7 +92,6 @@ static int p3d_ExpandOneStep(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
   double Ratio = -1.;
   double RandomNum = -1.;
   int savedDistChoice;
-//  int nbIKSolutions = 1;
   DirectionConfig  = p3d_alloc_config(GraphPt->rob);
 
   if (p3d_get_ik_choice() != IK_NORMAL) {
@@ -155,7 +154,7 @@ static int p3d_ExpandOneStep(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
   }
   p3d_destroy_config(GraphPt->rob, DirectionConfig);
   
-  if (p3d_get_ik_choice() == IK_UNIQUE) {
+  if (p3d_get_ik_choice() != IK_NORMAL) {
     rrtExpansionPhase = false;
   }
   return NbCreatedNodes;
@@ -456,12 +455,13 @@ or ComponantsPt NULL\n"));
         (p3d_GetStopValue() == FALSE)) {
     if((ENV.getBool(Env::expandBalanced) == false) ||
        (Comp1Pt->nnode < Comp2Pt->nnode +2)) {
-      
+//Sample direction and connection to the tree  
       if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH) {
         NbCurCreatedNodes = p3d_MonteCarloOneStep(GraphPt,Comp1Pt, NULL);
       } else{
         NbCurCreatedNodes =  p3d_ExpandOneStep(GraphPt,Comp1Pt, Comp2Pt);
       }
+//Check if the two componants can be connected      
       if(NbCurCreatedNodes != 0) {
         NbTotCreatedNodes += NbCurCreatedNodes;
         NTryCreateNode = 0;

@@ -129,6 +129,10 @@ p3d_node* NearestWeightNeighbor(p3d_graph* GraphPt, p3d_compco* CompPt,
     if (NodeOfCompListPt->N->IsDiscarded == FALSE) {
       if(p3d_get_ik_choice() == IK_UNIQUE){
         if (rrtExpansionPhase == false) {
+          if (ikSol) {
+            MY_FREE(ikSol, int, GraphPt->rob->cntrt_manager->ncntrts);//IkSol Vector is allocated in the copy
+            ikSol = NULL;
+          }
           p3d_copy_iksol(GraphPt->rob->cntrt_manager, NULL, &ikSol);
         }
         if(!p3d_compare_iksol(GraphPt->rob->cntrt_manager, ikSol, NodeOfCompListPt->N->iksol)){
@@ -137,6 +141,7 @@ p3d_node* NearestWeightNeighbor(p3d_graph* GraphPt, p3d_compco* CompPt,
         }
         if (rrtExpansionPhase == false) {
           MY_FREE(ikSol, int, GraphPt->rob->cntrt_manager->ncntrts);
+          ikSol = NULL;
         }
       }
       
