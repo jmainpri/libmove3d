@@ -5,6 +5,7 @@
 *.ps
 *.dot
 *.jpg
+*.orig
 .DS_Store
 *grind*
 *.trj

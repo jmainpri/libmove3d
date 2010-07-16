@@ -182,15 +182,7 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
   NewConfig = p3d_alloc_config(robotPt);
   p3d_unvalid_localpath_classic_test(robotPt, LocalPathPt,
                                      &(GraphPt->nb_test_coll), &DeltaPath,
-                                     &NewConfig);
-//  p3d_obj *o1, *o2;
-//  if(pqp_colliding_pair(&o1, &o2))
-//  {
-//    printf("%s: %d: \n\t",__FILE__,__LINE__);
-//    printf("PQP: Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
-//  }
-//  g3d_draw_allwin_active();
-  
+                                     &NewConfig); 
   
   
   if (DeltaPath == 0) {
@@ -214,18 +206,6 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
       GraphPt->nboundary++;
     }
     return FALSE;
-  }
-  
-  if (p3d_get_ik_choice() == IK_UNIQUE) {
-    p3d_cntrt* cntrt = NULL;
-    int singId = 0;
-    p3d_singularity* singularity = p3d_get_config_singular_jnt(robotPt->cntrt_manager, NewConfig, &cntrt, &singId);
-    if(singularity){
-      ikSol[cntrt->num] = - singId - 1;
-      extern int singularityCheck;
-      ChronoPrint("singularity");
-      singularityCheck = true;
-    }
   }
   
   GraphPt->nb_q_free = GraphPt->nb_q_free + 1;
@@ -271,13 +251,49 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
   LocalPathPt->destroy(robotPt, LocalPathPt);
   ikSolTmp = NULL;
 
-  //p3d_get_iksol_vector(robotPt->cntrt_manager,&IndexConstrSoluPt);
-  // WARNING: iksol does not work, a new vector containing the 1st solution of each constraint must be passed as argument
   NewNodePt = p3d_APInode_make_multisol(GraphPt, NewConfig, ikSol);
-
+  p3d_node * singularNode = NULL;
+  int singularDist = -1;
   if(p3d_get_ik_choice() == IK_UNIQUE){
+    
+    p3d_set_and_update_robot_conf_multisol(NewNodePt->q, ikSol);
+    configPt tmpConfig = p3d_get_robot_config(robotPt);
+    p3d_destroy_config(robotPt, NewNodePt->q);
+    NewNodePt->q = tmpConfig;
+    p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, NewNodePt->q);
+//    g3d_draw_allwin_active();
+    
     int singNum = 0;
-    p3d_isCloseToSingularityConfig(robotPt, robotPt->cntrt_manager, NewNodePt->q, &singNum);
+    int cntrt = p3d_isCloseToSingularityConfig(robotPt, robotPt->cntrt_manager, NewNodePt->q, &singNum);
+    if (cntrt != -1){
+      //Transform to singular configuration
+      configPt singConfig = p3d_alloc_config(robotPt);
+      do{
+        p3d_APInode_shoot_singularity(robotPt, &singConfig, &singNum, &cntrt, NewNodePt->q, NewNodePt->iksol);
+        p3d_unmark_for_singularity(robotPt->cntrt_manager, cntrt);
+      }while (p3d_col_test());
+      
+      ikSol[cntrt] = -(singNum + 1);
+      //test connexion between ExpansionNodePt and the singular config
+      LocalPathPt = p3d_local_planner_multisol(robotPt, NewNodePt->q, singConfig, ikSol);
+      if (LocalPathPt == NULL) {
+        PrintInfo(("Failed to create a localpath during singularity creation\n"));
+      }else{
+        (GraphPt->nb_local_call)++;
+        int ntest;
+        if(!p3d_unvalid_localpath_test(robotPt, LocalPathPt, &ntest)){
+          //if collision free create singular node
+          singularNode = p3d_APInode_make_multisol(GraphPt, singConfig, ikSol);
+          singularNode->isSingularity = TRUE;
+          singularDist = LocalPathPt->length_lp;
+          LocalPathPt->destroy(robotPt, LocalPathPt);
+          ikSol = NULL;
+          printf("singular configuration added to the tree\n");
+        }else {//else test connexion between NewNodePt and singular config
+          LocalPathPt->destroy(robotPt, LocalPathPt);
+        }
+      }
+    }
   }
   
   if (NewNodePt == NULL) {
@@ -301,8 +317,11 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
   p3d_AddNodeUpdateGraphStruc(GraphPt, NewNodePt, ExpansionNodePt,
                               ExpansionDist, CurrentCost);
   if (p3d_get_ik_choice() == IK_UNIQUE) {
-    extern int singularityCheck;
-    singularityCheck = false;
+    if (singularNode) {
+      CurrentCost = p3d_GetConfigCost(GraphPt->rob, singularNode->q);
+      p3d_AddNodeUpdateGraphStruc(GraphPt, singularNode, NewNodePt,
+                                  singularDist, CurrentCost);
+    }
   }
   //Additional cycles through edges addition if the flag is active
   if (ENV.getBool(Env::addCycles) == TRUE) {

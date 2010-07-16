@@ -2,9 +2,10 @@
 #define ENVIRONNEMENT_HPP
 
 #include "Device/robot.hpp"
+#include "Roadmap/graph.hpp"
 
 #ifndef _ENVIRONMENT_H
-typedef struct env;
+struct env;
 #endif
 
 /**
@@ -78,6 +79,11 @@ public:
 	 * Scene
 	 */
 	unsigned int getNumberOfRobots() { return m_Robot.size(); }
+	
+	/**
+	 * Get Active Graph
+	 */
+	Graph* getActiveGraph();
 
 private:
     std::vector<Robot*> m_Robot;/*!< All Robots in the scene */

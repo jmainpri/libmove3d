@@ -9,14 +9,16 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#include "../planningAPI.hpp"
+#include "planningAPI.hpp"
+
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"
 
 using namespace std;
 using namespace tr1;
 
-Node::Node():
+Node::Node() :
+		_Node(NULL),
         _SelectCost(0.0),
         _nbExpan(0)
 {
@@ -58,8 +60,7 @@ Node::Node(Graph* G, p3d_node* N) :
 {
     _Graph = G;
     _Robot = G->getRobot();
-    _Configuration
-            = shared_ptr<Configuration> (new Configuration(_Robot, N->q));
+    _Configuration = shared_ptr<Configuration> (new Configuration(_Robot, N->q));
     _activ = false;
     _Node = N;
 
@@ -90,12 +91,30 @@ _nbExpan(0)
 
 bool Node::operator==(Node& N)
 {
-    return this->_Configuration->equal(*(N._Configuration.get()));
+    return *_Configuration == *N._Configuration;
+}
+
+void Node::deleteNode()
+{
+    //p3d_APInode_desalloc( _Graph->getGraphStruct(), _Node);
+	if (_Node) 
+	{
+		if (_Node->list_closed_flex_sc != NULL) 
+		{
+			delete _Node->list_closed_flex_sc;
+		}
+		if(_Node->iksol)
+		{
+			p3d_destroy_specific_iksol(_Robot->getRobotStruct()->cntrt_manager, _Node->iksol);
+			_Node->iksol = NULL;
+		}
+		delete _Node;
+	}	
 }
 
 Node::~Node()
 {
-    //p3d_APInode_desalloc(_Graph->get_graph(), _Node);
+	//this->deleteNode();
 }
 
 //Accessors
@@ -177,6 +196,11 @@ p3d_compco* Node::getCompcoStruct()
 p3d_compco** Node::getCompcoStructPt()
 {
     return (&(_Node->comp));
+}
+
+unsigned int Node::getNumberOfNodesInCompco()
+{
+	return _Node->comp->nnode;
 }
 
 double Node::getCost()
@@ -293,6 +317,7 @@ bool Node::connectNodeToCompco(Node* N, double step)
 //place la compco dans la CompCo presente
 void Node::merge(Node* compco)
 {
+	cout << "Node::merge compco " << this->getCompcoStruct()->num << " with " << compco->getCompcoStruct()->num << endl;
     p3d_merge_comp(_Graph->getGraphStruct(), 
 				   compco->getCompcoStruct(),
                    &(_Node->comp));

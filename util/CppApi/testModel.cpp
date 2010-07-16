@@ -4,11 +4,12 @@
  *  Created on: Jul 8, 2009
  *      Author: jmainpri
  */
-#include "p3d_sys.h"
 #include "testModel.hpp"
 
 #include "Util-pkg.h"
 #include "Collision-pkg.h"
+
+//#include "planner_cxx/Greedy/GridCollisionChecker.h"
 
 using namespace std;
 using namespace tr1;
@@ -20,27 +21,27 @@ TestModel::TestModel() :
     cout << modelRobot->getName() << endl;
 }
 
-int TestModel::nbOfColisionsPerSeconds()
+int TestModel::nbOfVoxelCCPerSeconds()
 {
-
     double tu, ts;
     int nbTested(0);
     int nbInCol(0);
     ChronoOn();
+	
+	Robot* robotPt = global_Project->getActiveScene()->getActiveRobot();
 
     for (int i = 0;; i++)
     {
-        if (modelRobot->shoot()->IsInCollision())
-        {
-            nbInCol++;
-        }
+			robotPt->setAndUpdate(*robotPt->shoot());
+       // global_GridCollisionChecker->updateRobotOccupationCells(robotPt);
+			cout << "Warning not imlemented" << endl;
 
         ChronoTimes(&tu, &ts);
         if (tu > 5)
         {
             nbTested = i + 1;
-            cout << "Percenatge in collision = " << ((double) nbInCol
-                                                     / (double) nbTested) << endl;
+            cout << "Voxel in collision = " << ((double) nbInCol
+												   / (double) nbTested) << endl;
             break;
         }
     }
@@ -50,7 +51,42 @@ int TestModel::nbOfColisionsPerSeconds()
     ChronoOff();
     double val = (double) nbTested / tu;
 #ifdef QT_LIBRARY
-    QString str = QString("%1 Collision per second").arg(val);
+    QString str = QString("%1 Voxel Collision per second").arg(val);
+    ENV.setString(Env::numberOfCollisionPerSec,str);
+#endif
+    return (int) val;
+}
+
+int TestModel::nbOfColisionsPerSeconds()
+{
+    double tu, ts;
+    int nbTested(0);
+    int nbInCol(0);
+    ChronoOn();
+	
+    for (unsigned int i = 0;; i++)
+    {
+        if (modelRobot->shoot()->isInCollision())
+        {
+            nbInCol++;
+        }
+		
+        ChronoTimes(&tu, &ts);
+        if (tu > 5)
+        {
+            nbTested = i + 1;
+            cout << "Percenatge in collision = " << ((double) nbInCol
+                                                     / (double) nbTested) << endl;
+            break;
+        }
+    }
+	
+    ChronoPrint("");
+    ChronoTimes(&tu, &ts);
+    ChronoOff();
+    double val = (double) nbTested / tu;
+#ifdef QT_LIBRARY
+    QString str = QString("%1 Collision Test per second").arg(val);
     ENV.setString(Env::numberOfCollisionPerSec,str);
 #endif
     return (int) val;
@@ -99,7 +135,7 @@ void TestModel::distEnv()
     {
         q = modelRobot->shoot(true);
         //			q->print();
-        //			cout << "Conf is In Colision = " << (int)q->IsInCollision() << endl;
+        //			cout << "Conf is In Colision = " << (int)q->isInCollision() << endl;
         cout << "Distance from obst = " << (double) q->distEnv() << endl;
     }
 
@@ -139,7 +175,7 @@ int TestModel::nbOfLocalPathsPerSeconds()
 
         q1 = modelRobot->shoot();
 
-        if ( (!q1->setConstraints()) || q1->IsInCollision() )
+        if ( (!q1->setConstraints()) || q1->isInCollision() )
         {
             continue;
         }

@@ -9,7 +9,7 @@
 #include <iostream>
 
 #ifdef QT_LIBRARY
-#include "../qtWindow/qtLibrary.h"
+#include "qtWindow/qtLibrary.h"
 #endif
 
 using namespace std;

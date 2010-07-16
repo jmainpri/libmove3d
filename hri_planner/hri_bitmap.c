@@ -450,7 +450,7 @@ void  hri_bt_show_bitmapset(hri_bitmapset* bitmapset)
 void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
 {
   bitmapset->parameters = MY_ALLOC(hri_astar_parameters, 1);
-  bitmapset->parameters->path_length_weight = 60;
+  bitmapset->parameters->path_length_weight = 40;
   bitmapset->parameters->soft_collision_distance_weight = 8;
   bitmapset->parameters->soft_collision_base_cost = 15;
   bitmapset->parameters->start_cell_tolerance = 2;
@@ -592,143 +592,110 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   human->state = MY_ALLOC(hri_human_state, BT_STATE_NO);
   human->states_no = BT_STATE_NO;
   human->exists = FALSE; /* HUMAN EXIST */
-  human->transparent = FALSE; /* HRI_PLANNER may move through juman */
+  human->transparent = FALSE; /* HRI_PLANNER may move through human */
   human->id = -1;
 
-  if(strcasestr(robot->name,"SUPERMAN")){
-    
-    strcpy(human->state[BT_SITTING].name,"SITTING");
-    
-    human->state[BT_SITTING].dheight = 360;
-    human->state[BT_SITTING].dradius = 2.5;
-    human->state[BT_SITTING].vheight = 50;
-    human->state[BT_SITTING].vback = 1.3;
-    human->state[BT_SITTING].vradius = 2.4;
-    human->state[BT_SITTING].hradius = 2.8;
-    
-    human->state[BT_SITTING].c1 =  DTOR(-14.08);// left hip
-    human->state[BT_SITTING].c2 =  DTOR( 90);// left leg
-    human->state[BT_SITTING].c3 =  DTOR( 14.08);// right hip
-    human->state[BT_SITTING].c4 =  DTOR( 90);// right leg
-    human->state[BT_SITTING].c5 =  DTOR(-90);// left knee
-    human->state[BT_SITTING].c6 =  DTOR(-90);// right knee
-    human->state[BT_SITTING].c7 =  0.46;// torso height
-    
-    strcpy(human->state[BT_STANDING_TRANSPARENT].name,"STANDING TRANS");
-    
-    human->state[BT_STANDING_TRANSPARENT].dheight = 300;
-    human->state[BT_STANDING_TRANSPARENT].dradius = 1.6;
-    human->state[BT_STANDING_TRANSPARENT].vheight = 40;
-    human->state[BT_STANDING_TRANSPARENT].vback = 1.2;
-    human->state[BT_STANDING_TRANSPARENT].vradius = 2;
-    human->state[BT_STANDING_TRANSPARENT].hradius = 1.5;
-    
-    human->state[BT_STANDING_TRANSPARENT].c1 = 0;// left hip
-    human->state[BT_STANDING_TRANSPARENT].c2 = 0;// left leg
-    human->state[BT_STANDING_TRANSPARENT].c3 = 0;// right hip
-    human->state[BT_STANDING_TRANSPARENT].c4 = 0;// right leg
-    human->state[BT_STANDING_TRANSPARENT].c5 = 0;// left knee
-    human->state[BT_STANDING_TRANSPARENT].c6 = 0;// right knee
-    human->state[BT_STANDING_TRANSPARENT].c7 = 0.85;// torso height
-    
-    strcpy(human->state[BT_STANDING].name,"STANDING");
-    
-    human->state[BT_STANDING].dheight = 300;
-    human->state[BT_STANDING].dradius = 1.6;
-    human->state[BT_STANDING].vheight = 40;
-    human->state[BT_STANDING].vback = 1.2;
-    human->state[BT_STANDING].vradius = 2;
-    human->state[BT_STANDING].hradius = 1.5;
-    
-    human->state[BT_STANDING].c1 = 0;// left hip
-    human->state[BT_STANDING].c2 = 0;// left leg
-    human->state[BT_STANDING].c3 = 0;// right hip
-    human->state[BT_STANDING].c4 = 0;// right leg
-    human->state[BT_STANDING].c5 = 0;// left knee
-    human->state[BT_STANDING].c6 = 0;// right knee
-    human->state[BT_STANDING].c7 = 0.85;// torso height
-    
-    strcpy(human->state[BT_MOVING].name,"MOVING");
-    
-    human->state[BT_MOVING].dheight = 360;
-    human->state[BT_MOVING].dradius = 1.8;
-    human->state[BT_MOVING].vheight = 40;
-    human->state[BT_MOVING].vback = 1.0;
-    human->state[BT_MOVING].vradius = 1.5;
-    human->state[BT_MOVING].hradius = 1.8;
-    
-    human->state[BT_MOVING].c1 =  0;// left hip
-    human->state[BT_MOVING].c2 =  DTOR(-5);// left leg
-    human->state[BT_MOVING].c3 =  0;// right hip
-    human->state[BT_MOVING].c4 =  DTOR( 20);// right leg
-    human->state[BT_MOVING].c5 = DTOR(-10);// left knee
-    human->state[BT_MOVING].c6 = DTOR(-10);// right knee
-    human->state[BT_MOVING].c7 = 0.85;// torso height
+  // human aware navigation costs
+
+  strcpy(human->state[BT_SITTING].name,"SITTING");
+  human->state[BT_SITTING].dheight = 8;
+  human->state[BT_SITTING].dradius = 1.3;
+  human->state[BT_SITTING].vheight = 50;
+  human->state[BT_SITTING].vback = 50;
+  human->state[BT_SITTING].vradius = 2.4;
+  human->state[BT_SITTING].hradius = 0.0;
+
+  strcpy(human->state[BT_STANDING_TRANSPARENT].name,"STANDING TRANS");
+  human->state[BT_STANDING_TRANSPARENT].dheight = 8;
+  human->state[BT_STANDING_TRANSPARENT].dradius = 1.3;
+  human->state[BT_STANDING_TRANSPARENT].vheight = 40;
+  human->state[BT_STANDING_TRANSPARENT].vback = 50;
+  human->state[BT_STANDING_TRANSPARENT].vradius = 2;
+  human->state[BT_STANDING_TRANSPARENT].hradius = 0.0;
+
+  strcpy(human->state[BT_STANDING].name,"STANDING");
+  human->state[BT_STANDING].dheight = 8;
+  human->state[BT_STANDING].dradius = 1.3;
+  human->state[BT_STANDING].vheight = 40;
+  human->state[BT_STANDING].vback = 50;
+  human->state[BT_STANDING].vradius = 2;
+  human->state[BT_STANDING].hradius = 0.0;
+
+  strcpy(human->state[BT_MOVING].name,"MOVING");
+  human->state[BT_MOVING].dheight = 8;
+  human->state[BT_MOVING].dradius = 1.5;
+  human->state[BT_MOVING].vheight = 40;
+  human->state[BT_MOVING].vback = 40;
+  human->state[BT_MOVING].vradius = 1.6;
+  human->state[BT_MOVING].hradius = 0.0;
+
+
+  // joint states for ACHILLE and BATMAN models of human
+  if (strcasestr(robot->name,"achile")) {
+  	// ACHILE joints
+  	human->state[BT_SITTING].c1 =  DTOR(-90);// left hip
+  	human->state[BT_SITTING].c2 =  DTOR( 90);// left knee
+  	human->state[BT_SITTING].c3 =  DTOR(-90);// right hip
+  	human->state[BT_SITTING].c4 =  DTOR( 90);// right knee
+  	human->state[BT_SITTING].c7 =  0.60;// torso height
+
+  	human->state[BT_STANDING_TRANSPARENT].c1 = 0;// left hip
+  	human->state[BT_STANDING_TRANSPARENT].c2 = 0;// left leg
+  	human->state[BT_STANDING_TRANSPARENT].c3 = 0;// right hip
+  	human->state[BT_STANDING_TRANSPARENT].c4 = 0;// right leg
+  	human->state[BT_STANDING_TRANSPARENT].c7 = 1;// torso height
+
+  	human->state[BT_STANDING].c1 = 0;// left hip
+  	human->state[BT_STANDING].c2 = 0;// left leg
+  	human->state[BT_STANDING].c3 = 0;// right hip
+  	human->state[BT_STANDING].c4 = 0;// right leg
+  	human->state[BT_STANDING].c7 = 1;// torso height
+
+  	human->state[BT_MOVING].c1 =  0;// left hip
+  	human->state[BT_MOVING].c2 =  DTOR(-5);// left leg
+  	human->state[BT_MOVING].c3 =  0;// right hip
+  	human->state[BT_MOVING].c4 =  DTOR( 20);// right leg
+  	human->state[BT_MOVING].c5 = DTOR(-10);// left knee
+  	human->state[BT_MOVING].c6 = DTOR(-10);// right knee
+  	human->state[BT_MOVING].c7 = 1;// torso height
+  } else {
+  	if (strcasestr(robot->name,"superman") == NULL) {
+  		PrintWarning(("Human model robots should be named starting with ACHILE or SUPERMAN"));
+  	}
+  	// BATMAN
+  	human->state[BT_SITTING].c1 =  DTOR(-14.08);// left hip
+  	human->state[BT_SITTING].c2 =  DTOR( 90);// left leg
+  	human->state[BT_SITTING].c3 =  DTOR( 14.08);// right hip
+  	human->state[BT_SITTING].c4 =  DTOR( 90);// right leg
+  	human->state[BT_SITTING].c5 =  DTOR(-90);// left knee
+  	human->state[BT_SITTING].c6 =  DTOR(-90);// right knee
+  	human->state[BT_SITTING].c7 =  0.46;// torso height
+
+  	human->state[BT_STANDING_TRANSPARENT].c1 = 0;// left hip
+  	human->state[BT_STANDING_TRANSPARENT].c2 = 0;// left leg
+  	human->state[BT_STANDING_TRANSPARENT].c3 = 0;// right hip
+  	human->state[BT_STANDING_TRANSPARENT].c4 = 0;// right leg
+  	human->state[BT_STANDING_TRANSPARENT].c5 = 0;// left knee
+  	human->state[BT_STANDING_TRANSPARENT].c6 = 0;// right knee
+  	human->state[BT_STANDING_TRANSPARENT].c7 = 0.85;// torso height
+
+  	human->state[BT_STANDING].c1 = 0;// left hip
+  	human->state[BT_STANDING].c2 = 0;// left leg
+  	human->state[BT_STANDING].c3 = 0;// right hip
+  	human->state[BT_STANDING].c4 = 0;// right leg
+  	human->state[BT_STANDING].c5 = 0;// left knee
+  	human->state[BT_STANDING].c6 = 0;// right knee
+  	human->state[BT_STANDING].c7 = 0.85;// torso height
+
+  	human->state[BT_MOVING].c1 =  0;// left hip
+  	human->state[BT_MOVING].c2 =  DTOR(-5);// left leg
+  	human->state[BT_MOVING].c3 =  0;// right hip
+  	human->state[BT_MOVING].c4 =  DTOR( 20);// right leg
+  	human->state[BT_MOVING].c5 = DTOR(-10);// left knee
+  	human->state[BT_MOVING].c6 = DTOR(-10);// right knee
+  	human->state[BT_MOVING].c7 = 0.85;// torso height
   }
-  else{
-    strcpy(human->state[BT_SITTING].name,"SITTING");
-    
-    human->state[BT_SITTING].dheight = 360;
-    human->state[BT_SITTING].dradius = 2.5;
-    human->state[BT_SITTING].vheight = 50;
-    human->state[BT_SITTING].vback = 1.3;
-    human->state[BT_SITTING].vradius = 2.4;
-    human->state[BT_SITTING].hradius = 2.8;
-    
-    human->state[BT_SITTING].c1 =  DTOR(-90);// left hip
-    human->state[BT_SITTING].c2 =  DTOR( 90);// left knee
-    human->state[BT_SITTING].c3 =  DTOR(-90);// right hip
-    human->state[BT_SITTING].c4 =  DTOR( 90);// right knee
-    human->state[BT_SITTING].c7 =  0.60;// torso height
-    
-    strcpy(human->state[BT_STANDING_TRANSPARENT].name,"STANDING TRANS");
-    
-    human->state[BT_STANDING_TRANSPARENT].dheight = 300;
-    human->state[BT_STANDING_TRANSPARENT].dradius = 1.6;
-    human->state[BT_STANDING_TRANSPARENT].vheight = 40;
-    human->state[BT_STANDING_TRANSPARENT].vback = 1.2;
-    human->state[BT_STANDING_TRANSPARENT].vradius = 2;
-    human->state[BT_STANDING_TRANSPARENT].hradius = 1.5;
-    
-    human->state[BT_STANDING_TRANSPARENT].c1 = 0;// left hip
-    human->state[BT_STANDING_TRANSPARENT].c2 = 0;// left leg
-    human->state[BT_STANDING_TRANSPARENT].c3 = 0;// right hip
-    human->state[BT_STANDING_TRANSPARENT].c4 = 0;// right leg
-    human->state[BT_STANDING_TRANSPARENT].c7 = 1;// torso height
-    
-    strcpy(human->state[BT_STANDING].name,"STANDING");
-    
-    human->state[BT_STANDING].dheight = 300;
-    human->state[BT_STANDING].dradius = 1.6;
-    human->state[BT_STANDING].vheight = 40;
-    human->state[BT_STANDING].vback = 1.2;
-    human->state[BT_STANDING].vradius = 2;
-    human->state[BT_STANDING].hradius = 1.5;
-    
-    human->state[BT_STANDING].c1 = 0;// left hip
-    human->state[BT_STANDING].c2 = 0;// left leg
-    human->state[BT_STANDING].c3 = 0;// right hip
-    human->state[BT_STANDING].c4 = 0;// right leg
-    human->state[BT_STANDING].c7 = 1;// torso height
-    
-    strcpy(human->state[BT_MOVING].name,"MOVING");
-    
-    human->state[BT_MOVING].dheight = 360;
-    human->state[BT_MOVING].dradius = 1.8;
-    human->state[BT_MOVING].vheight = 40;
-    human->state[BT_MOVING].vback = 1.0;
-    human->state[BT_MOVING].vradius = 1.5;
-    human->state[BT_MOVING].hradius = 1.8;
-    
-    human->state[BT_MOVING].c1 =  0;// left hip
-    human->state[BT_MOVING].c2 =  DTOR(-5);// left leg
-    human->state[BT_MOVING].c3 =  0;// right hip
-    human->state[BT_MOVING].c4 =  DTOR( 20);// right leg
-    human->state[BT_MOVING].c5 = DTOR(-10);// left knee
-    human->state[BT_MOVING].c6 = DTOR(-10);// right knee
-    human->state[BT_MOVING].c7 = 1;// torso height
-  }
-  
+
   // default state, even for ghosts
   human->actual_state = BT_STANDING;
 
@@ -1521,7 +1488,7 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int rob_grid_x, int rob_grid_
       temp_env_dmax = p3d_get_env_dmax();
       p3d_set_env_dmax(0);
 
-      // calulate a localpath object for visball from human to goal
+      // calculate a localpath object for visball from human to goal
       path = p3d_local_planner(btset->visball, qtarget, qhuman);
 
       val = -1;
@@ -1598,7 +1565,7 @@ double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
 {
   int i;
   double radius,height;
-  double val = 0,res =0;
+  double val = 0, sigmoid = 0, quot = 0, res =0;
   double realx, realy;
   double humanx, humany;
   double distance;
@@ -1624,7 +1591,10 @@ double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
     if(distance > radius) {
       val = 0;
     } else {
-      val = height * pow((cos(distance/radius*M_PI_2)+0), 2);
+      // sigmoid function up to radius
+      sigmoid = cos(distance / radius * M_PI_2) + 0;
+      quot = 1 / (0.6 + distance );
+      val = pow(height * (sigmoid * quot), 3);
     }
     if(res < val) {
       res = val;
@@ -1674,7 +1644,7 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
   double radius,height,stretch_back;
   double val = 0,res =0;
   double realx, realy;
-  double angle,angle_deviation,angle_influence,deltax,deltay, orient,distance_cosine;
+  double angle,angle_deviation,deltax,deltay, orient,distance_cosine;
   double humanx, humany;
   double distance;
 
@@ -1707,22 +1677,30 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
       deltay = realy-humany;
       angle = atan2(deltay, deltax);
       // orient goes from -PI to PI, angle goes from - PI to PI
-      // get the angle deviation between -PI and PI
-      angle_deviation = getAngleDeviation(orient, angle);
-      angle_influence = ABS(angle_deviation); // value between 0 and PI for positive angle difference
+      // get the absolute angle deviation between 0 and PI
+      angle_deviation = ABS(getAngleDeviation(orient, angle));
 
-      // leave open area in front of human
-      angle_influence = angle_influence - M_PI_4;
-      if (angle_influence < 0) {
-        val = 0;
+      if (btset->human[i]->actual_state != BT_MOVING) {
+      	if ((angle_deviation < M_PI_4 )) {
+      		// leave open area in front of human
+      		val =0;
+      	} else {
+      		// cosine function is 0 at borders of radius
+      		distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
+
+      		// use stretch to increase / decrease weight more on more backward angles
+      		val = distance_cosine * (height + (angle_deviation - M_PI_4) * stretch_back);
+      	}
       } else {
-        // cosine function is 0 at borders of radius
-        distance_cosine = cos(distance / radius * M_PI_2 ); // value between 0 and 1 depending on distance and radius
+      	if (angle_deviation < M_PI_4 ) {
+      		// predictive costs
+      		distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
 
-        // use stretch to increase / decrease weight more on more backward angles
-        angle_influence += (ABS(angle_deviation) - M_PI_2) * stretch_back * distance_cosine;
-
-        val = height * distance_cosine* angle_influence;
+      		// use stretch to increase / decrease weight more on more backward angles
+      		val = distance_cosine * (height + (M_PI - angle_deviation) * stretch_back);
+      	} else {
+      		val = 0;
+      	}
       }
     }
     if(res < val) {
@@ -3530,7 +3508,48 @@ int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int 
     return FALSE;
   }
 
-  if(strcasestr(human->HumanPt->name,"superman")){
+  if(strcasestr(human->HumanPt->name,"achile")){
+     // if human model is ACHILE
+     if(state == BT_SITTING){
+       if (adjustForSick && human->actual_state != BT_SITTING) {
+         // adjust for sick laser detecting legs, not torso
+         config[6] = config[6]-0.45*cos(config[11]);
+         config[7] = config[7]-0.45*sin(config[11]);
+       }
+       config[8] = human->state[state].c7;
+       config[33] = human->state[state].c3;
+       config[35] = human->state[state].c4;
+       config[40] = human->state[state].c1;
+       config[42] = human->state[state].c2;
+     } else if(state == BT_STANDING || state == BT_STANDING_TRANSPARENT) {
+       // no need to adjust, don't know why
+       //    if (human->actual_state == BT_SITTING) {
+       //      // adjust for sick laser detecting legs, not torso
+       //      config[6] = config[6]+0.33*cos(config[11]);
+       //      config[7] = config[7]+0.33*sin(config[11]);
+       //    }
+       config[8] = human->state[state].c7;
+       config[33] = human->state[state].c3;
+       config[35] = human->state[state].c4;
+       config[40] = human->state[state].c1;
+       config[42] = human->state[state].c2;
+     }  else if(state == BT_MOVING){
+       // no need to adjust, don't know why
+       //    if (human->actual_state == BT_SITTING) {
+       //      // adjust for sick laser detecting legs, not torso
+       //      config[6] = config[6]+0.33*cos(config[11]);
+       //      config[7] = config[7]+0.33*sin(config[11]);
+       //    }
+       config[8] = human->state[state].c7;
+       config[32] = human->state[state].c3;
+       config[35] = human->state[state].c4;
+       config[39] = human->state[state].c1;
+       config[42] = human->state[state].c2;
+     } else { // unknown state
+       PrintError(("Unknown human state: %i\n", state));
+       return FALSE;
+     }
+  } else {
     // if human model is SUPERMAN
     if(state == BT_SITTING){
       if (adjustForSick && human->actual_state != BT_SITTING) {
@@ -3597,48 +3616,6 @@ int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int 
       config[72] = config[6] + cos(config[11]+0.4)*0.5;
       config[73] = config[7] + sin(config[11]+0.4)*0.5;
       config[74] = 1.1;
-    } else { // unknown state
-      PrintError(("Unknown human state: %i\n", state));
-      return FALSE;
-    }
-  }
-  if(strcasestr(human->HumanPt->name,"achile")){
-    // if human model is ACHILE
-    if(state == BT_SITTING){
-      if (adjustForSick && human->actual_state != BT_SITTING) {
-        // adjust for sick laser detecting legs, not torso
-        config[6] = config[6]-0.45*cos(config[11]);
-        config[7] = config[7]-0.45*sin(config[11]);
-      }
-      config[8] = human->state[state].c7;
-      config[33] = human->state[state].c3;
-      config[35] = human->state[state].c4;
-      config[40] = human->state[state].c1;
-      config[42] = human->state[state].c2;
-    } else if(state == BT_STANDING || state == BT_STANDING_TRANSPARENT) {
-      // no need to adjust, don't know why
-      //    if (human->actual_state == BT_SITTING) {
-      //      // adjust for sick laser detecting legs, not torso
-      //      config[6] = config[6]+0.33*cos(config[11]);
-      //      config[7] = config[7]+0.33*sin(config[11]);
-      //    }
-      config[8] = human->state[state].c7;
-      config[33] = human->state[state].c3;
-      config[35] = human->state[state].c4;
-      config[40] = human->state[state].c1;
-      config[42] = human->state[state].c2;
-    }  else if(state == BT_MOVING){
-      // no need to adjust, don't know why
-      //    if (human->actual_state == BT_SITTING) {
-      //      // adjust for sick laser detecting legs, not torso
-      //      config[6] = config[6]+0.33*cos(config[11]);
-      //      config[7] = config[7]+0.33*sin(config[11]);
-      //    }
-      config[8] = human->state[state].c7;
-      config[32] = human->state[state].c3;
-      config[35] = human->state[state].c4;
-      config[39] = human->state[state].c1;
-      config[42] = human->state[state].c2;
     } else { // unknown state
       PrintError(("Unknown human state: %i\n", state));
       return FALSE;

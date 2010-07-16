@@ -16,7 +16,7 @@
 class Robot;
 
 #ifndef _DEVICE_H
-typedef struct jnt;
+struct jnt;
 #endif
 
 /*!

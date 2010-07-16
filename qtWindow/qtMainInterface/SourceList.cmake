@@ -27,4 +27,17 @@ qtMotionPlanner.ui
 qtCost.ui
 qtRobot.ui
 )
+
+IF(HRI_COSTSPACE)
+BM3D_QT_GENERATE_MOC(
+qtHrics.hpp
+)
+BM3D_QT_GENERATE_UI_HEADERS(
+qtHrics.ui
+)
+BM3D_SRC_SUBDIR_PROCESS(
+qtHrics.cpp
+)
+ENDIF(HRI_COSTSPACE)
+
 SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME_TMP})

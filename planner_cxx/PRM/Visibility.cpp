@@ -157,7 +157,7 @@ void Vis_PRM::createOneOrphanLinking(int type, unsigned int & ADDED, int & nb_fa
 {
     shared_ptr<Configuration> q = _Robot->shoot();
 	
-	if ( q->setConstraintsWithSideEffect() && !q->IsInCollision() ) 
+	if ( q->setConstraintsWithSideEffect() && !q->isInCollision() ) 
 	{
 		Node* N = new Node(_Graph,q);
 		

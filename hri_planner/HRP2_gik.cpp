@@ -85,6 +85,14 @@ extern candidate_poins_for_task candidate_points_to_hide;
 
 extern int NEED_HRP2_VISIBILITY_UPDATE; //For updating the mightability maps
 
+extern configPt tmp_robot_config_after_exec[50]; //To store configurations of the robots after validating a particular node , the index should be synchronized with the index of the robots
+extern int tmp_changed_robot_config[50];//To keep track of the indices of the robots which will be changed  after a particular action.
+extern vectorN tmp_HRP2_GIK_final_config; //For storing the final configuration of HRP2 for GIK, for storing into node of symbolic planner
+ 
+extern struct robots_indices rob_indx; 
+
+extern int MM_RECORD_MOVIE_FRAMES;
+
 double attSamplingPeriod = 5e-3; // //Set a sampling period: 5ms second is the value used on HRP2, It should be 5e-3
 unsigned int NO_DOF_HRP2=0;
 
@@ -248,6 +256,52 @@ int waist_to_world_Coordinates(vector3d& inCoords, vector3d& outCoords)
     return OK;
 }
 */
+
+//HRP2 config to M3D human config mapping for temp, assuming the GIK is solved for HRP2 and mapped for human joints  
+int hrp2_to_M3D_human_Config_mapping_tmp( ghrp2_config_t *cfg, configPt m3dconfig)
+{
+  // specific for HRP2
+  int i;
+  /*\
+  m3dconfig[ MHP_Q_X ] = 0.0;
+  m3dconfig[ MHP_Q_Y ] = 0.0;
+  m3dconfig[ MHP_Q_Z ] = 0.0;
+  m3dconfig[ MHP_Q_RX ] = 0.0;
+  m3dconfig[ MHP_Q_RY ] = 0.0;
+  m3dconfig[ MHP_Q_RZ ] = 0.0;
+  */
+ /* 
+ for(i=0; i<16 ; i++)
+    m3dconfig[ MHP_Q_RLEG0 + i ] = cfg->angles[i];
+ */
+
+ m3dconfig[ HUMANq_PAN ] = cfg->angles[ GHRP2_HEAD_JOINT0];
+ m3dconfig[ HUMANq_TILT ] = cfg->angles[ GHRP2_HEAD_JOINT1];
+
+int HUMAN_Q_RARM0=18;
+  /*for(i=0; i<6 ; i++)
+  {
+    //printf("[%d] = %lf ",HUMAN_Q_RARM0 + i, m3dconfig[ HUMAN_Q_RARM0 + i ]); 
+    m3dconfig[ HUMAN_Q_RARM0 + i ] = cfg->angles[ GHRP2_RARM_JOINT0 + i];
+  }*/
+
+  m3dconfig[ HUMAN_Q_RARM0 + 2 ] = 2.0*M_PI-cfg->angles[ GHRP2_RARM_JOINT0 + 0];
+   m3dconfig[ HUMAN_Q_RARM0 + 3 ] = 2.0*M_PI-cfg->angles[ GHRP2_RARM_JOINT0 + 3];
+  printf("\n");
+ /* 
+  for(i=0; i<7 ; i++)
+    m3dconfig[ MHP_Q_LARM0 + i ] = cfg->angles[ GHRP2_LARM_JOINT0 + i];
+
+//AKP NOTE: There is mismatch in hand configuration of HRP2 model for HRP2 GIK and for biomove3d so the following part is commented
+
+  for(i=0; i<5 ; i++)
+    m3dconfig[ MHP_Q_LHAND0 + i ] = cfg->angles[ GHRP2_LHAND_JOINT0 + i];
+
+  for(i=0; i<5 ; i++)
+    m3dconfig[ MHP_Q_RHAND0 + i ] = cfg->angles[ GHRP2_RHAND_JOINT0 + i];
+*/
+
+}
 
 //HRP2 config to M3D config  
 int hrp2_to_M3D_ConfigPt( ghrp2_config_t *cfg, configPt m3dconfig)
@@ -5588,6 +5642,13 @@ configPt rob_actual_pos = MY_ALLOC(double,ACBTSET->robot->nb_dof);
 
  
   p3d_set_and_update_this_robot_conf(ACBTSET->robot,cur_rob_pos);
+  
+  fl_check_forms();
+    g3d_draw_allwin_active();
+  //printf("storing in the node of the geometric plan, rob_indx.HRP2=%d\n",rob_indx.HRP2);
+  //For storing in the node of the geometric plan
+  //p3d_copy_config_into(ACBTSET->robot,cur_rob_pos, &(tmp_robot_config_after_exec[rob_indx.HRP2]));
+  //tmp_changed_robot_config[rob_indx.HRP2]=1;
 
     int kcd_with_report=0;
  //int res = p3d_col_test_self_collision(cur_rob,kcd_with_report);
@@ -5642,6 +5703,8 @@ configPt rob_actual_pos = MY_ALLOC(double,ACBTSET->robot->nb_dof);
        if(res>0)
        {
        printf(" ***** AKP WARNING : There is collision with robot, for the configuration no. %d, res=%d \n", tmp_config_ctr, res);
+        //fl_check_forms();
+        //g3d_draw_allwin_active();
        point_of_curr_collision.x=target_in_global_frame[0];
        point_of_curr_collision.y=target_in_global_frame[1];
        point_of_curr_collision.z=target_in_global_frame[2]; 
@@ -5676,6 +5739,11 @@ configPt rob_actual_pos = MY_ALLOC(double,ACBTSET->robot->nb_dof);
      }
  tmp_config_ctr++;
  }
+
+  //printf("storing in the node of the geometric plan\n");
+  //For storing in the node of the geometric plan
+  //p3d_copy_config_into(ACBTSET->robot,cur_rob_pos, &(tmp_robot_config_after_exec[rob_indx.HRP2]));
+  //tmp_changed_robot_config[rob_indx.HRP2]=1;
 
   //Restoring the actual position of the robot
   p3d_set_and_update_this_robot_conf(ACBTSET->robot,rob_actual_pos);
@@ -6024,6 +6092,7 @@ attStandingRobot->staticState ( HRP2_conf );
 
 int execute_current_HRP2_GIK_solution(int with_bottle)
 {
+MM_RECORD_MOVIE_FRAMES=0;
  printf(" Inside execute_current_HRP2_GIK_solution()\n");
  int i=0;
  configPt bottle_cur_pos;
@@ -6031,6 +6100,11 @@ int execute_current_HRP2_GIK_solution(int with_bottle)
  rob_cur_pos= MY_ALLOC(double,ACBTSET->robot->nb_dof);  
 
  p3d_get_robot_config_into(ACBTSET->robot,&rob_cur_pos);
+
+ configPt hum_cur_pos;
+ hum_cur_pos= MY_ALLOC(double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof);  
+
+ p3d_get_robot_config_into(ACBTSET->human[ACBTSET->actual_human]->HumanPt,&hum_cur_pos);
 
  if(with_bottle==1)
  {
@@ -6076,18 +6150,33 @@ int execute_current_HRP2_GIK_solution(int with_bottle)
   
  }*/
 
+ int skip=50;//min val= 1
  printf(" Before executing the configs, cur_gik_sol_configs.no_configs=%d, rob_cur_pos=(%lf, %lf, %lf)\n",cur_gik_sol_configs.no_configs,rob_cur_pos[6],rob_cur_pos[7],rob_cur_pos[8]);
- for(i=0;i<cur_gik_sol_configs.no_configs;i++)
+ hum_cur_pos[6]=rob_cur_pos[6];
+ ////hum_cur_pos[7]=rob_cur_pos[7]-.8;
+ hum_cur_pos[7]=rob_cur_pos[7];
+ //hum_cur_pos[8]=rob_cur_pos[8];
+ hum_cur_pos[9]=rob_cur_pos[9];
+ hum_cur_pos[10]=rob_cur_pos[10];
+ hum_cur_pos[11]=rob_cur_pos[11];
+
+ rob_cur_pos[7]=rob_cur_pos[7]-.8;
+
+ for(i=0;i<cur_gik_sol_configs.no_configs;i+=skip)
  {
-  ////printf("Executing for i=%d\n",i);
+  printf("Executing for i=%d\n",i);
   hrp2_to_M3D_ConfigPt(&cur_gik_sol_configs.gik_sol[i],rob_cur_pos);
   ////printf("After hrp2_to_M3D_ConfigPt()\n");
   p3d_set_and_update_this_robot_conf(ACBTSET->robot,rob_cur_pos);
+
+  hrp2_to_M3D_human_Config_mapping_tmp( &cur_gik_sol_configs.gik_sol[i],hum_cur_pos);
+  p3d_set_and_update_this_robot_conf(ACBTSET->human[ACBTSET->actual_human]->HumanPt,hum_cur_pos);
+
   if(with_bottle==1)
   {
   bottle_cur_pos[6]=ACBTSET->robot->joints[ROBOTj_GRIP]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
   bottle_cur_pos[7]=ACBTSET->robot->joints[ROBOTj_GRIP]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
-  bottle_cur_pos[8]=ACBTSET->robot->joints[ROBOTj_GRIP]->abs_pos[2][3]-0.06; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
+  bottle_cur_pos[8]=ACBTSET->robot->joints[ROBOTj_GRIP]->abs_pos[2][3]-0.15; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
  
   //envPt->robot[bottle_indx]->ROBOT_POS[6]=hand_pos[0];
   //envPt->robot[bottle_indx]->ROBOT_POS[7]=hand_pos[1];
@@ -6101,10 +6190,43 @@ int execute_current_HRP2_GIK_solution(int with_bottle)
   
   }
  NEED_HRP2_VISIBILITY_UPDATE=1;
- g3d_draw_env();
+ //g3d_draw_env();
  fl_check_forms();
  g3d_draw_allwin_active();
  }
+ 
+ if(skip>1)//Then setting the last configuration
+ {
+ ////rob_cur_pos[7]=rob_cur_pos[7]-.8;
+ i=cur_gik_sol_configs.no_configs-1;
+  printf("Executing for i=%d\n",i);
+  hrp2_to_M3D_ConfigPt(&cur_gik_sol_configs.gik_sol[i],rob_cur_pos);
+  ////printf("After hrp2_to_M3D_ConfigPt()\n");
+  p3d_set_and_update_this_robot_conf(ACBTSET->robot,rob_cur_pos);
+  if(with_bottle==1)
+  {
+  bottle_cur_pos[6]=ACBTSET->robot->joints[ROBOTj_GRIP]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
+  bottle_cur_pos[7]=ACBTSET->robot->joints[ROBOTj_GRIP]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
+  bottle_cur_pos[8]=ACBTSET->robot->joints[ROBOTj_GRIP]->abs_pos[2][3]-0.15; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
+ 
+  //envPt->robot[bottle_indx]->ROBOT_POS[6]=hand_pos[0];
+  //envPt->robot[bottle_indx]->ROBOT_POS[7]=hand_pos[1];
+  //envPt->robot[bottle_indx]->ROBOT_POS[8]=hand_pos[2];
+  //bottle_cur_pos[6]=hand_pos[0];
+  //bottle_cur_pos[7]=hand_pos[1];
+  //bottle_cur_pos[8]=hand_pos[2];
+
+  ////p3d_set_and_update_this_robot_conf(envPt->robot[bottle_indx],bottle_cur_pos);
+  p3d_set_and_update_this_robot_conf(ACBTSET->object,bottle_cur_pos);
+  
+  }
+ NEED_HRP2_VISIBILITY_UPDATE=1;
+ }
+ //g3d_draw_env();
+ fl_check_forms();
+ g3d_draw_allwin_active();
+
+ 
  ////printf(" Before synchronize_HRP2_GIK_model()\n");
  ////synchronize_HRP2_GIK_model(&cur_gik_sol_configs.gik_sol[cur_gik_sol_configs.no_configs-1]);
  ////printf(" After synchronize_HRP2_GIK_model()\n");
@@ -6166,6 +6288,8 @@ attStandingRobot->staticState ( HRP2_conf );
 printf(" After executing the configs, rob_cur_pos=(%lf, %lf, %lf)\n",rob_cur_pos[6],rob_cur_pos[7],rob_cur_pos[8]);
 
 printf(" Returning from execute_current_HRP2_GIK_solution()\n");
+
+MM_RECORD_MOVIE_FRAMES=0;
 
 return 1;
   
@@ -6626,7 +6750,7 @@ return 0;
  qf[2]=qs[2]+0.45;
   */
 
-MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof); 
+///////////MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof); 
 
 ////p3d_col_deactivate_rob_rob(ACBTSET->visball,envPt->robot[bottle_indx]);
 ////p3d_col_deactivate_rob_rob(ACBTSET->visball,ACBTSET->object);
@@ -6656,6 +6780,7 @@ int val=Find_AStar_Path(qs, qf, grid_around_HRP2.GRID_SET, 1);
 if(val<0)
  {
  printf("AKP Warning: path from hand to bottle could not be found \n");
+ 
  return 0;
  }
 else
@@ -6744,6 +6869,8 @@ no_HRP2_hand_pos=0;
      if(GIK_path_res==0)
      {
      printf(" **** AKP WARNING : Could not found a collision free path to reach near the bottle \n");
+     p3d_set_and_update_this_robot_conf(ACBTSET->robot,rob_cur_pos);
+     MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof); 
      attStandingRobot->staticState ( backupConfig );
      return 0;
      }
@@ -6762,6 +6889,8 @@ no_HRP2_hand_pos=0;
      if(GIK_path_res==0)
      {
      printf(" **** AKP WARNING : Could not found a collision free path to orient the HRP2 hand for grasping the bottle \n");
+     p3d_set_and_update_this_robot_conf(ACBTSET->robot,rob_cur_pos);
+     MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof); 
      attStandingRobot->staticState ( backupConfig );
      return 0;
      }
@@ -6855,6 +6984,9 @@ no_pts_AStar_path= get_AStar_path(grid_around_HRP2.GRID_SET, grid_around_HRP2.GR
     if(no_path_pts==0)
     {
     printf(" **** AKP WARNING : Could not found a spline path to reach the bottle for grasping \n");
+    p3d_set_and_update_this_robot_conf(ACBTSET->robot,rob_cur_pos);
+     MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof); 
+ 
     attStandingRobot->staticState ( backupConfig );
     return 0;
     }
@@ -6873,6 +7005,8 @@ no_pts_AStar_path= get_AStar_path(grid_around_HRP2.GRID_SET, grid_around_HRP2.GR
      if(GIK_path_res==0)
      {
      printf(" **** AKP WARNING : Could not found a collision free path to reach the bottle for grasping.\n");
+     p3d_set_and_update_this_robot_conf(ACBTSET->robot,rob_cur_pos);
+     MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof); 
      attStandingRobot->staticState ( backupConfig );
      return 0;
      }
@@ -6933,6 +7067,8 @@ double t2=0.0;
      if(GIK_path_res==0)
      {
      printf(" **** AKP WARNING : Could not found a collision free path to reach the bottle for grasping.\n");
+     p3d_set_and_update_this_robot_conf(ACBTSET->robot,rob_cur_pos);
+     MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof); 
      attStandingRobot->staticState ( backupConfig );
      return 0;
      }
@@ -6941,6 +7077,21 @@ double t2=0.0;
 
 /////////***********///////////
 
+//For storing in the node of the geometric plan
+printf("storing in the node of the geometric plan\n");
+p3d_get_robot_config_into(ACBTSET->robot,&tmp_robot_config_after_exec[rob_indx.HRP2]);
+hrp2_to_M3D_ConfigPt(&cur_gik_sol_configs.gik_sol[cur_gik_sol_configs.no_configs-1],tmp_robot_config_after_exec[rob_indx.HRP2]);
+  tmp_changed_robot_config[rob_indx.HRP2]=1;
+tmp_HRP2_GIK_final_config=attStandingRobot->robot()->currentConfiguration();//Taking the current configuration of HRP2 GIK model
+
+  //p3d_copy_config_into(ACBTSET->robot,cur_rob_pos, &(tmp_robot_config_after_exec[rob_indx.HRP2]));
+  
+
+
+  ////printf("After hrp2_to_M3D_ConfigPt()\n");
+ 
+p3d_set_and_update_this_robot_conf(ACBTSET->robot,rob_cur_pos);
+     MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof); 
 attStandingRobot->staticState ( backupConfig );
 p3d_col_activate_rob_rob(ACBTSET->robot,ACBTSET->object);
  
@@ -7419,7 +7570,9 @@ int HRP2_put_object_for_human_to_take_new()
  configPt rob_cur_pos = MY_ALLOC(double,ACBTSET->robot->nb_dof); /* Allocation of temporary robot configuration */
  p3d_get_robot_config_into(ACBTSET->robot,&rob_cur_pos);
 
-
+ 
+ //fl_check_forms();
+    //g3d_draw_allwin_active();
   
  int for_hand=2;//1 for left, 2 for right hand;
  //p3d_vector3 hand_pos;
@@ -7548,6 +7701,8 @@ printf("  qs = (%lf, %lf, %lf), qf = (%lf, %lf, %lf)  \n", qs[0], qs[1], qs[2], 
      if(GIK_path_res==0)
      {
      printf(" **** AKP WARNING : Could not find a collision free path to lift the bottle.\n");
+     p3d_set_and_update_this_robot_conf(ACBTSET->robot,rob_cur_pos);
+     MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof); 
      attStandingRobot->staticState ( backupConfig );
      return 0;
      }
@@ -7753,6 +7908,8 @@ printf("****Inside HRP2_put_object_for_human_to_take_new(), after find_HRP2_GIK_
 if(point_to_put_found==0)
  {
  printf(" **** AKP Warning : No feasible point to put the object has been found.\n"); 
+ p3d_set_and_update_this_robot_conf(ACBTSET->robot,rob_cur_pos);
+     MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof); 
  attStandingRobot->staticState ( backupConfig );
  return 0;
  }
@@ -7833,6 +7990,8 @@ printf("  qs = (%lf, %lf, %lf), qf = (%lf, %lf, %lf) \n", qs[0], qs[1], qs[2], q
      if(GIK_path_res==0)
      {
      printf(" **** AKP WARNING : Could not find a collision free path to lower the hand with bottle.\n");
+     p3d_set_and_update_this_robot_conf(ACBTSET->robot,rob_cur_pos);
+     MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof); 
      attStandingRobot->staticState ( backupConfig );
      return 0;
      }
@@ -7862,6 +8021,16 @@ qf_tmp[2]=qf[2];
 
    printf(" Returning from HRP2_put_object_for_human_to_take_new();()\n");
    printf("cur_gik_sol_configs.no_configs=%d,start time=%lf, end time=%lf\n", cur_gik_sol_configs.no_configs,cur_gik_sol_configs.gik_sol[0].time,cur_gik_sol_configs.gik_sol[cur_gik_sol_configs.no_configs-1].time);
+
+//For storing in the node of the geometric plan
+printf("storing in the node of the geometric plan\n");
+p3d_get_robot_config_into(ACBTSET->robot,&tmp_robot_config_after_exec[rob_indx.HRP2]);
+hrp2_to_M3D_ConfigPt(&cur_gik_sol_configs.gik_sol[cur_gik_sol_configs.no_configs-1],tmp_robot_config_after_exec[rob_indx.HRP2]);
+  tmp_changed_robot_config[rob_indx.HRP2]=1;
+tmp_HRP2_GIK_final_config=attStandingRobot->robot()->currentConfiguration();//Taking the current configuration of HRP2 GIK model
+
+p3d_set_and_update_this_robot_conf(ACBTSET->robot,rob_cur_pos);
+     MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof); 
 attStandingRobot->staticState ( backupConfig );
 
 return 1;
@@ -8226,6 +8395,8 @@ printf("****Inside HRP2_hide_object_from_human(), after find_HRP2_GIK_sol_for_sp
      no_HRP2_hand_pos=prev_no_HRP2_hand_pos;
 
      attStandingRobot->staticState ( backupConfig_for_next_iteration );
+
+     make_cells_around_point_as_near_to_obstacle(qf,expansion); 
      ////return 0;
      }
      else

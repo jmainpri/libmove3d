@@ -2239,16 +2239,16 @@ void lm_set_and_get_motionTimes(p3d_softMotion_data* softMotion_data, double* ti
 	return;
 }
 
-void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char *fileName, bool flagPlot, int lp[], Gb_q6 positions[], int *nbPositions) {
+void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char *fileName, bool flagPlot,
+					    std::vector <int> lp, std::vector < std::vector <double> > positions, int *nbPositions) {
 	int i=0;
 	double SIMPLING_TIME = 0.01;
 	double paramDiff = 0.0;
 	double paramLocal = 0.0;
 	int segId = 0;
-	SM_SEGMENT segment[6];
-	SM_COND cond[6];
+
 	int index_dof = 0;
-	double q_arm[6];
+
 	int j = 0, k=0, nb_dof = 0, nbGpJnt = 0;
 	int v= 0;
 	p3d_localpath* localpathPt =  NULL;
@@ -2258,14 +2258,22 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	FILE *filepQarmtr = NULL;
 	p3d_softMotion_data *specificPt = NULL;
 	double dq;
-	double q_armOld[6];
-	double vqi[6];
-	double min[6], max[6];
 	int end_localpath = 0;
 	double u = 0.0;
 	double du, umax;
-	double qplot[6][10000];
+
+        std::vector <SM_SEGMENT>  segment;
+	std::vector <SM_COND>  cond;
+	SM_COND cond_i;
+	SM_SEGMENT segment_i;
+	std::vector < std::vector <double> > qplot;
+	std::vector <double>  qplot_i;
+	std::vector <double>  q_arm;
+	std::vector <double>  q_armOld;
+	std::vector <double>  vqi;
+	std::vector <double>  min, max;
 	gnuplot_ctrl * h = NULL;
+	std::vector <double> pos_vect;
 
 	if ((fileptr = fopen(fileName,"w+"))==NULL) {
 		printf("cannot open File RefTP.dat");
@@ -2277,27 +2285,62 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	  fprintf(fileptr,"# i PX.Acc PX.Vel PX.Pos PY.Acc PY.Vel PY.Pos PZ.Acc PZ.Vel PZ.Pos RX.Acc RX.Vel RX.Pos RY.Acc RY.Vel RY.Pos RZ.Acc RZ.Vel RZ.Pos q1 q2 q3 q4 q5 q6 vq1 vq2 vq3 vq4 vq5 vq6 ;\n");
 	}
 	index = 0;
-	int arm_mlpID = 4;
+	
+	int arm_mlpID = -1;
+
+
+	for(int iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-arm_lin") == 0) {
+			arm_mlpID = iGraph;
+		}
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-rarm_lin") == 0) {
+			arm_mlpID = iGraph;
+		}
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "kuka-rarm_lin") == 0) {
+			arm_mlpID = iGraph;
+		}
+	}
+	if(arm_mlpID == -1) {
+	  printf("ERROR p3d_softMotion_write_curve_for_bltplot unknow robot type \n");
+	  return;
+	}
+	
 	nbGpJnt = robotPt->mlp->mlpJoints[arm_mlpID]->nbJoints;
+	int nb_armDof =0;
+	q_armOld.clear();
+	vqi.clear();
+	min.clear();
+	max.clear();
+	segment.clear();
+	cond.clear();
+
+	
+	double min_i=0.0, max_i=0.0;
 	
 	for(v=0; v<nbGpJnt; v++) {
-	  index_dof = robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[v]]->index_dof;
+
 	  nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[v]]->dof_equiv_nbr;
 	  for(k=0; k<nb_dof; k++) {
-		q_armOld[j] = traj->courbePt->specific.softMotion_data->q_init[index_dof + k];
-		vqi[j] = 0.0;
-		p3d_jnt_get_dof_bounds(robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[v]], 0, &min[j], &max[j]);
+	
+		q_armOld.push_back(traj->courbePt->specific.softMotion_data->q_init[index_dof + k]);
+		vqi.push_back(0.0);
+		p3d_jnt_get_dof_bounds(robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[v]], 0, &min_i, &max_i);
+		min.push_back(min_i);
+		max.push_back(max_i);
 		j++;
+		nb_armDof ++;
 	  }
 	}
 	
 	index_dof = robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[0]]->index_dof;
-	int nb_armDof = 6;
+
 	localpathPt = traj->courbePt;
 	u = 0.0;
-int I_can;
+        int I_can;
 	int lpId = 0;
 	*nbPositions = 0;
+	qplot.clear();
+	positions.clear();
 	
 	while (localpathPt != NULL) {
 		specificPt = localpathPt->specific.softMotion_data;
@@ -2319,14 +2362,19 @@ int I_can;
 		while (end_localpath < 1) {
 
 			for (i=0;i<nb_armDof;i++) {
-				lm_get_softMotion_segment_params( specificPt, u, &segment[i], &segId, i);
+			
+	
+				lm_get_softMotion_segment_params( specificPt, u, &segment_i, &segId, i);
+				segment.push_back(segment_i);
+				
 				if (u >= specificPt->specific->motion[i].MotionDuration) {
 					paramLocal = specificPt->specific->motion[i].MotionDuration;
 				} else {
 					paramLocal = u;
 				}
-				lm_get_paramDiff_for_param( specificPt, &segment[i], segId, i, paramLocal, &paramDiff);
-				sm_CalculOfAccVelPosAtTimeSecond(paramDiff, &segment[i], &cond[i]);
+				lm_get_paramDiff_for_param( specificPt, &segment_i, segId, i, paramLocal, &paramDiff);
+				sm_CalculOfAccVelPosAtTimeSecond(paramDiff, &segment_i, &cond_i);
+				cond.push_back(cond_i);
 			}
 
 			/* position of the robot corresponding to parameter u */
@@ -2342,36 +2390,45 @@ int I_can;
 
 			// Check for the bounds for the arm
 			j=0;
-
+			q_arm.clear();
+			qplot_i.clear();
 			for(v=index_dof; v<( index_dof +nb_armDof); v++) {
  				dq = fmod((q[v] - q_armOld[j]), 2*M_PI);
 
 // 				q_arm[j] = q[v];
 
- 				q_arm[j] = q_armOld[j] + dq;
-				qplot[j][index] = q_arm[j];
+ 				q_arm.push_back(q_armOld[j] + dq);
+				qplot_i.push_back(q_arm[j]);
+// 				qplot[j][index] = q_arm[j];
 				//qplot[j][index] = q[v];
 				j++;
 			}
-
+			qplot.push_back(qplot_i);
 // 	vqi[j] = (q_arm[j] - q_armi[j]) / 0.01;
 			if(fileptr != NULL) {
-			  fprintf(fileptr,"%d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f  %f %f %f %f %f %f ;\n", index, cond[0].a, cond[0].v, q[21], cond[1].a, cond[1].v, q[22],cond[2].a, cond[2].v, q[23],cond[3].a, cond[3].v, q[24], cond[4].a, cond[4].v, q[25], cond[5].a, cond[5].v, q[26], q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5], vqi[0], vqi[1], vqi[2], vqi[3], vqi[4], vqi[5]);
+// 			  fprintf(fileptr,"%d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f  %f %f %f %f %f %f ;\n", index, cond[0].a, cond[0].v, q[21], cond[1].a, cond[1].v, q[22],cond[2].a, cond[2].v, q[23],cond[3].a, cond[3].v, q[24], cond[4].a, cond[4].v, q[25], cond[5].a, cond[5].v, q[26], q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5], vqi[0], vqi[1], vqi[2], vqi[3], vqi[4], vqi[5]);
 			}
 			if(filepQarmtr != NULL) {
-			fprintf(filepQarmtr,"%f %f %f %f %f %f\n",q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5]);
+			  pos_vect.clear();
+			  for(int w=0; w<qplot_i.size();w++){
+			   fprintf(filepQarmtr,"%f ",qplot_i[w]);
+	
+			  }
+			  fprintf(filepQarmtr,"\n");
 			}
-			positions[index].q1 = q_arm[0];
-			positions[index].q2 = q_arm[1];
-			positions[index].q3 = q_arm[2];
-			positions[index].q4 = q_arm[3];
-			positions[index].q5 = q_arm[4];
-			positions[index].q6 = q_arm[5];
-			lp[index] = lpId;
+			positions.push_back(qplot_i);
+// 			positions[0][index] = q_arm[0];
+// 			positions[1][index] = q_arm[1];
+// 			positions[2][index] = q_arm[2];
+// 			positions[3][index] = q_arm[3];
+// 			positions[4][index] = q_arm[4];
+// 			positions[5][index] = q_arm[5];
+			lp.push_back(lpId);
 			*nbPositions =  *nbPositions + 1;
 			index = index + 1;
+			q_armOld.clear();
 			for(i=0; i<nb_armDof; i++) {
-			q_armOld[i] = q_arm[i];
+			  q_armOld.push_back(q_arm[i]);
 			}
 			p3d_destroy_config(robotPt, q);
 			q = NULL;
@@ -2398,9 +2455,16 @@ int I_can;
 	if(flagPlot == true) {
 		FILE * f = NULL;
 		f = fopen("temp.dat","w");
-		for(i=0; i<index; i++){
-			fprintf(f,"%d %f %f %f %f %f %f\n",	i, qplot[0][i],qplot[1][i],qplot[2][i],qplot[3][i],qplot[4][i],qplot[5][i]);
+
+	        for(i=0; i<qplot.size(); i++){
+		  fprintf(f,"%d ",i);
+		  for(int v=0; v<qplot_i.size(); v++){
+			fprintf(f,"%f ",qplot[i][v]);
+		  }
+		  fprintf(f,"\n ");
 		}
+
+		
 		fclose(f);
 		h = gnuplot_init();
 		if(h == NULL){
@@ -2409,7 +2473,29 @@ int I_can;
 		gnuplot_cmd(h,(char*)"set term wxt");
 		gnuplot_cmd(h,(char*)"set xrange [%d:%d]",0,index-1);
 		gnuplot_cmd(h,(char*)"set yrange [-4.5:4.5]");  // maxi for Jido is 255°
-		gnuplot_cmd(h, (char*)"plot '%s' using 1:2 with lines lt 1 ti \"q1\", '%s' using 1:3 with lines lt 2 ti \"q2\" , '%s' using 1:4 with lines lt 3 ti \"q3\",'%s' using 1:5 with lines lt 4 ti \"q4\", '%s' using 1:6 with lines lt 5 ti \"q5\", '%s' using 1:7 with lines lt 6 ti \"q6\" " , "temp.dat", "temp.dat", "temp.dat", "temp.dat", "temp.dat", "temp.dat");
+		std::string gnuplotCmd;
+		gnuplotCmd.clear();
+		char text[255];
+		char text2[255];
+		for(i=0; i<qplot_i.size(); i++){
+		  sprintf(text,"%d",i+1);
+		  sprintf(text2,"%d",i+2);
+		  if(i==0) {
+		    gnuplotCmd.append("plot ");
+		  }
+		  gnuplotCmd.append("\"temp.dat\" using 1:");
+		  gnuplotCmd.append(text2);
+		  gnuplotCmd.append(" with lines lt ");
+		  gnuplotCmd.append(text);
+		  gnuplotCmd.append(" ti \"q");
+		  gnuplotCmd.append(text);
+		  if(i<qplot_i.size()-1){
+		    gnuplotCmd.append("\", ");
+		  } else {
+		      gnuplotCmd.append("\" ");
+		  }
+		}		
+		gnuplot_cmd(h, (char*)gnuplotCmd.c_str());
 	}
 	return;
 }

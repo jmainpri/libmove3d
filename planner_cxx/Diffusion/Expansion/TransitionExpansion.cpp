@@ -17,6 +17,8 @@
 using namespace std;
 using namespace tr1;
 
+using namespace Eigen;
+
 TransitionExpansion::TransitionExpansion() :
         RRTExpansion()
 {
@@ -31,6 +33,167 @@ TransitionExpansion::~TransitionExpansion()
 {
 }
 
+shared_ptr<Configuration> TransitionExpansion::computeGradient(shared_ptr<Configuration> q)
+{	
+	vector< pair<double,shared_ptr<Configuration> > > vect(8);
+	
+	for (unsigned int i=0; i<vect.size(); i++) 
+	{
+		shared_ptr<Configuration> ptrQ(new Configuration(*q));
+		ptrQ->setCostAsNotTested();
+		
+		vect[i].first = 0.0;
+		vect[i].second = ptrQ;
+	}
+	
+	unsigned int i=0;
+	
+	(*vect[i].second)(6) = (*q)(6) + step();
+	(*vect[i].second)(7) = (*q)(7);
+	
+	vect[i].first = vect[i].second->cost();
+	
+	i++;
+	
+	(*vect[i].second)(6) = (*q)(6);
+	(*vect[i].second)(7) = (*q)(7) + step();
+
+	vect[i].first = vect[i].second->cost();
+	
+	i++;
+	
+	(*vect[i].second)(6) = (*q)(6) - step();
+	(*vect[i].second)(7) = (*q)(7);
+	
+	vect[i].first = vect[i].second->cost();
+	
+	i++;
+	
+	(*vect[i].second)(6) = (*q)(6);
+	(*vect[i].second)(7) = (*q)(7) - step();
+	
+	vect[i].first = vect[i].second->cost();	
+	
+	i++;
+	
+	(*vect[i].second)(6) = (*q)(6) + step();
+	(*vect[i].second)(7) = (*q)(7) + step();
+
+	vect[i].first = vect[i].second->cost();
+	
+	i++;
+	
+	(*vect[i].second)(6) = (*q)(6) - step();
+	(*vect[i].second)(7) = (*q)(7) - step();
+	
+	vect[i].first = vect[i].second->cost();
+	
+	i++;
+	
+	
+	(*vect[i].second)(6) = (*q)(6) + step();
+	(*vect[i].second)(7) = (*q)(7) - step();
+	
+	vect[i].first = vect[i].second->cost();
+	
+	i++;
+		
+	(*vect[i].second)(6) = (*q)(6) - step();
+	(*vect[i].second)(7) = (*q)(7) + step();
+	
+	vect[i].first = vect[i].second->cost();
+	
+	sort(vect.begin(),vect.end());
+	
+//	for (unsigned int i=0; i<vect.size(); i++) 
+//	{
+//		//shared_ptr<Configuration> ptrQ(new Configuration(*q));
+//		cout << "Cost : " << i << " = " << vect[i].first << endl;
+//		cout << "Cost : " << i << " = " << vect[i].second->cost() << endl;
+//		vect[i].second->print();
+//		//vect[i].second = ptrQ;
+//	}
+//	cout << endl;
+	
+//	cout << "q = " << endl;
+//	q->print();
+	
+//	cout << "vect[0].second = " << endl;
+//	vect[0].second->print();
+	
+	Eigen::VectorXd direction = vect[0].second->getEigenVector() - q->getEigenVector();
+	
+	shared_ptr<Configuration> q_grad(new Configuration(vect[0].second->getRobot()));
+	
+//	cout << "q_grad = " << endl;
+//	q_grad->print();
+	
+	direction.normalize();
+	q_grad->setFromEigenVector(direction);
+	
+	return q_grad;
+}
+
+bool TransitionExpansion::mixWithGradient(Node* expansionNode,shared_ptr<Configuration> directionConfig)
+{	
+	shared_ptr<Configuration> q_grad = computeGradient(expansionNode->getConfiguration());
+	shared_ptr<Configuration> q_goal = getToComp()->getConfiguration();
+	
+	Eigen::VectorXd ExpansionVector = expansionNode->getConfiguration()->getEigenVector();
+	
+	Eigen::VectorXd Voronoi = ( directionConfig->getEigenVector() - ExpansionVector ).normalized() ;
+	Eigen::VectorXd Gradiant = q_grad->getEigenVector().normalized();
+	
+	
+	//		cout << "Voronoi : " << endl;
+	//		cout << Voronoi << endl;
+//		cout << "Gradiant : " << endl;
+//		cout << Gradiant << endl;
+	//		cout << "-----------------" << endl;
+	
+	//		double Norm = Voronoi.norm();
+	const unsigned int Discretization = 10;
+	const double delta = (1/(double)Discretization);
+	double k=0.0;
+	
+	for (unsigned int i=0; i<Discretization; i++) 
+	{
+		Eigen::VectorXd NewDirection = k*Voronoi + (1-k)*Gradiant;
+		NewDirection.normalize();
+		NewDirection *= 1.1*step();
+		
+		//			cout << "k = " << k << endl;
+		//			cout << NewDirection << endl;
+		//			cout << "-----------------" << endl;
+		
+		Eigen::VectorXd q_rand = NewDirection+ExpansionVector;
+		
+//		cout << "k = " << k << endl;
+//		cout << "q_rand = " << endl << q_rand << endl;
+//		cout << "-----------------" << endl;
+		
+		directionConfig->setFromEigenVector(q_rand);
+		
+		if ((!directionConfig->isOutOfBounds()) && 
+			(directionConfig->dist(*q_goal) < expansionNode->getConfiguration()->dist(*q_goal)))
+		{
+			break;
+		}
+		
+		if (i>=(Discretization-1)) 
+		{
+//			cout << "return false;" << endl;
+			return false;
+		}
+		//			cout << "delta = " << delta << endl;
+		k += delta;
+	}
+	
+	//cout << "Direction = " << endl;
+//	directionConfig->print();
+//	cout << "Return true" << endl;
+	return true;
+}
 
 /**
   * Gets the direction
@@ -530,17 +693,11 @@ bool TransitionExpansion::transitionTest(Node& fromNode,
     }
 }
 
-int TransitionExpansion::expandProcess(Node* expansionNode,
-                                       shared_ptr<Configuration> directionConfig,
-                                       Node* directionNode,
-                                       Env::expansionMethod method)
-{
 
-    if (method == Env::costConnect)
-    {
-        return expandCostConnect(*expansionNode, directionConfig,
-                                 directionNode, true);
-    }
+int TransitionExpansion::extendExpandProcess(Node* expansionNode,
+                                       shared_ptr<Configuration> directionConfig,
+                                       Node* directionNode)
+{
 
     bool failed(false);
     int nbCreatedNodes(0);
@@ -549,11 +706,22 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
 
     Node fromNode(*expansionNode);
     Node* extensionNode(NULL);
-
-    // Perform extension toward directionConfig
+	
+	// Perform extension toward directionConfig
     // Additional nodes creation in the nExtend case, but without checking for expansion control
-
     LocalPath directionLocalpath(fromNode.getConfiguration(), directionConfig);
+	
+	if ( ENV.getBool(Env::tRrtComputeGradient) )
+		{
+			if ( directionLocalpath.configAtParam(step())->cost() > fromNode.getConfiguration()->cost() ) 
+			{
+				
+				if( !mixWithGradient(expansionNode,directionConfig) )
+				{
+					return false;
+				}
+			}
+		}
 
     double pathDelta = directionLocalpath.getParamMax() == 0. ? 1.
         : MIN(1., step() / directionLocalpath.getParamMax() );
@@ -568,6 +736,7 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
     if (ENV.getBool(Env::expandControl) && !expandControl(directionLocalpath,
                                                           pathDelta, *expansionNode))
     {
+//		cout << "Failed expandControl test in " << __func__ << endl;
         return 0;
     }
     extensionCost = extensionLocalpath.getEnd()->cost();
@@ -581,6 +750,7 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
             if (!transitionTest(fromNode, extensionLocalpath))
             {
                 failed = true;
+				//cout << "Failed transition test in " << __func__ << endl;
             }
 
         }
@@ -608,15 +778,23 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
                 }
             }
         }
-
     }
-
+	
     // Add node to graph if everything succeeded
     if (!failed)
     {
-        extensionNode = addNode(&fromNode, extensionLocalpath, pathDelta,
+        extensionNode = addNode(&fromNode, 
+								extensionLocalpath, 
+								pathDelta,
                                 directionNode, nbCreatedNodes);
 
+		if ( ( directionNode != NULL )&&( extensionNode == directionNode ))
+		{
+			// Components were merged
+			cout << "Connected in Transition" << __func__ << endl;
+			return 0;
+		}
+		
         fromNode = *extensionNode;
 
         if ( extensionCost > expansionNode->getConfiguration()->cost())
@@ -627,6 +805,7 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
     else
     {
         adjustTemperature(false, &fromNode);
+		//cout << "New temperature in " << __func__ << " is " << node->temp() << endl;
         this->expansionFailed(*expansionNode);
     }
 
@@ -639,3 +818,27 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
     return nbCreatedNodes;
 }
 
+/** 
+ * expandProcess
+ */
+int TransitionExpansion::expandProcess(Node* expansionNode,
+									  shared_ptr<Configuration> directionConfig,
+									  Node* directionNode,
+									  Env::expansionMethod method)
+{
+	
+	switch (method) 
+	{
+		case Env::Connect:
+		case Env::costConnect:
+			return expandCostConnect(*expansionNode, directionConfig,directionNode, true);
+
+			
+		case Env::Extend:
+			return extendExpandProcess(expansionNode,directionConfig,directionNode);
+
+		default:
+			cerr << "Error : expand process not omplemented" << endl;
+			return 0;
+	} 
+}

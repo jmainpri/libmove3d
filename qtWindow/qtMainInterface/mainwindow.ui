@@ -227,8 +227,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>370</width>
-                 <height>821</height>
+                 <width>357</width>
+                 <height>822</height>
                 </rect>
                </property>
                <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -288,6 +288,32 @@
                          <number>1000</number>
                         </property>
                        </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QWidget" name="widget_5" native="true">
+                     <layout class="QHBoxLayout" name="horizontalLayout_5">
+                      <item>
+                       <widget class="QPushButton" name="pushButtonMobileCamera">
+                        <property name="text">
+                         <string>Mob. Camera</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="horizontalSpacer">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
                       </item>
                      </layout>
                     </widget>
@@ -381,6 +407,13 @@
                        <widget class="QCheckBox" name="checkBoxWalls">
                         <property name="text">
                          <string>Walls</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="6" column="0">
+                       <widget class="QCheckBox" name="checkBoxContour">
+                        <property name="text">
+                         <string>Contours</string>
                         </property>
                        </widget>
                       </item>
@@ -970,6 +1003,36 @@ p, li { white-space: pre-wrap; }
               </layout>
              </widget>
             </item>
+            <item>
+             <widget class="QGroupBox" name="groupBoxTests">
+              <property name="title">
+               <string>Tests</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_4">
+               <item>
+                <widget class="QPushButton" name="pushButtonTest1">
+                 <property name="text">
+                  <string>Test 1</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButtonTest2">
+                 <property name="text">
+                  <string>Test 2</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButtonTest3">
+                 <property name="text">
+                  <string>Test 3</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
            </layout>
           </widget>
          </widget>
@@ -1012,20 +1075,28 @@ p, li { white-space: pre-wrap; }
    </widget>
    <widget class="QMenu" name="menuGraph">
     <property name="title">
-     <string>Graph</string>
+     <string>Roadmap</string>
     </property>
     <addaction name="actionLoadGraph"/>
     <addaction name="actionSaveGraph_2"/>
+    <addaction name="actionSaveToDot"/>
+    <addaction name="separator"/>
+    <addaction name="actionLoadTrajectory"/>
+    <addaction name="actionSaveTrajectory"/>
    </widget>
    <widget class="QMenu" name="menuEnvironement_2">
     <property name="title">
      <string>Environement</string>
     </property>
+    <widget class="QMenu" name="menuRobot">
+     <property name="title">
+      <string>Robot</string>
+     </property>
+    </widget>
     <addaction name="actionOpenScenario"/>
     <addaction name="actionSaveScenario"/>
     <addaction name="separator"/>
-    <addaction name="actionRobot"/>
-    <addaction name="action3DViewer"/>
+    <addaction name="menuRobot"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEnvironement_2"/>
@@ -1037,11 +1108,6 @@ p, li { white-space: pre-wrap; }
   <action name="actionQuit">
    <property name="text">
     <string>Quit</string>
-   </property>
-  </action>
-  <action name="actionRobot">
-   <property name="text">
-    <string>Robot</string>
    </property>
   </action>
   <action name="action3DViewer">
@@ -1091,12 +1157,37 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionLoadGraph">
    <property name="text">
-    <string>Load</string>
+    <string>Load Graph</string>
    </property>
   </action>
   <action name="actionSaveGraph_2">
    <property name="text">
-    <string>Save</string>
+    <string>Save Graph</string>
+   </property>
+  </action>
+  <action name="actionLoadTrajectory">
+   <property name="text">
+    <string>Load Trajectory</string>
+   </property>
+  </action>
+  <action name="actionSaveTrajectory">
+   <property name="text">
+    <string>Save Trajectory</string>
+   </property>
+  </action>
+  <action name="actionAllDevices">
+   <property name="text">
+    <string>All Devices</string>
+   </property>
+  </action>
+  <action name="actionSave_Graph_To_Dot">
+   <property name="text">
+    <string>Save Graph To Dot</string>
+   </property>
+  </action>
+  <action name="actionSaveToDot">
+   <property name="text">
+    <string>Save To Dot</string>
    </property>
   </action>
  </widget>

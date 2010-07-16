@@ -15,7 +15,7 @@ using namespace tr1;
 CostSpace* global_costSpace(NULL);
 
 //------------------------------------------------------------------------------
-CostSpace::CostSpace() : m_deltaMethod(integral)
+CostSpace::CostSpace() : m_deltaMethod(cs_integral)
 {
 }
 //------------------------------------------------------------------------------
@@ -101,7 +101,7 @@ double CostSpace::deltaStepCost(double cost1, double cost2, double length)
     {
         switch (m_deltaMethod)
         {
-			case mechanical_work:
+			case cs_mechanical_work:
 				double cost;
 				if (cost2 > cost1)
 				{
@@ -113,8 +113,8 @@ double CostSpace::deltaStepCost(double cost1, double cost2, double length)
 				}
 				return cost;
 				
-			case integral:
-			case visibility:
+			case cs_integral:
+			case cs_visibility:
 				
 				return pow(((cost1 + cost2)/2),powerOnIntegral)*length;
 				
@@ -129,14 +129,14 @@ double CostSpace::deltaStepCost(double cost1, double cost2, double length)
 				//		  return epsilon*length;
 				//      }
 				
-			case average:
+			case cs_average:
 				return (cost1 + cost2) / 2.;
 				
 				//			case config_cost_and_dist:
 				//				alpha = p3d_GetAlphaValue();
 				//				return alpha * (cost1 + cost2) / 2. + (1. - alpha) * length;
 				
-			case boltzman_cost:
+			case cs_boltzman_cost:
 				
 				if (cost2 > cost1)
 					return 1;
@@ -221,13 +221,20 @@ double CostSpace::cost(LocalPath& path)
 //----------------------------------------------------------------------
 extern void* GroundCostObj;
 
+double computeBasicCost(Configuration& conf)
+{
+	return 1.0;
+}
+
 double computeIntersectionWithGround(Configuration& conf)
 {
 	double cost(0);
 	if(GroundCostObj)
 	{
-		GHintersectionVerticalLineWithGround(GroundCostObj, conf.getConfigStruct()[6],
-											 conf.getConfigStruct()[7], &cost);
+		GHintersectionVerticalLineWithGround(GroundCostObj, 
+											 conf.getConfigStruct()[6],
+											 conf.getConfigStruct()[7], 
+											 &cost);
 	}
 	return(cost);
 }

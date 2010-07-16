@@ -54,43 +54,43 @@ static void gradientProject(p3d_rob *rob, double d0, configPt Gt)
   p3d_col_test_robot(rob, DISTANCE_EXACT);
   p3d_col_report_closest_points(rob, r, s, distances);
 
-  for (i=0;i<rob->no;i++)
+	for (i=0;i<rob->no;i++)
     {
-      // project Gt on the tangent plane of the nearest obstacle
-      if (distances[i]<P3D_HUGE)
-	{
-	  d = distances[i];
-	  if (d<dmin)
-	    dmin = d;
-	  jnt = rob->o[i]->jnt;
-	  p3d_matInvertXform(jnt->abs_pos, M);
-	  p3d_xformPoint(M, r[i], P);
-	  p3d_vectSub(s[i], r[i], F);
-	  p3d_vectNormalize(F, F);
-	  p3d_jacTransposeMult(P, jnt, F, G);
-	  alpha = 0;
-	  normG = 0;
-	  for (j=0;j<=rob->njoints;j++) {
-	    jntPt =rob->joints[j];
-	    for(i_dof = 0; i_dof<jntPt->dof_equiv_nbr; i_dof++) {
-	      k = jntPt->index_dof+i_dof;
-	      /* Normalize to avoid the disparity between parameters
-		 with angle and parameters with length (change with
-		 the environment) */
-	      if (p3d_jnt_is_dof_angular(jntPt, i)) {
-		alpha += Gt[k]*G[k] * SQR(jntPt->dist);
-		normG +=  G[k]*G[k] * SQR(jntPt->dist);
-	      } else {
-		alpha += Gt[k]*G[k];
-		normG +=  G[k]*G[k];
-	      }
-	    }
-	  }
-	  if ((alpha > d-d0)&&(normG>EPS6))
-	    {
-	      for (k=0;k<rob->nb_dof;k++)
-		Gt[k] -= ((alpha - d + d0)/normG) * G[k];
-	    }			
+		// project Gt on the tangent plane of the nearest obstacle
+		if (distances[i]<P3D_HUGE)
+		{
+			d = distances[i];
+			if (d<dmin)
+				dmin = d;
+			jnt = rob->o[i]->jnt;
+			p3d_matInvertXform(jnt->abs_pos, M);
+			p3d_xformPoint(M, r[i], P);
+			p3d_vectSub(s[i], r[i], F);
+			p3d_vectNormalize(F, F);
+			p3d_jacTransposeMult(P, jnt, F, G);
+			alpha = 0;
+			normG = 0;
+			for (j=0;j<=rob->njoints;j++) {
+				jntPt =rob->joints[j];
+				for(i_dof = 0; i_dof<jntPt->dof_equiv_nbr; i_dof++) {
+					k = jntPt->index_dof+i_dof;
+					/* Normalize to avoid the disparity between parameters
+					 with angle and parameters with length (change with
+					 the environment) */
+					if (p3d_jnt_is_dof_angular(jntPt, i)) {
+						alpha += Gt[k]*G[k] * SQR(jntPt->dist);
+						normG +=  G[k]*G[k] * SQR(jntPt->dist);
+					} else {
+						alpha += Gt[k]*G[k];
+						normG +=  G[k]*G[k];
+					}
+				}
+			}
+			if ((alpha > d-d0)&&(normG>EPS6))
+			{
+				for (k=0;k<rob->nb_dof;k++)
+					Gt[k] -= ((alpha - d + d0)/normG) * G[k];
+			}			
     	}
     }
   p3d_destroy_config(rob, G);

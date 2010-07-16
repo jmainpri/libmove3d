@@ -61,6 +61,7 @@ MACRO(BM3D_CheckCompilationFlags)
 ENDMACRO(BM3D_CheckCompilationFlags)
 
 
+BM3D_flag(JIDO "Check this flag to activate all dependencies for Jido" OFF CXX_PLANNER USE_CXX_PLANNER PQP MULTIGRAPH LIGHT_PLANNER HRI_PLANNER HRI_GENERALIZED_IK MULTILOCALPATH GRASP_PLANNING FK_CNTRT USE_GSL)
 
 BM3D_flag(ANIMATION "Compilation with the module character" OFF)
 
@@ -88,8 +89,6 @@ BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module for Move3D" OFF HR
 BM3D_flag(HRI_GENERALIZED_IK "Human Robot Interaction generalized inverse kinematics" OFF)
 BM3D_flag(HRI_COSTSPACE "Human Robot Interaction planner module for Move3D" OFF)
 
-
-
 BM3D_flag(MULTILOCALPATH "Compilation avec le module Multi-Localpath" OFF)
 BM3D_flag(GRASP_PLANNING "Module de planification de prises" OFF PQP)
 
@@ -112,6 +111,7 @@ BM3D_flag(BIO_BALL "Sets Ball compiling mode" OFF)
 
 BM3D_flag(USE_HRP2_GIK "HRP2 GIK Library" OFF)
 BM3D_flag(USE_MIGHTABILITY_MAPS "Mightability Map Calculation and Planning" OFF)
+BM3D_flag(USE_HATP_LIBS "For including HATP libraries" OFF)
 
 
 BM3D_CheckCompilationFlags()
@@ -284,12 +284,14 @@ IF(USE_HRP2_GIK)
   SET(LIBS ${LIBS} ${HRP2_GIK_LIBRARIES})
 ENDIF(USE_HRP2_GIK)
 
-IF(USE_HRP2_GIK)
-  FIND_PACKAGE(HRP2_GIK REQUIRED)
-  INCLUDE_directories(${HRP2_GIK_INCLUDE_DIR})
-  SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${HRP2_GIK_INCLUDE_DIR})
-  SET(LIBS ${LIBS} ${HRP2_GIK_LIBRARIES})
-ENDIF(USE_HRP2_GIK)
+#-------------- HATP LIBRARY --------------------------------------
+#----------------------------------------------------------
+IF(USE_HATP_LIBS)
+  FIND_PACKAGE(HATP_LIB REQUIRED)
+  INCLUDE_directories(${HATP_LIB_INCLUDE_DIR})
+  SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${HATP_LIB_INCLUDE_DIR})
+  SET(LIBS ${LIBS} ${HATP_LIB_LIBRARIES})
+ENDIF(USE_HATP_LIBS)
 
 #Template :
 # FIND_PACKAGE(<Package> REQUIRED)

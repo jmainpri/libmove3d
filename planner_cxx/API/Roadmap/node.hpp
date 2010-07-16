@@ -8,9 +8,9 @@
 class Graph;
 
 #ifndef _ROADMAP_H
-typedef struct node;
-typedef struct edge;
-typedef struct compco;
+struct node;
+struct edge;
+struct compco;
 #endif
 
 //class cpp_Graph;
@@ -57,6 +57,15 @@ public:
      */
     ~Node();
 
+	/**
+	 * Deletes the p3d node without deleting the 
+	 * configuration allready stored in a shared_ptr
+	 */
+	void deleteNode();
+	
+	/**
+	 * Equal operator
+	 */
     bool operator==(Node& N);
 
   //Accessors
@@ -205,6 +214,12 @@ public:
      * @return le pointeur sur la structure Compco
      */
     compco** getCompcoStructPt();
+	
+	/**
+	 * Gets the number of nodes
+	 * in the connected componnent
+	 */
+	unsigned int getNumberOfNodesInCompco();
 
     /**
      * place le Node dans la composante connexe
@@ -252,13 +267,13 @@ public:
     /**
      * Method for EST
      */
-    void setSelectCost(double Cost) { _SelectCost = Cost; }
-    double getSelectCost() { return _SelectCost; }
-    void setExpandFailed() { _nbExpan++;  }
-    int getNbExpandFailed() { return _nbExpan; }
+    void			setSelectCost(double Cost) { _SelectCost = Cost; }
+    double		getSelectCost() { return _SelectCost; }
+    void			setExpandFailed() { _nbExpan++;  }
+    int				getNbExpandFailed() { return _nbExpan; }
 
-	std::vector<Node*>& getSortedNodes() {return _SortedNodes;}
-    void setSortedNodes( std::vector<Node*>& nodes ) { _SortedNodes = nodes;}
+		std::vector<Node*>& getSortedNodes() {return _SortedNodes;}
+    void							setSortedNodes( std::vector<Node*>& nodes ) { _SortedNodes = nodes;}
 	
 	
 	/**

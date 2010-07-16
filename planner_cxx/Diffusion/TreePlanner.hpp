@@ -26,7 +26,7 @@ public:
 	/**
 	 * Constructor
 	 */
-        TreePlanner(Robot* R, Graph* G);
+	TreePlanner(Robot* R, Graph* G);
 
 	/**
 	 * Destructor
@@ -44,7 +44,9 @@ public:
 	virtual bool checkStopConditions();
 
 	/**
-	 * Checks out the preconditions
+	 * Checks out the Pre-conditions
+	 * - start and goal are not in collision
+	 * - start and goal are different configurations
 	 */
 	virtual bool preConditions();
 
@@ -57,13 +59,13 @@ public:
 	 */
 	virtual bool connectNodeToCompco(Node* N, Node* CompNode);
 
-        /**
-          * Main function to connect to the other Connected Component
-          */
-        bool connectionToTheOtherCompco(Node* toNode);
+	/**
+	 * Main function to connect to the other Connected Component
+	 */
+	bool connectionToTheOtherCompco(Node* toNode);
 
 	/**
-	 * Expands tree from component fromComp,
+	 * Expands tree from component fromComp
 	 * to component toComp
 	 * @param fromComp the starting connex component
 	 * @param toComp the arriving connex component
@@ -75,22 +77,50 @@ public:
 	 * Main function of the Tree process
 	 * @return the number of Nodes added to the Graph
 	 */
-	unsigned int run();
+	virtual unsigned int run();
 
 	/**
 	 * Returns number of consecutive failure
 	 * during plannification
 	 */
-	int getNumConsecutiveFail()
+	unsigned int getNumberOfConsecutiveFail()
 	{
-		return _nbConscutiveFailures;
+		return m_nbConscutiveFailures;
 	};
 
+	/**
+	 * Returns number of expansion
+	 * during plannification
+	 */
+	unsigned int getNumberOfExpansion()
+	{
+		return m_nbExpansion;
+	};
+	
+	/**
+	 * Returns number of expansion failure
+	 * during plannification
+	 */
+	unsigned int getNumberOfFailedExpansion()
+	{
+		return m_nbFailedExpansion;
+	};
+	
+	/**
+	 * Returns number the initial number of nodes
+	 * of plannification
+	 */
+	unsigned int getNumberOfInitialNodes()
+	{
+		return m_nbInitNodes;
+	};
 
 protected:
 
-	int _nbConscutiveFailures;
-	int mNbExpansion;
+	unsigned int m_nbConscutiveFailures;
+	unsigned int m_nbExpansion;
+	unsigned int m_nbFailedExpansion;
+	unsigned int m_nbInitNodes;
 
 };
 

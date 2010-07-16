@@ -13,18 +13,20 @@
 using namespace std;
 using namespace tr1;
 
-/**
+/*!
  * Constructor
  */
 TreePlanner::TreePlanner(Robot* R, Graph* G) :
         Planner(R,G),
-        _nbConscutiveFailures(0),
-        mNbExpansion(0)
-{
-    cout << "Tree planner constructor " << endl;
+        m_nbConscutiveFailures(0),
+        m_nbExpansion(0),
+		m_nbFailedExpansion(0),
+		m_nbInitNodes(G->getNumberOfNodes())
+{	
+    cout << "TreePlanner::TreePlanner(R,G)" << endl;
 }
 
-/**
+/*!
  * Destructor
  */
 TreePlanner::~TreePlanner()
@@ -36,8 +38,8 @@ int TreePlanner::init()
 {
     int ADDED = 0;
     Planner::init();
-    _nbConscutiveFailures = 0;
-    mNbExpansion = 0;
+    m_nbConscutiveFailures = 0;
+    m_nbExpansion = 0;
 
     ADDED += Planner::setStart(_Robot->getInitialPosition());
     ADDED += Planner::setGoal(_Robot->getGoTo());
@@ -47,7 +49,8 @@ int TreePlanner::init()
 
     return ADDED;
 }
-/**
+
+/*!
  * Checks out that the plannification
  * problem fits such requirement
  */
@@ -67,13 +70,19 @@ bool TreePlanner::preConditions()
     if ((ENV.getBool(Env::biDir) && ENV.getBool(Env::expandToGoal))
         && (*_Start->getConfiguration() == *_Goal->getConfiguration()) )
         {
-        cout << "Tree Expansion failed: root nodes are the same" << endl;
+        cout << "TreePlanner::preConditions => Tree Expansion failed: root nodes are the same" << endl;
         return false;
     }
 
-    if (_Start->getConfiguration()->IsInCollision())
+	if (_Start->getConfiguration()->isOutOfBounds())
     {
-        cout << "Start in collision" << endl;
+        cout << "TreePlanner::preConditions => Start is out of bounds" << endl;
+        return false;
+    }
+	
+    if (_Start->getConfiguration()->isInCollision())
+    {
+        cout << "TreePlanner::preConditions => Start in collision" << endl;
         return false;
     }
 
@@ -82,14 +91,22 @@ bool TreePlanner::preConditions()
 //        cout << "Start does not respect constraints" << endl;
 //        return false;
 //    }
-
-    if (ENV.getBool(Env::expandToGoal)
-        && _Goal->getConfiguration()->IsInCollision())
-        {
-        cout << "Goal in collision" << endl;
-        return false;
-    }
-
+	
+    if (ENV.getBool(Env::expandToGoal))
+	{
+		if( _Goal->getConfiguration()->isOutOfBounds() )
+		{
+			cout << "TreePlanner::preConditions => Goal in collision" << endl;
+			return false;
+		}
+		
+		if( _Goal->getConfiguration()->isInCollision() )
+		{
+			cout << "TreePlanner::preConditions => Goal in collision" << endl;
+			return false;
+		}
+	}
+	
 //    if (ENV.getBool(Env::expandToGoal)
 //        && (!(_Goal->getConfiguration()->setConstraints())))
 //        {
@@ -107,7 +124,7 @@ bool TreePlanner::preConditions()
     return true;
 }
 
-/**
+/*!
  * Checks out if the plannification
  * problem has reach its goals
  */
@@ -160,7 +177,7 @@ bool TreePlanner::checkStopConditions()
         return (true);
     }
 
-    if (_nbConscutiveFailures > ENV.getInt(Env::NbTry))
+    if ((int)m_nbConscutiveFailures > ENV.getInt(Env::NbTry))
     {
         cout
                 << "Failure: the maximum number of consecutive failures to expand a component is reached."
@@ -182,18 +199,21 @@ bool TreePlanner::checkStopConditions()
     return (false);
 }
 
-/**
+/*!
  * Tries to connect one node from
  * one component to the other
  */
-bool TreePlanner::connectNodeToCompco(Node* N, Node* CompNode)
+bool TreePlanner::connectNodeToCompco(Node* N, Node* Compco)
 {
-    return p3d_ConnectNodeToComp(N->getGraph()->getGraphStruct(),
-                                 N->getNodeStruct(), CompNode->getCompcoStruct());
+//    return p3d_ConnectNodeToComp(N->getGraph()->getGraphStruct(),
+//                                 N->getNodeStruct(), CompNode->getCompcoStruct());
+	
+	return _Graph->connectNodeToCompco(N,Compco);
 }
 
-/**
-  * Main function to connect to the other component
+/*!
+  * Main function to connect 
+  * to the other component
   */
 bool TreePlanner::connectionToTheOtherCompco(Node* toNode)
 {
@@ -231,7 +251,7 @@ bool TreePlanner::connectionToTheOtherCompco(Node* toNode)
     return isConnectedToOtherTree;
 }
 
-/**
+/*!
  * Main Function of the Tree Planner,
  * Bi-Directionality is handled here
  */
@@ -242,11 +262,12 @@ unsigned int TreePlanner::run()
     //	cout << "ENV.getInt(Env::maxNodeCompco) = " << ENV.getInt(Env::maxNodeCompco) << endl;
     if(!preConditions())
     {
+		cout << "Stoped in Tree planner, pre condition" << endl;
         return 0;
     }
-
-    int NbCurCreatedNodes = 0;
-    int NbTotCreatedNodes = 0;
+	
+    unsigned int NbCurCreatedNodes = 0;
+    unsigned int NbTotCreatedNodes = 0;
 
     Node* fromNode = _Start;
     Node* toNode = _Goal;
@@ -259,13 +280,13 @@ unsigned int TreePlanner::run()
         //		cout << "ENV.getInt(Env::maxNodeCompco) = " << ENV.getInt(Env::maxNodeCompco) << endl;
         // Do not expand in the case of a balanced bidirectional expansion,
         // if the components are unbalanced.
-        if (!(ENV.getBool(Env::biDir) && ENV.getBool(Env::expandBalanced)
+        if (!((ENV.getBool(Env::biDir) && ENV.getBool(Env::expandBalanced))
             && (fromNode->getCompcoStruct()->nnode
                 > toNode->getCompcoStruct()->nnode + 2)))
             {
             // expand one way
             // one time (Main function of Tree like planners
-            NbCurCreatedNodes = expandOneStep(fromNode,toNode);
+			NbCurCreatedNodes = expandOneStep(fromNode,toNode); m_nbExpansion++;
 
             if (NbCurCreatedNodes > 0)
             {
@@ -277,7 +298,7 @@ unsigned int TreePlanner::run()
                 NbTotCreatedNodes += NbCurCreatedNodes;
 
 //                cout << "NbTotCreatedNodes  = "  << NbTotCreatedNodes << endl;
-                _nbConscutiveFailures = 0;
+                m_nbConscutiveFailures = 0;
 
                 if (ENV.getBool(Env::expandToGoal))
                 {
@@ -288,15 +309,15 @@ unsigned int TreePlanner::run()
 //                    while ((!connectNodeToCompco(_Graph->getLastnode(), toNode->randomNodeFromComp())) && (iter < toNode->getCompcoStruct()->nnode ))
                    {
 //                        iter = iter + 2;
-                        //						cout << "nb Comp : " << _Graph->getGraphStruct()->ncomp<< endl;
+//						cout << "nb Comp : " << _Graph->getGraphStruct()->ncomp<< endl;
                         cout << "connected" << endl;
-                        //                                                return (NbTotCreatedNodes);
+//                      return (NbTotCreatedNodes);
                     }
                 }
             }
             else
             {
-                _nbConscutiveFailures++;
+                m_nbConscutiveFailures++;
             }
         }
         if (ENV.getBool(Env::biDir))
@@ -308,9 +329,8 @@ unsigned int TreePlanner::run()
     {
         (*_draw_func)();
     }
-    ENV.setInt(Env::nbQRand,mNbExpansion);
-	
+    
+	ENV.setInt(Env::nbQRand,m_nbExpansion);
 	_Robot->setAndUpdate(*tmp);
-
     return (NbTotCreatedNodes);
 }

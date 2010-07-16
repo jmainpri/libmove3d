@@ -9,13 +9,16 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#include "../planningAPI.hpp"
-#include "../../API/Grids/gridsAPI.hpp"
+#include "planningAPI.hpp"
+#include "Grids/gridsAPI.hpp"
 
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"
+#include "Move3d-pkg.h"
+#include "Collision-pkg.h"
+
 #ifdef LIGHT_PLANNER
-#include "../../lightPlanner/proto/lightPlannerApi.h"
+#include "lightPlanner/proto/lightPlannerApi.h"
 #endif
 
 Robot* API_activeRobot = NULL;
@@ -71,7 +74,7 @@ Robot::Robot(p3d_rob* robotPt, bool copy )
 	
 	m_Joints.clear();
 	
-	for (int i=0; i<_Robot->njoints; i++) 
+	for (int i=0; i<=_Robot->njoints; i++) 
 	{
 		m_Joints.push_back( new Joint( this , _Robot->joints[i] , _copy ) );
 	}
@@ -105,6 +108,11 @@ p3d_traj* Robot::getTrajStruct()
 	return _Robot->tcur;
 }
 
+API::Trajectory Robot::getCurrentTraj()
+{
+	API::Trajectory traj(this,_Robot->tcur);
+	return traj;
+}
 
 unsigned int Robot::getNumberOfJoints()
 {
@@ -222,12 +230,26 @@ shared_ptr<Configuration> Robot::shootFreeFlyer(double* box)
 }
 
 #ifdef LIGHT_PLANNER
+
+bool Robot::isActiveCcConstraint()
+{
+	for(int i = 0; i < _Robot->nbCcCntrts; i++)
+	{
+		if(_Robot->ccCntrts[i]->active)
+		{
+			return true;
+		}
+    }
+	
+	return false;
+}
+
 /**
  * Activate Constraint
  */
 void Robot::activateCcConstraint()
 {
-	activateCcCntrts(_Robot,-1,true);
+	activateCcCntrts(_Robot,-1,false);
 }
 
 /**
@@ -273,6 +295,20 @@ shared_ptr<Configuration> Robot::shootBase()
 }
 
 /**
+ * Shoots the base Joint of the robot
+ */
+shared_ptr<Configuration> Robot::shootBaseWithoutCC()
+{
+	shared_ptr<Configuration> q = getCurrentPos();
+	m_Joints[_Robot->baseJnt->num]->shoot(*q);
+	cout << "Base Num = " << _Robot->baseJnt->num << endl;
+	deactivateCcConstraint();
+	setAndUpdate(*q);
+	activateCcConstraint();
+	return getCurrentPos();
+}
+
+/**
  * Shoots all exept base
  */
 shared_ptr<Configuration> Robot::shootAllExceptBase()
@@ -297,9 +333,7 @@ shared_ptr<Configuration> Robot::shootAllExceptBase()
 
 bool Robot::setAndUpdateAllExceptBase(Configuration& q)
 {
-	int njnt = _Robot->njoints;
-	
-	for(int i=0; i<=njnt; i++) 
+	for(int i=0; i<(int)m_Joints.size(); i++) 
 	{
 		p3d_jnt* jntPt = m_Joints[i]->getJointStruct();
 		
@@ -379,6 +413,45 @@ void Robot::setAndUpdateWithoutConstraints(Configuration& q)
 {
     p3d_set_robot_config(_Robot, q.getConfigStruct());
     p3d_update_this_robot_pos_without_cntrt(_Robot);
+}
+
+bool Robot::setAndUpdateHumanArms(Configuration& q)
+{
+	for(int i=2; i<=21; i++) // Just Arms
+	{
+		p3d_jnt* jntPt = _Robot->joints[i];
+		for(int j=0; j<jntPt->dof_equiv_nbr; j++) 
+		{
+			p3d_jnt_set_dof(jntPt, j, q[jntPt->index_dof+j]); 
+		}
+	}
+	
+	return p3d_update_this_robot_pos(_Robot);
+}
+
+bool Robot::isInCollision()
+{
+	bool ncol = false;
+	
+	/* collision checking */
+	if( g3d_get_KCD_CHOICE_IS_ACTIVE() )
+	{
+		if(G3D_ACTIVE_CC)
+		{
+			ncol = p3d_col_test_choice();
+		}
+	}
+	else
+	{
+		if(G3D_ACTIVE_CC)
+		{
+			//cout << "p3d_col_test_all()" << endl;
+			ncol = p3d_col_test_all();
+		}
+	}
+	
+	return true;
+	//cout << "Collision = " << ncol << endl;
 }
 
 shared_ptr<Configuration> Robot::getInitialPosition()
@@ -467,4 +540,31 @@ Vector3d Robot::getJointPos(int id)
     return vect;
 }
 
+/**
+ * Returns the number of DoF active in the planning phase
+ * @return Number of Active DoFs
+ */
+unsigned int Robot::getNumberOfActiveDoF()
+{
+	unsigned int nbDoF(0);
+	
+	for(unsigned int i=0;i<m_Joints.size();i++)
+	{
+		p3d_jnt* jntPt = m_Joints[i]->getJointStruct();
+		
+		for(int j=0; j<jntPt->dof_equiv_nbr; j++) 
+		{
+			int k = jntPt->index_dof + j;
+			
+			if (
+					(p3d_jnt_get_dof_is_user(jntPt, j) && p3d_jnt_get_dof_is_active_for_planner(jntPt,j)) &&
+					(_Robot->cntrt_manager->in_cntrt[k] != 2) ) 
+			{
+				nbDoF++;
+			}
+		}
+	}
+	
+	return nbDoF;
+}
 

@@ -1,22 +1,23 @@
 #include "moverobot.hpp"
 #include "ui_moverobot.h"
 
-#include "../cppToQt.hpp"
-#include "../qtOpenGL/glwidget.hpp"
+#include "qtOpenGL/glwidget.hpp"
 
 #include <iostream>
 #include <tr1/memory>
 
 #include "P3d-pkg.h"
-
-#ifdef P3D_COLLISION_CHECKING
 #include "Collision-pkg.h"
+
+#include "planner_cxx/cost_space.hpp"
+
+#ifdef HRI_COSTSPACE
+#include "HRICS_costspace.h"
 #endif
 
-#ifdef P3D_PLANNER
-#include "Planner-pkg.h"
+#ifdef WITH_XFORMS
+#include "cppToQt.hpp"
 #endif
-#include "Move3d-pkg.h"
 
 using namespace std;
 using namespace tr1;
@@ -27,8 +28,6 @@ MoveRobot::MoveRobot(QWidget *parent) :
 {
     m_ui->setupUi(this);
     
-
-
 }
 
 MoveRobot::~MoveRobot()
@@ -36,11 +35,17 @@ MoveRobot::~MoveRobot()
     delete m_ui;
 }
 
+/*!
+ * This function intialize all Robot Forms
+ * and sets them in a Tab widget
+ */
 void MoveRobot::initAllForms(GLWidget* ptrOpenGl)
 {
 	mOpenGl= ptrOpenGl;
 	
-    for(int i=0;i<XYZ_ENV->nr;i++)
+	Scene* envPt = global_Project->getActiveScene();
+	
+    for(unsigned int i=0;i<envPt->getNumberOfRobots();i++)
     {
         if(i==0)
         {
@@ -49,7 +54,7 @@ void MoveRobot::initAllForms(GLWidget* ptrOpenGl)
         }
 		
 #ifdef CXX_PLANNER
-        Robot* ptrRob = new Robot(XYZ_ENV->robot[i],false);
+        Robot* ptrRob = envPt->getRobot(i);
 		
 		FormRobot* form = newGridLayoutForRobot(ptrRob);
 		
@@ -61,7 +66,7 @@ void MoveRobot::initAllForms(GLWidget* ptrOpenGl)
         form->setSliders(*ptrConf);
 		mRobots.push_back(form);
 		
-		cout << "MoveRobot::ptrRob->getRobotStruct()->njoints = "  << ptrRob->getRobotStruct()->njoints << endl;
+		cout << "MoveRobot::ptrRob->getRobotStruct()->getNumberOfJoints() = "  << ptrRob->getNumberOfJoints() << endl;
 #endif
 #ifdef WITH_XFORMS
         std::string str = "g3d_draw_allwin_active";
@@ -75,8 +80,27 @@ void MoveRobot::initAllForms(GLWidget* ptrOpenGl)
     }
 }
 
-/**
- * Creates a grid for all robots
+FormRobot* MoveRobot::getRobotFormByName(string name)
+{
+	for(unsigned int i=0;i<mRobots.size();i++)
+	{
+		if (mRobots[i]->getRobot()->getName().compare(name) == 0) 
+		{
+			return mRobots[i];
+		}
+	}
+	cout << "Robot " << name << "doesn't exist" << endl;
+	return 0x00;
+}
+
+void MoveRobot::setRobotConstraintedDof(Robot* ptrRob)
+{
+	getRobotFormByName(ptrRob->getName())->resetConstraintedDoFs();
+}
+
+/*!
+ * This function intialize a Robot Form from a 
+ * Robot structure
  */
 FormRobot* MoveRobot::newGridLayoutForRobot(Robot* ptrRob)
 {
@@ -125,6 +149,10 @@ FormRobot* MoveRobot::newGridLayoutForRobot(Robot* ptrRob)
     return formRobot;
 }
 
+/*!
+ * Sets the Robot Forms to the initial
+ * configuration of their associated Robots
+ */
 void MoveRobot::updateAllRobotInitPos()
 {
 	for(unsigned int i=0;i<mRobots.size();i++)
@@ -133,7 +161,7 @@ void MoveRobot::updateAllRobotInitPos()
 		robot->setAndUpdate( *robot->getInitialPosition() );
 		mRobots[i]->setSliders( *robot->getCurrentPos() );
 		mRobots[i]->getComboBox()->setCurrentIndex(0);
-		//cout << "Show Robot :" << i << endl;
+		cout << "Set Robot " << robot->getName() << " to its initial position" << endl;
 	}
 }
 
@@ -152,6 +180,10 @@ void MoveRobot::changeEvent(QEvent *e)
 //---------------------------------------------------------------------
 // FormRobot
 //---------------------------------------------------------------------
+
+/*!
+ * Computes the number of dof of the Robot
+ */
 int FormRobot::calc_real_dof(void)
 {
     int nrd;
@@ -161,11 +193,11 @@ int FormRobot::calc_real_dof(void)
     nrd = robotPt->nb_user_dof;
     njnt = p3d_get_robot_njnt();
 
-#ifdef P3D_COLLISION_CHECKING
-    if(njnt > MAX_NJNTS_IN_ROBOTFORM) {
-        return 0;
-    }
-#endif
+//#ifdef P3D_COLLISION_CHECKING
+//    if(njnt > MAX_NJNTS_IN_ROBOTFORM) {
+//        return 0;
+//    }
+//#endif
 
     for(i=0; i<=njnt; i++) {
         for(j=0; j<robotPt->joints[i]->dof_equiv_nbr; j++) {
@@ -180,13 +212,16 @@ int FormRobot::calc_real_dof(void)
     return nrd;
 }
 
-#ifdef CXX_PLANNER
+/*!
+ * Initializes the 
+ * DofSlider Object (one per dof)
+ */
 void FormRobot::initSliders()
 {
     //    int       i, j, k, ir, ord;
     int k;
     int njnt, nb_dof;
-    configPt robot_pos_deg;
+    //configPt robot_pos_deg;
     p3d_rob *robotPt;
     p3d_jnt * jntPt;
 
@@ -225,7 +260,55 @@ void FormRobot::initSliders()
     mGridLayout->addItem(verticalSpacer, k+1, 0, 1, 1);
 }
 
+void FormRobot::resetConstraintedDoFs()
+{
+    int k;
+    int njnt, nb_dof;
+    //configPt robot_pos_deg;
+    p3d_rob *robotPt;
+    p3d_jnt * jntPt;
+	
+	int numDof = 0;
+	
+    nb_dof =    mRobot->getRobotStruct()->nb_dof; //p3d_get_robot_ndof();
+    njnt =      mRobot->getRobotStruct()->njoints; //p3d_get_robot_njnt();
+    //    ir =        ptrRob->getRobotStruct()->num; //p3d_get_desc_curnum(P3D_ROBOT);
+    robotPt =   mRobot->getRobotStruct(); //(p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+	
+    if(calc_real_dof() > 0)
+    {
+        for(int i=0; i<=njnt; i++)
+        {
+            jntPt = robotPt->joints[i];
+			
+            for(int j=0; j<jntPt->dof_equiv_nbr; j++)
+            {
+                k = jntPt->index_dof + j;
+				
+                if((p3d_jnt_get_dof_is_user(jntPt,j)) || (robotPt->cntrt_manager->in_cntrt[k] == 1))
+                {
+                    if ( robotPt->cntrt_manager->in_cntrt[k] == 2 )
+                    {
+                        mSliders[numDof]->getDoubleSpinBox()->setDisabled(true);
+                        mSliders[numDof]->getHorizontalSlider()->setDisabled(true);
+                    }
+					else 
+					{
+						mSliders[numDof]->getDoubleSpinBox()->setDisabled(false);
+                        mSliders[numDof]->getHorizontalSlider()->setDisabled(false);
+					}
+					numDof++;
+					//cout << "in_cntrt[k] = " << robotPt->cntrt_manager->in_cntrt[k] << endl;
+                }
+            }
+        }
+    }	
+}
 
+/*!
+ * Sets the slider value 
+ * with an input configuration
+ */
 void FormRobot::setSliders(Configuration& ptrConfRad)
 {
     string RobotName = ptrConfRad.getRobot()->getName();
@@ -236,7 +319,7 @@ void FormRobot::setSliders(Configuration& ptrConfRad)
     //    cout << RobotName  << endl;
     //    cout << "--------" << endl;
 
-    for(int numRob=0;numRob<mSliders.size();numRob++)
+    for(unsigned int numRob=0;numRob<mSliders.size();numRob++)
     {
 //        cout << mSliders[numRob][0]->getRobot()->getName() << mSliders.size() <<endl;
         if( mRobot->getName().compare( RobotName ) == 0 )
@@ -285,6 +368,11 @@ void FormRobot::setSliders(Configuration& ptrConfRad)
     }
 }
 
+/*!
+ * Sets the robot in
+ *  0 - Init
+ *  1 - Goto
+ */
 void FormRobot::setCurrentPosition(int position)
 {
 	shared_ptr<Configuration> ptrConf;
@@ -306,14 +394,20 @@ void FormRobot::setCurrentPosition(int position)
 		mRobot->setAndUpdate(*ptrConf);
 	}
 	
-#ifndef WITH_XFORMS
+#ifdef WITH_XFORMS
+	std::string str = "g3d_draw_allwin_active";
+	write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#else
 	if(!ENV.getBool(Env::isRunning))
 	{
 		mOpenGl->updateGL();
 	}
 #endif
 }
-			
+
+/*!
+ * Saves the current Config into the robot configuration
+ */
 void FormRobot::saveCurrentConfigToPosition()
 {	
 	int index = mPositions->currentIndex();
@@ -334,6 +428,11 @@ void FormRobot::saveCurrentConfigToPosition()
 //---------------------------------------------------------------------
 // DofSlider
 //---------------------------------------------------------------------
+/*!
+ * Makes a slider
+ *
+ * LABEL + SPINBOX + SLIDER
+ */
 void DofSlider::makeSlider(QGridLayout* gridLayout, p3d_jnt *jntPt, int DofNumOnJnt)
 {
     int DofNum = jntPt->index_dof + DofNumOnJnt;
@@ -379,11 +478,12 @@ void DofSlider::makeSlider(QGridLayout* gridLayout, p3d_jnt *jntPt, int DofNumOn
     mConnector = new QtShiva::SpinBoxSliderConnector(
             this, mDoubleSpinBox, mHorizontalSlider );
 
-    connect(mConnector,SIGNAL(valueChanged(double)),this,SLOT(dofValueChanged(double)));
+    connect(mConnector,SIGNAL(valueChanged(double)),this,SLOT(dofValueChanged(double)),Qt::DirectConnection);
 }
 
-#endif
-
+/*!
+ * Call Back called when a slider is moved
+ */
 void DofSlider::dofValueChanged(double value)
 {
     //    std::string str = "ChangeDof";
@@ -412,6 +512,22 @@ void DofSlider::dofValueChanged(double value)
     robotPt =   mRobot->getRobotStruct(); //(p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
 #endif
 
+	
+#ifdef HRI_GENERALIZED_IK
+	/*if ( mRobot->getName().find("HUMAN") != string::npos ) 
+	{
+		shared_ptr<Configuration> qSeated = mRobot->getCurrentPos();
+		HRI_AGENTS* agents = hri_create_agents();
+		Eigen::Vector3d head = mRobot->getJoint(5)->getVectorPos();
+//		cout << "head_heigth1 = " << mRobot->getJoint(1)->getVectorPos()(2) << endl;
+//		cout << "Head : " << (*qSeated)[8] << endl;
+		hri_agent_compute_posture(agents->humans[0],head[2],1.3,qSeated->getConfigStruct());
+		mRobot->setAndUpdate(*qSeated);
+//		cout << "head_heigth2 = " << mRobot->getJoint(1)->getVectorPos()(2) << endl;
+//		cout << "Head : " << (*qSeated)[8] << endl;
+	}*/
+#endif
+	
     p = p3d_alloc_config(robotPt);
     //    p = mRobot->getNewConfig()->getConfigStruct();
     //     p_deg = p3d_alloc_config(robotPt);
@@ -493,32 +609,79 @@ void DofSlider::dofValueChanged(double value)
             p3d_update_this_robot_pos_without_cntrt(robotPt);
         }
     }
-
+	
     if (ENV.getBool(Env::isCostSpace))
     {
 #ifdef P3D_PLANNER
-        std::cout << "Cost = " << p3d_GetConfigCost(robotPt,p) << std::endl;
+		p3d_rob* costRobot = robotPt;
+		configPt cost_q = p;
+#ifdef HRI_COSTSPACE
+		// Compute kinematic the object transfer point
+		if ( ENV.getBool(Env::HRIComputeOTP) )
+		{
+			Eigen::Vector3d WSPoint;
+			
+			if( dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->computeBestFeasableTransferPoint(WSPoint) )
+			{
+				Robot* Object = global_Project->getActiveScene()->getRobotByNameContaining("OBJECT");
+				
+				shared_ptr<Configuration> q_curr = Object->getCurrentPos();
+				
+				(*q_curr)[6] = WSPoint[0];
+				(*q_curr)[7] = WSPoint[1];
+				(*q_curr)[8] = WSPoint[2];
+				
+				Object->setAndUpdate(*q_curr);
+				
+				cout << "Set and update : " << Object->getName() << endl << WSPoint << endl;
+				
+				p3d_col_deactivate_rob_rob(Object->getRobotStruct(), 
+										   dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->getHuman()->getRobotStruct());
+			}
+		}
+		
+		if ( ENV.getBool(Env::enableHri) && (!ENV.getBool(Env::HRINoRobot))) 
+		{
+			std::string robotName(costRobot->name);
+			
+			// If the Robot moved is not ROBOT
+			if( robotName.find("ROBOT") == string::npos && (global_Project->getActiveScene()->getNumberOfRobots() > 1)  ) // Does not contain Robot
+			{
+					costRobot = p3d_get_robot_by_name_containing("ROBOT");
+					cost_q = p3d_get_robot_config(costRobot);
+					//cout << "Change the robot position = " << robotPt->name << endl;
+			}
+		
+			// Compute kinematic transfer point
+			if ( ENV.getBool(Env::HRIcameraBehindHuman) )
+			{
+				//cout << "choseBestTransferPoint" << endl;
+				if( HRICS_MotionPL != NULL )
+				{
+					Eigen::Vector3d WSPoint;
+					
+					if( dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->chooseBestTransferPoint(WSPoint) )
+					{
+						HRICS::Natural* reachSpace = HRICS_MotionPL->getReachability();
+						reachSpace->computeIsReachable(WSPoint,reachSpace->getGrid()->isReachableWithLA(WSPoint)); 
+					}
+				}
+			}
+		}
+#endif
+	if (!ENV.getBool(Env::HRINoRobot)) 
+	{
+		Configuration costConfig(new Robot(costRobot),cost_q);
+        //std::cout << "Cost = " << p3d_GetConfigCost(costRobot,cost_q) << std::endl;
+		std::cout << "Cost = " << global_costSpace->cost(costConfig) << std::endl;
+	}
 #endif
     }
+//	cout << "robotPt->name = " << robotPt->name << endl;
+//	cout << "XYZ_ROBOT = " << XYZ_ROBOT->name << endl;
 	
 #ifdef P3D_COLLISION_CHECKING
-    /* collision checking */
-    if( g3d_get_KCD_CHOICE_IS_ACTIVE() )
-    {
-        if(G3D_ACTIVE_CC)
-        {
-            ncol = p3d_col_test_choice();
-        }
-    }
-    else
-    {
-        if(G3D_ACTIVE_CC)
-        {
-			//cout << "p3d_col_test_all()" << endl;
-            ncol = p3d_col_test_all();
-        }
-    }
-	
+    ncol = mRobot->isInCollision();
 	//cout << "Collision = " << ncol << endl;
 #endif
 	

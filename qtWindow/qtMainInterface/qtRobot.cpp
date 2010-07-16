@@ -13,9 +13,18 @@
 #include "Util-pkg.h"
 
 #ifdef CXX_PLANNER
-#include "../../util/CppApi/MultiRun.hpp"
-#include "../../util/CppApi/SaveContext.hpp"
-#include "../../util/CppApi/testModel.hpp"
+#include "util/CppApi/MultiRun.hpp"
+#include "util/CppApi/SaveContext.hpp"
+#include "util/CppApi/testModel.hpp"
+//#include "planner_cxx/Greedy/GridCollisionChecker.h"
+#endif
+
+#ifdef HRI_GENERALIZED_IK
+#include "Hri_planner-pkg.h"
+#endif
+
+#ifdef LIGHT_PLANNER
+#include "lightPlannerApi.h"
 #endif
 
 using namespace std;
@@ -28,6 +37,7 @@ m_ui(new Ui::RobotWidget)
     m_ui->setupUi(this);
 	
 	initModel();
+	//initVoxelCollisionChecker();
 	
 }
 
@@ -42,6 +52,11 @@ RobotWidget::~RobotWidget()
 void RobotWidget::initRobot()
 {
 	m_ui->formRobot->initAllForms(m_mainWindow->getOpenGL());	
+}
+
+MoveRobot*  RobotWidget::getFormRobot()
+{
+	return m_ui->formRobot;
 }
 
 //---------------------------------------------------------------------
@@ -83,15 +98,25 @@ void RobotWidget::initModel()
     m_ui->comboBoxGrabObject->setCurrentIndex(0);
     connect(m_ui->comboBoxGrabObject, SIGNAL(currentIndexChanged(int)),this, SLOT(currentObjectChange(int))/*, Qt::DirectConnection*/);
 	
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxIsWeightedRot,       Env::isWeightedRotation);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxFKSampling,          Env::FKShoot);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxFKDistance,          Env::FKDistance);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxIsWeightedRot,			Env::isWeightedRotation);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxFKSampling,			Env::FKShoot);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxFKDistance,			Env::FKDistance);
+	m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxDrawBox,				Env::drawBox);
 	
     new QtShiva::SpinBoxSliderConnector(
 										this, m_ui->doubleSpinBoxWeightedRot, m_ui->horizontalSliderWeightedRot , Env::RotationWeight );
 	
 	connect(m_ui->pushButtonGrabObject,SIGNAL(clicked()),this,SLOT(GrabObject()));
     connect(m_ui->pushButtonReleaseObject,SIGNAL(clicked()),this,SLOT(ReleaseObject()));
+	
+	connect(m_ui->pushButtonComputeLeftArmGIK,SIGNAL(clicked()),this,SLOT(computeHriGikLARM()));
+	connect(m_ui->pushButtonComputeRightArmGIK,SIGNAL(clicked()),this,SLOT(computeHriGikRARM()));
+	
+	connect(m_ui->pushButtonPrintCurrentPos,SIGNAL(clicked()),this,SLOT(printCurrentPos()));
+	
+#if defined(LIGHT_PLANNER)
+	connect(m_ui->pushButtonSwitchFKIK,SIGNAL(clicked()),this,SLOT(switchFKIK()));
+#endif
 	
 }
 
@@ -137,21 +162,81 @@ void RobotWidget::setAttMatrix()
     //  p3d_compute_attached_matrix_from_virt_obj(robotPt->ccCntrts[0]);
     for(int i = 0; i < robotPt->nbCcCntrts; i++)
 	{
-		p3d_compute_Tatt(robotPt->ccCntrts[i]);
+		//p3d_compute_Tatt(robotPt->ccCntrts[i]);
 		
-		//      cout << "Tatt = " << endl;
-		//      for (i = 0; i < 4; i++)
-		//      {
-		////        PrintInfo(("%+10.6f  %+10.6f  %+10.6f  %+10.6f\n",
-		//               cout << robotPt->ccCntrts[i]->Tatt[i][0]
-		//                       << robotPt->ccCntrts[i]->Tatt[i][1]
-		//                       << robotPt->ccCntrts[i]->Tatt[i][2]
-		//                       << robotPt->ccCntrts[i]->Tatt[i][3] << endl;
-		//      }
-		//      cout << endl;
+		     cout << "Tatt = " << endl;
+		     for (i = 0; i < 4; i++)
+		      {
+						  cout << robotPt->ccCntrts[0]->Tatt[i][0]
+		                       << robotPt->ccCntrts[0]->Tatt[i][1]
+		                       << robotPt->ccCntrts[0]->Tatt[i][2]
+		                       << robotPt->ccCntrts[0]->Tatt[i][3] << endl;
+		      }
+		      cout << endl;
     }
 #endif
 }
+
+#if defined (HRI_GENERALIZED_IK)
+void RobotWidget::computeHriGik(bool leftArm)
+{	
+	int i=0;
+	for(i=0; i<XYZ_ENV->nr; i++){
+		if( strcasestr(XYZ_ENV->robot[i]->name,"VISBALL") )
+			break;
+	}
+	if(i==XYZ_ENV->nr){
+		printf("No visball in the environment\n");
+		return;
+	}
+	
+	// 1 - Select Goto point
+	p3d_vector3 Tcoord[3];
+	
+	Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = XYZ_ENV->robot[i]->joints[1]->abs_pos[0][3];
+	Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = XYZ_ENV->robot[i]->joints[1]->abs_pos[1][3];
+	Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = XYZ_ENV->robot[i]->joints[1]->abs_pos[2][3];
+	
+	
+	// 2 - Select Task
+	HRI_GIK_TASK_TYPE task;
+	
+	if (leftArm == true) 
+	{
+		task = GIK_LAREACH; // Left Arm GIK
+	}
+	else 
+	{
+		task = GIK_RAREACH; // Left Arm GIK
+	}
+
+	
+	// 3 - Select Agent
+	HRI_AGENTS * agents = hri_create_agents();
+	
+	configPt q;
+	
+	if(	agents->humans_no > 0 ) // Humans
+	{
+		q = p3d_get_robot_config(agents->humans[0]->robotPt);
+		hri_agent_single_task_manip_move(agents->humans[0], task, Tcoord, &q);
+		p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q);
+	}
+	else if ( agents->robots_no > 0) // Robots
+	{
+		q = p3d_get_robot_config(agents->robots[0]->robotPt);
+		hri_agent_single_task_manip_move(agents->robots[0], task, Tcoord, &q);
+		p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q);
+	}
+	else {
+		cout << "Warning: No Agent for GIK" << endl;
+	}
+
+	
+	//delete_config(robotPt,q);	
+	m_mainWindow->drawAllWinActive();
+}
+#endif
 
 void RobotWidget::currentObjectChange(int i)
 {
@@ -203,33 +288,122 @@ void RobotWidget::SetObjectToCarry()
 
 void RobotWidget::GrabObject()
 {
+	
 #ifdef LIGHT_PLANNER
-    if(mFreeFlyers.size() > 0)
-    {
-        p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
-		//        p3d_rob *carriedObject;
-		
-        p3d_set_object_to_carry(robotPt,ENV.getString(Env::ObjectToCarry).toStdString().c_str());
-		//        p3d_matrix4 saved;
-		//        p3d_mat4Copy(robotPt->curObjectJnt->abs_pos,saved);
-        p3d_mat4Copy(robotPt->carriedObject->joints[1]->abs_pos,robotPt->curObjectJnt->abs_pos);
-        p3d_grab_object(robotPt,0);
-		//        p3d_mat4Copy(saved,robotPt->curObjectJnt->abs_pos);
-		//        configPt q = p3d_get_robot_config(robotPt);
-		
-		//        robotPt->ROBOT_POS = q;
-		//        p3d_set_and_update_robot_conf(q);
-        p3d_mat4Print(robotPt->ccCntrts[0]->Tatt,"curObject Grab");
-    }
+	p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+	cout << "Robot = " << robotPt->name <<  endl;
+	p3d_set_object_to_carry(robotPt,ENV.getString(Env::ObjectToCarry).toStdString().c_str());
+	p3d_grab_object2(robotPt,0);
+	
+//    if(mFreeFlyers.size() > 0)
+//    {
+//        p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+//		//        p3d_rob *carriedObject;
+//		
+//        p3d_set_object_to_carry(robotPt,ENV.getString(Env::ObjectToCarry).toStdString().c_str());
+//		//        p3d_matrix4 saved;
+//		//        p3d_mat4Copy(robotPt->curObjectJnt->abs_pos,saved);
+//        p3d_mat4Copy(robotPt->carriedObject->joints[1]->abs_pos,robotPt->curObjectJnt->abs_pos);
+//        p3d_grab_object(robotPt,0);
+//		//        p3d_mat4Copy(saved,robotPt->curObjectJnt->abs_pos);
+//		//        configPt q = p3d_get_robot_config(robotPt);
+//		
+//		//        robotPt->ROBOT_POS = q;
+//		//        p3d_set_and_update_robot_conf(q);
+//        p3d_mat4Print(robotPt->ccCntrts[0]->Tatt,"curObject Grab");
+//    }
 #endif
 }
 
 void RobotWidget::ReleaseObject()
 {
+	p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+	cout << "Robot = " << robotPt->name <<  endl;
+	/*
+	p3d_release_object(robotPt);
+	deactivateCcCntrts(robotPt, -1);
+//	configPt qi = p3d_alloc_config(robotPt);
+//	p3d_copy_config_into(robotPt, _robotPt->ROBOT_POS, &qi);
+	x
+	//p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
+	double tx, ty, tz, ax, ay, az;
+	p3d_mat4ExtractPosReverseOrder2(robotPt->CurObjtJnt->abs_pos, &tx, &ty, &tz, &ax, &ay, &az);
+	
+//	p3d_set_and_update_this_robot_conf(robotPt, qi);
+//	p3d_destroy_config(_robotPt, qi);
+	
+	qi = p3d_get_robot_config(robotPt);
+	p3d_copy_config_into(robotPt, qi, &_robotPt->ROBOT_POS);
+	p3d_destroy_config(_robotPt, qi);
+	m_ui->mainWindow->drawAllWindowActive();
+	*/
+	
 #ifdef LIGHT_PLANNER
     //    m_ui->comboBoxGrabObject-
-    p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+//    p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
     p3d_release_object(robotPt);
-    m_ui->comboBoxGrabObject->setCurrentIndex(0);
+//    m_ui->comboBoxGrabObject->setCurrentIndex(0);
 #endif
 };
+
+void RobotWidget::printCurrentPos()
+{
+	Robot currRobot((p3d_rob*) p3d_get_desc_curid(P3D_ROBOT));
+	shared_ptr<Configuration> q = currRobot.getCurrentPos();
+	q->print(true );
+}
+
+#ifdef LIGHT_PLANNER
+void RobotWidget::switchFKIK()
+{
+	cout << "Switching FK to IK" << endl;
+	
+	Robot* ptrRob = global_Project->getActiveScene()->getActiveRobot();
+	
+	if ( ptrRob->isActiveCcConstraint() ) 
+	{
+		ptrRob->deactivateCcConstraint();
+	}
+	else {
+		ptrRob->activateCcConstraint();
+	}
+	
+	getFormRobot()->setRobotConstraintedDof(ptrRob);
+	
+}
+#endif
+
+/*void RobotWidget::initVoxelCollisionChecker()
+{
+	m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxDrawVoxelGrid,				Env::drawGrid);
+	
+    connect(m_ui->pushButtonCreateVoxelCollisionChecker,SIGNAL(clicked()),this,SLOT(createVoxelCC()));
+    connect(m_ui->pushButtonDeleteVoxelCollisionChecker,SIGNAL(clicked()),this,SLOT(deleteVoxelCC()));
+	
+	connect(m_ui->pushButtonVoxelCC,SIGNAL(clicked()),this,SLOT(voxelCCTest()));
+	connect(ENV.getObject(Env::numberOfCollisionPerSec),SIGNAL(valueChanged(QString)),m_ui->labelVoxelTime,SLOT(setText(QString)));
+	
+	connect(m_ui->spinBoxVoxelCCnbCells,SIGNAL(valueChanged(int)),ENV.getObject(Env::nbCells),SLOT(set(int)));
+	connect(ENV.getObject(Env::nbCells),SIGNAL(valueChanged(int)),m_ui->spinBoxVoxelCCnbCells,SLOT(setValue(int)));
+}
+
+void RobotWidget::createVoxelCC()
+{
+	API_activeGrid = global_GridCollisionChecker = new GridCollisionChecker;
+	ENV.setBool(Env::drawGrid, true);
+}
+
+void RobotWidget::deleteVoxelCC()
+{
+	ENV.setBool(Env::drawAll,false);
+	delete API_activeGrid;
+	API_activeGrid = NULL;
+}
+
+void RobotWidget::voxelCCTest()
+{
+#ifdef CXX_PLANNER
+    TestModel tests;
+    tests.nbOfVoxelCCPerSeconds();
+#endif
+}*/

@@ -3,15 +3,15 @@
  *  BioMove3D
  *
  *  Created by Jim Mainprice on 01/04/10.
- *  Copyright 2010 __MyCompanyName__. All rights reserved.
+ *  Copyright 2010 LAAS/CNRS. All rights reserved.
  *
  */
 
 #ifndef QT_MOTIONPLANNER_H
 #define QT_MOTIONPLANNER_H
 
-#include "../qtLibrary.h"
-#include "../../p3d/env.hpp"
+#include "qtLibrary.h"
+#include "p3d/env.hpp"
 #include "mainwindow.hpp"
 
 namespace Ui
@@ -55,6 +55,10 @@ private slots:
 	
 // General ---------------------------
 	void checkAllEdges();
+	void envDmaxSpinBoxValueChanged( double dmax );
+	
+// Show ------------------------------
+	void nodeToShowChanged();
 	
 private:
     Ui::MotionPlanner *m_ui;
@@ -69,10 +73,12 @@ private:
 #endif
 	
 	void initDiffusion();
+	void initMultiRRT();
     void initPRM();
 	void initMultiRun();
 	void initOptim();
 	void initGeneral();
+	void initShowGraph();
 };
 
 /**
@@ -84,11 +90,27 @@ class SmoothThread: public QThread
 	Q_OBJECT
 	
 public:
-	SmoothThread(QObject* parent = 0);
+	SmoothThread(bool isShortCut,QObject* parent = 0);
 	
 protected:
 	void run();
+	bool m_isShortCut;
+};
+
+/**
+ * @ingroup qtWindow
+ * @brief Multi Planner thread class 
+ */
+class MultiThread: public QThread
+{
+	Q_OBJECT
 	
+public:
+	MultiThread(bool isRRT,QObject* parent = 0);
+	
+protected:
+	void run();
+	bool m_isRRT;
 };
 	
 #endif

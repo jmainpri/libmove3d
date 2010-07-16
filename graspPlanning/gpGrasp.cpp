@@ -296,6 +296,11 @@ gpGrasp & gpGrasp::operator = (const gpGrasp &grasp)
 }
 
 
+bool gpGrasp::operator == (const gpGrasp &grasp)
+{
+  return ID==grasp.ID;
+}
+
 
 //! Draws all the contacts of a grasp.
 //! \param length lenght of each friction cone to draw

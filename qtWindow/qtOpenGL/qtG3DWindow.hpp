@@ -5,7 +5,8 @@ typedef struct g3d_win G3D_Window;
 
 #include "Graphic-pkg.h"
 
-struct g3d_win {
+struct g3d_win 
+{
 	char       name[256];
 	void       *form;
 	void       *canvas;
@@ -31,7 +32,6 @@ struct g3d_win {
 	int win_perspective;                  /* Boolean to know if it is a perspective window */    
 	g3d_window_draw_mode draw_mode;       /* Boolean to know if we'll draw only the objective or in a different color from obstacles */
 #endif
-	
 };
 
 void qt_calc_cam_param();

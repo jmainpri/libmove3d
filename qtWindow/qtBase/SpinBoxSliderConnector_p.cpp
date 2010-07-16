@@ -105,11 +105,11 @@ void SpinBoxSliderConnector::spinBoxValueChanged( double _value )
 {
     bool v = m_slider->blockSignals(true);
 
-    if(!_init)
-    {
+//    if(!_init)
+//    {
         this->computeScaling();
         _init = true;
-    }
+//    }
 
     int newValue = (int) ( _value * _Coeff + _Offset );
 
@@ -123,11 +123,11 @@ void SpinBoxSliderConnector::sliderValueChanged( int _value )
 {   
     bool v = m_spinBox->blockSignals(true);
 
-    if(!_init)
-    {
+//    if(!_init)
+//    {
         this->computeScaling();
         _init = true;
-    }
+//    }
 
     double newValue = (double) (( _value - _Offset) / _Coeff );
 

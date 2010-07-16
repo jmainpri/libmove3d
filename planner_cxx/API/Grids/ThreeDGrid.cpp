@@ -270,12 +270,17 @@ ThreeDCell* ThreeDGrid::getCell(double* pos)
 Vector3i ThreeDGrid::getCellCoord(ThreeDCell* ptrCell)
 {
     Vector3i coord;
+//	
+    int index = ptrCell->getIndex();
 	
-    int i = ptrCell->getIndex();
+//    coord[0] = (i/1) % 3 - 1 ; // x
+//    coord[1] = (i/3) % 3 - 1 ; // y
+//    coord[2] = (i/9) % 3 - 1 ; // z
 	
-    coord[0] = (i/1) % 3 - 1 ; // x
-    coord[1] = (i/3) % 3 - 1 ; // y
-    coord[2] = (i/9) % 3 - 1 ; // z
+	int sizeXY = _nbCellsX * _nbCellsY;
+    coord[2] = floor(index / sizeXY);
+    coord[1] = floor((index - coord[2]*sizeXY) / _nbCellsX);
+    coord[0] = floor((index - coord[2]*sizeXY) - coord[1] * _nbCellsX);
 	
     return coord;
 }
@@ -523,7 +528,7 @@ bool ThreeDGrid::loadFromXmlFile(string docname)
 	
     if(doc==NULL)
     {
-        cout << "Document not parsed successfully" << endl;
+        cout << "Document not parsed successfully (doc==NULL)" << endl;
         return false;
     }
 	

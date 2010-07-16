@@ -66,6 +66,7 @@ Main_threads::~Main_threads()
 
 }
 
+
 int Main_threads::run(int argc, char** argv)
 {
     app = new QApplication(argc, argv);
@@ -97,8 +98,9 @@ int Main_threads::run(int argc, char** argv)
 
 #ifdef QT_UI_XML_FILES
     MainWindow w;
-	w.raise();
     w.showMaximized();
+	//w.show();
+	w.raise();
 #endif
 
     return app->exec();
@@ -151,6 +153,7 @@ int main(int argc, char *argv[])
         pipe(qt_fl_pipe);
         fcntl(qt_fl_pipe[0], F_SETFL, O_NONBLOCK);
 #endif
+		
         Main_threads main;
         cout << "main.run(argc, argv)"  << endl;
         return main.run(argc, argv);

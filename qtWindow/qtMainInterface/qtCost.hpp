@@ -14,6 +14,10 @@
 #include "mainwindow.hpp"
 #include "qtMotionPlanner.hpp"
 
+#ifdef HRI_COSTSPACE
+#include "qtHrics.hpp"
+#endif
+
 #ifdef QWT
 #include "../qtPlot/basicPlotWindow.hpp"
 #endif
@@ -35,53 +39,21 @@ public:
     CostWidget(QWidget *parent = 0);
     ~CostWidget();
 
-#ifdef HRI_COSTSPACE
-	void initHRI();
-#endif
 	void initCost();
+	void initCostFunctions();
+	void initThreshold();
 	
 	void setMainWindow(MainWindow *ptrMW) { m_mainWindow = ptrMW; }
 	void setMotionWidget(MotionPlanner* ptrMLPW) { m_motionWidget = ptrMLPW; }
 	
-private slots:
-
 #ifdef HRI_COSTSPACE
-// HRI ----------------------------------------
-// Natural
-	void newNaturalCostSpace();
-	void deleteNaturalCostSpace();
-	
-// CSpace
-    void newHRIConfigSpace();
-    void deleteHRIConfigSpace();
-    void makeGridHRIConfigSpace();
-    void makePlanHRIConfigSpace();
-    void AStarInPlanHRIConfigSpace();
-    void writeToOBPlane();
-    void hriPlanRRT();
-
-// Workspace
-    void make3DHriGrid();
-    void delete3DHriGrid();
-    void computeGridCost();
-    void resetGridCost();
-    void AStarIn3DGrid();
-    void HRICSRRT();
-    void zoneSizeChanged();
-    void resetRandomPoints();
-	
- // Taskspace
-    void computeWorkspacePath();
-    void computeHoleMotion();
-    void KDistance(double value);
-    void KVisibility(double value);
-    void make2DGrid();
-	
-    void enableHriSpace();
-	void setWhichTestSlot(int test);
+	HricsWidget* getHriWidget();
 #endif
 	
+private slots:
+	
 // General Cost --------------------------------
+	void setCostFunction(int costFunctionId);
 	void stonesGraph();
 	void extractBestPath();
 	void newGraphAndReComputeCost();
@@ -93,18 +65,34 @@ private slots:
     void computeAStar();
 	//void computeGridAndExtract();
 	void graphSearchTest();
+	void runThresholdPlanner();
 	
 private:
-    Ui::CostWidget *m_ui;
+    Ui::CostWidget*		m_ui;
 	
-	MotionPlanner *m_motionWidget;
-	MainWindow *m_mainWindow;
+	MotionPlanner*		m_motionWidget;
+	MainWindow*			m_mainWindow;
 	
 #ifdef QWT
     BasicPlotWindow *plot;
 #endif
 	
-    void initHumanLike();
+};
+
+/**
+ * @ingroup qtWindow
+ * @brief Planner thread class 
+ */
+class TestPlannerthread: public QThread
+{
+	Q_OBJECT
+	
+public:
+	TestPlannerthread(QObject* parent = 0);
+	
+protected:
+	void run();
+	
 };
 
 #endif

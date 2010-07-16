@@ -9,6 +9,8 @@
 using namespace std;
 using namespace tr1;
 
+using namespace API;
+
 #include "Util-pkg.h"
 #include "Planner-pkg.h"
 
@@ -309,7 +311,7 @@ void Smoothing::debugShowTraj(double lPrev, double lNext)
     vectConf.at(0) = configAtParam(lPrev);
     vectConf.at(1) = configAtParam(lNext);
 
-    /*	trajToDraw.resize(4);
+    	trajToDraw.resize(4);
 
          trajToDraw.at(0) = extractSubTrajectory(0,lPrev);
          trajToDraw.at(1) = extractSubTrajectory(lPrev,lNext);
@@ -319,7 +321,7 @@ void Smoothing::debugShowTraj(double lPrev, double lNext)
          trajToDraw.at(0).setColor(0);
          trajToDraw.at(1).setColor(2);
          trajToDraw.at(2).setColor(1);
-         trajToDraw.at(3).setColor(0);*/
+         trajToDraw.at(3).setColor(0);
 
     //			basicTraj.print();
     //			triangleTraj.print();

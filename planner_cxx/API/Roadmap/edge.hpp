@@ -7,7 +7,7 @@
 class Graph;
 
 #ifndef _ROADMAP_H
-typedef struct edge;
+struct edge;
 #endif
 
 /**
@@ -106,12 +106,12 @@ public:
 	std::tr1::shared_ptr<LocalPath> getLocalPath();
 
 private:
-      edge* _Edge;
-      Node* _Start;
-      Node* _End;
-      Graph* _Graph;
-      Robot* _Robot;
-      double _Long;
+      edge*			_Edge;
+      Node*			_Start;
+      Node*			_End;
+      Graph*		_Graph;
+      Robot*		_Robot;
+      double		_Long;
 };
 
 #endif

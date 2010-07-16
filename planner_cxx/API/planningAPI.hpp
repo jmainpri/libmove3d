@@ -23,7 +23,7 @@
 /**
  * Environment has to be included before anything (weird)
  */
-#include "../p3d/env.hpp"
+#include "p3d/env.hpp"
 
 /**
  * The CPP API so that
@@ -34,6 +34,7 @@
 #define EIGEN_USE_NEW_STDVECTOR
 #include <Eigen/StdVector>
 #include <Eigen/Geometry> 
+#include <Eigen/LU>
 
 // Configuration has no dependencies and is used by most other classes
 #include "ConfigSpace/configuration.hpp"
@@ -47,6 +48,8 @@
 #include "Roadmap/edge.hpp"
 #include "Roadmap/compco.h"
 #include "Roadmap/graph.hpp"
+
+extern Graph* API_activeGraph;
 
 // LocalPathValidTest inherits LocalPath, include it after localpath.hpp
 #include "ConfigSpace/localPathValidTest.h"

@@ -226,6 +226,8 @@ class  Manipulation_JIDO {
  public:
      bool displayGrasps; /*!< boolean to enable/disable the display of the grasps of the current grasp list */
      bool displayPlacements; /*!<  boolean to enable/disable the display of the placements of the current object pose list */
+     std::vector < std::vector <double> > positions;
+     std::vector <int> lp;
  public :
      Manipulation_JIDO(p3d_rob * robotPt, gpHand_type handType);
      virtual ~Manipulation_JIDO();
@@ -255,11 +257,13 @@ class  Manipulation_JIDO {
      int setCameraJnt(char *cameraJntName);
      int setCameraFOV(double fov);
      int setCameraImageSize(int width, int height);
+     int setNbGraspsToTestForPickGoto(int n);
+     int reduceGraspList(int maxSize);
      int printConstraintInfo();
      int setPoseWrtEndEffector(double x, double y, double z, double rx, double ry, double rz, configPt q);
      int dynamicGrasping(char *robot_name, char *hand_robot_name, char *object_name);
      int robotBaseGraspConfig(char *objectName, double *x, double *y, double *theta);
-     MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, configPt qStart, configPt qGoal, char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions);
+     MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, configPt qStart, configPt qGoal, char* objectName, std::vector <int> lp, std::vector < std::vector <double> > positions,  int *nbPositions);
 
   
      int armComputePRM();
@@ -304,16 +308,16 @@ class  Manipulation_JIDO {
      /*Functions relative to JIDO */
      int computeTrajBetweenTwoConfigs(bool cartesian, configPt qi, configPt qf);
      int computeGraspList();
-     int reduceGraspList(int maxSize);
      int findSimpleGraspConfiguration(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
      int computePlacementList();
-     int setNbGraspsToTestForPickGoto(int n);
      int markGraspAsTested(int id);
 
      int computeRRT();
      int computeOptimTraj();
 };
 
+
 void printManipulationMessage(MANIPULATION_TASK_MESSAGE message);
+
 
 #endif

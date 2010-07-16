@@ -100,7 +100,7 @@ void PRM::expandOneStep()
 	
 	//                newConf->print();
 	
-	if ( q->setConstraintsWithSideEffect() && (!q->IsInCollision()) )
+	if ( q->setConstraintsWithSideEffect() && (!q->isInCollision()) )
 	{
 		Node* N = new Node(_Graph,q);
 		

@@ -105,8 +105,12 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg) {
 	int ir = p3d_get_desc_curnum(P3D_ROBOT);
 	int ntest=0;
 	double gain,gaintot=1.;
-	int lp[10000];
-	 Gb_q6 positions[10000];
+	//int lp[10000];
+	// double positions[7][10000];
+
+	std::vector <int> lp;
+	std::vector < std::vector <double> > positions;
+	 
 	 int nbPositions = 0;
 
 	if(!traj) {
@@ -216,7 +220,7 @@ void draw_trajectory_ptp() {
 	glPopAttrib();
 }
 
-int p3d_optim_traj_softMotion(p3d_traj *trajPt, bool param_write_file, double *gain, int *ntest, int lp[], Gb_q6 positions[], int *nbPositions) {
+int p3d_optim_traj_softMotion(p3d_traj *trajPt, bool param_write_file, double *gain, int *ntest, std::vector <int> lp, std::vector < std::vector <double> > positions, int *nbPositions) {
 	p3d_rob *robotPt = trajPt->rob;
 	p3d_traj *trajSmPTPPt = NULL;
 	p3d_traj *trajSmPt = NULL;
@@ -251,7 +255,11 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, bool param_write_file, double *g
 	int IGRAPH_INPUT = 0;
 	int IGRAPH_OUTPUT = 0;
 
-	
+	int robot_JIDO_PA10 =1;
+	int robot_JIDO_KUKA =2;
+	int robot_KUKA_RARM =3;
+
+	int robotType = 0;
 	/* length of trajPt */
 	ltot = p3d_ends_and_length_traj(trajPt, &qinit, &qgoal);
 	if (ltot<= 3*EPS6) {
@@ -261,6 +269,26 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, bool param_write_file, double *g
 		return FALSE;
 	}
 
+	// find the type of the robot
+	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-arm_lin") == 0) {
+			robotType = robot_JIDO_PA10;
+		}
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-rarm_lin") == 0) {
+			robotType = robot_JIDO_KUKA;
+		}
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "kuka-rarm_lin") == 0) {
+			robotType = robot_KUKA_RARM;
+		}
+	}
+
+	if(robotType == 0) {
+	  printf("ERROR p3d_optim_traj_softMotion unknow robot type \n");
+	  return 1;
+	}
+
+
+      if(robotType == 1) {
 		// Find the groups ID
 	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
 		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-ob_lin") == 0) {
@@ -285,7 +313,61 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, bool param_write_file, double *g
 			IGRAPH_UPBODY_SM = iGraph;
 		}
 	}
+      }
+	
+ if(robotType == 2) {
+		// Find the groups ID
+	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-ob_lin") == 0) {
+			IGRAPH_OBJECT_LIN = iGraph;
+		}
+	}
 
+	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-ob") == 0) {
+			IGRAPH_OBJECT_SM = iGraph;
+		}
+	}
+
+	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-rarm_lin") == 0) {
+			IGRAPH_UPBODY_LIN = iGraph;
+		}
+	}
+
+	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-rarm") == 0) {
+			IGRAPH_UPBODY_SM = iGraph;
+		}
+	}
+      }
+
+       if(robotType == 3) {
+		// Find the groups ID
+	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "kuka-ob_lin") == 0) {
+			IGRAPH_OBJECT_LIN = iGraph;
+		}
+	}
+
+	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "kuka-ob") == 0) {
+			IGRAPH_OBJECT_SM = iGraph;
+		}
+	}
+
+	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "kuka-rarm_lin") == 0) {
+			IGRAPH_UPBODY_LIN = iGraph;
+		}
+	}
+
+	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "kuka-rarm") == 0) {
+			IGRAPH_UPBODY_SM = iGraph;
+		}
+	}
+      }
 		// Clear static variable
 	if (TRAJPTP_CONFIG[0]!=NULL) {
 		for(int i=0; i<NB_TRAJPTP_CONFIG; i++) {
@@ -293,6 +375,7 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, bool param_write_file, double *g
 			TRAJPTP_CONFIG[i] = NULL;
 		}
 	}
+	
 	NB_TRAJPTP_CONFIG = 0;
 
 	int nbNonNullLp = 0;
