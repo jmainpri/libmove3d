@@ -863,41 +863,41 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
       key = XKeycodeToKeysym(fl_display,xev->xkey.keycode,0);
       switch(key)
 		{
-			case XK_space: //reset the joint selection
-				G3D_SELECTED_JOINT= -999;
+        case XK_space: //reset the joint selection
+		 G3D_SELECTED_JOINT= -999;
         break;
-			case XK_Shift_L: case XK_Shift_R:
-				shift_key_pressed= 1;
+	case XK_Shift_L: case XK_Shift_R:
+		 shift_key_pressed= 1;
         break;
-			case XK_e:
-				if(shift_key_pressed)
-                                        g3d_move_win_camera_forward( g3dwin->vs, 0.1*translation_step);
-				else
-                                        g3d_move_win_camera_forward( g3dwin->vs, translation_step);
+	case XK_e:
+		 if(shift_key_pressed)
+                    g3d_move_win_camera_forward( g3dwin->vs, 0.1*translation_step);
+		 else
+                    g3d_move_win_camera_forward( g3dwin->vs, translation_step);
         break;
-			case XK_d:
-				if(shift_key_pressed)
-                                        g3d_move_win_camera_forward( g3dwin->vs, -0.1*translation_step);
-				else
-                                        g3d_move_win_camera_forward( g3dwin->vs, -translation_step);
+	case XK_d:
+		 if(shift_key_pressed)
+                     g3d_move_win_camera_forward( g3dwin->vs, -0.1*translation_step);
+		 else
+                     g3d_move_win_camera_forward( g3dwin->vs, -translation_step);
         break;
-			case XK_s:
-				if(shift_key_pressed)
-                                        g3d_move_win_camera_sideways( g3dwin->vs, 0.1*translation_step);
-				else
-                                        g3d_move_win_camera_sideways( g3dwin->vs, translation_step);
+	 case XK_s:
+		 if(shift_key_pressed)
+                      g3d_move_win_camera_sideways( g3dwin->vs, 0.1*translation_step);
+		 else
+                      g3d_move_win_camera_sideways( g3dwin->vs, translation_step);
         break;
-			case XK_f:
-				if(shift_key_pressed)
-                                        g3d_move_win_camera_sideways( g3dwin->vs, -0.1*translation_step);
-				else
-                                        g3d_move_win_camera_sideways( g3dwin->vs, -translation_step);
+	 case XK_f:
+		      if(shift_key_pressed)
+                         g3d_move_win_camera_sideways( g3dwin->vs, -0.1*translation_step);
+		      else
+                         g3d_move_win_camera_sideways( g3dwin->vs, -translation_step);
         break;
-			case XK_t:
-				if(shift_key_pressed)
-                                        g3dwin->vs.z+= 0.1*translation_step;
-				else
-                                        g3dwin->vs.z+= translation_step;
+	 case XK_t:
+		      if(shift_key_pressed)
+                         g3dwin->vs.z+= 0.1*translation_step;
+		      else
+                          g3dwin->vs.z+= translation_step;
         break;
 			case XK_g:
 				if(shift_key_pressed)
@@ -905,82 +905,81 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
 				else
                                         g3dwin->vs.z-= translation_step;
         break;
-			case XK_r:
-				if(shift_key_pressed)
-                                        g3d_rotate_win_camera_rz( g3dwin->vs, -0.1*rotation_step);
-				else
-                                        g3d_rotate_win_camera_rz( g3dwin->vs, -rotation_step);
+	case XK_r:
+		if(shift_key_pressed)
+                    g3d_rotate_win_camera_rz( g3dwin->vs, -0.1*rotation_step);
+		else
+                    g3d_rotate_win_camera_rz( g3dwin->vs, -rotation_step);
         break;
-			case XK_w:
-				if(shift_key_pressed)
-                                        g3d_rotate_win_camera_rz( g3dwin->vs, 0.1*rotation_step);
-				else
-                                        g3d_rotate_win_camera_rz( g3dwin->vs, rotation_step);
+	case XK_w:
+		if(shift_key_pressed)
+                     g3d_rotate_win_camera_rz( g3dwin->vs, 0.1*rotation_step);
+		else
+                     g3d_rotate_win_camera_rz( g3dwin->vs, rotation_step);
         break;
-			case XK_v:
-				if(shift_key_pressed)
-                                        g3d_zoom_win_camera( g3dwin->vs, 0.1*zoom_step);
-				else
-                                        g3d_zoom_win_camera( g3dwin->vs, zoom_step);
+	case XK_v:
+		if(shift_key_pressed)
+                      g3d_zoom_win_camera( g3dwin->vs, 0.1*zoom_step);
+		else
+                     g3d_zoom_win_camera( g3dwin->vs, zoom_step);
         break;
-			case XK_c:
-				if(shift_key_pressed)
-                                        g3d_zoom_win_camera( g3dwin->vs, -0.1*zoom_step);
-				else
-                                        g3d_zoom_win_camera( g3dwin->vs, -zoom_step);
+	case XK_c:
+		if(shift_key_pressed)
+                     g3d_zoom_win_camera( g3dwin->vs, -0.1*zoom_step);
+		else
+                     g3d_zoom_win_camera( g3dwin->vs, -zoom_step);
         break;
-
-			case XK_q:
-				if(g3dwin->fct_key1!=NULL)
-					g3dwin->fct_key1();
-				break;
-			case XK_a:
-				if(g3dwin->fct_key2!=NULL)
-					g3dwin->fct_key2();
-				break;
+	case XK_q:
+		if(g3dwin->fct_key1!=NULL)
+			g3dwin->fct_key1();
+	break;
+	case XK_a:
+		if(g3dwin->fct_key2!=NULL)
+			g3dwin->fct_key2();
+	break;
 
         //déplacement de la source de lumière selon les trois axes:
-			case XK_i:
-				if(shift_key_pressed)
-                                        g3dwin->vs.lightPosition[0]+= 0.1*translation_step;
-				else
-                                        g3dwin->vs.lightPosition[0]+= translation_step;
-                                g3d_build_shadow_matrices(g3dwin->vs);
+	case XK_i:
+		if(shift_key_pressed)
+                 g3dwin->vs.lightPosition[0]+= 0.1*translation_step;
+		else
+                  g3dwin->vs.lightPosition[0]+= translation_step;
+                g3d_build_shadow_matrices(g3dwin->vs);
         break;
-			case XK_k:
-				if(shift_key_pressed)
-                                        g3dwin->vs.lightPosition[0]-= 0.1*translation_step;
-				else
-                                        g3dwin->vs.lightPosition[0]-= translation_step;
-                                g3d_build_shadow_matrices(g3dwin->vs);
+	case XK_k:
+		if(shift_key_pressed)
+                  g3dwin->vs.lightPosition[0]-= 0.1*translation_step;
+		else
+                  g3dwin->vs.lightPosition[0]-= translation_step;
+                g3d_build_shadow_matrices(g3dwin->vs);
         break;
-			case XK_j:
-				if(shift_key_pressed)
-                                        g3dwin->vs.lightPosition[1]+= 0.1*translation_step;
-				else
-                                        g3dwin->vs.lightPosition[1]+= translation_step;
-                                g3d_build_shadow_matrices(g3dwin->vs);
+	case XK_j:
+		if(shift_key_pressed)
+                   g3dwin->vs.lightPosition[1]+= 0.1*translation_step;
+		else
+                    g3dwin->vs.lightPosition[1]+= translation_step;
+                g3d_build_shadow_matrices(g3dwin->vs);
         break;
-			case XK_l:
-				if(shift_key_pressed)
-                                        g3dwin->vs.lightPosition[1]-= 0.1*translation_step;
-				else
-                                        g3dwin->vs.lightPosition[1]-= translation_step;
-                                g3d_build_shadow_matrices(g3dwin->vs);
+	case XK_l:
+		if(shift_key_pressed)
+                    g3dwin->vs.lightPosition[1]-= 0.1*translation_step;
+		else
+                   g3dwin->vs.lightPosition[1]-= translation_step;
+                g3d_build_shadow_matrices(g3dwin->vs);
         break;
-			case XK_p:
-				if(shift_key_pressed)
-                                        g3dwin->vs.lightPosition[2]+= 0.1*translation_step;
-				else
-                                        g3dwin->vs.lightPosition[2]+= translation_step;
-                                g3d_build_shadow_matrices(g3dwin->vs);
+	case XK_p:
+		if(shift_key_pressed)
+                  g3dwin->vs.lightPosition[2]+= 0.1*translation_step;
+		else
+                  g3dwin->vs.lightPosition[2]+= translation_step;
+                g3d_build_shadow_matrices(g3dwin->vs);
         break;
-			case XK_m:
-				if(shift_key_pressed)
-                                        g3dwin->vs.lightPosition[2]-= 0.1*translation_step;
-				else
-                                        g3dwin->vs.lightPosition[2]-= translation_step;
-                                g3d_build_shadow_matrices(g3dwin->vs);
+	case XK_m:
+		if(shift_key_pressed)
+                  g3dwin->vs.lightPosition[2]-= 0.1*translation_step;
+		else
+                  g3dwin->vs.lightPosition[2]-= translation_step;
+                g3d_build_shadow_matrices(g3dwin->vs);
         break;
 		}
       g3d_refresh_allwin_active();

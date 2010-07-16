@@ -839,7 +839,7 @@ void Manipulation::computeDoubleGraspConfigList(){
   list<gpDoubleGrasp> doubleGraspList;
   //p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_GOTO);
   gpDouble_grasp_generation((p3d_rob*)p3d_get_robot_by_name((char*) GP_SAHAND_RIGHT_ROBOT_NAME), (p3d_rob*)p3d_get_robot_by_name((char*) GP_SAHAND_LEFT_ROBOT_NAME), (p3d_rob*)p3d_get_robot_by_name((char*)GP_OBJECT_NAME_DEFAULT), *(getGraspListFromMap(0)), *(getGraspListFromMap(1)), doubleGraspList);
-  
+    cout << "Double Grasps " << doubleGraspList.size() << endl;
   vector<gpHand_properties> handProp = InitHandProp(-1);
   for(list<gpDoubleGrasp>::iterator itDouble = doubleGraspList.begin(); itDouble != doubleGraspList.end(); itDouble++){
     DoubleGraspData* data = new DoubleGraspData(_robot);
@@ -852,7 +852,7 @@ void Manipulation::computeDoubleGraspConfigList(){
       delete(data);
     }
   }
-  cout << "Valid Grasps" << _handsDoubleGraspsConfigs.size() << endl;
+  cout << "Valid Grasps " << _handsDoubleGraspsConfigs.size() << endl;
 }
 
 double Manipulation::getRobotGraspArmCost(gpGrasp grasp, configPt q){

@@ -1040,6 +1040,7 @@ int findBestExchangePosition(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3
         dEAf= p3d_vectNorm(EAf);
 
         cost= dAiOi + dOiE + dBiE + dEOf + dOfBf + dEAf;
+
 //         cost+= fabs(dAiOi + dOiE -dBiE) + fabs(dEOf + dOfBf - dEAf);
         if(cost < minCost)
         {
@@ -1049,9 +1050,12 @@ int findBestExchangePosition(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3
            Ebest[1]= E[1];
            Ebest[2]= E[2];
         }
+
+
       }
     }
   }
+
 
   if(minFound==TRUE)
   {
@@ -1078,6 +1082,178 @@ int findBestExchangePosition(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3
 
   return 0;
 }
+
+//! Displays the grid that is computed in findBestExchangePosition.
+//! The collisions are not tested in this version to make it computable at each frame display.
+//! \param object pointer to the object (a freeflying robot)
+//! \param Oi initial object position
+//! \param Of final object position
+//! \param Ai initial position of the hand that will pick the object up
+//! \param Af final position of the hand that will pick the object up
+//! \param Bi initial position of the hand that will place the object at its final position
+//! \param Bf final position of the hand that will place the object at its final position
+//! \param E best position where the two hands can exchange the object
+//! \return 0 in case of success, 1 otherwise
+int findBestExchangePositionGraphic(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3d_vector3 Ai, p3d_vector3 Af, p3d_vector3 Bi, p3d_vector3 Bf, p3d_vector3 result)
+{
+  if(object==NULL)
+  {
+    printf("%s: %d: findBestExchangePositionGraphic(): input p3d_rob is NULL.\n", __FILE__, __LINE__);
+    return 1;
+  }
+
+  unsigned int i, j, k, Nx, Ny, Nz;
+  int minFound= FALSE;
+  double  dx, dy, dz, cost, minCost;
+  double dimX, dimY, dimZ;
+  double xmin, xmax, ymin, ymax, zmin, zmax;
+  double dOiOf, dAiOi, dOfBf, dOiE, dBiE, dEOf, dEAf;
+  p3d_vector3 OiOf, AiOi, OfBf, OiE, BiE, EOf, EAf;
+  p3d_vector3 origin, E, Ebest;
+  configPt q= NULL;
+
+  q= p3d_alloc_config(object);
+  p3d_get_robot_config_into(object, &q);
+
+  xmin= 1.2*MIN( MIN(MIN(Oi[0],Of[0]),MIN(Ai[0],Af[0])), MIN(Bi[0],Bf[0]) );
+  xmax= 1.2*MAX( MAX(MAX(Oi[0],Of[0]),MAX(Ai[0],Af[0])), MAX(Bi[0],Bf[0]) );
+  ymin= MIN( MIN(MIN(Oi[1],Of[1]),MIN(Ai[1],Af[1])), MIN(Bi[1],Bf[1]) );
+  ymax= MAX( MAX(MAX(Oi[1],Of[1]),MAX(Ai[1],Af[1])), MAX(Bi[1],Bf[1]) );
+  zmin= 1.2*MIN( MIN(MIN(Oi[2],Of[2]),MIN(Ai[2],Af[2])), MIN(Bi[2],Bf[2]) );
+  zmax= 1.2*MAX( MAX(MAX(Oi[2],Of[2]),MAX(Ai[2],Af[2])), MAX(Bi[2],Bf[2]) );
+
+  if(xmin < 0) xmin*= 1.2; else xmin*= 0.8;
+  if(ymin < 0) ymin*= 1.2; else ymin*= 0.8;
+  if(zmin < 0) zmin*= 1.2; else zmin*= 0.8;
+
+  if(xmax > 0) xmax*= 1.2; else xmax*= 0.8;
+  if(ymax > 0) ymax*= 1.2; else ymax*= 0.8;
+  if(zmax > 0) zmax*= 1.2; else zmax*= 0.8;
+
+  p3d_vectSub(Oi, Of, OiOf); 
+  p3d_vectSub(Ai, Oi, AiOi); 
+  p3d_vectSub(Of, Bf, OfBf); 
+
+  dOiOf= p3d_vectNorm(OiOf);
+  dAiOi= p3d_vectNorm(AiOi);
+  dOfBf= p3d_vectNorm(OfBf);
+
+  origin[0]= xmin;
+  origin[1]= ymin;
+  origin[2]= zmin;
+  dimX= xmax - xmin;
+  dimY= ymax - ymin;
+  dimZ= zmax - zmin;
+
+  Nx= Ny= Nz= 30;
+  Nx= Ny= Nz= 40;
+  Ny= 100;
+
+  Nx= (unsigned int)(dimX/0.01);
+  Ny= (unsigned int)(dimY/0.01);
+  Nz= (unsigned int)(dimZ/0.01);
+
+
+  dx= dimX/((double) Nx);
+  dy= dimY/((double) Ny);
+  dz= dimZ/((double) Nz);
+
+  minCost= 1e9;
+
+  double maxCost= -1e9;
+  gpVector3D point;
+  std::vector<gpVector3D> points;
+
+  for(i=0; i<Nx; ++i)
+  {
+    E[0]= origin[0] + i*dx;
+
+    for(j=0; j<Ny; ++j)
+    {
+      E[1]= origin[1] + j*dy;
+      for(k=0; k<Nz; ++k)
+      {
+        E[2]= origin[2] + k*dz;
+
+        p3d_vectSub(E, Oi, OiE);
+        p3d_vectSub(E, Bi, BiE);
+        p3d_vectSub(Of, E, EOf);
+        p3d_vectSub(Af, E, EAf);
+
+        dOiE= p3d_vectNorm(OiE);
+        dBiE= p3d_vectNorm(BiE);
+        dEOf= p3d_vectNorm(EOf);
+        dEAf= p3d_vectNorm(EAf);
+
+        cost= dAiOi + dOiE + dBiE + dEOf + dOfBf + dEAf;
+
+        point.set(E[0], E[1], E[2]);
+        point.cost= cost;
+        points.push_back(point);
+
+        if(cost > maxCost) { maxCost= cost; }
+
+//         cost+= fabs(dAiOi + dOiE -dBiE) + fabs(dEOf + dOfBf - dEAf);
+        if(cost < minCost)
+        {
+           minFound= TRUE;
+           minCost= cost;
+           Ebest[0]= E[0];
+           Ebest[1]= E[1];
+           Ebest[2]= E[2];
+        }
+      }
+    }
+  }
+
+
+  for(unsigned int i=0; i<points.size(); ++i)
+  {
+    points[i].cost= (points[i].cost - minCost)/(maxCost - minCost);
+  }
+
+  double color[4];
+  glPushAttrib(GL_ENABLE_BIT | GL_POINT_BIT);
+  glEnable(GL_BLEND);
+  glDisable(GL_LIGHTING);
+  glPointSize(10);
+  glBegin(GL_POINTS);  
+    for(unsigned int i=0; i<points.size(); ++i)
+    {
+      g3d_rgb_from_hue(points[i].cost, color);
+      glColor4f(color[0], color[1], color[2], 0.3);
+      glVertex3d(points[i].x, points[i].y, points[i].z);
+    }
+  glEnd();
+  glPopAttrib();
+
+
+  if(minFound==TRUE)
+  {
+    result[0]= Ebest[0];
+    result[1]= Ebest[1];
+    result[2]= Ebest[2];
+  }
+  else
+  {
+    result[0]= 0.5*(Oi[0] + Of[0]);
+    result[1]= 0.5*(Oi[1] + Of[1]);
+    result[2]= 0.5*(Oi[2] + Of[2]);
+  }
+
+// printf("origin: %f %f %f \n",origin[0],origin[1],origin[2]);
+// printf("[%f %f] [%f %f]  [%f %f] \n",xmin,xmax,ymin,ymax,zmin,zmax);
+// printf("Oi: %f %f %f \n",Oi[0],Oi[1],Oi[2]);
+// printf("Of: %f %f %f \n",Of[0],Of[1],Of[2]);
+// printf("best exchange: %f %f %f \n",result[0],result[1],result[2]);
+
+
+  p3d_set_and_update_this_robot_conf(object, q);
+  p3d_destroy_config(object, q);
+
+  return 0;
+}
+
 
 //! This function is the same as findBestExchangePosition but it receives matrices instead of vectors.
 //! Only the translation part of the matrices is used in the function.

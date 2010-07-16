@@ -271,13 +271,16 @@ int gpPlacement::draw(double length)
   double color[4];
   GLfloat matGL[16];
   p3d_matrix4 Tobject;
+  unsigned int i1, i2, j, n;
+  double d, step;
+  p3d_vector3 diff;
 
   glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT);
   
   glColor3f(1, 0, 0);
   for(i=0; i<contacts.size(); i++)
   {
-    contacts[i].draw(length, 10);
+//     contacts[i].draw(length, 10);
   }
 
   glDisable(GL_LIGHTING);
@@ -293,10 +296,10 @@ int gpPlacement::draw(double length)
 
     g3d_rgb_from_int(ID, color);
     g3d_set_color(Any, color);
-    if(polyhedron!=NULL)
-    {   g3d_draw_p3d_polyhedre(polyhedron);  }
+//     if(polyhedron!=NULL)
+//     {   g3d_draw_p3d_polyhedre(polyhedron);  }
 
-    //display each contact:
+    //display the support polygon:
     glColor3f(0, 0, 1);
     glBegin(GL_LINE_LOOP);
     for(i=0; i<contacts.size(); i++)
@@ -309,38 +312,39 @@ int gpPlacement::draw(double length)
     glColor3f(1, 0, 1);
     glBegin(GL_LINES);
       glVertex3f(center[0], center[1], center[2]);
-      glVertex3f(center[0]+length*plane.normale[0], center[1]+length*plane.normale[1], center[2]+length*plane.normale[2]);
+//       glVertex3f(center[0]+length*plane.normale[0], center[1]+length*plane.normale[1], center[2]+length*plane.normale[2]);
+      glVertex3f(center[0]-4*length*plane.normale[0], center[1]-4*length*plane.normale[1], center[2]-4*length*plane.normale[2]);
     glEnd();
 
-/*
+
     //display the placement surface as lines starting from the center point and going to points of the discretized contour:
-    glColor3f(0, 0, 1);
-    g3d_rgb_from_hue(stability, color);
-    glColor3f(color[0], color[1], color[2]);
-    glColor3f(stability,stability,stability);
-    glBegin(GL_LINES);
-    for(i=0; i<contacts.size(); i++)
-    {
-        i1= i;
-        if(i < contacts.size()-1)
-        {  i2= i1 + 1;  }
-        else
-        {  i2= 0;  }
-  
-        p3d_vectSub(contacts[i2].position, contacts[i1].position, diff);
-        d= p3d_vectNorm(diff); 
-        p3d_vectScale(diff, diff, 1/d);
-        n= (unsigned int) (d/(0.3*length));
-        step = d/((double) n); 
-  
-        for(j=0; j<n; j++)
-        {
-          glVertex3f(center[0], center[1], center[2]);
-          glVertex3f(contacts[i1].position[0]+j*step*diff[0],contacts[i1].position[1]+j*step*diff[1],contacts[i1].position[2]+j*step*diff[2]);        
-        }
-    }
-    glEnd();  
-*/
+//     glColor3f(0, 0, 1);
+//     g3d_rgb_from_hue(stability, color);
+//     glColor3f(color[0], color[1], color[2]);
+//     glColor3f(stability,stability,stability);
+//     glBegin(GL_LINES);
+//     for(i=0; i<contacts.size(); i++)
+//     {
+//         i1= i;
+//         if(i < contacts.size()-1)
+//         {  i2= i1 + 1;  }
+//         else
+//         {  i2= 0;  }
+//   
+//         p3d_vectSub(contacts[i2].position, contacts[i1].position, diff);
+//         d= p3d_vectNorm(diff); 
+//         p3d_vectScale(diff, diff, 1/d);
+//         n= (unsigned int) (d/(0.3*length));
+//         step = d/((double) n); 
+//   
+//         for(j=0; j<n; j++)
+//         {
+//           glVertex3f(center[0], center[1], center[2]);
+//           glVertex3f(contacts[i1].position[0]+j*step*diff[0],contacts[i1].position[1]+j*step*diff[1],contacts[i1].position[2]+j*step*diff[2]);        
+//         }
+//     }
+//     glEnd();  
+
 
   glPopMatrix();
 

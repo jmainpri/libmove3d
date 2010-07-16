@@ -12,6 +12,7 @@ void g3d_set_win_wall_color(g3d_states &vs, float r, float v, float b);
 void g3d_set_win_camera(g3d_states &vs, float ox,float oy, float oz,
                    float dist, float az, float el,
                    float up0, float up1, float up2);
+void g3d_print_win_camera(g3d_states &vs);
 void g3d_set_win_center(g3d_states &vs, float ox,float oy, float oz);
 void g3d_set_light (g3d_states &vs);
 void g3d_save_win_camera(g3d_states &vs);

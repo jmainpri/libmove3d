@@ -1272,7 +1272,7 @@ int p3d_get_freeflyer_pose2(p3d_rob *robotPt, double *x, double *y, double *z, d
 {
   if(robotPt==NULL)
   {
-    printf("%s: %d: p3d_set_freeflyer_pose2(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    printf("%s: %d: p3d_get_freeflyer_pose2(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
     return 1;
   }
 
