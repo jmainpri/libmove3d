@@ -61,6 +61,7 @@ MACRO(BM3D_CheckCompilationFlags)
 ENDMACRO(BM3D_CheckCompilationFlags)
 
 
+BM3D_flag(JIDO "Check this flag to activate all dependencies for Jido" OFF CXX_PLANNER USE_CXX_PLANNER PQP MULTIGRAPH LIGHT_PLANNER HRI_PLANNER HRI_GENERALIZED_IK MULTILOCALPATH GRASP_PLANNING FK_CNTRT USE_GSL)
 
 BM3D_flag(ANIMATION "Compilation with the module character" OFF)
 
@@ -87,8 +88,6 @@ BM3D_flag(DPG "Dynamic planning using grids" OFF CXX_PLANNER)
 BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module for Move3D" OFF HRI_GENERALIZED_IK)
 BM3D_flag(HRI_GENERALIZED_IK "Human Robot Interaction generalized inverse kinematics" OFF)
 BM3D_flag(HRI_COSTSPACE "Human Robot Interaction planner module for Move3D" OFF)
-
-
 
 BM3D_flag(MULTILOCALPATH "Compilation avec le module Multi-Localpath" OFF)
 BM3D_flag(GRASP_PLANNING "Module de planification de prises" OFF PQP)
