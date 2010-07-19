@@ -36,10 +36,9 @@ int p3d_standard_shoot(p3d_rob *robotPt, configPt q, int sample_passive)
 		{
 			k = jntPt->index_dof + j;
 			
-			if ( 
-				sample_passive ||
-				(p3d_jnt_get_dof_is_user(jntPt, j) && p3d_jnt_get_dof_is_active_for_planner(jntPt,j)) &&
-				(robotPt->cntrt_manager->in_cntrt[k] != 2) ) 
+			if (p3d_jnt_get_dof_is_user(jntPt, j) && (sample_passive ||
+				 ((p3d_jnt_get_dof_is_active_for_planner(jntPt,j)) &&
+				(robotPt->cntrt_manager->in_cntrt[k] != 2))) ) 
 			{
 				p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
 				q[k] = p3d_random(vmin, vmax);
