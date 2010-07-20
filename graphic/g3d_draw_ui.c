@@ -442,7 +442,7 @@ static int g3d_create_fl_object_on_frame(FL_OBJECT** obj, int type, FL_Coord w, 
       break;
     }
     case(FL_INPUT):{
-      if(defaultWidth  < 20){
+      if(defaultWidth < 20){
         defaultWidth = 20;
       }
       break;

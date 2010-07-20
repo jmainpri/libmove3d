@@ -977,7 +977,7 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
   }
 
   umax = localpathPt->range_param;
-  distances = MY_ALLOC(double, njnt + 1);
+  distances = MY_ALLOC(double, njnt + 1);           /**********  ALLOC ********/
   if (p3d_col_get_tolerance(&tolerance) && microcollision_avoidance) {
     p3d_col_set_tolerance(tolerance + dmax);
     newtol = tolerance + dmax;
@@ -1007,7 +1007,7 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
     /* The initial position of the robot is recovered */
     p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, qp);
     p3d_destroy_config(robotPt, qp);
-    MY_FREE(distances, double, njnt + 1);
+    MY_FREE(distances, double, njnt + 1);  /****** FREE *******/
     p3d_col_set_tolerance(tolerance);
     return TRUE;
   }
@@ -1026,7 +1026,7 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
     /* The initial position of the robot is recovered */
     p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, qp);
     p3d_destroy_config(robotPt, qp);
-    MY_FREE(distances, double, njnt + 1);
+    MY_FREE(distances, double, njnt + 1);/********** FREE ****/
     p3d_col_set_tolerance(tolerance);
     return(FALSE);
   }
@@ -1037,7 +1037,7 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
     /* The initial position of the robot is recovered */
     p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, qp);
     p3d_destroy_config(robotPt, qp);
-    MY_FREE(distances, double, njnt + 1);
+    MY_FREE(distances, double, njnt + 1);/********** FREE ****/
     p3d_col_set_tolerance(tolerance);
     return TRUE;
   }
@@ -1062,7 +1062,7 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
       p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, qp);
       //p3d_destroy_config(robotPt, qsave);
       p3d_destroy_config(robotPt, qp);
-      MY_FREE(distances, double, njnt + 1);
+      MY_FREE(distances, double, njnt + 1);/********** FREE ****/
       p3d_col_set_tolerance(tolerance);
       return TRUE;
     }
@@ -1089,7 +1089,7 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
 		  p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, qp);
 		  //p3d_destroy_config(robotPt, qsave);
 		  p3d_destroy_config(robotPt, qp);
-		  MY_FREE(distances, double, njnt + 1);
+		  MY_FREE(distances, double, njnt + 1);/********** FREE ****/
 		  p3d_col_set_tolerance(tolerance);
 		  return TRUE;
 		}
@@ -1160,7 +1160,7 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
   //p3d_destroy_config(robotPt, qsave);
   p3d_destroy_config(robotPt, qp);
 
-  MY_FREE(distances, double, njnt + 1);
+  MY_FREE(distances, double, njnt + 1); /** FREE **/
   p3d_col_set_tolerance(tolerance);
   return FALSE;
 }
