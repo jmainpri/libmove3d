@@ -429,11 +429,11 @@ int gpCompute_stable_placements(p3d_rob *object, std::list<gpPlacement> &placeme
 
       if( p3d_vectDotProd(cross, normal) < 0 ) //projection is outside the support polygon
       {  
-        stable= false;
+        stable = false;
         break;
       }
 
-      d= gpPoint_to_line_segment_distance(proj, p1, p2, closest);
+      d = gpPoint_to_line_segment_distance(proj, p1, p2, closest);
 
       if(j==0) { dmin= d;}
       else if(d < dmin)
