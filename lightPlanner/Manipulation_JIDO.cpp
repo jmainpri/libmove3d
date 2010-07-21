@@ -681,7 +681,7 @@ configPt Manipulation_JIDO::robotRest(){
 
 
 //! Computes a path for a given manipulation elementary task.
-MANIPULATION_TASK_MESSAGE Manipulation_JIDO::armPlanTask(MANIPULATION_TASK_TYPE_STR task, configPt qStart, configPt qGoal, char* objectName, std::vector <int> lp, std::vector < std::vector <double> > positions,  int *nbPositions){
+MANIPULATION_TASK_MESSAGE Manipulation_JIDO::armPlanTask(MANIPULATION_TASK_TYPE_STR task, configPt qStart, configPt qGoal, char* objectName, std::vector <int> &lp, std::vector < std::vector <double> > &positions){
 
   configPt qi = NULL, qf = NULL;
   p3d_rob *cur_robot= NULL;
@@ -1101,7 +1101,7 @@ printf("************************************************************************
     XYZ_ENV->cur_robot= cur_robot;
     return MANIPULATION_TASK_ERROR_UNKNOWN;
   }
-  if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions, nbPositions) == 1){
+  if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions) == 1){
     printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
     XYZ_ENV->cur_robot= cur_robot;
     return MANIPULATION_TASK_ERROR_UNKNOWN;
