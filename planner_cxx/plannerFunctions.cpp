@@ -27,60 +27,57 @@ using namespace std;
 
 int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void))
 {
-    ENV.setBool(Env::isRunning,true);
+	ENV.setBool(Env::isRunning,true);
+	
+	double /*tu,*/ts;
+	
+	GraphPt = GraphPt ? GraphPt : p3d_create_graph();
 
-    double /*tu,*/ts;
-
-    GraphPt = GraphPt ? GraphPt : p3d_create_graph();
-
-//#ifdef LIST_OF_PLANNERS
-//    RRT* rrt = (RRT*)plannerlist[0];
-//#else
-    Robot* rob = global_Project->getActiveScene()->getActiveRobot();
-    Graph* graph = new Graph(rob,GraphPt);
+	Robot* rob = global_Project->getActiveScene()->getActiveRobot();
+	Graph* graph = 	API_activeGraph =  new Graph(rob,GraphPt);
 	
 	cout << "Planning for robot : " << rob->getName() << endl;
-
-    RRT* rrt;
+	
+	RRT* rrt;
 
     // Initialize all RRTs
 	// -------------------------------------------------------------------------
-    if(ENV.getBool(Env::isManhattan))
-    {
-        rrt = new ManhattanLikeRRT(rob,graph);
-    }
+	if(ENV.getBool(Env::isManhattan))
+	{
+		rrt = new ManhattanLikeRRT(rob,graph);
+	}
 	else if(ENV.getBool(Env::isMultiRRT) && ENV.getBool(Env::isCostSpace)  )
-    {
-        rrt = new MultiTRRT(rob,graph);
-    }
+	{
+		rrt = new MultiTRRT(rob,graph);
+	}
 	else if(ENV.getBool(Env::isMultiRRT))
 	{
 		rrt = new MultiRRT(rob,graph);
 	}
 #ifdef HRI_COSTSPACE
-    else if(ENV.getBool(Env::HRIPlannerWS) && ENV.getBool(Env::HRIPlannerTRRT))
-    {
-        rrt = new HRICS_RRT(rob,graph);
-    }
-    else if(ENV.getBool(Env::HRIPlannerCS) && ENV.getBool(Env::HRIPlannerTRRT))
-    {
-        rrt = new HRICS_RRTPlan(rob,graph);
-    }
+	else if(ENV.getBool(Env::HRIPlannerWS) && ENV.getBool(Env::HRIPlannerTRRT))
+	{
+		rrt = new HRICS_RRT(rob,graph);
+	}
+	else if(ENV.getBool(Env::HRIPlannerCS) && ENV.getBool(Env::HRIPlannerTRRT))
+	{
+		rrt = new HRICS_RRTPlan(rob,graph);
+	}
 #endif
-    else if(ENV.getBool(Env::isCostSpace) && ENV.getBool(Env::useTRRT) )
-    {
-        rrt = new TransitionRRT(rob,graph);
-    }
-    else
-    {
+	else if(ENV.getBool(Env::isCostSpace) && ENV.getBool(Env::useTRRT) )
+	{
+		rrt = new TransitionRRT(rob,graph);
+	}
+	else
+	{
 		if( ENV.getBool(Env::isCostSpace) && (!ENV.getBool(Env::useTRRT)) )
 		{
 			ENV.setBool(Env::isCostSpace,false);
 		}
 		
-        rrt = new RRT(rob,graph);
-    }
-//#endif
+		rrt = new RRT(rob,graph);
+	}
+	//#endif
 
     int nb_added_nodes = rrt->init();
 
@@ -147,14 +144,11 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
 		cout << " - m_nbExpansion + m_nbInitNodes - m_nbExpansionFailed  =  " << (rrt->getNumberOfExpansion() + rrt->getNumberOfInitialNodes() - rrt->getNumberOfFailedExpansion() ) << endl;
 		cout << " - _Graph->getNumberOfNodes() = " << graph->getNumberOfNodes() << endl;
 	}
-
-//#ifndef LIST_OF_PLANNERS
-//    delete rrt;
-//#endif
-    if(res)
-        return graph->getGraphStruct()->nnode;
-    else
-        return false;
+	
+	if(res)
+		return graph->getGraphStruct()->nnode;
+	else
+		return false;
 }
 
 
@@ -169,7 +163,7 @@ bool p3d_run_est(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 	RRT* rrt = (RRT*)plannerlist[0];
 #else
         Robot* _Robot = new Robot(GraphPt->rob,false);
-        Graph* _Graph = new Graph(_Robot,GraphPt);
+        Graph* _Graph = API_activeGraph = new Graph(_Robot,GraphPt);
 
 	EST* est;
 
@@ -211,7 +205,7 @@ int p3d_run_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct
 	PRM* prm = (PRM*)plannerlist[2];
 #else
 	Robot* _Robot = new Robot(GraphPt->rob);
-	Graph* _Graph = new Graph(_Robot,GraphPt);
+	Graph* _Graph = API_activeGraph = new Graph(_Robot,GraphPt);
 	
 	PRM* prm = new PRM(_Robot,_Graph);
 #endif
@@ -243,7 +237,7 @@ int p3d_run_vis_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (
 	Vis_PRM* vprm = (Vis_PRM*)plannerlist[1];
 #else
 	Robot* _Robot = new Robot(GraphPt->rob);
-	Graph* _Graph = new Graph(_Robot,GraphPt);
+	Graph* _Graph = API_activeGraph = new Graph(_Robot,GraphPt);
 	
 	Vis_PRM* vprm = new Vis_PRM(_Robot,_Graph);
 #endif
@@ -273,7 +267,7 @@ int p3d_run_acr(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct
 	ACR* acr = (ACR*)plannerlist[3];
 #else
         Robot* _Robot = new Robot(GraphPt->rob);
-        Graph* _Graph = new Graph(_Robot,GraphPt);
+        Graph* _Graph = API_activeGraph = new Graph(_Robot,GraphPt);
 
         ACR* acr = new ACR(_Robot,_Graph);
 #endif

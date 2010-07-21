@@ -101,11 +101,10 @@ int  RRT::init()
  */
 int RRT::expandOneStep(Node* fromComp, Node* toComp)
 {
+	// Resets the expansion structure
+	_expan->setGraph(_Graph);
 	_expan->setFromComp(fromComp);
 	_expan->setToComp(toComp);
-//	cout << "---------------------------------------------------" << endl;
-//	cout <<"Robot Name = " << _Robot->getName() << endl;
-//	cout << _Robot->getRobotStruct() << endl;
 	
     Node* directionNode(NULL);
     Node* expansionNode(NULL);
@@ -141,7 +140,7 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
 								 directionNode,
                                  ENV.getExpansionMethod());
 	
-	if (nbNodeCreated==0) 
+	if ( nbNodeCreated < 1 ) 
 	{
 		m_nbFailedExpansion++;
 	}

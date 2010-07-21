@@ -1,11 +1,13 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-#include "edge.hpp"
-#include "compco.h"
+#include "Roadmap/node.hpp"
+#include "Roadmap/edge.hpp"
+#include "Roadmap/compco.h"
 #include "Trajectory/trajectory.hpp"
 
 #include <map>
+
 /**
  @ingroup ROADMAP
  \brief Classe représentant un Graph pour un Robot
@@ -136,7 +138,7 @@ public:
 	/**
 	 * Get Node ith node in Graph
 	 */
-	Node* getNode(unsigned int i) { return _Nodes[i]; } 
+	Node* getNode(unsigned int i) { return m_Nodes[i]; } 
 	
 	/**
 	 * obtient le vecteur des Edge du Graph
@@ -154,12 +156,17 @@ public:
 	 * obtient le nombre de Node dans le Graph
 	 * @return le nombre de Node dans le Graph
 	 */
-	unsigned int getNumberOfNodes() { return _Nodes.size(); }
+	unsigned int getNumberOfNodes() { return m_Nodes.size(); }
 	
 	/*
 	 * Get the number of compco in the grap
 	 */
 	unsigned int getNumberOfCompco();
+	
+	/**
+	 * Get Compcos
+	 */
+	std::vector<ConnectedComponent*> getConnectedComponents() { return m_Comp; }
 	
 	/**
 	 * obtient le Node correspondant au p3d_node
@@ -194,24 +201,24 @@ public:
 	 * Gets Start Node
 	 * @return le nom du Graph
 	 */
-	Node* getStart() {return _Start;}
+	Node* getStart() {return m_Start;}
 	
 	/**
 	 * Sets Start Node
 	 */
-	void setStart(Node* N) { _Start=N; }
+	void setStart(Node* N) { m_Start=N; }
 	
 	
 	/**
 	 * Gets Start Node
 	 * @return le nom du Graph
 	 */
-	Node* getGoal() {return _Goal;}
+	Node* getGoal() {return m_Goal;}
 	
 	/**
 	 * Sets Goal Node
 	 */
-	void setGoal(Node* N) { _Goal=N; }
+	void setGoal(Node* N) { m_Goal=N; }
 	
 	
 	/**
@@ -299,7 +306,8 @@ public:
 	 * @param N2 le Node final de l'Edge
 	 * @param Long la longueur de l'Edge
 	 */
-	void addEdge(Node* N1, Node* N2, double Long);
+	void addEdge(Node* source, Node* target, double Long);
+	
 	/**
 	 * ajoute deux Edge au Graph
 	 * @param N1 l'une des extrémités des Edge
@@ -311,13 +319,19 @@ public:
 	/**
 	 * Removes an edge from the graph
 	 */
-	void removeEdge(Edge* E);
+	//void removeEdge(Edge* E);
 	
 	/**
 	 * trie les Node en fonction de leur distance à un Node de référence
 	 * @param N le Node de référence
 	 */
 	void sortNodesByDist(Node* N);
+	
+	/**
+	 * Adds a node to the node list and the other structures
+	 * @param N the node to be added
+	 */
+	void addNode(Node* N);
 	
 	/**
 	 * ajoute un Node s'il est à moins d'une distance max du Graph
@@ -366,6 +380,15 @@ public:
 	 */
 	bool linkToAllNodes(Node* N);
 	
+	
+	/**
+	 * Function that computes if 
+	 * a node is linked to another node
+	 * @return true of the nodes can be linked
+	 * @return the distance between the nodes
+	 */
+	bool areNodesLinked(Node* node1, Node* node2, double & dist);
+	
 	/**
 	 * Link 2 nodes and merge them
 	 */
@@ -410,7 +433,6 @@ public:
 	 */
 	std::vector<Node*> getNodesInTheCompCo(Node* node);
 	
-	
 	/**
 	 * ajoute des Edges formant des cycles dans le Graph
 	 * @param node le nouveau Node ajouté
@@ -434,6 +456,16 @@ public:
 	void mergeCheck();
 	
 	/**
+	 * Delete the compco
+	 */
+	void deleteCompco(ConnectedComponent* CompCo);
+	
+	/**
+	 * Check C and C++ Connected Components
+	 */
+	bool checkConnectedComponents();
+	
+	/**
 	 * Recompute the Graph cost (Edges and Nodes)
 	 */
 	void recomputeCost();
@@ -454,29 +486,47 @@ public:
 	 */
 	void initMotionPlanning(Node* start,Node* goal);
 	
+	// BGL functions ----------------------------------------
+	// ------------------------------------------------------
+	void				initBGL();
+	BGL_Vertex	findVertexDescriptor(Node* N);
+	BGL_Edge		findEdgeDescriptor(Edge* E);
+	void				saveBGLGraphToDotFile(const std::string& filename);
+	
 	
 private:
 	
 	void init();
+	
 	void freeResources();
 	static bool compareEdges(Edge* E1, Edge* E2);
 	static bool compareNodes(Node* N1, Node* N2);
 	
 private:
-	graph* _Graph;
-	Robot* _Robot;
 	
-	p3d_traj* _Traj;
+	// Old p3d graph
+	graph*														m_Graph;
+	Robot*														m_Robot;
 	
-	std::vector<Node*> _Nodes;
-	std::vector<Edge*> _Edges;
-	std::vector<ConnectedComponent*> m_Comp;
-	std::map<node*, Node*> _NodesTable;
+	// Boost Graph Lib 
+	BGL_Graph													m_BoostGraph;
 	
-	Node* _Start;
-	Node* _Goal;
+	// latest trajectory
+	p3d_traj*													m_Traj;
 	
-	std::string _Name;
+	std::vector<Node*>								m_Nodes;
+	std::vector<Edge*>								m_Edges;
+	std::vector<ConnectedComponent*>	m_Comp;
+	
+	// Maps between old and new nodes
+	std::map<node*, Node*>						m_NodesTable;
+	
+	// Start and goal nodes
+	Node*															m_Start;
+	Node*															m_Goal;
+	
+	// Graph name
+	std::string												m_Name;
 };
 
 #endif
