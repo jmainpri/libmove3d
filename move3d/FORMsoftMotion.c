@@ -133,7 +133,7 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg) {
 
 	fct_draw = &(g3d_draw_allwin_active);
 
-	if(p3d_optim_traj_softMotion(traj, ENV.getBool(Env::writeSoftMotionFiles), &gain, &ntest, lp, positions, &nbPositions)){
+	if(p3d_optim_traj_softMotion(traj, ENV.getBool(Env::writeSoftMotionFiles), &gain, &ntest, lp, positions)){
 		gaintot = gaintot*(1.- gain);
 		/* position the robot at the beginning of the optimized trajectory */
 		position_robot_at_beginning(ir, traj);
@@ -220,7 +220,7 @@ void draw_trajectory_ptp() {
 	glPopAttrib();
 }
 
-int p3d_optim_traj_softMotion(p3d_traj *trajPt, bool param_write_file, double *gain, int *ntest, std::vector <int> lp, std::vector < std::vector <double> > positions, int *nbPositions) {
+int p3d_optim_traj_softMotion(p3d_traj *trajPt, bool param_write_file, double *gain, int *ntest, std::vector <int> &lp, std::vector < std::vector <double> > &positions) {
 	p3d_rob *robotPt = trajPt->rob;
 	p3d_traj *trajSmPTPPt = NULL;
 	p3d_traj *trajSmPt = NULL;
@@ -634,7 +634,7 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, bool param_write_file, double *g
 
 	/* Write curve into a file for BLTPLOT */
 	if(param_write_file == true) {
-		p3d_softMotion_write_curve_for_bltplot(robotPt, trajSmPt, (char*)"RefSM.dat", ENV.getBool(Env::plotSoftMotionCurve), lp, positions, nbPositions) ;
+		p3d_softMotion_write_curve_for_bltplot(robotPt, trajSmPt, (char*)"RefSM.dat", ENV.getBool(Env::plotSoftMotionCurve), lp, positions) ;
 	}
 	if (fct_draw){(*fct_draw)();}
 
