@@ -385,6 +385,12 @@ gpConvexHull::~gpConvexHull()
 //! the convex hull computation is done (TODO: check this last point (memory management)).
 int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadius, bool verbose)
 {
+  if(this==NULL)
+  {
+    printf("%s: %d: gpConvexHull::compute(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
   if(dimension_ < 2)
   {
     printf("%s: %d: gpConvexHull::compute(): points dimension is must be >= 2.\n",__FILE__,__LINE__);
@@ -473,7 +479,7 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
   if(!exitcode)  // if no error 
   {
      // get the hull vertices:
-     hull_vertices.resize(qh_qh.num_vertices);
+     hull_vertices.resize(qh num_vertices); // qh defined in qhull.h
      cntV= 0;
      FORALLvertices
      {
@@ -482,7 +488,7 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
      }
 
      // now, get the hull faces:
-     hull_faces.resize(qh_qh.num_facets);
+     hull_faces.resize(qh num_facets);// qh defined in qhull.h
      cntF= 0;
      FORALLfacets
      {
@@ -761,6 +767,12 @@ gpConvexHull3D::gpConvexHull3D(p3d_vector3 *point_array, unsigned int nb_points)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpConvexHull3D::draw(bool wireframe)
 {
+  if(this==NULL)
+  {
+    printf("%s: %d: gpConvexHull3D::draw(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
   unsigned int i, j, k;
   std::vector<double> normal, center;
 
@@ -781,18 +793,19 @@ int gpConvexHull3D::draw(bool wireframe)
      }
      glEnd();
   }
+     // draw face normals:
+//   glColor3f(1, 0, 1);
+//   glBegin(GL_LINES);
+//    for(i=0; i<hull_faces.size(); i++)
+//    {
+//      normal= hull_faces[i].normal();
+//      center= hull_faces[i].center();
+// 
+//      glVertex3f(center[0], center[1], center[2]);
+//      glVertex3f(center[0] + normal[0], center[1] + normal[1], center[2] + normal[2]);
+//    }
+//   glEnd();
 
-  glColor3f(1, 0, 1);
-  glBegin(GL_LINES);
-   for(i=0; i<hull_faces.size(); i++)
-   {
-     normal= hull_faces[i].normal();
-     center= hull_faces[i].center();
-
-     glVertex3f(center[0], center[1], center[2]);
-     glVertex3f(center[0] + normal[0], center[1] + normal[1], center[2] + normal[2]);
-   }
-  glEnd();
 
 //   glColor3f(1, 0, 1);
 //   glBegin(GL_LINES);
@@ -859,6 +872,12 @@ int gpConvexHull3D::draw(bool wireframe)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpConvexHull3D::drawFace(unsigned int face_index)
 {
+  if(this==NULL)
+  {
+    printf("%s: %d: gpConvexHull3D::drawFace(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
   if(face_index > hull_faces.size())
   {
     printf("%s: %d: gpConvexHull3D::drawFace(): input face index (%d) exceeds the hull's number of faces (%d).\n",__FILE__,__LINE__,face_index,hull_faces.size());

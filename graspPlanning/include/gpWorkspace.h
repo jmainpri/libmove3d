@@ -19,27 +19,7 @@ class gpSAHandInfo
    //! lengths of the phalanges:
    double length1, length2, length3;
 
-   gpSAHandInfo()
-   {
-//      q1min= -20*DEGTORAD;
-//      q1max=  20*DEGTORAD;
-//      q2min= -19*DEGTORAD;
-//      q2max=  90*DEGTORAD;
-//      q3min=   0*DEGTORAD;
-//      q3max=  90*DEGTORAD;
-     // these bounds are reduced because a finger has no chance to ensure a good contact
-     // close to the initial bounds:
-     q1min= -20*DEGTORAD;
-     q1max=  20*DEGTORAD;
-     q2min= 10*DEGTORAD;
-     q2max=  70*DEGTORAD;
-     q3min=   20*DEGTORAD;
-     q3max=  60*DEGTORAD;
-
-     length1= 0.067816;
-     length2= 0.029980;
-     length3= 0.029;
-   }
+   gpSAHandInfo();
 };
 
 
@@ -64,5 +44,7 @@ extern int gpSAHfinger_jacobian(double length1, double length2, double length3, 
 // extern int gpSAHfinger_manipulability_ellipsoid(double length1, double length2, double length3, double q1, double q2, double q3);
 
 extern int gpDraw_SAHfinger_manipulability_ellipsoid(p3d_rob *robot, gpHand_properties &hand_properties, int finger_index, int handID= 0);
+
+extern int gpDraw_reachable_points(p3d_rob *robot, p3d_rob *object, gpHand_properties &handProp);
 
 #endif

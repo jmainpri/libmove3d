@@ -50,5 +50,5 @@ extern int p3d_update_carried_object_pos(p3d_rob *robotPt);
 #endif
 
 extern int p3d_set_freeflyer_pose(p3d_rob *robotPt, p3d_matrix4 pose);
-
+extern int p3d_set_freeflyer_pose2(p3d_rob *robotPt, double x, double y, double z, double alpha, double beta, double gamma);
 #endif /* __CEXTRACT__ */

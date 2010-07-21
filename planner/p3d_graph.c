@@ -49,6 +49,17 @@ p3d_graph * p3d_create_graph(void) {
     }
     Robot->GRAPH = Graph;
     XYZ_GRAPH    = Graph;
+    int nbSols;
+    if (p3d_is_multisol(Robot->cntrt_manager, &nbSols)) {
+      Graph->usedIkSols = MY_ALLOC(int *, nbSols);
+      for (int i = 0; i < nbSols; i++) {
+        Graph->usedIkSols[i] = MY_ALLOC(int, Robot->cntrt_manager->ncntrts);
+        for(int j = 0; j < Robot->cntrt_manager->ncntrts; j++){
+          Graph->usedIkSols[i][j] = -1;
+        }
+      }
+      Graph->nbUsedIkSols = 0;
+    }
   }
 
 #ifdef MULTIGRAPH
@@ -57,7 +68,10 @@ p3d_graph * p3d_create_graph(void) {
 #ifdef DPG
   if (ENV.getBool(Env::UseDPGGrids)) {
     Graph->dpgGrid = new DpgGrid(Graph->env);
+  }else {
+    Graph->dpgGrid = NULL;
   }
+
 #endif
 
   if (STAT) {
@@ -923,6 +937,9 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
     p3d_copy_iksol(robotPt->cntrt_manager, robotPt->ikSolPos, &iksols);
     Ns  = p3d_APInode_make_multisol(G, qs, iksols);
     p3d_insert_node(G, Ns);
+    if(p3d_get_ik_choice() != IK_NORMAL && iksols){
+      p3d_AddIkSolInArray(robotPt->cntrt_manager, iksols, G->usedIkSols, &G->nbUsedIkSols);
+    }
     G->dist_nodes = p3d_add_node_to_list(Ns, G->dist_nodes);
     p3d_create_compco(G, Ns);
     Ns->type = ISOLATED;
@@ -946,6 +963,9 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
     p3d_copy_iksol(robotPt->cntrt_manager, robotPt->ikSolGoto, &iksolg);
     Ng  = p3d_APInode_make_multisol(G, qg, iksolg);
     p3d_insert_node(G, Ng);
+    if(p3d_get_ik_choice() != IK_NORMAL && iksolg){
+      p3d_AddIkSolInArray(robotPt->cntrt_manager, iksolg, G->usedIkSols, &G->nbUsedIkSols);
+    }
     G->dist_nodes = p3d_add_node_to_list(Ng, G->dist_nodes);
     p3d_create_compco(G, Ng);
     Ng->type = ISOLATED;

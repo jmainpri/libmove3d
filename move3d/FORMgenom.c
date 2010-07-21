@@ -667,10 +667,10 @@ int genomReplanCollidingTraj(p3d_rob* robotPt, int cartesian, double* armConfig,
         printf("Optimization with softMotion not possible: current trajectory contains one or zero local path\n");
       return 1;
     }
-    if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions, nbPositions) == 1){
-      printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
-      return 1;
-    }
+//     if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions, nbPositions) == 1){
+//       printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
+//       return 1;
+//     }
     //peut etre ajouter un return specific pour savoir qu'il y'a une nouvelle traj
   }
   return 0;

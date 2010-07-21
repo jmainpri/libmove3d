@@ -718,6 +718,7 @@ static void CB_config_obj(FL_OBJECT *ob, long arg)
            &(robotPt->ROBOT_POS));
   if(robotPt->ikSolPos != NULL){
     p3d_destroy_specific_iksol(robotPt->cntrt_manager, robotPt->ikSolPos);
+    robotPt->ikSolPos = NULL;
   }
   p3d_copy_iksol(robotPt->cntrt_manager, robotPt->confcur->ikSol, &(robotPt->ikSolPos));
       } break;
@@ -726,6 +727,7 @@ static void CB_config_obj(FL_OBJECT *ob, long arg)
            &(robotPt->ROBOT_GOTO));
   if(robotPt->ikSolGoto != NULL){
     p3d_destroy_specific_iksol(robotPt->cntrt_manager, robotPt->ikSolGoto);
+    robotPt->ikSolGoto = NULL;
   }
   p3d_copy_iksol(robotPt->cntrt_manager, robotPt->confcur->ikSol, &(robotPt->ikSolGoto));
       } break;

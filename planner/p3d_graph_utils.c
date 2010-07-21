@@ -246,6 +246,16 @@ int p3d_del_graph(p3d_graph *G) {
   if((G->stat != NULL)){
     destroyStat(&(G->stat));
   }
+  
+  int nbSols;
+  if (p3d_is_multisol(G->rob->cntrt_manager, &nbSols) && G->usedIkSols) {
+    for (int i = 0; i < nbSols; i++) {
+      MY_FREE(G->usedIkSols[i], int, G->rob->cntrt_manager->ncntrts);
+      G->usedIkSols[i] = NULL;
+    }
+    MY_FREE(G->usedIkSols, int *, nbSols);
+    G->usedIkSols = NULL;
+  }
   /* Delete references to the graph */
   if (G->rob != NULL) {
     G->rob->GRAPH = NULL;

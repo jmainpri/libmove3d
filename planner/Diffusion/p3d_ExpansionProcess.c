@@ -83,6 +83,11 @@ void p3d_AddNodeUpdateGraphStruc(p3d_graph* graphPt, p3d_node* newNodePt,
       graphPt->n_consec_fail_pb_level = 0;
     }
   }
+  //ikSol Treatement
+  if (p3d_get_ik_choice() == IK_UNIQUE) {
+    p3d_AddIkSolInArray(graphPt->rob->cntrt_manager, newNodePt->iksol, graphPt->usedIkSols, &graphPt->nbUsedIkSols);
+  }
+  
 }
 
 /**
@@ -266,6 +271,7 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
     int singNum = 0;
     int cntrt = p3d_isCloseToSingularityConfig(robotPt, robotPt->cntrt_manager, NewNodePt->q, &singNum);
     if (cntrt != -1){
+      p3d_isCloseToSingularityConfig(robotPt, robotPt->cntrt_manager, NewNodePt->q, &singNum);
       //Transform to singular configuration
       configPt singConfig = p3d_alloc_config(robotPt);
       do{

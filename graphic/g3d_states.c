@@ -11,7 +11,7 @@ g3d_states g3d_init_viewer_state(double size)
     vs.CONTOUR = 0;
     vs.GHOST = 0;
     vs.BB = 0;
-    vs.GOURAUD = 0;
+    vs.GOURAUD = 1;
     vs.ACTIVE = 1;
     vs.list = -1;
 
@@ -166,10 +166,17 @@ g3d_set_win_camera(g3d_states &vs, float ox,float oy, float oz,
   vs.y = oy;
   vs.z = oz;
   vs.zo = dist;
-  vs.az = az, vs.el = el;
+  vs.az = az;
+  vs.el = el;
   vs.up[0] = up0;
-  vs.up[1] = up1, vs.up[2] = up2;
+  vs.up[1] = up1,
+  vs.up[2] = up2;
   vs.up[3]=0.0;
+}
+
+void g3d_print_win_camera(g3d_states &vs)
+{
+  printf("%f, %f, %f, %f, %f, %f, %f, %f, %f\n",vs.x, vs.y, vs.z, vs.zo, vs.az, vs.el, vs.up[0], vs.up[1], vs.up[2]);
 }
 
 void

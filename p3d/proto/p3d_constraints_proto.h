@@ -73,6 +73,8 @@ extern void p3d_destroy_specific_iksol(p3d_cntrt_management *cntrt_manager, int 
 extern void p3d_destroy_specific_niksol ( p3d_cntrt_management *cntrt_manager, int *niksol );
 extern void p3d_mark_for_singularity(p3d_cntrt_management *cntrt_manager, int ctNum);
 extern void p3d_unmark_for_singularity(p3d_cntrt_management *cntrt_manager, int ctNum);
+extern int p3d_findIkSolInArray (p3d_cntrt_management* cntrt_manager, int* ikSol, int ** ikSolArray, int nbArrayItems);
+extern int p3d_AddIkSolInArray (p3d_cntrt_management* cntrt_manager, int* ikSol, int ** ikSolArray, int *nbArrayItems);
 extern int p3d_local_conf_correction(p3d_rob *robotPt, configPt q);
 extern int p3d_test_singularity_connexion(p3d_cntrt_management *cntrt_manager, p3d_node *N1, p3d_node *N2);
 extern int p3d_get_nb_ikSol(p3d_cntrt_management *cntrt_manager);

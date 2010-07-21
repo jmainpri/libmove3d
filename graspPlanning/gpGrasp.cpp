@@ -339,7 +339,7 @@ int gpGrasp::draw(double length, int nb_slices)
       contacts[i].draw(length, nb_slices);
     }
 
-    g3d_draw_frame(frame, 4*length);
+//     g3d_draw_frame(frame, 4*length);
 
 //     if(hand_type==GP_SAHAND_RIGHT)
 //     { 
@@ -1251,8 +1251,8 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        workspace.at(13).radius= 0.008588; 
        workspace.at(14).setCenter(0.009846, 0.055841, -0.032481); 
        workspace.at(14).radius= 0.008270; 
-/*
-       workspace.resize(25);
+
+       workspace.resize(31);
 
        workspace.at(0).setCenter(-0.003262, 0.062235, -0.082269); 
        workspace.at(0).radius= 0.017917; 
@@ -1303,19 +1303,127 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        workspace.at(23).setCenter(-0.001691, 0.096858, -0.065418); 
        workspace.at(23).radius= 0.004489; 
        workspace.at(24).setCenter(0.002142, 0.030632, -0.084668); 
-       workspace.at(24).radius= 0.004380; */
-//        workspace.at(25).setCenter(0.012673, 0.047298, -0.075590); 
-//        workspace.at(25).radius= 0.004272; 
-//        workspace.at(26).setCenter(0.017049, 0.059458, -0.090737); 
-//        workspace.at(26).radius= 0.004263; 
-//        workspace.at(27).setCenter(0.000000, -0.012191, -0.098303); 
-//        workspace.at(27).radius= 0.004234; 
-//        workspace.at(28).setCenter(-0.008784, 0.083570, -0.082231); 
-//        workspace.at(28).radius= 0.004122; 
-//        workspace.at(29).setCenter(-0.017470, 0.060924, -0.099026); 
-//        workspace.at(29).radius= 0.004093; 
-//        workspace.at(30).setCenter(-0.006076, 0.028586, -0.085191); 
-//        workspace.at(30).radius= 0.004077; 
+       workspace.at(24).radius= 0.004380; 
+       workspace.at(25).setCenter(0.012673, 0.047298, -0.075590); 
+       workspace.at(25).radius= 0.004272; 
+       workspace.at(26).setCenter(0.017049, 0.059458, -0.090737); 
+       workspace.at(26).radius= 0.004263; 
+       workspace.at(27).setCenter(0.000000, -0.012191, -0.098303); 
+       workspace.at(27).radius= 0.004234; 
+       workspace.at(28).setCenter(-0.008784, 0.083570, -0.082231); 
+       workspace.at(28).radius= 0.004122; 
+       workspace.at(29).setCenter(-0.017470, 0.060924, -0.099026); 
+       workspace.at(29).radius= 0.004093; 
+       workspace.at(30).setCenter(-0.006076, 0.028586, -0.085191); 
+       workspace.at(30).radius= 0.004077; 
+
+       workspace.resize(51);
+       workspace.at(0).setCenter(-0.000000, 0.082053, -0.055491); 
+       workspace.at(0).radius= 0.027800; 
+       workspace.at(1).setCenter(-0.000000, 0.054309, -0.092300); 
+       workspace.at(1).radius= 0.018294; 
+       workspace.at(2).setCenter(-0.000000, 0.040406, -0.051358); 
+       workspace.at(2).radius= 0.013861; 
+       workspace.at(3).setCenter(-0.022472, 0.105721, -0.030710); 
+       workspace.at(3).radius= 0.013178; 
+       workspace.at(4).setCenter(0.022472, 0.105721, -0.030710); 
+       workspace.at(4).radius= 0.013178; 
+       workspace.at(5).setCenter(0.000000, -0.037106, -0.076797); 
+       workspace.at(5).radius= 0.012761; 
+       workspace.at(6).setCenter(-0.000000, 0.113220, -0.022672); 
+       workspace.at(6).radius= 0.011154; 
+       workspace.at(7).setCenter(-0.000000, 0.031050, -0.074148); 
+       workspace.at(7).radius= 0.010695; 
+       workspace.at(8).setCenter(0.000000, -0.030234, -0.100747); 
+       workspace.at(8).radius= 0.010446; 
+       workspace.at(9).setCenter(-0.000000, 0.030260, -0.109865); 
+       workspace.at(9).radius= 0.010436; 
+       workspace.at(10).setCenter(0.000000, -0.029985, -0.052456); 
+       workspace.at(10).radius= 0.010306; 
+       workspace.at(11).setCenter(0.007150, 0.050878, -0.031797); 
+       workspace.at(11).radius= 0.009450; 
+       workspace.at(12).setCenter(-0.016215, 0.076288, -0.088855); 
+       workspace.at(12).radius= 0.008588; 
+       workspace.at(13).setCenter(0.016215, 0.076288, -0.088855); 
+       workspace.at(13).radius= 0.008588; 
+       workspace.at(14).setCenter(-0.009846, 0.055841, -0.032481); 
+       workspace.at(14).radius= 0.008270; 
+       workspace.at(15).setCenter(-0.000000, 0.022663, -0.091911); 
+       workspace.at(15).radius= 0.007871; 
+       workspace.at(16).setCenter(0.016341, 0.116272, -0.013845); 
+       workspace.at(16).radius= 0.007639; 
+       workspace.at(17).setCenter(0.032364, 0.112867, -0.013845); 
+       workspace.at(17).radius= 0.007639; 
+       workspace.at(18).setCenter(-0.016341, 0.116272, -0.013845); 
+       workspace.at(18).radius= 0.007639; 
+       workspace.at(19).setCenter(-0.032364, 0.112867, -0.013845); 
+       workspace.at(19).radius= 0.007639; 
+       workspace.at(20).setCenter(-0.029235, 0.101956, -0.054994); 
+       workspace.at(20).radius= 0.007374; 
+       workspace.at(21).setCenter(0.029235, 0.101956, -0.054994); 
+       workspace.at(21).radius= 0.007374; 
+       workspace.at(22).setCenter(-0.008750, 0.049622, -0.068817); 
+       workspace.at(22).radius= 0.007201; 
+       workspace.at(23).setCenter(0.008750, 0.049622, -0.068817); 
+       workspace.at(23).radius= 0.007201; 
+       workspace.at(24).setCenter(0.000000, -0.020361, -0.115106); 
+       workspace.at(24).radius= 0.006941; 
+       workspace.at(25).setCenter(-0.000000, 0.019585, -0.059740); 
+       workspace.at(25).radius= 0.006792; 
+       workspace.at(26).setCenter(0.000000, -0.019658, -0.085465); 
+       workspace.at(26).radius= 0.006722; 
+       workspace.at(27).setCenter(0.000000, -0.018822, -0.070405); 
+       workspace.at(27).radius= 0.006537; 
+       workspace.at(28).setCenter(-0.000000, 0.080595, -0.089750); 
+       workspace.at(28).radius= 0.006484; 
+       workspace.at(29).setCenter(-0.003954, 0.113227, -0.041408); 
+       workspace.at(29).radius= 0.006484; 
+       workspace.at(30).setCenter(-0.025442, 0.088726, -0.077660); 
+       workspace.at(30).radius= 0.006443; 
+       workspace.at(31).setCenter(0.025442, 0.088726, -0.077660); 
+       workspace.at(31).radius= 0.006443; 
+       workspace.at(32).setCenter(-0.024496, 0.085428, -0.032607); 
+       workspace.at(32).radius= 0.005891; 
+       workspace.at(33).setCenter(0.024496, 0.085428, -0.032607); 
+       workspace.at(33).radius= 0.005891; 
+       workspace.at(34).setCenter(-0.000000, 0.016628, -0.119474); 
+       workspace.at(34).radius= 0.005775; 
+       workspace.at(35).setCenter(-0.004162, 0.119190, -0.007099); 
+       workspace.at(35).radius= 0.005756; 
+       workspace.at(36).setCenter(-0.009364, 0.044054, -0.111903); 
+       workspace.at(36).radius= 0.005730; 
+       workspace.at(37).setCenter(0.009364, 0.044054, -0.111903); 
+       workspace.at(37).radius= 0.005730; 
+       workspace.at(38).setCenter(0.015714, 0.063024, -0.033048); 
+       workspace.at(38).radius= 0.005464; 
+       workspace.at(39).setCenter(-0.019124, 0.108458, -0.049210); 
+       workspace.at(39).radius= 0.005403; 
+       workspace.at(40).setCenter(0.019124, 0.108458, -0.049210); 
+       workspace.at(40).radius= 0.005403; 
+       workspace.at(41).setCenter(-0.008684, -0.040854, -0.059722); 
+       workspace.at(41).radius= 0.005390; 
+       workspace.at(42).setCenter(0.008684, -0.040854, -0.059722); 
+       workspace.at(42).radius= 0.005390; 
+       workspace.at(43).setCenter(0.007903, 0.113020, -0.041408); 
+       workspace.at(43).radius= 0.005375; 
+       workspace.at(44).setCenter(-0.027540, 0.096043, -0.067587); 
+       workspace.at(44).radius= 0.005373; 
+       workspace.at(45).setCenter(0.027540, 0.096043, -0.067587); 
+       workspace.at(45).radius= 0.005373; 
+       workspace.at(46).setCenter(-0.025063, 0.117912, -0.004371); 
+       workspace.at(46).radius= 0.005343; 
+       workspace.at(47).setCenter(0.008409, 0.120253, -0.004371); 
+       workspace.at(47).radius= 0.005343; 
+       workspace.at(48).setCenter(0.025063, 0.117912, -0.004371); 
+       workspace.at(48).radius= 0.005343; 
+       workspace.at(49).setCenter(-0.000000, 0.015048, -0.073876); 
+       workspace.at(49).radius= 0.005226; 
+       workspace.at(50).setCenter(0.008882, -0.041785, -0.091702); 
+       workspace.at(50).radius= 0.005209; 
+
+
+
+
        nb_positions= 500;
        nb_directions= 6;
        nb_rotations= 6;
@@ -1390,7 +1498,7 @@ int gpHand_properties::draw(p3d_matrix4 pose)
     printf("%s: %d: gpHand_properties::draw(): the calling instance is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
-
+static int ws= 0;
   unsigned int i;
   int result= GP_OK;
   float matGL[16];
@@ -1420,7 +1528,7 @@ int gpHand_properties::draw(p3d_matrix4 pose)
       break;
       case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
         p3d_matInvertXform(Tgrasp_frame_hand, Tgrasp_frame_hand_inv);
-        g3d_draw_frame(Tgrasp_frame_hand_inv, 0.1);
+//         g3d_draw_frame(Tgrasp_frame_hand_inv, 0.1);
 
         p3d_mat4Mult(Tgrasp_frame_hand_inv, Thand_wrist, T);
         p3d_matInvertXform(T, T_inv);
@@ -1430,9 +1538,9 @@ int gpHand_properties::draw(p3d_matrix4 pose)
 // //         g3d_draw_frame(Thand_wrist_inv, 0.1);
 
 //         for(i=0; i<1; ++i)
-        for(i=0; i<2; ++i)
+        for(i=1; i<2; ++i)
         {
-          g3d_draw_frame(Twrist_finger[i], 0.05);
+//           g3d_draw_frame(Twrist_finger[i], 0.05);
           p3d_to_gl_matrix(Twrist_finger[i], matGL);
           glPushMatrix();
             glMultMatrixf(matGL);
@@ -1443,16 +1551,17 @@ int gpHand_properties::draw(p3d_matrix4 pose)
               case 2:  g3d_set_color(Blue, NULL);  break;
               case 3:  g3d_set_color(Yellow, NULL);  break;
             }
-            gpDraw_SAHfinger_outer_workspace(data, 2*DEGTORAD);
-            for(unsigned int j=0; j<workspace.size(); ++j)
-            {
-              g3d_draw_solid_sphere(workspace[j].center[0],workspace[j].center[1],workspace[j].center[2], workspace[j].radius, 25);
-            }/*
+//             gpDraw_SAHfinger_outer_workspace(data, 2*DEGTORAD);
+//             for(unsigned int j=0; j<workspace.size(); ++j)
+//             {
+//               g3d_draw_solid_sphere(workspace[j].center[0],workspace[j].center[1],workspace[j].center[2], workspace[j].radius, 25);
+//             }
 printf("draw ws= %d\n",ws);
-if(ws==TRUE)
- {//glDisable(GL_LIGHTING);
+if(ws<2)
+ {glDisable(GL_LIGHTING);
+// glEnable(GL_LIGHTING);
              gpDraw_SAHfinger_outer_workspace(data, 2*DEGTORAD);
-ws= FALSE;
+ws++;
 }
 else
 {glEnable(GL_LIGHTING);
@@ -1460,8 +1569,8 @@ else
             {
               g3d_draw_solid_sphere(workspace[j].center[0],workspace[j].center[1],workspace[j].center[2], workspace[j].radius, 25);
             }
-ws= TRUE;
-}*/
+ws= 0;
+}
 
 /*
             glPushMatrix();
@@ -1778,7 +1887,6 @@ int gpDoubleGrasp::computeBestObjectOrientation(p3d_matrix4 torsoPose, p3d_matri
 
     p3d_vectNormalize(Z, Z);
     p3d_vectXprod(Y, Z, X);
-
 
     p3d_vectNormalize(X, X);
     p3d_vectXprod(Z, X, Y);

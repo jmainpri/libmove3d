@@ -1248,5 +1248,109 @@ int p3d_set_freeflyer_pose(p3d_rob *robotPt, p3d_matrix4 pose)
 }
 
 
+//! Sets the configuration of a freeflyer robot from a 6 parameters.
+//! NB: Values are clamped to the joint parameter bounds.
+//! \param robotPt pointer to the robot
+//! \param x desired x position
+//! \param y desired y position
+//! \param z desired z position
+//! \param alpha desired first Euler angle
+//! \param beta desired second Euler angle
+//! \param gamma desired third Euler angle
+//! \return 0 in case of success, 1 otherwise
+int p3d_set_freeflyer_pose2(p3d_rob *robotPt, double x, double y, double z, double alpha, double beta, double gamma)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_set_freeflyer_pose2(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  double tx_min, tx_max, ty_min, ty_max, tz_min, tz_max;
+  double alpha_min, alpha_max, beta_min, beta_max, gamma_min, gamma_max;
+  configPt q= NULL;
+  p3d_jnt *firstJoint= NULL;
+
+  firstJoint= robotPt->joints[1];
+
+  if(firstJoint->type!=P3D_FREEFLYER)
+  {
+    printf("%s: %d: p3d_set_freeflyer_pose2(): the first joint of robot \"%s\" is not of type P3D_FREEFLYER.\n",__FILE__,__LINE__,robotPt->name);
+    return 1;
+  }
+
+  tx_min= firstJoint->dof_data[0].vmin;
+  tx_max= firstJoint->dof_data[0].vmax;
+  ty_min= firstJoint->dof_data[1].vmin;
+  ty_max= firstJoint->dof_data[1].vmax;
+  tz_min= firstJoint->dof_data[2].vmin;
+  tz_max= firstJoint->dof_data[2].vmax;
+
+  alpha_min= firstJoint->dof_data[3].vmin;
+  alpha_max= firstJoint->dof_data[3].vmax;
+  beta_min = firstJoint->dof_data[4].vmin;
+  beta_max = firstJoint->dof_data[4].vmax;
+  gamma_min= firstJoint->dof_data[5].vmin;
+  gamma_max= firstJoint->dof_data[5].vmax;
+
+  if(x < tx_min)
+  {  x= tx_min;  }
+  if(x > tx_max)
+  {  x= tx_max;  }
+  if(y < ty_min)
+  {  y= ty_min;  }
+  if(y > ty_max)
+  {  y= ty_max;  }
+  if(z < tz_min)
+  {  z= tz_min;  }
+  if(z > tz_max)
+  {  z= tz_max;  }
+
+  alpha = fmod(alpha, 2*M_PI);
+  beta  = fmod(beta, 2*M_PI);
+  gamma = fmod(gamma, 2*M_PI);
+
+  if(alpha < alpha_min)
+  {  alpha+= 2*M_PI;  }
+  if(alpha > alpha_max)
+  {   alpha-= 2*M_PI;  }
+  if(beta < beta_min)
+  {  beta+= 2*M_PI;  }
+  if(beta > beta_max)
+  {   beta-= 2*M_PI;  }
+  if(gamma < gamma_min)
+  {  gamma+= 2*M_PI;  }
+  if(gamma > gamma_max)
+  {   gamma-= 2*M_PI;  }
+
+  if(alpha < alpha_min)
+  {  alpha= alpha_min;  }
+  if(alpha > alpha_max)
+  {  alpha= alpha_max;  }
+  if(beta < beta_min)
+  {  beta= beta_min;  }
+  if(beta > beta_max)
+  {  beta= beta_max;  }
+  if(gamma < gamma_min)
+  {  gamma= gamma_min;  }
+  if(gamma > gamma_max)
+  {  gamma= gamma_max;  }
+
+  q= p3d_alloc_config(robotPt);
+  p3d_get_robot_config_into(robotPt, &q);
+
+  q[firstJoint->index_dof + 0] = x;
+  q[firstJoint->index_dof + 1] = y;
+  q[firstJoint->index_dof + 2] = z;
+  q[firstJoint->index_dof + 3] = alpha;
+  q[firstJoint->index_dof + 4] = beta;
+  q[firstJoint->index_dof + 5] = gamma;
+
+  p3d_set_and_update_this_robot_conf(robotPt, q);
+
+  p3d_destroy_config(robotPt, q);
+
+  return 0;
+}
 
 

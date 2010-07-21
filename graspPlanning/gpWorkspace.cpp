@@ -2,6 +2,29 @@
 #include "GraspPlanning-pkg.h"
 #include <vector>
 
+gpSAHandInfo::gpSAHandInfo()
+{
+  q1min= -20*DEGTORAD;
+  q1max=  20*DEGTORAD;
+  q2min= -19*DEGTORAD;
+  q2max=  90*DEGTORAD;
+  q3min=   0*DEGTORAD;
+  q3max=  90*DEGTORAD;
+    // these bounds are reduced because a finger has no chance to ensure a good contact
+    // close to the initial bounds:
+//      q1min= -20*DEGTORAD;
+//      q1max=  20*DEGTORAD;
+//      q2min= 10*DEGTORAD;
+//      q2max=  70*DEGTORAD;
+//      q3min=   20*DEGTORAD;
+//      q3max=  60*DEGTORAD;
+
+  length1= 0.067816;
+  length2= 0.029980;
+  length3= 0.029;
+}
+
+
 //! @ingroup workspace 
 //! Computes the position of the fingertip center point of the Schunk Anthropomorphic Hand finger.
 //! \param length1 length of the first phalanx
@@ -687,7 +710,8 @@ int gpSAHfinger_workspace(gpSAHandInfo data, double dq, std::vector<gpVector3D> 
 //! with the same principle until the maximal number is reached ro the last computed sphere radius
 //! is smaller than the given threshold.
 //! \param data geometrical info about the finger
-//! \param dq discretization step of the joint parameters (in radians)
+//! \param dq discretization step of the joint parameters (in radians). Do not use less than ~2 degrees (pi/180 rads)
+//! to avoid memory overload and excessive computatison time.
 //! \param dr the algorithm will end when it has found a sphere with radius < dr
 //! \param nb_spheres_max maximal number of spheres that will be computed
 //! \param spheres computed sphere set
@@ -723,7 +747,7 @@ int gpSAHfinger_workspace_approximation(gpSAHandInfo data, double dq, double dr,
 
   innerList.sort();
 
-  while(true)
+  while(true && !innerList.empty())
   {
     best= innerList.back();
     sphere.center[0]= best.x;
@@ -771,6 +795,7 @@ int gpSAHfinger_workspace_approximation(gpSAHandInfo data, double dq, double dr,
   return GP_OK;
 }
 
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDraw_SAHfinger_manipulability_ellipsoid(p3d_rob *robot, gpHand_properties &handProp, int finger_index, int handID)
 {
   #ifdef GP_DEBUG
@@ -798,7 +823,6 @@ int gpDraw_SAHfinger_manipulability_ellipsoid(p3d_rob *robot, gpHand_properties 
 
   p3d_to_gl_matrix(Twrist, mat1);
   p3d_to_gl_matrix(handProp.Twrist_finger[finger_index-1], mat2);
-
 
   gpGet_SAHfinger_joint_angles(robot, handProp, q, finger_index, handID);
 
@@ -851,6 +875,107 @@ glDisable(GL_BLEND);
 glEnable(GL_LIGHTING);
 glDepthMask(GL_TRUE);
 glDisable(GL_CULL_FACE);
+
+  glPopAttrib();
+
+  return GP_OK;
+}
+
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpDraw_reachable_points(p3d_rob *robot, p3d_rob *object, gpHand_properties &handProp)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: gpDraw_reachable_points(): input robot is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  if(object==NULL)
+  {
+    printf("%s: %d: gpDraw_reachable_points(): input object is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  unsigned int i, j;
+  static bool firstTime= true;
+  static gpKdTree kdtree;
+  static std::list<gpContact> contactList;
+  std::list<gpContact> points;
+  std::list<gpContact>::iterator iter;
+  double colors[4][3]= {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0},{1.0,0.0,1.0}};
+  p3d_vector3 center;
+  p3d_matrix4 Twrist, Tobject, Tobject_inv, T, Ttmp;
+  GLfloat mat[16];
+
+  if(firstTime)
+  {
+//     gpSample_obj_surface(object->o[0], 0.005, handProp.fingertip_radius, contactList);
+    gpSample_obj_surface(object->o[0], 0.002, 0.0, contactList);
+
+    FILE *file= fopen("/home/jpsaut/BioMove3Dgit/BioMove3D/pointCLoud", "w+");
+    for(std::list<gpContact>::iterator iter=contactList.begin(); iter!=contactList.end(); ++iter)
+    {
+     fprintf(file, "v %f %f %f\n", iter->position[0], iter->position[1], iter->position[2]);
+    }
+    fclose(file);
+
+    kdtree.build(contactList);
+    firstTime= false;
+printf("contacts %d\n",contactList.size());
+  }
+
+
+
+  p3d_get_freeflyer_pose(robot, Twrist);
+  p3d_get_freeflyer_pose(object, Tobject);
+  p3d_matInvertXform(Tobject, Tobject_inv);
+  p3d_to_gl_matrix(Tobject, mat);
+
+//   glPushAttrib(GL_LIGHTING_BIT | GL_POINT_BIT);
+//   glDisable(GL_LIGHTING);
+//   glPointSize(5);
+//   glPushMatrix();
+//   glMultMatrixf(mat);
+//     glBegin(GL_POINTS);
+//       for(iter=contactList.begin(); iter!=contactList.end(); ++iter)
+//       {
+//         glVertex3dv(iter->position);
+//       }
+//     glEnd();
+//   glPopMatrix();
+//   glPopAttrib();
+// return GP_OK;
+
+
+  glPushAttrib(GL_LIGHTING_BIT | GL_POINT_BIT);
+  glDisable(GL_LIGHTING);
+  glPointSize(5);
+
+  for(i=0; i<4; ++i) //for each finger:
+  {
+    glColor3f(colors[i][0], colors[i][1], colors[i][2]);
+
+    p3d_mat4Mult(Twrist, handProp.Twrist_finger[i], Ttmp);
+    p3d_mat4Mult(Tobject_inv, Ttmp, T);
+
+    p3d_to_gl_matrix(Tobject, mat);
+
+    for(j=0; j<handProp.workspace.size(); ++j)
+    {
+      p3d_xformPoint(T, handProp.workspace[j].center, center);
+      points.clear();
+      kdtree.sphereIntersection(center, handProp.workspace[j].radius, points);
+printf("points %d\n",points.size());
+      glPushMatrix();
+      glMultMatrixf(mat);
+        glBegin(GL_POINTS);
+         for(iter=points.begin(); iter!=points.end(); ++iter)
+         {
+           glVertex3dv(iter->position);
+         }
+        glEnd();
+      glPopMatrix();
+    }
+  }
 
   glPopAttrib();
 

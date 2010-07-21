@@ -72,7 +72,7 @@ int gpGrasps_from_grasp_frame_SAHand ( p3d_rob *robot, p3d_rob *object, int body
 	p3d_mat4Mult ( gFrame, hand.Tgrasp_frame_hand, Twrist );
 
 	fingertip_radius= hand.fingertip_radius;
-	contacts.reserve ( 6 );
+	contacts.reserve(6);
 
 	//memorize current robot configuration:
 	config= p3d_alloc_config ( robot );

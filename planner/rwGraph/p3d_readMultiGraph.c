@@ -75,6 +75,8 @@ static int readMultiGraph(p3d_rob* robot, p3d_multiGraph * mg, const char * file
           return FALSE;
         }
         robot->mg->graphs[i] = XYZ_GRAPH;
+        XYZ_GRAPH = NULL;
+        robot->GRAPH = NULL;
         i++;
       }
     }

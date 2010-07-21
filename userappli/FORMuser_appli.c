@@ -399,35 +399,54 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
       configPt startConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
       configPt endConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
-      for (int i = 0; i < 15 ; i++) {
-        manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), "");
+      for (int i = 0; i < 1; i++) {
+//        manip.computeOfflineRoadmap();
+        char file[255];
+        sprintf(file, "%s/video/graphs/simple/mg50x50_%d.graph", getenv("HOME_MOVE3D"), i);
+//        p3d_writeGraph(XYZ_ROBOT->mg, (char *)file, MGGRAPH);
+//        XYZ_ROBOT->preComputedGraphs[1] = NULL;
+        manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), file);
         manip.clear();
       }
       manip.printStatDatas();
-#endif
+      manip.clear();
+#else
       configPt config = p3d_alloc_config(XYZ_ROBOT), rootConfig = p3d_get_robot_config(XYZ_ROBOT);
       int singularity = -1, cntrt = -1;
       
-      cntrt = p3d_isCloseToSingularityConfig(XYZ_ROBOT, XYZ_ROBOT->cntrt_manager, rootConfig , &singularity);
-      if (cntrt != -1) {
-        
+//      cntrt = p3d_isCloseToSingularityConfig(XYZ_ROBOT, XYZ_ROBOT->cntrt_manager, rootConfig , &singularity);
+//      if (cntrt != -1) {
+//        
         p3d_APInode_shoot_singularity(XYZ_ROBOT, &config, &singularity, &cntrt, rootConfig, XYZ_ROBOT->ikSol);
         g3d_draw_allwin_active();
         p3d_unmark_for_singularity(XYZ_ROBOT->cntrt_manager, cntrt);
         
         p3d_destroy_config(XYZ_ROBOT, config);
         p3d_destroy_config(XYZ_ROBOT, rootConfig);
-      }
+//      }
       
 
 //      ENV.setBool(Env::UseDPGGrids, true);
 
-
+#endif
+#ifdef MULTIGRAPH
+      static int mgDraw = 0;
+      static p3d_graph* graph = XYZ_ROBOT->GRAPH;
+      if (mgDraw < XYZ_ROBOT->mg->nbGraphs) {
+        XYZ_GRAPH = XYZ_ROBOT->mg->graphs[mgDraw];
+        XYZ_ROBOT->GRAPH = XYZ_GRAPH;
+        mgDraw++;
+      }else{
+        XYZ_GRAPH = graph;
+        XYZ_ROBOT->GRAPH = XYZ_GRAPH;
+        mgDraw = 0;
+      }
+#endif
       break;
     }
     case 17:{
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-      manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS), p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO), "");
+      manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS), p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO), "",0);
       manip.printStatDatas();
 #endif
       break;

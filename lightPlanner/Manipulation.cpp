@@ -150,7 +150,7 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
         correctGraphForNewFixedJoints(_robot->preComputedGraphs[1], startConfig, 1, jnts);
         p3d_copy_config_into(_robot, firstGraspData->getApproachConfig(), &_robot->ROBOT_POS);
         p3d_set_and_update_this_robot_conf(_robot, firstGraspData->getApproachConfig());
-        approachTraj = gotoObjectByConf(_robot, objectStartPos, startConfig, true);
+        approachTraj = gotoObjectByConf(_robot, objectStartPos, startConfig, false);
       }else {
         approachTraj = gotoObjectByConf(_robot, objectStartPos, firstGraspData->getApproachConfig(), true);
       }
@@ -303,7 +303,7 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
           correctGraphForHandsAndObject(_robot, _robot->preComputedGraphs[3], 0, doubleGrasp.grasp1 , 2, doubleGrasp.grasp2, 1, 1);
         }
         p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
-        carryToDeposit = carryObjectByConf(_robot, objectEndPos, secondGraspData->getGraspConfig(), 1 - closestWrist, false, false);
+        carryToDeposit = carryObjectByConf(_robot, objectEndPos, secondGraspData->getGraspConfig(), 1 - closestWrist, false, true);
       }else {
         carryToDeposit = carryObjectByConf(_robot, objectEndPos, secondGraspData->getGraspConfig(), 1 - closestWrist, false, true);
       }
@@ -313,7 +313,10 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
           statDatas.push_back(_robot->GRAPH->nnode);
           statDatas.push_back(_robot->GRAPH->time);
           int nbTests = checkTraj(carryToDeposit, _robot->preComputedGraphs[3]);
-          statDatas.push_back(nbTests);
+          if (nbTests >= 0) {
+            statDatas.push_back(nbTests);
+          }
+          statDatas.push_back(-999);
           _robot->preComputedGraphs[3] = NULL;
         }
         p3d_concat_traj(carryToOpenDeposit, carryToDeposit);
@@ -839,7 +842,7 @@ void Manipulation::computeDoubleGraspConfigList(){
   list<gpDoubleGrasp> doubleGraspList;
   //p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_GOTO);
   gpDouble_grasp_generation((p3d_rob*)p3d_get_robot_by_name((char*) GP_SAHAND_RIGHT_ROBOT_NAME), (p3d_rob*)p3d_get_robot_by_name((char*) GP_SAHAND_LEFT_ROBOT_NAME), (p3d_rob*)p3d_get_robot_by_name((char*)GP_OBJECT_NAME_DEFAULT), *(getGraspListFromMap(0)), *(getGraspListFromMap(1)), doubleGraspList);
-  
+    cout << "Double Grasps " << doubleGraspList.size() << endl;
   vector<gpHand_properties> handProp = InitHandProp(-1);
   for(list<gpDoubleGrasp>::iterator itDouble = doubleGraspList.begin(); itDouble != doubleGraspList.end(); itDouble++){
     DoubleGraspData* data = new DoubleGraspData(_robot);
@@ -852,7 +855,7 @@ void Manipulation::computeDoubleGraspConfigList(){
       delete(data);
     }
   }
-  cout << "Valid Grasps" << _handsDoubleGraspsConfigs.size() << endl;
+  cout << "Valid Grasps " << _handsDoubleGraspsConfigs.size() << endl;
 }
 
 double Manipulation::getRobotGraspArmCost(gpGrasp grasp, configPt q){
@@ -985,6 +988,9 @@ int Manipulation::checkTraj(p3d_traj * traj, p3d_graph* graph){
   }
   traj = _robot->tcur;
 #endif
+  if (returnValue == -2) {
+    return -1;
+  }
   return j;
 }
 
