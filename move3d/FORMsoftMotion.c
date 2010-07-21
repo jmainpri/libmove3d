@@ -111,7 +111,6 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg) {
 	std::vector <int> lp;
 	std::vector < std::vector <double> > positions;
 	 
-	 int nbPositions = 0;
 
 	if(!traj) {
 		printf("Soft Motion : ERREUR : no current traj\n");
