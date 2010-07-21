@@ -842,9 +842,9 @@ printf("************************************************************************
                 q2_conf = _configTraj[itraj+1];
 
 
-               // if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
-               //    p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
-               // }
+               if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
+                  p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
+               }
 
 
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
