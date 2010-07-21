@@ -53,6 +53,7 @@
 #include "../graphic/proto/g3d_draw_proto.h"
 
 static int st_iksol_size = 0;
+static int st_nbIkSols = 0;
 static int **st_iksol = NULL;
 static int *st_niksol = NULL;
 static double ***st_ikSolConfig = NULL;//Array to put valids configurations of constraints
@@ -8592,15 +8593,13 @@ int p3d_cntrt_localpath_classic_test(p3d_rob *robotPt,
 void p3d_init_iksol(p3d_cntrt_management *cntrt_manager) {
 	int i, j;
 	st_iksol_size = cntrt_manager->ncntrts;
+  st_nbIkSols = p3d_get_nb_ikSol(cntrt_manager);
 	st_iksol = MY_ALLOC(int*, st_iksol_size);
-	st_niksol = MY_ALLOC(
-                       int, st_iksol_size);
-  st_ikSolConfig = MY_ALLOC(
-                            double **, st_iksol_size);
+	st_niksol = MY_ALLOC(int, st_iksol_size);
+  st_ikSolConfig = MY_ALLOC(double **, st_iksol_size);
   for (i = 0; i < st_iksol_size; i++) {
     st_ikSolConfig[i] = MY_ALLOC(double*, (cntrt_manager->cntrts[i])->nbSol);
-    st_iksol[i] = MY_ALLOC(
-                           int, (cntrt_manager->cntrts[i])->nbSol);
+    st_iksol[i] = MY_ALLOC(int, (cntrt_manager->cntrts[i])->nbSol);
     for (j = 0; j < (cntrt_manager->cntrts[i])->nbSol; j++) {
       st_ikSolConfig[i][j] = MY_ALLOC(double, (cntrt_manager->cntrts[i])->npasjnts);
       st_iksol[i][j] = -1;
@@ -9069,11 +9068,10 @@ void p3d_get_non_sing_iksol(
  * @param cntrt_manager the constraint mamanger
  * @return the number max of solutions.
  */
-int p3d_get_nb_ikSol(
-                     p3d_cntrt_management *cntrt_manager) {
+int p3d_get_nb_ikSol(p3d_cntrt_management *cntrt_manager) {
   int i = 0, nbSolutions = 0;
   
-  if (p3d_get_ik_choice() != IK_NORMAL) {
+//  if (p3d_get_ik_choice() != IK_NORMAL) {
     for (i = 0, nbSolutions = 1; i
          < cntrt_manager->ncntrts; i++) {//compute the number of solutions.
       if (((cntrt_manager->cntrts[i])->nbSol
@@ -9084,9 +9082,9 @@ int p3d_get_nb_ikSol(
             *= (cntrt_manager->cntrts[i])->nbSol;
           }
     }
-  } else {
-    nbSolutions = 1;
-  }
+//  } else {
+//    nbSolutions = 1;
+//  }
   return nbSolutions;
 }
 
@@ -9272,13 +9270,13 @@ int p3d_isCloseToSingularityConfig(p3d_rob* robot, p3d_cntrt_management *cntrt_m
     p3d_cntrt* cntrt = cntrt_manager->cntrts[i];
     for(int j = 0; j < cntrt->nSingularities; j++){
       p3d_singularity* sing = cntrt->singularities[j];
+      int near = TRUE;
       for(int k = 0; k < sing->nJnt; k++){
         p3d_jnt* jnt = robot->joints[sing->singJntVal[k]->jntNum];
-        int near = TRUE;
         for(int h = 0; h < jnt->dof_equiv_nbr; h++){
           // compute dof range
           double range = jnt->dof_data[h].vmax - jnt->dof_data[h].vmin;
-          if (ABS(config[jnt->index_dof + h] - sing->singJntVal[k]->val[h]) > 30 * range / 100) {
+          if (ABS(config[jnt->index_dof + h] - sing->singJntVal[k]->val[h]) > (1 * range) / 100){//(0.0873 * range) / M_PI) {//5° for a 360° joint range
             near = FALSE;
             break;
           }else {
@@ -9370,6 +9368,43 @@ void p3d_unmark_for_singularity(
   cntrt_manager->cntrts[ctNum]->active = 1; //enable the constraint.
   cntrt_manager->cntrts[ctNum]->markedForSingularity
   = 0;
+}
+
+/**
+ * @brief Check if the given IkSol is inside the given array
+ * @param cntrt_manager the constraint manager
+ * @param ikSol The ikSol to find
+ * @param ikSolArray The ikSol Array to search into
+ * @return true if the ikSol is found, false otherwise
+ */
+int p3d_findIkSolInArray (p3d_cntrt_management* cntrt_manager, int* ikSol, int ** ikSolArray, int nbArrayItems){
+  for(int i =  0; i < nbArrayItems; i++){
+    if(p3d_compare_iksol(cntrt_manager, ikSol, ikSolArray[i])){
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * @brief Check if the given IkSol is inside the given array and add it if do not exist
+ * @param cntrt_manager the constraint manager
+ * @param ikSol The ikSol to find
+ * @param ikSolArray The ikSol Array to search into
+ * @param nbArrayItems The number of items in ikSolArray
+ * @return true if it added, false otherwise
+ */
+int p3d_AddIkSolInArray (p3d_cntrt_management* cntrt_manager, int* ikSol, int ** ikSolArray, int *nbArrayItems){
+  if(ikSol && !p3d_findIkSolInArray(cntrt_manager, ikSol, ikSolArray, *nbArrayItems)){
+    for(int i = 0; i < st_iksol_size; i++){
+      ikSolArray[*nbArrayItems][i] = ikSol[i];
+    }
+    (*nbArrayItems)++;
+    printf("added ");
+    p3d_print_iksol(cntrt_manager, ikSol);
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /** \brief this function find a constraint where the given joint number is passive
