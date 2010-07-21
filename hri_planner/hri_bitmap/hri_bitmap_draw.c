@@ -344,7 +344,7 @@ void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
                   current->parent->x*btset->pace+btset->realx,
                   current->parent->y*btset->pace+btset->realy,
                   0.1,
-                  4, NULL);
+                  Green, NULL);
               current = current->parent;
             }
     } else {
@@ -356,7 +356,7 @@ void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
             current->parent->x*btset->pace+btset->realx,
             current->parent->y*btset->pace+btset->realy,
             current->parent->z*btset->pace+btset->realz,
-            4, NULL);
+            Green, NULL);
         current = current->parent;
       }
     }

@@ -425,47 +425,51 @@ static int g3d_create_fl_object_on_frame(FL_OBJECT** obj, int type, FL_Coord w, 
   int x=0,y=0,defaultWidth = FRAME_SHIFT_X*2, defaultHeight = FL_DEFAULT_SIZE+FRAME_SHIFT_Y*2;
 
   FRAME_SHIFT_Y = FRAME_SHIFT_Y_DEFAULT;
+
   //si le fl_object a un label on cherche la taille du label pour que l'objet ne soit pas plus petit.
   if (strcmp(label,"") && !g3d_label_has_return(label) && (*obj)->label != NULL){
     fl_get_string_dimension((*obj)->lstyle, (*obj)->lsize, (*obj)->label, strlen((*obj)->label), &defaultWidth, &defaultHeight);
   }
-  //tailles par défaut spéciales
+  //tailles par defaut speciales
   switch ((*obj)->objclass){
     case (FL_CHECKBUTTON):{
-      if(h < 0){//si l'utilisateur ne veux pas specifier la hauteur.
-          defaultHeight = 30;
+      if(h < 0 && defaultHeight < 30){//si l'utilisateur ne veux pas specifier la hauteur.
+        defaultHeight = 30;
       }
       if(w < 0){//si l'utilisateur ne veux pas specifier la largeure.
-
-        defaultWidth = defaultWidth == FRAME_SHIFT_X*2? 30: defaultWidth + 30;
+        defaultWidth = (defaultWidth == FRAME_SHIFT_X*2)? 30: defaultWidth + 30;
       }
       break;
     }
     case(FL_INPUT):{
-      defaultWidth = 20;
+      if(defaultWidth < 20){
+        defaultWidth = 20;
+      }
       break;
     }
   }
+
   (*obj)->parent = (*parent);
   (*obj)->u_ldata = 0;
-  if (w < 0){//si l'utilisateur ne veut pas spécifier la largeure de l'objet.
+
+  if (w < 0){//si l'utilisateur ne veut pas specifier la largeure de l'objet.
     w = defaultWidth;
   }else{//if (w < 0)
     (*obj)->u_ldata += 1;
-    w = w > defaultWidth?w:defaultWidth;
+    w = MAX(w, defaultWidth);
   }//if (w < 0)
-  if (h < 0){//si l'utilisateur ne veut pas spécifier la hauteur de l'objet.
+  if (h < 0){//si l'utilisateur ne veut pas specifier la hauteur de l'objet.
     h = defaultHeight;
   }else{//if (h < 0)
     (*obj)->u_ldata += 2;
-    h = h > defaultHeight?h:defaultHeight;
+    h = MAX(h, defaultHeight);
   }//if (h < 0)
  
-  if ((*parent)->child == NULL){//si c'est le premier élément de la frame.
+  if ((*parent)->child == NULL){//si c'est le premier element de la frame.
     (*parent)->child = (*obj);
   }else{
     previous = (*parent)->child;
-    //aller au dernier élément ajouté dans le form.
+    //aller au dernier element ajoute dans le form.
     while(((FL_OBJECT**)previous->u_vdata)[1] != NULL){
       previous = ((FL_OBJECT**)previous->u_vdata)[1];
     }
@@ -474,8 +478,8 @@ static int g3d_create_fl_object_on_frame(FL_OBJECT** obj, int type, FL_Coord w, 
   }
   g3d_place_fl_object_in_frame(obj,label,&x,&y,w,h,parent); //positionnement de l'object
   if(!g3d_fl_object_has_good_width_height(obj,label,x,y,w,h,(*parent),0)){
-    if ((*parent)->u_ldata == 3){//si la taille de la frame parent a été spécifié.
-      printf("Error : Can't create the frame %s : out of parent frame bounds\n", label);
+    if ((*parent)->u_ldata == 3){//si la taille de la frame parent a ete specifie.
+      printf("Error : Can't create the frame %s at (x=%d, y=%d, w=%d, h=%d): out of parent frame bounds\n", label, x,y,w,h);
       g3d_fl_free_object(*obj);
     }else{//if ((*parent)->u_ldata == 3)
       //agrandir la frame parent si elle n'est pas assez grande.
@@ -835,7 +839,7 @@ static int g3d_fl_object_max_height(FL_OBJECT** obj){
 }
 
 /****************************************************************************/
-/** \brief check if an FL_OBJECT has a good hidth and height or not.
+/** \brief check if an FL_OBJECT has a good width and height or not.
  \param **obj pointer to the *FL_OBJECT
  \param *label pointer to the FL_OBJECT's label
  \param w the width
