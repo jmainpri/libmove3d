@@ -2240,7 +2240,7 @@ void lm_set_and_get_motionTimes(p3d_softMotion_data* softMotion_data, double* ti
 }
 
 void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char *fileName, bool flagPlot,
-					    std::vector <int> lp, std::vector < std::vector <double> > positions, int *nbPositions) {
+					    std::vector <int> &lp, std::vector < std::vector <double> > &positions) {
 	int i=0;
 	double SIMPLING_TIME = 0.01;
 	double paramDiff = 0.0;
@@ -2338,7 +2338,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	u = 0.0;
         int I_can;
 	int lpId = 0;
-	*nbPositions = 0;
+	//*nbPositions = 0;
 	qplot.clear();
 	positions.clear();
 	
@@ -2424,7 +2424,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 // 			positions[4][index] = q_arm[4];
 // 			positions[5][index] = q_arm[5];
 			lp.push_back(lpId);
-			*nbPositions =  *nbPositions + 1;
+//			*nbPositions =  *nbPositions + 1;
 			index = index + 1;
 			q_armOld.clear();
 			for(i=0; i<nb_armDof; i++) {
@@ -2472,7 +2472,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 		}
 		gnuplot_cmd(h,(char*)"set term wxt");
 		gnuplot_cmd(h,(char*)"set xrange [%d:%d]",0,index-1);
-		gnuplot_cmd(h,(char*)"set yrange [-4.5:4.5]");  // maxi for Jido is 255°
+		gnuplot_cmd(h,(char*)"set yrange [-4.5:4.5]");  // maxi for Jido is 255ï¿½
 		std::string gnuplotCmd;
 		gnuplotCmd.clear();
 		char text[255];
