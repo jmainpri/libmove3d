@@ -15,20 +15,20 @@
 #endif
 
 #ifdef CXX_PLANNER
-#include "planner_cxx/plannerFunctions.hpp"
-#include "planner_cxx/API/Trajectory/Smoothing.hpp"
-#include "planner_cxx/API/Trajectory/CostOptimization.hpp"
+#include "plannerFunctions.hpp"
+#include "API/Trajectory/Smoothing.hpp"
+#include "API/Trajectory/CostOptimization.hpp"
 //#include "planner_cxx/Greedy/GreedyCost.hpp"
-#include "planner_cxx/API/Search/Dijkstra/dijkstra.hpp"
+#include "API/Search/Dijkstra/dijkstra.hpp"
 #include "util/CppApi/MultiRun.hpp"
 #endif
 
 #ifdef HRI_COSTSPACE
-#include "planner_cxx/HRI_CostSpace/HRICS_Workspace.h"
+#include "HRI_CostSpace/HRICS_Workspace.h"
 #endif
 
-#ifdef HRI_PLANNER
-#include "planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
+#if defined( HRI_PLANNER ) && defined( HRI_COSTSPACE )
+#include "HRI_CostSpace/HRICS_HAMP.h"
 #endif
 
 #include "Graphic-pkg.h"
