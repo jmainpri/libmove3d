@@ -26,10 +26,12 @@ HRI_AGENTS * hri_create_agents()
       if(strcasestr(env->robot[i]->name,"HUMAN"))
         agents->humans_no++;
   }
-
+  agents->all_agents_no = agents->robots_no + agents->humans_no;
+  
   agents->robots = MY_ALLOC(HRI_AGENT *,agents->robots_no);
   agents->humans = MY_ALLOC(HRI_AGENT *,agents->humans_no);
-
+  agents->all_agents = MY_ALLOC(HRI_AGENT *,agents->all_agents_no);
+  
   for(i=0; i<env->nr; i++){
     if(strcasestr(env->robot[i]->name,"ROBOT")){
       agents->robots[i_r] = hri_create_agent(env->robot[i]);
@@ -42,7 +44,13 @@ HRI_AGENTS * hri_create_agents()
       }
     }
   }
-
+  
+  i = 0;
+  for(i_r=0; i_r<agents->robots_no; i_r++, i++)
+    agents->all_agents[i] = agents->robots[i_r];
+  for(i_h=0; i_h<agents->humans_no; i_h++, i++)
+    agents->all_agents[i] = agents->humans[i_h];
+  
   return agents;
 }
 

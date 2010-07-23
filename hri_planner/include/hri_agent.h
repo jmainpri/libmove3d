@@ -93,10 +93,12 @@ typedef struct STRUCT_HRI_AGENT{
 
 
 typedef struct STRUCT_HRI_AGENTS{
-	HRI_AGENT ** robots;
-	int robots_no;
-	HRI_AGENT ** humans;
-	int humans_no;
+  HRI_AGENT ** all_agents;
+  int all_agents_no;
+  HRI_AGENT ** robots;
+  int robots_no;
+  HRI_AGENT ** humans;
+  int humans_no;
 }HRI_AGENTS;
 
 typedef struct struct_hri_shared_zone{
