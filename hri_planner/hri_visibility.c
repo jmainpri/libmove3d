@@ -267,6 +267,21 @@ int hri_object_visibility_placement(HRI_AGENT *agent, p3d_rob *object, int *resu
   return TRUE;
 }
 
+int hri_object_pointing_placement(HRI_AGENT *agent, p3d_rob *object, int *result, double *elevation, double *azimuth)
+{
+  
+  if(object==NULL || agent==NULL){
+    printf("%s: %d: hri_object_pointing_placement(): input object is NULL.\n",__FILE__,__LINE__);
+    return FALSE;
+  }  
+  
+  g3d_object_visibility_placement(agent->perspective->pointjoint->abs_pos, object, 
+                                  DTOR(agent->perspective->point_tolerance),DTOR(agent->perspective->point_tolerance),
+                                  DTOR(agent->perspective->point_tolerance),DTOR(agent->perspective->point_tolerance),
+                                  result, elevation, azimuth);  
+  return TRUE;
+}
+
 
 int g3d_object_visibility_placement(p3d_matrix4 camera_frame, p3d_rob *object, double Hfov, double Vfov, double Hfoa, double Vfoa, int *result, double *phi_result, double *theta_result)
 {
@@ -302,3 +317,198 @@ int g3d_object_visibility_placement(p3d_matrix4 camera_frame, p3d_rob *object, d
   
   return TRUE;
 }
+
+int g3d_draw_agent_pointing(HRI_AGENT *agent)
+{
+  GLdouble GreenColor[4] =   { 0.0, 0.5, 0.0, 0.5 };
+  GLdouble GreenColorT[4] =   { 0.0, 0.5, 0.0, 0.0 };  
+  
+  if(agent!=NULL){
+    
+    g3d_draw_visibility_by_frame(agent->robotPt->joints[36]->abs_pos,
+                                 DTOR(20),
+                                 DTOR(20),
+                                 2, GreenColor, GreenColorT);  
+    //  g3d_draw_visibility_by_frame(agent->robotPt->joints[37]->abs_pos,
+    //                             DTOR(20),
+    //                             DTOR(20),
+    //                             2, GreenColor, GreenColorT);  
+    
+  }
+  
+  
+}
+
+int g3d_draw_agent_fov(HRI_AGENT *agent)
+{
+  //GLdouble GreenColor[4] =   { 0.0, 0.5, 0.0, 0.5 };
+  //GLdouble GreenColorT[4] =   { 0.0, 0.5, 0.0, 0.0 };
+  GLdouble RedColor[4] =   { 0.5, 0.0, 0.0, 0.5 };
+  GLdouble RedColorT[4] =   { 0.5, 0.0, 0.0, 0.0 };
+  GLdouble GreyColor[4] =   { 0.5, 0.5, 0.5, 0.5 };
+  GLdouble GreyColorT[4] =   { 0.5, 0.5, 0.5, 0.0 };
+
+  if(agent!=NULL){
+    
+    g3d_draw_visibility_by_frame(agent->perspective->camjoint->abs_pos,
+                                 DTOR(agent->perspective->foa),
+                                 DTOR(agent->perspective->foa*0.75),
+                                 1, RedColor, RedColorT);  
+    
+    g3d_draw_visibility_by_frame(agent->perspective->camjoint->abs_pos,
+                                 DTOR(agent->perspective->fov),
+                                 DTOR(agent->perspective->fov*0.75),
+                                 1, GreyColor, GreyColorT);  
+  }
+  return TRUE;
+}
+
+int g3d_draw_visibility_by_frame(p3d_matrix4 camera_frame, double Hfov, double Vfov, double max_dist, GLdouble source_color[], GLdouble  dest_color[])
+{
+  double x_source, y_source, z_source;
+  p3d_vector4 left_up, left_down, right_up, right_down;
+  p3d_vector4 left_up_abs, left_down_abs, right_up_abs, right_down_abs;
+    
+  x_source = camera_frame[0][3];
+  y_source = camera_frame[1][3];
+  z_source = camera_frame[2][3];
+    
+  left_up[0] = max_dist;
+  left_up[1] = atan(Hfov/2)*max_dist;
+  left_up[2] = atan(Vfov/2)*max_dist;
+  left_up[3] = 1;
+  
+  left_down[0] = max_dist;
+  left_down[1] = atan(Hfov/2)*max_dist;
+  left_down[2] = -atan(Vfov/2)*max_dist;
+  left_down[3] = 1;
+  
+  right_up[0] = max_dist;
+  right_up[1] = -atan(Hfov/2)*max_dist;
+  right_up[2] = atan(Vfov/2)*max_dist;
+  right_up[3] = 1;
+  
+  right_down[0] = max_dist;
+  right_down[1] = -atan(Hfov/2)*max_dist;
+  right_down[2] = -atan(Vfov/2)*max_dist;
+  right_down[3] = 1;
+  
+  p3d_matvec4Mult(camera_frame, left_up, left_up_abs);
+  p3d_matvec4Mult(camera_frame, left_down, left_down_abs);
+  p3d_matvec4Mult(camera_frame, right_up, right_up_abs);
+  p3d_matvec4Mult(camera_frame, right_down, right_down_abs);
+  
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  
+  //Left
+  glBegin(GL_QUADS);
+  glColor4dv(source_color);
+  glVertex3f(x_source,y_source,z_source);  
+  glColor4dv(dest_color);
+  glVertex3f(left_up_abs[0],left_up_abs[1],left_up_abs[2]);  
+  glColor4dv(dest_color);
+  glVertex3f(left_down_abs[0],left_down_abs[1],left_down_abs[2]); 
+  glColor4dv(source_color);
+  glVertex3f(x_source,y_source,z_source);
+  glEnd();
+  
+  //Right
+  glBegin(GL_QUADS);
+  glColor4dv(source_color);
+  glVertex3f(x_source,y_source,z_source);  
+  glColor4dv(dest_color);
+  glVertex3f(right_up_abs[0],right_up_abs[1],right_up_abs[2]); 
+  glColor4dv(dest_color);
+  glVertex3f(right_down_abs[0],right_down_abs[1],right_down_abs[2]);  
+  glColor4dv(source_color);
+  glVertex3f(x_source,y_source,z_source);
+  glEnd();
+  
+  //Up
+  glBegin(GL_QUADS);
+  glColor4dv(source_color);
+  glVertex3f(x_source,y_source,z_source);  
+  glColor4dv(dest_color);
+  glVertex3f(right_up_abs[0],right_up_abs[1],right_up_abs[2]); 
+  glColor4dv(dest_color);
+  glVertex3f(left_up_abs[0],left_up_abs[1],left_up_abs[2]);  
+  glColor4dv(source_color);
+  glVertex3f(x_source,y_source,z_source);
+  glEnd();
+  
+  //Down
+  glBegin(GL_QUADS);
+  glColor4dv(source_color);
+  glVertex3f(x_source,y_source,z_source);  
+  glColor4dv(dest_color);
+  glVertex3f(left_down_abs[0],left_down_abs[1],left_down_abs[2]); 
+  glColor4dv(dest_color);
+  glVertex3f(right_down_abs[0],right_down_abs[1],right_down_abs[2]);  
+  glColor4dv(source_color);
+  glVertex3f(x_source,y_source,z_source);
+  glEnd();
+   
+  glDisable(GL_BLEND);
+ 
+  return TRUE;
+}
+
+
+int hri_is_object_pointed(HRI_AGENT * agent, p3d_rob *object, int threshold, int save)
+{
+  GLint viewport[4];
+  g3d_states st;
+  g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
+  double result;
+  
+  if(object==NULL || agent==NULL){
+    printf("%s: %d: g3d_is_object_visible_from_viewpoint(): input object is NULL.\n",__FILE__,__LINE__);
+    return FALSE;
+  }  
+  //Change the size of the viewport if you want speed
+  if(!save){
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    glViewport(0,0,(GLint)(viewport[2]/3),(GLint)(viewport[3]/3));
+  }
+  
+  g3d_save_win_camera(win->vs);
+  g3d_save_state(win, &st);
+  
+  // only keep what is necessary:
+  win->vs.fov            = agent->perspective->point_tolerance;
+  win->vs.displayFrame   = FALSE;
+  win->vs.displayJoints  = FALSE;
+  win->vs.displayShadows = FALSE;
+  win->vs.displayWalls   = FALSE;
+  win->vs.displayFloor   = FALSE;
+  win->vs.displayTiles   = FALSE;
+  win->vs.cullingEnabled =  1;
+  //do not forget to set the backgroung to black:
+  g3d_set_win_bgcolor(win->vs, 0, 0, 0);
+  
+  // move the camera to the desired pose and apply the new projection matrix:
+  g3d_set_camera_parameters_from_frame(agent->perspective->pointjoint->abs_pos, win->vs);
+  g3d_set_projection_matrix(win->vs.projection_mode);
+  
+  //everything is ready now.
+  g3d_is_object_visible_from_current_viewpoint(win, object,&result,save,(char*)"");
+  
+  //restore viewport
+  if(!save){
+    glViewport(0,0,(GLint)viewport[2],(GLint)viewport[3]);
+  }
+  g3d_load_state(win, &st);
+  
+  g3d_restore_win_camera(win->vs);
+  g3d_set_projection_matrix(win->vs.projection_mode); // do this after restoring the camera fov
+  
+  g3d_draw_win(win);
+  
+  if(100*result>=threshold)
+    return TRUE;
+  else
+    return FALSE;
+  
+}
+

@@ -71,6 +71,9 @@ typedef struct STRUCT_HRI_PERSP{
   double foa;
   int pan_jnt_idx;
   int tilt_jnt_idx;
+  
+  p3d_jnt * pointjoint;
+  double point_tolerance;
 } HRI_PERSP;
 
 typedef struct STRUCT_HRI_AGENT{
