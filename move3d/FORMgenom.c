@@ -65,10 +65,10 @@ static FL_OBJECT * BT_RELEASE_OBJECT = NULL;
 
 static FL_OBJECT * BT_PICK_UP_TAKE = NULL;
 static FL_OBJECT * BT_PLACE = NULL;
+static FL_OBJECT * BT_CONSTRUCTPRM = NULL;
 #ifdef DPG
 static FL_OBJECT * BT_CHECKCOLONTRAJ = NULL;
 static FL_OBJECT * BT_REPLANCOLTRAJ = NULL;
-static FL_OBJECT * BT_CONSTRUCTPRM = NULL;
 #endif
 /* ---------- FUNCTION DECLARATIONS --------- */
 static void initManipulationGenom();
