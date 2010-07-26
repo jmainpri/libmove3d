@@ -76,7 +76,7 @@
   extern p3d_rob * PSP_ROBOT;
 
   extern int HRI_DRAW_TRAJ;
-
+extern HRI_AGENTS * GLOBAL_AGENTS;
 
 #ifdef USE_MIGHTABILITY_MAPS
  extern int SHOW_MM_BASED_OBJECT_REACHABLE;
