@@ -1116,7 +1116,7 @@ printf("************************************************************************
 //   centerCamera();
 
   g3d_draw_allwin_active();
-
+  printf("BioMove3D: armPlanTask OK\n");
   return MANIPULATION_TASK_OK;
 }
 
@@ -2576,17 +2576,21 @@ int Manipulation_JIDO::checkCollisionOnTraj(int currentLpId) {
     return MANIPULATION_TASK_ERROR_UNKNOWN;
   }
   p3d_localpath* currentLp = traj->courbePt;
+  int lpid = 0;
   for(int i = 0; i < currentLpId/2; i++){
     currentLp = currentLp->next_lp;
   }
-  return checkForCollidingPath(_robotPt, traj, currentLp);
+  printf("m3d checkForCollidingPath lpIn  = %d, funcLp  = %d", currentLpId, lpid);
+  return checkForCollidingPath(robotPt, traj, currentLp);
 }
 
 //! Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
 //! \return 0 in case of success, !=0 otherwise
 int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &lp, std::vector < std::vector <double> > &positions) {
   configPt qi = NULL, qf = NULL;
-  static p3d_traj *traj = NULL;
+  p3d_traj *traj = NULL;
+  int ntest=0;
+  double gain;
   
   XYZ_ENV->cur_robot = _robotPt;
   //initialize and get the current linear traj
