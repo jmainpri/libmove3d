@@ -65,7 +65,11 @@ static FL_OBJECT * BT_RELEASE_OBJECT = NULL;
 
 static FL_OBJECT * BT_PICK_UP_TAKE = NULL;
 static FL_OBJECT * BT_PLACE = NULL;
-
+#ifdef DPG
+static FL_OBJECT * BT_CHECKCOLONTRAJ = NULL;
+static FL_OBJECT * BT_REPLANCOLTRAJ = NULL;
+static FL_OBJECT * BT_CONSTRUCTPRM = NULL;
+#endif
 /* ---------- FUNCTION DECLARATIONS --------- */
 static void initManipulationGenom();
 static void g3d_create_genom_group(void);
@@ -90,10 +94,13 @@ static void CB_release_object(FL_OBJECT *obj, long arg);
 static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg);
 static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg);
 static void CB_genomPlaceObject(FL_OBJECT *obj, long arg);
-
+#ifdef DPG
+static void CB_checkColOnTraj(FL_OBJECT *obj, long arg);
+static void CB_replanColTraj(FL_OBJECT *obj, long arg);
+#endif
 /* -------------------- MAIN FORM CREATION GROUP --------------------- */
 void g3d_create_genom_form(void) {
-	GENOM_FORM = fl_bgn_form(FL_UP_BOX, 150, 600);
+	GENOM_FORM = fl_bgn_form(FL_UP_BOX, 150, 750);
 	g3d_create_genom_group();
 	fl_end_form();
 }
@@ -123,7 +130,7 @@ static void g3d_create_genom_group(void) {
 	int x, y, dy, w, h;
 	FL_OBJECT *obj;
 
-	obj = fl_add_labelframe(FL_ENGRAVED_FRAME, 5, 15, 140, 570, "Genom Requests");
+	obj = fl_add_labelframe(FL_ENGRAVED_FRAME, 5, 15, 140, 720, "Genom Requests");
 
 	GENOMGROUP = fl_bgn_group();
 
@@ -200,9 +207,18 @@ static void g3d_create_genom_group(void) {
 //   y+= dy;
 //   CHECK_COL_ON_TRAJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Check traj col");
 //   fl_set_call_back(CHECK_COL_ON_TRAJ, CB_genomCheckCollisionOnTraj_obj, 1);
-
+  BT_CONSTRUCTPRM =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Build PRM");
+  fl_set_call_back(BT_CONSTRUCTPRM, CB_genomArmComputePRM_obj, 0);
+#ifdef DPG
+  y+= dy;
+  BT_CHECKCOLONTRAJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Check col Traj");
+  fl_set_call_back(BT_CHECKCOLONTRAJ, CB_checkColOnTraj, 0);
+  y+= dy;
+  BT_REPLANCOLTRAJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Replan Col Traj");
+  fl_set_call_back(BT_REPLANCOLTRAJ, CB_replanColTraj, 0);
+  y+= dy;
+#endif
   
-
   fl_end_group();
 }
 
@@ -480,19 +496,21 @@ static void CB_genomArmComputePRM_obj(FL_OBJECT *obj, long arg){
   manipulation->armComputePRM();
 }
 
-static void CB_genomCheckCollisionOnTraj_obj(FL_OBJECT *obj, long arg){
-  p3d_rob *robotPt = NULL;
-  robotPt= (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
-//   configPt currentPos = p3d_get_robot_config(robotPt);
-//   double armPos[6] = {currentPos[5], currentPos[6], currentPos[7], currentPos[8], currentPos[9], currentPos[10]};
 #ifdef DPG
-  if(genomCheckCollisionOnTraj(robotPt, 0, 0)){
-    printf("There is collision\n");
-  }else{
-    printf("There is no collision\n");
-  }
-#endif
+void CB_checkColOnTraj(FL_OBJECT *obj, long arg){
+  if (manipulation== NULL) {
+	  initManipulationGenom();
+	}
+  manipulation->checkCollisionOnTraj();
 }
+void CB_replanColTraj(FL_OBJECT *obj, long arg){
+  if (manipulation== NULL) {
+	  initManipulationGenom();
+	}
+//  manipulation->replanCollidingTraj(XYZ_ROBOT, 0, <#double *armConfig#>, <#int currentLpId#>, <#int [] lp#>, <#Gb_q6 [] positions#>, <#int *nbPositions#>);
+}
+#endif
+
 
 static void CB_set_cartesian(FL_OBJECT *obj, long arg) {
 	FORMGENOM_CARTESIAN= !FORMGENOM_CARTESIAN;
@@ -543,139 +561,139 @@ static void CB_release_object(FL_OBJECT *obj, long arg) {
 
 
 
-#ifdef DPG
-//! \brief Check if the current path is in collision or not
-//! \return 1 in case of collision, 0 otherwise
-int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, int currentLpId) {
-  configPt qi = NULL, qf = NULL;
-  static p3d_traj *traj = NULL;
-//   int ntest=0;
-//   double gain;
-
-  XYZ_ENV->cur_robot= robotPt;
-  //initialize and get the current linear traj
-  if (!traj){
-    if(robotPt->nt < robotPt->tcur->num - 2){
-      return 1;
-    }else{
-      traj = robotPt->t[robotPt->tcur->num - 2];
-    }
-  }
-  if(cartesian == 0) {
-    /* plan in the C_space */
-    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, (char*)"jido-arm_lin", 1) ;
-    deactivateCcCntrts(robotPt, -1);
-  } else {
-    /* plan in the cartesian space */
-    qi = p3d_alloc_config(robotPt);
-    qf = p3d_alloc_config(robotPt);
-    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, (char*)"jido-ob_lin", 1) ;
-    p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &qi);
-    p3d_copy_config_into(robotPt, robotPt->ROBOT_GOTO, &qf);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
-    p3d_copy_config_into(robotPt, qi, &robotPt->ROBOT_POS);
-    p3d_copy_config_into(robotPt, qf, &robotPt->ROBOT_GOTO);
-    p3d_destroy_config(robotPt, qi);
-    p3d_destroy_config(robotPt, qf);
-    if(robotPt->nbCcCntrts!=0) {
-      p3d_activateCntrt(robotPt, robotPt->ccCntrts[0]);
-    }
-  }
-  if (currentLpId > traj->nlp){
-    return 1;
-  }
-  p3d_localpath* currentLp = traj->courbePt;
-  for(int i = 0; i < currentLpId; i++){
-    currentLp = currentLp->next_lp;
-  }
-  return checkForCollidingPath(robotPt, traj, currentLp);
-}
-
-//! Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
-//! \return 0 in case of success, !=0 otherwise
-int genomReplanCollidingTraj(p3d_rob* robotPt, int cartesian, double* armConfig, int currentLpId, int lp[], Gb_q6 positions[],  int *nbPositions) {
-  configPt qi = NULL, qf = NULL;
-  static p3d_traj *traj = NULL;
-  int ntest=0;
-  double gain;
-
-  XYZ_ENV->cur_robot= robotPt;
-  //initialize and get the current linear traj
-  if (!traj){
-    if(robotPt->nt < robotPt->tcur->num - 2){
-      return 1;
-    }else{
-      traj = robotPt->t[robotPt->tcur->num - 2];
-    }
-  }
-  if(cartesian == 0) {
-    /* plan in the C_space */
-    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, (char*)"jido-arm_lin", 1) ;
-    deactivateCcCntrts(robotPt, -1);
-  } else {
-    /* plan in the cartesian space */
-    qi = p3d_alloc_config(robotPt);
-    qf = p3d_alloc_config(robotPt);
-    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, (char*)"jido-ob_lin", 1) ;
-    p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &qi);
-    p3d_copy_config_into(robotPt, robotPt->ROBOT_GOTO, &qf);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
-    p3d_copy_config_into(robotPt, qi, &robotPt->ROBOT_POS);
-    p3d_copy_config_into(robotPt, qf, &robotPt->ROBOT_GOTO);
-    p3d_destroy_config(robotPt, qi);
-    p3d_destroy_config(robotPt, qf);
-    if(robotPt->nbCcCntrts!=0) {
-      p3d_activateCntrt(robotPt, robotPt->ccCntrts[0]);
-    }
-  }
-  if (currentLpId > traj->nlp){
-    return 1;
-  }
-  p3d_localpath* currentLp = traj->courbePt;
-  for(int i = 0; i < currentLpId; i++){
-    currentLp = currentLp->next_lp;
-  }
-  configPt currentConfig = p3d_get_robot_config(robotPt);
-  int j = 0, returnValue = 0, optimized = traj->isOptimized;
-  if(optimized){
-    p3dAddTrajToGraph(robotPt, robotPt->GRAPH, traj);
-  }
-  do{
-    printf("Test %d\n", j);
-    j++;
-    returnValue = replanForCollidingPath(robotPt, traj, robotPt->GRAPH, currentConfig, currentLp, optimized);
-    traj = robotPt->tcur;
-    currentLp = traj->courbePt;
-  }while(returnValue != 1 && returnValue != 0);
-  if (optimized && j > 1){
-    optimiseTrajectory(100,6);
-  }
-  if(j > 1){//There is a new traj
-    /* COMPUTE THE SOFTMOTION TRAJECTORY */
-    traj = robotPt->tcur;
-    if(!traj) {
-      printf("SoftMotion : ERREUR : no current traj\n");
-      return 1;
-    }
-    if(!traj || traj->nlp < 1) {
-        printf("Optimization with softMotion not possible: current trajectory contains one or zero local path\n");
-      return 1;
-    }
-//     if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions, nbPositions) == 1){
-//       printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
-//       return 1;
-//     }
-    //peut etre ajouter un return specific pour savoir qu'il y'a une nouvelle traj
-  }
-  return 0;
-}
-#endif
+//#ifdef DPG
+////! \brief Check if the current path is in collision or not
+////! \return 1 in case of collision, 0 otherwise
+//int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, int currentLpId) {
+//  configPt qi = NULL, qf = NULL;
+//  static p3d_traj *traj = NULL;
+////   int ntest=0;
+////   double gain;
+//
+//  XYZ_ENV->cur_robot= robotPt;
+//  //initialize and get the current linear traj
+//  if (!traj){
+//    if(robotPt->nt < robotPt->tcur->num - 2){
+//      return 1;
+//    }else{
+//      traj = robotPt->t[robotPt->tcur->num - 2];
+//    }
+//  }
+//  if(cartesian == 0) {
+//    /* plan in the C_space */
+//    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+//    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, (char*)"jido-arm_lin", 1) ;
+//    deactivateCcCntrts(robotPt, -1);
+//  } else {
+//    /* plan in the cartesian space */
+//    qi = p3d_alloc_config(robotPt);
+//    qf = p3d_alloc_config(robotPt);
+//    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+//    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, (char*)"jido-ob_lin", 1) ;
+//    p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &qi);
+//    p3d_copy_config_into(robotPt, robotPt->ROBOT_GOTO, &qf);
+//    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
+//    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
+//    p3d_copy_config_into(robotPt, qi, &robotPt->ROBOT_POS);
+//    p3d_copy_config_into(robotPt, qf, &robotPt->ROBOT_GOTO);
+//    p3d_destroy_config(robotPt, qi);
+//    p3d_destroy_config(robotPt, qf);
+//    if(robotPt->nbCcCntrts!=0) {
+//      p3d_activateCntrt(robotPt, robotPt->ccCntrts[0]);
+//    }
+//  }
+//  if (currentLpId > traj->nlp){
+//    return 1;
+//  }
+//  p3d_localpath* currentLp = traj->courbePt;
+//  for(int i = 0; i < currentLpId; i++){
+//    currentLp = currentLp->next_lp;
+//  }
+//  return checkForCollidingPath(robotPt, traj, currentLp);
+//}
+//
+////! Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
+////! \return 0 in case of success, !=0 otherwise
+//int genomReplanCollidingTraj(p3d_rob* robotPt, int cartesian, double* armConfig, int currentLpId, int lp[], Gb_q6 positions[],  int *nbPositions) {
+//  configPt qi = NULL, qf = NULL;
+//  static p3d_traj *traj = NULL;
+//  int ntest=0;
+//  double gain;
+//
+//  XYZ_ENV->cur_robot= robotPt;
+//  //initialize and get the current linear traj
+//  if (!traj){
+//    if(robotPt->nt < robotPt->tcur->num - 2){
+//      return 1;
+//    }else{
+//      traj = robotPt->t[robotPt->tcur->num - 2];
+//    }
+//  }
+//  if(cartesian == 0) {
+//    /* plan in the C_space */
+//    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+//    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, (char*)"jido-arm_lin", 1) ;
+//    deactivateCcCntrts(robotPt, -1);
+//  } else {
+//    /* plan in the cartesian space */
+//    qi = p3d_alloc_config(robotPt);
+//    qf = p3d_alloc_config(robotPt);
+//    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+//    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, (char*)"jido-ob_lin", 1) ;
+//    p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &qi);
+//    p3d_copy_config_into(robotPt, robotPt->ROBOT_GOTO, &qf);
+//    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
+//    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
+//    p3d_copy_config_into(robotPt, qi, &robotPt->ROBOT_POS);
+//    p3d_copy_config_into(robotPt, qf, &robotPt->ROBOT_GOTO);
+//    p3d_destroy_config(robotPt, qi);
+//    p3d_destroy_config(robotPt, qf);
+//    if(robotPt->nbCcCntrts!=0) {
+//      p3d_activateCntrt(robotPt, robotPt->ccCntrts[0]);
+//    }
+//  }
+//  if (currentLpId > traj->nlp){
+//    return 1;
+//  }
+//  p3d_localpath* currentLp = traj->courbePt;
+//  for(int i = 0; i < currentLpId; i++){
+//    currentLp = currentLp->next_lp;
+//  }
+//  configPt currentConfig = p3d_get_robot_config(robotPt);
+//  int j = 0, returnValue = 0, optimized = traj->isOptimized;
+//  if(optimized){
+//    p3dAddTrajToGraph(robotPt, robotPt->GRAPH, traj);
+//  }
+//  do{
+//    printf("Test %d\n", j);
+//    j++;
+//    returnValue = replanForCollidingPath(robotPt, traj, robotPt->GRAPH, currentConfig, currentLp, optimized);
+//    traj = robotPt->tcur;
+//    currentLp = traj->courbePt;
+//  }while(returnValue != 1 && returnValue != 0);
+//  if (optimized && j > 1){
+//    optimiseTrajectory(100,6);
+//  }
+//  if(j > 1){//There is a new traj
+//    /* COMPUTE THE SOFTMOTION TRAJECTORY */
+//    traj = robotPt->tcur;
+//    if(!traj) {
+//      printf("SoftMotion : ERREUR : no current traj\n");
+//      return 1;
+//    }
+//    if(!traj || traj->nlp < 1) {
+//        printf("Optimization with softMotion not possible: current trajectory contains one or zero local path\n");
+//      return 1;
+//    }
+////     if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions, nbPositions) == 1){
+////       printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
+////       return 1;
+////     }
+//    //peut etre ajouter un return specific pour savoir qu'il y'a une nouvelle traj
+//  }
+//  return 0;
+//}
+//#endif
 
 
 
