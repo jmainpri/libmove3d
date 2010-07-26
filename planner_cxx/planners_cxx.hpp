@@ -1,6 +1,6 @@
 #include "API/planningAPI.hpp"
 
-#include "../p3d/env.hpp"
+#include "p3d/env.hpp"
 
 #include "planner.hpp"
 #include "PRM/PRM.hpp"

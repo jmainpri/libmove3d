@@ -6,6 +6,7 @@
 #include "P3d-pkg.h"
 #include "GroundHeight-pkg.h"
 #include "Planner-pkg.h"
+#include "Collision-pkg.h"
 
 using namespace std;
 using namespace tr1;
@@ -218,13 +219,17 @@ double CostSpace::cost(LocalPath& path)
 	
 	return Cost;
 }
+
 //----------------------------------------------------------------------
-extern void* GroundCostObj;
+// Basic cost functions
+//----------------------------------------------------------------------
 
 double computeBasicCost(Configuration& conf)
 {
 	return 1.0;
 }
+
+extern void* GroundCostObj;
 
 double computeIntersectionWithGround(Configuration& conf)
 {
@@ -237,6 +242,17 @@ double computeIntersectionWithGround(Configuration& conf)
 											 &cost);
 	}
 	return(cost);
+}
+
+double computeDistanceToObstacles(Configuration& conf)
+{
+	Robot* robotPt = conf.getRobot();
+	shared_ptr<Configuration> qActual = robotPt->getCurrentPos();
+	robotPt->setAndUpdate(conf);
+	double cost = p3d_GetMinDistCost(robotPt->getRobotStruct());
+//	cout << "cost = "<< cost << endl;
+	robotPt->setAndUpdate(*qActual);
+	return cost;
 }
 //----------------------------------------------------------------------
 void CostSpace::initMotionPlanning(Graph* graph, Node* start, Node* goal)

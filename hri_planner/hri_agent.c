@@ -26,10 +26,12 @@ HRI_AGENTS * hri_create_agents()
       if(strcasestr(env->robot[i]->name,"HUMAN"))
         agents->humans_no++;
   }
-
+  agents->all_agents_no = agents->robots_no + agents->humans_no;
+  
   agents->robots = MY_ALLOC(HRI_AGENT *,agents->robots_no);
   agents->humans = MY_ALLOC(HRI_AGENT *,agents->humans_no);
-
+  agents->all_agents = MY_ALLOC(HRI_AGENT *,agents->all_agents_no);
+  
   for(i=0; i<env->nr; i++){
     if(strcasestr(env->robot[i]->name,"ROBOT")){
       agents->robots[i_r] = hri_create_agent(env->robot[i]);
@@ -42,7 +44,13 @@ HRI_AGENTS * hri_create_agents()
       }
     }
   }
-
+  
+  i = 0;
+  for(i_r=0; i_r<agents->robots_no; i_r++, i++)
+    agents->all_agents[i] = agents->robots[i_r];
+  for(i_h=0; i_h<agents->humans_no; i_h++, i++)
+    agents->all_agents[i] = agents->humans[i_h];
+  
   return agents;
 }
 
@@ -137,57 +145,44 @@ HRI_MANIP * hri_create_empty_agent_manip()
 HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
 {
   HRI_PERSP * persp = NULL;
-  int res;
   
   persp = MY_ALLOC(HRI_PERSP,1);
   
-  res = hri_get_default_camera_joint_no(agent->type);
-  
-  if(res == FALSE){
-    PrintError(("can't find camera joints"));
-    return NULL;
-  }
-  
-  persp->camjoint = agent->robotPt->joints[res];
-  
   switch (agent->type) {
   case HRI_JIDO1:
-    persp->fov = 60;
-    persp->foa = 60;
-    persp->tilt_jnt_idx = 3;
-    persp->pan_jnt_idx  = 2;
-    break;
-  case HRI_ACHILE:
-    persp->fov = 160;
-    persp->foa = 30;
-    persp->tilt_jnt_idx = 6;
-    persp->pan_jnt_idx  = 5;
-    break;
-  case HRI_SUPERMAN:
-    persp->fov = 160;
-    persp->foa = 30;
-    persp->tilt_jnt_idx = 55;
-    persp->pan_jnt_idx  = 54;
-    break;
-  default:
-    persp->fov = 0;
-    persp->foa = 0;
-    break;
-  }
-    
-  return persp;
-}
-
-int hri_get_default_camera_joint_no(HRI_AGENT_TYPE type)
-{
-  switch (type) {
-    case HRI_JIDO1:
-      return 14;
+      persp->camjoint = agent->robotPt->joints[14];
+      persp->fov = 60;
+      persp->foa = 60;
+      persp->tilt_jnt_idx = 3;
+      persp->pan_jnt_idx  = 2;
+      persp->pointjoint = agent->robotPt->joints[1]; //TODO: put the corrent value
+      persp->point_tolerance = 20;      
+      break;
     case HRI_ACHILE:
-      return 40;
+      persp->camjoint = agent->robotPt->joints[40];
+      persp->fov = 160;
+      persp->foa = 30;
+      persp->tilt_jnt_idx = 6;
+      persp->pan_jnt_idx  = 5;
+      persp->pointjoint = agent->robotPt->joints[36];
+      persp->point_tolerance = 20;      
+    break;
+    case HRI_SUPERMAN:
+      persp->camjoint = agent->robotPt->joints[1]; //TODO: put the corrent value
+      persp->fov = 160;
+      persp->foa = 30;
+      persp->tilt_jnt_idx = 55;
+      persp->pan_jnt_idx  = 54;
+      persp->pointjoint = agent->robotPt->joints[1]; //TODO: put the corrent value
+      persp->point_tolerance = 20;      
+      break;
     default:
-      return 0;
+      persp->fov = 0;
+      persp->foa = 0;
+      break;
   }
+  
+  return persp;
 }
 
 int hri_create_assign_default_manipulation(HRI_AGENTS * agents)
@@ -401,6 +396,7 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       *tasklist_no = 6;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
       
+      //TODO: LOOK and POINT
       (*tasklist)[0].type = GIK_RATREACH;
       (*tasklist)[0].default_joints[0] = 3;
       (*tasklist)[0].default_joints[1] = 4;

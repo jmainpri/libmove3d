@@ -72,5 +72,6 @@ extern CostSpace* global_costSpace;
 
 double computeIntersectionWithGround(Configuration& conf);
 double computeBasicCost(Configuration& conf);
+double computeDistanceToObstacles(Configuration& conf);
 
 #endif

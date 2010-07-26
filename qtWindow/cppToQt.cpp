@@ -63,12 +63,30 @@ using namespace tr1;
  */
 void qt_resetGraph()
 {
-#ifdef P3D_PLANNER
-	if(XYZ_GRAPH)
+	try 
 	{
-		p3d_del_graph(XYZ_GRAPH);
-	}
+		if (API_activeGraph) 
+		{
+			cerr << "Delete C++ API Graph" << endl;
+			delete API_activeGraph;
+			API_activeGraph = NULL;
+		}
+		
+#ifdef P3D_PLANNER
+		if( !p3d_del_graph(XYZ_GRAPH) )
+		{
+			cerr << "XYZ_GRAPH deleted" << endl;
+		}
 #endif
+	}
+	catch (string str) 
+	{
+		cerr << str << endl;
+	}
+	catch (...) 
+	{
+		cerr << "Exeption in qt_resetGraph()" << endl;
+	}
 }
 
 /**
@@ -86,28 +104,38 @@ void qt_runDiffusion()
 {
 	cout << "Diffusion" << endl;
 	
+	try 
+	{
 #ifdef P3D_PLANNER
-	p3d_SetStopValue(FALSE);
+		p3d_SetStopValue(FALSE);
 #endif
-	ChronoOn();
-	
-	int res;
-	cout << "ENV.getBool(Env::Env::treePlannerIsEST) = " << ENV.getBool(Env::treePlannerIsEST) << endl;
-	if (ENV.getBool(Env::treePlannerIsEST))
-	{
+		ChronoOn();
+		
+		int res;
+		cout << "ENV.getBool(Env::Env::treePlannerIsEST) = " << ENV.getBool(Env::treePlannerIsEST) << endl;
+		if (ENV.getBool(Env::treePlannerIsEST))
+		{
 #ifdef CXX_PLANNER
-		res = p3d_run_est(XYZ_GRAPH, fct_stop, fct_draw);
-	}
-	else
-	{
-		res = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
+			res = p3d_run_est(XYZ_GRAPH, fct_stop, fct_draw);
+		}
+		else
+		{
+			res = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
 #endif
+		}
+		ChronoPrint("");
+		ChronoOff();
+		
+		g3d_draw_allwin_active();
 	}
-	
-	ChronoPrint("");
-	ChronoOff();
-	
-	g3d_draw_allwin_active();
+	catch (string str) 
+	{
+		cerr << str << endl;
+	}
+	catch (...) 
+	{
+		cerr << "Exeption in run qt_runDiffusion" << endl;
+	}
 }
 
 /**

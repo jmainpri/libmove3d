@@ -22,6 +22,8 @@
 #include "lightPlanner/proto/lightPlannerApi.h"
 #endif
 
+#include <boost/graph/graphviz.hpp>
+
 Graph* API_activeGraph=NULL;
 
 using namespace std;
@@ -36,39 +38,39 @@ Graph::Graph(Robot* R, p3d_graph* G)
 {
     if (G)
     {
-        _Graph = new p3d_graph(*G);
+        m_Graph = new p3d_graph(*G);
     }
     else
     {
-        _Graph = p3d_create_graph();
+        m_Graph = p3d_create_graph();
     }
-    _Robot = R;
-    _Graph->rob->GRAPH = _Graph;
-    _Traj = NULL;
+    m_Robot = R;
+    m_Graph->rob->GRAPH = m_Graph;
+    m_Traj = NULL;
     this->init();
 }
 
 Graph::Graph(Robot* R)
 {
-    _Robot = R;
-    _Graph = p3d_allocinit_graph();
+    m_Robot = R;
+    m_Graph = p3d_allocinit_graph();
 
-    _Graph->env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-    _Graph->rob = _Robot->getRobotStruct();
-    if (_Robot->getRobotStruct() != NULL)
+    m_Graph->env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+    m_Graph->rob = m_Robot->getRobotStruct();
+    if (m_Robot->getRobotStruct() != NULL)
     {
-        _Robot->getRobotStruct()->GRAPH = _Graph;
-        XYZ_GRAPH = _Graph;
+        m_Robot->getRobotStruct()->GRAPH = m_Graph;
+        XYZ_GRAPH = m_Graph;
     }
     if (STAT)
     {
-        _Graph->stat = createStat();
+        m_Graph->stat = createStat();
     }
     else
     {
-        _Graph->stat = NULL;
+        m_Graph->stat = NULL;
     }
-    _Traj = NULL;
+    m_Traj = NULL;
     this->init();
 }
 
@@ -78,14 +80,14 @@ Graph::Graph(p3d_graph* G)
     {
         /*_Graph = MY_ALLOC(p3d_graph, 1);
                 *_Graph = *G;*/
-        _Graph = G;
+        m_Graph = G;
     }
     else
     {
-        _Graph = p3d_create_graph();
+        m_Graph = p3d_create_graph();
     }
-    _Robot = global_Project->getActiveScene()->getRobotByName(G->rob->name);
-    _Traj = NULL;
+    m_Robot = global_Project->getActiveScene()->getRobotByName(G->rob->name);
+    m_Traj = NULL;
     this->init();
 }
 
@@ -95,14 +97,14 @@ Graph::Graph(p3d_graph* G)
  */
 Graph::Graph(const Graph& G)
 {
-	_Graph = G.exportGraphStruct();
-	_Robot = G._Robot;
+	m_Graph = G.exportGraphStruct();
+	m_Robot = G.m_Robot;
 	
-	shared_ptr<Configuration> q_start = G._Start->getConfiguration();
-	shared_ptr<Configuration> q_goal =  G._Goal->getConfiguration();
+	shared_ptr<Configuration> q_start = G.m_Start->getConfiguration();
+	shared_ptr<Configuration> q_goal =  G.m_Goal->getConfiguration();
 	
-	_Start = searchConf(*q_start);
-	_Goal =  searchConf(*q_goal);
+	m_Start = searchConf(*q_start);
+	m_Goal =  searchConf(*q_goal);
 	
 	this->init();
 }
@@ -112,34 +114,128 @@ Graph::Graph(const Graph& G)
   */
 void Graph::init()
 {
-    if (_Graph->nodes)
+    if (m_Graph->nodes)
     {
-        p3d_list_node* l = _Graph->nodes;
+        p3d_list_node* l = m_Graph->nodes;
         while (l)
         {
             Node* node = new Node(this, l->N);
-            _NodesTable.insert(pair<p3d_node*, Node*>(l->N, node));
-            _Nodes.push_back(node);
+            m_NodesTable.insert(pair<p3d_node*, Node*>(l->N, node));
+            m_Nodes.push_back(node);
             l = l->next;
         }
     }
-    if (_Graph->edges)
+    if (m_Graph->edges)
     {
-        p3d_list_edge* l = _Graph->edges;
+        p3d_list_edge* l = m_Graph->edges;
         while (l)
         {
 			//cout << "Init : Edge = " << l->E << endl;
             Edge* edge = new Edge(this,l->E);
-            _Edges.push_back(edge);
+            m_Edges.push_back(edge);
             l = l->next;
         }
     }
     this->setName();
+	
+		initBGL();
+	//m_BoostGraph;
+}
+
+// BGL Functions
+//----------------------------------------------
+void Graph::initBGL()
+{
+	try 
+	{
+		BGL_VertexDataMapT NodeData = boost::get( NodeData_t() , m_BoostGraph );
+		
+		for(unsigned int i = 0; i < m_Nodes.size(); ++i)
+		{
+			BGL_Vertex v	= boost::add_vertex(m_BoostGraph);
+			NodeData[v]		= m_Nodes[i];
+			m_Nodes[i]->setDescriptor(v);
+		}
+		
+		BGL_EdgeDataMapT EdgeData = boost::get( EdgeData_t() , m_BoostGraph );
+		
+		for(unsigned int i = 0; i < m_Edges.size(); ++i)
+		{
+			BGL_Vertex s = findVertexDescriptor(m_Edges[i]->getStart());
+			BGL_Vertex t = findVertexDescriptor(m_Edges[i]->getEnd());
+			
+			BGL_Edge e; bool found;
+			
+			tie(e, found) = boost::add_edge(s,t,m_BoostGraph);
+			
+			if (!found) 
+			{
+				throw string("Erreur: BGL edge exists allready or nodes inexistant");
+			}
+			
+			EdgeData[e] = m_Edges[i];
+			m_Edges[i]->setDescriptor(e);
+		}
+	}
+	catch (string str) 
+	{
+		cerr << str << endl;
+		return;
+	}
+	catch (...) 
+	{
+		cerr << "Unkomwn error building BGL Graph" << endl;
+		return;
+	}
+
+	saveBGLGraphToDotFile("/Users/jmainpri/Desktop/Graph/myGraph.dot");
+	cout << "Building BGL_Graph OK!!!" << endl;
+}
+				 
+BGL_Vertex Graph::findVertexDescriptor(Node* N)
+{
+	BGL_VertexDataMapT NodeData = boost::get( NodeData_t() , m_BoostGraph );
+	
+	typedef boost::graph_traits<BGL_Graph>::vertex_iterator vertex_iter;
+	pair<vertex_iter, vertex_iter> vp;
+	
+	for (vp = vertices(m_BoostGraph); vp.first != vp.second; ++vp.first)
+	{		
+		if( NodeData[*vp.first]	== N )
+		{
+			return *vp.first;
+		}
+	}
+	
+	throw string("Erreur: BGL vertex not found");
+}
+
+BGL_Edge Graph::findEdgeDescriptor(Edge* E)
+{
+	BGL_EdgeDataMapT EdgeData = boost::get( EdgeData_t() , m_BoostGraph );
+	
+	typedef boost::graph_traits<BGL_Graph>::edge_iterator edge_iter;
+	pair<edge_iter, edge_iter> ep;
+	
+	for (ep = edges(m_BoostGraph); ep.first != ep.second; ++ep.first)
+	{		
+		if( EdgeData[*ep.first]	== E )
+		{
+			return *ep.first;
+		}
+	}
+	
+	throw string("Erreur: BGL vertex not found");
+}
+
+void Graph::saveBGLGraphToDotFile(const std::string& filename)
+{
+	std::ofstream out(filename.c_str());
+	boost::write_graphviz(out,m_BoostGraph);
 }
 
 // Destructors
 //----------------------------------------------
-
 Graph::~Graph()
 {
 	if( Graph_Debug_Import_Export )
@@ -153,9 +249,9 @@ Graph::~Graph()
 }
 
 void Graph::deleteGraphStruct()
-{
+{	
 	/* verification of the existence of the graph */
-	if (!_Graph)
+	if (m_Graph)
 	{
 		// Get the compoc mirroring the P3d
 		updateCompcoFromStruct();
@@ -165,7 +261,7 @@ void Graph::deleteGraphStruct()
 		p3d_list_edge *ELS, *ELD;  /* Edge List Scanner, Edge pointer for Deletion */
 		
 		/*nodes desallocation*/
-		NLS = _Graph->nodes;
+		NLS = m_Graph->nodes;
 		
 		while (NLS) {
 			NLD = NLS;
@@ -188,23 +284,23 @@ void Graph::deleteGraphStruct()
 			delete NLD;
 		}
 		
-		if((_Graph->stat != NULL))
+		if((m_Graph->stat != NULL))
 		{
-			destroyStat(&(_Graph->stat));
+			destroyStat(&(m_Graph->stat));
 		}
 		
 		/* Delete references to the graph */
-		if (_Graph->rob != NULL) 
+		if (m_Graph->rob != NULL) 
 		{
-			_Graph->rob->GRAPH = NULL;
-			
-			if (XYZ_GRAPH == _Graph) 
-			{
-				XYZ_GRAPH = NULL;
-			}
+			m_Graph->rob->GRAPH = NULL;
 		}
 		
-		delete _Graph;
+		if (XYZ_GRAPH == m_Graph) 
+		{
+			XYZ_GRAPH = NULL;
+		}
+		
+		delete m_Graph;
 	}
 }
 
@@ -218,14 +314,14 @@ void Graph::freeResources()
         delete m_Comp[i];
     }
 	
-    for(unsigned int i=0;i<_Nodes.size();i++)
+    for(unsigned int i=0;i<m_Nodes.size();i++)
     {
-        delete _Nodes[i];
+        delete m_Nodes[i];
     }
 
-    for(unsigned int i=0;i<_Edges.size();i++)
+    for(unsigned int i=0;i<m_Edges.size();i++)
     {
-        delete _Edges[i];
+        delete m_Edges[i];
     }
 }
 
@@ -241,15 +337,15 @@ void Graph::importGraphStruct(p3d_graph* G)
 		cout << "Importing the graph" << endl;
 	}
 	
-	_Robot = global_Project->getActiveScene()->getRobotByName(G->rob->name);
-	_Graph = G;
+	m_Robot = global_Project->getActiveScene()->getRobotByName(G->rob->name);
+	m_Graph = G;
 	
     if (G->nodes)
     {
         p3d_list_node* l = G->nodes;
         while (l)
         {
-            _Nodes.push_back(new Node(this, l->N));
+            m_Nodes.push_back(new Node(this, l->N));
             l = l->next;
         }
     }
@@ -258,7 +354,7 @@ void Graph::importGraphStruct(p3d_graph* G)
         p3d_list_edge* l = G->edges;
         while (l)
         {
-            _Edges.push_back(new Edge(this, 
+            m_Edges.push_back(new Edge(this, 
 									  static_cast<unsigned int>(l->E->Ni->num - 1 ), 
 									  static_cast<unsigned int>(l->E->Nf->num - 1 ) ));
 			
@@ -292,15 +388,15 @@ p3d_graph* Graph::exportGraphStruct() const
 	//this->updateCompcoFromStruct();
 	
     //p3d_graph* G = p3d_allocinit_graph();
-	p3d_graph* G = new p3d_graph(*_Graph);
+		p3d_graph* G = new p3d_graph(*m_Graph);
 	
     G->env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-    G->rob = _Robot->getRobotStruct();
+    G->rob = m_Robot->getRobotStruct();
 	
-    _Robot->getRobotStruct()->GRAPH = G;
+    m_Robot->getRobotStruct()->GRAPH = G;
 	
-	G->nnode = static_cast<int>(_Nodes.size());
-	G->nedge = static_cast<int>(_Edges.size());
+		G->nnode = static_cast<int>(m_Nodes.size());
+		G->nedge = static_cast<int>(m_Edges.size());
 	
     if (STAT)
     {
@@ -316,7 +412,7 @@ p3d_graph* Graph::exportGraphStruct() const
 	if( Graph_Debug_Import_Export || true )
 	{
 		//cout << "Graph G : " << G <<  endl;
-		cout << "m_Nodes.size() = " << _Nodes.size() << endl;
+		cout << "mm_Nodes.size() = " << m_Nodes.size() << endl;
 	}
 	
 	// New table of nodes
@@ -326,18 +422,18 @@ p3d_graph* Graph::exportGraphStruct() const
 	p3d_list_node* ln = NULL;
 	p3d_list_node* prevNode = NULL;
 
-	for (unsigned int i = 0; i < _Nodes.size(); i++) 
+	for (unsigned int i = 0; i < m_Nodes.size(); i++) 
 	{
 		// Creates a new copied p3d_node
 		ln = new p3d_list_node;
-		ln->N = new p3d_node(*_Nodes[i]->getNodeStruct());
-		ln->N->q = p3d_copy_config(_Robot->getRobotStruct(),ln->N->q);
+		ln->N = new p3d_node(*m_Nodes[i]->getNodeStruct());
+		ln->N->q = p3d_copy_config(m_Robot->getRobotStruct(),ln->N->q);
 		cout << "Node(" << ln->N->num << " ) = " << ln->N->numcomp << endl;
 		
 		//cout <<  "ln->N->num = " << ln->N->num << endl;
 		
 		// Adds the new node to the map
-		NodeMap.insert(pair<p3d_node*,p3d_node*>(_Nodes[i]->getNodeStruct(),ln->N));
+		NodeMap.insert(pair<p3d_node*,p3d_node*>(m_Nodes[i]->getNodeStruct(),ln->N));
 		
 		if (i==0) {
 			G->nodes = ln;
@@ -361,7 +457,7 @@ p3d_graph* Graph::exportGraphStruct() const
 	if( Graph_Debug_Import_Export )
 	{
 		cout << "Graph G : " << G <<  endl;
-		cout << "m_Edges.size() = " << _Edges.size() << endl;
+		cout << "mm_Edges.size() = " << m_Edges.size() << endl;
 	}
 	
 	// New table of edges
@@ -371,18 +467,18 @@ p3d_graph* Graph::exportGraphStruct() const
 	p3d_list_edge* le = NULL;
 	p3d_list_edge* prevEdge = NULL;
 	
-	for (unsigned int i = 0; i < _Edges.size(); i++) 
+	for (unsigned int i = 0; i < m_Edges.size(); i++) 
 	{
 		// Creates new edge
 		le = new p3d_list_edge;
-		le->E = new p3d_edge(*_Edges[i]->getEdgeStruct());
+		le->E = new p3d_edge(*m_Edges[i]->getEdgeStruct());
 		
 		// Change the p3d_node pointers
-		le->E->Ni = NodeMap[_Edges[i]->getStart()->getNodeStruct()];
-		le->E->Nf = NodeMap[_Edges[i]->getEnd()->getNodeStruct()];
+		le->E->Ni = NodeMap[m_Edges[i]->getStart()->getNodeStruct()];
+		le->E->Nf = NodeMap[m_Edges[i]->getEnd()->getNodeStruct()];
 		
 		// Adds the new Edge to the map
-		EdgeMap.insert(pair<p3d_edge*,p3d_edge*>(_Edges[i]->getEdgeStruct(),le->E));
+		EdgeMap.insert(pair<p3d_edge*,p3d_edge*>(m_Edges[i]->getEdgeStruct(),le->E));
 		
 		if (i==0) {
 			G->edges = le;
@@ -426,7 +522,7 @@ p3d_graph* Graph::exportGraphStruct() const
 			CompMap.insert(pair<p3d_compco*,p3d_compco*>(m_Comp[i]->getCompcoStruct(),lc));
 			
 			// Copy node list of the compco
-			lc->nodes			= copyNodeList(NodeMap,lc->nodes);
+			lc->nodes					= copyNodeList(NodeMap,lc->nodes);
 			lc->dist_nodes		= copyNodeList(NodeMap,lc->dist_nodes);
 			
 			//cout << "Nb : Can reach = " << lc->ncanreach <<  endl;
@@ -452,7 +548,7 @@ p3d_graph* Graph::exportGraphStruct() const
 	//---------------------------------------------------------------------
 	// Copy all nodes neighbours, last node, last edge
 	ln = G->nodes;
-	for (unsigned int i = 0; i < _Nodes.size(); i++) 
+	for (unsigned int i = 0; i < m_Nodes.size(); i++) 
 	{
 		ln->N->neighb =				copyNodeList( NodeMap, ln->N->neighb , ln->N->last_neighb );
 		ln->N->edges =				copyEdgeList( EdgeMap, ln->N->edges , ln->N->last_edge );
@@ -465,7 +561,7 @@ p3d_graph* Graph::exportGraphStruct() const
 		
 		ln = ln->next;
 	}
-	//G->last_edge = lc;
+	//G->lastm_Edge = lc;
 	
 	return G;
 }
@@ -578,9 +674,9 @@ void Graph::updateCompcoFromStruct()
 {
 	m_Comp.clear();
 	
-	if (_Graph->comp)
+	if (m_Graph->comp)
     {
-        p3d_compco* l = _Graph->comp;
+        p3d_compco* l = m_Graph->comp;
         while (l)
         {
             m_Comp.push_back(new ConnectedComponent(this, l));
@@ -593,58 +689,53 @@ void Graph::updateCompcoFromStruct()
 //----------------------------------------------
 p3d_graph* Graph::getGraphStruct()
 {
-    return _Graph;
+    return m_Graph;
 }
 
 void Graph::setGraph(p3d_graph* G)
 {
-    *_Graph = *G;
+    *m_Graph = *G;
 }
 
 Robot* Graph::getRobot()
 {
-    return _Robot;
+    return m_Robot;
 }
 
 /*void Graph::setRobot(Robot* R)
 {
-	_Robot = R;
+	m_Robot = R;
 }*/
 
 void Graph::setTraj(p3d_traj* Traj)
 {
-    _Traj = Traj;
+    m_Traj = Traj;
 }
 
 p3d_traj* Graph::getTrajStruct()
 {
-    return _Traj;
+    return m_Traj;
 }
 
 vector<Node*> Graph::getNodes()
 {
-    return _Nodes;
+    return m_Nodes;
 }
 
 vector<Edge*> Graph::getEdges()
 {
-    return _Edges;
+    return m_Edges;
 }
 
 map<p3d_node*, Node*> Graph::getNodesTable()
 {
-    return _NodesTable;
-}
-
-unsigned int Graph::getNumberOfCompco()
-{
-	return _Graph->ncomp;
+    return m_NodesTable;
 }
 
 Node* Graph::getNode(p3d_node* N)
 {
-    map<p3d_node*, Node*>::iterator it = _NodesTable.find(N);
-    if (it != _NodesTable.end())
+    map<p3d_node*, Node*>::iterator it = m_NodesTable.find(N);
+    if (it != m_NodesTable.end())
         return (it->second);
     else
     {
@@ -655,54 +746,63 @@ Node* Graph::getNode(p3d_node* N)
 
 Node* Graph::getLastnode()
 {
-    return (_Nodes.back());
+    return (m_Nodes.back());
 }
 
 string Graph::getName()
 {
-    return _Name;
+    return m_Name;
 }
 
 void Graph::setName()
 {
-    _Name = "graph";
+    m_Name = "graph";
 }
 
 void Graph::setName(string Name)
 {
-    _Name = Name;
+    m_Name = Name;
 }
 
 bool Graph::equal(Graph* G)
 {
-    return (_Graph->nodes == G->getGraphStruct()->nodes);
+    return (m_Graph->nodes == G->getGraphStruct()->nodes);
 }
 
 bool Graph::equalName(Graph* G)
 {
-    return (_Name == G->getName());
+    return (m_Name == G->getName());
 }
 
 // Graph operations
 //----------------------------------------------
+
 /**
  * Is Edge in graph
  */
 bool Graph::isEdgeInGraph(Node* N1, Node* N2)
 {
-    bool flag = false;
+	bool flag = false;
 	
-    for (uint i = 0; i < _Edges.size(); i = i + 1)
-    {
-        flag =
-		( _Edges[i]->getEdgeStruct()->Ni == N1->getNodeStruct() ) &&
-		( _Edges[i]->getEdgeStruct()->Nf == N2->getNodeStruct() );
-        if (flag)
-        {
-            return flag;
-        }
-    }
-    return flag;
+	for (unsigned int i = 0; i < m_Edges.size(); i++)
+	{
+		if( use_p3d_structures )
+		{
+			flag =
+			( m_Edges[i]->getEdgeStruct()->Ni == N1->getNodeStruct() ) &&
+			( m_Edges[i]->getEdgeStruct()->Nf == N2->getNodeStruct() );
+		}
+		else {
+			flag = ( m_Edges[i]->getStart() == N1 ) &&
+						 ( m_Edges[i]->getEnd()   == N2 );
+		}
+		
+		if (flag)
+		{
+			return flag;
+		}
+	}
+	return flag;
 }
 
 /**
@@ -710,8 +810,20 @@ bool Graph::isEdgeInGraph(Node* N1, Node* N2)
   */
 Node* Graph::searchConf(Configuration& q)
 {
-    p3d_node* node(p3d_TestConfInGraph(_Graph,q.getConfigStruct()));
-    return (node ? _NodesTable[node] : NULL);
+	if( use_p3d_structures )
+	{
+    p3d_node* node(p3d_TestConfInGraph(m_Graph,q.getConfigStruct()));
+    return (node ? m_NodesTable[node] : NULL);
+	}
+	else 
+	{
+		for(unsigned int i=0;i<m_Nodes.size();i++)
+		{
+			if(m_Nodes[i]->getConfiguration()->equal(q))
+				return m_Nodes[i];
+		}
+		return 0x00;
+	}
 }
 
 /**
@@ -719,16 +831,18 @@ Node* Graph::searchConf(Configuration& q)
   */
 Node* Graph::insertNode(Node* node)
 {
-    _NodesTable.insert(pair<p3d_node*, Node*> (node->getNodeStruct(), node));
-    _Nodes.push_back(node);
-
-    p3d_insert_node(_Graph, node->getNodeStruct());
-
-    this->getGraphStruct()->dist_nodes = p3d_add_node_to_list(
-            node->getNodeStruct(),
-            this->getGraphStruct()->dist_nodes);
-
-    return (node);
+	addNode(node);
+	
+	if ( use_p3d_structures )
+	{
+    p3d_insert_node(m_Graph, node->getNodeStruct());
+		
+    m_Graph->dist_nodes = p3d_add_node_to_list(
+																					node->getNodeStruct(),
+																					this->getGraphStruct()->dist_nodes);
+	}
+	
+	return (node);
 }
 
 /**
@@ -736,9 +850,13 @@ Node* Graph::insertNode(Node* node)
   */
 Node* Graph::insertExtremalNode(Node* node)
 {
-    this->insertNode(node);
-    node->getNodeStruct()->type = ISOLATED;
-    return (node);
+	insertNode(node);
+	
+	if (use_p3d_structures) 
+	{
+		node->getNodeStruct()->type = ISOLATED;
+	}
+	return (node);
 }
 
 /**
@@ -750,17 +868,30 @@ Node* Graph::insertNode(Node* expansionNode,LocalPath& path)
  Node* expansionNode,
  double currentCost, double step)*/
 {
-    double step = path.getParamMax();
+	double step = path.getParamMax();
 	
+	if( !isInGraph(expansionNode) )
+	{
+		Node* newExpansion = searchConf( *expansionNode->getConfiguration() );
+		
+		if ( newExpansion ) 
+		{
+			expansionNode = newExpansion;
+		}
+		else 
+		{
+			throw string("expansionNode is not in the graph");
+		}
+	}
 	
-    Node* node(this->insertConfigurationAsNode(path.getEnd(), expansionNode, step));
+	Node* node = insertConfigurationAsNode(path.getEnd(), expansionNode, step);
 	
     // Cost updates
     if (ENV.getBool(Env::isCostSpace))
     {
         double currentCost = path.getEnd()->cost();
 		
-        p3d_SetNodeCost(_Graph, node->getNodeStruct(), currentCost );
+        p3d_SetNodeCost(m_Graph, node->getNodeStruct(), currentCost );
 		
         //for adaptive variant, new temp is refreshed except if it is going down.
         if (currentCost < expansionNode->getNodeStruct()->cost)
@@ -769,38 +900,35 @@ Node* Graph::insertNode(Node* expansionNode,LocalPath& path)
         }
         else
         {
-            node->getNodeStruct()->temp = expansionNode->getNodeStruct()->temp
-			/ 2.;
+            node->getNodeStruct()->temp = expansionNode->getNodeStruct()->temp / 2.;
         }
     }
 	
     //weight updates
     if (p3d_GetIsWeightedChoice())
-        p3d_SetNodeWeight(_Graph, node->getNodeStruct());
+        p3d_SetNodeWeight(m_Graph, node->getNodeStruct());
 	
     //check stop conditions
     if (p3d_GetIsWeightStopCondition())
-    {
         node->checkStopByWeight();
-    }
 	
     // Graph updates for RANDOM_IN_SHELL method
     if (ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH)
     {
         p3d_SetNGood(p3d_GetNGood() + 1);
 		
-        if (node->getNodeStruct()->weight > _Graph->CurPbLevel)
+        if (node->getNodeStruct()->weight > m_Graph->CurPbLevel)
         {
-            _Graph->CurPbLevel = node->getNodeStruct()->weight;
-            _Graph->n_consec_pb_level = 0;
-            _Graph->n_consec_fail_pb_level = 0;
+            m_Graph->CurPbLevel = node->getNodeStruct()->weight;
+            m_Graph->n_consec_pb_level = 0;
+            m_Graph->n_consec_fail_pb_level = 0;
             if (p3d_GetNGood() > 2)
-                _Graph->critic_cur_pb_level = _Graph->CurPbLevel;
+                m_Graph->critic_cur_pb_level = m_Graph->CurPbLevel;
         }
         else
         {
-            _Graph->n_consec_pb_level++;
-            _Graph->n_consec_fail_pb_level = 0;
+            m_Graph->n_consec_pb_level++;
+            m_Graph->n_consec_fail_pb_level = 0;
         }
     }
 	
@@ -810,7 +938,6 @@ Node* Graph::insertNode(Node* expansionNode,LocalPath& path)
         this->addCycles(node, step);
     }
 	
-	
     return (node);
 }
 
@@ -819,32 +946,16 @@ Node* Graph::insertNode(Node* expansionNode,LocalPath& path)
  */
 Node* Graph::insertConfigurationAsNode(shared_ptr<Configuration> q, Node* from,double step)
 {
-    Node* node = new Node(this, q);
+	Node* node = new Node(this, q);
 	
-    this->insertNode(node);
+	insertNode(node);
 	
-    if (node->getCompcoStruct()->num < from->getCompcoStruct()->num)
-    {
-        p3d_merge_comp(_Graph,
-                       node->getCompcoStruct(),
-                       from->getCompcoStructPt());
-    }
-    else if (from->getCompcoStruct()->num < node->getCompcoStruct()->num)
-    {
-        p3d_merge_comp(_Graph,
-                       from->getCompcoStruct(),
-                       node->getCompcoStructPt());
-    }
+	mergeComp( from, node, step );
 	
-    p3d_create_edges(_Graph,
-                     from->getNodeStruct(),
-                     node->getNodeStruct(),
-                     step);
+	node->getNodeStruct()->rankFromRoot = from->getNodeStruct()->rankFromRoot +1;
+	node->getNodeStruct()->type = LINKING;
 	
-    node->getNodeStruct()->rankFromRoot = from->getNodeStruct()->rankFromRoot +1;
-    node->getNodeStruct()->type = LINKING;
-	
-    return(node);
+	return(node);
 }
 
 /**
@@ -870,9 +981,9 @@ bool Graph::compareNodes(Node* N1, Node* N2)
   */
 void Graph::sortEdges()
 {
-    if (_Edges.size() > 0)
+    if (m_Edges.size() > 0)
     {
-        sort(_Edges.begin(), _Edges.end(), &compareEdges);
+        sort(m_Edges.begin(), m_Edges.end(), &compareEdges);
     }
 }
 
@@ -881,26 +992,46 @@ void Graph::sortEdges()
   */
 void Graph::sortNodesByDist(Node* N)
 {
-    if (_Nodes.size() > 1)
+    if (m_Nodes.size() > 1)
     {
-        for (unsigned int i=0; i < _Nodes.size(); i++)
+        for (unsigned int i=0; i < m_Nodes.size(); i++)
         {
-            _Nodes[i]->dist(N);
+            m_Nodes[i]->dist(N);
         }
-        sort(_Nodes.begin(), _Nodes.end(), &compareNodes);
+        sort(m_Nodes.begin(), m_Nodes.end(), &compareNodes);
     }
 }
 
 /**
   * Add Edge to Graph
   */
-void Graph::addEdge(Node* N1, Node* N2, double Long)
-{
-    if (!this->isEdgeInGraph(N1, N2))
-    {
-        Edge* E = new Edge(this, N1, N2, Long);
-        _Edges.push_back(E);
-    }
+void Graph::addEdge(Node* source, Node* target, double Long)
+{	
+	if (!this->isEdgeInGraph(source, target))
+	{
+		Edge* E = new Edge(this, source, target, Long);
+		m_Edges.push_back(E);
+		
+		BGL_EdgeDataMapT EdgeData = boost::get( EdgeData_t() , m_BoostGraph );
+		BGL_Edge e; bool found;
+		
+		boost::tie(e, found) = boost::add_edge( source->getDescriptor(), 
+																					  target->getDescriptor(), m_BoostGraph);
+		
+		if (found) 
+		{
+			EdgeData[e] = E;
+			E->setDescriptor(e);
+		}
+		
+		if( use_p3d_structures )
+		{
+			p3d_create_one_edge(m_Graph,
+													source->getNodeStruct(),
+													target->getNodeStruct(),
+													Long);
+		}
+	}
 }
 
 /**
@@ -909,39 +1040,71 @@ void Graph::addEdge(Node* N1, Node* N2, double Long)
   */
 void Graph::addEdges(Node* N1, Node* N2, double Long)
 {
-    this->addEdge(N1, N2, Long);
-    this->addEdge(N2, N1, Long);
+	addEdge(N1, N2, Long);
+	addEdge(N2, N1, Long);
+	
+	if( use_p3d_structures )
+	{
+		// This is the code copied from 
+		
+		//		p3d_create_edges(m_Graph,
+		//									 N1->getNodeStruct(),
+		//									 N2->getNodeStruct(),
+		//									 DistNodes);
+		
+		N2->getNodeStruct()->parent = N1->getNodeStruct();  // modif Juan (WARNING : suppose that N1 is always the parent node)
+		if(p3d_get_costComputation())
+		{
+			N1->getNodeStruct()->cost += N1->getNodeStruct()->last_edge->E->cost;
+			N2->getNodeStruct()->cost += N2->getNodeStruct()->last_edge->E->cost;
+		}
+	}
 }
 
-void p3d_remove_edge_from_list(p3d_edge* edge,p3d_list_edge* list)
-{
-	for(p3d_list_edge* edges = list; edges; edges = edges->next)
-	{
-    if(edges->E == edge)
-		{
-      if(edges->prev)
-			{
-        edges->prev->next = edges->next;
-      } 
-      if(edges->next)
-			{
-        edges->next->prev = edges->prev;
-      }
-      delete edges;
-      break;
-    }
-  }
-}
+//void p3d_removem_Edge_from_list(p3dm_Edge* edge,p3d_listm_Edge* list)
+//{
+//	for(p3d_listm_Edge* edges = list; edges; edges = edges->next)
+//	{
+//    if(edges->E == edge)
+//		{
+//      if(edges->prev)
+//			{
+//        edges->prev->next = edges->next;
+//      } 
+//      if(edges->next)
+//			{
+//        edges->next->prev = edges->prev;
+//      }
+//      delete edges;
+//      break;
+//    }
+//  }
+//}
 
 /**
  * Remove an edge from the graph
  */
-void Graph::removeEdge(Edge* E)
+//void Graph::removeEdge(Edge* E)
+//{
+//	removeNodeFromGraph(E->getStart());
+//	removeNodeFromGraph(E->getEnd());
+//	
+//	p3d_removem_Edge_from_list(E->getEdgeStruct(),m_Graph->edges);
+//}
+
+/**
+ * Add basically a node to the graph
+ */
+void Graph::addNode(Node* N)
 {
-	removeNodeFromGraph(E->getStart());
-	removeNodeFromGraph(E->getEnd());
+	m_NodesTable.insert(pair<p3d_node*, Node*> (N->getNodeStruct(), N));
+	m_Nodes.push_back(N);
 	
-	p3d_remove_edge_from_list(E->getEdgeStruct(),_Graph->edges);
+	BGL_VertexDataMapT NodeData = boost::get( NodeData_t() , m_BoostGraph );
+	BGL_Vertex v								= boost::add_vertex(m_BoostGraph);
+	NodeData[v]									= N;
+	
+	N->setDescriptor(v);
 }
 
 /**
@@ -949,21 +1112,21 @@ void Graph::removeEdge(Edge* E)
   */
 void Graph::addNode(Node* N, double maxDist)
 {
-    double d;
-    for (uint i = 0; i < _Nodes.size(); i = i + 1)
-    {
-        if ((d = _Nodes[i]->getConfiguration()->dist(*N->getConfiguration()))
-            < maxDist)
-            {
-            LocalPath path(_Nodes[i]->getConfiguration(), N->getConfiguration());
-
-            if ( path.isValid() )
-            {
-                this->addEdges(_Nodes[i], N, d);
-            }
-        }
-    }
-    _Nodes.push_back(N);
+	double d;
+	for (unsigned int i = 0; i < m_Nodes.size(); i = i + 1)
+	{
+		if ((d = m_Nodes[i]->getConfiguration()->dist(*N->getConfiguration()))< maxDist)
+		{
+			LocalPath path(m_Nodes[i]->getConfiguration(), N->getConfiguration());
+			
+			if ( path.isValid() )
+			{
+				this->addEdges(m_Nodes[i], N, d);
+			}
+		}
+	}
+	
+	addNode(N);
 }
 
 /**
@@ -977,7 +1140,7 @@ void Graph::addNodes(vector<Node*> N, double maxDist)
     }
 }
 
-void p3d_remove_node_from_list(p3d_node* node,p3d_list_node* list)
+/*void p3d_remove_node_from_list(p3d_node* node,p3d_list_node* list)
 {
 	for(p3d_list_node* nodes = list; nodes; nodes = nodes->next)
 	{
@@ -996,34 +1159,19 @@ void p3d_remove_node_from_list(p3d_node* node,p3d_list_node* list)
       break;
     }
   }
-}
+}*/
 
 /**
  * Remove a node from compco
+ * TODO 
  */
 void Graph::removeNodeFromGraph(Node* N)
 {	
-	p3d_list_node* ln = _Graph->nodes;
-	
-	// Remove from neighb list
-	for (unsigned int i = 0; i < _Nodes.size(); i++) 
-	{
-		p3d_remove_node_from_list(N->getNodeStruct(),ln->N->neighb);
-		if (N->getNodeStruct() == ln->N->parent) 
-		{
-			ln->N->parent = NULL;
-		}
-		ln = ln->next;
-	}
-	
-	p3d_remove_node_from_list(N->getNodeStruct(),_Graph->dist_nodes);
-	p3d_remove_node_from_list(N->getNodeStruct(),_Graph->nodes);
-	
-	p3d_compco* Comp = N->getCompcoStruct();
-	p3d_remove_node_compco(N->getNodeStruct(), Comp, true);
-	
-	vector<Node*>::iterator it = find( _Nodes.begin(),_Nodes.end(), N);
-	_Nodes.erase( it );
+//	delete N;
+//	for(unsigned int i=0;i<m_Nodes.size();i++)
+//	{
+//		
+//	}
 }
 
 /**
@@ -1031,12 +1179,10 @@ void Graph::removeNodeFromGraph(Node* N)
   */
 bool Graph::isInGraph(Node* N)
 {
-    for (uint i = 0; i < _Nodes.size(); i = i + 1)
+    for (unsigned int i = 0; i < m_Nodes.size(); i++ )
     {
-        if (N->equal(_Nodes[i]))
-        {
+        if ( N == m_Nodes[i] ) 
             return true;
-        }
     }
     return false;
 }
@@ -1062,15 +1208,15 @@ bool Graph::linkNode(Node* N)
 bool Graph::linkNodeWithoutDist(Node* N)
 {
     bool b = false;
-    for (int j = 1; j <= _Graph->ncomp; j = j + 1)
+    for (int j = 1; j <= m_Graph->ncomp; j = j + 1)
     {
         if (N->getNodeStruct()->numcomp != j)
         {
-            for (uint i = 0; i < _Nodes.size(); i = i + 1)
+            for (unsigned int i = 0; i < m_Nodes.size(); i = i + 1)
             {
-                if (_Nodes[i]->getNodeStruct()->numcomp == j)
+                if (m_Nodes[i]->getNodeStruct()->numcomp == j)
                 {
-                    if (_Nodes[i]->connectNodeToCompco(N, 0))
+                    if (m_Nodes[i]->connectNodeToCompco(N, 0))
                     {
                         N->getNodeStruct()->search_to
                                 = N->getNodeStruct()->last_neighb->N;
@@ -1093,7 +1239,7 @@ bool Graph::linkNodeWithoutDist(Node* N)
   */
 bool Graph::linkNodeAtDist(Node* N)
 {
-  int nbLinkedComponents = p3d_link_node_graph_multisol(N->getNodeStruct(), _Graph);
+  int nbLinkedComponents = p3d_link_node_graph_multisol(N->getNodeStruct(), m_Graph);
   this->mergeCheck();
   return(nbLinkedComponents > 0);
 }
@@ -1103,41 +1249,104 @@ bool Graph::linkNodeAtDist(Node* N)
   */
 bool Graph::linkToAllNodes(Node* newN)
 {
-    return p3d_all_link_node(newN->getNodeStruct(), _Graph);
+    return p3d_all_link_node(newN->getNodeStruct(), m_Graph);
 }
+
+bool Graph::areNodesLinked(Node* node1, Node* node2, double & dist)
+{	
+	// copy of the function p3d_APInode_linked
+	// that computes also the IK solution
+	
+  /* current position of robot is saved */
+  shared_ptr<Configuration> qSave = m_Robot->getCurrentPos();
+	
+  LocalPath* LP = new LocalPath(
+																				 node1->getConfiguration(), 
+																				 node2->getConfiguration() );
+	
+	
+  if (LP->getParamMax() != NULL)
+		dist = LP->getParamMax();
+  else{
+		PrintInfo(("Warning: created an edge with \
+							 a 0 distance: no localpathPt->length \n"));
+		dist = 0;
+	}
+  if((p3d_get_SORTING()==P3D_NB_CONNECT)&&
+     (p3d_get_MOTION_PLANNER()==P3D_BASIC)) 
+	{
+    if((dist > p3d_get_DMAX())&&(LEQ(0.,p3d_get_DMAX())))
+		{ 
+			/* ecremage deja fait dans le cas tri par distance... */
+      /* the local path is destroyed */
+      delete LP;
+      return false;
+    }
+  }
+	
+  bool isNoCol = LP->isValid();   // <- modif Juan
+	//   isNoCol = 1;
+
+	int ntest = LP->getNbColTest();
+
+	delete LP;
+	
+  if(m_Graph){
+    m_Graph->nb_local_call = m_Graph->nb_local_call + 1;
+    m_Graph->nb_test_coll = m_Graph->nb_test_coll + ntest;
+  }
+	
+  return(isNoCol);
+}
+
 
 /**
  * Link Node and Merge
  */
  bool Graph::linkNodeAndMerge(Node* node1, Node* node2)
 {
-	p3d_node* Node1Pt = node1->getNodeStruct();
-	p3d_node* Node2Pt = node2->getNodeStruct();
-	
-	int  IsLinkedAndMerged = FALSE;
 	double DistNodes = 0.;
+	bool  IsLinkedAndMerged = false;
 	
-	if ((Node1Pt == NULL) || (Node2Pt == NULL)) {
-		PrintInfo(("Warning: Try to link two nodes with NULL structures \n"));
-		return FALSE;
-	}
-	p3d_compco* CompNode1Pt = Node1Pt->comp;
-	p3d_compco* CompNode2Pt = Node2Pt->comp;
-	
-	if (p3d_APInode_linked(_Graph, Node1Pt, Node2Pt, &DistNodes)) 
+	if ( use_p3d_structures ) 
 	{
-		if (CompNode1Pt->num < CompNode2Pt->num)
-			p3d_merge_comp(_Graph, CompNode1Pt, &CompNode2Pt);
-		else if (CompNode1Pt->num > CompNode2Pt->num) {
-			p3d_merge_comp(_Graph, CompNode2Pt, &CompNode1Pt);
+		p3d_node* Node1Pt = node1->getNodeStruct();
+		p3d_node* Node2Pt = node2->getNodeStruct();
+		
+		if ((Node1Pt == NULL) || (Node2Pt == NULL)) 
+		{
+			cerr << "Warning: Try to link two nodes with NULL structures \n";
+			return false;
 		}
-				
-		p3d_create_edges(_Graph, Node1Pt, Node2Pt, DistNodes);
-		//    PrintInfo(("dist: %f\n",DistNodes));
 		
-		this->addEdges(node1, node2, DistNodes);
-		
-		IsLinkedAndMerged = TRUE;
+		if (p3d_APInode_linked(m_Graph, Node1Pt, Node2Pt, &DistNodes)) 
+		{
+			/*p3d_compco* CompNode1Pt = Node1Pt->comp;
+			p3d_compco* CompNode2Pt = Node2Pt->comp;
+			
+			if (CompNode1Pt->num < CompNode2Pt->num)
+				p3d_merge_comp(m_Graph, CompNode1Pt, &CompNode2Pt);
+			else if (CompNode1Pt->num > CompNode2Pt->num)
+				p3d_merge_comp(m_Graph, CompNode2Pt, &CompNode1Pt);
+			
+			//p3d_create_edges(m_Graph, Node1Pt, Node2Pt, DistNodes);
+			//    PrintInfo(("dist: %f\n",DistNodes));
+			
+			addEdges(node1, node2, DistNodes);*/
+			
+			mergeComp(node1, node2, DistNodes);
+			
+			IsLinkedAndMerged = true;
+		}
+	}
+	else 
+	{
+		if (areNodesLinked(node1, node2, DistNodes)) 
+		{
+			mergeComp(node1, node2, DistNodes); 
+			
+			IsLinkedAndMerged = true;
+		}
 	}
 	
 	return IsLinkedAndMerged;
@@ -1158,13 +1367,13 @@ void Graph::createRandConfs(int NMAX)
     inode = 0;
 
     shared_ptr<Configuration> Cs = shared_ptr<Configuration> (
-            new Configuration(_Robot, _Robot->getRobotStruct()->ROBOT_POS));
+            new Configuration(m_Robot, m_Robot->getRobotStruct()->ROBOT_POS));
     Node* Ns = new Node(this, Cs);
     this->insertNode(Ns);
 
     while (inode < NMAX)
     {
-        shared_ptr<Configuration> C = _Robot->shoot();
+        shared_ptr<Configuration> C = m_Robot->shoot();
         if (!C->isInCollision())
         {
             this->insertNode(new Node(this, C));
@@ -1190,10 +1399,10 @@ void Graph::createRandConfs(int NMAX)
 
     PrintInfo(("For the generation of %d configurations : ", inode));
     ChronoTimes(&tu, &ts);
-    _Graph->time = _Graph->time + tu;
+    m_Graph->time = m_Graph->time + tu;
     ChronoPrint("");
     ChronoOff();
-    p3d_print_info_graph(_Graph);
+    p3d_print_info_graph(m_Graph);
 }
 
 /**
@@ -1209,6 +1418,7 @@ Node* Graph::randomNodeFromComp(Node* comp)
  */
 bool Graph::connectNodeToCompco(Node* node1, Node* compco)
 {
+	 //This is a copy of the old p3d_ConnectNodeToComp
 	Node* node2 = NULL;
 	
 	bool IsConnectSuccess = false;
@@ -1315,16 +1525,16 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> conf
     // When retrieving statistics
     if (getStatStatus())
     {
-        _Graph->stat->planNeigCall++;
+        m_Graph->stat->planNeigCall++;
     }
 
     //computation of the mobFrameRef of the Config
     if (distConfigChoice == MOBILE_FRAME_DIST && p3d_GetRefAndMobFrames(
-            _Graph->rob, &RefFramePt, &MobFramePt))
+            m_Graph->rob, &RefFramePt, &MobFramePt))
     {
-        p3d_set_robot_config(_Graph->rob, config->getConfigStruct());
-        p3d_update_this_robot_pos_without_cntrt_and_obj(_Graph->rob);
-        p3d_GetRefAndMobFrames(_Graph->rob, &RefFramePt, &MobFramePt);
+        p3d_set_robot_config(m_Graph->rob, config->getConfigStruct());
+        p3d_update_this_robot_pos_without_cntrt_and_obj(m_Graph->rob);
+        p3d_GetRefAndMobFrames(m_Graph->rob, &RefFramePt, &MobFramePt);
         if (RefFramePt == NULL)
         {
             p3d_mat4Copy(*MobFramePt, MobFrameRef);
@@ -1345,7 +1555,7 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> conf
             cout << "Graph CPP API :: FK Constraint could not be satistfied"  << endl;
         }
 
-        activateCcCntrts(_Robot->getRobotStruct(),-1,true);
+        activateCcCntrts(m_Robot->getRobotStruct(),-1,true);
     }
 #endif
 
@@ -1360,14 +1570,14 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> conf
         {
             if (distConfigChoice == MOBILE_FRAME_DIST)
             {
-                CurrentDist = p3d_GetSe3DistanceFrames(_Graph->rob,
+                CurrentDist = p3d_GetSe3DistanceFrames(m_Graph->rob,
                                                        MobFrameRef, nodes->N->RelMobFrame);
             }
             else
             {
 
                 CurrentDist = config->dist(
-                        *_NodesTable[nodes->N]->getConfiguration(),
+                        *m_NodesTable[nodes->N]->getConfiguration(),
                         distConfigChoice);
             }
 
@@ -1387,7 +1597,7 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> conf
 #ifdef LIGHT_PLANNER
     if(ENV.getBool(Env::FKDistance))
     {
-        deactivateCcCntrts(_Robot->getRobotStruct(),-1);
+        deactivateCcCntrts(m_Robot->getRobotStruct(),-1);
     }
 #endif
 
@@ -1398,46 +1608,65 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> conf
         return NULL;
         }
 
-    return _NodesTable[BestNodePt];
+    return m_NodesTable[BestNodePt];
 }
+
+unsigned int Graph::getNumberOfCompco()
+{
+	return m_Graph->ncomp;
+}
+
+//-----------------------------------------------------------
+// Connected componnents
+//-----------------------------------------------------------
 
 /**
   * Merge Component
   */
 int Graph::mergeComp(Node* CompCo1, Node* CompCo2, double DistNodes)
 {
-    if ((CompCo1 == NULL) || (CompCo2 == NULL))
-    {
-        PrintInfo (("Warning: Try to link two nodes with NULL structures \n"));
-        return FALSE;
-    }
-
-    if (CompCo1->getCompcoStruct()->num < CompCo2->getCompcoStruct()->num)
-    {
-        CompCo1->merge(CompCo2);
-    }
-    else if (CompCo1->getCompcoStruct()->num > CompCo2->getCompcoStruct()->num)
-    {
-        CompCo2->merge(CompCo1);
-    }
-
-    this->addEdges(CompCo1, CompCo2, DistNodes);
-
-    p3d_create_edges(_Graph,
-                     CompCo1->getNodeStruct(),
-                     CompCo2->getNodeStruct(),
-                     DistNodes);
+	if ((CompCo1 == NULL) || (CompCo2 == NULL))
+	{
+		cerr << "Warning: Try to link two nodes with NULL structures \n";
+		return false;
+	}
 	
-    return true;
+	if (CompCo1->getCompcoStruct()->num > CompCo2->getCompcoStruct()->num)
+	{
+		std::swap( CompCo1, CompCo2 );
+	}
+	
+	cout << "Node::merge compco " 
+	<< CompCo1->getCompcoStruct()->num << " with " 
+	<< CompCo2->getCompcoStruct()->num << endl;
+	
+//	if( use_p3d_structures ) 
+//		p3d_merge_comp(m_Graph, 
+//									 CompCo1->getCompcoStruct(),
+//									 &(CompCo2->getNodeStruct()->comp));
+	
+	CompCo1->getConnectedComponent()->mergeWith( *CompCo2->getConnectedComponent() );
+	
+	addEdges(CompCo1, CompCo2, DistNodes);
+	
+	return true;
 }
 
 /**
  * Create a Compco
  */
-void Graph::createCompco(Node* node)
+void Graph::createCompco(Node* N)
 {
-	p3d_create_compco(_Graph, node->getNodeStruct() );
-	m_Comp.push_back(new ConnectedComponent(this,node->getNodeStruct()->comp));
+	if ( use_p3d_structures ) 
+	{
+		p3d_create_compco(m_Graph, N->getNodeStruct() );
+	}
+	
+	m_Comp.push_back(new ConnectedComponent(this,N->getNodeStruct()->comp));
+	m_Comp.back()->addNode(N);
+	N->setCompco( m_Comp.back() );
+	
+	cout << "Add Compco for Node " << N->getNodeStruct()->num << endl;
 }
 
 /**
@@ -1445,7 +1674,7 @@ void Graph::createCompco(Node* node)
  */
 Node* Graph::getCompco(unsigned int ith)
 {
-	p3d_compco* component = _Graph->comp;
+	p3d_compco* component = m_Graph->comp;
 	
 	for(unsigned int i=0;i<getNumberOfCompco();i++)
 	{
@@ -1472,7 +1701,7 @@ std::vector<Node*> Graph::getNodesInTheCompCo(Node* node)
 
     while (ListNode!=NULL)
     {
-        Nodes.push_back(this->_NodesTable[ListNode->N]);
+        Nodes.push_back( m_NodesTable[ListNode->N] );
         ListNode = ListNode->next;
     }
     return Nodes;
@@ -1484,9 +1713,55 @@ std::vector<Node*> Graph::getNodesInTheCompCo(Node* node)
   */
 void Graph::mergeCheck()
 {
-    p3d_merge_check(_Graph);
+	p3d_merge_check(m_Graph);
+	checkConnectedComponents();
 }
 
+/**
+ * Deletes a connected component
+ */
+void Graph::deleteCompco(ConnectedComponent* CompCo)
+{
+	// Remove Compco from vector
+	vector<ConnectedComponent*>::iterator itCompCo;
+	itCompCo = find( m_Comp.begin(), m_Comp.end(), CompCo );
+	m_Comp.erase( itCompCo );
+	
+	// Remove Compco
+	p3d_remove_compco(m_Graph,CompCo->getCompcoStruct());
+	
+	// Checks Compco
+	checkConnectedComponents();
+}
+
+bool Graph::checkConnectedComponents()
+{
+		p3d_compco* lc = m_Graph->comp;
+		vector<ConnectedComponent*>::iterator itCompCo;
+	
+		while (lc) 
+		{
+			for (itCompCo = m_Comp.begin(); itCompCo != m_Comp.end(); ++itCompCo ) 
+			{
+				if ( (*itCompCo)->getCompcoStruct() == lc ) 
+				{
+					break;
+				}
+				if ( itCompCo == ( m_Comp.end() - 1 ) )
+				{
+					throw string("The C compco and C++ are not the same");
+				}
+			}
+			lc = lc->suiv;
+		}
+	cout << "Compco OK!" << endl;
+	return true;
+}
+
+
+//-----------------------------------------------------------
+// Misc
+//-----------------------------------------------------------
 /**
   * Add Cycle in Graph
   */
@@ -1494,7 +1769,7 @@ void Graph::addCycles(Node* node, double step)
 {
     double longStep = 3. * step;
     p3d_list_node* listDistNodePt = p3d_listNodeInDist(
-            _Robot->getRobotStruct(), node->getNodeStruct()->comp,
+            m_Robot->getRobotStruct(), node->getNodeStruct()->comp,
             node->getNodeStruct(), longStep);
 
     p3d_list_node* savedListDistNodePt = listDistNodePt;
@@ -1503,7 +1778,7 @@ void Graph::addCycles(Node* node, double step)
 
     while (listDistNodePt)
     {
-        if (!p3d_IsSmallDistInGraph(_Graph, node->getNodeStruct(),
+        if (!p3d_IsSmallDistInGraph(m_Graph, node->getNodeStruct(),
                                     listDistNodePt->N, 5, step))
         {
             LP = shared_ptr<LocalPath> (new LocalPath(node->getConfiguration(),
@@ -1515,8 +1790,10 @@ void Graph::addCycles(Node* node, double step)
                                                         this->getNode(listDistNodePt->N), step)*/)
 
                 {
-                p3d_create_edges(_Graph, node->getNodeStruct(),
-                                 listDistNodePt->N, LP->length());
+									addEdges(node, m_NodesTable[listDistNodePt->N], LP->length() );
+//                p3d_create_edges(m_Graph, node->getNodeStruct(),
+//                                 listDistNodePt->N, LP->length());
+									
                 node->getNodeStruct()->edges->E->for_cycle = true;
             }
         }
@@ -1536,14 +1813,14 @@ void Graph::addCycles(Node* node, double step)
  */
 void Graph::recomputeCost()
 {
-    for(unsigned int i=0; i<_Nodes.size();i++)
+	for(unsigned int i=0; i<m_Nodes.size();i++)
 	{
-		_Nodes[i]->getCost();
+		m_Nodes[i]->getCost();
 	}
 	
-	for(unsigned int i=0;i<_Edges.size();i++)
+	for(unsigned int i=0;i<m_Edges.size();i++)
 	{
-		_Edges[i]->getEdgeCost();
+		m_Edges[i]->getEdgeCost();
 	}
 }
 
@@ -1553,9 +1830,9 @@ void Graph::recomputeCost()
 bool Graph::checkAllEdgesValid()
 {
 	int collTest = 0;
-	for(unsigned int i=0;i<_Edges.size();i++)
+	for(unsigned int i=0;i<m_Edges.size();i++)
 	{
-		shared_ptr<LocalPath> ptrLP = _Edges[i]->getLocalPath();
+		shared_ptr<LocalPath> ptrLP = m_Edges[i]->getLocalPath();
 		
 		if(!(ptrLP->isValid()))
 		{
@@ -1580,7 +1857,7 @@ API::Trajectory* Graph::extractBestTraj(shared_ptr<Configuration> qi,shared_ptr<
 	//ChronoOn();
 	
 	
-	if(_Graph == NULL) {
+	if(m_Graph == NULL) {
 		cout << "Warning: cannot extract the best path\
 				   as there is no current graph" << endl;
 		return 0x00;
@@ -1589,10 +1866,10 @@ API::Trajectory* Graph::extractBestTraj(shared_ptr<Configuration> qi,shared_ptr<
 	//  graphPt = XYZ_GRAPH;
 	
 	// start and goal config creation
-//	qi = _Robot->getInitialPosition();
+//	qi = mm_Robot->getInitialPosition();
 //	qf = _Robot->getGoTo();
 	if(qf->isInCollision()) {
-		(_Graph->nb_test_coll)++;
+		(m_Graph->nb_test_coll)++;
 		cout << "Computation of approximated optimal cost stopped: \
 				   Goal configuration in collision" << endl;
 		ChronoOff();
@@ -1618,12 +1895,12 @@ API::Trajectory* Graph::extractBestTraj(shared_ptr<Configuration> qi,shared_ptr<
 		//configGoal = NULL;
 	}
 	initMotionPlanning(Ns,Ng);
-	_Robot->setAndUpdate(*Ns->getConfiguration());
+	m_Robot->setAndUpdate(*Ns->getConfiguration());
 	
 	//search of the main constructed connected compoant
-	p3d_compco* actualCompco = _Graph->comp;
+	p3d_compco* actualCompco = m_Graph->comp;
 	p3d_compco* mainCompPt = actualCompco;
-	for(int i=0;i<_Graph->ncomp;i++)
+	for(int i=0;i<m_Graph->ncomp;i++)
 	{
 		if (actualCompco->nnode > mainCompPt->nnode) {
 			mainCompPt = actualCompco;
@@ -1632,8 +1909,8 @@ API::Trajectory* Graph::extractBestTraj(shared_ptr<Configuration> qi,shared_ptr<
 	}
 	
 	//connection of the the extremal nodes to the main componant
-	bool ConnectRes = p3d_ConnectNodeToComp(_Graph,  Ns->getNodeStruct(), mainCompPt);
-	ConnectRes = (ConnectRes && p3d_ConnectNodeToComp(_Graph, Ng->getNodeStruct(), mainCompPt)) ;
+	bool ConnectRes = p3d_ConnectNodeToComp(m_Graph,  Ns->getNodeStruct(), mainCompPt);
+	ConnectRes = (ConnectRes && p3d_ConnectNodeToComp(m_Graph, Ng->getNodeStruct(), mainCompPt)) ;
 	
 	if(!ConnectRes) 
 	{
@@ -1642,23 +1919,23 @@ API::Trajectory* Graph::extractBestTraj(shared_ptr<Configuration> qi,shared_ptr<
 	else 
 	{
 		// on construit la trajectoire entre les points etapes
-		(_Graph->nb_test_coll)++;
+		(m_Graph->nb_test_coll)++;
 		cout << "Connection of the extremal nodes succeeded\n" << endl;
-		//cout << _Graph->ncomp << endl;
-		trajPt = p3d_graph_to_traj(_Robot->getRobotStruct());
+		//cout << m_Graph->ncomp << endl;
+		trajPt = p3d_graph_to_traj(m_Robot->getRobotStruct());
 	}
 	
 	//time info
 //  ChronoPrint("");
 //	ChronoTimes(&tu,&ts);
-//	_Graph->time = _Graph->time + tu;
+//	m_Graph->time = m_Graph->time + tu;
 //  ChronoOff();
 	
 	//PrintInfo(("ConnectRes: %d\n",ConnectRes));
 	//cout << "ConnectRes = " << ConnectRes << endl;
 	if(ConnectRes == TRUE && trajPt) 
 	{
-		API::Trajectory* traj = new API::Trajectory(_Robot,trajPt);
+		API::Trajectory* traj = new API::Trajectory(m_Robot,trajPt);
 		cout << "Trajectory cost  = " << traj->cost() << endl;
 		return traj;
 	}
@@ -1676,23 +1953,23 @@ void Graph::initMotionPlanning(Node* start,Node* goal)
 	int n_coldeg,icoldeg;
 	double *coldeg_qs;
 #endif
-	_Graph->search_start = start->getNodeStruct();
+	m_Graph->search_start = start->getNodeStruct();
 	if(ENV.getBool(Env::expandToGoal)== true) 
 	{
-		_Graph->search_goal = goal->getNodeStruct();
+		m_Graph->search_goal = goal->getNodeStruct();
 	}
 	
-	_Graph->search_done = FALSE;
-	p3d_InitDynDomainParam(_Graph,start->getNodeStruct(),goal->getNodeStruct());
+	m_Graph->search_done = FALSE;
+	p3d_InitDynDomainParam(m_Graph,start->getNodeStruct(),goal->getNodeStruct());
 	
 	if(ENV.getBool(Env::isCostSpace) == true) {
 		global_costSpace->initMotionPlanning(this, start, goal);
 	}
 	if (p3d_GetIsWeightedChoice()== TRUE) {
-		p3d_init_root_weight(_Graph);
+		p3d_init_root_weight(m_Graph);
 	}
 	if(ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH ) {
-		p3d_init_pb_variables(_Graph);
+		p3d_init_pb_variables(m_Graph);
 	}
 	if(start != NULL) {
 		start->getNodeStruct()->rankFromRoot = 1;

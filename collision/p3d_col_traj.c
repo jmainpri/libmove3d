@@ -1125,21 +1125,25 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
 
 //    printf("du[%d] = %f\n",loop++,du);
 
-    //if (du == 0) {
-//      printf("ERROR, BUG: du is zero = %f\n", du);
-//      /* The initial position of the robot is recovered */
-//      p3d_set_current_q_inv(robotPt, localpathPt, qp);
-//      p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, qp);
-//      //p3d_destroy_config(robotPt, qsave);
-//      p3d_destroy_config(robotPt, qp);
-//      MY_FREE(distances, double, njnt + 1);/********** FREE ****/
-//      p3d_col_set_tolerance(tolerance);
-//      return TRUE;
-//    }
+
     u += du;
     if (u > umax - EPS6) {
       u = umax;
       end_localpath++;
+    } else {
+      // if u has not yet reached the threshold of umax - EPS6,
+      // and du is 0, then we loop forever
+      if (du == 0) {
+        printf("ERROR, BUG: du is zero = %f\n", du);
+        /* The initial position of the robot is recovered */
+        p3d_set_current_q_inv(robotPt, localpathPt, qp);
+        p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, qp);
+        //p3d_destroy_config(robotPt, qsave);
+        p3d_destroy_config(robotPt, qp);
+        MY_FREE(distances, double, njnt + 1);/********** FREE ****/
+        p3d_col_set_tolerance(tolerance);
+        return TRUE;
+      }
     }
 
   }

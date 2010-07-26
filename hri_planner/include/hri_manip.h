@@ -25,6 +25,8 @@
 
 #define ROBOTj_BASE 1
 #define ROBOTj_GRIP 16
+// Virtual object freeflyer joint
+#define ROBOTj_VOBJECT 18
 #define ROBOTj_LOOK 14 // 18 for hrp, 32 for BH
 #define ROBOTj_PAN 2
 #define ROBOTj_TILT 3

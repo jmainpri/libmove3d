@@ -81,51 +81,56 @@ vector<Node*> Vis_PRM::isOrphanLinking(Node* N, int & link)
  */
 bool Vis_PRM::linkOrphanLinking(Node* N, int type, unsigned int & ADDED, int & nb_fail)
 {
-    int link = 0;
-    
+	int link = 0;
+	
+	int NodesAdded =0;
 	// All Orphan nodes
 	vector<Node*> vect = this->isOrphanLinking(N,link);
 	
-//	cout << "Size of linked nodes " << vect.size() << endl;
-//	cout << "Link = " << link << endl;
-    if ((type == 1 || type == 2) && (link > 1))
-    {
+	//	cout << "Size of linked nodes " << vect.size() << endl;
+	//	cout << "Link = " << link << endl;
+	if ((type == 1 || type == 2) && (link > 1))
+	{
 		//_Graph->insertNode(N);
-		ADDED++;
+		_Graph->addNode(N); ADDED++; NodesAdded++;
 		nb_fail = 0;
 		
 		//_Graph->MergeComp(vect[0], N, vect[0]->dist(N));
 		vect[0]->connectNodeToCompco(N, 0);
 		//_Graph->addEdges(N,vect[0],N->dist(vect[0]));
 		for (unsigned int k = 1; k < vect.size(); k++)
-        {
+		{
 			//N->merge(vect[k]);
 			///_Graph->addEdges(N,,N->dist(vect[k]));
 			//p3d_create_edges(_Graph->getGraphStruct(),
-//							 vect[k]->getNodeStruct(),
-//							 N->getNodeStruct(),
-//							 N->dist(vect[k]));
+			//							 vect[k]->getNodeStruct(),
+			//							 N->getNodeStruct(),
+			//							 N->dist(vect[k]));
 			
 			//_Graph->MergeComp(vect[k], N, vect[k]->dist(N));
 			vect[k]->connectNodeToCompco(N, 0);
 			
-        }
-        return true;
-    }
-    else if ((type == 0 || type == 2) && (link == 0))
-    {
-        _Graph->insertNode(N);
-        ADDED++;
+		}
+		return true;
+	}
+	else if ((type == 0 || type == 2) && (link == 0))
+	{
+		_Graph->insertNode(N);
+		ADDED++; NodesAdded++;
 		nb_fail = 0;
-        return true;
-    }
-    else
-    {
+		return true;
+	}
+	else
+	{
+		if(NodesAdded > 0)
+		{
+			throw string("Erases a created node"); 
+		}
 		nb_fail++;
-        N->deleteCompco();
-        delete N->getNodeStruct();
-        return false;
-    }
+		N->deleteCompco();
+		delete N->getNodeStruct();
+		return false;
+	}
 }
 
 
@@ -134,20 +139,19 @@ bool Vis_PRM::linkOrphanLinking(Node* N, int type, unsigned int & ADDED, int & n
  */
 int Vis_PRM::createOrphansLinking(unsigned int nb_node, int type)
 {
-    unsigned int ADDED = 0;
-    int nb_try = 0;
+	unsigned int ADDED = 0;
+	int nb_try = 0;
 	
-    while ((*_stop_func)() &&  nb_try < ENV.getInt(Env::NbTry) && (_Graph->getGraphStruct()->ncomp > 1 || !type))
-    {
+	while ((*_stop_func)() &&  nb_try < ENV.getInt(Env::NbTry) && (_Graph->getGraphStruct()->ncomp > 1 || !type))
+	{
 		if (!(_Graph->getNumberOfNodes() < nb_node)) 
 		{
 			return ADDED;
 		}
 		
-        createOneOrphanLinking(type, ADDED, nb_try);
-    }
-    return ADDED;
-	
+		createOneOrphanLinking(type, ADDED, nb_try);
+	}
+	return ADDED;
 }
 
 /**

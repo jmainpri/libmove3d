@@ -22,7 +22,7 @@ Node::Node() :
         _SelectCost(0.0),
         _nbExpan(0)
 {
-
+	m_is_BGL_Descriptor_Valid = false;
 }
 //Constructor and destructor
 Node::Node(const Node& N) :
@@ -33,7 +33,13 @@ Node::Node(const Node& N) :
         _SelectCost(0.0),
         _nbExpan(0)
 {
-    _Node = N._Node;
+	throw string("Copy constructor has to be removed");
+	
+	_Node = new p3d_node(*N._Node);
+	
+	// BGL data
+	m_is_BGL_Descriptor_Valid = N.m_is_BGL_Descriptor_Valid;
+	m_BGL_Descriptor = N.m_BGL_Descriptor;
 }
 
 //Constructor and destructor
@@ -41,16 +47,80 @@ Node::Node(Graph* G, shared_ptr<Configuration> C, bool newCompco) :
         _SelectCost(0.0),
         _nbExpan(0)
 {
-    _Graph = G;
-    _Robot = G->getRobot();
-    _Configuration = C;
-    _activ = false;
-    _Node = p3d_APInode_make_multisol(G->getGraphStruct(),
-                                      C->getConfigStruct(), NULL);
+	m_is_BGL_Descriptor_Valid = false;
+	_Graph = G;
+	_Robot = G->getRobot();
+	_Configuration = C;
+	_activ = false;
+	
+//	_Node = p3d_APInode_make_multisol(G->getGraphStruct(), C->getConfigStruct(), NULL);
+//	
+//	if (newCompco) 
+//	{
+//		_Graph->createCompco(this);
+//	}
+//	
+//	return;
+		
+	// The node has to be made
+	// without using the old graph struck
+	// this is a copy of the p3d_APInode_make_multisol
+	
+  _Node = p3d_create_node(/*graphPt*/ NULL);
+  _Node->q = C->getConfigStruct();
+	
+  /*if(iksol){
+    p3d_copy_iksol(G->getRobot()->getRobotStruct()->cntrt_manager,iksol,&(nodePt->iksol));
+  }*/
+	
+  // p3d_set_node_rel_mob_frame(graphPt,nodePt);
+  /*p3d_SetMobFrameToNode replace the
+	 p3d_set_node_rel_mob_frame function
+   */
+	
+  // WARNING : suppose that q has been set and updated
+  //p3d_SetMobFrameToNode(NULL,nodePt);
+	// The node has to be made
+	// without using the old graph struck
+	// this is a copy of the p3d_SetMobFrameToNode
+	
+	p3d_matrix4* RefFramePt=NULL, *MobFramePt=NULL;
+  p3d_matrix4 MobFrameRef;
+  p3d_matrix4 InversedMatRefFrame;
+	
+  // NOTE: The mobile frame is refered to its initial location 
+  //       The inital location corresponts to the root node
+  //       (Currently implemented only for Ns !!!)
+	
+  if(p3d_GetRefAndMobFrames(_Robot->getRobotStruct(), &RefFramePt,&MobFramePt)) 
+	{
+    if(RefFramePt == NULL) 
+		{
+      p3d_mat4Copy(*MobFramePt,_Node->RelMobFrame);
+    }
+    else 
+		{
+      p3d_matInvertXform(*RefFramePt, InversedMatRefFrame);
+      p3d_matMultXform(InversedMatRefFrame,*MobFramePt,MobFrameRef);      
+      p3d_mat4Copy(MobFrameRef,_Node->RelMobFrame);
+    }
+	}
+	
+	int singularityCheck = 0;
+  if(singularityCheck){
+    _Node->isSingularity = TRUE;
+  }
+	//   if(p3d_get_costComputation()){
+	//     nodePt->cost = p3d_GetHriDistCost(graphPt->rob, 1);
+	//   }
+	
+	// Compco are now handled
+	// In the Boost Graph
 	
 	if (newCompco) 
 	{
-		p3d_create_compco(G->getGraphStruct(), _Node);
+		_Graph->createCompco(this);
+		//p3d_create_compco(G->getGraphStruct(), _Node);
 	}
 }
 
@@ -66,7 +136,8 @@ Node::Node(Graph* G, p3d_node* N) :
 
     if (_Node->comp == NULL)
     {
-        p3d_create_compco(G->getGraphStruct(), _Node);
+			_Graph->createCompco(this);
+			// p3d_create_compco(G->getGraphStruct(), _Node);
     }
 }
 
@@ -183,11 +254,6 @@ bool Node::isActiv()
     return _activ;
 }
 
-void Node::setCompco(p3d_compco* compco)
-{
-    _Node->comp = compco;
-}
-
 p3d_compco* Node::getCompcoStruct()
 {
     return (_Node->comp);
@@ -223,15 +289,16 @@ double Node::getDist()
 
 double Node::dist(Node* N)
 {
-    double d = this->getConfiguration()->dist(*N->getConfiguration());
-    _Node->dist_Nnew = d;
-    return d;
+	double d = getConfiguration()->dist(*N->getConfiguration());
+	_Node->dist_Nnew = d;
+	return d;
 }
 
 bool Node::equal(Node* N)
 {
-    return (p3d_equal_config(_Robot->getRobotStruct(), N->getNodeStruct()->q,
-                             _Node->q));
+	return getConfiguration()->equal(*N->getConfiguration());
+// return (p3d_equal_config(_Robot->getRobotStruct(), N->getNodeStruct()->q,
+//                             _Node->q));
 }
 
 bool Node::inSameComponent(Node* N)
@@ -271,10 +338,96 @@ std::vector<p3d_edge*> Node::getEdges()
 
 bool Node::isLinkable(Node* N, double* dist)
 {
-    return p3d_APInode_linked(_Graph->getGraphStruct(), 
-							  _Node,
-                              N->getNodeStruct(), 
-							  dist);
+	// Function that is the copy of p3d_APInode_linked
+	// that relies on the old graph
+	
+//	return p3d_APInode_linked(_Graph->getGraphStruct(), 
+//														_Node,
+//														N->getNodeStruct(), 
+//														dist);
+	
+	p3d_node *N1 = _Node;
+	p3d_node *N2 = N->getNodeStruct();
+	
+	p3d_rob *robotPt = _Robot->getRobotStruct();
+  p3d_localpath *localpathPt;
+  int ntest = 0, isNoCol = 0, *ikSol = NULL;
+  configPt qsave;
+	
+//  if(graphPt){
+//		robotPt = graphPt->rob;
+//  }else{
+//    robotPt = XYZ_ROBOT;
+//  }
+	
+  /* current position of robot is saved */
+  qsave = p3d_get_robot_config(robotPt);
+	
+  /* compute the local path using the local method associated to
+	 the robot */
+	int DEBUG_GRAPH_API = 0;
+  if (DEBUG_GRAPH_API){
+    printf("API Node Linked :\n");
+    p3d_print_iksol(robotPt->cntrt_manager,N1->iksol);
+    p3d_print_iksol(robotPt->cntrt_manager,N2->iksol);
+  }
+  if(!p3d_compare_iksol(robotPt->cntrt_manager, N1->iksol, N2->iksol)){
+    p3d_destroy_config(robotPt, qsave);
+    return(FALSE);
+  }
+  p3d_get_non_sing_iksol(robotPt->cntrt_manager, N1->iksol, N2->iksol, &ikSol);
+  localpathPt = p3d_local_planner_multisol(robotPt, N1->q, N2->q, ikSol);
+	
+  if (localpathPt == NULL) { // Not valid localpath
+    p3d_destroy_config(robotPt, qsave);
+    return(FALSE);
+  }
+	
+	
+  if (localpathPt->length != NULL)
+		*dist = localpathPt->length(robotPt,localpathPt);
+  else{
+		PrintInfo(("Warning: created an edge with \
+							 a 0 distance: no localpathPt->length \n"));
+		*dist = 0;
+	}
+  if((p3d_get_SORTING()==P3D_NB_CONNECT)&&
+     (p3d_get_MOTION_PLANNER()==P3D_BASIC)) {
+    if((*dist > p3d_get_DMAX())&&(LEQ(0.,p3d_get_DMAX()))){ /* ecremage deja fait dans le cas tri par distance... */
+      /* the local path is destroyed */
+      localpathPt->destroy(robotPt, localpathPt);
+      localpathPt = NULL;
+			
+      /* The initial position of the robot is recovered */
+      p3d_set_robot_config(robotPt, qsave);
+      p3d_destroy_config(robotPt, qsave);
+      return(FALSE);
+    }
+  }
+  //start path deform
+  if (p3d_get_cycles() == TRUE) {
+    if (localpathPt->length != NULL)
+      *dist = localpathPt->length(robotPt, localpathPt);
+    else {
+      PrintInfo(("linked: no distance function specified\n"));
+      *dist = 0;
+    }
+  }
+  //end path deform
+  isNoCol = !p3d_unvalid_localpath_test(robotPt, localpathPt, &ntest);   // <- modif Juan
+	//   isNoCol = 1;
+  localpathPt->destroy(robotPt, localpathPt);
+	
+// See this later (Add counts to local methods and collision tests)
+//  if(graphPt){
+//    graphPt->nb_local_call = graphPt->nb_local_call + 1;
+//    graphPt->nb_test_coll = graphPt->nb_test_coll + ntest;
+//  }
+	
+  /* The initial position of the robot is recovered */
+  p3d_set_robot_config(robotPt, qsave);
+  p3d_destroy_config(robotPt, qsave);
+  return(isNoCol);
 }
 
 void Node::checkStopByWeight()
@@ -292,7 +445,9 @@ void Node::checkStopByWeight()
 //fonctions sur les composantes connexes
 void Node::deleteCompco()
 {
-    p3d_remove_compco(_Graph->getGraphStruct(), _Node->comp);
+		// This is now handled in the Boost Graph
+	_Graph->deleteCompco(m_Compco);
+    //p3d_remove_compco(_Graph->getGraphStruct(), _Node->comp);
 }
 
 bool Node::maximumNumberNodes()
@@ -309,18 +464,17 @@ bool Node::connectNodeToCompco(Node* N, double step)
     }
     else
     {
-        return (p3d_ConnectNodeToComp(N->getGraph()->getGraphStruct(),
-                                      N->getNodeStruct(), _Node->comp));
+//				return (p3d_ConnectNodeToComp(N->getGraph()->getGraphStruct(),
+//                                      N->getNodeStruct(), _Node->comp));
+			return _Graph->connectNodeToCompco(N,this);
+//			throw string("Warning : function outated ");
     }
 }
 
 //place la compco dans la CompCo presente
 void Node::merge(Node* compco)
 {
-	cout << "Node::merge compco " << this->getCompcoStruct()->num << " with " << compco->getCompcoStruct()->num << endl;
-    p3d_merge_comp(_Graph->getGraphStruct(), 
-				   compco->getCompcoStruct(),
-                   &(_Node->comp));
+	_Graph->mergeComp(this,compco,dist(compco));
 }
 
 bool Node::equalCompco(Node* compco)
@@ -336,5 +490,26 @@ Node* Node::randomNodeFromComp()
 void Node::print()
 {
     _Configuration->print();
+}
+
+BGL_Vertex Node::getDescriptor()
+{
+	if (m_is_BGL_Descriptor_Valid) 
+	{
+		return m_BGL_Descriptor;
+	}
+	else 
+	{
+//		try 
+//		{
+			m_is_BGL_Descriptor_Valid = true;
+			return _Graph->findVertexDescriptor(this);
+//		}
+//		catch (string str) 
+//		{
+//			cerr << str << endl;
+//			return NULL;
+//		}
+	}
 }
 

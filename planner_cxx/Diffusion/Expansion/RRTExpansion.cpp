@@ -233,7 +233,7 @@ int RRTExpansion::expandProcess(Node* expansionNode, shared_ptr<
     bool extensionSucceeded(false);
     bool failed(false);
     int nbCreatedNodes(0);
-    Node fromNode(*expansionNode);
+    Node* fromNode = expansionNode;
     Node* extensionNode(NULL);
     shared_ptr<LocalPath> directionLocalpath;
     double positionAlongDirection(0.);
@@ -246,7 +246,7 @@ int RRTExpansion::expandProcess(Node* expansionNode, shared_ptr<
                               && positionAlongDirection < 1.))
     {
         directionLocalpath = shared_ptr<LocalPath> (new LocalPath(
-                fromNode.getConfiguration(), directionConfig));
+                fromNode->getConfiguration(), directionConfig));
 
 		// Expand one step along the local path "extensionLocalpath"
         extensionSucceeded = nextStep(*directionLocalpath, directionNode,
@@ -275,7 +275,7 @@ int RRTExpansion::expandProcess(Node* expansionNode, shared_ptr<
         // Add node to graph if everything succeeded
         if (!failed)
         {
-            extensionNode = addNode(&fromNode, *extensionLocalpath,
+            extensionNode = addNode( fromNode, *extensionLocalpath,
                                     positionAlongDirection, directionNode,
                                     nbCreatedNodes);
 
@@ -288,7 +288,7 @@ int RRTExpansion::expandProcess(Node* expansionNode, shared_ptr<
 
         if (!failed)
         {
-            fromNode = *extensionNode;
+            fromNode = extensionNode;
         }
         firstIteration = false;
 
