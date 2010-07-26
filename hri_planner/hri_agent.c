@@ -9,6 +9,20 @@
 #include "proto/hri_agent_proto.h"
 #include "proto/hri_gik_proto.h"
 
+int hri_assign_global_agents(HRI_AGENTS *agents)
+{
+  if(GLOBAL_AGENTS != NULL){
+    printf("Global agents is not null. Will cause memory leak\n");
+    //TODO: free global agents and assign it to the new one
+    return FALSE;
+  }
+  else {
+    GLOBAL_AGENTS = agents;
+    return TRUE;
+  }
+}
+
+
 HRI_AGENTS * hri_create_agents()
 {
   int i, i_r=0, i_h=0;
@@ -159,12 +173,12 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
       persp->point_tolerance = 20;      
       break;
     case HRI_ACHILE:
-      persp->camjoint = agent->robotPt->joints[40];
+      persp->camjoint = agent->robotPt->joints[42];
       persp->fov = 160;
       persp->foa = 30;
       persp->tilt_jnt_idx = 6;
       persp->pan_jnt_idx  = 5;
-      persp->pointjoint = agent->robotPt->joints[36];
+      persp->pointjoint = agent->robotPt->joints[38];
       persp->point_tolerance = 20;      
     break;
     case HRI_SUPERMAN:
@@ -181,6 +195,8 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
       persp->foa = 0;
       break;
   }
+  persp->enable_vision_draw = FALSE;
+  persp->enable_pointing_draw = FALSE;
   
   return persp;
 }
