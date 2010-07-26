@@ -74,6 +74,9 @@ typedef struct STRUCT_HRI_PERSP{
   
   p3d_jnt * pointjoint;
   double point_tolerance;
+  
+  int enable_vision_draw;
+  int enable_pointing_draw;
 } HRI_PERSP;
 
 typedef struct STRUCT_HRI_AGENT{

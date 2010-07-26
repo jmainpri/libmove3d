@@ -1,3 +1,4 @@
+extern int hri_assign_global_agents(HRI_AGENTS *agents);
 extern HRI_AGENTS * hri_create_agents(void);
 extern HRI_AGENT * hri_create_agent(p3d_rob * robot);
 extern HRI_MANIP * hri_create_empty_agent_manip();
