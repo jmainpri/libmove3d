@@ -1195,6 +1195,7 @@ void g3d_draw_env_custom()
     g3d_hri_bt_draw_targets(BTSET);
     hri_exp_draw_ordered_points();
     //g3d_hri_display_test();
+    g3d_draw_all_agents_fovs(GLOBAL_AGENTS);
     if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
   #ifdef USE_MIGHTABILITY_MAPS
       execute_Mightability_Map_functions();
