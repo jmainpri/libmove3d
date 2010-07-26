@@ -769,7 +769,7 @@ printf("************************************************************************
 
         copyConfigTrajToFORM();
 
-	cleanRoadmap();
+//	cleanRoadmap();
 	cleanTraj();
 
 	printf("il y a %d configurations\n", _configTraj.size());
@@ -841,11 +841,11 @@ printf("************************************************************************
                 q1_conf = _configTraj[itraj];
                 q2_conf = _configTraj[itraj+1];
 
-
+#ifdef FK_CNTRT
                if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
                   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
                }
-
+#endif
 
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
@@ -1181,6 +1181,7 @@ int Manipulation_JIDO::computeRRT(){
   ChronoOff();
 #else
   result= p3d_specific_search((char*)"out.txt");
+  optimiseTrajectory(100,6);
 #endif
   if(!result){
     printf("ArmGotoQ: could not find a path.\n");
@@ -2577,7 +2578,7 @@ int Manipulation_JIDO::checkCollisionOnTraj(p3d_rob* robotPt, int cartesian, int
     return MANIPULATION_TASK_ERROR_UNKNOWN;
   }
   p3d_localpath* currentLp = traj->courbePt;
-  for(int i = 0; i < currentLpId; i++){
+  for(int i = 0; i < currentLpId/2; i++){
     currentLp = currentLp->next_lp;
   }
   return checkForCollidingPath(robotPt, traj, currentLp);
@@ -2585,7 +2586,7 @@ int Manipulation_JIDO::checkCollisionOnTraj(p3d_rob* robotPt, int cartesian, int
 
 //! Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
 //! \return 0 in case of success, !=0 otherwise
-int Manipulation_JIDO::replanCollidingTraj(p3d_rob* robotPt, int cartesian, double* armConfig, int currentLpId, int lp[], Gb_q6 positions[],  int *nbPositions) {
+int Manipulation_JIDO::replanCollidingTraj(p3d_rob* robotPt, int cartesian, int currentLpId, int lp[], Gb_q6 positions[],  int *nbPositions) {
   configPt qi = NULL, qf = NULL;
   static p3d_traj *traj = NULL;
   int ntest=0;
@@ -2627,7 +2628,7 @@ int Manipulation_JIDO::replanCollidingTraj(p3d_rob* robotPt, int cartesian, doub
     return MANIPULATION_TASK_ERROR_UNKNOWN;
   }
   p3d_localpath* currentLp = traj->courbePt;
-  for(int i = 0; i < currentLpId; i++){
+  for(int i = 0; i < currentLpId/2; i++){
     currentLp = currentLp->next_lp;
   }
   configPt currentConfig = p3d_get_robot_config(robotPt);

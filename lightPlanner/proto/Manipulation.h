@@ -305,7 +305,7 @@ class  Manipulation_JIDO {
     int destroyTrajectories();
     int checkCollisionOnTraj();
     int checkCollisionOnTraj(p3d_rob* robotPt, int cartesian, int currentLpId);
-    int replanCollidingTraj(p3d_rob* robotPt, int cartesian, double* armConfig, int currentLpId, int lp[], Gb_q6 positions[],  int *nbPositions);
+    int replanCollidingTraj(p3d_rob* robotPt, int cartesian, int currentLpId, int lp[], Gb_q6 positions[],  int *nbPositions);
   protected:
      /*Functions relative to JIDO */
      int computeTrajBetweenTwoConfigs(bool cartesian, configPt qi, configPt qf);
