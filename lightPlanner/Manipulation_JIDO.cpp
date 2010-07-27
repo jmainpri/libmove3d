@@ -2581,7 +2581,7 @@ int Manipulation_JIDO::checkCollisionOnTraj(int currentLpId) {
     currentLp = currentLp->next_lp;
   }
   printf("m3d checkForCollidingPath lpIn  = %d, funcLp  = %d", currentLpId, lpid);
-  return checkForCollidingPath(robotPt, traj, currentLp);
+  return checkForCollidingPath(_robotPt, traj, currentLp);
 }
 
 //! Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
