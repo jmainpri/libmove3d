@@ -782,7 +782,7 @@ printf("************************************************************************
 		  return MANIPULATION_TASK_NO_TRAJ_FOUND;
 		}
               
-	        cleanRoadmap();
+	        //cleanRoadmap();
 	}
 
 
@@ -2580,7 +2580,6 @@ int Manipulation_JIDO::checkCollisionOnTraj(int currentLpId) {
   for(int i = 0; i < currentLpId/2; i++){
     currentLp = currentLp->next_lp;
   }
-  printf("m3d checkForCollidingPath lpIn  = %d, funcLp  = %d", currentLpId, lpid);
   return checkForCollidingPath(_robotPt, traj, currentLp);
 }
 
@@ -2636,13 +2635,18 @@ int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &l
   if(optimized){
     p3dAddTrajToGraph(_robotPt, _robotPt->GRAPH, traj);
   }
+  printf("nbTraj before : %d\n", _robotPt->nt);
   do{
     printf("Test %d\n", j);
     j++;
-    returnValue = replanForCollidingPath(_robotPt, traj, _robotPt->GRAPH, currentConfig, currentLp, optimized);
+//    returnValue = replanForCollidingPath(_robotPt, traj, _robotPt->GRAPH, currentConfig, currentLp, optimized);
+   returnValue  = checkCollisionsOnPathAndReplan(_robotPt, traj, _robotPt->GRAPH, optimized);
     traj = _robotPt->tcur;
     currentLp = traj->courbePt;
   }while(returnValue != 1 && returnValue != 0 && returnValue != -2 && j < 10);
+  
+  printf("nbTraj after : %d, returnValue = %d\n", _robotPt->nt, returnValue); 
+ 
   if (optimized && j > 1){
     optimiseTrajectory(100,6);
   }
