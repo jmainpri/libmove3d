@@ -429,6 +429,7 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
   double objx, objy, objz;
 
   GLOBAL_AGENTS = hri_create_agents();
+  hri_assign_source_agent("JIDO", GLOBAL_AGENTS);
 
   /* NAVIGATION */
   if(SELECTED_BTSET==1){
@@ -1217,20 +1218,20 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
   agents = hri_create_agents();
 
   q_r = p3d_get_robot_config(agents->robots[0]->robotPt);
-  q_h = p3d_get_robot_config(agents->humans[0]->robotPt);
+  q_h = p3d_get_robot_config(agents->robots[1]->robotPt);
   //q_hs = p3d_get_robot_config(agents->humans[1]->robotPt);
   //q_hs_saved = p3d_copy_config(agents->humans[1]->robotPt, agents->humans[1]->robotPt->ROBOT_POS);
   q_r_saved = p3d_get_robot_config(agents->robots[0]->robotPt);
-  q_h_saved = p3d_copy_config(agents->humans[0]->robotPt, agents->humans[0]->robotPt->ROBOT_POS);
+  q_h_saved = p3d_get_robot_config(agents->robots[1]->robotPt);
   //q_h_saved = p3d_get_robot_config(agents->humans[0]->robotPt);
-
+  
   for(i=0; i<500; i++){
-
+    
     // Shoot random position
     Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = p3d_random(agents->robots[0]->robotPt->joints[1]->abs_pos[0][3],
-                                                            agents->humans[0]->robotPt->joints[1]->abs_pos[0][3]);
+                                                            agents->robots[1]->robotPt->joints[1]->abs_pos[0][3]);
     Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = p3d_random(agents->robots[0]->robotPt->joints[1]->abs_pos[1][3]-0.5,
-                                                            agents->humans[0]->robotPt->joints[1]->abs_pos[1][3]+0.5);
+                                                            agents->robots[1]->robotPt->joints[1]->abs_pos[1][3]+0.5);
     Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = p3d_random(0.8, 1.5);
 
     // Test if Human can reach that position
@@ -1264,13 +1265,13 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
     // Robot Can reach
     // Test if Human can reach that position
     
-    p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h_saved);
-    hreached = hri_agent_single_task_manip_move(agents->humans[0], GIK_RATREACH, Tcoord, &q_h);
-    p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
+    p3d_set_and_update_this_robot_conf(agents->robots[1]->robotPt,q_h_saved);
+    hreached = hri_agent_single_task_manip_move(agents->robots[1], GIK_RATREACH, Tcoord, &q_h);
+    p3d_set_and_update_this_robot_conf(agents->robots[1]->robotPt,q_h);
     if(!hreached){
-      p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h_saved);
-      hreached = hri_agent_single_task_manip_move(agents->humans[0], GIK_LATREACH, Tcoord, &q_h);
-      p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
+      p3d_set_and_update_this_robot_conf(agents->robots[1]->robotPt,q_h_saved);
+      hreached = hri_agent_single_task_manip_move(agents->robots[1], GIK_LATREACH, Tcoord, &q_h);
+      p3d_set_and_update_this_robot_conf(agents->robots[1]->robotPt,q_h);
     }
     if(!hreached){
       zone[j].x = Tcoord[0][0]; zone[j].y = Tcoord[0][1]; zone[j].z = Tcoord[0][2];
@@ -1288,14 +1289,14 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
       continue;
     }    
       
-    if(p3d_col_test_robot(agents->humans[0]->robotPt,FALSE)){
+    if(p3d_col_test_robot(agents->robots[1]->robotPt,FALSE)){
       zone[j].x = Tcoord[0][0]; zone[j].y = Tcoord[0][1]; zone[j].z = Tcoord[0][2];
       zone[j].value = -1; //human has reached but in collision
       shared_zone_l++;
       j++;
       continue;
     }
-    p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h_saved);
+    p3d_set_and_update_this_robot_conf(agents->robots[1]->robotPt,q_h_saved);
 //    hreached = hri_agent_single_task_manip_move(agents->humans[1], GIK_LATREACH, Tcoord, &q_hs);
 //    p3d_set_and_update_this_robot_conf(agents->humans[1]->robotPt,q_hs);
 
@@ -1306,11 +1307,11 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
 
     g3d_draw_allwin_active();
   }
-  p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h_saved);
+  p3d_set_and_update_this_robot_conf(agents->robots[1]->robotPt,q_h_saved);
   p3d_destroy_config(agents->robots[0]->robotPt,q_r);
-  p3d_destroy_config(agents->humans[0]->robotPt,q_h);
+  p3d_destroy_config(agents->robots[1]->robotPt,q_h);
   p3d_destroy_config(agents->robots[0]->robotPt,q_r_saved);
-  p3d_destroy_config(agents->humans[0]->robotPt,q_h_saved);
+  p3d_destroy_config(agents->robots[1]->robotPt,q_h_saved);
 
   SWITCH_TO_GREEN = TRUE;
 }
@@ -1324,7 +1325,7 @@ void CB_test_button2_obj(FL_OBJECT *obj, long arg)
   p3d_vector3 Tcoord[3];
 
   for(i=0; i<env->nr; i++){
-    if( strcasestr(env->robot[i]->name,"CUP") )
+    if( strcasestr(env->robot[i]->name,"TAPE") )
       break;
   }
   if(i==env->nr){
@@ -1341,7 +1342,7 @@ void CB_test_button2_obj(FL_OBJECT *obj, long arg)
   Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = env->robot[i]->joints[1]->abs_pos[1][3];
   Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = env->robot[i]->joints[1]->abs_pos[2][3]+0.03;
 
-  hri_agent_single_task_manip_move(agents->humans[0], GIK_LATREACH, Tcoord, &q_h);
+  hri_agent_single_task_manip_move(agents->humans[0], GIK_RAREACH, Tcoord, &q_h);
   p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
   hri_agent_single_task_manip_move(agents->robots[0], GIK_LATREACH, Tcoord, &q_r);
   p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r);
@@ -1502,91 +1503,41 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
   configPt q_source, q_object;
   double phi, theta;
   int tilt_joint, pan_joint;
-  int visible = FALSE;
-  //double temp_orient;
+  int visible = FALSE;  
   
-  //g3d_screenshot("Move3D");
-  //g3d_screenshot("Perspective");
-
-  
-  //clock_t c0, c1;
-  //double cputime;
-    
   for(i=0; i<env->nr; i++){
     if( strcasestr(env->robot[i]->name,"ROBOT") ){
       robot = env->robot[i];
       continue;
     }
-    if( strcasestr(env->robot[i]->name,"CUP") ){
+    if( strcasestr(env->robot[i]->name,"SPACENAV") ){
       object = env->robot[i];
       continue;
     }    
   }
+
   int visibil;
-  int result;  double elevation = 0, azimuth = 0;
-  result = hri_is_object_visible(GLOBAL_AGENTS->robots[0],object, 50, TRUE);
+  int result;
+  // result = hri_is_object_visible(GLOBAL_AGENTS->robots[0],object, 50, TRUE);
   
-  hri_object_visibility_placement(GLOBAL_AGENTS->robots[0], object, &visibil,&elevation,&azimuth);
-
-
-  pan_joint  = GLOBAL_AGENTS->robots[0]->perspective->pan_jnt_idx;
-  tilt_joint = GLOBAL_AGENTS->robots[0]->perspective->tilt_jnt_idx;
-  robot  = GLOBAL_AGENTS->robots[0]->robotPt;
-
-  q_source = MY_ALLOC(double, robot->nb_dof); /* ALLOC */
-  
-  p3d_get_robot_config_into(robot, &q_source);
-
-
-  /* TURN PAN */
-  azimuth = azimuth +  q_source[robot->joints[pan_joint]->index_dof];
-  if(robot->joints[pan_joint]->dof_data[0].vmin > azimuth){
-    q_source[robot->joints[pan_joint]->index_dof] = robot->joints[pan_joint]->dof_data[0].vmin;
-  }
-  else{
-    if(robot->joints[pan_joint]->dof_data[0].vmax < azimuth){
-      q_source[robot->joints[pan_joint]->index_dof] = robot->joints[pan_joint]->dof_data[0].vmax;
-    }
-    else{
-      q_source[robot->joints[pan_joint]->index_dof] = azimuth; 
-    }
-  } 
-  
-  /* TURN TILT */
-  elevation = -elevation; // Temporary fix. There is a bug in Jido Move3D model. Tilt inversed.
-  elevation = elevation + q_source[robot->joints[tilt_joint]->index_dof];
-  if(robot->joints[tilt_joint]->dof_data[0].vmin > elevation){
-    q_source[robot->joints[tilt_joint]->index_dof] = robot->joints[tilt_joint]->dof_data[0].vmin;
-  }
-  else{
-    if(robot->joints[tilt_joint]->dof_data[0].vmax < elevation){
-      q_source[robot->joints[tilt_joint]->index_dof] = robot->joints[tilt_joint]->dof_data[0].vmax;
-    }
-    else{
-      q_source[robot->joints[tilt_joint]->index_dof] = elevation;  
-    }
-  }
-  
-  p3d_set_and_update_this_robot_conf(robot, q_source);  
-
-  MY_FREE(q_source, double, robot->nb_dof); /* FREE */
-
-
+  // hri_object_visibility_placement(GLOBAL_AGENTS->robots[0], object, &visibil);
   //g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, 50, object, &phi);
   //g3d_object_visibility_placement(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, object, DTOR(90), DTOR(90*0.75), DTOR(50), DTOR(50*0.75), &visibil);
+  GLOBAL_AGENTS->humans[0]->perspective->enable_vision_draw = TRUE;
+  GLOBAL_AGENTS->humans[0]->perspective->enable_pointing_draw = TRUE;
   
-  printf("VISIBILITY RESULT ROBOT: %d PLACEMENT: %d ELEV: %f AZIM: %f\n ",result,visibil, RTOD(elevation), RTOD(azimuth));
-  
-
-  //g3d_is_object_visible_from_viewpoint(robot->joints[14]->abs_pos, 50, object, &phi);
-
-  //g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, 50, object, &phi);
-    
-  //printf("VISIBILITY RESULT ROBOT: %f\n",phi);
-  
+  GLOBAL_AGENTS->robots[0]->perspective->enable_vision_draw = TRUE;
+  GLOBAL_AGENTS->robots[0]->perspective->enable_pointing_draw = TRUE;
+  //printf("VISIBILITY RESULT ROBOT: %d PLACEMENT: %d\n ",result,visibil);
+  result = hri_is_object_pointed(GLOBAL_AGENTS->humans[0],object, 50, TRUE);
   //g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->humans[0]->perspective->camjoint->abs_pos, 150, object, &phi);
     
-  //printf("VISIBILITY RESULT HUMAN: %f\n",phi);
+  printf("VISIBILITY RESULT HUMAN: %d\n",result);
+  
+  q_source = p3d_get_robot_config(GLOBAL_AGENTS->humans[0]->robotPt);
+  hri_agent_load_default_arm_posture(GLOBAL_AGENTS->humans[0], q_source);
+  hri_agent_compute_posture(GLOBAL_AGENTS->humans[0],1.5 , 2, q_source);
+  p3d_set_and_update_this_robot_conf(GLOBAL_AGENTS->humans[0]->robotPt, q_source);
   
   return;
   

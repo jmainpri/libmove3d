@@ -1728,6 +1728,9 @@ void g3d_hri_display_test( void )
 {
   //g3d_hri_display_surfaces();
   g3d_hri_display_shared_zone();
+  g3d_draw_agent_fov(GLOBAL_AGENTS->humans[0]);
+  g3d_draw_agent_pointing(GLOBAL_AGENTS->humans[0]);
+
 }
 
 

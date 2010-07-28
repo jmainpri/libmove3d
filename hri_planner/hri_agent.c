@@ -16,16 +16,31 @@ HRI_AGENTS * GLOBAL_AGENTS = NULL;
 int hri_assign_global_agents(HRI_AGENTS *agents)
 {
   if(GLOBAL_AGENTS != NULL){
-    printf("Global agents is not null. Will cause memory leak\n");
-    //TODO: free global agents and assign it to the new one
+    printf("Global agents is not null. Erasing the existing data\n");
+    if(!hri_destroy_agents(GLOBAL_AGENTS))  return FALSE;
+  }
+  GLOBAL_AGENTS = agents;
+  return TRUE;
+}
+
+int hri_assign_source_agent(char *agent_name, HRI_AGENTS *agents)
+{
+  int i;
+  
+  if (agents == NULL) {
+    printf("%s:%d - Cannot assign source agent\n",__FILE__, __LINE__);
     return FALSE;
   }
   else {
-    GLOBAL_AGENTS = agents;
-    return TRUE;
+    for (i=0; i<agents->all_agents_no; i++) {
+      if (strcasestr(agents->all_agents[i]->robotPt->name, agent_name)) {
+        agents->source_agent_idx = i;
+        return TRUE;
+      }
+    }
   }
+  return FALSE;  
 }
-
 
 HRI_AGENTS * hri_create_agents()
 {
@@ -72,6 +87,27 @@ HRI_AGENTS * hri_create_agents()
   return agents;
 }
 
+int hri_destroy_agents(HRI_AGENTS *agents)
+{
+  int i;
+  int res = 1;
+  
+  if(agents == NULL)
+    return TRUE;
+  
+  for (i=0; i<agents->all_agents_no; i++) {
+    res = res && hri_destroy_agent(agents->all_agents[i]);
+  }
+  if (res) {
+    MY_FREE(agents->robots, HRI_AGENT *,agents->robots_no);
+    MY_FREE(agents->humans, HRI_AGENT *,agents->humans_no);
+    MY_FREE(agents->all_agents, HRI_AGENT *,agents->all_agents_no);
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
 
 HRI_AGENT * hri_create_agent(p3d_rob * robot)
 {
@@ -148,6 +184,21 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
   return hri_agent;
 }
 
+int hri_destroy_agent(HRI_AGENT *agent)
+{
+  int res = 1;
+  
+  if ( agent == NULL )
+    return TRUE;
+  
+  res = res && hri_destroy_agent_navig(agent->navig);
+  res = res && hri_destroy_agent_manip(agent->manip);
+  res = res && hri_destroy_agent_perspective(agent->perspective);
+  
+  return res;
+}
+
+
 HRI_MANIP * hri_create_empty_agent_manip()
 {
   HRI_MANIP * manip = NULL;
@@ -173,7 +224,7 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
       persp->foa = 60;
       persp->tilt_jnt_idx = 3;
       persp->pan_jnt_idx  = 2;
-      persp->pointjoint = agent->robotPt->joints[1]; //TODO: put the corrent value
+      persp->pointjoint = agent->robotPt->joints[17];
       persp->point_tolerance = 20;      
       break;
     case HRI_ACHILE:
@@ -182,7 +233,7 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
       persp->foa = 30;
       persp->tilt_jnt_idx = 6;
       persp->pan_jnt_idx  = 5;
-      persp->pointjoint = agent->robotPt->joints[38];
+      persp->pointjoint = agent->robotPt->joints[36];
       persp->point_tolerance = 20;      
     break;
     case HRI_SUPERMAN:
@@ -205,6 +256,12 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
   return persp;
 }
 
+int hri_destroy_agent_perspective(HRI_PERSP *persp)
+{
+  MY_FREE(persp,HRI_PERSP,1);  
+  return TRUE;
+}
+
 int hri_create_assign_default_manipulation(HRI_AGENTS * agents)
 {
   int i;
@@ -225,10 +282,20 @@ HRI_NAVIG * hri_create_agent_navig(HRI_AGENT * agent)
   navig = MY_ALLOC(HRI_NAVIG,1);
 
   navig->btset_initialized = FALSE;
-#ifdef HRI_PLANNER
   navig->btset = hri_bt_create_bitmaps();
-#endif
+
   return navig;
+}
+
+int hri_destroy_agent_navig(HRI_NAVIG *navig)
+{
+  if(hri_bt_destroy_bitmapset(navig->btset)) {  
+    MY_FREE(navig,HRI_NAVIG,1);
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
 }
 
 
@@ -255,12 +322,22 @@ HRI_MANIP * hri_create_agent_manip(HRI_AGENT * agent)
   return manip;
 }
 
+int hri_destroy_agent_manip(HRI_MANIP *manip)
+{
+  if(hri_gik_destroy_gik(manip->gik)) {  
+    MY_FREE(manip,HRI_MANIP,1);  
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
 int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * tasklist_no, HRI_AGENT_TYPE type)
 {
 
   switch (type) {
     case HRI_HRP214:
-      // TODO: Test if alloc works in a case statement
       *tasklist_no = 7;
       *tasklist = MY_ALLOC(GIK_TASK, *tasklist_no);
 
@@ -343,14 +420,15 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       return TRUE;
 
     case HRI_JIDO1:
-      *tasklist_no = 3;
+      *tasklist_no = 5;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
       
       (*tasklist)[0].type = GIK_LOOK;
       (*tasklist)[0].default_joints[0] = 2;
       (*tasklist)[0].default_joints[1] = 3;
-      (*tasklist)[0].active_joint = 14; /* active joint */
-      (*tasklist)[0].default_joints_no = 2;
+      (*tasklist)[0].default_joints[2] = 15;
+      (*tasklist)[0].active_joint = 15; /* active joint */
+      (*tasklist)[0].default_joints_no = 3;
 
       (*tasklist)[1].type = GIK_LATREACH;
       (*tasklist)[1].default_joints[0] = 5;
@@ -359,7 +437,7 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       (*tasklist)[1].default_joints[3] = 8;
       (*tasklist)[1].default_joints[4] = 9;
       (*tasklist)[1].default_joints[5] = 10;
-      (*tasklist)[1].active_joint = 16; /* active joint */
+      (*tasklist)[1].active_joint = 17; /* active joint */
       (*tasklist)[1].default_joints_no = 6;
       
       (*tasklist)[2].type = GIK_RATREACH;
@@ -369,8 +447,28 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       (*tasklist)[2].default_joints[3] = 8;
       (*tasklist)[2].default_joints[4] = 9;
       (*tasklist)[2].default_joints[5] = 10;
-      (*tasklist)[2].active_joint = 16; /* active joint */
+      (*tasklist)[2].active_joint = 17; /* active joint */
       (*tasklist)[2].default_joints_no = 6;
+      
+      (*tasklist)[3].type = GIK_RAPOINT;
+      (*tasklist)[3].default_joints[0] = 5;
+      (*tasklist)[3].default_joints[1] = 6;
+      (*tasklist)[3].default_joints[2] = 7;
+      (*tasklist)[3].default_joints[3] = 8;
+      (*tasklist)[3].default_joints[4] = 9;
+      (*tasklist)[3].default_joints[5] = 10;
+      (*tasklist)[3].active_joint = 16; /* active joint */
+      (*tasklist)[3].default_joints_no = 6;
+      
+      (*tasklist)[4].type = GIK_LAPOINT;
+      (*tasklist)[4].default_joints[0] = 5;
+      (*tasklist)[4].default_joints[1] = 6;
+      (*tasklist)[4].default_joints[2] = 7;
+      (*tasklist)[4].default_joints[3] = 8;
+      (*tasklist)[4].default_joints[4] = 9;
+      (*tasklist)[4].default_joints[5] = 10;
+      (*tasklist)[4].active_joint = 16; /* active joint */
+      (*tasklist)[4].default_joints_no = 6;
       
       return TRUE;
 
@@ -413,10 +511,9 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       return TRUE;
 
     case HRI_ACHILE:
-      *tasklist_no = 6;
+      *tasklist_no = 9;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
       
-      //TODO: LOOK and POINT
       (*tasklist)[0].type = GIK_RATREACH;
       (*tasklist)[0].default_joints[0] = 3;
       (*tasklist)[0].default_joints[1] = 4;
@@ -486,7 +583,40 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       (*tasklist)[5].default_joints[6] = 21;
       (*tasklist)[5].active_joint = 21; /* active joint */
       (*tasklist)[5].default_joints_no = 7;
-
+      
+      (*tasklist)[6].type = GIK_LOOK;
+      (*tasklist)[6].default_joints[0] = 3;
+      (*tasklist)[6].default_joints[1] = 4;
+      (*tasklist)[6].default_joints[2] = 5;
+      (*tasklist)[6].default_joints[3] = 6;
+      (*tasklist)[6].default_joints[4] = 43;
+      (*tasklist)[6].active_joint = 43; /* active joint */
+      (*tasklist)[6].default_joints_no = 5;
+           
+      (*tasklist)[7].type = GIK_RAPOINT;
+      (*tasklist)[7].default_joints[0] = 8;
+      (*tasklist)[7].default_joints[1] = 9;
+      (*tasklist)[7].default_joints[2] = 10;
+      (*tasklist)[7].default_joints[3] = 11;
+      (*tasklist)[7].default_joints[4] = 12;
+      (*tasklist)[7].default_joints[5] = 13;
+      (*tasklist)[7].default_joints[6] = 14;
+      (*tasklist)[7].default_joints[7] = 38;
+      (*tasklist)[7].active_joint = 38; /* active joint */
+      (*tasklist)[7].default_joints_no = 8;
+      
+      (*tasklist)[8].type = GIK_LAPOINT;
+      (*tasklist)[8].default_joints[0] = 15;
+      (*tasklist)[8].default_joints[1] = 16;
+      (*tasklist)[8].default_joints[2] = 17;
+      (*tasklist)[8].default_joints[3] = 18;
+      (*tasklist)[8].default_joints[4] = 19;
+      (*tasklist)[8].default_joints[5] = 20;
+      (*tasklist)[8].default_joints[6] = 21;
+      (*tasklist)[8].default_joints[7] = 39;
+      (*tasklist)[8].active_joint = 39; /* active joint */
+      (*tasklist)[8].default_joints_no = 8;
+      
       return TRUE;
 
     case HRI_BERT:
@@ -549,7 +679,6 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
     default:
       PrintError(("Agent type unknown\n"));
       return FALSE;
-
   }
 
   return FALSE;

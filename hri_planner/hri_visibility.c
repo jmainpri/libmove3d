@@ -322,25 +322,27 @@ void g3d_draw_all_agents_fovs(HRI_AGENTS *agents)
 {
   int i;
   
-  for (i=0; i<agents->all_agents_no; i++) {
-    if(agents->all_agents[i]->perspective->enable_vision_draw)
-      g3d_draw_agent_fov(agents->all_agents[i]);
-    if(agents->all_agents[i]->perspective->enable_pointing_draw)
-      g3d_draw_agent_pointing(agents->all_agents[i]);
+  if(agents != NULL){
+    for (i=0; i<agents->all_agents_no; i++) {
+      if(agents->all_agents[i]->perspective->enable_vision_draw)
+        g3d_draw_agent_fov(agents->all_agents[i]);
+      if(agents->all_agents[i]->perspective->enable_pointing_draw)
+        g3d_draw_agent_pointing(agents->all_agents[i]);
+    }
   }
 }
-  
+
 
 int g3d_draw_agent_pointing(HRI_AGENT *agent)
 {
-  GLdouble GreenColor[4] =   { 0.0, 0.5, 0.0, 0.5 };
-  GLdouble GreenColorT[4] =   { 0.0, 0.5, 0.0, 0.0 };  
+  GLdouble BlueColor[4] =    { 0.0, 0.0, 0.5, 0.7 };
+  GLdouble BlueColorT[4] =   { 0.0, 0.0, 0.5, 0.0 }; 
   
   if(agent!=NULL && agent->perspective->enable_pointing_draw){
     
     g3d_draw_visibility_by_frame(agent->perspective->pointjoint->abs_pos,
                                  DTOR(agent->perspective->point_tolerance), DTOR(agent->perspective->point_tolerance),
-                                 2, GreenColor, GreenColorT);  
+                                 2, BlueColor, BlueColorT);  
     return TRUE;
   }
   else {
@@ -351,13 +353,13 @@ int g3d_draw_agent_pointing(HRI_AGENT *agent)
 
 int g3d_draw_agent_fov(HRI_AGENT *agent)
 {
-  GLdouble GreenColor[4] =   { 0.0, 0.5, 0.0, 0.5 };
+  GLdouble GreenColor[4] =   { 0.0, 0.5, 0.0, 0.7 };
   GLdouble GreenColorT[4] =   { 0.0, 0.5, 0.0, 0.0 };
   GLdouble GreyColor[4] =   { 0.5, 0.5, 0.5, 0.5 };
   GLdouble GreyColorT[4] =   { 0.5, 0.5, 0.5, 0.0 };
-
+ 
   if(agent!=NULL && agent->perspective->enable_vision_draw){
-    
+      
     g3d_draw_visibility_by_frame(agent->perspective->camjoint->abs_pos,
                                  DTOR(agent->perspective->foa),
                                  DTOR(agent->perspective->foa*0.75),
@@ -366,8 +368,9 @@ int g3d_draw_agent_fov(HRI_AGENT *agent)
     g3d_draw_visibility_by_frame(agent->perspective->camjoint->abs_pos,
                                  DTOR(agent->perspective->fov),
                                  DTOR(agent->perspective->fov*0.75),
-                                 1, GreyColor, GreyColorT);  
-    return TRUE;
+                                 1, GreyColor, GreyColorT);
+    
+        return TRUE;
   }
   else {
     return FALSE;

@@ -96,8 +96,9 @@ typedef struct STRUCT_HRI_AGENT{
 
 
 typedef struct STRUCT_HRI_AGENTS{
-  HRI_AGENT ** all_agents;
+  HRI_AGENT ** all_agents; // The list of agents robots+humans
   int all_agents_no;
+  int source_agent_idx; // This is the index of the agent who is the robot
   HRI_AGENT ** robots;
   int robots_no;
   HRI_AGENT ** humans;
