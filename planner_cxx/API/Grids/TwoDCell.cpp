@@ -4,7 +4,7 @@
 #include <iostream>
 #include "Graphic-pkg.h"
 
-#include <Eigen/Array>
+#include <Eigen/Core>
 
 using namespace std;
 using namespace API;

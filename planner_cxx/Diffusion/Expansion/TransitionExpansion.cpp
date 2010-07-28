@@ -11,9 +11,11 @@
 #include "HRI_CostSpace/HRICS_Workspace.h"
 #endif
 
-#include "ConfigSpace/localpath.hpp"
-#include "Roadmap/node.hpp"
-#include "Roadmap/compco.hpp"
+#include "API/ConfigSpace/localpath.hpp"
+
+#include "API/Roadmap/node.hpp"
+#include "API/Roadmap/compco.hpp"
+#include "API/Roadmap/graph.hpp"
 
 #include "Localpath-pkg.h"
 #include "Planner-pkg.h"

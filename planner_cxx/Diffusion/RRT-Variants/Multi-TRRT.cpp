@@ -17,6 +17,8 @@
  */
 
 #include "Expansion/TransitionExpansion.h"
+#include "Roadmap/node.hpp"
+#include "Roadmap/graph.hpp"
 
 #ifdef HRI_COSTSPACE
 #include "HRI_CostSpace/HRICS_Workspace.h"
