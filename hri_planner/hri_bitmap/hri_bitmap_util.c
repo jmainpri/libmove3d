@@ -863,9 +863,9 @@ double getRotationBoundingCircleRadius(p3d_rob *robot)
     original_vox = robotq[robot->joints[ROBOTj_VOBJECT]->index_dof];
     original_voy = robotq[robot->joints[ROBOTj_VOBJECT]->index_dof + 1];
 
-    robotq[robot->joints[ROBOTj_BASE]->index_dof] = 0;
-    robotq[robot->joints[ROBOTj_BASE]->index_dof + 1] = 0;
-    robotq[robot->joints[ROBOTj_BASE]->index_dof + 5] = 0;
+    robotq[robot->joints[ROBOTj_BASE]->index_dof] = 0;//x
+    robotq[robot->joints[ROBOTj_BASE]->index_dof + 1] = 0;//y
+    robotq[robot->joints[ROBOTj_BASE]->index_dof + 5] = 0;//rz
 
     // virtual object freeflyer might distort the bounding box
     robotq[robot->joints[ROBOTj_VOBJECT]->index_dof] = 0; //x
