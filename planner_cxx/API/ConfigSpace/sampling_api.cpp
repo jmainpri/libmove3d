@@ -1,4 +1,5 @@
-#include "../planningAPI.hpp"
+#include "API/Device/robot.hpp"
+#include "API/ConfigSpace/configuration.hpp"
 
 using std::tr1::shared_ptr;
 

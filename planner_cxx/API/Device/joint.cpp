@@ -7,9 +7,17 @@
  *
  */
 
-#include "P3d-pkg.h"
-#include "../planningAPI.hpp"
+#include "API/Device/robot.hpp"
+
+#include <Eigen/Core>
+#define EIGEN_USE_NEW_STDVECTOR
+#include <Eigen/StdVector>
+#include <Eigen/Geometry> 
+#include <Eigen/LU>
+
 #include <string>
+
+#include "P3d-pkg.h"
 
 using namespace std;
 

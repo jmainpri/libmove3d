@@ -1,8 +1,10 @@
 #ifndef GRIDTOGRAPH_H
 #define GRIDTOGRAPH_H
 
-#include "../ThreeDGrid.h"
-#include "../planner_cxx/API/planningAPI.hpp"
+#include "ThreeDGrid.h"
+
+#include "Device/robot.hpp"
+#include "Roadmap/graph.hpp"
 
 /**
   @ingroup GRID

@@ -3,21 +3,25 @@
 
 #include <tr1/memory>
 
-#include "ConfigSpace/configuration.hpp"
-
-class Graph;
-class ConnectedComponent;
-
-const bool use_p3d_structures=true;
+#include "API/ConfigSpace/configuration.hpp"
 
 #ifndef _ROADMAP_H
 struct node;
 struct edge;
 struct compco;
 #endif
-
-//class cpp_Graph;
+ 
 #include "BGL_Graph.hpp"
+
+#ifndef EDGE_HPP
+class Edge;
+#endif
+
+#ifndef COMPCO_HPP
+class ConnectedComponent;
+#endif
+
+class Graph;
 
 /**
  @ingroup ROADMAP
@@ -109,6 +113,16 @@ public:
 	bool isActiv();
 	
 	/**
+	 * Returns the node id
+	 */
+	unsigned int getId();
+	
+	/**
+	 * Sets the Id
+	 */
+	void setId(unsigned int id);
+	
+	/**
 	 * obtient le cout du Node
 	 * @return le cout du Node
 	 */
@@ -185,7 +199,7 @@ public:
 	/**
 	 * Get All neighbors
 	 */
-	std::vector<node*> getNeighbors();
+	std::vector<Node*> getNeighbors();
 	
 	/**
 	 * Get Number of Edges
@@ -195,7 +209,15 @@ public:
 	/**
 	 * Get All Edges
 	 */
-	std::vector<edge*> getEdges();
+	std::vector<Edge*> getEdges();
+	
+	/**
+	 * To be implemented for retro-compatibility
+	 */
+	Node* getParent() { return NULL; }
+	Node* getSearchFrom() { return NULL; }
+	Node* getSearchTo() { return NULL; }
+	Edge* getEdgeFrom() { return NULL; }
 	
 	/**
 	 * teste si deux Node peuvent être liés
@@ -210,25 +232,6 @@ public:
 	 */
 	void checkStopByWeight();
 	
-	//fonctions portant sur les composantes connexes
-	/**
-	 * obtient la structure de composante connexe à laquelle appartient le Node
-	 * @return la structure de composante connexe à laquelle appartient le Node
-	 */
-	ConnectedComponent* getConnectedComponent() { return m_Compco; }
-	
-	/**
-	 * obtient la structure de composante connexe à laquelle appartient le Node
-	 * @return la structure de composante connexe à laquelle appartient le Node
-	 */
-	compco* getCompcoStruct();
-	
-	/**
-	 * obtient le pointeur sur la structure Compco
-	 * @return le pointeur sur la structure Compco
-	 */
-	compco** getCompcoStructPt();
-	
 	/**
 	 * Gets the number of nodes
 	 * in the connected componnent
@@ -236,10 +239,16 @@ public:
 	unsigned int getNumberOfNodesInCompco();
 	
 	/**
+	 * obtient la structure de composante connexe à laquelle appartient le Node
+	 * @return la structure de composante connexe à laquelle appartient le Node
+	 */
+	ConnectedComponent* getConnectedComponent() { return m_Compco; }
+	
+	/**
 	 * Sets the compco of the node
 	 * @param the connected component in which is the node
 	 */
-	void setCompco(ConnectedComponent* compco) { m_Compco = compco; }
+	void setConnectedComponent(ConnectedComponent* compco);
 	
 	/**
 	 * detruit la composante connexe

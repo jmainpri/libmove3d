@@ -10,7 +10,11 @@
 //
 //
 
-#include "planningAPI.hpp"
+#include "Roadmap/edge.hpp"
+#include "Roadmap/graph.hpp"
+#include "Roadmap/BGL_Graph.hpp"
+
+#include <tr1/memory>
 
 #include "Localpath-pkg.h"
 #include "Planner-pkg.h"
@@ -60,40 +64,44 @@ Edge::Edge(Graph* G, p3d_edge* E)
 
 Edge::Edge(Graph* G, Node* N1, Node* N2, double Long)
 {
-    int *ikSol = NULL;
-
-    m_Edge = MY_ALLOC(p3d_edge, 1);
-    m_Edge->Ni = N1->getNodeStruct();
-    m_Edge->Nf = N2->getNodeStruct();
-
-    m_Edge->path = p3d_local_planner_multisol(
-            G->getRobot()->getRobotStruct(),
-            N1->getConfiguration()->getConfigStruct(),
-            N2->getConfiguration()->getConfigStruct(),
-            ikSol);
-
-    m_Edge->planner = p3d_local_get_planner();
-
-    //voir pour la longueur
-    m_Edge->longueur = Long;
-    m_Edge->sens_edge = 1;
-    m_Edge->visible = 0;
-    m_Edge->unvalid = 0;
-    m_Edge->for_cycle = 0;
-
-
-    m_Graph = G;
-    m_Robot = G->getRobot();
-		p3d_SetEdgeCost(m_Robot->getRobotStruct(),m_Edge);
-    m_Long = Long;
-    m_Start = N1;
-    m_End = N2;
+	int *ikSol = NULL;
+	
+	m_Edge = new p3d_edge;
+	
+	m_Edge->Ni = N1->getNodeStruct();
+	m_Edge->Nf = N2->getNodeStruct();
+	
+//	m_Edge->num = _Graph->getNumberOfEdges();
+	
+	m_Edge->path = p3d_local_planner_multisol(
+																						G->getRobot()->getRobotStruct(),
+																						N1->getConfiguration()->getConfigStruct(),
+																						N2->getConfiguration()->getConfigStruct(),
+																						ikSol);
+	
+	m_Edge->planner = p3d_local_get_planner();
+	
+	//voir pour la longueur
+	m_Edge->longueur = Long;
+	m_Edge->sens_edge = 1;
+	m_Edge->visible = 0;
+	m_Edge->unvalid = 0;
+	m_Edge->for_cycle = 0;
+	
+	
+	m_Graph = G;
+	m_Robot = G->getRobot();
+	p3d_SetEdgeCost(m_Robot->getRobotStruct(),m_Edge);
+	m_Long = Long;
+	m_Start = N1;
+	m_End = N2;
 	
 	m_is_BGL_Descriptor_Valid = false;
 }
 
 Edge::~Edge()
 {
+	m_Edge->path->destroy(m_Robot->getRobotStruct(), m_Edge->path );
 	delete m_Edge;
 }
 

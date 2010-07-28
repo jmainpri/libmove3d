@@ -1,10 +1,13 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-#include "Roadmap/node.hpp"
-#include "Roadmap/edge.hpp"
-#include "Roadmap/compco.h"
-#include "Trajectory/trajectory.hpp"
+#include "API/Roadmap/node.hpp"
+#include "API/Roadmap/edge.hpp"
+#include "API/Trajectory/trajectory.hpp"
+
+#ifndef COMPCO_HPP
+class ConnectedComponent;
+#endif
 
 #include <map>
 
@@ -89,6 +92,29 @@ public:
 	list_edge* copyEdgeList(std::map<edge*,edge*>& EdgeMap, list_edge* le, list_edge* end = NULL) const;
 	
 	/**
+	 * return the value of the Change flag
+	 * @return true if the graph has change since last export
+	 */
+	bool isGraphChanged() { return m_graphChanged; }
+	
+	/**
+	 * export from the Cpp graph to p3d_graph
+	 */
+	graph* exportCppToGraphStruct(bool deleteGraphStruct = false);
+	
+	/**
+	 * create node list
+	 */
+	list_node* createNodeList(std::map<Node*,node*>& NodeMap, std::vector<Node*> nodes, list_node* end = NULL) ;
+	
+	
+	/**
+	 * create edge list
+	 */
+	list_edge* createEdgeList(std::map<Edge*,edge*>& EdgeMap, std::vector<Edge*> edges, list_edge* end = NULL) ;
+
+	
+	/**
 	 * updates the connected components (Fix this!!!)
 	 */
 	void updateCompcoFromStruct();
@@ -141,6 +167,12 @@ public:
 	Node* getNode(unsigned int i) { return m_Nodes[i]; } 
 	
 	/**
+	 * obtient le nombre de Node dans le Graph
+	 * @return le nombre de Node dans le Graph
+	 */
+	unsigned int getNumberOfEdges();
+	
+	/**
 	 * obtient le vecteur des Edge du Graph
 	 * @return le vecteur des Edge du Graph
 	 */
@@ -156,7 +188,7 @@ public:
 	 * obtient le nombre de Node dans le Graph
 	 * @return le nombre de Node dans le Graph
 	 */
-	unsigned int getNumberOfNodes() { return m_Nodes.size(); }
+	unsigned int getNumberOfNodes();
 	
 	/*
 	 * Get the number of compco in the grap
@@ -166,7 +198,7 @@ public:
 	/**
 	 * Get Compcos
 	 */
-	std::vector<ConnectedComponent*> getConnectedComponents() { return m_Comp; }
+	std::vector<ConnectedComponent*>& getConnectedComponents() { return m_Comp; }
 	
 	/**
 	 * obtient le Node correspondant au p3d_node
@@ -179,7 +211,7 @@ public:
 	 * obtient le dernier Node ajouté au Graph
 	 * @return le dernier Node ajouté au Graph
 	 */
-	Node* getLastnode();
+	Node* getLastNode();
 	
 	/**
 	 * obtient le nom du Graph
@@ -492,6 +524,7 @@ public:
 	BGL_Vertex	findVertexDescriptor(Node* N);
 	BGL_Edge		findEdgeDescriptor(Edge* E);
 	void				saveBGLGraphToDotFile(const std::string& filename);
+	BGL_Graph&	get_BGL_Graph() { return m_BoostGraph; }
 	
 	
 private:
@@ -511,6 +544,10 @@ private:
 	// Boost Graph Lib 
 	BGL_Graph													m_BoostGraph;
 	
+	// Flag that is set to false 
+	// each time the graph is exported to p3d_graph
+	bool															m_graphChanged;
+	
 	// latest trajectory
 	p3d_traj*													m_Traj;
 	
@@ -528,5 +565,7 @@ private:
 	// Graph name
 	std::string												m_Name;
 };
+
+extern Graph* API_activeGraph;
 
 #endif

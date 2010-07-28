@@ -5,7 +5,7 @@
  *      Author: jmainpri
  */
 
-#include "planningAPI.hpp"
+#include "API/Trajectory/trajectory.hpp"
 
 #include "P3d-pkg.h"
 #include "Localpath-pkg.h"

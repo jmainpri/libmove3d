@@ -31,12 +31,12 @@ struct EdgeData_t {
 class Node;
 class Edge;
 
-typedef boost::property<NodeData_t, Node*> VertexProperty;
-typedef boost::property<EdgeData_t, Edge*> EdgeProperty;
+typedef boost::property<NodeData_t, Node*>														VertexProperty;
+typedef boost::property<EdgeData_t, Edge*>														EdgeProperty;
 
 // Defaut type of a graph
 typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS,
-															VertexProperty,EdgeProperty > BGL_Graph;
+															VertexProperty,EdgeProperty >						BGL_Graph;
 
 /// Defaut type of a vertex in a graph
 typedef boost::graph_traits<BGL_Graph>::vertex_descriptor							BGL_Vertex;
