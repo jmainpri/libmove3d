@@ -11,6 +11,8 @@
 #include "HRI_CostSpace/HRICS_Workspace.h"
 #endif
 
+#include "ConfigSpace/localpath.hpp"
+#include "Roadmap/node.hpp"
 #include "Roadmap/compco.hpp"
 
 #include "Localpath-pkg.h"
