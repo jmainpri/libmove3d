@@ -180,7 +180,6 @@ void g3d_create_hri_planner_form(void)
   g3d_create_gik_jointsel_form();
   g3d_create_psp_parameters_form();
   
-  GLOBAL_AGENTS = hri_create_agents();
 }
 
 void g3d_show_hri_planner_form(void)
@@ -428,6 +427,8 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
   int dimx,dimy,dimz;
   int i;
   double objx, objy, objz;
+
+  GLOBAL_AGENTS = hri_create_agents();
 
   /* NAVIGATION */
   if(SELECTED_BTSET==1){

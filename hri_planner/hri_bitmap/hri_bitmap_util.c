@@ -877,12 +877,25 @@ double getRotationBoundingCircleRadius(p3d_rob *robot)
      * for any turning angle of the robot
      */
     p3d_set_and_update_this_robot_conf(robot, robotq);
+
+    int no, i;
+    p3d_BB *BB, *BBo;
+    
+    no = robot->no;
+    BB = &(robot->BB);
+    
+    for (i = 0;i < no;i++) { 
+      BBo = &(robot->o[i]->BB);
+      printf("ONAME:%s xmin:%f ymax:%f\n",robot->o[i]->name,BBo->xmin,BBo->ymax);
+    }
+
     // calculate the distance between the robot turning point
     //(robotq[ROBOTq_X], robotq[ROBOTq_Y] assuming it is in the middle of the BB) and the bounding box corners
     // choose between comparing to min or max coordinates
     rotation_radius =
       MAX(DISTANCE2D(robot->BB.xmax, robot->BB.ymax, robotq[ROBOTq_X], robotq[ROBOTq_Y]),
           DISTANCE2D(robot->BB.xmin, robot->BB.ymin, robotq[ROBOTq_X], robotq[ROBOTq_Y]));
+
     // restore orignal robot rotation
     robotq[robot->joints[ROBOTj_BASE]->index_dof] = original_x;
     robotq[robot->joints[ROBOTj_BASE]->index_dof + 1] = original_y;

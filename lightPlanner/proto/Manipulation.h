@@ -303,7 +303,9 @@ class  Manipulation_JIDO {
     int clearConfigTraj();
     int copyConfigTrajToFORM();
     int destroyTrajectories();
-  
+    int checkCollisionOnTraj();
+    int checkCollisionOnTraj(int currentLpId);
+    int replanCollidingTraj(int currentLpId, std::vector <int> &lp, std::vector < std::vector <double> > &positionsb);
   protected:
      /*Functions relative to JIDO */
      int computeTrajBetweenTwoConfigs(bool cartesian, configPt qi, configPt qf);
