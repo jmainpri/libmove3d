@@ -10,7 +10,7 @@
 #ifndef MULTITRANSITIONRRT_HPP_
 #define MULTITRANSITIONRRT_HPP_
 
-#include "Multi-RRT.h"
+#include "Multi-RRT.hpp"
 
 /**
  @ingroup Diffusion

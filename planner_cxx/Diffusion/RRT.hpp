@@ -3,6 +3,11 @@
 
 #include "Expansion/RRTExpansion.h"
 #include "TreePlanner.hpp"
+
+#include "API/Device/robot.hpp"
+#include "API/ConfigSpace/configuration.hpp"
+#include "API/ConfigSpace/localpath.hpp"
+
 /**
  * @ingroup Diffusion
  *

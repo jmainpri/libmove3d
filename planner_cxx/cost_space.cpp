@@ -3,6 +3,8 @@
 
 #include "planningAPI.hpp"
 
+#include "Roadmap/compco.hpp"
+
 #include "P3d-pkg.h"
 #include "GroundHeight-pkg.h"
 #include "Planner-pkg.h"
@@ -149,6 +151,49 @@ double CostSpace::deltaStepCost(double cost1, double cost2, double length)
     }
     //no cost function
     return length;
+}
+//----------------------------------------------------------------------
+void CostSpace::setNodeCost(Node* node, double cost)
+{
+	//	p3d_SetNodeCost(this->getActivGraph()->getGraphStruct(), 
+	//									this->getGoal()->getNodeStruct(), 
+	//									this->getGoal()->getConfiguration()->cost());
+//	double cost = node->getConfiguration()->cost();
+	p3d_node* NodePt = node->getNodeStruct();
+	
+	NodePt->cost = cost;
+	
+	if (NodePt->parent != NULL)
+	{
+		//       NodePt->sumCost = NodePt->parent->sumCost+cost;
+		double cost1 = NodePt->parent->cost;
+		double cost2 = NodePt->cost;
+		double length = p3d_get_env_dmax();
+		
+		NodePt->sumCost = deltaStepCost(cost1, cost2, length) 
+		+ NodePt->parent->sumCost;
+		
+		//		NodePt->sumCost = p3d_ComputeDeltaStepCost(cost1, cost2, length)
+		//		+ NodePt->parent->sumCost;
+		
+	}
+	else
+	{
+		NodePt->sumCost = cost;
+	}
+	node->getConnectedComponent()->getCompcoStruct()->minCost 
+	= MIN(cost,node->getConnectedComponent()->getCompcoStruct()->minCost );
+	
+	node->getConnectedComponent()->getCompcoStruct()->maxCost 
+	= MAX(cost,node->getConnectedComponent()->getCompcoStruct()->maxCost );
+	
+	/*if (p3d_GetCostMethodChoice() == URMSON_TRANSITION)
+	{
+		node->getConnectedComponent()->getCompcoStruct()->maxUrmsonCost
+		= MAX(NodePt->sumCost +
+					p3d_ComputeUrmsonCostToGoal(_Graph->getGraphStruct(),NodePt) ,
+					node->getConnectedComponent()->getCompcoStruct()->maxUrmsonCost);
+	}	*/
 }
 //----------------------------------------------------------------------
 double CostSpace::cost(LocalPath& path)

@@ -7,7 +7,7 @@
  *
  */
 
-#include "Multi-TRRT.h"
+#include "Multi-TRRT.hpp"
 
 /*
  * RRT-Transition.cpp
@@ -149,7 +149,7 @@ void MultiTRRT::initalizeRoot(Node* rootNode)
  */
 bool MultiTRRT::connectNodeToCompco(Node* node, Node* compNode)
 {
-	if (node->getCompcoStruct()->num == compNode->getCompcoStruct()->num ) 
+	if ( node->equalCompco(compNode) ) 
 	{
 		cout << "Error tries to connect to its own component" << endl;
 	}

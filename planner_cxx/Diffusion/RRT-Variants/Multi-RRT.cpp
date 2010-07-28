@@ -7,7 +7,11 @@
  *
  */
 
-#include "Multi-RRT.h"
+#include "Multi-RRT.hpp"
+
+#include "API/Roadmap/node.hpp"
+#include "API/Roadmap/compco.hpp"
+#include "API/Roadmap/graph.hpp"
 
 #include "P3d-pkg.h"
 #include "Graphic-pkg.h"
@@ -37,6 +41,7 @@ int MultiRRT::init()
 	
 	if(_Robot->getName().compare("ROBOT_JUSTIN") == 0)
 	{
+#ifdef LIGHT_PLANNER
 		_expan->setDirectionMethod(NAVIGATION_BEFORE_MANIPULATION);
 		
 		for (int i=0; i<ENV.getInt(Env::nbOfSeeds); i++)
@@ -49,6 +54,7 @@ int MultiRRT::init()
 			g3d_draw_allwin_active();
 			addSeed(q);
 		}
+#endif
 	}
 	else 
 	{
@@ -92,8 +98,8 @@ Node* MultiRRT::getRandomCompcoForExpansion(Node* fromNode)
 {
 	Node* randomCompco;
 	unsigned int i=0;
-	int initNum = fromNode->getCompcoStruct()->num ;
-	int randNum = fromNode->getCompcoStruct()->num ;
+	int initNum = fromNode->getConnectedComponent()->getId() ;
+	int randNum = fromNode->getConnectedComponent()->getId() ;
 	
 	//	cout << "Number of Component : " << _Graph->getNumberOfCompco() << endl;
 	//	cout << "Init Component : " << initNum << endl;
@@ -102,10 +108,10 @@ Node* MultiRRT::getRandomCompcoForExpansion(Node* fromNode)
 	{
 		double randomNumber = p3d_random(0,_Graph->getNumberOfCompco());
 		unsigned int randId = (unsigned int)randomNumber;
-		//		cout << "Rand Number : " << randomNumber << endl;
-		//		cout << "Rand Id : " << randId << endl;
+//		cout << "Rand Number : " << randomNumber << endl;
+//		cout << "Rand Id : " << randId << endl;
 		randomCompco = _Graph->getCompco(randId);
-		randNum = randomCompco->getCompcoStruct()->num;
+		randNum = randomCompco->getConnectedComponent()->getCompcoStruct()->num;
 		//		cout << "Rand Component : " << randNum << endl;
 		i++;
 	}
@@ -188,7 +194,7 @@ unsigned int MultiRRT::run()
 			{
 				// If it expands towards a goal
 				// Tries to link with local method
-				if( connectNodeToCompco(_Graph->getLastnode(), m_goalNode ) )
+				if( connectNodeToCompco(_Graph->getLastNode(), m_goalNode ) )
 				{
 					cout << "connected" << endl;
 					//return (NbTotCreatedNodes);

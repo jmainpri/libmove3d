@@ -1,7 +1,16 @@
 #ifndef PLANNER_HPP
 #define PLANNER_HPP
 
-#include "planningAPI.hpp"
+#include "API/ConfigSpace/configuration.hpp"
+
+#ifndef GRAPH_HPP
+class Graph;
+#endif
+
+#ifndef NODE_HPP
+class Node;
+#endif
+
 /**
   * @defgroup NEW_CPP_MODULE C++ Module
   * This Module takes in all that has been done with the new C++ API

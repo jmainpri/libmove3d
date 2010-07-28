@@ -7,6 +7,9 @@
 
 #include "ESTExpansion.h"
 
+#include "API/Roadmap/node.hpp"
+#include "API/Roadmap/graph.hpp"
+
 #include "Planner-pkg.h"
 
 using namespace std;

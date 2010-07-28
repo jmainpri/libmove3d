@@ -174,7 +174,7 @@ int ManhattanLikeRRT::passiveExpandProcess(Node* expansionNode,
 	{
 	  totalCreatedNodes += nbCreatedNodes;
 	  // If the expansion succeeded, update the expansion node for the next iteration
-	  expansionNode = _Graph->getLastnode();
+	  expansionNode = _Graph->getLastNode();
 	  if (ML_DEBUG) { cout << "Expanded passive parameters at try " << i + 1 << endl; }
 	}
       }
@@ -209,7 +209,7 @@ int ManhattanLikeRRT::expandOneStep(Node* fromComp,Node* toComp)
   // expand the passive dofs
   nbCreatedNodes += this->passiveExpandProcess(nbCreatedNodes == 0 ? 
 					       expansionNode :
-					       _Graph->getLastnode(),
+					       _Graph->getLastNode(),
 					       nbCreatedNodes,
 					       directionNode);
   return (nbCreatedNodes);

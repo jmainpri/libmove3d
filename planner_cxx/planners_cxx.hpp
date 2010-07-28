@@ -1,4 +1,4 @@
-#include "API/planningAPI.hpp"
+#include "planningAPI.hpp"
 
 #include "p3d/env.hpp"
 
@@ -10,5 +10,5 @@
 #include "Diffusion/EST.hpp"
 #include "Diffusion/RRT-Variants/Transition-RRT.hpp"
 #include "Diffusion/RRT-Variants/ManhattanLike-RRT.hpp"
-#include "Diffusion/RRT-Variants/Multi-RRT.h"
-#include "Diffusion/RRT-Variants/Multi-TRRT.h"
+#include "Diffusion/RRT-Variants/Multi-RRT.hpp"
+#include "Diffusion/RRT-Variants/Multi-TRRT.hpp"

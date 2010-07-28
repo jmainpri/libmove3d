@@ -10,6 +10,8 @@
 
 #include "planningAPI.hpp"
 
+#include "Roadmap/compco.hpp"
+
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"
 
@@ -76,20 +78,23 @@ bool BaseExpansion::expandControl(LocalPath& path, double positionAlongDirection
 		 *
 		 */
 //		cout << "Average length = " << compNode.getCompcoStruct()->sumLengthEdges / (compNode.getCompcoStruct()->nnode-1) << endl;
-		double ratio =  (double)compNode.getCompcoStruct()->nbRefinNodes / (double)compNode.getCompcoStruct()->nnode;
+		double ratio =  (double)compNode.getConnectedComponent()->getCompcoStruct()->nbRefinNodes / 
+		(double)compNode.getConnectedComponent()->getNumberOfNodes();
+		
 		cout << "ratio of RNODES = " << ratio << endl;
 		cout << endl;
 	}
 
         if( path.getParamMax() <= radius ) // || extensionLocalpath->length() < 0.01 * path->length(); //extensionLocalpath->length() <= this->step();
 	{
-		if(compNode.getCompcoStruct()->nbRefinNodes*2 > compNode.getCompcoStruct()->nnode)
+		if(compNode.getConnectedComponent()->getCompcoStruct()->nbRefinNodes*2 > 
+			 compNode.getConnectedComponent()->getNumberOfNodes())
 		{
 			return(false);
 		}
 		else
 		{
-			compNode.getCompcoStruct()->nbRefinNodes++;
+			compNode.getConnectedComponent()->getCompcoStruct()->nbRefinNodes++;
 		}
 	}
 	return(true);
@@ -124,12 +129,13 @@ Node* BaseExpansion::addNode(Node* currentNode,
 {
 	if ((pathDelta == 1. && directionNode))
 	{
-		cout << "MergeComp" << endl;
+		//cout << "MergeComp" << endl;
 		mGraph->linkNodeAndMerge(currentNode,directionNode);
 		return (directionNode);
 	}
 	else
 	{
+		//cout << "insertNode" << endl;
 		Node* newNode = mGraph->insertNode( currentNode, path );
 		nbCreatedNodes++;
 		return (newNode);
