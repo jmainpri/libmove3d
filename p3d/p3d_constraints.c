@@ -3087,7 +3087,10 @@ static int p3d_fct_lin_rel_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl
 	if (st_niksol) {
 		st_iksol[ct->num][0] = 1;
 		st_niksol[ct->num] = 1;
-		st_ikSolConfig[ct->num][0][0] = (valfo / 180) * M_PI;
+		// WITHOUT check segfaulted in gsJidoChris SCENARIO
+		if (st_ikSolConfig[ct->num] != NULL && st_ikSolConfig[ct->num][0] != NULL) {
+			st_ikSolConfig[ct->num][0][0] = (valfo / 180) * M_PI;
+		}
 	}/* else {
     printf("p3d_fct_lin_rel_dof st_iksol ??\n");
     }*/
