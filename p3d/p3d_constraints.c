@@ -3084,13 +3084,10 @@ static int p3d_fct_lin_rel_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl
   
 	lastvalfo = p3d_jnt_get_dof_deg(ct->pasjnts[0], ct->pas_jnt_dof[0]);
 	p3d_jnt_set_dof_deg(ct->pasjnts[0], ct->pas_jnt_dof[0], valfo);
-	if (st_niksol) {
+	if (st_niksol && st_iksol_size > ct->num) {
 		st_iksol[ct->num][0] = 1;
 		st_niksol[ct->num] = 1;
-		// WITHOUT check segfaulted in gsJidoChris SCENARIO
-		if (st_ikSolConfig[ct->num] != NULL && st_ikSolConfig[ct->num][0] != NULL) {
-			st_ikSolConfig[ct->num][0][0] = (valfo / 180) * M_PI;
-		}
+		st_ikSolConfig[ct->num][0][0] = (valfo / 180) * M_PI;
 	}/* else {
     printf("p3d_fct_lin_rel_dof st_iksol ??\n");
     }*/
