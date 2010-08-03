@@ -1227,7 +1227,7 @@ int Manipulation_JIDO::grabObject(char* objectName){
   double error;
   p3d_matrix4 wristPose, objectPose, T1, T2, Tinv, gframe;
 
-  this->releaseObject();
+  //this->releaseObject();
   deactivateCcCntrts(_robotPt, -1);
 
 
@@ -1243,10 +1243,10 @@ int Manipulation_JIDO::grabObject(char* objectName){
   p3d_mat4Mult(Tinv, wristPose, T2);
   // the two following lines use empirical values, they may need to be adjusted
   error= p3d_mat4Distance(gframe, T2, 1, 0.3);
-  if(error > 0.2) {
+  if(error > 0.5) {
      printf("error= %f\n", error);
      printf("%s: %d: Manipulation_JIDO::grabObject(): there is an inconsistency between the current frame and the current wrist/object relative pose.\n",__FILE__,__LINE__);
-     return 1;
+     //return 1;
   }
 
   configPt qi = NULL;
@@ -1267,7 +1267,9 @@ int Manipulation_JIDO::grabObject(char* objectName){
 //! Sets everything so that the object whose motion is linked to the robot's end-effector motion is no more linked.
 int Manipulation_JIDO::releaseObject(){
   configPt qi = NULL;
-  p3d_release_object(_robotPt);
+  if(p3d_release_object(_robotPt)==1) {
+    return 1;
+  }
   deactivateCcCntrts(_robotPt, -1);
   qi = p3d_alloc_config(_robotPt);
   p3d_copy_config_into(_robotPt, _robotPt->ROBOT_POS, &qi);
@@ -2564,22 +2566,22 @@ int Manipulation_JIDO::checkCollisionOnTraj(int currentLpId) {
     deactivateCcCntrts(_robotPt, -1);
   } else {
     /* plan in the cartesian space */
-    qi = p3d_alloc_config(robotPt);
-    qf = p3d_alloc_config(robotPt);
-    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, (char*)"jido-ob_lin", 1) ;
-    p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &qi);
-    p3d_copy_config_into(robotPt, robotPt->ROBOT_GOTO, &qf);
+    qi = p3d_alloc_config(_robotPt);
+    qf = p3d_alloc_config(_robotPt);
+    p3d_multiLocalPath_disable_all_groupToPlan(_robotPt);
+    p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-ob_lin", 1) ;
+    p3d_copy_config_into(_robotPt, _robotPt->ROBOT_POS, &qi);
+    p3d_copy_config_into(_robotPt, _robotPt->ROBOT_GOTO, &qf);
     p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
     p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qf);
     //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
     //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
-    p3d_copy_config_into(robotPt, qi, &robotPt->ROBOT_POS);
-    p3d_copy_config_into(robotPt, qf, &robotPt->ROBOT_GOTO);
-    p3d_destroy_config(robotPt, qi);
-    p3d_destroy_config(robotPt, qf);
-    if(robotPt->nbCcCntrts!=0) {
-      p3d_activateCntrt(robotPt, robotPt->ccCntrts[0]);
+    p3d_copy_config_into(_robotPt, qi, &_robotPt->ROBOT_POS);
+    p3d_copy_config_into(_robotPt, qf, &_robotPt->ROBOT_GOTO);
+    p3d_destroy_config(_robotPt, qi);
+    p3d_destroy_config(_robotPt, qf);
+    if(_robotPt->nbCcCntrts!=0) {
+      p3d_activateCntrt(_robotPt, _robotPt->ccCntrts[0]);
     }
   }
   if (currentLpId > traj->nlp){
@@ -2617,22 +2619,22 @@ int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &l
     deactivateCcCntrts(_robotPt, -1);
   } else {
     /* plan in the cartesian space */
-    qi = p3d_alloc_config(robotPt);
-    qf = p3d_alloc_config(robotPt);
-    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, (char*)"jido-ob_lin", 1) ;
-    p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &qi);
-    p3d_copy_config_into(robotPt, robotPt->ROBOT_GOTO, &qf);
+    qi = p3d_alloc_config(_robotPt);
+    qf = p3d_alloc_config(_robotPt);
+    p3d_multiLocalPath_disable_all_groupToPlan(_robotPt);
+    p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-ob_lin", 1) ;
+    p3d_copy_config_into(_robotPt, _robotPt->ROBOT_POS, &qi);
+    p3d_copy_config_into(_robotPt, _robotPt->ROBOT_GOTO, &qf);
     p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
     p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qf);
     //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
     //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
-    p3d_copy_config_into(robotPt, qi, &robotPt->ROBOT_POS);
-    p3d_copy_config_into(robotPt, qf, &robotPt->ROBOT_GOTO);
-    p3d_destroy_config(robotPt, qi);
-    p3d_destroy_config(robotPt, qf);
-    if(robotPt->nbCcCntrts!=0) {
-      p3d_activateCntrt(robotPt, robotPt->ccCntrts[0]);
+    p3d_copy_config_into(_robotPt, qi, &_robotPt->ROBOT_POS);
+    p3d_copy_config_into(_robotPt, qf, &_robotPt->ROBOT_GOTO);
+    p3d_destroy_config(_robotPt, qi);
+    p3d_destroy_config(_robotPt, qf);
+    if(_robotPt->nbCcCntrts!=0) {
+      p3d_activateCntrt(_robotPt, _robotPt->ccCntrts[0]);
     }
   }
   if (currentLpId > traj->nlp){

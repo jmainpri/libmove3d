@@ -5693,87 +5693,84 @@ static int p3d_set_pa10_6_arm_ik(p3d_cntrt_management * cntrt_manager,
   
 }
 
-/** \brief p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint
- * return 0 if there is an error
- */
-int p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(
-                                                                  p3d_rob* robot, configPt q) {
-	p3d_jnt *virObjJnt= NULL, *wristJnt= NULL;
-	p3d_matrix4 TattInv, Twrist, TvirtObj;
-	configPt q0= NULL;
-	p3d_cntrt* cntrt_arm = NULL;
-	int i=0;
-  
-	for (i=0; i<=robot->njoints; i++) {
-		if (robot->joints[i]->name==NULL)
-			continue;
-    
-		if (strcmp(robot->joints[i]->name, "virtual_object") == 0) {
-			virObjJnt = robot->joints[i];
-		}
-	}
-  
-	for (i=0; i<=robot->njoints; i++) {
-		if (robot->joints[i]->name==NULL)
-			continue;
-    
-		if (strcmp(robot->joints[i]->name, "wristJoint") == 0) {
-			wristJnt = robot->joints[i];
-		}
-	}
-  
-	if (virObjJnt==NULL || wristJnt==NULL) {
-		printf("FATAL_ERROR: the virtual object does not exist\n");
-		return 0;
-	}
-	/* Look for the arm_IK constraint */
-	for (i = 0; i < robot->cntrt_manager->ncntrts; i++) {
-		cntrt_arm = robot->cntrt_manager->cntrts[i];
-		if (strcmp(cntrt_arm->namecntrt, "p3d_pa10_6_arm_ik")==0) {
-			break;
-		}
-	}
-  
-	if (i == robot->cntrt_manager->ncntrts) {
-		printf("FATAL_ERROR : arm_IK constraint does not exist\n");
-		return 0;
-	}
-	if (cntrt_arm->active == 1) {
-		return 1;
-	}
-	q0= p3d_alloc_config(robot);
-	p3d_get_robot_config_into(robot, &q0);
-  
-	p3d_set_and_update_this_robot_conf(robot, q);
-  
-	p3d_mat4Copy(wristJnt->abs_pos, Twrist);
-	p3d_matInvertXform(cntrt_arm->Tatt, TattInv);
-	p3d_mat4Mult(Twrist, TattInv, TvirtObj);
-  
-	p3d_mat4ExtractPosReverseOrder(TvirtObj, &q[virObjJnt->index_dof],
-                                 &q[virObjJnt->index_dof+1], &q[virObjJnt->index_dof+2],
-                                 &q[virObjJnt->index_dof+3], &q[virObjJnt->index_dof+4],
-                                 &q[virObjJnt->index_dof+5]);
-  
-	p3d_activateCntrt(robot, cntrt_arm);
-	p3d_set_and_update_this_robot_conf(robot, q);
-  
-	p3d_desactivateCntrt(robot, cntrt_arm);
-  
-	p3d_set_and_update_this_robot_conf(robot, q0);
-	p3d_destroy_config(robot, q0);
-	return 1;
-}
+// int p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(
+//                                                                   p3d_rob* robot, configPt q) {
+// 	p3d_jnt *virObjJnt= NULL, *wristJnt= NULL;
+// 	p3d_matrix4 TattInv, Twrist, TvirtObj;
+// 	configPt q0= NULL;
+// 	p3d_cntrt* cntrt_arm = NULL;
+// 	int i=0;
+//   
+// 	for (i=0; i<=robot->njoints; i++) {
+// 		if (robot->joints[i]->name==NULL)
+// 			continue;
+//     
+// 		if (strcmp(robot->joints[i]->name, "virtual_object") == 0) {
+// 			virObjJnt = robot->joints[i];
+// 		}
+// 	}
+//   
+// 	for (i=0; i<=robot->njoints; i++) {
+// 		if (robot->joints[i]->name==NULL)
+// 			continue;
+//     
+// 		if (strcmp(robot->joints[i]->name, "wristJoint") == 0) {
+// 			wristJnt = robot->joints[i];
+// 		}
+// 	}
+//   
+// 	if (virObjJnt==NULL || wristJnt==NULL) {
+// 		printf("FATAL_ERROR: the virtual object does not exist\n");
+// 		return 0;
+// 	}
+// 	/* Look for the arm_IK constraint */
+// 	for (i = 0; i < robot->cntrt_manager->ncntrts; i++) {
+// 		cntrt_arm = robot->cntrt_manager->cntrts[i];
+// 		if (strcmp(cntrt_arm->namecntrt, "p3d_pa10_6_arm_ik")==0) {
+// 			break;
+// 		}
+// 	}
+//   
+// 	if (i == robot->cntrt_manager->ncntrts) {
+// 		printf("FATAL_ERROR : arm_IK constraint does not exist\n");
+// 		return 0;
+// 	}
+// 	if (cntrt_arm->active == 1) {
+// 		return 1;
+// 	}
+// 	q0= p3d_alloc_config(robot);
+// 	p3d_get_robot_config_into(robot, &q0);
+//   
+// 	p3d_set_and_update_this_robot_conf(robot, q);
+//   
+// 	p3d_mat4Copy(wristJnt->abs_pos, Twrist);
+// 	p3d_matInvertXform(cntrt_arm->Tatt, TattInv);
+// 	p3d_mat4Mult(Twrist, TattInv, TvirtObj);
+//   
+// 	p3d_mat4ExtractPosReverseOrder(TvirtObj, &q[virObjJnt->index_dof],
+//                                  &q[virObjJnt->index_dof+1], &q[virObjJnt->index_dof+2],
+//                                  &q[virObjJnt->index_dof+3], &q[virObjJnt->index_dof+4],
+//                                  &q[virObjJnt->index_dof+5]);
+//   
+// 	p3d_activateCntrt(robot, cntrt_arm);
+// 	p3d_set_and_update_this_robot_conf(robot, q);
+//   
+// 	p3d_desactivateCntrt(robot, cntrt_arm);
+//   
+// 	p3d_set_and_update_this_robot_conf(robot, q0);
+// 	p3d_destroy_config(robot, q0);
+// 	return 1;
+// }
 
 
 /** \brief p3d_update_virtual_object_config_for_arm_ik_constraint
  * return 0 if there is an error
  */
 int p3d_update_virtual_object_config_for_arm_ik_constraint( p3d_rob* robot, int armId, configPt q) {
-	p3d_jnt *virObjJnt= NULL, *wristJnt= NULL;
+	p3d_jnt *virObjJnt= NULL,*virObjJnt2= NULL, *wristJnt= NULL, *wristJnt2= NULL;
 	p3d_matrix4 TattInv, Twrist, TvirtObj;
 	configPt q0= NULL;
-	p3d_cntrt* cntrt_arm = NULL;
+	p3d_cntrt* cntrt_arm = NULL, * cntrt_arm2 = NULL;
 
 	if(robot->nbCcCntrts==0) {
 		printf("%s: %d: p3d_update_virtual_object_config_for_arm_ik_constraint(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robot->name);
@@ -5787,7 +5784,7 @@ int p3d_update_virtual_object_config_for_arm_ik_constraint( p3d_rob* robot, int 
 		printf("%s: %d: p3d_update_virtual_object_config_for_arm_ik_constraint(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robot->name);
 		return FALSE;
 	}
-	else {
+	else {	  
 		wristJnt= robot->ccCntrts[armId]->pasjnts[robot->ccCntrts[armId]->npasjnts-1];
 	}
 
@@ -5797,6 +5794,7 @@ int p3d_update_virtual_object_config_for_arm_ik_constraint( p3d_rob* robot, int 
 	}
 	/* Look for the arm_IK constraint */
 	cntrt_arm = robot->ccCntrts[armId];
+
 	if (cntrt_arm == NULL) {
 		printf("FATAL_ERROR : arm_IK constraint does not exist\n");
 		return 0;
