@@ -416,9 +416,11 @@ class  ManipulationPlanner {
      int setPoseWrtEndEffector(double x, double y, double z, double rx, double ry, double rz, configPt q);
      int dynamicGrasping(int armId, char *robot_name, char *hand_robot_name, char *object_name);
      int robotBaseGraspConfig(int armId, char *objectName, double *x, double *y, double *theta);
-     MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, char* objectName, std::vector <int> lp, std::vector < std::vector <double> > positions,  int *nbPositions);
 
+     MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal,
+				       char* objectName, std::vector <int> &lp, std::vector < std::vector <double> > &positions);
 
+  
      int armComputePRM();
 
      int cleanRoadmap();
