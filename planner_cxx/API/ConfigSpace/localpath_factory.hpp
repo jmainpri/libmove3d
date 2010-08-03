@@ -1,7 +1,13 @@
 #ifndef LOCALPATH_FACTORY_HPP
 #define LOCALPATH_FACTORY_HPP
 
-#include "../planningAPI.hpp"
+#ifndef CONFIGURATION_HPP
+class Configuration;
+#endif
+#ifndef LOCALPATH_HPP
+class LocalPath;
+#endif
+
 
 /**
     @ingroup CONFIG_SPACE

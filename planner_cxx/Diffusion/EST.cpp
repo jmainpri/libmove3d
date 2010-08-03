@@ -9,6 +9,9 @@
 
 #include "Planner-pkg.h" 
 
+#include "API/Roadmap/node.hpp"
+#include "API/Roadmap/graph.hpp"
+
 using namespace std;
 using namespace tr1;
 

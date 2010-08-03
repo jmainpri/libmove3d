@@ -9,7 +9,8 @@
 #ifndef LOCALPATH_VALID_TEST_HPP
 #define LOCALPATH_VALID_TEST_HPP
 
-#include "planningAPI.hpp"
+#include "API/ConfigSpace/configuration.hpp"
+#include "API/ConfigSpace/localpath.hpp"
 
 /**
  * @ingroup CONFIG_SPACE

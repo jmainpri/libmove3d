@@ -6,7 +6,14 @@
  */
 
 #include "TreePlanner.hpp"
-#include "../API/Grids/ThreeDPoints.h"
+
+#include "API/Grids/ThreeDPoints.h"
+
+#include "API/Roadmap/node.hpp"
+#include "API/Roadmap/compco.hpp"
+#include "API/Roadmap/graph.hpp"
+
+#include "p3d/env.hpp"
 
 #include "Planner-pkg.h"
 
@@ -139,11 +146,11 @@ bool TreePlanner::checkStopConditions()
     if (/*ENV.getBool(Env::ligandExitTrajectory)*/false)
     {
         double d(_Start->getConfiguration()->dist(
-                *_Graph->getLastnode()->getConfiguration()));
+                *_Graph->getLastNode()->getConfiguration()));
         if (d > 12.0)
         {
             ENV.setBool(Env::expandToGoal, true);
-            _Goal = _Graph->getLastnode();
+            _Goal = _Graph->getLastNode();
             _Graph->getGraphStruct()->search_goal = _Goal->getNodeStruct();
             _Goal->getNodeStruct()->rankFromRoot = 1;
             _Goal->getNodeStruct()->type = ISOLATED;
@@ -227,13 +234,13 @@ bool TreePlanner::connectionToTheOtherCompco(Node* toNode)
 
         Node* closestNode = _Graph->nearestWeightNeighbour(
                 toNode,
-                _Graph->getLastnode()->getConfiguration(),
+                _Graph->getLastNode()->getConfiguration(),
                 false,
                 p3d_GetDistConfigChoice());
 
         ENV.setBool(Env::isWeightedRotation,WeigtedRot);
 		
-        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastnode(), closestNode );
+        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastNode(), closestNode );
     }
 
     if(isConnectedToOtherTree)
@@ -243,11 +250,11 @@ bool TreePlanner::connectionToTheOtherCompco(Node* toNode)
 
     if(ENV.getBool(Env::randomConnectionToGoal))
     {
-        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastnode(), toNode->randomNodeFromComp());
+        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastNode(), toNode->randomNodeFromComp());
     }
     else
     {
-        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastnode(), toNode );
+        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastNode(), toNode );
     }
 
     return isConnectedToOtherTree;
@@ -289,16 +296,16 @@ unsigned int TreePlanner::run()
 		// Do not expand in the case of a balanced bidirectional expansion,
 		// if the components are unbalanced.
 		if (!((ENV.getBool(Env::biDir) && ENV.getBool(Env::expandBalanced))
-					&& (fromNode->getCompcoStruct()->nnode
-							> toNode->getCompcoStruct()->nnode + 2)))
+					&& (fromNode->getConnectedComponent()->getNumberOfNodes()
+							> toNode->getConnectedComponent()->getNumberOfNodes() + 2)))
 		{
 			// expand one way
 			// one time (Main function of Tree like planners
 			NbCurCreatedNodes = expandOneStep(fromNode,toNode); m_nbExpansion++;
 			
-			cout << "Number Of Compco C++ : " << _Graph->getConnectedComponents().size() << endl;
-			cout << "Number Of Compco C : " << _Graph->getNumberOfCompco() << endl;
-			cout << "--------------------------------------------" << endl;
+//			cout << "Number Of Compco C++ : " << _Graph->getConnectedComponents().size() << endl;
+//			cout << "Number Of Compco C : " << _Graph->getNumberOfCompco() << endl;
+//			cout << "--------------------------------------------" << endl;
 			
 			if (NbCurCreatedNodes > 0)
 			{

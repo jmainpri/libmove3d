@@ -10,7 +10,11 @@
 //
 //
 #include "RRT.hpp"
-#include "Grids/ThreeDPoints.h"
+
+#include "API/Grids/ThreeDPoints.h"
+#include "API/Roadmap/node.hpp"
+
+#include <iostream>
 
 using namespace std;
 using namespace tr1;
@@ -127,7 +131,8 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
 //   directionConfig->print();
 
     // get node for expansion
-    expansionNode = _expan->getExpansionNode(fromComp, directionConfig,
+    expansionNode = _expan->getExpansionNode(fromComp, 
+																						 directionConfig,
                                              ENV.getInt(Env::DistConfigChoice));
 
 //    cout << "***********************************************************"  << endl;
@@ -136,9 +141,9 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
 
     // expansion in one direction
     int nbNodeCreated = _expan->expandProcess(expansionNode, 
-								 directionConfig, 
-								 directionNode,
-                                 ENV.getExpansionMethod());
+																							directionConfig, 
+																							directionNode,
+																							ENV.getExpansionMethod());
 	
 	if ( nbNodeCreated < 1 ) 
 	{

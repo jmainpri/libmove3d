@@ -851,26 +851,14 @@ int localPathCollidesFullCheck (hri_bitmapset * btset, hri_bitmap_cell* cell, hr
 double getRotationBoundingCircleRadius(p3d_rob *robot)
 {
   configPt robotq;
-  double original_x, original_y, original_rz, original_vox, original_voy;
-
+  double original_rz;
   double rotation_radius = 0;
 
   if (robot != NULL) {
     robotq = p3d_get_robot_config(robot); /** ALLOC **/
-    original_x = robotq[robot->joints[ROBOTj_BASE]->index_dof ];
-    original_y = robotq[robot->joints[ROBOTj_BASE]->index_dof + 1];
     original_rz = robotq[robot->joints[ROBOTj_BASE]->index_dof + 5];
-    original_vox = robotq[robot->joints[ROBOTj_VOBJECT]->index_dof];
-    original_voy = robotq[robot->joints[ROBOTj_VOBJECT]->index_dof + 1];
+    robotq[robot->joints[ROBOTj_BASE]->index_dof + 5] = 0;//rz
 
-    robotq[robot->joints[ROBOTj_BASE]->index_dof] = 0;
-    robotq[robot->joints[ROBOTj_BASE]->index_dof + 1] = 0;
-    robotq[robot->joints[ROBOTj_BASE]->index_dof + 5] = 0;
-
-    // virtual object freeflyer might distort the bounding box
-    robotq[robot->joints[ROBOTj_VOBJECT]->index_dof] = 0; //x
-    robotq[robot->joints[ROBOTj_VOBJECT]->index_dof + 1] = 0; //y
-//    robotq[robot->joints[ROBOTj_VOBJECT]->index_dof + 2] = 0; //z
 
     /* turn the robot rz to zero to get its zero position bounding box
      * it is not minimal, but that way, we at least get the same expand rate
@@ -878,16 +866,6 @@ double getRotationBoundingCircleRadius(p3d_rob *robot)
      */
     p3d_set_and_update_this_robot_conf(robot, robotq);
 
-    int no, i;
-    p3d_BB *BB, *BBo;
-    
-    no = robot->no;
-    BB = &(robot->BB);
-    
-    for (i = 0;i < no;i++) { 
-      BBo = &(robot->o[i]->BB);
-      printf("ONAME:%s xmin:%f ymax:%f\n",robot->o[i]->name,BBo->xmin,BBo->ymax);
-    }
 
     // calculate the distance between the robot turning point
     //(robotq[ROBOTq_X], robotq[ROBOTq_Y] assuming it is in the middle of the BB) and the bounding box corners
@@ -897,11 +875,7 @@ double getRotationBoundingCircleRadius(p3d_rob *robot)
           DISTANCE2D(robot->BB.xmin, robot->BB.ymin, robotq[ROBOTq_X], robotq[ROBOTq_Y]));
 
     // restore orignal robot rotation
-    robotq[robot->joints[ROBOTj_BASE]->index_dof] = original_x;
-    robotq[robot->joints[ROBOTj_BASE]->index_dof + 1] = original_y;
     robotq[robot->joints[ROBOTj_BASE]->index_dof + 5] = original_rz;
-    robotq[robot->joints[ROBOTj_VOBJECT]->index_dof] = original_vox;
-    robotq[robot->joints[ROBOTj_VOBJECT]->index_dof + 1] = original_voy;
 
     p3d_set_and_update_this_robot_conf(robot, robotq);
 

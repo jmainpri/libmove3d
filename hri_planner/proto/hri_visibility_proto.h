@@ -8,3 +8,4 @@ extern int g3d_draw_agent_fov(HRI_AGENT *agent);
 extern int g3d_draw_visibility_by_frame(p3d_matrix4 camera_frame, double Hfov, double Vfov, double max_dist, GLdouble source_color[],GLdouble dest_color[]);
 extern int g3d_draw_agent_pointing(HRI_AGENT *agent);
 extern int hri_is_object_pointed(HRI_AGENT * agent, p3d_rob *object, int threshold, int save);
+extern void g3d_draw_all_agents_fovs(HRI_AGENTS *agents);

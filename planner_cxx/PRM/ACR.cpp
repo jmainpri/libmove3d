@@ -11,6 +11,13 @@
 //
 #include "ACR.hpp"
 
+#include "API/Roadmap/node.hpp"
+#include "API/Roadmap/graph.hpp"
+
+#include <iostream>
+
+#include "p3d/env.hpp"
+
 #include "Planner-pkg.h"
 
 using namespace std;

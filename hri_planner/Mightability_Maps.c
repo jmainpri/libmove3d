@@ -13082,7 +13082,7 @@ configPt show_all_grasps ( p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &
 				if ( gpInverse_geometric_model_PA10 ( robot, gframe_robot, result ) ==GP_OK )
 				{
 #ifdef LIGHT_PLANNER
-//p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, result);
+//p3d_update_virtual_object_config_for_arm_ik_constraint(robot, 0, result);
 //            p3d_set_and_update_this_robot_conf(robot, result);
 #endif
 					p3d_set_and_update_this_robot_conf ( robot, result );

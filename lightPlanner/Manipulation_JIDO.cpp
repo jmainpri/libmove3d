@@ -771,10 +771,10 @@ printf("************************************************************************
 
         copyConfigTrajToFORM();
 
-	cleanRoadmap();
+//	cleanRoadmap();
 	cleanTraj();
 
-	printf("il y a %d configurations\n", _configTraj.size());
+	printf("il y a %ld configurations\n", _configTraj.size());
         for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
                 q2_conf = _configTraj[itraj+1];
@@ -784,7 +784,7 @@ printf("************************************************************************
 		  return MANIPULATION_TASK_NO_TRAJ_FOUND;
 		}
               
-	        cleanRoadmap();
+	        //cleanRoadmap();
 	}
 
 
@@ -804,7 +804,7 @@ printf("************************************************************************
 
         clearConfigTraj();
 
-        printf("il y a %d configurations\n", _configTraj.size());
+        printf("il y a %ld configurations\n", _configTraj.size());
 
         p3d_set_and_update_this_robot_conf(_robotPt, qStart);
         gpOpen_hand(_robotPt, _handProp);
@@ -837,17 +837,17 @@ printf("************************************************************************
 	cleanRoadmap();
 	cleanTraj();
 	
-	printf("il y a %d configurations\n", _configTraj.size());
+	printf("il y a %ld configurations\n", _configTraj.size());
 
         for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
                 q2_conf = _configTraj[itraj+1];
 
-
+#ifdef FK_CNTRT
                if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
                   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
                }
-
+#endif
 
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
@@ -876,7 +876,7 @@ printf("************************************************************************
 	  
         destroyTrajectories();
         clearConfigTraj();
-        printf("il y a %d configurations\n", _configTraj.size());
+        printf("il y a %ld configurations\n", _configTraj.size());
 
 	qi = p3d_copy_config(_robotPt, qStart);
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
@@ -912,7 +912,7 @@ printf("************************************************************************
 
         copyConfigTrajToFORM();
 
-	printf("il y a %d configurations\n", _configTraj.size());
+	printf("il y a %ld configurations\n", _configTraj.size());
 
         for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
@@ -982,7 +982,7 @@ printf("************************************************************************
 	cleanRoadmap();
 	cleanTraj();
 	
-	printf("il y a %d configurations\n", _configTraj.size());
+	printf("il y a %ld configurations\n", _configTraj.size());
 
         for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
@@ -1119,7 +1119,7 @@ printf("************************************************************************
 //   centerCamera();
 
   g3d_draw_allwin_active();
-
+  printf("BioMove3D: armPlanTask OK\n");
   return MANIPULATION_TASK_OK;
 }
 
@@ -1184,6 +1184,7 @@ int Manipulation_JIDO::computeRRT(){
   ChronoOff();
 #else
   result= p3d_specific_search((char*)"out.txt");
+  optimiseTrajectory(100,6);
 #endif
   if(!result){
     printf("ArmGotoQ: could not find a path.\n");
@@ -1570,13 +1571,13 @@ int Manipulation_JIDO::computePlacementList(){
   forbidWindowEvents();
 
   gpCompute_stable_placements(_object, _placementList);
-  printf("%d poses found\n",_placementList.size());
+  printf("%ld poses found\n",_placementList.size());
 
   // do not test collisions against our robot:
   robotList.push_back(_robotPt);
 //   robotList.push_back(_support);
   gpFind_placements_on_object(_object, _support, robotList, _placementList, _placementTranslationStep, _placementNbOrientations, 0.005, _placementOnSupportList);
-  printf("%d poses on support found\n",_placementOnSupportList.size());
+  printf("%ld poses on support found\n",_placementOnSupportList.size());
 
 
   // do not compute clearance with: our robot, the support, the human:
@@ -2527,11 +2528,9 @@ int Manipulation_JIDO::setCameraImageSize(int width, int height) {
 //! \brief Check if the current path is in collision or not
 //! \return 1 in case of collision, 0 otherwise
 int  Manipulation_JIDO::checkCollisionOnTraj(){
-  p3d_rob *robotPt = NULL;
-  robotPt= (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
   //   configPt currentPos = p3d_get_robot_config(robotPt);
   //   double armPos[6] = {currentPos[5], currentPos[6], currentPos[7], currentPos[8], currentPos[9], currentPos[10]};
-  if(checkCollisionOnTraj(robotPt, 0, 0)){
+  if(checkCollisionOnTraj(0)){
     printf("There is collision\n");
     return 1;
   }else{
@@ -2543,26 +2542,26 @@ int  Manipulation_JIDO::checkCollisionOnTraj(){
 
 //! \brief Check if the current path is in collision or not
 //! \return 1 in case of collision, 0 otherwise
-int Manipulation_JIDO::checkCollisionOnTraj(p3d_rob* robotPt, int cartesian, int currentLpId) {
+int Manipulation_JIDO::checkCollisionOnTraj(int currentLpId) {
   configPt qi = NULL, qf = NULL;
-  static p3d_traj *traj = NULL;
+  p3d_traj *traj = NULL;
   //   int ntest=0;
   //   double gain;
   
-  XYZ_ENV->cur_robot= robotPt;
+  XYZ_ENV->cur_robot= _robotPt;
   //initialize and get the current linear traj
   if (!traj){
-    if(robotPt->nt < robotPt->tcur->num - 2){
+    if(_robotPt->nt < _robotPt->tcur->num - 2){
       return 1;
     }else{
-      traj = robotPt->t[robotPt->tcur->num - 2];
+      traj = _robotPt->t[_robotPt->tcur->num - 2];
     }
   }
-  if(cartesian == 0) {
+  if(_cartesian == 0) {
     /* plan in the C_space */
-    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, (char*)"jido-arm_lin", 1) ;
-    deactivateCcCntrts(robotPt, -1);
+    p3d_multiLocalPath_disable_all_groupToPlan(_robotPt);
+    p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-arm_lin", 1) ;
+    deactivateCcCntrts(_robotPt, -1);
   } else {
     /* plan in the cartesian space */
     qi = p3d_alloc_config(robotPt);
@@ -2587,34 +2586,35 @@ int Manipulation_JIDO::checkCollisionOnTraj(p3d_rob* robotPt, int cartesian, int
     return MANIPULATION_TASK_ERROR_UNKNOWN;
   }
   p3d_localpath* currentLp = traj->courbePt;
-  for(int i = 0; i < currentLpId; i++){
+  int lpid = 0;
+  for(int i = 0; i < currentLpId/2; i++){
     currentLp = currentLp->next_lp;
   }
-  return checkForCollidingPath(robotPt, traj, currentLp);
+  return checkForCollidingPath(_robotPt, traj, currentLp);
 }
 
 //! Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
 //! \return 0 in case of success, !=0 otherwise
-int Manipulation_JIDO::replanCollidingTraj(p3d_rob* robotPt, int cartesian, double* armConfig, int currentLpId, int lp[], Gb_q6 positions[],  int *nbPositions) {
+int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &lp, std::vector < std::vector <double> > &positions) {
   configPt qi = NULL, qf = NULL;
-  static p3d_traj *traj = NULL;
+  p3d_traj *traj = NULL;
   int ntest=0;
   double gain;
   
-  XYZ_ENV->cur_robot = robotPt;
+  XYZ_ENV->cur_robot = _robotPt;
   //initialize and get the current linear traj
   if (!traj){
-    if(robotPt->nt < robotPt->tcur->num - 2){
+    if(_robotPt->nt < _robotPt->tcur->num - 2){
       return MANIPULATION_TASK_INVALID_TRAJ_ID;
     }else{
-      traj = robotPt->t[robotPt->tcur->num - 2];
+      traj = _robotPt->t[_robotPt->tcur->num - 2];
     }
   }
-  if(cartesian == 0) {
+  if(_cartesian == 0) {
     /* plan in the C_space */
-    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, (char*)"jido-arm_lin", 1) ;
-    deactivateCcCntrts(robotPt, -1);
+    p3d_multiLocalPath_disable_all_groupToPlan(_robotPt);
+    p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-arm_lin", 1) ;
+    deactivateCcCntrts(_robotPt, -1);
   } else {
     /* plan in the cartesian space */
     qi = p3d_alloc_config(robotPt);
@@ -2639,27 +2639,32 @@ int Manipulation_JIDO::replanCollidingTraj(p3d_rob* robotPt, int cartesian, doub
     return MANIPULATION_TASK_ERROR_UNKNOWN;
   }
   p3d_localpath* currentLp = traj->courbePt;
-  for(int i = 0; i < currentLpId; i++){
+  for(int i = 0; i < currentLpId/2; i++){
     currentLp = currentLp->next_lp;
   }
-  configPt currentConfig = p3d_get_robot_config(robotPt);
+  configPt currentConfig = p3d_get_robot_config(_robotPt);
   int j = 0, returnValue = 0, optimized = traj->isOptimized;
   if(optimized){
-    p3dAddTrajToGraph(robotPt, robotPt->GRAPH, traj);
+    p3dAddTrajToGraph(_robotPt, _robotPt->GRAPH, traj);
   }
+  printf("nbTraj before : %d\n", _robotPt->nt);
   do{
     printf("Test %d\n", j);
     j++;
-    returnValue = replanForCollidingPath(robotPt, traj, robotPt->GRAPH, currentConfig, currentLp, optimized);
-    traj = robotPt->tcur;
+//    returnValue = replanForCollidingPath(_robotPt, traj, _robotPt->GRAPH, currentConfig, currentLp, optimized);
+   returnValue  = checkCollisionsOnPathAndReplan(_robotPt, traj, _robotPt->GRAPH, optimized);
+    traj = _robotPt->tcur;
     currentLp = traj->courbePt;
   }while(returnValue != 1 && returnValue != 0 && returnValue != -2 && j < 10);
+  
+  printf("nbTraj after : %d, returnValue = %d\n", _robotPt->nt, returnValue); 
+ 
   if (optimized && j > 1){
     optimiseTrajectory(100,6);
   }
   if(j > 1){//There is a new traj
     /* COMPUTE THE SOFTMOTION TRAJECTORY */
-    traj = robotPt->tcur;
+    traj = _robotPt->tcur;
     if(!traj) {
       printf("SoftMotion : ERREUR : no current traj\n");
       return MANIPULATION_TASK_ERROR_UNKNOWN;
@@ -2668,10 +2673,12 @@ int Manipulation_JIDO::replanCollidingTraj(p3d_rob* robotPt, int cartesian, doub
       printf("Optimization with softMotion not possible: current trajectory contains one or zero local path\n");
       return MANIPULATION_TASK_OK;
     }
-    //     if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions, nbPositions) == 1){
-    //       printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
-    //       return 1;
-    //     }
+    double gain = 0.0;
+    int ntest = 0;
+    if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions) == 1){
+           printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
+           return 1;
+    }
     //peut etre ajouter un return specific pour savoir qu'il y'a une nouvelle traj
   }
   return MANIPULATION_TASK_OK;

@@ -1,8 +1,8 @@
 #ifndef EDGE_HPP
 #define EDGE_HPP
 
-#include "Roadmap/node.hpp"
-#include "ConfigSpace/localpath.hpp"
+#include "API/Roadmap/node.hpp"
+#include "API/ConfigSpace/localpath.hpp"
 
 class Graph;
 

@@ -434,7 +434,7 @@ static void CB_genomSetX_obj(FL_OBJECT *obj, long arg) {
 
 static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 
-	int nbPositions = 0;
+//	int nbPositions = 0;
 	
 	if (manipulation== NULL) {
 	  initManipulationGenom();
@@ -447,6 +447,13 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	}
 	manipulation->armPlanTask(ARM_FREE,manipulation->robotStart(),manipulation->robotGoto(),(char*)"", manipulation->lp, manipulation->positions);
 	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
+  std::cout << "Positions : " << std::endl;
+  for(unsigned int i = 0; i < manipulation->positions.size(); i++){
+    for(unsigned int j = 0; j < manipulation->positions[i].size(); j++){
+      std::cout << manipulation->positions[i][j]<< " ";
+    }
+    std::cout << manipulation->lp[i] << std::endl;
+  }
         return;
 }
 

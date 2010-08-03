@@ -163,6 +163,10 @@ public:
 public:
 
     enum boolParameter {
+				// Controls wether the C++ planner maps the C Graph or not
+			  // Only works with RRT
+				use_p3d_structures,
+				// Controls wether the planner is PRM or Diffusion
         isPRMvsDiffusion,
         isGoalBiased,
         treePlannerIsEST,

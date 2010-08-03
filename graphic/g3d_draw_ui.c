@@ -60,7 +60,7 @@ static int FRAME_NEXT_DIST_Y = FRAME_NEXT_DIST_Y_DEFAULT;
 /****************************************************************************/
 
 void g3d_create_form(FL_FORM** form, int w, int h, int type){
-  if (w < 0 || h < 0){//si l'utilisateur ne veut pas spécifier les dimensions de la frame.
+  if (w < 0 || h < 0){//si l'utilisateur ne veut pas specifier les dimensions de la frame.
     return;
   }
   *form = fl_bgn_form(type,w,h);
@@ -556,7 +556,7 @@ static int g3d_place_fl_object_in_form(FL_OBJECT** obj, const char *label, int* 
   FL_OBJECT* prev = ((FL_OBJECT**)(*obj)->u_vdata)[0];
   FL_OBJECT* tmp = ((FL_OBJECT*)(*parent)->u_vdata);
   int nbPrev = 0, newWidth = 0, newHeight = 0;
-  //décalage spécifique a certaines classes
+  //decalage specifique a certaines classes
   FORM_SHIFT_X = FORM_SHIFT_X_DEFAULT;
   FORM_NEXT_DIST_X = FORM_NEXT_DIST_X_DEFAULT;
   switch ((*obj)->objclass){
@@ -625,7 +625,7 @@ static int g3d_place_fl_object_in_form(FL_OBJECT** obj, const char *label, int* 
     g3d_shift_childs(obj);
   }
   if (((*y) + h) > ((*parent)->h - FORM_SHIFT_Y)){
-    printf("Error : Can't create the frame : %s .Increase form height\n", label);
+    printf("Error : Can't create the frame : %s . Increase form height %i > %i\n", label, ((*y) + h), ((*parent)->h - FORM_SHIFT_Y));
     g3d_fl_free_object(*obj);
     return 0;
   }

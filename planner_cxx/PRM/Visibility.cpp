@@ -11,6 +11,11 @@
 //
 #include "Visibility.hpp"
 
+#include "API/Roadmap/node.hpp"
+#include "API/Roadmap/graph.hpp"
+
+#include "p3d/env.hpp"
+
 using namespace std;
 using namespace tr1;
 

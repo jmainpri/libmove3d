@@ -7,7 +7,7 @@
  *
  */
 
-#include "Multi-TRRT.h"
+#include "Multi-TRRT.hpp"
 
 /*
  * RRT-Transition.cpp
@@ -17,6 +17,8 @@
  */
 
 #include "Expansion/TransitionExpansion.h"
+#include "Roadmap/node.hpp"
+#include "Roadmap/graph.hpp"
 
 #ifdef HRI_COSTSPACE
 #include "HRI_CostSpace/HRICS_Workspace.h"
@@ -149,7 +151,7 @@ void MultiTRRT::initalizeRoot(Node* rootNode)
  */
 bool MultiTRRT::connectNodeToCompco(Node* node, Node* compNode)
 {
-	if (node->getCompcoStruct()->num == compNode->getCompcoStruct()->num ) 
+	if ( node->equalCompco(compNode) ) 
 	{
 		cout << "Error tries to connect to its own component" << endl;
 	}

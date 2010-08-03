@@ -11,28 +11,36 @@
 #include "RRT.hpp"
 
 /**
-  @ingroup Diffusion
-  */
+ @ingroup Diffusion
+ */
 class TransitionRRT : public RRT {
-
+	
 public:
-
-    TransitionRRT(Robot* R, Graph* G);
-
-    ~TransitionRRT();
-
-    virtual int init();
-
-    /**
-    * costConnectNodeToComp
-    * Try to connect a node to a given component
-    * taking into account the fact that the space
-    * is a cost space
-    * @return: TRUE if the node and the componant have
-    * been connected.
-    */
-    virtual bool connectNodeToCompco(Node* N, Node* CompNode);
-
+	
+	TransitionRRT(Robot* R, Graph* G);
+	
+	~TransitionRRT();
+	
+	/**
+	 * Initialize the Transition RRT variables
+	 */
+	virtual int init();
+	
+	/**
+	 * Set the node cost
+	 */
+	void setNodeCost(Node* node);
+	
+	/**
+	 * costConnectNodeToComp
+	 * Try to connect a node to a given component
+	 * taking into account the fact that the space
+	 * is a cost space
+	 * @return: TRUE if the node and the componant have
+	 * been connected.
+	 */
+	virtual bool connectNodeToCompco(Node* N, Node* CompNode);
+	
 };
 
 #endif /* TRANSITIONRRT_HPP_ */
