@@ -1228,7 +1228,7 @@ int Manipulation_JIDO::grabObject(char* objectName){
   double error;
   p3d_matrix4 wristPose, objectPose, T1, T2, Tinv, gframe;
 
-  //this->releaseObject();
+  this->releaseObject();
   deactivateCcCntrts(_robotPt, -1);
 
 
