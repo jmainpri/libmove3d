@@ -2293,7 +2293,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-arm_lin") == 0) {
 			arm_mlpID = iGraph;
 		}
-		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-rarm_lin") == 0) {
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "upBody") == 0) {
 			arm_mlpID = iGraph;
 		}
 		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "kuka-rarm_lin") == 0) {
@@ -2314,7 +2314,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	segment.clear();
 	cond.clear();
 
-	
+	index_dof = robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[0]]->index_dof;
 	double min_i=0.0, max_i=0.0;
 	
 	for(v=0; v<nbGpJnt; v++) {
@@ -2332,7 +2332,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	  }
 	}
 	
-	index_dof = robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[0]]->index_dof;
+// 	index_dof = robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[0]]->index_dof;
 
 	localpathPt = traj->courbePt;
 	u = 0.0;

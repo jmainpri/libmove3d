@@ -26,21 +26,21 @@
 
 using namespace std;
 
-void undefinedRobotMessage() {
-  printf("The robot has not been defined in Manipulation_JIDO. Recreate an instance of Manipulation_JIDO.\n");
-}
-
-void undefinedObjectMessage() {
-  printf("The object has not been defined in Manipulation_JIDO. Set it with setObjectToManipulate().\n");
-}
-
-void undefinedSupportMessage() {
-  printf("The support has not been defined in Manipulation_JIDO. Set it with setSupport().\n");
-}
-
-void undefinedCameraMessage() {
-  printf("The joint of the pan/tilt unit has not been defined in Manipulation_JIDO. Set it with setCameraJnt().\n");
-}
+// void undefinedRobotMessage() {
+//   printf("The robot has not been defined in Manipulation_JIDO. Recreate an instance of Manipulation_JIDO.\n");
+// }
+// 
+// void undefinedObjectMessage() {
+//   printf("The object has not been defined in Manipulation_JIDO. Set it with setObjectToManipulate().\n");
+// }
+// 
+// void undefinedSupportMessage() {
+//   printf("The support has not been defined in Manipulation_JIDO. Set it with setSupport().\n");
+// }
+// 
+// void undefinedCameraMessage() {
+//   printf("The joint of the pan/tilt unit has not been defined in Manipulation_JIDO. Set it with setCameraJnt().\n");
+// }
 
 Manipulation_JIDO::Manipulation_JIDO(p3d_rob *robotPt, gpHand_type handType)//: // _capture(false)
 {
@@ -681,6 +681,7 @@ configPt Manipulation_JIDO::robotRest(){
 
 
 //! Computes a path for a given manipulation elementary task.
+
 MANIPULATION_TASK_MESSAGE Manipulation_JIDO::armPlanTask(MANIPULATION_TASK_TYPE_STR task, configPt qStart, configPt qGoal, char* objectName, std::vector <int> &lp, std::vector < std::vector <double> > &positions){
 
   configPt qi = NULL, qf = NULL;
@@ -2526,6 +2527,7 @@ int Manipulation_JIDO::setCameraImageSize(int width, int height) {
   return 0;
 }
 
+
 #ifdef DPG
 //! \brief Check if the current path is in collision or not
 //! \return 1 in case of collision, 0 otherwise
@@ -2771,3 +2773,4 @@ void printManipulationMessage(MANIPULATION_TASK_MESSAGE message)
   }
 
 }
+
