@@ -5762,6 +5762,69 @@ int p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(
 	return 1;
 }
 
+
+/** \brief p3d_update_virtual_object_config_for_arm_ik_constraint
+ * return 0 if there is an error
+ */
+int p3d_update_virtual_object_config_for_arm_ik_constraint( p3d_rob* robot, int armId, configPt q) {
+	p3d_jnt *virObjJnt= NULL, *wristJnt= NULL;
+	p3d_matrix4 TattInv, Twrist, TvirtObj;
+	configPt q0= NULL;
+	p3d_cntrt* cntrt_arm = NULL;
+
+	if(robot->nbCcCntrts==0) {
+		printf("%s: %d: p3d_update_virtual_object_config_for_arm_ik_constraint(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robot->name);
+		return FALSE;
+	}
+	else {
+		virObjJnt= robot->ccCntrts[armId]->actjnts[0];
+	}
+
+	if(robot->nbCcCntrts==0) {
+		printf("%s: %d: p3d_update_virtual_object_config_for_arm_ik_constraint(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robot->name);
+		return FALSE;
+	}
+	else {
+		wristJnt= robot->ccCntrts[armId]->pasjnts[robot->ccCntrts[armId]->npasjnts-1];
+	}
+
+	if (virObjJnt==NULL || wristJnt==NULL) {
+		printf("FATAL_ERROR: the virtual object does not exist or connot find end-eff Jnt\n");
+		return 0;
+	}
+	/* Look for the arm_IK constraint */
+	cntrt_arm = robot->ccCntrts[armId];
+	if (cntrt_arm == NULL) {
+		printf("FATAL_ERROR : arm_IK constraint does not exist\n");
+		return 0;
+	}
+	if (cntrt_arm->active == 1) {
+		return 1;
+	}
+	q0= p3d_alloc_config(robot);
+	p3d_get_robot_config_into(robot, &q0);
+
+	p3d_set_and_update_this_robot_conf(robot, q);
+
+	p3d_mat4Copy(wristJnt->abs_pos, Twrist);
+	p3d_matInvertXform(cntrt_arm->Tatt, TattInv);
+	p3d_mat4Mult(Twrist, TattInv, TvirtObj);
+
+	p3d_mat4ExtractPosReverseOrder(TvirtObj, &q[virObjJnt->index_dof],
+                                 &q[virObjJnt->index_dof+1], &q[virObjJnt->index_dof+2],
+                                 &q[virObjJnt->index_dof+3], &q[virObjJnt->index_dof+4],
+                                 &q[virObjJnt->index_dof+5]);
+
+	p3d_activateCntrt(robot, cntrt_arm);
+	p3d_set_and_update_this_robot_conf(robot, q);
+
+	p3d_desactivateCntrt(robot, cntrt_arm);
+
+	p3d_set_and_update_this_robot_conf(robot, q0);
+	p3d_destroy_config(robot, q0);
+	return 1;
+}
+
 /**  
  * Computes Attached Matrix of a Inverse Kinematics constraint
  **/

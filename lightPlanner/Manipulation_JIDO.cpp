@@ -727,7 +727,8 @@ printf("************************************************************************
     p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-ob_lin", 1) ;
     p3d_copy_config_into(_robotPt, qStart, &qi);
     /* Uptdate the Virual object for inverse kinematics */
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
+    p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
+    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
     p3d_set_and_update_this_robot_conf(_robotPt, qi);
     p3d_destroy_config(_robotPt, qi);
     qi = p3d_get_robot_config(_robotPt);
@@ -744,7 +745,8 @@ printf("************************************************************************
        if(_cartesian == true) {
 	qf = p3d_alloc_config(_robotPt);
 	p3d_copy_config_into(_robotPt, qGoal, &qf);
-	p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
+	p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qf);
+	//p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
 	p3d_set_and_update_this_robot_conf(_robotPt, qf);
 	p3d_destroy_config(_robotPt, qf);
 	qf = p3d_get_robot_config(_robotPt);
@@ -893,7 +895,8 @@ printf("************************************************************************
 	
         qf = p3d_alloc_config(_robotPt);
         p3d_copy_config_into(_robotPt, qGoal, &qf);
-        p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
+	p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qf);
+        //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
         gpOpen_hand(_robotPt, _handProp);
         p3d_set_and_update_this_robot_conf(_robotPt, qf);
         p3d_destroy_config(_robotPt, qf);
@@ -1268,7 +1271,8 @@ int Manipulation_JIDO::releaseObject(){
   qi = p3d_alloc_config(_robotPt);
   p3d_copy_config_into(_robotPt, _robotPt->ROBOT_POS, &qi);
   /* Uptdate the Virual object for inverse kinematics */
-  p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
+  p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
+  //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
   p3d_set_and_update_this_robot_conf(_robotPt, qi);
   p3d_destroy_config(_robotPt, qi);
   qi = p3d_get_robot_config(_robotPt);
@@ -1311,8 +1315,10 @@ int Manipulation_JIDO::armComputePRM() {
     p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-ob_lin", 1) ;
     p3d_copy_config_into(_robotPt, _robotPt->ROBOT_POS, &qi);
     p3d_copy_config_into(_robotPt, _robotPt->ROBOT_GOTO, &qf);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
+    p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
+    p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qf);
+    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
+    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
     p3d_copy_config_into(_robotPt, qi, &_robotPt->ROBOT_POS);
     p3d_copy_config_into(_robotPt, qf, &_robotPt->ROBOT_GOTO);
     p3d_destroy_config(_robotPt, qi);
@@ -2367,8 +2373,10 @@ int Manipulation_JIDO::computeTrajBetweenTwoConfigs(bool cartesian, configPt qi,
                 p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-ob_lin", 1) ;
                 p3d_copy_config_into(_robotPt, _robotPt->ROBOT_POS, &qi);
                 p3d_copy_config_into(_robotPt, _robotPt->ROBOT_GOTO, &qf);
-                p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
-                p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
+		p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
+		p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qf);
+                //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
+                //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
                 p3d_copy_config_into(_robotPt, qi, &_robotPt->ROBOT_POS);
                 p3d_copy_config_into(_robotPt, qf, &_robotPt->ROBOT_GOTO);
                 p3d_destroy_config(_robotPt, qi);
@@ -2563,8 +2571,10 @@ int Manipulation_JIDO::checkCollisionOnTraj(p3d_rob* robotPt, int cartesian, int
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, (char*)"jido-ob_lin", 1) ;
     p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &qi);
     p3d_copy_config_into(robotPt, robotPt->ROBOT_GOTO, &qf);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
+    p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
+    p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qf);
+    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
+    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
     p3d_copy_config_into(robotPt, qi, &robotPt->ROBOT_POS);
     p3d_copy_config_into(robotPt, qf, &robotPt->ROBOT_GOTO);
     p3d_destroy_config(robotPt, qi);
@@ -2613,8 +2623,10 @@ int Manipulation_JIDO::replanCollidingTraj(p3d_rob* robotPt, int cartesian, doub
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, (char*)"jido-ob_lin", 1) ;
     p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &qi);
     p3d_copy_config_into(robotPt, robotPt->ROBOT_GOTO, &qf);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
+    p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
+    p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qf);
+    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
+    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
     p3d_copy_config_into(robotPt, qi, &robotPt->ROBOT_POS);
     p3d_copy_config_into(robotPt, qf, &robotPt->ROBOT_GOTO);
     p3d_destroy_config(robotPt, qi);
