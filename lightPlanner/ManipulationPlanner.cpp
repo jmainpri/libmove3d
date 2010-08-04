@@ -56,19 +56,19 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robotPt, gpHand_type handType)
   _graspID.resize(1);
   _handProp.resize(1);
 
-  _hand_robotPt[0]= NULL;
-  _handProp[0].initialize(handType);
+  _hand_robotPt.at(0)= NULL;
+  _handProp.at(0).initialize(handType);
 
   switch (handType) {
     case GP_GRIPPER:
-      _hand_robotPt[0]= p3d_get_robot_by_name((char*)GP_GRIPPER_ROBOT_NAME);
+      _hand_robotPt.at(0)= p3d_get_robot_by_name((char*)GP_GRIPPER_ROBOT_NAME);
       break;
     default:
       
       break;
   }
   
-  if(_hand_robotPt[0]==NULL)
+  if(_hand_robotPt.at(0)==NULL)
   {
     printf("%s: %d: ManipulationPlanner::ManipulationPlanner: a robot \"%s\" is required.\n",__FILE__,__LINE__,(char*)GP_GRIPPER_ROBOT_NAME);
     return;
@@ -86,27 +86,11 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robotPt, gpHand_type handType)
    _placementNbOrientations= 8;
    _placementOffset= -0.005;
 
-  for(int i=0; i<6; i++){
-    _QCUR[i]= 0.0;
-    _QGOAL[i]= 0.0;
-    _XCUR[i]= 0.0;
-    _XGOAL[i]= 0.0;
-  }
-
-  double deg2rad= (M_PI/180.0);
-  _qrest[0]= -64.288472*deg2rad;
-  _qrest[1]= 27.829957*deg2rad;
-  _qrest[2]= 112.040164*deg2rad;
-  _qrest[3]= 183.719232*deg2rad;
-  _qrest[4]= -45.732049*deg2rad;
-  _qrest[5]= 135.484701*deg2rad;
-
   _object           = NULL;
   _support          = NULL;
   _human            = NULL;
   _capture          = false;
   _cartesian        = false;
-//   _objectGrabed     = false;
   displayGrasps     = false;
   displayPlacements = false;
 
@@ -199,27 +183,11 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robotPt, gpHand_type handType1
    _placementNbOrientations= 8;
    _placementOffset= -0.005;
 
-  for(int i=0; i<6; i++){
-    _QCUR[i]= 0.0;
-    _QGOAL[i]= 0.0;
-    _XCUR[i]= 0.0;
-    _XGOAL[i]= 0.0;
-  }
-
-  double deg2rad= (M_PI/180.0);
-  _qrest[0]= -64.288472*deg2rad;
-  _qrest[1]= 27.829957*deg2rad;
-  _qrest[2]= 112.040164*deg2rad;
-  _qrest[3]= 183.719232*deg2rad;
-  _qrest[4]= -45.732049*deg2rad;
-  _qrest[5]= 135.484701*deg2rad;
-
   _object           = NULL;
   _support          = NULL;
   _human            = NULL;
   _capture          = false;
   _cartesian        = false;
-//   _objectGrabed     = false;
   displayGrasps     = false;
   displayPlacements = false;
 
@@ -825,7 +793,7 @@ configPt ManipulationPlanner::robotRest(){
     return NULL;
   }
 
-  return _qrest;
+  return _configRest;
 }
 
 
@@ -845,6 +813,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
   // variabel for ARM_PICK_GOTO
    double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
    double q1, q2, q3, q4, q5, q6;
+   configPt qpregrasp = NULL, qgrasp = NULL;
+
+   
    unsigned int itraj;
    configPt q1_conf = NULL, q2_conf = NULL, qint = NULL;
 
@@ -966,7 +937,10 @@ printf("************************************************************************
         qi = p3d_get_robot_config(_robotPt);
         addConfigTraj(qi);
 
-        if(findPregraspAndGraspConfiguration(armId, _liftUpDistance,&pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
+	  qgrasp= p3d_alloc_config(_robotPt);
+          qpregrasp= p3d_alloc_config(_robotPt);
+	if(findPregraspAndGraspConfiguration(armId, _liftUpDistance, &qpregrasp, &qgrasp)!= 0) {
+        //if(findPregraspAndGraspConfiguration(armId, _liftUpDistance,&pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
 	  printf("no solution to grasp\n");
           success= false;
 	  return MANIPULATION_TASK_NO_GRASP;
@@ -974,15 +948,16 @@ printf("************************************************************************
         // mark the unreachable grasp as tested for path planning:
         markGraspAsTested(armId, _graspID.at(armId));
 	//p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
-        p3d_set_and_update_this_robot_conf(_robotPt, qi);
+
+        p3d_set_and_update_this_robot_conf(_robotPt, qpregrasp);	
         gpOpen_hand(_robotPt, _handProp.at(armId));
-        setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
+
         qint = p3d_get_robot_config(_robotPt);
         addConfigTraj(qint);
 
-        p3d_set_and_update_this_robot_conf(_robotPt, qi);
+        p3d_set_and_update_this_robot_conf(_robotPt, qgrasp);
         gpOpen_hand(_robotPt, _handProp.at(armId));
-        setArmQ(q1, q2, q3, q4, q5, q6);
+ 
         qf = p3d_get_robot_config(_robotPt);
 	p3d_get_robot_config_into(_robotPt, &qGoal);
         addConfigTraj(qf);
@@ -1020,10 +995,13 @@ printf("************************************************************************
       if(success==false)
       {  return MANIPULATION_TASK_NO_TRAJ_FOUND;  }
 
-	GP_ConcateneAllTrajectories(_robotPt);
+      GP_ConcateneAllTrajectories(_robotPt);
 
-        _robotPt->tcur= _robotPt->t[0];
-	p3d_copy_config_into(_robotPt, qi, &qStart);
+      _robotPt->tcur= _robotPt->t[0];
+      p3d_copy_config_into(_robotPt, qi, &qStart);
+
+      p3d_destroy_config(_robotPt, qgrasp);
+      p3d_destroy_config(_robotPt, qpregrasp);
       
     break;
     case  ARM_PICK_TAKE_TO_FREE:
@@ -2017,7 +1995,8 @@ int ManipulationPlanner::findPregraspAndGraspConfiguration(int armId, double dis
 //! \param qPreGrasp will be the approach configuration
 //! \param qGrasp will be the grasp configuration
 //! \return 0 in case of success, 1 otherwise
-int ManipulationPlanner::findPregraspAndGraspConfiguration(int armId, double distance, configPt qpregrasp, configPt qgrasp){
+int ManipulationPlanner::findPregraspAndGraspConfiguration(int armId, double distance, configPt* qprev, configPt* qg){
+ configPt qgrasp = NULL, qpregrasp = NULL;
 
  if(_robotPt==NULL) {
     printf("%s: %d: ManipulationPlanner::findPregraspAndGraspConfiguration().\n", __FILE__, __LINE__);
@@ -2091,8 +2070,12 @@ int ManipulationPlanner::findPregraspAndGraspConfiguration(int armId, double dis
   p3d_get_robot_config_into(_robotPt, &_robotPt->ROBOT_POS);
 
   p3d_destroy_config(_robotPt, qcur);
-//   p3d_destroy_config(_robotPt, qgrasp);
-//   p3d_destroy_config(_robotPt, qpregrasp);
+  
+p3d_copy_config_into(_robotPt, qgrasp, qg);
+ p3d_copy_config_into(_robotPt, qpregrasp, qprev);
+ 
+   p3d_destroy_config(_robotPt, qgrasp);
+   p3d_destroy_config(_robotPt, qpregrasp);
   XYZ_ENV->cur_robot= cur_robotPt;
 
   return 0;
