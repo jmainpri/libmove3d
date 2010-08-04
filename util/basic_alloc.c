@@ -143,7 +143,7 @@ void* basic_alloc(unsigned long n, size_t size) {
   }
 
   if ((ptr = malloc(s)) == NULL) {
-    PrintError(("MP: basic_alloc: can't alloc %lu * %ld = %u of extra memory, current size %ld \n", n, size, (unsigned)s, basic_alloc_size));
+    PrintError(("MP: basic_alloc: can't alloc %lu * %zd = %u of extra memory, current size %zd \n", n, size, (unsigned)s, basic_alloc_size));
     return NULL;
   }
   else
