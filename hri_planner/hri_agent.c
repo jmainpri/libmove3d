@@ -282,13 +282,19 @@ HRI_NAVIG * hri_create_agent_navig(HRI_AGENT * agent)
   navig = MY_ALLOC(HRI_NAVIG,1);
 
   navig->btset_initialized = FALSE;
+	
+#if defined( HRI_GENERALIZED_IK ) && defined( HRI_PLANNER )
   navig->btset = hri_bt_create_bitmaps();
-
+#else
+	navig->btset = NULL;
+#endif
+	
   return navig;
 }
 
 int hri_destroy_agent_navig(HRI_NAVIG *navig)
 {
+#if defined( HRI_GENERALIZED_IK ) && defined( HRI_PLANNER )
   if(hri_bt_destroy_bitmapset(navig->btset)) {  
     MY_FREE(navig,HRI_NAVIG,1);
     return TRUE;
@@ -296,6 +302,9 @@ int hri_destroy_agent_navig(HRI_NAVIG *navig)
   else {
     return FALSE;
   }
+#else
+	return TRUE;
+#endif
 }
 
 
@@ -837,8 +846,10 @@ int hri_agent_compute_posture(HRI_AGENT * agent, double head_height, double heig
     if(head_height > height_threshold) {
       hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, hiptoground_dist - ankletoground_dist, 
                              &hip_angle, &knee_angle, &ankle_angle);      
-      
+     
+#if defined(HRI_PLANNER)  // && also i guesse defined(HRI_GENERALIZED_IK)
       q[8] = head_height - headtoneck_dist - necktobase_dist;
+#endif
       q[agent->robotPt->joints[23]->index_dof] = -hip_angle;
       q[agent->robotPt->joints[25]->index_dof] = knee_angle;
       q[agent->robotPt->joints[27]->index_dof] = -ankle_angle;
@@ -858,8 +869,9 @@ int hri_agent_compute_posture(HRI_AGENT * agent, double head_height, double heig
       
       hz_hip_angle = acos( (SQR(hiptoknee_dist)+SQR(hiptoground_dist-ankletoground_dist)-SQR(kneetoankle_dist)) / 
                           (2*hiptoknee_dist*(hiptoground_dist-ankletoground_dist)) );
-      q[8] = head_height - headtoneck_dist - necktobase_dist;
-      
+#if defined(HRI_PLANNER) // && also i guesse defined(HRI_GENERALIZED_IK)
+			q[8] = head_height - headtoneck_dist - necktobase_dist;
+#endif
       hip_angle = hip_angle+hz_hip_angle;
       ankle_angle = (M_PI_2-(M_PI - ankle_angle - atan2(hiptoground_dist-ankletoground_dist,0.4)));
       
