@@ -686,7 +686,6 @@ int g3d_set_camera_parameters_from_frame(p3d_matrix4 frame, g3d_states &vs)
 //! \return 1 in case of success, 0 means failure
 int g3d_save_state(g3d_win *win, g3d_states *st)
 {
-  int i;
   
   if(win==NULL || st==NULL){
     return FALSE;
@@ -716,8 +715,7 @@ int g3d_save_state(g3d_win *win, g3d_states *st)
 //! \return 1 in case of success, 0 means failure
 int g3d_load_state(g3d_win *win, g3d_states *st)
 {
-  int i;
-  
+   
   if(win==NULL || st==NULL){
     return FALSE;
   }
