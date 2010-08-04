@@ -305,7 +305,7 @@ class  Manipulation_JIDO {
     int destroyTrajectories();
     int checkCollisionOnTraj();
     int checkCollisionOnTraj(int currentLpId);
-    int replanCollidingTraj(int currentLpId, std::vector <int> &lp, std::vector < std::vector <double> > &positionsb);
+    int replanCollidingTraj(int currentLpId, std::vector <int> &lp, std::vector < std::vector <double> > &positions);
   protected:
      /*Functions relative to JIDO */
      int computeTrajBetweenTwoConfigs(bool cartesian, configPt qi, configPt qf);
@@ -371,8 +371,25 @@ class  ManipulationPlanner {
      bool _cartesian; /*!< choose to plan the arm motion in cartesian space (for the end effector) or joint space  */
      //bool _objectGrabed; // not used for now (redundent with robot->isCarryingObject)
 
+// Moky imported functions
+ void computeOfflineRoadmap(); 
+      p3d_traj* computeRegraspTask(configPt startConfig, configPt gotoConfig, std::string offlineFile);
+    p3d_traj* computeRegraspTask(configPt startConfig, configPt gotoConfig, std::string offlineFile, int whichTest);
 
-     
+    int findAllArmsGraspsConfigs(p3d_matrix4 objectStartPos, p3d_matrix4 objectEndPos);
+    int findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectPos);
+    double getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpHand_properties handProp, gpGrasp grasp, int whichArm, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig);
+    void computeExchangeMat(configPt startConfig, configPt gotoConfig);
+    void computeDoubleGraspConfigList();
+    inline void setExchangeMat(p3d_matrix4 exchangeMat){
+      p3d_mat4Copy(exchangeMat, _exchangeMat);
+    }
+    inline void getExchangeMat(p3d_matrix4 exchangeMat){
+      p3d_mat4Copy(_exchangeMat, exchangeMat);
+    }
+    void drawSimpleGraspConfigs();
+    void drawDoubleGraspConfigs();
+    void printStatDatas();  
  public:
      bool displayGrasps; /*!< boolean to enable/disable the display of the grasps of the current grasp list */
      bool displayPlacements; /*!<  boolean to enable/disable the display of the placements of the current object pose list */
@@ -397,9 +414,16 @@ class  ManipulationPlanner {
      /*Functions relative to JIDO */
      int setArmQ(double q1, double q2, double q3, double q4, double q5, double q6);
      int getArmQ(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
-     int setArmX(double x, double y, double z, double rx, double ry, double rz);
-     int setArmX(double x, double y, double z, unsigned int nbTries= 30);
-     int getArmX(double* x, double* y, double* z, double* rx, double* ry, double* rz);
+     int setArmX( double x, double y, double z, double rx, double ry, double rz);
+     int setArmX( double x, double y, double z, unsigned int nbTries= 30);
+     int getArmX( double* x, double* y, double* z, double* rx, double* ry, double* rz);
+     
+
+     int setArmQ(int armId, std::vector<double> q);
+     int getArmQ(int armId, std::vector<double> &q);
+     int setArmX(int armId, double x, double y, double z, double rx, double ry, double rz);
+     int setArmX(int armId, double x, double y, double z, unsigned int nbTries= 30);
+     int getArmX(int armId, double* x, double* y, double* z, double* rx, double* ry, double* rz);
 
      void setArmCartesian(bool v);
      bool getArmCartesian();
@@ -449,10 +473,14 @@ class  ManipulationPlanner {
 
      /* Functions relative to object grasping */
     int findPregraspAndGraspConfiguration(int armId, double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
+
+    /* Functions relative to object grasping */
+    int findPregraspAndGraspConfiguration(int armId, double distance, configPt qPreGrasp, configPt qGrasp);
     bool isObjectGraspable(int armId, char *objectName);
 
      /* Functions relative to object placement */
     int findPlacementConfigurations(int armId, double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
+//     int findPlacementConfigurations(int armId, double distance, configPt qPrePlacement, configPt qPlacement);
 
     int addConfigTraj(configPt config);
     int clearConfigTraj();
@@ -460,21 +488,39 @@ class  ManipulationPlanner {
     int destroyTrajectories();
     int checkCollisionOnTraj();
     int checkCollisionOnTraj(int currentLpId);
-    int replanCollidingTraj(int currentLpId, std::vector <int> &lp, std::vector < std::vector <double> > &positionsb);
+    int replanCollidingTraj(int currentLpId, std::vector <int> &lp, std::vector < std::vector <double> > &positions);
       
   protected:
      
      int computeTrajBetweenTwoConfigs(bool cartesian, configPt qi, configPt qf);
      int computeGraspList(int armId);
-
-     /*Functions relative to JIDO */
      int findSimpleGraspConfiguration(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
-     
+//      int findSimpleGraspConfiguration(int armId, configPt* qGrasp);
      int computePlacementList();
      int markGraspAsTested(int armId, int id);
-
      int computeRRT();
      int computeOptimTraj();
+
+     // Moky imported functions
+   double getRobotGraspArmCost(gpGrasp grasp, configPt q);
+    int getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, std::vector<gpHand_properties> armsProp, gpDoubleGrasp doubleGrasp, configPt* doubleGraspConfig);
+    std::vector<gpHand_properties> InitHandProp(int armId);
+    std::list<gpGrasp>* getGraspListFromMap(int armId);
+    int checkTraj(p3d_traj * traj, p3d_graph* graph);
+
+  private :
+    std::map < int, std::map<int, ManipulationData*, std::less<int> >, std::less<int> > _handsGraspsConfig;
+    std::list<DoubleGraspData*> _handsDoubleGraspsConfigs;
+
+    p3d_graph * _offlineGraph;
+    static const int _maxColGrasps = 10;
+    p3d_matrix4 _exchangeMat;
+    std::vector<std::vector<double> > _statDatas;
+
+
+
+
+     
 };
 
 void undefinedRobotMessage();
