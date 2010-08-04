@@ -864,30 +864,33 @@ int genomSetInterfaceQuality() {
 
 static void CB_genomGraspObject(FL_OBJECT *obj, long arg) {
      double distance = 0.1;
-      double pre_q1, pre_q2, pre_q3,pre_q4, pre_q5, pre_q6, q1, q2, q3, q4, q5, q6;
+     configPt qgrasp = NULL, qpregrasp = NULL;
 
       if (manipulation== NULL) {
 	  initManipulationGenom();
       }
+
+       qgrasp = p3d_alloc_config(manipulation->robot());
+       qpregrasp = p3d_alloc_config(manipulation->robot());
        manipulation->setObjectToManipulate((char*)OBJECT_NAME);
        if(manipulation->isObjectGraspable(0, (char*)OBJECT_NAME) == false) {
 	  std::cout << "this object is not graspable " << std::endl;
 	  return;
        }
 
-       manipulation->findPregraspAndGraspConfiguration(0, distance, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6);
-       manipulation->setArmQ(q1, q2, q3, q4, q5, q6);
+       manipulation->findPregraspAndGraspConfiguration(0, distance, &qpregrasp, &qgrasp);
+
+       p3d_set_and_update_this_robot_conf(manipulation->robot(), qgrasp);
+//        manipulation->setArmQ(q1, q2, q3, q4, q5, q6);
+
+       p3d_destroy_config (manipulation->robot(), qpregrasp );
+       p3d_destroy_config (manipulation->robot(), qgrasp );
        g3d_draw_allwin_active();
 }
 
 
 static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
-
-
-
-
-
-        int nbPositions = 0;
+    
 //         double x, y, theta;
 	if (manipulation== NULL) {
 	  initManipulationGenom();
@@ -917,7 +920,7 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
 
 static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
 
-        int nbPositions = 0;
+
 
 	if (manipulation== NULL) {
 	  initManipulationGenom();
@@ -941,7 +944,7 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
 
 static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg) {
 
-  int nbPositions;
+
 
   if (manipulation== NULL) {
     initManipulationGenom();
@@ -966,7 +969,7 @@ static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg) {
 
 static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
 
-  int nbPositions = 0;
+
 
   if (manipulation== NULL) {
     initManipulationGenom();

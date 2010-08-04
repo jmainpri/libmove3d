@@ -940,7 +940,6 @@ printf("************************************************************************
 	  qgrasp= p3d_alloc_config(_robotPt);
           qpregrasp= p3d_alloc_config(_robotPt);
 	if(findPregraspAndGraspConfiguration(armId, _liftUpDistance, &qpregrasp, &qgrasp)!= 0) {
-        //if(findPregraspAndGraspConfiguration(armId, _liftUpDistance,&pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
 	  printf("no solution to grasp\n");
           success= false;
 	  return MANIPULATION_TASK_NO_GRASP;
@@ -1029,7 +1028,6 @@ printf("************************************************************************
         qf = p3d_alloc_config(_robotPt);
         p3d_copy_config_into(_robotPt, qGoal, &qf);
 	p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, armId, qf);
-        //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
         gpOpen_hand(_robotPt, _handProp.at(armId));
         p3d_set_and_update_this_robot_conf(_robotPt, qf);
         p3d_destroy_config(_robotPt, qf);
@@ -1881,113 +1879,20 @@ int ManipulationPlanner::findSimpleGraspConfiguration(double *q1, double *q2, do
 //! \return false not graspable, true otherwise
 bool ManipulationPlanner::isObjectGraspable(int armId, char *objectName){
    setObjectToManipulate(objectName);
-   double q1, q2, q3, q4, q5, q6;
-   double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5,  pre_q6;
+   configPt qpregrasp = NULL, qgrasp = NULL;
+   
+   qgrasp= p3d_alloc_config(_robotPt);
+   qpregrasp= p3d_alloc_config(_robotPt);
    double distance = 0.0;
-   if(findPregraspAndGraspConfiguration(armId, distance, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6)== 1){
+   if(findPregraspAndGraspConfiguration(armId, distance, &qpregrasp, &qgrasp)== 1){
+      p3d_destroy_config(_robotPt, qpregrasp);
+      p3d_destroy_config(_robotPt, qpregrasp);
       return false;
    }
+   p3d_destroy_config(_robotPt, qpregrasp);
+   p3d_destroy_config(_robotPt, qpregrasp);
    return true;
 }
-
-
-//! Finds a configuration to grasp the object plus
-//! an intermediate configuration (a configuration slightly before grasqping the object)
-//! \param distance the distance (along the vertical) between the grasp configuration and the intermediate configuration
-//! \param pre_q1 will be filled with value of joint #1
-//! \param pre_q2 will be filled with value of joint #2
-//! \param pre_q3 will be filled with value of joint #3
-//! \param pre_q4 will be filled with value of joint #4
-//! \param pre_q5 will be filled with value of joint #5
-//! \param pre_q6 will be filled with value of joint #6
-//! \param q1 will be filled with value of joint #1
-//! \param q2 will be filled with value of joint #2
-//! \param q3 will be filled with value of joint #3
-//! \param q4 will be filled with value of joint #4
-//! \param q5 will be filled with value of joint #5
-//! \param q6 will be filled with value of joint #6
-//! \return 0 in case of success, 1 otherwise
-int ManipulationPlanner::findPregraspAndGraspConfiguration(int armId, double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6){
-
- if(_robotPt==NULL) {
-    printf("%s: %d: ManipulationPlanner::findPregraspAndGraspConfiguration().\n", __FILE__, __LINE__);
-    undefinedRobotMessage();
-    return 1;
-  }
-  if(_object==NULL) {
-    printf("%s: %d: ManipulationPlanner::findPregraspAndGraspConfiguration().\n", __FILE__, __LINE__);
-    undefinedObjectMessage();
-    return 1;
-  }
-  deactivateCcCntrts(_robotPt, -1);
-  int result = 0;
-
-  this->computeGraspList(armId);
-
-  /* met la pince mobile loin, treeeesss loiiiiinnnn */
-  p3d_set_and_update_this_robot_conf(p3d_get_robot_by_name(GP_GRIPPER_ROBOT_NAME), p3d_get_robot_by_name(GP_GRIPPER_ROBOT_NAME)->ROBOT_GOTO);
-
-
-//   p3d_matrix4 objectPose;
-  configPt qcur= NULL, qgrasp= NULL, qpregrasp= NULL;
-  p3d_rob *cur_robotPt= NULL;
-  list<gpGrasp> untestedGrasps;
-  list<gpGrasp>::iterator igrasp;
-
-  cur_robotPt= XYZ_ENV->cur_robot;
-  XYZ_ENV->cur_robot= _robotPt;
-
-  qcur= p3d_alloc_config(_robotPt);
-  qgrasp= p3d_alloc_config(_robotPt);
-  qpregrasp= p3d_alloc_config(_robotPt);
-  p3d_get_robot_config_into(_robotPt, &qcur);
-
-  // only copy the grasps that were not tested for path planning:
-  for(igrasp=_graspList.at(armId).begin(); igrasp!=_graspList.at(armId).end(); ++igrasp)
-  {
-    if(igrasp->tested==false)
-    {
-      untestedGrasps.push_back(*igrasp);
-    }
-  }
-
-  result= gpFind_grasp_and_pregrasp_from_base_configuration(_robotPt, _object, untestedGrasps, GP_PA10, qcur, _grasp.at(armId), _handProp.at(armId), _liftUpDistance, qpregrasp, qgrasp);
-
-  _graspID.at(armId)= _grasp.at(armId).ID;
-
-  if(result==GP_ERROR)
-  {
-    printf("%s: %d: ManipulationPlanner::findPregraspAndGraspConfiguration(): No grasp is reachable from the current base configuration.\n",__FILE__,__LINE__);
-    p3d_set_and_update_this_robot_conf(_robotPt, qcur);
-    p3d_destroy_config(_robotPt, qcur);
-    p3d_destroy_config(_robotPt, qpregrasp);
-    p3d_destroy_config(_robotPt, qgrasp);
-    XYZ_ENV->cur_robot= cur_robotPt;
-    return 1;
-  }
-
-
-  p3d_set_and_update_this_robot_conf(_robotPt, qgrasp);
-  gpOpen_hand(_robotPt, _handProp.at(armId));
-  this->getArmQ(q1, q2, q3, q4, q5, q6);
-
-  p3d_set_and_update_this_robot_conf(_robotPt, qpregrasp);
-//   gpOpen_hand(robotPt, hand);
-  this->getArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
-
-  p3d_get_robot_config_into(_robotPt, &_robotPt->ROBOT_GOTO);
-
-  p3d_set_and_update_this_robot_conf(_robotPt, qcur);
-  p3d_get_robot_config_into(_robotPt, &_robotPt->ROBOT_POS);
-
-  p3d_destroy_config(_robotPt, qcur);
-  p3d_destroy_config(_robotPt, qgrasp);
-  p3d_destroy_config(_robotPt, qpregrasp);
-  XYZ_ENV->cur_robot= cur_robotPt;
-
-  return 0;
-}
-
 
 //! Finds a configuration to grasp the object plus
 //! an intermediate configuration (a configuration slightly before grasqping the object)
@@ -2245,8 +2150,7 @@ int ManipulationPlanner::setObjectPoseWrtEndEffector(double x, double y, double 
 //! \return 0 in case of success, 1 otherwise
 int ManipulationPlanner::dynamicGrasping(int armId, char *robot_name, char *hand_robot_name, char *object_name){
  int i, result, nb_iters_max;
-  double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
-  double q1, q2, q3, q4, q5, q6;
+
   p3d_vector3 objectCenter;
   p3d_matrix4 objectPose;
   configPt qbase= NULL;
@@ -2256,7 +2160,7 @@ int ManipulationPlanner::dynamicGrasping(int armId, char *robot_name, char *hand
   p3d_rob *cur_robotPt= NULL;
   gpHand_properties hand_info;
   hand_info.initialize(GP_GRIPPER);
-
+  configPt qpregrasp = NULL, qgrasp = NULL;
 
   robotPt= p3d_get_robot_by_name(robot_name);
   hand_robotPt= p3d_get_robot_by_name(hand_robot_name);
@@ -2264,7 +2168,11 @@ int ManipulationPlanner::dynamicGrasping(int armId, char *robot_name, char *hand
   cur_robotPt= XYZ_ENV->cur_robot;
   XYZ_ENV->cur_robot= robotPt;
 
-  result= findPregraspAndGraspConfiguration(armId, 0.0, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6);
+
+   qgrasp= p3d_alloc_config(_robotPt);
+   qpregrasp= p3d_alloc_config(_robotPt);
+   
+  result= findPregraspAndGraspConfiguration(armId, 0.0, &qpregrasp, &qgrasp);
 
   object= getObjectByName(object_name);
 
@@ -2283,7 +2191,8 @@ int ManipulationPlanner::dynamicGrasping(int armId, char *robot_name, char *hand
 // if(rob!=NULL) genomSetObjectPoseWrtEndEffector(robotPt, rob, 0, 0, 0.06, 0.5, 0, 0);
  if(result==0) //success
   {
-    this->setArmQ(q1, q2, q3, q4, q5, q6);
+//     this->setArmQ(q1, q2, q3, q4, q5, q6);
+    p3d_set_and_update_this_robot_conf(_robotPt, qgrasp);
     gpSet_grasp_configuration(robotPt, _grasp.at(armId), 0);
   }
   else //robot needs to move
@@ -2299,11 +2208,12 @@ int ManipulationPlanner::dynamicGrasping(int armId, char *robot_name, char *hand
         qbase= NULL;
 printf("pose %f %f %f\n",objectPose[0][3],objectPose[1][3],objectPose[2][3]);
 
-        result= findPregraspAndGraspConfiguration(armId, 0.0, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6);
+        result= findPregraspAndGraspConfiguration(armId, 0.0, &qpregrasp, &qgrasp);
 
 
         if(result==0) {
-          this->setArmQ(q1, q2, q3, q4, q5, q6);
+//           this->setArmQ(q1, q2, q3, q4, q5, q6);
+	  p3d_set_and_update_this_robot_conf(_robotPt, qgrasp);
           gpSet_grasp_configuration(robotPt, _grasp.at(armId), 0);
           break;
         }
@@ -2340,7 +2250,8 @@ printf("pose %f %f %f\n",objectPose[0][3],objectPose[1][3],objectPose[2][3]);
     system(str);
     count++;
   }
-
+  p3d_destroy_config(_robotPt, qpregrasp);
+  p3d_destroy_config(_robotPt, qgrasp);
   return 0;
 }
 
@@ -2358,6 +2269,10 @@ int ManipulationPlanner::robotBaseGraspConfig(int armId, char *objectName, doubl
   double x0, y0, theta0;
   handProp.initialize(GP_GRIPPER);
    p3d_rob *hand_robotPt= NULL;
+   configPt qgrasp = NULL, qpregrasp = NULL;
+
+   qgrasp= p3d_alloc_config(_robotPt);
+   qpregrasp= p3d_alloc_config(_robotPt);
 
    std::list<gpGrasp> graspList;
 
@@ -2365,8 +2280,6 @@ int ManipulationPlanner::robotBaseGraspConfig(int armId, char *objectName, doubl
 
    q0 = p3d_get_robot_config(_robotPt);
 
-   double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
-   double q1, q2, q3, q4, q5, q6;
 
    gpGet_grasp_list_gripper(std::string(objectName), graspList);
 
@@ -2399,15 +2312,18 @@ continue;
 	g3d_draw_allwin_active();
 		//qresult= NULL;
 		//qresult= gpFind_grasp_from_base_configuration ( robotPt, objectPt, graspList, GP_PA10, qbase, grasp, handProp );
-      if(findPregraspAndGraspConfiguration(armId, 0.08, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
+      if(findPregraspAndGraspConfiguration(armId, 0.08, &qpregrasp, &qgrasp) != 0) {
 // 	  printf("no solution to grasp\n");
 
           p3d_destroy_config ( _robotPt, qbase );
+
+	
 		qbase= NULL;
 
 
 	} else {
            p3d_set_and_update_this_robot_conf(_robotPt, qbase);
+	   
            break;
 	}
 
@@ -2419,6 +2335,8 @@ continue;
 	if ( i==nb_iters_max )
 	{
 		printf ( "GP_FindGraspConfig: No valid platform configuration was found.\n" );
+		  p3d_destroy_config ( _robotPt, qpregrasp );
+	    p3d_destroy_config ( _robotPt, qgrasp );
 		return 1;
 	}
 
@@ -2427,6 +2345,8 @@ continue;
 	*x = x0;
 	*y = y0;
 	*theta = theta0;
+	  p3d_destroy_config ( _robotPt, qpregrasp );
+	    p3d_destroy_config ( _robotPt, qgrasp );
 	return 0;
 }
 
@@ -3941,7 +3861,7 @@ vector<gpHand_properties> ManipulationPlanner::InitHandProp(int armId){
 
 int ManipulationPlanner::checkTraj(p3d_traj * traj, p3d_graph* graph){
   _robotPt->tcur = traj;
-  int j = 0, returnValue;
+  int j = 0, returnValue = 0;
 #ifdef DPG
   int optimized = traj->isOptimized;
   if(optimized){

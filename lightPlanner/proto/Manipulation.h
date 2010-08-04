@@ -467,9 +467,6 @@ class  ManipulationPlanner {
 
      void draw(int armId);
      /* Functions relative to object grasping */
-     int findPregraspAndGraspConfiguration(int armId, double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
-
-     /* Functions relative to object grasping */
      int findPregraspAndGraspConfiguration(int armId, double distance, configPt* qPreGrasp, configPt* qGrasp);
      bool isObjectGraspable(int armId, char *objectName);
 
@@ -493,6 +490,9 @@ class  ManipulationPlanner {
      /***************/
      /* The getters */
      /***************/
+     p3d_rob* robot() {
+	return _robotPt;
+     }
      configPt robotStart();
      configPt robotGoto();
      configPt robotRest();
