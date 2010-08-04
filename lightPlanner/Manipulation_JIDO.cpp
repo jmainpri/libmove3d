@@ -775,7 +775,7 @@ printf("************************************************************************
 //	cleanRoadmap();
 	cleanTraj();
 
-	printf("il y a %ld configurations\n", _configTraj.size());
+	printf("il y a %zd configurations\n", _configTraj.size());
         for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
                 q2_conf = _configTraj[itraj+1];
@@ -805,7 +805,7 @@ printf("************************************************************************
 
         clearConfigTraj();
 
-        printf("il y a %ld configurations\n", _configTraj.size());
+        printf("il y a %zd configurations\n", _configTraj.size());
 
         p3d_set_and_update_this_robot_conf(_robotPt, qStart);
         gpOpen_hand(_robotPt, _handProp);
@@ -838,7 +838,7 @@ printf("************************************************************************
 	cleanRoadmap();
 	cleanTraj();
 	
-	printf("il y a %ld configurations\n", _configTraj.size());
+	printf("il y a %zd configurations\n", _configTraj.size());
 
         for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
@@ -877,7 +877,7 @@ printf("************************************************************************
 	  
         destroyTrajectories();
         clearConfigTraj();
-        printf("il y a %ld configurations\n", _configTraj.size());
+        printf("il y a %zd configurations\n", _configTraj.size());
 
 	qi = p3d_copy_config(_robotPt, qStart);
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
@@ -913,7 +913,7 @@ printf("************************************************************************
 
         copyConfigTrajToFORM();
 
-	printf("il y a %ld configurations\n", _configTraj.size());
+	printf("il y a %zd configurations\n", _configTraj.size());
 
         for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
@@ -983,7 +983,7 @@ printf("************************************************************************
 	cleanRoadmap();
 	cleanTraj();
 	
-	printf("il y a %ld configurations\n", _configTraj.size());
+	printf("il y a %zd configurations\n", _configTraj.size());
 
         for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
@@ -1061,7 +1061,7 @@ printf("************************************************************************
 	cleanRoadmap();
 	cleanTraj();
 
-	printf("il y a %ld configurations\n", _configTraj.size());
+	printf("il y a %zd configurations\n", _configTraj.size());
 
         for(itraj=0; itraj < _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
