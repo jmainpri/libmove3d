@@ -458,7 +458,10 @@ class  ManipulationPlanner {
     int clearConfigTraj();
     int copyConfigTrajToFORM();
     int destroyTrajectories();
-
+    int checkCollisionOnTraj();
+    int checkCollisionOnTraj(int currentLpId);
+    int replanCollidingTraj(int currentLpId, std::vector <int> &lp, std::vector < std::vector <double> > &positionsb);
+      
   protected:
      
      int computeTrajBetweenTwoConfigs(bool cartesian, configPt qi, configPt qf);
