@@ -9,7 +9,9 @@
 #include "proto/hri_agent_proto.h"
 #include "proto/hri_gik_proto.h"
 
-#if defined(HRI_GENERALIZED_IK) && !defined(HRI_PLANNER)
+// The global agents are not included 
+// when compiling minimal (only hri_agent.c and hri_gik.c)
+#if defined( HRI_GENERALIZED_IK ) && !defined( HRI_PLANNER )
 HRI_AGENTS * GLOBAL_AGENTS = NULL;
 #endif
 
@@ -847,9 +849,8 @@ int hri_agent_compute_posture(HRI_AGENT * agent, double head_height, double heig
       hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, hiptoground_dist - ankletoground_dist, 
                              &hip_angle, &knee_angle, &ankle_angle);      
      
-#if defined(HRI_PLANNER)  // && also i guesse defined(HRI_GENERALIZED_IK)
       q[8] = head_height - headtoneck_dist - necktobase_dist;
-#endif
+
       q[agent->robotPt->joints[23]->index_dof] = -hip_angle;
       q[agent->robotPt->joints[25]->index_dof] = knee_angle;
       q[agent->robotPt->joints[27]->index_dof] = -ankle_angle;
@@ -868,10 +869,10 @@ int hri_agent_compute_posture(HRI_AGENT * agent, double head_height, double heig
                              &hip_angle, &knee_angle, &ankle_angle);      
       
       hz_hip_angle = acos( (SQR(hiptoknee_dist)+SQR(hiptoground_dist-ankletoground_dist)-SQR(kneetoankle_dist)) / 
-                          (2*hiptoknee_dist*(hiptoground_dist-ankletoground_dist)) );
-#if defined(HRI_PLANNER) // && also i guesse defined(HRI_GENERALIZED_IK)
+                          (2*hiptoknee_dist*(hiptoground_dist-ankletoground_dist)));
+
 			q[8] = head_height - headtoneck_dist - necktobase_dist;
-#endif
+
       hip_angle = hip_angle+hz_hip_angle;
       ankle_angle = (M_PI_2-(M_PI - ankle_angle - atan2(hiptoground_dist-ankletoground_dist,0.4)));
       
