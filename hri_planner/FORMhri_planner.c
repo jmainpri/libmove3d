@@ -429,7 +429,7 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
   double objx, objy, objz;
 
   GLOBAL_AGENTS = hri_create_agents();
-  hri_assign_source_agent("JIDO", GLOBAL_AGENTS);
+  hri_assign_source_agent("JIDOKUKA", GLOBAL_AGENTS);
 
   /* NAVIGATION */
   if(SELECTED_BTSET==1){
