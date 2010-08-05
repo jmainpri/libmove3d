@@ -3,7 +3,7 @@
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
 
-int hri_is_object_visible(HRI_AGENT * agent,p3d_rob *object, int threshold, int save)
+int hri_is_object_visible(HRI_AGENT * agent, p3d_rob *object, int threshold, int save)
 {
   GLint viewport[4];
   g3d_states st;
