@@ -39,6 +39,20 @@
 #include "forms.h"
 #endif
 
+// Problem when using the minimal HRI module
+// Without XFORMS (only hri_agent.c and hri_gik.c)
+// The dependencies in files are not clear we should prevent
+// using pkg.h usage and specify more precisly the interfaces 
+// in source files
+
+#if defined( HRI_GENERALIZED_IK ) && !defined( HRI_PLANNER )
+#include "../hri_planner/include/hri_agent.h"
+#include "../hri_planner/include/hri_manip.h"
+#include "../util/proto/gnuplot_proto.h"
+#include "../hri_planner/proto/hri_bitmap_proto.h"
+#include "../hri_planner/proto/hri_agent_proto.h"
+#endif
+
 #ifdef HRI_PLANNER
 #include "../hri_planner/include/hri_agent.h"
 #include "../hri_planner/include/hri_manip.h"
@@ -88,9 +102,9 @@ extern struct SOLUTION_CONFIGS_FOR_HRP2 cur_gik_sol_configs;//It will store the 
 /* proto */
 #ifdef HRI_PLANNER
 #include "../hri_planner/proto/hri_planner_proto.h"
+#include "../hri_planner/proto/hri_agent_proto.h"
 #include "../hri_planner/graphic/proto/hri_graphic_proto.h"
 #endif
-
 #ifdef USE_MIGHTABILITY_MAPS
 #include "../hri_planner/proto/hri_affordance_include_proto.h"
 #endif
