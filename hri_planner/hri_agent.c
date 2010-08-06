@@ -904,7 +904,10 @@ static int hri_compute_leg_angles(double hipknee, double kneeankle, double ankle
   return TRUE;
 }
 
-int hri_agent_compute_posture(HRI_AGENT * agent, double neck_height, double height_threshold, configPt q)
+/**
+ * sets agents joints and state according to head height and state (STANDING, SITTING, MOVING) .
+ */
+int hri_agent_compute_posture(HRI_AGENT * agent, double neck_height, int state, configPt q)
 {
   double hiptoknee_dist, kneetoankle_dist, necktobase_dist, hiptoground_dist; 
   double basetohip_dist, ankletoground_dist;
@@ -929,7 +932,7 @@ int hri_agent_compute_posture(HRI_AGENT * agent, double neck_height, double heig
     hiptoground_dist =  neck_height - necktobase_dist - basetohip_dist;
     ankletoground_dist = 0.09; // Fixed distance in ACHILE model
 
-    if (neck_height > height_threshold) {
+    if(state != BT_SITTING) {
       hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0, 
                              &hip_angle, &knee_angle, &ankle_angle);
       agent->actual_state = BT_STANDING;
