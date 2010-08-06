@@ -879,10 +879,17 @@ static int hri_compute_leg_angles(double hipknee, double kneeankle, double ankle
   double alpha;  // alpha = angle between hipground and hipankle
   double hiptoanklelevel = hipground - ankleground;
   double hipankle = sqrt( SQR(hiptoanklelevel)+SQR(ankledist) );
-   
+  
+  if (hiptoanklelevel < ankleground) {
+    *hip   = 0;
+    *ankle = 0;
+    *knee  = 0;
+    return TRUE;
+  }
+  
   if(hipankle > hipknee+kneeankle) {
     // Legs cannot reach to ankledist
-    if(hipknee+kneeankle <= hiptoanklelevel) {
+    if(hipknee+kneeankle < ABS(hiptoanklelevel)) {
       // Flying man
       *hip   = 0;
       *ankle = 0;
@@ -921,13 +928,18 @@ int hri_agent_compute_posture(HRI_AGENT * agent, double neck_height, int state, 
   if(agent->type == HRI_ACHILE) {
     
     necktobase_dist = neck_height-agent->robotPt->joints[1]->abs_pos[2][3];
-    hiptoknee_dist = DISTANCE2D(agent->robotPt->joints[23]->abs_pos[0][3],
+    hiptoknee_dist = DISTANCE3D(agent->robotPt->joints[23]->abs_pos[0][3],
+                                agent->robotPt->joints[23]->abs_pos[1][3],
                                 agent->robotPt->joints[23]->abs_pos[2][3],
-                                agent->robotPt->joints[25]->abs_pos[0][3],                                 
+                                agent->robotPt->joints[25]->abs_pos[0][3],
+                                agent->robotPt->joints[25]->abs_pos[1][3],
                                 agent->robotPt->joints[25]->abs_pos[2][3]); // Constant -> 0.47
-    kneetoankle_dist = DISTANCE2D(agent->robotPt->joints[25]->abs_pos[0][3],                                   
+    printf("Hip height: %f Knee height: %f\n",agent->robotPt->joints[23]->abs_pos[2][3],agent->robotPt->joints[25]->abs_pos[2][3]);
+    kneetoankle_dist = DISTANCE3D(agent->robotPt->joints[25]->abs_pos[0][3],
+                                  agent->robotPt->joints[25]->abs_pos[1][3],
                                   agent->robotPt->joints[25]->abs_pos[2][3],
-                                  agent->robotPt->joints[27]->abs_pos[0][3],                                   
+                                  agent->robotPt->joints[27]->abs_pos[0][3],  
+                                  agent->robotPt->joints[27]->abs_pos[1][3],
                                   agent->robotPt->joints[27]->abs_pos[2][3]); // Constant -> 0.39
     basetohip_dist = agent->robotPt->joints[1]->abs_pos[2][3]-agent->robotPt->joints[23]->abs_pos[2][3];
     hiptoground_dist =  neck_height - necktobase_dist - basetohip_dist;
