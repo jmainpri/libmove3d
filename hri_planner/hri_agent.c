@@ -932,16 +932,15 @@ int hri_agent_compute_posture(HRI_AGENT * agent, double neck_height, int state, 
     hiptoground_dist =  neck_height - necktobase_dist - basetohip_dist;
     ankletoground_dist = 0.09; // Fixed distance in ACHILE model
 
-    if(state != BT_SITTING) {
+    if(neck_height <= 1.4) { // 1.4 magic number for ACHILLE model only
       hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0, 
                              &hip_angle, &knee_angle, &ankle_angle);
-      agent->actual_state = BT_STANDING;
     }
     else {
       hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0.4, 
                              &hip_angle, &knee_angle, &ankle_angle);
-      agent->actual_state = BT_SITTING;
     }
+    agent->actual_state = state;
     
     q[8] = neck_height - necktobase_dist;
     
