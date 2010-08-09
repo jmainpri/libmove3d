@@ -2597,6 +2597,8 @@ int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &l
       traj = _robotPt->t[_robotPt->tcur->num - 2];
     }
   }
+  traj = _robotPt->tcur;
+  
   if(_cartesian == 0) {
     /* plan in the C_space */
     p3d_multiLocalPath_disable_all_groupToPlan(_robotPt);
@@ -2635,7 +2637,7 @@ int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &l
   do{
     printf("Test %d\n", j);
     j++;
-    returnValue = replanForCollidingPath(_robotPt, traj, _robotPt->GRAPH, currentConfig, currentLp, optimized);
+    returnValue = checkCollisionsOnPathAndReplan(_robotPt, traj, _robotPt->GRAPH, optimized);
     traj = _robotPt->tcur;
     currentLp = traj->courbePt;
   }while(returnValue != 1 && returnValue != 0 && returnValue != -2 && j < 10);
