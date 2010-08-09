@@ -927,7 +927,7 @@ int hri_agent_compute_posture(HRI_AGENT * agent, double neck_height, int state, 
   
   if(agent->type == HRI_ACHILE) {
     
-    necktobase_dist = neck_height-agent->robotPt->joints[1]->abs_pos[2][3];
+    necktobase_dist = agent->robotPt->joints[5]->abs_pos[2][3]-agent->robotPt->joints[1]->abs_pos[2][3];
     hiptoknee_dist = DISTANCE3D(agent->robotPt->joints[23]->abs_pos[0][3],
                                 agent->robotPt->joints[23]->abs_pos[1][3],
                                 agent->robotPt->joints[23]->abs_pos[2][3],
