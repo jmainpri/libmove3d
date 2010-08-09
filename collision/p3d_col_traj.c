@@ -856,7 +856,7 @@ int p3d_test_config_continuity(p3d_rob *robotPt, configPt qprev, configPt qcur)
 {
   int i = 0;
   double xprev, xcur, xmin, xmax, dx, xf;
-  double xcurm, xprevm, xminm, xmaxm;
+//  double xcurm, xprevm, xminm, xmaxm;
 
   for(i=0; i<robotPt->njoints; i++) {
     if(robotPt->joints[i]->type!=P3D_ROTATE) {

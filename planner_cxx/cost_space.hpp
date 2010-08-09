@@ -5,9 +5,9 @@
 #include <map>
 #include <string>
 
-#include "ConfigSpace/configuration.hpp"
-#include "ConfigSpace/localpath.hpp"
-#include "Roadmap/graph.hpp"
+#include "API/ConfigSpace/configuration.hpp"
+#include "API/ConfigSpace/localpath.hpp"
+#include "API/Roadmap/graph.hpp"
 
 /*!
  * Delta step cost method enum
@@ -49,19 +49,23 @@ public:
   // Get All Cost Functions
   std::vector<std::string> getAllCost();
 	
+	// Set node cost
+	void setNodeCost(Node* node, double Cost);
+	
   // Initializes the Cost space motion planning problem
   void initMotionPlanning(Graph* graph, Node* start, Node* goal);
 	
   // Set DeltaStepCost
   void setDeltaStepMethod(CostSpaceDeltaStepMethod method) { m_deltaMethod = method; }
+	
+	// Compute the delta step cost
+  double deltaStepCost(double cost1, double cost2, double length);
   
 protected:
   boost::function<double(Configuration&)> mSelectedCost;
   std::map<std::string, boost::function<double(Configuration&)> > mFunctions;
 	
 private:
-  // Compute the delta step cost
-  double deltaStepCost(double cost1, double cost2, double length);
 	
   // Delta
   enum CostSpaceDeltaStepMethod m_deltaMethod;

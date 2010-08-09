@@ -9,6 +9,8 @@
 
 #include "localPathValidTest.h"
 
+#include "API/Device/robot.hpp"
+
 #include "P3d-pkg.h"
 #include "Collision-pkg.h"
 

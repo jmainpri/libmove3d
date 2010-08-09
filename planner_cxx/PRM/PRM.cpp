@@ -11,6 +11,14 @@
 //
 #include "PRM.hpp"
 
+#include "API/Device/robot.hpp"
+#include "API/Roadmap/node.hpp"
+#include "API/Roadmap/graph.hpp"
+
+#include "p3d/env.hpp"
+
+#include <iostream>
+
 #include "Planner-pkg.h"
 
 using namespace std;
@@ -112,6 +120,7 @@ void PRM::expandOneStep()
 		
 		if (ENV.getBool(Env::drawGraph))
 		{
+			cout << "Number of nodes added : " << m_nbAddedNode << endl;
 			(*_draw_func)();
 		}
 	}

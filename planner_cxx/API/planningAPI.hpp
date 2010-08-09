@@ -37,33 +37,29 @@
 #include <Eigen/LU>
 
 // Configuration has no dependencies and is used by most other classes
-#include "ConfigSpace/configuration.hpp"
-#include "ConfigSpace/localpath.hpp"
+#include "API/ConfigSpace/configuration.hpp"
+#include "API/ConfigSpace/localpath.hpp"
 
 // Dependency to robot
-#include "Device/robot.hpp"
+#include "API/Device/robot.hpp"
 
 // Graph, Node, Edge, Robot and Localpath have no interdependencies
-#include "Roadmap/node.hpp"
-#include "Roadmap/edge.hpp"
-#include "Roadmap/compco.h"
-#include "Roadmap/graph.hpp"
-
-extern Graph* API_activeGraph;
+#include "API/Roadmap/node.hpp"
+#include "API/Roadmap/edge.hpp"
+//#include "Roadmap/compco.hpp"
+#include "API/Roadmap/graph.hpp"
 
 // LocalPathValidTest inherits LocalPath, include it after localpath.hpp
-#include "ConfigSpace/localPathValidTest.h"
+#include "API/ConfigSpace/localPathValidTest.h"
 
-#include "Search/AStar/AStar.h"
-#include "Search/Dijkstra/dijkstra.hpp"
+#include "API/Search/AStar/AStar.h"
+#include "API/Search/Dijkstra/dijkstra.hpp"
 
-//#include "Trajectory/CostOptimization.hpp"
-//#include "Trajectory/Smoothing.hpp"
-#include "Trajectory/trajectory.hpp"
+//#include "API/Trajectory/CostOptimization.hpp"
+//#include "API/Trajectory/Smoothing.hpp"
+#include "API/Trajectory/trajectory.hpp"
 
-#include "scene.h"
-#include "project.h"
-
-extern Project* global_Project;
+#include "API/scene.hpp"
+#include "API/project.hpp"
 
 #endif

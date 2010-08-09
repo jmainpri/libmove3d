@@ -707,6 +707,7 @@ int Manipulation::findAllArmsGraspsConfigs(p3d_matrix4 objectStartPos, p3d_matri
     cout << "Error: the number of arm  != 2" << endl;
     return 0;
   }
+  /* check for the nearest wrist with the object */
   int closestWrist = getClosestWristToTheObject(_robot);
 //  switchBBActivationForGrasp();
   nbGraspConfigs = findAllSpecificArmGraspsConfigs(closestWrist, objectStartPos);

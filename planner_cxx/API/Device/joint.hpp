@@ -9,7 +9,7 @@
 #ifndef JOINT_HPP
 #define JOINT_HPP
 
-#include "ConfigSpace/configuration.hpp"
+#include "API/ConfigSpace/configuration.hpp"
 
 #include "p3d_matrix.h"
 

@@ -9,7 +9,7 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#include "scene.h"
+#include "scene.hpp"
 
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"

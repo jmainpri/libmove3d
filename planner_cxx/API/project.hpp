@@ -1,7 +1,7 @@
 #ifndef WORKSPACE_HPP
 #define WORKSPACE_HPP
 
-#include "scene.h"
+#include "scene.hpp"
 
 /**
   * @ingroup NEW_CPP_MODULE
@@ -49,5 +49,7 @@ private:
         std::vector<Scene*> m_Scenes;/*!< le vecteur des Scene chargés*/
         std::string m_activeScene;/*!< le nom de l'Scene actif*/
 };
+
+extern Project* global_Project;
 
 #endif

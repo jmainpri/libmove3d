@@ -2722,7 +2722,7 @@ int psp_test_actual_robot_pos(p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PSP_BT
 
 static int psp_set_vert2rconf(p3d_matrix4 matr,  psp_obs_vertex *vert , configPt qres)
 {
-  p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1}, obPoint={0,0,0,1};
+  p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1};// obPoint={0,0,0,1};
   //double rx,ry,rz;
 
   v_aux[0] = vert->pos[0];
@@ -2743,8 +2743,9 @@ static int psp_set_vert2rconf(p3d_matrix4 matr,  psp_obs_vertex *vert , configPt
 
 static double psp_check_vertex(p3d_rob* r,  p3d_matrix4 matr, double viewPercent , psp_obs_vertex *vert, configPt qcurr, configPt qres, hri_bitmapset* PSP_BTSET)
 {
-  p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1}, obPoint={ox,oy,oz,1};
-  double rx,ry,rz;
+//  p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1};
+  p3d_vector4 obPoint={ox,oy,oz,1};
+//  double rx,ry,rz;
   p3d_copy_config_into(r,qcurr, &qres);
   if (vert->status == PSP_NON_OBSERVED)
   {
@@ -2770,8 +2771,9 @@ static double psp_check_vertex(p3d_rob* r,  p3d_matrix4 matr, double viewPercent
 
 static double psp_check_vertexL(p3d_rob* r,  p3d_matrix4 matr, double viewPercent , psp_obs_vertex *vert, configPt qcurr, configPt qres, hri_bitmapset* PSP_BTSET)
 {
-  p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1}, obPoint={ox,oy,oz,1};
-  double rx,ry,rz;
+//  p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1};
+  p3d_vector4 obPoint={ox,oy,oz,1};
+//  double rx,ry,rz;
   p3d_copy_config_into(r,qcurr, &qres);
   if (vert->status == PSP_St_OBSERVABLE)
   {
@@ -4500,8 +4502,8 @@ int psu_get_num_objects_near(p3d_rob *currRob, double radius, int type, p3d_obj 
   p3d_obj *o;
   p3d_rob *r;
   int contObj =0;
-  p3d_vector4 pointHead,pointDisc, pointAhead;
-  psp_cone cone;
+  p3d_vector4 pointHead, pointAhead;//pointDisc,
+//  psp_cone cone;
   double disttocenter;
   //p3d_rob *human = PSP_BTSET->human[PSP_BTSET->actual_human]->HumanPt;
 
@@ -4700,8 +4702,8 @@ int psu_get_num_robots_near(p3d_rob *currRob, double radius, int type, p3d_rob *
   p3d_rob *r;
   p3d_obj *o;
   int contObj =0;
-  p3d_vector4 pointHead,pointDisc, pointAhead;
-  psp_cone cone;
+  p3d_vector4 pointHead, pointAhead;//pointDisc,
+//  psp_cone cone;
   double disttocenter;
   //p3d_rob *human = PSP_BTSET->human[PSP_BTSET->actual_human]->HumanPt;
 
@@ -4768,7 +4770,7 @@ void psr_get_obj_list(p3d_rob *currRob, p3d_obj **oList, int *nObj,  p3d_rob **r
 {
   p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   p3d_obj *o;
-  p3d_rob *r, *human;
+//  p3d_rob *r, *human;
   double perspValue;
   int no = envPt->no;
   p3d_vector4 objCenter,robCenter;
@@ -5622,7 +5624,7 @@ double pso_watch3_obj(int saveImage)
 {
 
   int w=133,h=66;
-  GLint viewport[4];
+//  GLint viewport[4];
   G3D_Window *win = g3d_get_win_by_name((char*)"Perspective");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
   int i, greenCount=0, totalCount=0;

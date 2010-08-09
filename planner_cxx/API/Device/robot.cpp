@@ -9,8 +9,10 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#include "planningAPI.hpp"
-#include "Grids/gridsAPI.hpp"
+#include "API/Device/joint.hpp"
+#include "API/Device/robot.hpp"
+#include "API/Grids/gridsAPI.hpp"
+#include "API/Trajectory/trajectory.hpp"
 
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"

@@ -1006,7 +1006,7 @@ static void CB_SAHandRight_obj ( FL_OBJECT *obj, long arg )
 
 	p3d_get_robot_config_into ( robotPt, &qstart );
 #ifdef LIGHT_PLANNER
-	p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint ( robotPt, qstart );
+	p3d_update_virtual_object_config_for_arm_ik_constraint(robotPt, 0, qstart);
 #endif
 	g3d_draw_allwin_active();
 
@@ -1056,7 +1056,7 @@ static void CB_SAHandRight_obj ( FL_OBJECT *obj, long arg )
 	if ( qfinal!=NULL )
 	{
 #ifdef LIGHT_PLANNER
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint ( robotPt, qfinal );
+	p3d_update_virtual_object_config_for_arm_ik_constraint(robotPt, 0, qfinal);
 #endif
 		printf ( "Grasp configuration list was successfully computed.\n" );
 		XYZ_ENV->cur_robot= robotPt;
@@ -1110,19 +1110,19 @@ static void CB_SAHandRight_obj ( FL_OBJECT *obj, long arg )
 
 		p3d_get_robot_config_into ( robotPt, &qinter1 );
 #ifdef LIGHT_PLANNER
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint ( robotPt, qinter1 );
+		p3d_update_virtual_object_config_for_arm_ik_constraint(robotPt, 0, qinter1);
 #endif
 
 		gpSet_platform_configuration ( robotPt, x, y, theta );
 		p3d_get_robot_config_into ( robotPt, &qinter2 );
 #ifdef LIGHT_PLANNER
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint ( robotPt, qinter2 );
+		p3d_update_virtual_object_config_for_arm_ik_constraint(robotPt, 0, qinter2);
 #endif
 
 		gpSet_arm_configuration ( robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6 );
 		p3d_get_robot_config_into ( robotPt, &qinter3 );
 #ifdef LIGHT_PLANNER
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint ( robotPt, qinter3 );
+		p3d_update_virtual_object_config_for_arm_ik_constraint(robotPt, 0, qinter3);
 #endif
 
 		if ( p3d_col_test() )
@@ -1296,7 +1296,7 @@ static void CB_SAHandRight_obj ( FL_OBJECT *obj, long arg )
 		p3d_set_and_update_this_robot_conf ( robotPt, qfinal );
 		g3d_draw_allwin_active();
 #ifdef LIGHT_PLANNER
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint ( robotPt, qfinal );
+		p3d_update_virtual_object_config_for_arm_ik_constraint(robotPt, 0, qfinal);
 #endif
 		gpGet_arm_configuration ( robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6 );
 
@@ -1305,11 +1305,11 @@ static void CB_SAHandRight_obj ( FL_OBJECT *obj, long arg )
 		g3d_draw_allwin_active();
 		gpSet_arm_configuration ( robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6 );
 #ifdef LIGHT_PLANNER
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint ( robotPt, qstart );
+		p3d_update_virtual_object_config_for_arm_ik_constraint(robotPt, 0, qstart);
 #endif
 		p3d_get_robot_config_into ( robotPt, &qinter1 );
 #ifdef LIGHT_PLANNER
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint ( robotPt, qinter1 );
+		p3d_update_virtual_object_config_for_arm_ik_constraint(robotPt, 0, qinter1);
 #endif
 		if ( p3d_col_test() )
 		{
@@ -2343,7 +2343,8 @@ int GP_FindPathForArmOnly()
 	gpOpen_hand ( robotPt, HAND_PROP );
 	p3d_get_robot_config_into ( robotPt, &qstart );
 #ifdef LIGHT_PLANNER
-	p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint ( robotPt, qstart );
+	p3d_update_virtual_object_config_for_arm_ik_constraint(robotPt, 0, qstart);
+	//p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint ( robotPt, qstart );
 #endif
 
 	p3d_set_and_update_this_robot_conf ( robotPt, qstart );
@@ -2400,7 +2401,8 @@ int GP_FindPathForArmOnly()
 	if ( qfinal!=NULL )
 	{
 #ifdef LIGHT_PLANNER
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint ( robotPt, qfinal );
+		p3d_update_virtual_object_config_for_arm_ik_constraint(robotPt, 0, qfinal);
+		//p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint ( robotPt, qfinal );
 #endif
 		p3d_set_and_update_this_robot_conf ( robotPt, qfinal );
 		gpOpen_hand ( robotPt, HAND_PROP );

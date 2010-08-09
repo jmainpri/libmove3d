@@ -506,6 +506,7 @@ static void CB_random_confs_obj(FL_OBJECT *ob, long arg) {
 // Generate collision-free random configrations and save to a file for use with the SMR.
 static void CB_smr_confs_obj(FL_OBJECT *ob, long arg) {
 
+  #ifdef BIO
   p3d_rob *robotPt;
   configPt q;
   int collision_free;
@@ -527,7 +528,7 @@ static void CB_smr_confs_obj(FL_OBJECT *ob, long arg) {
   int atom_num;
   int success;
 
-#ifdef BIO
+
   // STOP = FALSE;
   p3d_SetStopValue(FALSE);
   // Get the system robot
@@ -777,9 +778,12 @@ void CB_specific_search_obj(FL_OBJECT *ob, long arg){
 
 void p3d_printTrajGraphContactPdbFiles(char* filePrefix, int index, p3d_rob *robotPt){
   int ir = p3d_get_desc_curnum(P3D_ROBOT);
-  char fileGraph[300], fileTraj[300], fileContacts[300];
-  FILE *contacts_file;
+  char fileGraph[300], fileTraj[300];
 
+#ifdef BIO
+  char fileContacts[300];
+  FILE *contacts_file;
+#endif
   printf("\nSMOOTHING PATH ...\n");
   CB_start_optim_obj(NULL, 0);
   fl_set_button(ROBOTS_FORM[ir].SHOWTRAJ_OBJ, 1);

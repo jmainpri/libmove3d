@@ -46,8 +46,12 @@ void Dijkstra::creatStructures()
     {
         Node* ptrNode = nodes[i];
 
-        vector<p3d_node*> neighbors = ptrNode->getNeighbors();
-        vector<p3d_edge*> edges = ptrNode->getEdges();
+			
+			cout << "Warning this function is broken" << endl;
+			vector<p3d_node*> neighbors; // = ptrNode->getNeighbors();
+			vector<p3d_edge*> edges; //= ptrNode->getEdges();
+			
+			cout << "Broken use p3d_edges" << endl;
 
         vector<vertex_t> neighID;
         vector<weight_t> neighWeight;

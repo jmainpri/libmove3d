@@ -1,8 +1,8 @@
 #ifndef ENVIRONNEMENT_HPP
 #define ENVIRONNEMENT_HPP
 
-#include "Device/robot.hpp"
-#include "Roadmap/graph.hpp"
+#include "API/Device/robot.hpp"
+#include "API/Roadmap/graph.hpp"
 
 #ifndef _ENVIRONMENT_H
 struct env;

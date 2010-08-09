@@ -3,7 +3,6 @@
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
 //#include "Util-pkg.h"
-//#ifdef HRI_PLANNER
 #include "Hri_planner-pkg.h"
 #include "iostream"
 //#endif

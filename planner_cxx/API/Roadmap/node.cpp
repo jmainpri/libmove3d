@@ -9,7 +9,12 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#include "planningAPI.hpp"
+#include "API/Roadmap/node.hpp"
+#include "API/Roadmap/compco.hpp"
+#include "API/Roadmap/graph.hpp"
+#include "API/Roadmap/BGL_Graph.hpp"
+
+#include <tr1/memory>
 
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"
@@ -66,8 +71,10 @@ Node::Node(Graph* G, shared_ptr<Configuration> C, bool newCompco) :
 	// without using the old graph struck
 	// this is a copy of the p3d_APInode_make_multisol
 	
-  _Node = p3d_create_node(/*graphPt*/ NULL);
+  _Node = p3d_create_node( NULL );
   _Node->q = C->getConfigStruct();
+	_Node->num = _Graph->getNumberOfNodes();
+	_Node->parent = NULL;
 	
   /*if(iksol){
     p3d_copy_iksol(G->getRobot()->getRobotStruct()->cntrt_manager,iksol,&(nodePt->iksol));
@@ -208,11 +215,79 @@ void Node::setTemp(double t)
 }
 
 /**
+ * Returns the node id
+ */
+unsigned int Node::getId()
+{
+	return _Node->num;
+}
+
+/**
+ * Sets the Id
+ */
+void Node::setId(unsigned int id)
+{
+	_Node->num = id;
+}
+
+/**
  * Get Number of neighbors
  */
 int Node::getNumberOfNeighbors() 
 { 
-	return _Node->nneighb; 
+	if (ENV.getBool(Env::use_p3d_structures)) 
+	{
+		return _Node->nneighb;
+	}
+	else 
+	{
+		return getNeighbors().size();
+	}
+}
+
+/**
+ * Get number of neighbors
+ */
+std::vector<Node*> Node::getNeighbors()
+{
+	vector<Node*> allNeighbors;
+	
+//	if (ENV.getBool(Env::use_p3d_structures)) 
+//	{
+//		p3d_list_node* list = _Node->neighb;
+//		
+//		for(int i=0;i<_Node->nneighb;i++)
+//		{
+//			p3d_node* ptrNode = list->N;
+//			allNeighbors.push_back(_Graph->getNodesTable()[ptrNode]);
+//			list = list->next;
+//		}
+//	}
+//	else 
+//	{
+		boost::graph_traits<BGL_Graph>::adjacency_iterator ai;
+		boost::graph_traits<BGL_Graph>::adjacency_iterator ai_end;
+		
+		BGL_Graph& g = _Graph->get_BGL_Graph();
+		BGL_VertexDataMapT NodeData = boost::get( NodeData_t() , g );
+		
+		//m_BGL_Descriptor = _Graph->findVertexDescriptor(this);
+	
+		for (tie(ai, ai_end) = adjacent_vertices(m_BGL_Descriptor, g); ai != ai_end; ++ai)
+		{
+			//BGL_Vertex v = ;
+			allNeighbors.push_back( NodeData[*ai] );
+		}
+	//}
+	
+	/*cout << "--------------------------------------" << endl;
+	vector<Node*>::iterator it;
+	for (it = allNeighbors.begin(); it != allNeighbors.end(); ++it) 
+	{
+		cout << "Node num (neigh): " << (*it)->getId() << endl;
+	}*/
+	
+	return allNeighbors;
 }
 
 
@@ -221,7 +296,65 @@ int Node::getNumberOfNeighbors()
  */
 int Node::getNumberOfEdges() 
 { 
-	return _Node->nedge; 
+	if ( ENV.getBool(Env::use_p3d_structures) ) 
+	{
+		return _Node->nedge;
+	}
+	else 
+	{
+		return getEdges().size();
+	}
+}
+
+std::vector<Edge*> Node::getEdges()
+{
+	vector<Edge*> allEdges; 
+	
+//	if (ENV.getBool(Env::use_p3d_structures)) 
+//	{
+//		vector<p3d_edge*> allEdges;
+//		p3d_list_edge* list = _Node->edges;
+//		
+//		for(int i=0;i<_Node->nedge;i++)
+//		{
+//			p3d_edge* ptrEdge = list->E;
+//			allEdges.push_back(ptrEdge);
+//			list = list->next;
+//		}
+//	}
+//	else 
+//	{
+		boost::graph_traits<BGL_Graph>::out_edge_iterator out_i, out_end;
+		BGL_Graph& g = _Graph->get_BGL_Graph();
+		
+		BGL_EdgeDataMapT EdgeData = boost::get( EdgeData_t() ,g );
+		
+		//m_BGL_Descriptor = _Graph->findVertexDescriptor(this);
+	
+		for (tie(out_i, out_end) = boost::out_edges( m_BGL_Descriptor , g); 
+				 out_i != out_end; ++out_i) 
+		{
+			//BGL_Edge e = *out_i;
+			allEdges.push_back( EdgeData[*out_i] );
+		}
+		
+		/* Only if the graph is bidirectional
+		 boost::graph_traits<BGL_Graph>::in_edge_iterator in_i, in_end;
+		
+		for (tie(in_i, in_end) = boost::in_edges(m_BGL_Descriptor, g); 
+				 in_i != in_end; ++in_i) 
+		{
+			//BGL_Edge e = *out_i;
+			Edge* e = EdgeData[*in_i];
+			
+			if ( find( allEdges.begin(), allEdges.end() , e ) != allEdges.end() ) 
+			{
+				allEdges.push_back( e );
+			}
+		}*/
+//	}
+	
+	return allEdges;
 }
 
 p3d_node* Node::getNodeStruct()
@@ -254,15 +387,15 @@ bool Node::isActiv()
     return _activ;
 }
 
-p3d_compco* Node::getCompcoStruct()
-{
-    return (_Node->comp);
-}
-
-p3d_compco** Node::getCompcoStructPt()
-{
-    return (&(_Node->comp));
-}
+//p3d_compco* Node::getCompcoStruct()
+//{
+//    return (_Node->comp);
+//}
+//
+//p3d_compco** Node::getCompcoStructPt()
+//{
+//    return (&(_Node->comp));
+//}
 
 unsigned int Node::getNumberOfNodesInCompco()
 {
@@ -301,39 +434,36 @@ bool Node::equal(Node* N)
 //                             _Node->q));
 }
 
+void Node::setConnectedComponent(ConnectedComponent* Compco)
+{
+	m_Compco = Compco;
+	_Node->numcomp = m_Compco->getId();
+}
+
 bool Node::inSameComponent(Node* N)
 {
-    return (_Node->comp->num == N->getNodeStruct()->comp->num);
-}
-
-std::vector<p3d_node*> Node::getNeighbors()
-{
-    vector<p3d_node*> allNeighbors;
-    p3d_list_node* list = _Node->neighb;
-
-    for(int i=0;i<_Node->nneighb;i++)
-    {
-        p3d_node* ptrNode = list->N;
-        allNeighbors.push_back(ptrNode);
-        list = list->next;
-    }
-
-    return allNeighbors;
-}
-
-std::vector<p3d_edge*> Node::getEdges()
-{
-    vector<p3d_edge*> allEdges;
-    p3d_list_edge* list = _Node->edges;
-
-    for(int i=0;i<_Node->nedge;i++)
-    {
-        p3d_edge* ptrEdge = list->E;
-        allEdges.push_back(ptrEdge);
-        list = list->next;
-    }
-
-    return allEdges;
+	bool isInSameComponent = false;
+	
+	if (ENV.getBool(Env::use_p3d_structures)) 
+	{
+		isInSameComponent = 
+		(_Node->comp->num == N->getNodeStruct()->comp->num);
+		
+		/*if( isInSameComponent )
+		{
+			if ( m_Compco != N->getConnectedComponent() )
+			{
+				throw string("The nodes are not in the same C++ components");
+			}
+		}*/
+	}
+	else 
+	{
+		isInSameComponent =
+		( m_Compco == N->getConnectedComponent() );
+	}
+	
+	return isInSameComponent;
 }
 
 bool Node::isLinkable(Node* N, double* dist)
@@ -452,7 +582,7 @@ void Node::deleteCompco()
 
 bool Node::maximumNumberNodes()
 {
-    return this->getCompcoStruct()->nnode >= ENV.getInt(Env::maxNodeCompco);
+    return ((int)m_Compco->getNumberOfNodes()) >= ENV.getInt(Env::maxNodeCompco);
 }
 
 bool Node::connectNodeToCompco(Node* N, double step)
@@ -479,7 +609,28 @@ void Node::merge(Node* compco)
 
 bool Node::equalCompco(Node* compco)
 {
-    return (_Node->comp == compco->getCompcoStruct());
+	bool equalCompco = false;
+	
+	if (ENV.getBool(Env::use_p3d_structures)) 
+	{
+		equalCompco = 
+		(_Node->comp == compco->getConnectedComponent()->getCompcoStruct() );
+		
+		if( equalCompco )
+		{
+			if ( m_Compco != compco->getConnectedComponent() )
+			{
+				throw string("The nodes are not in the same C++ components");
+			}
+		}
+	}
+	else 
+	{
+		equalCompco =
+		( m_Compco == compco->getConnectedComponent() );
+	}
+	
+	return equalCompco;
 }
 
 Node* Node::randomNodeFromComp()

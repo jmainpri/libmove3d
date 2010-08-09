@@ -1,11 +1,13 @@
 #include "RRTExpansion.h"
 
-#include "planningAPI.hpp"
+#include "API/Device/robot.hpp"
+#include "API/ConfigSpace/configuration.hpp"
+#include "API/Roadmap/compco.hpp"
+#include "API/Roadmap/graph.hpp"
+#include "API/Grids/ThreeDPoints.h"
 
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"
-
-#include "../API/Grids/ThreeDPoints.h"
 
 using namespace std;
 using namespace tr1;
@@ -38,7 +40,7 @@ shared_ptr<Configuration> RRTExpansion::getExpansionDirection(
 
         p3d_addConfig(mGraph->getRobot()->getRobotStruct(),
                       q->getConfigStruct(),
-                      expandComp->getCompcoStruct()->dist_nodes->N->q,
+                      expandComp->getConnectedComponent()->getCompcoStruct()->dist_nodes->N->q,
                       q->getConfigStruct());
 
         return (q);
@@ -76,7 +78,8 @@ shared_ptr<Configuration> RRTExpansion::getExpansionDirection(
 
                 p3d_shoot_inside_box(mGraph->getRobot()->getRobotStruct(),
                                      /*expandComp->getConfiguration()->getConfigStruct(),*/
-                                     q->getConfigStruct(), expandComp->getCompcoStruct()->box_env_small,
+                                     q->getConfigStruct(), 
+																		 expandComp->getConnectedComponent()->getCompcoStruct()->box_env_small,
                                      (int) samplePassive);
             break;
 #ifdef LIGHT_PLANNER
@@ -131,7 +134,7 @@ Node* RRTExpansion::getExpansionNode(Node* compNode, shared_ptr<Configuration> d
 
     if (p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH)
     {
-        return mGraph->getNode(compNode->getCompcoStruct()->dist_nodes->N);
+        return mGraph->getNode(compNode->getConnectedComponent()->getCompcoStruct()->dist_nodes->N);
     }
 
     int KNearest = -1;
@@ -149,7 +152,7 @@ Node* RRTExpansion::getExpansionNode(Node* compNode, shared_ptr<Configuration> d
         /* Select randomly among the K nearest nodes of a componant */
         NearestPercent = m_kNearestPercent;
         KNearest
-                = MAX(1,(int)((NearestPercent*(compNode->getCompcoStruct()->nnode))/100.));
+                = MAX(1,(int)((NearestPercent*(compNode->getConnectedComponent()->getNumberOfNodes()))/100.));
         // TODO : fix
         //   ExpansionNodePt = KNearestWeightNeighbor(mG, compNode->mN->comp, direction->mQ,
         // KNearest);
@@ -165,7 +168,7 @@ Node* RRTExpansion::getExpansionNode(Node* compNode, shared_ptr<Configuration> d
     case K_BEST_SCORE_EXP_METH:
         NearestPercent = m_kNearestPercent;
         KNearest
-                = MAX(1,(int)((NearestPercent*(compNode->getCompcoStruct()->nnode))/100.));
+                = MAX(1,(int)((NearestPercent*(compNode->getConnectedComponent()->getNumberOfNodes()))/100.));
         // TODO : fix
         // ExpansionNodePt = KNearestWeightNeighbor(mG, compNode->mN->comp, direction->mQ, KNearest);
         return (mGraph->nearestWeightNeighbour(compNode, direction,
@@ -178,7 +181,7 @@ Node* RRTExpansion::getExpansionNode(Node* compNode, shared_ptr<Configuration> d
 
     case RANDOM_NODE_METH:
         return (mGraph->getNode(p3d_RandomNodeFromComp(
-                compNode->getCompcoStruct())));
+                compNode->getConnectedComponent()->getCompcoStruct())));
 	
 	/*case NAVIGATION_BEFORE_MANIPULATION:
 	{

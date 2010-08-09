@@ -26,21 +26,21 @@
 
 using namespace std;
 
-void undefinedRobotMessage() {
-  printf("The robot has not been defined in Manipulation_JIDO. Recreate an instance of Manipulation_JIDO.\n");
-}
-
-void undefinedObjectMessage() {
-  printf("The object has not been defined in Manipulation_JIDO. Set it with setObjectToManipulate().\n");
-}
-
-void undefinedSupportMessage() {
-  printf("The support has not been defined in Manipulation_JIDO. Set it with setSupport().\n");
-}
-
-void undefinedCameraMessage() {
-  printf("The joint of the pan/tilt unit has not been defined in Manipulation_JIDO. Set it with setCameraJnt().\n");
-}
+// void undefinedRobotMessage() {
+//   printf("The robot has not been defined in Manipulation_JIDO. Recreate an instance of Manipulation_JIDO.\n");
+// }
+// 
+// void undefinedObjectMessage() {
+//   printf("The object has not been defined in Manipulation_JIDO. Set it with setObjectToManipulate().\n");
+// }
+// 
+// void undefinedSupportMessage() {
+//   printf("The support has not been defined in Manipulation_JIDO. Set it with setSupport().\n");
+// }
+// 
+// void undefinedCameraMessage() {
+//   printf("The joint of the pan/tilt unit has not been defined in Manipulation_JIDO. Set it with setCameraJnt().\n");
+// }
 
 Manipulation_JIDO::Manipulation_JIDO(p3d_rob *robotPt, gpHand_type handType)//: // _capture(false)
 {
@@ -681,6 +681,7 @@ configPt Manipulation_JIDO::robotRest(){
 
 
 //! Computes a path for a given manipulation elementary task.
+
 MANIPULATION_TASK_MESSAGE Manipulation_JIDO::armPlanTask(MANIPULATION_TASK_TYPE_STR task, configPt qStart, configPt qGoal, char* objectName, std::vector <int> &lp, std::vector < std::vector <double> > &positions){
 
   configPt qi = NULL, qf = NULL;
@@ -727,7 +728,8 @@ printf("************************************************************************
     p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-ob_lin", 1) ;
     p3d_copy_config_into(_robotPt, qStart, &qi);
     /* Uptdate the Virual object for inverse kinematics */
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
+    p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
+    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
     p3d_set_and_update_this_robot_conf(_robotPt, qi);
     p3d_destroy_config(_robotPt, qi);
     qi = p3d_get_robot_config(_robotPt);
@@ -744,7 +746,8 @@ printf("************************************************************************
        if(_cartesian == true) {
 	qf = p3d_alloc_config(_robotPt);
 	p3d_copy_config_into(_robotPt, qGoal, &qf);
-	p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
+	p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qf);
+	//p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
 	p3d_set_and_update_this_robot_conf(_robotPt, qf);
 	p3d_destroy_config(_robotPt, qf);
 	qf = p3d_get_robot_config(_robotPt);
@@ -772,7 +775,7 @@ printf("************************************************************************
 //	cleanRoadmap();
 	cleanTraj();
 
-	printf("il y a %ld configurations\n", _configTraj.size());
+	printf("il y a %zd configurations\n", _configTraj.size());
         for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
                 q2_conf = _configTraj[itraj+1];
@@ -782,7 +785,7 @@ printf("************************************************************************
 		  return MANIPULATION_TASK_NO_TRAJ_FOUND;
 		}
               
-	        cleanRoadmap();
+	        //cleanRoadmap();
 	}
 
 
@@ -802,7 +805,7 @@ printf("************************************************************************
 
         clearConfigTraj();
 
-        printf("il y a %ld configurations\n", _configTraj.size());
+        printf("il y a %zd configurations\n", _configTraj.size());
 
         p3d_set_and_update_this_robot_conf(_robotPt, qStart);
         gpOpen_hand(_robotPt, _handProp);
@@ -835,7 +838,7 @@ printf("************************************************************************
 	cleanRoadmap();
 	cleanTraj();
 	
-	printf("il y a %ld configurations\n", _configTraj.size());
+	printf("il y a %zd configurations\n", _configTraj.size());
 
         for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
@@ -874,7 +877,7 @@ printf("************************************************************************
 	  
         destroyTrajectories();
         clearConfigTraj();
-        printf("il y a %ld configurations\n", _configTraj.size());
+        printf("il y a %zd configurations\n", _configTraj.size());
 
 	qi = p3d_copy_config(_robotPt, qStart);
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
@@ -893,7 +896,8 @@ printf("************************************************************************
 	
         qf = p3d_alloc_config(_robotPt);
         p3d_copy_config_into(_robotPt, qGoal, &qf);
-        p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
+	p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qf);
+        //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
         gpOpen_hand(_robotPt, _handProp);
         p3d_set_and_update_this_robot_conf(_robotPt, qf);
         p3d_destroy_config(_robotPt, qf);
@@ -909,7 +913,7 @@ printf("************************************************************************
 
         copyConfigTrajToFORM();
 
-	printf("il y a %ld configurations\n", _configTraj.size());
+	printf("il y a %zd configurations\n", _configTraj.size());
 
         for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
@@ -979,7 +983,7 @@ printf("************************************************************************
 	cleanRoadmap();
 	cleanTraj();
 	
-	printf("il y a %ld configurations\n", _configTraj.size());
+	printf("il y a %zd configurations\n", _configTraj.size());
 
         for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
@@ -1057,7 +1061,7 @@ printf("************************************************************************
 	cleanRoadmap();
 	cleanTraj();
 
-	printf("il y a %ld configurations\n", _configTraj.size());
+	printf("il y a %zd configurations\n", _configTraj.size());
 
         for(itraj=0; itraj < _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
@@ -1116,7 +1120,7 @@ printf("************************************************************************
 //   centerCamera();
 
   g3d_draw_allwin_active();
-
+  printf("BioMove3D: armPlanTask OK\n");
   return MANIPULATION_TASK_OK;
 }
 
@@ -1240,10 +1244,10 @@ int Manipulation_JIDO::grabObject(char* objectName){
   p3d_mat4Mult(Tinv, wristPose, T2);
   // the two following lines use empirical values, they may need to be adjusted
   error= p3d_mat4Distance(gframe, T2, 1, 0.3);
-  if(error > 0.2) {
+  if(error > 0.5) {
      printf("error= %f\n", error);
      printf("%s: %d: Manipulation_JIDO::grabObject(): there is an inconsistency between the current frame and the current wrist/object relative pose.\n",__FILE__,__LINE__);
-     return 1;
+     //return 1;
   }
 
   configPt qi = NULL;
@@ -1264,12 +1268,15 @@ int Manipulation_JIDO::grabObject(char* objectName){
 //! Sets everything so that the object whose motion is linked to the robot's end-effector motion is no more linked.
 int Manipulation_JIDO::releaseObject(){
   configPt qi = NULL;
-  p3d_release_object(_robotPt);
+  if(p3d_release_object(_robotPt)==1) {
+    return 1;
+  }
   deactivateCcCntrts(_robotPt, -1);
   qi = p3d_alloc_config(_robotPt);
   p3d_copy_config_into(_robotPt, _robotPt->ROBOT_POS, &qi);
   /* Uptdate the Virual object for inverse kinematics */
-  p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
+  p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
+  //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
   p3d_set_and_update_this_robot_conf(_robotPt, qi);
   p3d_destroy_config(_robotPt, qi);
   qi = p3d_get_robot_config(_robotPt);
@@ -1312,8 +1319,10 @@ int Manipulation_JIDO::armComputePRM() {
     p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-ob_lin", 1) ;
     p3d_copy_config_into(_robotPt, _robotPt->ROBOT_POS, &qi);
     p3d_copy_config_into(_robotPt, _robotPt->ROBOT_GOTO, &qf);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
+    p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
+    p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qf);
+    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
+    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
     p3d_copy_config_into(_robotPt, qi, &_robotPt->ROBOT_POS);
     p3d_copy_config_into(_robotPt, qf, &_robotPt->ROBOT_GOTO);
     p3d_destroy_config(_robotPt, qi);
@@ -2368,8 +2377,10 @@ int Manipulation_JIDO::computeTrajBetweenTwoConfigs(bool cartesian, configPt qi,
                 p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-ob_lin", 1) ;
                 p3d_copy_config_into(_robotPt, _robotPt->ROBOT_POS, &qi);
                 p3d_copy_config_into(_robotPt, _robotPt->ROBOT_GOTO, &qf);
-                p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
-                p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
+		p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
+		p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qf);
+                //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
+                //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
                 p3d_copy_config_into(_robotPt, qi, &_robotPt->ROBOT_POS);
                 p3d_copy_config_into(_robotPt, qf, &_robotPt->ROBOT_GOTO);
                 p3d_destroy_config(_robotPt, qi);
@@ -2516,6 +2527,7 @@ int Manipulation_JIDO::setCameraImageSize(int width, int height) {
   return 0;
 }
 
+
 #ifdef DPG
 //! \brief Check if the current path is in collision or not
 //! \return 1 in case of collision, 0 otherwise
@@ -2562,8 +2574,10 @@ int Manipulation_JIDO::checkCollisionOnTraj(int currentLpId) {
     p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-ob_lin", 1) ;
     p3d_copy_config_into(_robotPt, _robotPt->ROBOT_POS, &qi);
     p3d_copy_config_into(_robotPt, _robotPt->ROBOT_GOTO, &qf);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
+    p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
+    p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qf);
+    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
+    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
     p3d_copy_config_into(_robotPt, qi, &_robotPt->ROBOT_POS);
     p3d_copy_config_into(_robotPt, qf, &_robotPt->ROBOT_GOTO);
     p3d_destroy_config(_robotPt, qi);
@@ -2576,6 +2590,7 @@ int Manipulation_JIDO::checkCollisionOnTraj(int currentLpId) {
     return MANIPULATION_TASK_ERROR_UNKNOWN;
   }
   p3d_localpath* currentLp = traj->courbePt;
+  int lpid = 0;
   for(int i = 0; i < currentLpId/2; i++){
     currentLp = currentLp->next_lp;
   }
@@ -2586,7 +2601,9 @@ int Manipulation_JIDO::checkCollisionOnTraj(int currentLpId) {
 //! \return 0 in case of success, !=0 otherwise
 int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &lp, std::vector < std::vector <double> > &positions) {
   configPt qi = NULL, qf = NULL;
-  static p3d_traj *traj = NULL;
+  p3d_traj *traj = NULL;
+  int ntest=0;
+  double gain;
   
   XYZ_ENV->cur_robot = _robotPt;
   //initialize and get the current linear traj
@@ -2612,8 +2629,10 @@ int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &l
     p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-ob_lin", 1) ;
     p3d_copy_config_into(_robotPt, _robotPt->ROBOT_POS, &qi);
     p3d_copy_config_into(_robotPt, _robotPt->ROBOT_GOTO, &qf);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
+    p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
+    p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qf);
+    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
+    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
     p3d_copy_config_into(_robotPt, qi, &_robotPt->ROBOT_POS);
     p3d_copy_config_into(_robotPt, qf, &_robotPt->ROBOT_GOTO);
     p3d_destroy_config(_robotPt, qi);
@@ -2634,13 +2653,18 @@ int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &l
   if(optimized){
     p3dAddTrajToGraph(_robotPt, _robotPt->GRAPH, traj);
   }
+  printf("nbTraj before : %d\n", _robotPt->nt);
   do{
     printf("Test %d\n", j);
     j++;
-    returnValue = checkCollisionsOnPathAndReplan(_robotPt, traj, _robotPt->GRAPH, optimized);
+//    returnValue = replanForCollidingPath(_robotPt, traj, _robotPt->GRAPH, currentConfig, currentLp, optimized);
+   returnValue  = checkCollisionsOnPathAndReplan(_robotPt, traj, _robotPt->GRAPH, optimized);
     traj = _robotPt->tcur;
     currentLp = traj->courbePt;
   }while(returnValue != 1 && returnValue != 0 && returnValue != -2 && j < 10);
+  
+  printf("nbTraj after : %d, returnValue = %d\n", _robotPt->nt, returnValue); 
+ 
   if (optimized && j > 1){
     optimiseTrajectory(100,6);
   }
@@ -2668,86 +2692,87 @@ int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &l
 #endif
 
 
-void printManipulationError(MANIPULATION_TASK_MESSAGE message) {
-  switch(message)
-  {
-    case MANIPULATION_TASK_OK:
-     printf("MANIPULATION_TASK_OK\n");
-    break;
-    case MANIPULATION_TASK_NOT_INITIALIZED:
-     printf("MANIPULATION_TASK_NOT_INITIALIZED\n");
-    break;
-    case MANIPULATION_TASK_NO_TRAJ_FOUND:
-     printf("MANIPULATION_TASK_NO_TRAJ_FOUND\n");
-    break;
-    case MANIPULATION_TASK_INVALID_QSTART:
-     printf("MANIPULATION_TASK_INVALID_QSTART \n");
-    break;
-    case MANIPULATION_TASK_INVALID_QGOAL:
-     printf("MANIPULATION_TASK_INVALID_QGOAL\n");
-    break;
-    case MANIPULATION_TASK_INVALID_TRAJ_ID:
-     printf("MANIPULATION_TASK_INVALID_TRAJ_ID\n");
-    break;
-    case MANIPULATION_TASK_INVALID_TASK:
-     printf("MANIPULATION_TASK_INVALID_TASK\n");
-    break;
-    case MANIPULATION_TASK_UNKNOWN_OBJECT:
-     printf("MANIPULATION_TASK_UNKNOWN_OBJECT\n");
-    break;
-    case MANIPULATION_TASK_NO_GRASP:
-     printf("MANIPULATION_TASK_NO_GRASP\n");
-    break;
-    case MANIPULATION_TASK_NO_PLACE:
-     printf("MANIPULATION_TASK_NO_PLACE\n");
-    break;
-    case MANIPULATION_TASK_ERROR_UNKNOWN:
-     printf("MANIPULATION_TASK_ERROR_UNKNOWN\n");
-    break;
+// void printManipulationError(MANIPULATION_TASK_MESSAGE message) {
+//   switch(message)
+//   {
+//     case MANIPULATION_TASK_OK:
+//      printf("MANIPULATION_TASK_OK\n");
+//     break;
+//     case MANIPULATION_TASK_NOT_INITIALIZED:
+//      printf("MANIPULATION_TASK_NOT_INITIALIZED\n");
+//     break;
+//     case MANIPULATION_TASK_NO_TRAJ_FOUND:
+//      printf("MANIPULATION_TASK_NO_TRAJ_FOUND\n");
+//     break;
+//     case MANIPULATION_TASK_INVALID_QSTART:
+//      printf("MANIPULATION_TASK_INVALID_QSTART \n");
+//     break;
+//     case MANIPULATION_TASK_INVALID_QGOAL:
+//      printf("MANIPULATION_TASK_INVALID_QGOAL\n");
+//     break;
+//     case MANIPULATION_TASK_INVALID_TRAJ_ID:
+//      printf("MANIPULATION_TASK_INVALID_TRAJ_ID\n");
+//     break;
+//     case MANIPULATION_TASK_INVALID_TASK:
+//      printf("MANIPULATION_TASK_INVALID_TASK\n");
+//     break;
+//     case MANIPULATION_TASK_UNKNOWN_OBJECT:
+//      printf("MANIPULATION_TASK_UNKNOWN_OBJECT\n");
+//     break;
+//     case MANIPULATION_TASK_NO_GRASP:
+//      printf("MANIPULATION_TASK_NO_GRASP\n");
+//     break;
+//     case MANIPULATION_TASK_NO_PLACE:
+//      printf("MANIPULATION_TASK_NO_PLACE\n");
+//     break;
+//     case MANIPULATION_TASK_ERROR_UNKNOWN:
+//      printf("MANIPULATION_TASK_ERROR_UNKNOWN\n");
+//     break;
+// 
+//    }
+// 
+// 
+// }
+// 
+// 
+// void printManipulationMessage(MANIPULATION_TASK_MESSAGE message)
+// {
+//   switch(message)
+//   {
+//     case MANIPULATION_TASK_OK:
+//      printf("MANIPULATION_TASK_OK\n");
+//     break;
+//     case MANIPULATION_TASK_NOT_INITIALIZED:
+//      printf("MANIPULATION_TASK_NOT_INITIALIZED\n");
+//     break;
+//     case MANIPULATION_TASK_NO_TRAJ_FOUND:
+//      printf("MANIPULATION_TASK_NO_TRAJ_FOUND\n");
+//     break;
+//     case MANIPULATION_TASK_INVALID_QSTART:
+//      printf("MANIPULATION_TASK_INVALID_QSTART\n");
+//     break;
+//     case MANIPULATION_TASK_INVALID_QGOAL:
+//      printf("MANIPULATION_TASK_INVALID_QGOAL\n");
+//     break;
+//     case MANIPULATION_TASK_INVALID_TRAJ_ID:
+//      printf("MANIPULATION_TASK_INVALID_TRAJ_ID\n");
+//     break;
+//     case MANIPULATION_TASK_INVALID_TASK:
+//      printf("MANIPULATION_TASK_INVALID_TASK\n");
+//     break;
+//     case MANIPULATION_TASK_UNKNOWN_OBJECT:
+//      printf("MANIPULATION_TASK_UNKNOWN_OBJECT\n");
+//     break;
+//     case MANIPULATION_TASK_NO_GRASP:
+//      printf("MANIPULATION_TASK_NO_GRASP\n");
+//     break;
+//     case MANIPULATION_TASK_NO_PLACE:
+//      printf("MANIPULATION_TASK_NO_PLACE\n");
+//     break;
+//     case MANIPULATION_TASK_ERROR_UNKNOWN:
+//      printf("MANIPULATION_TASK_ERROR_UNKNOWN\n");
+//     break;
+//   }
+// 
+// }
 
-   }
-
-
-}
-
-
-void printManipulationMessage(MANIPULATION_TASK_MESSAGE message)
-{
-  switch(message)
-  {
-    case MANIPULATION_TASK_OK:
-     printf("MANIPULATION_TASK_OK\n");
-    break;
-    case MANIPULATION_TASK_NOT_INITIALIZED:
-     printf("MANIPULATION_TASK_NOT_INITIALIZED\n");
-    break;
-    case MANIPULATION_TASK_NO_TRAJ_FOUND:
-     printf("MANIPULATION_TASK_NO_TRAJ_FOUND\n");
-    break;
-    case MANIPULATION_TASK_INVALID_QSTART:
-     printf("MANIPULATION_TASK_INVALID_QSTART\n");
-    break;
-    case MANIPULATION_TASK_INVALID_QGOAL:
-     printf("MANIPULATION_TASK_INVALID_QGOAL\n");
-    break;
-    case MANIPULATION_TASK_INVALID_TRAJ_ID:
-     printf("MANIPULATION_TASK_INVALID_TRAJ_ID\n");
-    break;
-    case MANIPULATION_TASK_INVALID_TASK:
-     printf("MANIPULATION_TASK_INVALID_TASK\n");
-    break;
-    case MANIPULATION_TASK_UNKNOWN_OBJECT:
-     printf("MANIPULATION_TASK_UNKNOWN_OBJECT\n");
-    break;
-    case MANIPULATION_TASK_NO_GRASP:
-     printf("MANIPULATION_TASK_NO_GRASP\n");
-    break;
-    case MANIPULATION_TASK_NO_PLACE:
-     printf("MANIPULATION_TASK_NO_PLACE\n");
-    break;
-    case MANIPULATION_TASK_ERROR_UNKNOWN:
-     printf("MANIPULATION_TASK_ERROR_UNKNOWN\n");
-    break;
-  }
-
-}
