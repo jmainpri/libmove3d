@@ -11,7 +11,7 @@
 #endif
 #endif
 
-////#define HRI_HRP2 /* This is where we define the robot we use for HRI planner */
+//////////#define HRI_HRP2 /* This is where we define the robot we use for HRI planner */
 #define HRI_JIDO /* This is where we define the robot we use for HRI planner */
 
 //AKP:Define which human model to use
