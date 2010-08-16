@@ -234,6 +234,15 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
       persp->pointjoint = agent->robotPt->joints[17];
       persp->point_tolerance = 20;      
       break;
+    case HRI_HRP214:
+      persp->camjoint = agent->robotPt->joints[49];
+      persp->fov = 40;
+      persp->foa = 40;
+      persp->tilt_jnt_idx = 16;
+      persp->pan_jnt_idx  = 17;
+      persp->pointjoint = agent->robotPt->joints[48];
+      persp->point_tolerance = 20;      
+      break;
     case HRI_JIDOKUKA:
       persp->camjoint = agent->robotPt->joints[15];
       persp->fov = 60;
@@ -934,7 +943,6 @@ int hri_agent_compute_posture(HRI_AGENT * agent, double neck_height, int state, 
                                 agent->robotPt->joints[25]->abs_pos[0][3],
                                 agent->robotPt->joints[25]->abs_pos[1][3],
                                 agent->robotPt->joints[25]->abs_pos[2][3]); // Constant -> 0.47
-    printf("Hip height: %f Knee height: %f\n",agent->robotPt->joints[23]->abs_pos[2][3],agent->robotPt->joints[25]->abs_pos[2][3]);
     kneetoankle_dist = DISTANCE3D(agent->robotPt->joints[25]->abs_pos[0][3],
                                   agent->robotPt->joints[25]->abs_pos[1][3],
                                   agent->robotPt->joints[25]->abs_pos[2][3],
