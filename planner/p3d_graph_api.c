@@ -258,6 +258,7 @@ int p3d_APInode_shoot_singularity(p3d_rob *rob, configPt* q, int *singNum, int *
   p3d_mark_for_singularity(cntrt_manager,*cntrtNum);
   int *ikSol = MY_ALLOC(int, rob->cntrt_manager->ncntrts);
   int result = 0;
+  int nbMaxShoots = 100, nbShoots = 0;
   do {
     if (rootConfig) {
 //            g3d_draw_allwin_active();
@@ -289,8 +290,9 @@ int p3d_APInode_shoot_singularity(p3d_rob *rob, configPt* q, int *singNum, int *
     p3d_set_robot_config(rob, *q);
     result = p3d_set_robot_singularity(rob, *cntrtNum, singNum);
     p3d_get_robot_config_into(rob, q);
+    nbShoots++;
  //         g3d_draw_allwin_active();
-  } while (!result || (!p3d_set_and_update_this_robot_conf_multisol(rob, *q, NULL, 0, ikSol)));//shoot until we have a valid configuration
+  } while ((!result || (!p3d_set_and_update_this_robot_conf_multisol(rob, *q, NULL, 0, ikSol))) && (nbShoots < nbMaxShoots));//shoot until we have a valid configuration
   p3d_set_iksol_elem(*cntrtNum, -(*singNum) - 1);
   MY_FREE(ikSol, int, rob->cntrt_manager->ncntrts);
   if (DEBUG_GRAPH_API){
