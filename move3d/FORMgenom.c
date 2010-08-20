@@ -445,16 +445,31 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	} else {
 	  manipulation->setArmCartesian(false);
 	}
-	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(),(char*)"", manipulation->lp, manipulation->positions);
+	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(),(char*)"", manipulation->lp, manipulation->positions, manipulation->segments);
 
 	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
-  std::cout << "Positions : " << std::endl;
-  for(unsigned int i = 0; i < manipulation->positions.size(); i++){
-    for(unsigned int j = 0; j < manipulation->positions[i].size(); j++){
-      std::cout << manipulation->positions[i][j]<< " ";
+   std::cout << "Positions (nb conf = "<< manipulation->positions.size() << "): " << std::endl;
+ 
+//   for(unsigned int i = 0; i < manipulation->positions.size(); i++){
+//     for(unsigned int j = 0; j < manipulation->positions[i].size(); j++){
+//       std::cout << manipulation->positions[i][j]<< " ";
+//     }
+//     std::cout << manipulation->lp[i] << std::endl;
+//   }
+
+std::cout << "nb segments in array " << manipulation->segments.seg.size() << std::endl;
+if( manipulation->segments.seg.size()>0){
+std::cout << "nb axis " << manipulation->segments.seg[0].data.size() << std::endl;
+
+  for(unsigned int i = 0; i < manipulation->segments.seg.size(); i++){
+    std::cout << "lp "<<manipulation->segments.seg[i].lp<< " time " << manipulation->segments.seg[i].time << " ";
+    for(unsigned int j = 0; j < manipulation->segments.seg[i].data.size(); j++){
+     std::cout << "J" << j << " " << manipulation->segments.seg[i].data[j].jerk << " ";
     }
-    std::cout << manipulation->lp[i] << std::endl;
+    std::cout << std::endl;
   }
+}
+
         return;
 }
 
@@ -486,7 +501,7 @@ int genomArmGotoX(p3d_rob* robotPt, int cartesian, double x, double y, double z,
 	}
 
 
-  return manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), (char*)"", manipulation->lp, manipulation->positions);
+  return manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), (char*)"", manipulation->lp, manipulation->positions, manipulation->segments);
 }
 
 static void CB_genomCleanRoadmap_obj(FL_OBJECT *obj, long arg){
@@ -908,7 +923,7 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
         manipulation->setCameraFOV(CAMERA_FOV);
         manipulation->setCameraImageSize(200, 200);
         manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(),
-				  (char*)OBJECT_NAME,  manipulation->lp,  manipulation->positions);
+				  (char*)OBJECT_NAME,  manipulation->lp,  manipulation->positions, manipulation->segments);
 
         g3d_win *win= NULL;
         win= g3d_get_cur_win();
@@ -935,7 +950,7 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
         manipulation->setObjectToManipulate((char*)OBJECT_NAME);
 	
         manipulation->armPlanTask(ARM_PICK_TAKE_TO_FREE,0,manipulation->robotStart(), manipulation->robotGoto(),
-				  (char*)OBJECT_NAME,  manipulation->lp,  manipulation->positions);
+				  (char*)OBJECT_NAME,  manipulation->lp,  manipulation->positions, manipulation->segments);
 
 	g3d_draw_allwin_active();
 	return;
@@ -961,7 +976,7 @@ static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg) {
   manipulation->setHuman((char*)HUMAN_NAME);
 
   manipulation->armPlanTask(ARM_PICK_TAKE_TO_PLACE,0,manipulation->robotStart(), manipulation->robotGoto(),
-			    (char*)OBJECT_NAME, manipulation->lp, manipulation->positions);
+			    (char*)OBJECT_NAME, manipulation->lp, manipulation->positions, manipulation->segments);
   g3d_draw_allwin_active();
 
   return;
@@ -986,7 +1001,7 @@ static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
   manipulation->setHuman((char*)HUMAN_NAME);
 
   manipulation->armPlanTask(ARM_PLACE_FROM_FREE,0,manipulation->robotStart(), manipulation->robotGoto(),
-			    (char*)OBJECT_NAME, manipulation->lp, manipulation->positions);
+			    (char*)OBJECT_NAME, manipulation->lp, manipulation->positions, manipulation->segments);
 
   g3d_draw_allwin_active();
 

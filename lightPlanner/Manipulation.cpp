@@ -58,6 +58,10 @@ void Manipulation::computeOfflineRoadmap(){
   _statDatas.push_back(datas);
 } 
 
+/*
+start/goto config config du robot
+cas 0 : grasping --> calcul des grasps
+*/
 p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoConfig, string offlineFile, int whichTest){
   vector<double> statDatas;
   double tu = 0, ts = 0;
@@ -80,14 +84,15 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
   p3d_mat4Copy(_robot->curObjectJnt->jnt_mat, objectEndPos);
   p3d_set_and_update_this_robot_conf(_robot, startConfig);
   //Find the closest arm to the start position of the object to start planning with
-  int closestWrist = getClosestWristToTheObject(_robot);
-  
+  int closestWrist = getClosestWristToTheObject(_robot);// mon armID
+
+  // je m'en fou
   while (whichTest != 0 && _handsDoubleGraspsConfigs.size() == 0) {
     clear();
     computeRegraspTask(p3d_copy_config(_robot, startConfig), p3d_copy_config(_robot, gotoConfig), offlineFile, 0);
   }
   
-  if (_handsDoubleGraspsConfigs.size() > 0) {
+  if (_handsDoubleGraspsConfigs.size() > 0) {  // test si les grasp sont deja calculer
     p3d_copy_config_into(_robot, startConfig, &(_robot->ROBOT_POS));
     p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
     dgData = (*_handsDoubleGraspsConfigs.begin());
@@ -727,13 +732,14 @@ int Manipulation::findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectP
   gpDeactivate_hand_selfcollisions(_robot, 2);
   list<gpGrasp> graspList;
   gpGet_grasp_list_SAHand(GP_OBJECT_NAME_DEFAULT, armId + 1, graspList);
-  std::map<int, ManipulationData*, std::less<int> > configMap;
+  std::map<int, ManipulationData*, std::less<int> > configMap; // vecteur de configuration du robot le map classe automatique en fonction du cout de JP <int>
   
   //For each grasp, get the tAtt and check the collision
   for(list<gpGrasp>::iterator iter = graspList.begin(); iter != graspList.end(); iter++){
     ManipulationData* data = new ManipulationData(_robot);
-    configPt graspConfig = data->getGraspConfig(), approachConfig = data->getApproachConfig();
+    configPt graspConfig = data->getGraspConfig(), approachConfig = data->getApproachConfig(); // recupere les pointeurs
     p3d_matrix4 tAtt;
+    //( *iter) le grasp de jp courant du for
     double configCost = getCollisionFreeGraspAndApproach(objectPos, handProp[armId], (*iter), armId + 1, tAtt, &graspConfig, &approachConfig);
     if(configCost != -1){
       data->setAttachFrame(tAtt);
@@ -747,12 +753,13 @@ int Manipulation::findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectP
     }else{
       delete(data);
     }
-  }
+  } // end for remplir la configMap
   p3d_desactivateCntrt(_robot, _robot->ccCntrts[armId]);
   _handsGraspsConfig.insert(pair<int, map<int, ManipulationData*, less<int> > > (armId, configMap));
   return nbGraspConfigs;
 }
 
+// lien entre light planner et grasplanning
 double Manipulation::getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpHand_properties handProp, gpGrasp grasp, int whichArm, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig){
   p3d_matrix4 handFrame, fictive;
   p3d_mat4Mult(grasp.frame, handProp.Tgrasp_frame_hand, handFrame);

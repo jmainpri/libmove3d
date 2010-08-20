@@ -1,6 +1,8 @@
 #ifndef __MANIPULATIONSTRUCT_H__
 #define __MANIPULATIONSTRUCT_H__
 
+#include <vector>
+
 //! @ingroup manipulation 
 //! The different manipulation tasks that can be planned with Jido:
 typedef enum MANIPULATION_TASK_TYPE_STR {
@@ -29,6 +31,21 @@ typedef enum MANIPULATION_TASK_MESSAGE {
   MANIPULATION_TASK_ERROR_UNKNOWN /*!< something undefined was wrong */
 } MANIPULATION_TASK_MESSAGE;
 
+typedef struct MANIPULATION_SEGMENT_AXIS_DATA_STR {
+ double ic_a;
+ double ic_v;
+ double ic_x;
+ double jerk;
+} MANIPULATION_SEGMENT_AXIS_DATA_STR;
 
+typedef struct MANIPULATION_SEGMENT_STR {
+  double time;
+  int lp;
+  std::vector<MANIPULATION_SEGMENT_AXIS_DATA_STR> data;
+} MANIPULATION_SEGMENT_STR;
+
+typedef struct MANPIPULATION_TRAJECTORY_STR {
+  std::vector<MANIPULATION_SEGMENT_STR> seg;
+}MANPIPULATION_TRAJECTORY_STR;
 
 #endif

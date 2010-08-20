@@ -690,7 +690,7 @@ MANIPULATION_TASK_MESSAGE Manipulation_JIDO::armPlanTask(MANIPULATION_TASK_TYPE_
   bool success;
   int i, ntest=0;
   double gain = 0;
-
+  MANPIPULATION_TRAJECTORY_STR segments;
 
   // variabel for ARM_PICK_GOTO
    double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
@@ -1105,7 +1105,8 @@ printf("************************************************************************
     XYZ_ENV->cur_robot= cur_robot;
     return MANIPULATION_TASK_ERROR_UNKNOWN;
   }
-  if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions) == 1){
+  
+  if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions, segments) == 1){
     printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
     XYZ_ENV->cur_robot= cur_robot;
     return MANIPULATION_TASK_ERROR_UNKNOWN;
@@ -2604,7 +2605,7 @@ int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &l
   p3d_traj *traj = NULL;
   int ntest=0;
   double gain;
-  
+  std::vector < std::vector <double> > segments;
   XYZ_ENV->cur_robot = _robotPt;
   //initialize and get the current linear traj
   if (!traj){
@@ -2679,7 +2680,7 @@ int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &l
     }
     double gain = 0.0;
     int ntest = 0;
-    if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions) == 1){
+    if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions, segments) == 1){
            printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
            return 1;
     }

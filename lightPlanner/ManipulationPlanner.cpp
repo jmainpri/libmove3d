@@ -799,7 +799,7 @@ configPt ManipulationPlanner::robotRest(){
 
 //! Computes a path for a given manipulation elementary task.
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal,
-				       char* objectName, std::vector <int> &lp, std::vector < std::vector <double> > &positions)
+				       char* objectName, std::vector <int> &lp, std::vector < std::vector <double> > &positions, MANPIPULATION_TRAJECTORY_STR &segments)
 {
 
   configPt qi = NULL, qf = NULL;
@@ -1235,7 +1235,7 @@ printf("************************************************************************
     XYZ_ENV->cur_robot= cur_robot;
     return MANIPULATION_TASK_ERROR_UNKNOWN;
   }
-  if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions) == 1){
+  if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions, segments) == 1){
     printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
     XYZ_ENV->cur_robot= cur_robot;
     return MANIPULATION_TASK_ERROR_UNKNOWN;
@@ -2753,7 +2753,7 @@ int  ManipulationPlanner::checkCollisionOnTraj(int currentLpId) {
 
 //! Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
 //! \return 0 in case of success, !=0 otherwise
-int  ManipulationPlanner::replanCollidingTraj(int currentLpId, std::vector <int> &lp, std::vector < std::vector <double> > &positions) {
+int  ManipulationPlanner::replanCollidingTraj(int currentLpId, std::vector <int> &lp, std::vector < std::vector <double> > &positions, MANPIPULATION_TRAJECTORY_STR &segments) {
   configPt qi = NULL, qf = NULL;
   p3d_traj *traj = NULL;
   int ntest=0;
@@ -2833,7 +2833,7 @@ int  ManipulationPlanner::replanCollidingTraj(int currentLpId, std::vector <int>
     }
     double gain = 0.0;
     int ntest = 0;
-    if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions) == 1){
+    if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions, segments) == 1){
            printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
            return 1;
     }

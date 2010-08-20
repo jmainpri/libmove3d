@@ -10,7 +10,6 @@
 
 #include "ManipulationStruct.h"
 
-
 /** @defgroup manipulation 
 * The manipulation classes are dedicated to
 * the planning of manipulation tasks.
@@ -318,7 +317,15 @@ class  Manipulation_JIDO {
      int computeOptimTraj();
 };
 
-
+// class ManipulationGrasping {
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+// }
 
 //! @ingroup manipulation
 class  ManipulationPlanner {
@@ -412,9 +419,11 @@ class  ManipulationPlanner {
      MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId,
 					   configPt qStart, configPt qGoal,
 					   char* objectName, std::vector <int> &lp,
-					   std::vector < std::vector <double> > &positions);
+					   std::vector < std::vector <double> > &positions,
+					   MANPIPULATION_TRAJECTORY_STR &segments);
 
      std::vector < std::vector <double> > positions;
+     MANPIPULATION_TRAJECTORY_STR segments;
      std::vector <int> lp;
 
      int setLiftUpDistance(double dist) {
@@ -476,7 +485,7 @@ class  ManipulationPlanner {
      //     int findPlacementConfigurations(int armId, double distance, configPt qPrePlacement, configPt qPlacement);
 
      /******************/
-     /* Camera Menbers */
+     /* Camera Members */
      /******************/
      void setCapture(bool v);
      bool getCapture();
