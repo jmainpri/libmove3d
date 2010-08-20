@@ -462,7 +462,7 @@ class  ManipulationPlanner {
      int destroyTrajectories();
      int checkCollisionOnTraj();
      int checkCollisionOnTraj(int currentLpId);
-     int replanCollidingTraj(int currentLpId, std::vector <int> &lp, std::vector < std::vector <double> > &positions);
+     int replanCollidingTraj(int currentLpId, std::vector <int> &lp, std::vector < std::vector <double> > &positions, MANPIPULATION_TRAJECTORY_STR &segments);
      
      /*******************/
      /* grasp's members */

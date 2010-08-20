@@ -2605,7 +2605,7 @@ int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &l
   p3d_traj *traj = NULL;
   int ntest=0;
   double gain;
-  std::vector < std::vector <double> > segments;
+  MANPIPULATION_TRAJECTORY_STR segments;
   XYZ_ENV->cur_robot = _robotPt;
   //initialize and get the current linear traj
   if (!traj){

@@ -530,10 +530,9 @@ void CB_replanColTraj(FL_OBJECT *obj, long arg){
   if (manipulation== NULL) {
 	  initManipulationGenom();
 	}
-  std::vector <int> lp;
-  std::vector < std::vector <double> > positions;
+
   
-  manipulation->replanCollidingTraj(0, lp, positions);
+  manipulation->replanCollidingTraj(0, manipulation->lp, manipulation->positions, manipulation->segments);
 }
 #endif
 
