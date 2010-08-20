@@ -595,8 +595,19 @@ static void CB_find_put_obj_candidates_obj(FL_OBJECT *ob, long arg)
  ////find_candidate_points_on_plane_to_put_obj_new();
  ////assign_weights_on_candidte_points_to_put_obj(); 
  ////CANDIDATE_POINTS_FOR_TASK_FOUND=1;
+
+//tmp for testing
+////move_object_on_a_path();
+////return;
+
+//Tmp for testing
 test_jido_grasp_traj();
 return;
+
+//tmp testing for object object from mocap data file
+read_update_object_pos_from_mocap_data_file();
+return;
+
  get_set_of_points_to_put_object();
 
 }

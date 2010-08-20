@@ -1083,6 +1083,7 @@ int findBestExchangePosition(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3
   return 0;
 }
 
+#ifdef GRASP_PLANNING
 //! Displays the grid that is computed in findBestExchangePosition.
 //! The collisions are not tested in this version to make it computable at each frame display.
 //! \param object pointer to the object (a freeflying robot)
@@ -1161,6 +1162,7 @@ int findBestExchangePositionGraphic(p3d_rob *object, p3d_vector3 Oi, p3d_vector3
   minCost= 1e9;
 
   double maxCost= -1e9;
+
   gpVector3D point;
   std::vector<gpVector3D> points;
 
@@ -1190,7 +1192,6 @@ int findBestExchangePositionGraphic(p3d_rob *object, p3d_vector3 Oi, p3d_vector3
         point.set(E[0], E[1], E[2]);
         point.cost= cost;
         points.push_back(point);
-
         if(cost > maxCost) { maxCost= cost; }
 
 //         cost+= fabs(dAiOi + dOiE -dBiE) + fabs(dEOf + dOfBf - dEAf);
@@ -1253,7 +1254,7 @@ int findBestExchangePositionGraphic(p3d_rob *object, p3d_vector3 Oi, p3d_vector3
 
   return 0;
 }
-
+#endif
 
 //! This function is the same as findBestExchangePosition but it receives matrices instead of vectors.
 //! Only the translation part of the matrices is used in the function.

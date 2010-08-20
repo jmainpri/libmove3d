@@ -2615,6 +2615,8 @@ int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &l
       traj = _robotPt->t[_robotPt->tcur->num - 2];
     }
   }
+  traj = _robotPt->tcur;
+  
   if(_cartesian == 0) {
     /* plan in the C_space */
     p3d_multiLocalPath_disable_all_groupToPlan(_robotPt);

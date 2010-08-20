@@ -1198,6 +1198,7 @@ void g3d_draw_env_custom()
     g3d_draw_all_agents_fovs(GLOBAL_AGENTS);
     if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
   #ifdef USE_MIGHTABILITY_MAPS
+      ////printf("Inside g3d_draw_env_custom() \n");
       execute_Mightability_Map_functions();
   #endif
   } else {

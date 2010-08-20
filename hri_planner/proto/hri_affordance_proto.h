@@ -86,6 +86,10 @@ extern int JIDO_put_obj_in_hand_into_trashbin(char trashbin_name[50], char obj_t
 extern int execute_JIDO_trajectory();
 extern int simulate_object_falling(char obj_name[50]);
 extern int play_all_JIDO_trajectories();
-
+extern int move_object_on_a_path();
+extern int update_object_pos_from_mocap(point_co_ordi *mrkrs_pos, int obj_index, char object_name[30]);
+extern int read_update_object_pos_from_mocap_data_file();
+extern int update_human_pos_from_mocap_eye_glasses(point_co_ordi *mrkrs_pos, int obj_index, char object_name[30], int is_primary_human);
+extern int update_human_pos_from_mocap_rigid_hat(point_co_ordi *mrkrs_pos, int obj_index, char object_name[30], int is_primary_human);
 #endif /* __CEXTRACT__ */
 
