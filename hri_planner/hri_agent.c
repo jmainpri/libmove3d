@@ -808,7 +808,7 @@ int hri_agent_single_task_manip_move(HRI_AGENT * agent, HRI_GIK_TASK_TYPE type, 
     if(manip->tasklist[manip->activetasks[0]].type == type){
       // Gik is well initialized - This test is only by task type number and not by joints
       if(manip->gik->GIKInitialized){
-        if(!hri_gik_compute(agent->robotPt, manip->gik, 500, 0.04, FALSE, 0, goalCoord, NULL, q, NULL)){
+        if(!hri_gik_compute(agent->robotPt, manip->gik, 500, 0.01, goalCoord, q, NULL)){
           return FALSE;
         }
         else{
@@ -837,7 +837,7 @@ int hri_agent_single_task_manip_move(HRI_AGENT * agent, HRI_GIK_TASK_TYPE type, 
     return FALSE;
   }
 
-  if(!hri_gik_initialize_gik(manip->gik,agent->robotPt,FALSE,
+  if(!hri_gik_initialize_gik(manip->gik,agent->robotPt,
                              manip->tasklist[manip->activetasks[0]].default_joints_no))
     return FALSE;
 
@@ -847,7 +847,7 @@ int hri_agent_single_task_manip_move(HRI_AGENT * agent, HRI_GIK_TASK_TYPE type, 
     return FALSE;
 
 
-  if(!hri_gik_compute(agent->robotPt, manip->gik, 500, 0.02, FALSE, 0, goalCoord, NULL, q, NULL))
+  if(!hri_gik_compute(agent->robotPt, manip->gik, 500, 0.02, goalCoord, q, NULL))
     return FALSE;
 
   return TRUE;

@@ -253,7 +253,6 @@ typedef struct GIK_struct{
   hri_gik_task ** task;
   int task_no;
   p3d_rob ** forceballs;
-  int direct;
   p3d_rob * robot;
   p3d_jnt ** joints;
   int * free_joints;
