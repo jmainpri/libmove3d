@@ -10,7 +10,7 @@
 ## Check for the header files
 
 find_path (Eigen_INCLUDE_DIR Eigen/Cholesky
- PATHS /home/akpandey/bin/eigen /usr/local/include /usr/include /sw/include /opt/local/include /usr/local/motion
+ PATHS /usr/local/include /usr/include /sw/include /opt/local/include /usr/local/motion ${CMAKE_CURRENT_SOURCE_DIR}/other_libraries/eigen/build/install/include
  PATH_SUFFIXES eigen2 eigen
  )
 

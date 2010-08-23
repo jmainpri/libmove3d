@@ -1197,10 +1197,10 @@ void g3d_draw_env_custom()
     //g3d_hri_display_test();
     g3d_draw_all_agents_fovs(GLOBAL_AGENTS);
     if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
-  #ifdef USE_MIGHTABILITY_MAPS
-      ////printf("Inside g3d_draw_env_custom() \n");
-      execute_Mightability_Map_functions();
-  #endif
+#if defined(USE_MIGHTABILITY_MAPS) && !defined(COMPILE_ON_JIDO)
+    ////printf("Inside g3d_draw_env_custom() \n");
+    execute_Mightability_Map_functions();
+#endif
   } else {
     if (win->draw_mode!=NORMAL)
       g3d_set_light_persp();
