@@ -58,6 +58,10 @@ void activateCcCntrts(p3d_rob * robot, int cntrtNum, bool nonUsedCntrtDesactivat
  * @param cntrtNum the constraint number. If -1 activate all constraints
  */
 void deactivateCcCntrts(p3d_rob * robot, int cntrtNum){
+  if (!robot) {
+    printf("A null Robot is given to deactivateCcCntrts");
+    return;
+  }
   if(cntrtNum == -1){
     for(int i = 0; i < robot->nbCcCntrts; i++){
       p3d_desactivateCntrt(robot, robot->ccCntrts[i]);
