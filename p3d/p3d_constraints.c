@@ -5759,7 +5759,7 @@ static int p3d_set_pa10_6_arm_ik(p3d_cntrt_management * cntrt_manager,
 // 	return 1;
 // }
 
-
+#ifdef LIGHT_PLANNER
 /** \brief p3d_update_virtual_object_config_for_arm_ik_constraint
  * return 0 if there is an error
  */
@@ -5823,8 +5823,9 @@ int p3d_update_virtual_object_config_for_arm_ik_constraint( p3d_rob* robot, int 
 	p3d_destroy_config(robot, q0);
 	return 1;
 }
+#endif
 
-
+#ifdef LIGHT_PLANNER
 /** \brief p3d_update_virtual_object_config
  * return 0 if there is an error
  */
@@ -5894,6 +5895,7 @@ int p3d_update_virtual_object_config(p3d_rob* robot, int armId, configPt q) {
 	p3d_destroy_config(robot, q0);
 	return 1;
 }
+#endif
 
 /**  
  * Computes Attached Matrix of a Inverse Kinematics constraint

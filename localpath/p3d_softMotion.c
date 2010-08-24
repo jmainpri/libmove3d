@@ -3,6 +3,8 @@
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
+#include "../lightPlanner/proto/ManipulationStruct.h"
+#include <stdio.h>
 
 char * array_group_name[] = {
  "base",
@@ -605,8 +607,8 @@ configPt p3d_softMotion_config_at_param(p3d_rob *robotPt, p3d_localpath *localpa
 	if (param > localpathPt->range_param){ param = localpathPt->range_param;}
 	for (i=0;i<softMotion_specificPt->nbDofs;i++) {
 		lm_get_softMotion_segment_params( softMotion_specificPt, param, &segment[i], &segId, i);
-		if (param >= softMotion_specificPt->specific->motion[i].MotionDuration) {
-			paramLocal = softMotion_specificPt->specific->motion[i].MotionDuration;
+		if (param >= softMotion_specificPt->specific->motionTime) {
+			paramLocal = softMotion_specificPt->specific->motionTime;
 		} else {
 			paramLocal = param;
 		}
@@ -2240,55 +2242,42 @@ void lm_set_and_get_motionTimes(p3d_softMotion_data* softMotion_data, double* ti
 }
 
 void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char *fileName, bool flagPlot,
-					    std::vector <int> &lp, std::vector < std::vector <double> > &positions) {
-	int i=0;
+					    std::vector <int> &lp, std::vector < std::vector <double> > &positions,
+					    MANPIPULATION_TRAJECTORY_STR &segments) {
 	double SIMPLING_TIME = 0.01;
-	double paramDiff = 0.0;
-	double paramLocal = 0.0;
-	int segId = 0;
-
 	int index_dof = 0;
-
-	int j = 0, k=0, nb_dof = 0, nbGpJnt = 0;
-	int v= 0;
+	int j=0;
+	int nb_dof = 0, nbGpJnt = 0;
 	p3d_localpath* localpathPt =  NULL;
 	configPt q = NULL;
 	int index;
-	FILE *fileptr = NULL;
-	FILE *filepQarmtr = NULL;
+	FILE *filepTrajtr = NULL;
 	p3d_softMotion_data *specificPt = NULL;
 	double dq;
 	int end_localpath = 0;
 	double u = 0.0;
 	double du, umax;
-
-        std::vector <SM_SEGMENT>  segment;
-	std::vector <SM_COND>  cond;
-	SM_COND cond_i;
-	SM_SEGMENT segment_i;
-	std::vector < std::vector <double> > qplot;
+// 	std::vector <std::vector <double> > segment_q;
+// 	std::vector <SM_COND>  cond;
+// 	SM_COND cond_i;
+// 	SM_SEGMENT segment_i;
 	std::vector <double>  qplot_i;
 	std::vector <double>  q_arm;
 	std::vector <double>  q_armOld;
 	std::vector <double>  vqi;
 	std::vector <double>  min, max;
-	gnuplot_ctrl * h = NULL;
-	std::vector <double> pos_vect;
-
-	if ((fileptr = fopen(fileName,"w+"))==NULL) {
-		printf("cannot open File RefTP.dat");
-	}
-	if ((filepQarmtr = fopen("qarm.traj","w+"))==NULL) {
-		printf("cannot open File qarm.traj");
-	}
-	if(fileptr != NULL) {
-	  fprintf(fileptr,"# i PX.Acc PX.Vel PX.Pos PY.Acc PY.Vel PY.Pos PZ.Acc PZ.Vel PZ.Pos RX.Acc RX.Vel RX.Pos RY.Acc RY.Vel RY.Pos RZ.Acc RZ.Vel RZ.Pos q1 q2 q3 q4 q5 q6 vq1 vq2 vq3 vq4 vq5 vq6 ;\n");
-	}
-	index = 0;
-	
+	gnuplot_ctrl * h = NULL;	
+	MANIPULATION_SEGMENT_STR manip_seg;
+	MANIPULATION_SEGMENT_AXIS_DATA_STR manip_seg_data;
+	int I_can = 0;
+	int lpId = 0;
 	int arm_mlpID = -1;
+	
+	if ((filepTrajtr = fopen("arm.traj","w+"))==NULL) {
+		printf("cannot open File arm.traj");
+	}
 
-
+	index = 0;
 	for(int iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
 		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-arm_lin") == 0) {
 			arm_mlpID = iGraph;
@@ -2311,16 +2300,16 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	vqi.clear();
 	min.clear();
 	max.clear();
-	segment.clear();
-	cond.clear();
+	segments.seg.clear();
+	
 
 	index_dof = robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[0]]->index_dof;
 	double min_i=0.0, max_i=0.0;
 	
-	for(v=0; v<nbGpJnt; v++) {
+	for(int v=0; v<nbGpJnt; v++) {
 
 	  nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[v]]->dof_equiv_nbr;
-	  for(k=0; k<nb_dof; k++) {
+	  for(int k=0; k<nb_dof; k++) {
 	
 		q_armOld.push_back(traj->courbePt->specific.softMotion_data->q_init[index_dof + k]);
 		vqi.push_back(0.0);
@@ -2334,25 +2323,60 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	
 // 	index_dof = robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[0]]->index_dof;
 
+	
+	positions.clear();
+	localpathPt = traj->courbePt;
+	lpId = 0;
+	while (localpathPt !=NULL) {
+	  specificPt = localpathPt->specific.softMotion_data;
+	  for(int s=1; s<=7;s++) {
+	    manip_seg.time = 0.0;
+	    if(s==1) { manip_seg.time = specificPt->specific->motion[0].Times.Tjpa;}
+	    if(s==2) { manip_seg.time = specificPt->specific->motion[0].Times.Taca;}
+	    if(s==3) { manip_seg.time = specificPt->specific->motion[0].Times.Tjna;}
+	    if(s==4) { manip_seg.time = specificPt->specific->motion[0].Times.Tvc;}
+	    if(s==5) { manip_seg.time = specificPt->specific->motion[0].Times.Tjnb;}
+	    if(s==6) { manip_seg.time = specificPt->specific->motion[0].Times.Tacb;}
+	    if(s==7) { manip_seg.time = specificPt->specific->motion[0].Times.Tjpb;}
+
+	    if(manip_seg.time > EPS6) {
+	        manip_seg.lp = lpId;
+		manip_seg.data.clear();
+		for (int i=0;i<nb_armDof;i++) {
+		  manip_seg_data.ic_a = specificPt->specific->motion[i].IC.a;
+		  manip_seg_data.ic_a = specificPt->specific->motion[i].IC.v;
+		  manip_seg_data.ic_a = specificPt->specific->motion[i].IC.x;
+		  if(s==1) { manip_seg_data.jerk = specificPt->specific->motion[i].jerk.J1*specificPt->specific->motion[i].Dir;}
+		  if(s==2) { manip_seg_data.jerk = 0.0;}
+		  if(s==3) { manip_seg_data.jerk = -specificPt->specific->motion[i].jerk.J2*specificPt->specific->motion[i].Dir;}
+		  if(s==4) { manip_seg_data.jerk = 0.0;}
+		  if(s==5) { manip_seg_data.jerk = -specificPt->specific->motion[i].jerk.J3*specificPt->specific->motion[i].Dir;}
+		  if(s==6) { manip_seg_data.jerk = 0.0;}
+		  if(s==7) { manip_seg_data.jerk = specificPt->specific->motion[i].jerk.J4*specificPt->specific->motion[i].Dir;}
+		  manip_seg.data.push_back(manip_seg_data);
+		}
+		segments.seg.push_back(manip_seg);
+	    }
+	  }
+	  lpId ++;
+	  localpathPt = localpathPt->next_lp;
+	}
+	
 	localpathPt = traj->courbePt;
 	u = 0.0;
-        int I_can;
-	int lpId = 0;
-	//*nbPositions = 0;
-	qplot.clear();
-	positions.clear();
-	
+	lpId = 0;
 	while (localpathPt != NULL) {
 		specificPt = localpathPt->specific.softMotion_data;
 		umax = localpathPt->range_param;
-    //activate the constraint for the local path
+		//activate the constraint for the local path
 		p3d_desactivateAllCntrts(robotPt);
-		for(i = 0; i < localpathPt->nbActiveCntrts; i++){
+		for(int i = 0; i < localpathPt->nbActiveCntrts; i++){
 			p3d_activateCntrt(robotPt, robotPt->cntrt_manager->cntrts[localpathPt->activeCntrts[i]]);
 		}
 
 		if (u > umax - EPS6) {
-			u -= umax;
+			//u -= umax;
+			u=0;
 			end_localpath = 0;
 			localpathPt = localpathPt->next_lp;
 			lpId ++;
@@ -2360,80 +2384,48 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 		}
 
 		while (end_localpath < 1) {
-
-			for (i=0;i<nb_armDof;i++) {
+			q_arm.clear();
+			qplot_i.clear();
 			
-	
-				lm_get_softMotion_segment_params( specificPt, u, &segment_i, &segId, i);
-				segment.push_back(segment_i);
-				
-				if (u >= specificPt->specific->motion[i].MotionDuration) {
-					paramLocal = specificPt->specific->motion[i].MotionDuration;
-				} else {
-					paramLocal = u;
-				}
-				lm_get_paramDiff_for_param( specificPt, &segment_i, segId, i, paramLocal, &paramDiff);
-				sm_CalculOfAccVelPosAtTimeSecond(paramDiff, &segment_i, &cond_i);
-				cond.push_back(cond_i);
-			}
-
 			/* position of the robot corresponding to parameter u */
 			q = localpathPt->config_at_param(robotPt, localpathPt, u);
 			I_can = p3d_set_and_update_this_robot_conf_multisol(robotPt, q, NULL, 0, localpathPt->ikSol);
 			if(I_can == FALSE) {
-
-
                               printf("error config %d in lp %d\n",index, lpId);
 			}
 			  
 			p3d_get_robot_config_into(robotPt, &q);
-
 			// Check for the bounds for the arm
 			j=0;
-			q_arm.clear();
-			qplot_i.clear();
-			for(v=index_dof; v<( index_dof +nb_armDof); v++) {
+			for(int v=index_dof; v<( index_dof +nb_armDof); v++) {
  				dq = fmod((q[v] - q_armOld[j]), 2*M_PI);
-
-// 				q_arm[j] = q[v];
-
  				q_arm.push_back(q_armOld[j] + dq);
 				qplot_i.push_back(q_arm[j]);
-// 				qplot[j][index] = q_arm[j];
-				//qplot[j][index] = q[v];
 				j++;
 			}
-			qplot.push_back(qplot_i);
-// 	vqi[j] = (q_arm[j] - q_armi[j]) / 0.01;
-			if(fileptr != NULL) {
-// 			  fprintf(fileptr,"%d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f  %f %f %f %f %f %f ;\n", index, cond[0].a, cond[0].v, q[21], cond[1].a, cond[1].v, q[22],cond[2].a, cond[2].v, q[23],cond[3].a, cond[3].v, q[24], cond[4].a, cond[4].v, q[25], cond[5].a, cond[5].v, q[26], q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5], vqi[0], vqi[1], vqi[2], vqi[3], vqi[4], vqi[5]);
+			// vqi[j] = (q_arm[j] - q_armi[j]) / 0.01;
+
+			if(filepTrajtr != NULL) {
+
+                         for(unsigned int w=0; w<qplot_i.size();w++){
+                          fprintf(filepTrajtr,"%f ",qplot_i[w]);
+
+                         }
+                         fprintf(filepTrajtr,"\n");
 			}
-			if(filepQarmtr != NULL) {
-			  pos_vect.clear();
-			  for(int w=0; w<qplot_i.size();w++){
-			   fprintf(filepQarmtr,"%f ",qplot_i[w]);
-	
-			  }
-			  fprintf(filepQarmtr,"\n");
-			}
+  
 			positions.push_back(qplot_i);
-// 			positions[0][index] = q_arm[0];
-// 			positions[1][index] = q_arm[1];
-// 			positions[2][index] = q_arm[2];
-// 			positions[3][index] = q_arm[3];
-// 			positions[4][index] = q_arm[4];
-// 			positions[5][index] = q_arm[5];
 			lp.push_back(lpId);
-//			*nbPositions =  *nbPositions + 1;
 			index = index + 1;
 			q_armOld.clear();
-			for(i=0; i<nb_armDof; i++) {
+			for(int i=0; i<nb_armDof; i++) {
 			  q_armOld.push_back(q_arm[i]);
 			}
 			p3d_destroy_config(robotPt, q);
 			q = NULL;
 			du = SIMPLING_TIME;
 			u += du;
+			
 			if (u > umax - EPS6) {
 				u -= umax;
 				end_localpath++;
@@ -2443,23 +2435,20 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 		lpId ++;
 		end_localpath = 0;
 	}
-	if(fileptr != NULL) {
-	  fclose(fileptr);
-	  printf("File RefSM created\n");
-	}
-	if(filepQarmtr != NULL) {
-	fclose(filepQarmtr);
-	printf("File qarm.traj created\n");
+
+	if(filepTrajtr != NULL) {
+	fclose(filepTrajtr);
+	printf("File arm.traj created\n");
 	}
 	
 	if(flagPlot == true) {
 		FILE * f = NULL;
 		f = fopen("temp.dat","w");
 
-	        for(i=0; i<qplot.size(); i++){
+	        for(unsigned int i=0; i<positions.size(); i++){
 		  fprintf(f,"%d ",i);
-		  for(int v=0; v<qplot_i.size(); v++){
-			fprintf(f,"%f ",qplot[i][v]);
+		  for(unsigned int v=0; v<positions[i].size(); v++){
+			fprintf(f,"%f ",positions[i][v]);
 		  }
 		  fprintf(f,"\n ");
 		}
@@ -2477,24 +2466,26 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 		gnuplotCmd.clear();
 		char text[255];
 		char text2[255];
-		for(i=0; i<qplot_i.size(); i++){
-		  sprintf(text,"%d",i+1);
-		  sprintf(text2,"%d",i+2);
-		  if(i==0) {
-		    gnuplotCmd.append("plot ");
-		  }
-		  gnuplotCmd.append("\"temp.dat\" using 1:");
-		  gnuplotCmd.append(text2);
-		  gnuplotCmd.append(" with lines lt ");
-		  gnuplotCmd.append(text);
-		  gnuplotCmd.append(" ti \"q");
-		  gnuplotCmd.append(text);
-		  if(i<qplot_i.size()-1){
-		    gnuplotCmd.append("\", ");
-		  } else {
-		      gnuplotCmd.append("\" ");
-		  }
-		}		
+		if(positions.size()>1){
+		  for(unsigned int i=0; i<positions.at(0).size(); i++){
+		    sprintf(text,"%d",i+1);
+		    sprintf(text2,"%d",i+2);
+		    if(i==0) {
+		      gnuplotCmd.append("plot ");
+		    }
+		    gnuplotCmd.append("\"temp.dat\" using 1:");
+		    gnuplotCmd.append(text2);
+		    gnuplotCmd.append(" with lines lt ");
+		    gnuplotCmd.append(text);
+		    gnuplotCmd.append(" ti \"q");
+		    gnuplotCmd.append(text);
+		    if(i<qplot_i.size()-1){
+		      gnuplotCmd.append("\", ");
+		    } else {
+			gnuplotCmd.append("\" ");
+		    }
+		  }	
+		}
 		gnuplot_cmd(h, (char*)gnuplotCmd.c_str());
 	}
 	return;

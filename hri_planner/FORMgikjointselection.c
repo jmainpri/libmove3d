@@ -445,7 +445,7 @@ void CB_gik_run_obj(FL_OBJECT *obj, long arg)
 
   gik_initialize_current_tasks(robotPt);
 
-  hri_gik_compute(robotPt, HRI_GIK, GIK_STEP, GIK_PRECISION, FALSE, GIK_FORCE, Tcoord, NULL, &q, NULL);
+  hri_gik_compute(robotPt, HRI_GIK, GIK_STEP, GIK_PRECISION, Tcoord, &q, NULL);
 
   p3d_set_and_update_this_robot_conf(robotPt,q);
 
@@ -531,7 +531,7 @@ static void gik_initialize_current_tasks( p3d_rob * robotPt )
    }
    */
   //printf("joints  %i\n",linelength);
-  hri_gik_initialize_gik(HRI_GIK,robotPt,FALSE,linelength);
+  hri_gik_initialize_gik(HRI_GIK,robotPt,linelength);
   for(i=0; i<priority_form_val_l; i++){
     hri_gik_add_task(HRI_GIK, 3, linelength, i+1, jm[i], PDGIKTASK[priority_form_val[i]].active_joint);
   }

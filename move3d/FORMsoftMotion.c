@@ -11,6 +11,7 @@
 #include <string>
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/lightPlanner.h"
+#include "../lightPlanner/proto/ManipulationStruct.h"
 
 
 /* --------- FORM VARIABLES ------- */
@@ -113,7 +114,7 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg) {
 
 	std::vector <int> lp;
 	std::vector < std::vector <double> > positions;
-	 
+	MANPIPULATION_TRAJECTORY_STR segments;
 
 	if(!traj) {
 		printf("Soft Motion : ERREUR : no current traj\n");
@@ -135,7 +136,7 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg) {
 
 	fct_draw = &(g3d_draw_allwin_active);
 
-	if(p3d_optim_traj_softMotion(traj, ENV.getBool(Env::writeSoftMotionFiles), &gain, &ntest, lp, positions)){
+	if(p3d_optim_traj_softMotion(traj, ENV.getBool(Env::writeSoftMotionFiles), &gain, &ntest, lp, positions, segments)){
 		gaintot = gaintot*(1.- gain);
 		/* position the robot at the beginning of the optimized trajectory */
 		position_robot_at_beginning(ir, traj);
@@ -247,7 +248,7 @@ void draw_trajectory_approx() {
 }
 
 
-int p3d_optim_traj_softMotion(p3d_traj *trajPt, bool param_write_file, double *gain, int *ntest, std::vector <int> &lp, std::vector < std::vector <double> > &positions) {
+int p3d_optim_traj_softMotion(p3d_traj *trajPt, bool param_write_file, double *gain, int *ntest, std::vector <int> &lp, std::vector < std::vector <double> > &positions, MANPIPULATION_TRAJECTORY_STR &segments) {
 	p3d_rob *robotPt = trajPt->rob;
 	p3d_traj *trajSmPTPPt = NULL;
 	p3d_traj *trajSmPt = NULL;
@@ -661,7 +662,7 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, bool param_write_file, double *g
 
 	/* Write curve into a file for BLTPLOT */
 	if(param_write_file == true) {
-		p3d_softMotion_write_curve_for_bltplot(robotPt, trajSmPt, (char*)"RefSM.dat", ENV.getBool(Env::plotSoftMotionCurve), lp, positions) ;
+		p3d_softMotion_write_curve_for_bltplot(robotPt, trajSmPt, (char*)"RefSM.dat", ENV.getBool(Env::plotSoftMotionCurve), lp, positions, segments) ;
 	}
 	if (fct_draw){(*fct_draw)();}
 
@@ -1034,17 +1035,6 @@ static void CB_load_traj_approx_obj(FL_OBJECT *obj, long arg){
 	p3d_rob* robotPt= (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);;
 	/* lecture du fichier environnement */
 
-// 	int r, nr;
-// 
-// 	r = p3d_get_desc_curnum(P3D_ROBOT);
-// 	nr= p3d_get_desc_number(P3D_ROBOT);
-
-// 	for(i=0; i<nr; i++){
-// 		robotPt= (p3d_rob *) p3d_sel_desc_num(P3D_ROBOT, i);
-// 		if(strcmp("JIDO_ROBOT", robotPt->name)==0){
-// 			break;
-// 		}
-// 	}
 
 	p3d_set_directory(file_directory);
 	file	= fl_show_fselector("Trajectory filename", file_directory,	"*.traj", "");

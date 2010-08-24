@@ -234,6 +234,15 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
       persp->pointjoint = agent->robotPt->joints[17];
       persp->point_tolerance = 20;      
       break;
+    case HRI_HRP214:
+      persp->camjoint = agent->robotPt->joints[49];
+      persp->fov = 40;
+      persp->foa = 40;
+      persp->tilt_jnt_idx = 16;
+      persp->pan_jnt_idx  = 17;
+      persp->pointjoint = agent->robotPt->joints[48];
+      persp->point_tolerance = 20;      
+      break;
     case HRI_JIDOKUKA:
       persp->camjoint = agent->robotPt->joints[15];
       persp->fov = 60;
@@ -799,7 +808,7 @@ int hri_agent_single_task_manip_move(HRI_AGENT * agent, HRI_GIK_TASK_TYPE type, 
     if(manip->tasklist[manip->activetasks[0]].type == type){
       // Gik is well initialized - This test is only by task type number and not by joints
       if(manip->gik->GIKInitialized){
-        if(!hri_gik_compute(agent->robotPt, manip->gik, 500, 0.04, FALSE, 0, goalCoord, NULL, q, NULL)){
+        if(!hri_gik_compute(agent->robotPt, manip->gik, 500, 0.01, goalCoord, q, NULL)){
           return FALSE;
         }
         else{
@@ -828,7 +837,7 @@ int hri_agent_single_task_manip_move(HRI_AGENT * agent, HRI_GIK_TASK_TYPE type, 
     return FALSE;
   }
 
-  if(!hri_gik_initialize_gik(manip->gik,agent->robotPt,FALSE,
+  if(!hri_gik_initialize_gik(manip->gik,agent->robotPt,
                              manip->tasklist[manip->activetasks[0]].default_joints_no))
     return FALSE;
 
@@ -838,7 +847,7 @@ int hri_agent_single_task_manip_move(HRI_AGENT * agent, HRI_GIK_TASK_TYPE type, 
     return FALSE;
 
 
-  if(!hri_gik_compute(agent->robotPt, manip->gik, 500, 0.02, FALSE, 0, goalCoord, NULL, q, NULL))
+  if(!hri_gik_compute(agent->robotPt, manip->gik, 500, 0.02, goalCoord, q, NULL))
     return FALSE;
 
   return TRUE;
@@ -934,7 +943,6 @@ int hri_agent_compute_posture(HRI_AGENT * agent, double neck_height, int state, 
                                 agent->robotPt->joints[25]->abs_pos[0][3],
                                 agent->robotPt->joints[25]->abs_pos[1][3],
                                 agent->robotPt->joints[25]->abs_pos[2][3]); // Constant -> 0.47
-    printf("Hip height: %f Knee height: %f\n",agent->robotPt->joints[23]->abs_pos[2][3],agent->robotPt->joints[25]->abs_pos[2][3]);
     kneetoankle_dist = DISTANCE3D(agent->robotPt->joints[25]->abs_pos[0][3],
                                   agent->robotPt->joints[25]->abs_pos[1][3],
                                   agent->robotPt->joints[25]->abs_pos[2][3],
