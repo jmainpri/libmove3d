@@ -271,9 +271,9 @@ int gpPlacement::draw(double length)
   double color[4];
   GLfloat matGL[16];
   p3d_matrix4 Tobject;
-  unsigned int i1, i2, j, n;
-  double d, step;
-  p3d_vector3 diff;
+//   unsigned int i1, i2, j, n;
+//   double d, step;
+//   p3d_vector3 diff;
 
   glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT);
   
