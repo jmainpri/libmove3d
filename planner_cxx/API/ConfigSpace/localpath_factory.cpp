@@ -1,4 +1,5 @@
-#include "../planningAPI.hpp"
+#include "API/ConfigSpace/configuration.hpp"
+#include "API/ConfigSpace/locapath.hpp"
 
 using std::tr1::shared_ptr;
 

@@ -193,10 +193,10 @@ int index_of_curr_obj_in_JIDO_hand=-1; //To update the status of this object for
 int execute_Mightability_Map_functions()
 {
 ////////////g3d_drawDisc(point_to_put.x,point_to_put.y,point_to_put.z,0.02, Green, NULL);
- ////printf(" Inside execute_Mightability_Map_functions()\n");
+ ////////printf(" Inside execute_Mightability_Map_functions()\n");
    if(Affordances_Found==1)
    {
-  
+   MM_RECORD_MOVIE_FRAMES=0;
    // printf(" Inside Affordances_Found==1\n");
    if(UPDATE_MIGHTABILITY_MAP_INFO==1)
     {
@@ -331,6 +331,66 @@ if((++movie_count)%image_rate == 0) {
  return 1;
 }
 
+int move_object_on_a_path()
+{
+ envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+ int obj_index=get_index_of_robot_by_name ( "PINK_TRASHBIN" );
+ configPt rob_cur_pos = MY_ALLOC(double,envPt->robot[obj_index]->nb_dof); /* Allocation of temporary robot configuration */
+
+ p3d_get_robot_config_into(envPt->robot[obj_index],&rob_cur_pos);
+ 
+ double x=rob_cur_pos[6];
+ double y=rob_cur_pos[7];
+ double z=rob_cur_pos[8];
+ double end_x=x+0.75;
+ double end_y=y+0.75;
+ double end_z=z+0.75;
+
+  int obj_index_2=get_index_of_robot_by_name ( "BLUE_TRASHBIN" );
+ configPt rob_cur_pos_2 = MY_ALLOC(double,envPt->robot[obj_index_2]->nb_dof); /* Allocation of temporary robot configuration */
+
+ p3d_get_robot_config_into(envPt->robot[obj_index_2],&rob_cur_pos_2);
+ 
+ double x2=rob_cur_pos_2[6];
+ double y2=rob_cur_pos_2[7];
+ double z2=rob_cur_pos_2[8];
+ double end_x2=x2+0.75;
+ double end_y2=y2+0.75;
+ double end_z2=z2+0.75;
+ 
+ for(;x<end_x;x+=0.01)
+ {
+  y+=0.01;
+  rob_cur_pos[6]=x;
+  rob_cur_pos[7]=y;
+  p3d_set_and_update_this_robot_conf(envPt->robot[obj_index], rob_cur_pos); 
+  robots_status_for_Mightability_Maps[obj_index].has_moved=1;
+
+  y2-=0.01;
+  ////x2-=0.005;
+  rob_cur_pos_2[7]=y2;
+  rob_cur_pos_2[6]=x2;
+  p3d_set_and_update_this_robot_conf(envPt->robot[obj_index_2], rob_cur_pos_2); 
+  robots_status_for_Mightability_Maps[obj_index_2].has_moved=1;
+
+  fl_check_forms();
+  g3d_draw_allwin_active();
+ }
+
+ /*
+ for(;x<end_x;x+=0.02)
+ {
+  y+=0.02;
+  rob_cur_pos[6]=x;
+  rob_cur_pos[7]=y;
+  p3d_set_and_update_this_robot_conf(envPt->robot[obj_index], rob_cur_pos); 
+  fl_check_forms();
+  g3d_draw_allwin_active();
+ }
+ */
+
+}
+
 #ifdef USE_SYM_GEO_PLAN
 int init_geometric_plan_data()
 {
@@ -370,7 +430,7 @@ int assign_indices_of_robots()
       {
       if (strcasestr(envPt->robot[nr_ctr]->name,"JIDO_ROBOT"))//HRP2 has to perform the action
        {
-       rob_indx.JIDO=nr_ctr;
+       rob_indx.JIDO_ROBOT=nr_ctr;
        }
        else
        {
@@ -4928,6 +4988,77 @@ ACBTSET->changed = TRUE;
 	////g3d_draw_allwin_active();
   human_state_updated=0;
  }
+ 
+//////////printf("After updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
+return 1;
+}
+
+int virtually_update_non_primary_human_state(int state, int hum_index) //1 means sitting 0 means standing, hum_index is the index of robot in environment (envPt)
+{
+ envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+ 
+    configPt hum_cur_pos = MY_ALLOC(double,envPt->robot[hum_index]->nb_dof); /* Allocation of temporary robot configuration */
+
+    p3d_get_robot_config_into(envPt->robot[hum_index],&hum_cur_pos);
+
+ //////////printf("Before updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
+  //ACBTSET->human[ACBTSET->actual_human]->actual_state = 1; //// AKP Note: Comment it if using motion capture button
+  ////update_human_state(1);//For sitting //// AKP Note: Comment it if using motion capture button
+  //////configPt config;
+  //////config = p3d_copy_config(ACBTSET->human[ACBTSET->actual_human]->HumanPt, ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS);
+  ////ACBTSET->actual_human=0;
+ hri_human * human=ACBTSET->human[ACBTSET->actual_human];
+ ////int state=1;
+ 
+    if(strcasestr(human->HumanPt->name,"superman"))
+    {
+    hum_cur_pos[8] = human->state[state].c7;
+    hum_cur_pos[43] = human->state[state].c1;
+    hum_cur_pos[44] = human->state[state].c2;
+    hum_cur_pos[46] = human->state[state].c3;
+    hum_cur_pos[47] = human->state[state].c4;
+    hum_cur_pos[50] = human->state[state].c5;
+    hum_cur_pos[53] = human->state[state].c6;
+    // Right Hand 
+    hum_cur_pos[66] = hum_cur_pos[6] + cos(hum_cur_pos[11]-0.4)*0.5; // REVIEW 0.4 --> 0.2 
+    hum_cur_pos[67] = hum_cur_pos[7] + sin(hum_cur_pos[11]-0.4)*0.5;
+    hum_cur_pos[68] = hum_cur_pos[68]-0.34+0.1;
+    // Left Hand 
+    hum_cur_pos[72] = hum_cur_pos[6] + cos(hum_cur_pos[11]+0.4)*0.5;
+    hum_cur_pos[73] = hum_cur_pos[7] + sin(hum_cur_pos[11]+0.4)*0.5;
+    hum_cur_pos[74] = hum_cur_pos[74]-0.34+0.1;
+    }
+    else
+    {
+     if(strcasestr(human->HumanPt->name,"achile"))
+     {
+      hum_cur_pos[8] = human->state[state].c7;
+      hum_cur_pos[33] = human->state[state].c3;
+      hum_cur_pos[35] = human->state[state].c4;
+      hum_cur_pos[40] = human->state[state].c1;
+      hum_cur_pos[42] = human->state[state].c2;
+     }   
+    } 
+ ////human->actual_state=state;
+	////hri_set_human_state_SICK(ACBTSET->human[ACBTSET->actual_human], 1, q, FALSE);
+
+	p3d_set_and_update_this_robot_conf(envPt->robot[hum_index],hum_cur_pos);
+        MY_FREE(hum_cur_pos,double,envPt->robot[hum_index]->nb_dof);
+
+	////p3d_destroy_config(ACBTSET->human[ACBTSET->actual_human]->HumanPt,config);
+////ACBTSET->changed = TRUE;
+
+	/*if(BTSET!=NULL)
+		hri_bt_refresh_all(BTSET);
+	if(INTERPOINT!=NULL){
+		hri_bt_3drefresh_all(INTERPOINT);
+	}*/
+ ////////g3d_draw_env();
+ ////////fl_check_forms();
+ ////////g3d_draw_allwin_active();
+	////g3d_draw_allwin_active();
+  ////human_state_updated=0;
+ 
  
 //////////printf("After updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
 return 1;
@@ -11300,13 +11431,13 @@ int show_symbolic_Mightability_Map_Relations()
           g3d_drawDisc(object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[i].x, object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[i].y, object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_JIDO.point[i].z, grid_around_HRP2.GRID_SET->pace/2.0, Red, NULL);
 
        }
-       
+       /*
        for(i=0;i<object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.no_points;i++)
        {
           g3d_drawDisc(object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.point[i].x, object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.point[i].y, object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.point[i].z, grid_around_HRP2.GRID_SET->pace/2.0, Green, NULL);
 
       
-       } 
+       } */
       }
      /* if(object_MM.object[nr_ctr].sym_MM.reachable_for_putting_inside_by_human.no_points>0)
       {
@@ -11517,14 +11648,22 @@ default_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp)
 }
 
 int lp[10000];
-       Gb_q6 positions[10000];
-       int nbPositions = 0;
+Gb_q6 positions[10000];
+int nbPositions = 0;
+double current_JIDO_arm_traj_pos[2000][6];
 
 int traj_ctr=0;
         p3d_traj* current_new_trajPt[20];
 
 int test_jido_grasp_traj()
 {
+/*int tmp_ctr_3=0;
+for(tmp_ctr_3=0;tmp_ctr_3<10000;tmp_ctr_3++)
+ {
+positions[tmp_ctr_3]=MY_ALLOC(Gb_q6,1);
+ }
+positions[tmp_ctr_3]=MY_ALLOC(Gb_q6,1);
+*/
 MM_RECORD_MOVIE_FRAMES=0;
 char support_name[50]="HRP2TABLE";
 	int no_obj=5;
@@ -11551,17 +11690,64 @@ char support_name[50]="HRP2TABLE";
  configPt JIDO_actual_pos = MY_ALLOC ( double,ACBTSET->robot->nb_dof ); /* Allocation of temporary robot configuration */
         p3d_get_robot_config_into ( ACBTSET->robot,&JIDO_actual_pos ); 
 
+///// Variables used for calling the function to show all grasps
+ static p3d_rob *object= NULL;
+ configPt qcur= NULL, qgrasp= NULL, qend= NULL;
+ std::list<gpGrasp> grasp_list;
+ gpGrasp valid_grasp;   // the current grasp
+ int grasp_list_result;
+  gpHand_properties hand_prop;
+/////////////////////////////////////////////////////////////////
+
+
+
 char obj_to_manipulate[10][50]={"RED_BOTTLE","GREY_TAPE","BLACK_TAPE","YELLOW_BOTTLE","BLUE_BOTTLE"};
   
 
-			int i=0;
+			int i=3;
 			printf ( " Manipulating %s \n",obj_to_manipulate[i] );
 			int obj_index=get_index_of_robot_by_name ( obj_to_manipulate[i] );
 			g3d_draw_allwin_active();
-                        int grasp_path_res=0;
+                        
 // 			if ( strcasestr ( obj_to_manipulate[i],"TAPE" ) )
 //                        return 1;
-                        manipulation->setNbGraspsToTestForPickGoto(100);
+
+/////////////// Finding differenr grsaps
+
+
+grasp_list_result= gpGet_grasp_list_gripper(obj_to_manipulate[i], grasp_list);
+
+ if(grasp_list_result==GP_ERROR)
+  {  
+   printf("AKP Warning : Not able to get grasp list\n");
+   return 0;  
+  }
+
+
+  object= p3d_get_robot_by_name(obj_to_manipulate[i]);
+  qcur= p3d_alloc_config(ACBTSET->robot);
+  p3d_get_robot_config_into(ACBTSET->robot, &qcur);
+  
+  //JIDO_curr= p3d_alloc_config(ACBTSET->robot);
+  //p3d_get_robot_config_into(ACBTSET->robot, &JIDO_curr);
+
+ hand_prop.initialize(grasp_list.front().hand_type);
+
+
+show_all_grasps(ACBTSET->robot,object, grasp_list, GP_PA10, qcur, valid_grasp, hand_prop);
+
+p3d_set_and_update_this_robot_conf ( ACBTSET->robot, qcur );
+p3d_copy_config_into ( ACBTSET->robot, qcur, &ACBTSET->robot->ROBOT_POS );
+
+//p3d_destroy_config(ACBTSET->robot, JIDO_curr); 
+p3d_destroy_config(ACBTSET->robot, qcur); 
+g3d_draw_allwin_active();
+
+////////////// END finding different grasps
+                          
+                        manipulation->setNbGraspsToTestForPickGoto(500);
+
+                        int grasp_path_res=0;
 		        grasp_path_res=plan_JIDO_arm_path_to_grasp ( obj_to_manipulate[i], ARM_PICK_GOTO );
                         printf(" After plan_JIDO_arm_path_to_grasp ( %s, ARM_PICK_GOTO )\n", obj_to_manipulate[i]);
                         if(grasp_path_res==0)
@@ -11620,6 +11806,40 @@ i=1;
 printf ( " Manipulating %s \n",obj_to_manipulate[i] );
 			obj_index=get_index_of_robot_by_name ( obj_to_manipulate[i] );
 			g3d_draw_allwin_active();
+
+/////////////// Finding differenr grsaps
+
+
+grasp_list_result= gpGet_grasp_list_gripper(obj_to_manipulate[i], grasp_list);
+
+ if(grasp_list_result==GP_ERROR)
+  {  
+   printf("AKP Warning : Not able to get grasp list\n");
+   return 0;  
+  }
+
+
+  object= p3d_get_robot_by_name(obj_to_manipulate[i]);
+ 
+  qcur= p3d_alloc_config(ACBTSET->robot);
+  p3d_get_robot_config_into(ACBTSET->robot, &qcur);
+  
+
+
+ hand_prop.initialize(grasp_list.front().hand_type);
+
+
+show_all_grasps(ACBTSET->robot,object, grasp_list, GP_PA10, qcur, valid_grasp, hand_prop);
+
+p3d_set_and_update_this_robot_conf ( ACBTSET->robot, qcur );
+p3d_copy_config_into ( ACBTSET->robot, qcur, &ACBTSET->robot->ROBOT_POS );
+
+ p3d_destroy_config(ACBTSET->robot, qcur); 
+
+g3d_draw_allwin_active();
+
+////////////// END finding different grasps
+
                         grasp_path_res=0;
 // 			if ( strcasestr ( obj_to_manipulate[i],"TAPE" ) )
 //                        return 1;
@@ -11683,6 +11903,37 @@ i=3;
 printf ( " Manipulating %s \n",obj_to_manipulate[i] );
 			obj_index=get_index_of_robot_by_name ( obj_to_manipulate[i] );
 			g3d_draw_allwin_active();
+
+/////////////// Finding differenr grsaps
+
+
+grasp_list_result= gpGet_grasp_list_gripper(obj_to_manipulate[i], grasp_list);
+
+ if(grasp_list_result==GP_ERROR)
+  {  
+   printf("AKP Warning : Not able to get grasp list\n");
+   return 0;  
+  }
+
+
+  object= p3d_get_robot_by_name(obj_to_manipulate[i]);
+  qcur= p3d_alloc_config(ACBTSET->robot);
+  p3d_get_robot_config_into(ACBTSET->robot, &qcur);
+  
+  hand_prop.initialize(grasp_list.front().hand_type);
+
+
+show_all_grasps(ACBTSET->robot,object, grasp_list, GP_PA10, qcur, valid_grasp, hand_prop);
+
+p3d_set_and_update_this_robot_conf ( ACBTSET->robot, qcur );
+p3d_copy_config_into ( ACBTSET->robot, qcur, &ACBTSET->robot->ROBOT_POS );
+
+p3d_destroy_config(ACBTSET->robot, qcur);  
+
+g3d_draw_allwin_active();
+
+////////////// END finding different grasps
+
                         grasp_path_res=0;
 // 			if ( strcasestr ( obj_to_manipulate[i],"TAPE" ) )
 //                        return 1;
@@ -11835,7 +12086,7 @@ int JIDO_put_obj_in_hand_into_trashbin ( char trashbin_name[50], char obj_to_man
 	reverse_sort_weighted_candidate_points_to_putinto_obj();
 	//////////printf ( " >>>> No. of point to putinto =%d for the object %s \n", object_MM.object[container_index].sym_MM.reachable_for_putting_inside_by_JIDO.no_points,obj_to_manipulate[i] );
 
-	printf ( " >>>> No. of point to putinto =%d, for %s \n", current_candidate_points_to_putinto.no_points,obj_to_manipulate );
+	printf ( " >>>> No. of point to put %s inside %s = %d\n", obj_to_manipulate, trashbin_name, current_candidate_points_to_putinto.no_points );
 
 	double x,y,z,rx,ry,rz;
 	manipulation->getArmX ( &x, &y, &z, &rx, &ry, &rz );
@@ -12029,7 +12280,9 @@ int JIDO_put_obj_in_hand_into_trashbin ( char trashbin_name[50], char obj_to_man
 				else
 				{
 					p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_actual_pos );
-					manipulation->setArmQ ( positions[0].q1, positions[0].q2, positions[0].q3, positions[0].q4, positions[0].q5, positions[0].q6 );
+					//////////manipulation->setArmQ ( positions[0].q1, positions[0].q2, positions[0].q3, positions[0].q4, positions[0].q5, positions[0].q6 );
+					
+					manipulation->setArmQ ( manipulation->positions[0][0], manipulation->positions[1][0], manipulation->positions[2][0], manipulation->positions[3][0], manipulation->positions[4][0], manipulation->positions[5][0] );
 
 					if ( manipulation->grabObject ( obj_to_manipulate ) !=0 )
 					{
@@ -12510,7 +12763,8 @@ int JIDO_put_obj_in_hand_into_trashbin_old ( char trashbin_name[50], char obj_to
 				else
 				{
 					p3d_set_and_update_this_robot_conf ( envPt->robot[obj_index],obj_actual_pos );
-					manipulation->setArmQ ( positions[0].q1, positions[0].q2, positions[0].q3, positions[0].q4, positions[0].q5, positions[0].q6 );
+					//////////manipulation->setArmQ ( positions[0].q1, positions[0].q2, positions[0].q3, positions[0].q4, positions[0].q5, positions[0].q6 );
+					manipulation->setArmQ ( manipulation->positions[0][0], manipulation->positions[1][0], manipulation->positions[2][0], manipulation->positions[3][0], manipulation->positions[4][0], manipulation->positions[5][0] );
 
 					if ( manipulation->grabObject ( obj_to_manipulate ) !=0 )
 					{
@@ -12530,7 +12784,8 @@ int JIDO_put_obj_in_hand_into_trashbin_old ( char trashbin_name[50], char obj_to
 					int j=0;
 					for ( j=0;j< nbPositions;j++ )
 					{
-						manipulation->setArmQ ( positions[j].q1, positions[j].q2, positions[j].q3, positions[j].q4, positions[j].q5, positions[j].q6 );
+						//////////manipulation->setArmQ ( positions[j].q1, positions[j].q2, positions[j].q3, positions[j].q4, positions[j].q5, positions[j].q6 );
+						manipulation->setArmQ ( manipulation->positions[0][0], manipulation->positions[1][0], manipulation->positions[2][0], manipulation->positions[3][0], manipulation->positions[4][0], manipulation->positions[5][0] );
 						g3d_draw_allwin_active();
 						fl_check_forms();
 					}
@@ -12715,14 +12970,17 @@ int execute_JIDO_trajectory()
 					int j=0;
 					for ( j=0;j< nbPositions;j+=skip )
 					{
-						manipulation->setArmQ ( positions[j].q1, positions[j].q2, positions[j].q3, positions[j].q4, positions[j].q5, positions[j].q6 );
+						//////////manipulation->setArmQ ( positions[j].q1, positions[j].q2, positions[j].q3, positions[j].q4, positions[j].q5, positions[j].q6 );
+						//////////manipulation->setArmQ ( manipulation->positions[0][0], manipulation->positions[1][0], manipulation->positions[2][0], manipulation->positions[3][0], manipulation->positions[4][0], manipulation->positions[5][0] );
+                                                  manipulation->setArmQ (current_JIDO_arm_traj_pos[j][0],       current_JIDO_arm_traj_pos[j][1],current_JIDO_arm_traj_pos[j][2],  current_JIDO_arm_traj_pos[j][3],current_JIDO_arm_traj_pos[j][4],      current_JIDO_arm_traj_pos[j][5]);
 						g3d_draw_allwin_active();
 						fl_check_forms();
 					}
                                         if(skip>1) //To set the last configuration
                                         {
                                         j=nbPositions-1;
-                                      	manipulation->setArmQ ( positions[j].q1, positions[j].q2, positions[j].q3, positions[j].q4, positions[j].q5, positions[j].q6 );
+                                      	//////////manipulation->setArmQ ( positions[j].q1, positions[j].q2, positions[j].q3, positions[j].q4, positions[j].q5, positions[j].q6 );
+					manipulation->setArmQ ( manipulation->positions[0][0], manipulation->positions[1][0], manipulation->positions[2][0], manipulation->positions[3][0], manipulation->positions[4][0], manipulation->positions[5][0] );
 					g3d_draw_allwin_active();
 					fl_check_forms();
 					}
@@ -12843,14 +13101,37 @@ g3d_draw_allwin_active();
       
       ////message= manipulation->armPlanTask(ARM_PICK_GOTO,manipulation->robotStart(), manipulation->robotGoto(), obj_to_grasp, lp, positions, &nbPositions);
       printf(" After manipulation->setSupport(%s);\n", support_name);
-    
-      message= manipulation->armPlanTask(type,manipulation->robotStart(), manipulation->robotGoto(), obj_to_grasp, lp, positions, &nbPositions);
+   
+      //////////message= manipulation->armPlanTask(type,manipulation->robotStart(), manipulation->robotGoto(), obj_to_grasp, lp, positions, &nbPositions);
+      nbPositions=0;
+      message= manipulation->armPlanTask(type,manipulation->robotStart(), manipulation->robotGoto(), obj_to_grasp,  manipulation->lp,  manipulation->positions);
+
+      nbPositions=manipulation->positions.size();
+
       if(message!=MANIPULATION_TASK_OK)
       {
        printf(" ***** AKP WARNING: Can not find jido arm path \n");
        return 0;
-      }  
-
+      }
+       
+      printf("****** manipulation->positions.size()=%d, nbPositions=%d \n",manipulation->positions.size(), nbPositions);
+      int config_ctr_1=0;
+      for(config_ctr_1=0;config_ctr_1<nbPositions;config_ctr_1++)
+      {
+      
+////       manipulation->positions[0][config_ctr_1];
+       ////printf(" storing config %d \n",config_ctr_1);
+       ////printf(" manipulation->positions[%d][0]=%lf\n",manipulation->positions[config_ctr_1][0]); 
+       
+       current_JIDO_arm_traj_pos[config_ctr_1][0]=manipulation->positions[config_ctr_1][0];
+       current_JIDO_arm_traj_pos[config_ctr_1][1]=manipulation->positions[config_ctr_1][1];
+       current_JIDO_arm_traj_pos[config_ctr_1][2]=manipulation->positions[config_ctr_1][2];
+       current_JIDO_arm_traj_pos[config_ctr_1][3]=manipulation->positions[config_ctr_1][3];
+       current_JIDO_arm_traj_pos[config_ctr_1][4]=manipulation->positions[config_ctr_1][4];
+       current_JIDO_arm_traj_pos[config_ctr_1][5]=manipulation->positions[config_ctr_1][5];
+       
+      }    
+////nbPositions=manipulation->lp.size();
 printManipulationMessage(message);
 printf("armPlanTask OK\n");
        int i=0;
@@ -12991,7 +13272,26 @@ g3d_draw_allwin_active();
        MANIPULATION_TASK_MESSAGE message;
 
       manipulation->setSupport(support_name);
-      message= manipulation->armPlanTask(ARM_PICK_GOTO,manipulation->robotStart(), manipulation->robotGoto(), obj_to_grasp, lp, positions, &nbPositions);
+      //////////message= manipulation->armPlanTask(ARM_PICK_GOTO,manipulation->robotStart(), manipulation->robotGoto(), obj_to_grasp, lp, positions, &nbPositions);
+
+       message= manipulation->armPlanTask(ARM_PICK_GOTO,manipulation->robotStart(), manipulation->robotGoto(), obj_to_grasp,  manipulation->lp,  manipulation->positions);
+
+        nbPositions=manipulation->positions.size();
+      
+          int config_ctr_1=0;
+      for(config_ctr_1=0;config_ctr_1<nbPositions;config_ctr_1++)
+      {
+      
+       current_JIDO_arm_traj_pos[config_ctr_1][0]=manipulation->positions[config_ctr_1][0];
+       current_JIDO_arm_traj_pos[config_ctr_1][1]=manipulation->positions[config_ctr_1][1];
+       current_JIDO_arm_traj_pos[config_ctr_1][2]=manipulation->positions[config_ctr_1][2];
+       current_JIDO_arm_traj_pos[config_ctr_1][3]=manipulation->positions[config_ctr_1][3];
+       current_JIDO_arm_traj_pos[config_ctr_1][4]=manipulation->positions[config_ctr_1][4];
+       current_JIDO_arm_traj_pos[config_ctr_1][5]=manipulation->positions[config_ctr_1][5];
+
+      }    
+       
+
 printManipulationMessage(message);
 printf("armPlanTask OK\n");
        int i=0;
@@ -13057,6 +13357,7 @@ configPt show_all_grasps ( p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &
 	gpGet_arm_base_frame ( robot, base_frame ); //on récupère le repere de la base du bras
 	p3d_matInvertXform ( base_frame, inv_base_frame );
 
+        int total_no_of_grasps=0;
 	//pour chaque prise de la liste:
 	for ( igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++ )
 	{
@@ -13082,7 +13383,7 @@ configPt show_all_grasps ( p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &
 				if ( gpInverse_geometric_model_PA10 ( robot, gframe_robot, result ) ==GP_OK )
 				{
 #ifdef LIGHT_PLANNER
-// 	   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, result);
+//p3d_update_virtual_object_config_for_arm_ik_constraint(robot, 0, result);
 //            p3d_set_and_update_this_robot_conf(robot, result);
 #endif
 					p3d_set_and_update_this_robot_conf ( robot, result );
@@ -13113,8 +13414,10 @@ configPt show_all_grasps ( p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &
 				return NULL;
 				break;
 		}
-
+        total_no_of_grasps++;
 	}
+        
+        printf(" Total no. of Grasps = %d \n", total_no_of_grasps);
 
 	p3d_set_and_update_this_robot_conf ( robot, q0 );
 	p3d_destroy_config ( robot, q0 );
@@ -13123,3 +13426,925 @@ configPt show_all_grasps ( p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &
 }
 
 /////// END Graspability of obejct test
+
+/////// Related to data from Motion Capture
+
+int read_update_object_pos_from_mocap_data_file()
+{
+  
+    fl_check_forms();
+    g3d_draw_allwin_active();
+
+  point_co_ordi mrkrs_pos[10];
+
+  
+  ////char filename_1[100]="/home/akpandey/AKP_modules/mhp_new/34put_glass.txt";
+  char filename_1[100]="/home/akpandey/AKP_modules/mhp_new/34Show_cup.txt";
+  char object_name_1[50]="YELLOW_BOTTLE";
+  int obj_index_1=get_index_of_robot_by_name(object_name_1);//("SPACENAVBOX");//("ACCESSKIT");//("YELLOW_BOTTLE");
+  ////char filename[100]="/home/akpandey/AKP_modules/mhp_new/34show_accessory_box.txt";
+  //int obj_index=get_index_of_robot_by_name("ACCESSKIT");//("YELLOW_BOTTLE");
+  
+  int no_markers_on_obj_1=2;
+  printf("**** Openning  file: %s for getting markers pos **** \n",filename_1); 
+  FILE* fr_1 = fopen (filename_1, "rt");  
+  if (!fr_1) 
+  {
+    printf("File: %s couldn't be opened\n",filename_1); 
+    return 0;     
+  }
+  
+  char filename_2[100]="/home/akpandey/AKP_modules/mhp_new/34show_accessory_box.txt";
+  char object_name_2[50]="ACCESSKIT";
+  int obj_index_2=get_index_of_robot_by_name(object_name_2);//("YELLOW_BOTTLE");
+  
+  int no_markers_on_obj_2=2;
+  printf("**** Openning  file: %s for getting markers pos **** \n",filename_2); 
+  FILE* fr_2 = fopen (filename_2, "rt");  
+  if (!fr_2) 
+  {
+    printf("File: %s couldn't be opened\n",filename_2); 
+    return 0;     
+  }
+
+  
+  char filename_3[100]="/home/akpandey/AKP_modules/mhp_new/34Show_box.txt";
+  char object_name_3[50]="SPACENAVBOX";
+  int obj_index_3=get_index_of_robot_by_name(object_name_3);//("YELLOW_BOTTLE");
+  
+  int no_markers_on_obj_3=2;
+  printf("**** Openning  file: %s for getting markers pos **** \n",filename_3); 
+  FILE* fr_3 = fopen (filename_3, "rt");  
+  if (!fr_3) 
+  {
+    printf("File: %s couldn't be opened\n",filename_3); 
+    return 0;     
+  }
+
+  char filename_4[100]="/home/akpandey/AKP_modules/mhp_new/34Show_googles.txt";
+  char object_name_4[50]="ACHILE_HUMAN1";
+  int obj_index_4=get_index_of_robot_by_name(object_name_4);//("YELLOW_BOTTLE");
+  
+  int no_markers_on_obj_4=3;
+  printf("**** Openning  file: %s for getting markers pos **** \n",filename_4); 
+  FILE* fr_4 = fopen (filename_4, "rt");  
+  if (!fr_4) 
+  {
+    printf("File: %s couldn't be opened\n",filename_4); 
+    return 0;     
+  }
+
+
+  char filename_5[100]="/home/akpandey/AKP_modules/mhp_new/34show_Helmet.txt";
+  char object_name_5[50]="ACHILE_HUMAN2";
+  int obj_index_5=get_index_of_robot_by_name(object_name_5);//("YELLOW_BOTTLE");
+  
+  int no_markers_on_obj_5=4;
+  printf("**** Openning  file: %s for getting markers pos **** \n",filename_5); 
+  FILE* fr_5 = fopen (filename_5, "rt");  
+  if (!fr_5) 
+  {
+    printf("File: %s couldn't be opened\n",filename_5); 
+    return 0;     
+  }
+
+  double x1,y1,z1,x2,y2,z2,x3,y3,z3,x4,y4,z4;
+  //  int time;
+  
+  char line[500];
+  int data_ctr=0;
+  
+  
+  //printf("Opened  file: %s \n",filename); 
+  
+  
+  //int i=0;
+  //for(i=0;i<no_markers_on_obj;i++)
+  int valid_data=1;
+  int file_1_has_data=1;
+  int file_2_has_data=1;
+  int file_3_has_data=1;
+  int file_4_has_data=1;
+  int file_5_has_data=1;
+
+  while(valid_data==1)
+  {
+  valid_data=0;
+  if((fgets(line, 190, fr_1) != NULL)&&(file_1_has_data==1))
+   {
+    int file_1_has_data=1;
+      /* get a line, up to 80 chars from fr.  done if NULL */
+      sscanf (line, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf", &x1, &y1, &z1,  &x2, &y2, &z2);
+      ////sscanf (line, "%lf %lf %lf %lf %lf %lf", &x1, &y1, &z1,  &x2, &y2, &z2);
+      
+      // ********* Used to rotate the entire human by some angle about z axis for test purpose. Comment it for final run
+      /*double rot_mrk_by=M_PI/2.0;//-M_PI/6;
+	x=x*cos(rot_mrk_by)+y*sin(rot_mrk_by);
+	y=-x*sin(rot_mrk_by)+y*cos(rot_mrk_by);
+      */
+      // *******//
+
+
+      /* convert the string to a long int */
+      //printf ("%ld\n", elapsed_seconds);
+      //g3d_drawDisc(x/1000,y/1000, z/1000, 0.02, 3 , NULL);
+      //printf("\n tracked points (%lf,%lf,%lf)\n",x,y,z); 
+      ////fflush(stdout);
+      mrkrs_pos[0].x=x1/1000; 
+      mrkrs_pos[0].y=y1/1000;
+      mrkrs_pos[0].z=z1/1000;
+    
+      mrkrs_pos[1].x=x2/1000; 
+      mrkrs_pos[1].y=y2/1000;
+      mrkrs_pos[1].z=z2/1000;
+    
+      // Translating the markers to Move3D coordinate system
+      mrkrs_pos[0].x+=4.6; 
+      mrkrs_pos[0].y-=3;
+ 
+      mrkrs_pos[1].x+=4.6; 
+      mrkrs_pos[1].y-=3;
+      //mrkrs_pos[mrk_ctr].z=z/1000;
+      //printf("Drawing disc on %f %f %f\n",mrkrs_pos[mrk_ctr].x,mrkrs_pos[mrk_ctr].y,mrkrs_pos[mrk_ctr].z);
+      //g3d_drawDisc(mrkrs_pos[mrk_ctr].x,mrkrs_pos[mrk_ctr].y, mrkrs_pos[mrk_ctr].z, 0.02, 3 , NULL);
+
+      update_object_pos_from_mocap(mrkrs_pos, obj_index_1, object_name_1);
+    
+       valid_data=1;
+
+      
+        
+    }
+    else
+    { 
+     file_1_has_data=0;
+     fclose(fr_1);    
+     //valid_data=0;
+    }
+ 
+    if((fgets(line, 190, fr_2) != NULL)&&(file_2_has_data==1))
+    {
+      file_2_has_data=1;
+     
+      /* get a line, up to 80 chars from fr.  done if NULL */
+      sscanf (line, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf", &x1, &y1, &z1,  &x2, &y2, &z2);
+      ////sscanf (line, "%lf %lf %lf %lf %lf %lf", &x1, &y1, &z1,  &x2, &y2, &z2);
+      
+      // ********* Used to rotate the entire human by some angle about z axis for test purpose. Comment it for final run
+      /*double rot_mrk_by=M_PI/2.0;//-M_PI/6;
+	x=x*cos(rot_mrk_by)+y*sin(rot_mrk_by);
+	y=-x*sin(rot_mrk_by)+y*cos(rot_mrk_by);
+      */
+      // *******//
+
+
+      /* convert the string to a long int */
+      //printf ("%ld\n", elapsed_seconds);
+      //g3d_drawDisc(x/1000,y/1000, z/1000, 0.02, 3 , NULL);
+      //printf("\n tracked points (%lf,%lf,%lf)\n",x,y,z); 
+      ////fflush(stdout);
+      mrkrs_pos[0].x=x1/1000; 
+      mrkrs_pos[0].y=y1/1000;
+      mrkrs_pos[0].z=z1/1000;
+    
+      mrkrs_pos[1].x=x2/1000; 
+      mrkrs_pos[1].y=y2/1000;
+      mrkrs_pos[1].z=z2/1000;
+    
+      // Translating the markers to Move3D coordinate system
+      mrkrs_pos[0].x+=4.6; 
+      mrkrs_pos[0].y-=3;
+ 
+      mrkrs_pos[1].x+=4.6; 
+      mrkrs_pos[1].y-=3;
+      //mrkrs_pos[mrk_ctr].z=z/1000;
+      //printf("Drawing disc on %f %f %f\n",mrkrs_pos[mrk_ctr].x,mrkrs_pos[mrk_ctr].y,mrkrs_pos[mrk_ctr].z);
+      //g3d_drawDisc(mrkrs_pos[mrk_ctr].x,mrkrs_pos[mrk_ctr].y, mrkrs_pos[mrk_ctr].z, 0.02, 3 , NULL);
+
+      update_object_pos_from_mocap(mrkrs_pos, obj_index_2, object_name_2);
+      valid_data=1;
+        
+    }
+    else
+    {
+    file_2_has_data=0;
+    fclose(fr_2); 
+    //valid_data=0;
+    }
+
+     if((fgets(line, 190, fr_3) != NULL)&&(file_3_has_data==1))
+    {
+      file_3_has_data=1;
+     
+      /* get a line, up to 80 chars from fr.  done if NULL */
+      sscanf (line, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf", &x1, &y1, &z1,  &x2, &y2, &z2);
+      ////sscanf (line, "%lf %lf %lf %lf %lf %lf", &x1, &y1, &z1,  &x2, &y2, &z2);
+      
+      // ********* Used to rotate the entire human by some angle about z axis for test purpose. Comment it for final run
+      /*double rot_mrk_by=M_PI/2.0;//-M_PI/6;
+	x=x*cos(rot_mrk_by)+y*sin(rot_mrk_by);
+	y=-x*sin(rot_mrk_by)+y*cos(rot_mrk_by);
+      */
+      // *******//
+
+
+      /* convert the string to a long int */
+      //printf ("%ld\n", elapsed_seconds);
+      //g3d_drawDisc(x/1000,y/1000, z/1000, 0.02, 3 , NULL);
+      //printf("\n tracked points (%lf,%lf,%lf)\n",x,y,z); 
+      ////fflush(stdout);
+      mrkrs_pos[0].x=x1/1000; 
+      mrkrs_pos[0].y=y1/1000;
+      mrkrs_pos[0].z=z1/1000;
+    
+      mrkrs_pos[1].x=x2/1000; 
+      mrkrs_pos[1].y=y2/1000;
+      mrkrs_pos[1].z=z2/1000;
+    
+      // Translating the markers to Move3D coordinate system
+      mrkrs_pos[0].x+=4.6; 
+      mrkrs_pos[0].y-=3;
+ 
+      mrkrs_pos[1].x+=4.6; 
+      mrkrs_pos[1].y-=3;
+      //mrkrs_pos[mrk_ctr].z=z/1000;
+      //printf("Drawing disc on %f %f %f\n",mrkrs_pos[mrk_ctr].x,mrkrs_pos[mrk_ctr].y,mrkrs_pos[mrk_ctr].z);
+      //g3d_drawDisc(mrkrs_pos[mrk_ctr].x,mrkrs_pos[mrk_ctr].y, mrkrs_pos[mrk_ctr].z, 0.02, 3 , NULL);
+
+      update_object_pos_from_mocap(mrkrs_pos, obj_index_3, object_name_3);
+      valid_data=1;
+        
+    }
+    else
+    {
+    file_3_has_data=0;
+    fclose(fr_3); 
+    //valid_data=0;
+    }
+
+
+    if((fgets(line, 300, fr_4) != NULL)&&(file_4_has_data==1))
+    {
+      file_4_has_data=1;
+     
+      /* get a line, up to 80 chars from fr.  done if NULL */
+      sscanf (line, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf", &x1, &y1, &z1,  &x2, &y2, &z2, &x3, &y3, &z3);
+      ////sscanf (line, "%lf %lf %lf %lf %lf %lf", &x1, &y1, &z1,  &x2, &y2, &z2);
+      
+      // ********* Used to rotate the entire human by some angle about z axis for test purpose. Comment it for final run
+      /*double rot_mrk_by=M_PI/2.0;//-M_PI/6;
+	x=x*cos(rot_mrk_by)+y*sin(rot_mrk_by);
+	y=-x*sin(rot_mrk_by)+y*cos(rot_mrk_by);
+      */
+      // *******//
+
+
+      /* convert the string to a long int */
+      //printf ("%ld\n", elapsed_seconds);
+      //g3d_drawDisc(x/1000,y/1000, z/1000, 0.02, 3 , NULL);
+      //printf("\n tracked points (%lf,%lf,%lf)\n",x,y,z); 
+      ////fflush(stdout);
+      mrkrs_pos[0].x=x1/1000; 
+      mrkrs_pos[0].y=y1/1000;
+      mrkrs_pos[0].z=z1/1000;
+    
+      mrkrs_pos[1].x=x2/1000; 
+      mrkrs_pos[1].y=y2/1000;
+      mrkrs_pos[1].z=z2/1000;
+    
+      mrkrs_pos[2].x=x3/1000; 
+      mrkrs_pos[2].y=y3/1000;
+      mrkrs_pos[2].z=z3/1000;
+    
+      // Translating the markers to Move3D coordinate system
+      mrkrs_pos[0].x+=4.6; 
+      mrkrs_pos[0].y-=3;
+ 
+      mrkrs_pos[1].x+=4.6; 
+      mrkrs_pos[1].y-=3;
+
+      mrkrs_pos[2].x+=4.6; 
+      mrkrs_pos[2].y-=3;
+
+
+      //mrkrs_pos[mrk_ctr].z=z/1000;
+
+      //printf("Drawing disc on %f %f %f\n",mrkrs_pos[mrk_ctr].x,mrkrs_pos[mrk_ctr].y,mrkrs_pos[mrk_ctr].z);
+      //g3d_drawDisc(mrkrs_pos[mrk_ctr].x,mrkrs_pos[mrk_ctr].y, mrkrs_pos[mrk_ctr].z, 0.02, 3 , NULL);
+      int is_primary_human=1;
+      update_human_pos_from_mocap_eye_glasses(mrkrs_pos, obj_index_4, object_name_4, is_primary_human);
+      valid_data=1;
+        
+    }
+    else
+    {
+    file_4_has_data=0;
+    fclose(fr_4); 
+    //valid_data=0;
+    }
+
+
+     if((fgets(line, 300, fr_5) != NULL)&&(file_5_has_data==1))
+    {
+      file_5_has_data=1;
+     
+      /* get a line, up to 80 chars from fr.  done if NULL */
+      sscanf (line, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf", &x1, &y1, &z1,  &x2, &y2, &z2, &x3, &y3, &z3, &x4, &y4, &z4);
+      ////sscanf (line, "%lf %lf %lf %lf %lf %lf", &x1, &y1, &z1,  &x2, &y2, &z2);
+      
+      // ********* Used to rotate the entire human by some angle about z axis for test purpose. Comment it for final run
+      /*double rot_mrk_by=M_PI/2.0;//-M_PI/6;
+	x=x*cos(rot_mrk_by)+y*sin(rot_mrk_by);
+	y=-x*sin(rot_mrk_by)+y*cos(rot_mrk_by);
+      */
+      // *******//
+
+
+      /* convert the string to a long int */
+      //printf ("%ld\n", elapsed_seconds);
+      //g3d_drawDisc(x/1000,y/1000, z/1000, 0.02, 3 , NULL);
+      //printf("\n tracked points (%lf,%lf,%lf)\n",x,y,z); 
+      ////fflush(stdout);
+      mrkrs_pos[0].x=x1/1000; 
+      mrkrs_pos[0].y=y1/1000;
+      mrkrs_pos[0].z=z1/1000;
+    
+      mrkrs_pos[1].x=x2/1000; 
+      mrkrs_pos[1].y=y2/1000;
+      mrkrs_pos[1].z=z2/1000;
+    
+      mrkrs_pos[2].x=x3/1000; 
+      mrkrs_pos[2].y=y3/1000;
+      mrkrs_pos[2].z=z3/1000;
+    
+      mrkrs_pos[3].x=x4/1000; 
+      mrkrs_pos[3].y=y4/1000;
+      mrkrs_pos[3].z=z4/1000;
+    
+      // Translating the markers to Move3D coordinate system
+      mrkrs_pos[0].x+=4.6; 
+      mrkrs_pos[0].y-=3;
+ 
+      mrkrs_pos[1].x+=4.6; 
+      mrkrs_pos[1].y-=3;
+
+      mrkrs_pos[2].x+=4.6; 
+      mrkrs_pos[2].y-=3;
+
+
+      mrkrs_pos[3].x+=4.6; 
+      mrkrs_pos[3].y-=3;
+
+      //mrkrs_pos[mrk_ctr].z=z/1000;
+
+      //printf("Drawing disc on %f %f %f\n",mrkrs_pos[mrk_ctr].x,mrkrs_pos[mrk_ctr].y,mrkrs_pos[mrk_ctr].z);
+      //g3d_drawDisc(mrkrs_pos[mrk_ctr].x,mrkrs_pos[mrk_ctr].y, mrkrs_pos[mrk_ctr].z, 0.02, 3 , NULL);
+      int is_primary_human=0;
+      update_human_pos_from_mocap_rigid_hat(mrkrs_pos, obj_index_5, object_name_5,is_primary_human);
+      valid_data=1;
+        
+    }
+    else
+    {
+    file_5_has_data=0;
+    fclose(fr_5); 
+    //valid_data=0;
+    }
+
+
+    fl_check_forms();
+    g3d_draw_allwin_active();
+
+    printf(" >>>> Reading data %d \n", data_ctr);
+   //if(data_ctr==3)
+   //break;
+    data_ctr++;
+
+   }
+
+  printf(" ****** Finished reading data from file \n"); 
+  //fclose(fr_1); 
+  //fclose(fr_2); 
+
+  if(data_ctr==0) {
+      printf("\n MOCAP WARNING : there is no data in the marker file Markers_pos.txt\n");
+      fflush(stdout);
+      return 0;
+    }
+}
+
+
+int update_object_pos_from_mocap(point_co_ordi *mrkrs_pos, int obj_index, char object_name[30])
+{
+  double YAW_CALIBRATION=0;
+  double PITCH_CALIBRATION=0;
+  double yaw, pitch;
+
+  point_co_ordi object_pos;
+  double dx, dy, dz, dl;
+  point_co_ordi point_at_dist;
+  
+  if(mrkrs_pos == NULL)
+    return FALSE;
+
+  object_pos.x = (mrkrs_pos[0].x + mrkrs_pos[1].x) /2; //0 is right and 1 is left marker
+  object_pos.y = (mrkrs_pos[0].y + mrkrs_pos[1].y) /2; 
+  object_pos.z = (mrkrs_pos[0].z + mrkrs_pos[1].z) /2;
+  
+ envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+ 
+ configPt rob_cur_pos = MY_ALLOC(double,envPt->robot[obj_index]->nb_dof); /* Allocation of temporary robot configuration */
+
+ p3d_get_robot_config_into(envPt->robot[obj_index],&rob_cur_pos);
+
+  if (strcasestr(envPt->robot[obj_index]->name,"BOTTLE")||strcasestr(envPt->robot[obj_index]->name,"CUP"))//No need to find orientation
+      {
+   
+  
+      }
+  else
+      { 
+  dx = mrkrs_pos[0].x - mrkrs_pos[1].x; 
+  dy = mrkrs_pos[0].y - mrkrs_pos[1].y; 
+  dz = mrkrs_pos[0].z - mrkrs_pos[1].z;
+  dl = sqrt(dx*dx+dy*dy+dz*dz);
+  
+  /* Drawing the uncalibrated axis of FOV, which is directly based on markers position */
+  
+  yaw = asin(dy/dl);
+  
+  yaw -= YAW_CALIBRATION; // if no calibration has been done make sure YAW_CALIBRATION is set to 0. It will also necessary for finding the correct value of YAW_CALIBRATION because the calibration function will also call this function to find the calibration value.
+  
+  //CURRENT_YAW = *yaw;
+  
+  if(dx<0&&dy>0) 
+  {
+    yaw=M_PI-(yaw);
+    //printf(" forehead_pos.x = %lf, mrkrs_pos[3].x = %lf \n",forehead_pos.x, mrkrs_pos[3].x);
+    //printf(" Inside if(dx<0&&dy>0) \n"); 
+  }
+  else 
+  {
+    if(dx<0&&dy<0) 
+   {
+      //printf(" forehead_pos.x = %lf, mrkrs_pos[3].x = %lf \n",forehead_pos.x, mrkrs_pos[3].x);
+      //printf(" Inside if(dx<0&&dy<0) \n");
+      yaw=-M_PI-(yaw);
+   }
+  }
+    //else
+    //printf(" dx>0 \n");
+      
+  
+  pitch = asin(dz/dl);
+  pitch = -(pitch); // Because this angle has been calculated wrt global frame in which +Z is upward. But for head frame +z is downward.
+  
+  pitch -= PITCH_CALIBRATION; // // if no calibration has been done make sure PITCH_CALIBRATION is set to 0. It will also necessary for finding the correct value of PITCH_CALIBRATION because the calibration function will also call this function to find the calibration value.
+  
+  //CURRENT_PITCH = *pitch;
+  //printf(" dz =%lf, pitch = %lf \n", dz, pitch*180/M_PI);
+  /*if(dz>0)
+    {
+    pitch=M_PI-pitch;
+    
+    }
+    else
+    {
+    if(dz<0)
+    {
+    pitch=-M_PI-pitch;
+    }
+    }
+  */
+  }
+
+  
+  rob_cur_pos[MOBJECTq_X]=object_pos.x;
+  rob_cur_pos[MOBJECTq_Y]=object_pos.y;
+  rob_cur_pos[MOBJECTq_Z]=object_pos.z;
+
+   if (strcasestr(envPt->robot[obj_index]->name,"BOTTLE")||strcasestr(envPt->robot[obj_index]->name,"CUP"))
+      {
+      rob_cur_pos[MOBJECTq_Z]-=0.03;
+      }
+   else
+      {
+      if (strcasestr(envPt->robot[obj_index]->name,"ACCESSKIT"))
+       {
+        
+            rob_cur_pos[MOBJECTq_Z]-=0.09;
+       }
+      else
+       {
+       if (strcasestr(envPt->robot[obj_index]->name,"SPACENAVBOX"))
+        {
+        
+            rob_cur_pos[MOBJECTq_Z]-=0.05;
+        }
+       }
+      }
+  //rob_cur_pos[MOBJECTq_RX]=object_pos.x;
+  rob_cur_pos[MOBJECTq_RY]=pitch;
+  rob_cur_pos[MOBJECTq_RZ]=yaw+M_PI/2.0;//Because the positions of markers are along the Y axis, not the x axis of the object local co-ordinate system, and calculation above has been done for the line along the Y axis, so it has been rotated by M_PI/2.0 to be consistent with the global system 
+  
+  p3d_set_and_update_this_robot_conf(envPt->robot[obj_index], rob_cur_pos);
+  p3d_copy_config_into ( envPt->robot[obj_index], rob_cur_pos, &envPt->robot[obj_index]->ROBOT_POS );
+     
+  MY_FREE(rob_cur_pos, double,envPt->robot[obj_index]->nb_dof); 
+
+  return TRUE;
+
+}
+
+int update_human_pos_from_mocap_eye_glasses(point_co_ordi *mrkrs_pos, int obj_index, char object_name[30], int is_primary_human)
+{
+   double YAW_CALIBRATION=0;
+   double PITCH_CALIBRATION=0;
+  
+   point_co_ordi forehead_pos;
+    
+   
+    forehead_pos.x = (mrkrs_pos[0].x + mrkrs_pos[2].x) /2; //0 is Left front 2 is right front markers
+    forehead_pos.y = (mrkrs_pos[0].y + mrkrs_pos[2].y) /2; 
+    forehead_pos.z = (mrkrs_pos[0].z + mrkrs_pos[2].z) /2;
+    
+    
+    
+    double dx = forehead_pos.x - (mrkrs_pos[1].x+mrkrs_pos[2].x)/2.0; 
+    double dy = forehead_pos.y - (mrkrs_pos[1].y+mrkrs_pos[2].y)/2.0; 
+    double dz = forehead_pos.z - (mrkrs_pos[1].z+mrkrs_pos[2].z)/2.0;
+    
+    double dl = sqrt(dx*dx+dy*dy+dz*dz);
+    /* Drawing the uncalibrated axis of FOV, which is directly based on markers position */
+    
+    /*point_co_ordi point_at_dist;
+    point_at_dist.x= forehead_pos.x-(mrkrs_pos[3].x-forehead_pos.x)*3/dl; // to find a point at 3 meters from the back marker along the line from back marker to forehead marker
+    point_at_dist.y= forehead_pos.y-(mrkrs_pos[3].y-forehead_pos.y)*3/dl; // to find a point at 3 meters from the back marker along the line from back marker to forehead marker
+    point_at_dist.z= forehead_pos.z-(mrkrs_pos[3].z-forehead_pos.z)*3/dl; // to find a point at 3 meters from the back marker along the line from back marker to forehead marker
+    */
+    
+      
+    
+    ////double dx=forehead_pos.x-mrkrs_pos[13].x;
+    ////double dy=forehead_pos.y-mrkrs_pos[13].y; 
+    
+    
+    double yaw=asin(dy/dl);
+    
+    yaw-=YAW_CALIBRATION; // if no calibration has been done make sure YAW_CALIBRATION is set to 0. It will also necessary for finding the correct value of YAW_CALIBRATION because the calibration function will also call this function to find the calibration value.
+    
+  
+    
+    if(dx<0&&dy>0) {
+      yaw=M_PI-yaw;
+      //printf(" forehead_pos.x = %lf, mrkrs_pos[3].x = %lf \n",forehead_pos.x, mrkrs_pos[3].x);
+      //printf(" Inside if(dx<0&&dy>0) \n"); 
+    }
+    else {
+      if(dx<0&&dy<0) {
+	//printf(" forehead_pos.x = %lf, mrkrs_pos[3].x = %lf \n",forehead_pos.x, mrkrs_pos[3].x);
+	//printf(" Inside if(dx<0&&dy<0) \n");
+	yaw=-M_PI-yaw;
+      }
+      //else
+      //printf(" dx>0 \n");
+    }
+    
+    
+    double pitch=asin(dz/dl);
+    pitch=-pitch; // Because this angle has been calculated wrt global frame in which +Z is upward. But for head frame +z is downward.
+    
+    pitch-=PITCH_CALIBRATION; // // if no calibration has been done make sure PITCH_CALIBRATION is set to 0. It will also necessary for finding the correct value of PITCH_CALIBRATION because the calibration function will also call this function to find the calibration value.
+    
+    //printf(" dz =%lf, pitch = %lf \n", dz, pitch*180/M_PI);
+    /*if(dz>0)
+      {
+      pitch=M_PI-pitch;
+         
+      }
+      else
+      {
+      if(dz<0)
+       {
+      pitch=-M_PI-pitch;
+       }
+      }
+    */
+    forehead_pos.theta = pitch;//atan2(dy,dx); 
+
+    envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+ 
+    configPt hum_cur_pos = MY_ALLOC(double,envPt->robot[obj_index]->nb_dof); /* Allocation of temporary robot configuration */
+
+    p3d_get_robot_config_into(envPt->robot[obj_index],&hum_cur_pos);
+    
+    
+    hum_cur_pos[HUMANq_X] = forehead_pos.x; 
+    hum_cur_pos[HUMANq_Y] = forehead_pos.y;
+
+  
+    //printf("Calculated %f -> %f \n",hum_cur_pos[11] ,hum_cur_pos[64] );
+    
+    /* AKP : Earlier working version */
+    /*
+	  dx         = forehead_pos.x - mrkrs_pos[3].x;//-mrkrs_pos[4].x;
+	  dz  = forehead_pos.z - mrkrs_pos[3].z;
+	  
+	  double phi = atan(dz/dx);
+	  if (dx > 0) 
+	  phi *= -1.0;
+	  hum_cur_pos[HUMANq_TILT] = phi;//(atan2(dx,dz));
+	  //printf("phi head %f \n",hum_cur_pos[HUMANq_TILT] );
+	  */
+
+    hum_cur_pos[HUMANq_TILT] = pitch;
+
+    //hum_cur_pos[64]=0.0;
+    //hum_cur_pos[HUMANq_PAN]=0.0;
+    
+   if(mrkrs_pos[0].z <= 1.4) //Human is sitting
+   {
+   if(is_primary_human==1)
+   virtually_update_human_state_new(1);// Sitting
+   else
+   virtually_update_non_primary_human_state(1, obj_index);// Sitting
+  
+   if(fabs(yaw-hum_cur_pos[HUMANq_RZ])>M_PI/4) 
+    {
+      // AKP: Earlier working version
+      //// hum_cur_pos[11] = forehead_pos.theta;
+      //hum_cur_pos[HUMANq_PAN]=yaw ; // Human Yaw angle relative to the human body frame
+      
+      //printf(" Before changing human orientation hum_cur_pos[11] = %lf , yaw = %lf \n",hum_cur_pos[11]*180/M_PI, yaw*180/M_PI);
+      
+      ////hum_cur_pos[HUMANq_TORSO_PAN] = yaw;//Since human is sitting, so assuming that only torso is rotated
+      
+      //hum_cur_pos[64]=0.0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+      hum_cur_pos[HUMANq_PAN]=0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+    }
+    else 
+    {
+      //hum_cur_pos[64]=(forehead_pos.theta -  hum_cur_pos[11]) ; // Human Yaw angle relative to the human body frame
+      
+      /* AKP: Earlier working version */ 
+      // hum_cur_pos[HUMANq_PAN]=(forehead_pos.theta -  hum_cur_pos[11]) ; // Human Yaw angle relative to the human body frame
+      
+      
+      
+      //hum_cur_pos[11] = yaw;
+      
+      //hum_cur_pos[64]=0.0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+      //  hum_cur_pos[HUMANq_PAN]=0.0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+      
+      hum_cur_pos[HUMANq_PAN]=yaw - hum_cur_pos[HUMANq_RZ]; // Human Yaw angle relative to the human body frame
+      
+      
+    }
+   }
+   else
+   {
+   if(is_primary_human==1)
+   virtually_update_human_state_new(0);// Standing
+   else
+   virtually_update_non_primary_human_state(0, obj_index);// Standing
+    
+    if(fabs(yaw-hum_cur_pos[HUMANq_RZ])>M_PI/4) 
+    {
+      // AKP: Earlier working version
+      //// hum_cur_pos[11] = forehead_pos.theta;
+      //hum_cur_pos[HUMANq_PAN]=yaw ; // Human Yaw angle relative to the human body frame
+      
+      //printf(" Before changing human orientation hum_cur_pos[11] = %lf , yaw = %lf \n",hum_cur_pos[11]*180/M_PI, yaw*180/M_PI);
+      
+      hum_cur_pos[HUMANq_RZ] = yaw; //Since the human is standing, so assuming that whole body of the human is rotated, not only the torso
+      
+      //hum_cur_pos[64]=0.0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+      hum_cur_pos[HUMANq_PAN]=0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+    }
+    else 
+    {
+      //hum_cur_pos[64]=(forehead_pos.theta -  hum_cur_pos[11]) ; // Human Yaw angle relative to the human body frame
+      
+      /* AKP: Earlier working version */ 
+      // hum_cur_pos[HUMANq_PAN]=(forehead_pos.theta -  hum_cur_pos[11]) ; // Human Yaw angle relative to the human body frame
+      
+      
+      
+      //hum_cur_pos[11] = yaw;
+      
+      //hum_cur_pos[64]=0.0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+      //  hum_cur_pos[HUMANq_PAN]=0.0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+      
+      hum_cur_pos[HUMANq_PAN]=yaw - hum_cur_pos[HUMANq_RZ]; // Human Yaw angle relative to the human body frame
+      
+      
+    }
+    
+   }
+    
+  p3d_set_and_update_this_robot_conf(envPt->robot[obj_index], hum_cur_pos);
+  p3d_copy_config_into ( envPt->robot[obj_index], hum_cur_pos, &envPt->robot[obj_index]->ROBOT_POS );
+     
+  MY_FREE(hum_cur_pos, double,envPt->robot[obj_index]->nb_dof); 
+    
+  return TRUE;
+
+}
+
+
+int update_human_pos_from_mocap_rigid_hat(point_co_ordi *mrkrs_pos, int obj_index, char object_name[30], int is_primary_human)
+{
+    double YAW_CALIBRATION=0;
+    double PITCH_CALIBRATION=0;
+  
+    point_co_ordi forehead_pos;
+    
+    forehead_pos.x = (mrkrs_pos[0].x + mrkrs_pos[1].x) /2; //0 is Cap front right and 1 is cap front left markers
+    forehead_pos.y = (mrkrs_pos[0].y + mrkrs_pos[1].y) /2; 
+    forehead_pos.z = (mrkrs_pos[0].z + mrkrs_pos[1].z) /2;
+    
+   
+    
+    double dx = forehead_pos.x - mrkrs_pos[3].x; // 3 is cap back marker
+    double dy = forehead_pos.y - mrkrs_pos[3].y; 
+    double dz = forehead_pos.z - mrkrs_pos[3].z;
+   
+    double dl = sqrt(dx*dx+dy*dy+dz*dz);
+    /* Drawing the uncalibrated axis of FOV, which is directly based on markers position */
+    
+    /*point_co_ordi point_at_dist;
+    point_at_dist.x= forehead_pos.x-(mrkrs_pos[3].x-forehead_pos.x)*3/dl; // to find a point at 3 meters from the back marker along the line from back marker to forehead marker
+    point_at_dist.y= forehead_pos.y-(mrkrs_pos[3].y-forehead_pos.y)*3/dl; // to find a point at 3 meters from the back marker along the line from back marker to forehead marker
+    point_at_dist.z= forehead_pos.z-(mrkrs_pos[3].z-forehead_pos.z)*3/dl; // to find a point at 3 meters from the back marker along the line from back marker to forehead marker
+    */
+    
+      
+    
+    ////double dx=forehead_pos.x-mrkrs_pos[13].x;
+    ////double dy=forehead_pos.y-mrkrs_pos[13].y; 
+    
+    
+    double yaw=asin(dy/dl);
+    
+    yaw-=YAW_CALIBRATION; // if no calibration has been done make sure YAW_CALIBRATION is set to 0. It will also necessary for finding the correct value of YAW_CALIBRATION because the calibration function will also call this function to find the calibration value.
+    
+  
+    
+    if(dx<0&&dy>0) {
+      yaw=M_PI-yaw;
+      //printf(" forehead_pos.x = %lf, mrkrs_pos[3].x = %lf \n",forehead_pos.x, mrkrs_pos[3].x);
+      //printf(" Inside if(dx<0&&dy>0) \n"); 
+    }
+    else {
+      if(dx<0&&dy<0) {
+	//printf(" forehead_pos.x = %lf, mrkrs_pos[3].x = %lf \n",forehead_pos.x, mrkrs_pos[3].x);
+	//printf(" Inside if(dx<0&&dy<0) \n");
+	yaw=-M_PI-yaw;
+      }
+      //else
+      //printf(" dx>0 \n");
+    }
+    
+    
+    double pitch=asin(dz/dl);
+    pitch=-pitch; // Because this angle has been calculated wrt global frame in which +Z is upward. But for head frame +z is downward.
+    
+    pitch-=PITCH_CALIBRATION; // // if no calibration has been done make sure PITCH_CALIBRATION is set to 0. It will also necessary for finding the correct value of PITCH_CALIBRATION because the calibration function will also call this function to find the calibration value.
+    
+    //printf(" dz =%lf, pitch = %lf \n", dz, pitch*180/M_PI);
+    /*if(dz>0)
+      {
+      pitch=M_PI-pitch;
+         
+      }
+      else
+      {
+      if(dz<0)
+       {
+      pitch=-M_PI-pitch;
+       }
+      }
+    */
+    forehead_pos.theta = pitch;//atan2(dy,dx); 
+
+    envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+ 
+    configPt hum_cur_pos = MY_ALLOC(double,envPt->robot[obj_index]->nb_dof); /* Allocation of temporary robot configuration */
+
+    p3d_get_robot_config_into(envPt->robot[obj_index],&hum_cur_pos);
+    
+    
+    hum_cur_pos[HUMANq_X] = forehead_pos.x; 
+    hum_cur_pos[HUMANq_Y] = forehead_pos.y;
+
+  
+    //printf("Calculated %f -> %f \n",hum_cur_pos[11] ,hum_cur_pos[64] );
+    
+    /* AKP : Earlier working version */
+    /*
+	  dx         = forehead_pos.x - mrkrs_pos[3].x;//-mrkrs_pos[4].x;
+	  dz  = forehead_pos.z - mrkrs_pos[3].z;
+	  
+	  double phi = atan(dz/dx);
+	  if (dx > 0) 
+	  phi *= -1.0;
+	  hum_cur_pos[HUMANq_TILT] = phi;//(atan2(dx,dz));
+	  //printf("phi head %f \n",hum_cur_pos[HUMANq_TILT] );
+	  */
+
+    hum_cur_pos[HUMANq_TILT] = pitch;
+
+    //hum_cur_pos[64]=0.0;
+    //hum_cur_pos[HUMANq_PAN]=0.0;
+    
+   if(mrkrs_pos[0].z <= 1.4) //Human is sitting
+   {
+   if(is_primary_human==1)
+   virtually_update_human_state_new(1);// Sitting
+   else
+   virtually_update_non_primary_human_state(1, obj_index);// Sitting
+  
+   if(fabs(yaw-hum_cur_pos[HUMANq_RZ])>M_PI/4) 
+    {
+      // AKP: Earlier working version
+      //// hum_cur_pos[11] = forehead_pos.theta;
+      //hum_cur_pos[HUMANq_PAN]=yaw ; // Human Yaw angle relative to the human body frame
+      
+      //printf(" Before changing human orientation hum_cur_pos[11] = %lf , yaw = %lf \n",hum_cur_pos[11]*180/M_PI, yaw*180/M_PI);
+      
+      ////hum_cur_pos[HUMANq_TORSO_PAN] = yaw;//Since human is sitting, so assuming that only torso is rotated
+      
+      //hum_cur_pos[64]=0.0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+      hum_cur_pos[HUMANq_PAN]=0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+    }
+    else 
+    {
+      //hum_cur_pos[64]=(forehead_pos.theta -  hum_cur_pos[11]) ; // Human Yaw angle relative to the human body frame
+      
+      /* AKP: Earlier working version */ 
+      // hum_cur_pos[HUMANq_PAN]=(forehead_pos.theta -  hum_cur_pos[11]) ; // Human Yaw angle relative to the human body frame
+      
+      
+      
+      //hum_cur_pos[11] = yaw;
+      
+      //hum_cur_pos[64]=0.0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+      //  hum_cur_pos[HUMANq_PAN]=0.0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+      
+      hum_cur_pos[HUMANq_PAN]=yaw - hum_cur_pos[HUMANq_RZ]; // Human Yaw angle relative to the human body frame
+      
+      
+    }
+   }
+   else
+   {
+   if(is_primary_human==1)
+   virtually_update_human_state_new(0);// Standing
+   else
+   virtually_update_non_primary_human_state(0, obj_index);// Standing
+   
+    
+    if(fabs(yaw-hum_cur_pos[HUMANq_RZ])>M_PI/4) 
+    {
+      // AKP: Earlier working version
+      //// hum_cur_pos[11] = forehead_pos.theta;
+      //hum_cur_pos[HUMANq_PAN]=yaw ; // Human Yaw angle relative to the human body frame
+      
+      //printf(" Before changing human orientation hum_cur_pos[11] = %lf , yaw = %lf \n",hum_cur_pos[11]*180/M_PI, yaw*180/M_PI);
+      
+      hum_cur_pos[HUMANq_RZ] = yaw; //Since the human is standing, so assuming that whole body of the human is rotated, not only the torso
+      
+      //hum_cur_pos[64]=0.0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+      hum_cur_pos[HUMANq_PAN]=0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+    }
+    else 
+    {
+      //hum_cur_pos[64]=(forehead_pos.theta -  hum_cur_pos[11]) ; // Human Yaw angle relative to the human body frame
+      
+      /* AKP: Earlier working version */ 
+      // hum_cur_pos[HUMANq_PAN]=(forehead_pos.theta -  hum_cur_pos[11]) ; // Human Yaw angle relative to the human body frame
+      
+      
+      
+      //hum_cur_pos[11] = yaw;
+      
+      //hum_cur_pos[64]=0.0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+      //  hum_cur_pos[HUMANq_PAN]=0.0;// since the head position is relative to human body so when the whole body has been rotated make the Yaw angle of human as 0 
+      
+      hum_cur_pos[HUMANq_PAN]=yaw - hum_cur_pos[HUMANq_RZ]; // Human Yaw angle relative to the human body frame
+      
+      
+    }
+    
+   }
+    
+  p3d_set_and_update_this_robot_conf(envPt->robot[obj_index], hum_cur_pos);
+  p3d_copy_config_into ( envPt->robot[obj_index], hum_cur_pos, &envPt->robot[obj_index]->ROBOT_POS );
+     
+  MY_FREE(hum_cur_pos, double,envPt->robot[obj_index]->nb_dof); 
+    
+  return TRUE;
+
+}
+/////// End Related to data from Motion Capture
+

@@ -9,8 +9,8 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#include "project.h"
-#include "planningAPI.hpp"
+#include "project.hpp"
+#include "scene.hpp"
 
 using namespace std;
 

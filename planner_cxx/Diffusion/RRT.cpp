@@ -10,7 +10,11 @@
 //
 //
 #include "RRT.hpp"
-#include "Grids/ThreeDPoints.h"
+
+#include "API/Grids/ThreeDPoints.h"
+#include "API/Roadmap/node.hpp"
+
+#include <iostream>
 
 using namespace std;
 using namespace tr1;
@@ -101,11 +105,10 @@ int  RRT::init()
  */
 int RRT::expandOneStep(Node* fromComp, Node* toComp)
 {
+	// Resets the expansion structure
+	_expan->setGraph(_Graph);
 	_expan->setFromComp(fromComp);
 	_expan->setToComp(toComp);
-//	cout << "---------------------------------------------------" << endl;
-//	cout <<"Robot Name = " << _Robot->getName() << endl;
-//	cout << _Robot->getRobotStruct() << endl;
 	
     Node* directionNode(NULL);
     Node* expansionNode(NULL);
@@ -128,7 +131,8 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
 //   directionConfig->print();
 
     // get node for expansion
-    expansionNode = _expan->getExpansionNode(fromComp, directionConfig,
+    expansionNode = _expan->getExpansionNode(fromComp, 
+																						 directionConfig,
                                              ENV.getInt(Env::DistConfigChoice));
 
 //    cout << "***********************************************************"  << endl;
@@ -137,11 +141,11 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
 
     // expansion in one direction
     int nbNodeCreated = _expan->expandProcess(expansionNode, 
-								 directionConfig, 
-								 directionNode,
-                                 ENV.getExpansionMethod());
+																							directionConfig, 
+																							directionNode,
+																							ENV.getExpansionMethod());
 	
-	if (nbNodeCreated==0) 
+	if ( nbNodeCreated < 1 ) 
 	{
 		m_nbFailedExpansion++;
 	}

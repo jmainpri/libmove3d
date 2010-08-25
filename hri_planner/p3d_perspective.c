@@ -1817,7 +1817,7 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
     if(!PSP_GIK->GIKInitialized){
 #ifdef HRI_JIDO
       /***** FOR JIDO *****/
-      hri_gik_initialize_gik(PSP_GIK,r,1,3); //
+      hri_gik_initialize_gik(PSP_GIK,r,3); //
       hri_gik_add_task(PSP_GIK, 3, 3, 1, jointindexesR, ROBOTj_LOOK);  /* Cameras */
 #elif defined HRI_TUM_BH
       /***** FOR BH *****/
@@ -1837,7 +1837,7 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 
     // printf("INITIALIZED\n");
 
-    res = hri_gik_compute(r, PSP_GIK, 150, distGoal, 1, 0, point2look,NULL, resq, NULL);
+    res = hri_gik_compute(r, PSP_GIK, 150, distGoal, point2look, resq, NULL);
 #ifdef HRI_HRP2
     res2 = p3d_col_test_robot(r,2);
     //printf("collision 2:   %i \n",res2);
@@ -1903,18 +1903,18 @@ static int psp_look_in_two_times_at(p3d_rob* r, double fromx, double fromy, doub
     printf("INITIALIZING ... \n");
     if(!PSP_GIK2->GIKInitialized){
       /***** FOR JIDO *****/
-      hri_gik_initialize_gik(PSP_GIK2,r,1,6); //
+      hri_gik_initialize_gik(PSP_GIK2,r,6); //
       hri_gik_add_task(PSP_GIK2, 3, 6, 1, jointindexesR2, 10);  /* Placement */
     }
     printf("INITIALIZED 1 \n");
     if(!PSP_GIK3->GIKInitialized){
       /***** FOR JIDO *****/
-      hri_gik_initialize_gik(PSP_GIK3,r,1,4);
+      hri_gik_initialize_gik(PSP_GIK3,r,4);
       hri_gik_add_task(PSP_GIK3, 3, 4, 1, jointindexesR3, ROBOTj_POINT);  /* Orientation */
     }
 
     printf("INITIALIZED 2 \n");
-    res = hri_gik_compute(r, PSP_GIK2, 200, 0.1, 1, 0, &point2look, NULL, resq, NULL);
+    res = hri_gik_compute(r, PSP_GIK2, 200, 0.1, &point2look, resq, NULL);
 
     printf("First conf found \n");
     if (res)
@@ -1924,7 +1924,7 @@ static int psp_look_in_two_times_at(p3d_rob* r, double fromx, double fromy, doub
       point2look[1]=toy;
       point2look[2]=toz;
       printf("Trying second \n");
-      res = hri_gik_compute(r, PSP_GIK3, 200, 0.1, 1, 0, &point2look, NULL, resq, NULL);
+      res = hri_gik_compute(r, PSP_GIK3, 200, 0.1, &point2look, resq, NULL);
 
       if (res)
 	    {
@@ -1986,7 +1986,7 @@ static int psp_human_take(p3d_rob* r, p3d_vector3 *point2receive, configPt *resq
   {
     printf("INITIALIZING ... \n");
     if(!PSP_GIK2->GIKInitialized){
-      hri_gik_initialize_gik(PSP_GIK2,r,1,njoints);
+      hri_gik_initialize_gik(PSP_GIK2,r,njoints);
 
       //hri_gik_add_task(PSP_GIK2, 3, njoints, 2, jointindexesR, ROBOTj_LOOK);  /* Look */
       hri_gik_add_task(PSP_GIK2, 3, njoints, 1, jointindexesR2, ROBOTj_GRIP);  /* Place grip */
@@ -1994,7 +1994,7 @@ static int psp_human_take(p3d_rob* r, p3d_vector3 *point2receive, configPt *resq
 
     }
 
-    res = hri_gik_compute(r, PSP_GIK2, 200, 0.1, 1, 0, point2receive, NULL, resq, NULL);
+    res = hri_gik_compute(r, PSP_GIK2, 200, 0.1, point2receive, resq, NULL);
   }
 
   if (r->joints[gripObject]->o)
@@ -2088,7 +2088,7 @@ static int psp_place_grip(p3d_rob* r, p3d_vector3 *point2give, configPt *resq,  
   {
     printf("INITIALIZING ... \n");
     if(!PSP_GIK2->GIKInitialized){
-      hri_gik_initialize_gik(PSP_GIK2,r,1,njoints);
+      hri_gik_initialize_gik(PSP_GIK2,r,njoints);
 #ifdef  HRI_HRP2
       hri_gik_add_task(PSP_GIK2, 3, njoints, 2, jointindexesR, ROBOTj_LOOK);  /* Look */
 #endif
@@ -2097,7 +2097,7 @@ static int psp_place_grip(p3d_rob* r, p3d_vector3 *point2give, configPt *resq,  
 
     }
 
-    res = hri_gik_compute(r, PSP_GIK2, iter, 0.1, 1, 0, point2give, NULL, resq, NULL);
+    res = hri_gik_compute(r, PSP_GIK2, iter, 0.1, point2give, resq, NULL);
   }
 
   if (r->joints[gripObject]->o)
@@ -2254,13 +2254,13 @@ static int psp_take_from_surface(p3d_rob* r, p3d_obj* obj, configPt *resq,  doub
     printf("INITIALIZING ... \n");
     if(!PSP_GIK2->GIKInitialized){
       /***** FOR JIDO *****/
-      hri_gik_initialize_gik(PSP_GIK2,r,1,njoints); //
+      hri_gik_initialize_gik(PSP_GIK2,r,njoints); //
       hri_gik_add_task(PSP_GIK2, 3, njoints, 1, jointindexesR2, ROBOTj_GRIP);  /* Placement */
     }
     //unsigned long msecSt,msecEnd;
     //int msecQual;
     //msecSt = ChronoGet();
-    res = hri_gik_compute(r, PSP_GIK2, 200, 0.1, 1, 0, point2give, NULL, resq, NULL);
+    res = hri_gik_compute(r, PSP_GIK2, 200, 0.1, point2give, resq, NULL);
     //msecEnd = ChronoGet();
     // msecQual =(int)( msecEnd - msecSt);
 
@@ -2372,13 +2372,13 @@ static int psp_take_it_at(p3d_rob* r, p3d_vector3 goalPoint, configPt *resq,  do
     printf("INITIALIZING ... \n");
     if(!PSP_GIK2->GIKInitialized){
       /***** FOR JIDO *****/
-      hri_gik_initialize_gik(PSP_GIK2,r,1,njoints); //
+      hri_gik_initialize_gik(PSP_GIK2,r,njoints); //
       hri_gik_add_task(PSP_GIK2, 3, njoints, 1, jointindexesR2, ROBOTj_GRIP);  /* Placement */
     }
     //unsigned long msecSt,msecEnd;
     //int msecQual;
     //msecSt = ChronoGet();
-    res = hri_gik_compute(r, PSP_GIK2, 200, 0.1, 1, 0, point2give, NULL, resq, NULL);
+    res = hri_gik_compute(r, PSP_GIK2, 200, 0.1, point2give, resq, NULL);
     //msecEnd = ChronoGet();
     // msecQual =(int)( msecEnd - msecSt);
 
@@ -2722,7 +2722,7 @@ int psp_test_actual_robot_pos(p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PSP_BT
 
 static int psp_set_vert2rconf(p3d_matrix4 matr,  psp_obs_vertex *vert , configPt qres)
 {
-  p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1}, obPoint={0,0,0,1};
+  p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1};// obPoint={0,0,0,1};
   //double rx,ry,rz;
 
   v_aux[0] = vert->pos[0];
@@ -2743,8 +2743,9 @@ static int psp_set_vert2rconf(p3d_matrix4 matr,  psp_obs_vertex *vert , configPt
 
 static double psp_check_vertex(p3d_rob* r,  p3d_matrix4 matr, double viewPercent , psp_obs_vertex *vert, configPt qcurr, configPt qres, hri_bitmapset* PSP_BTSET)
 {
-  p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1}, obPoint={ox,oy,oz,1};
-  double rx,ry,rz;
+//  p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1};
+  p3d_vector4 obPoint={ox,oy,oz,1};
+//  double rx,ry,rz;
   p3d_copy_config_into(r,qcurr, &qres);
   if (vert->status == PSP_NON_OBSERVED)
   {
@@ -2770,8 +2771,9 @@ static double psp_check_vertex(p3d_rob* r,  p3d_matrix4 matr, double viewPercent
 
 static double psp_check_vertexL(p3d_rob* r,  p3d_matrix4 matr, double viewPercent , psp_obs_vertex *vert, configPt qcurr, configPt qres, hri_bitmapset* PSP_BTSET)
 {
-  p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1}, obPoint={ox,oy,oz,1};
-  double rx,ry,rz;
+//  p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1};
+  p3d_vector4 obPoint={ox,oy,oz,1};
+//  double rx,ry,rz;
   p3d_copy_config_into(r,qcurr, &qres);
   if (vert->status == PSP_St_OBSERVABLE)
   {
@@ -4500,8 +4502,8 @@ int psu_get_num_objects_near(p3d_rob *currRob, double radius, int type, p3d_obj 
   p3d_obj *o;
   p3d_rob *r;
   int contObj =0;
-  p3d_vector4 pointHead,pointDisc, pointAhead;
-  psp_cone cone;
+  p3d_vector4 pointHead, pointAhead;//pointDisc,
+//  psp_cone cone;
   double disttocenter;
   //p3d_rob *human = PSP_BTSET->human[PSP_BTSET->actual_human]->HumanPt;
 
@@ -4700,8 +4702,8 @@ int psu_get_num_robots_near(p3d_rob *currRob, double radius, int type, p3d_rob *
   p3d_rob *r;
   p3d_obj *o;
   int contObj =0;
-  p3d_vector4 pointHead,pointDisc, pointAhead;
-  psp_cone cone;
+  p3d_vector4 pointHead, pointAhead;//pointDisc,
+//  psp_cone cone;
   double disttocenter;
   //p3d_rob *human = PSP_BTSET->human[PSP_BTSET->actual_human]->HumanPt;
 
@@ -4768,7 +4770,7 @@ void psr_get_obj_list(p3d_rob *currRob, p3d_obj **oList, int *nObj,  p3d_rob **r
 {
   p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   p3d_obj *o;
-  p3d_rob *r, *human;
+//  p3d_rob *r, *human;
   double perspValue;
   int no = envPt->no;
   p3d_vector4 objCenter,robCenter;
@@ -5622,7 +5624,7 @@ double pso_watch3_obj(int saveImage)
 {
 
   int w=133,h=66;
-  GLint viewport[4];
+//  GLint viewport[4];
   G3D_Window *win = g3d_get_win_by_name((char*)"Perspective");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
   int i, greenCount=0, totalCount=0;

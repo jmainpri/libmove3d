@@ -9,7 +9,7 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#include "../planningAPI.hpp"
+#include "planningAPI.hpp"
 //#include "../../HRI_CostSpace/HRICS_HAMP.h"
 
 #include "P3d-pkg.h"
@@ -107,19 +107,19 @@ LocalPath::LocalPath(Robot* R, p3d_localpath* lpPtr) :
     
     _Begin = shared_ptr<Configuration> (
       new Configuration(_Robot,
-			p3d_copy_config(_Robot->getRobotStruct(),
 					getLocalpathStruct()->config_at_param(
-					  _Robot->getRobotStruct(), getLocalpathStruct(),
-					  0))));
+					  _Robot->getRobotStruct(), 
+						getLocalpathStruct(),
+					  0),true));
     
     _Begin->setConstraints();
     
     _End = shared_ptr<Configuration> (
       new Configuration(_Robot,
-			p3d_copy_config(_Robot->getRobotStruct(),
-					getLocalpathStruct()->config_at_param(
-					  _Robot->getRobotStruct(), getLocalpathStruct(),
-					  getLocalpathStruct()->range_param))));
+						getLocalpathStruct()->config_at_param(
+					  _Robot->getRobotStruct(), 
+						getLocalpathStruct(),
+					  getLocalpathStruct()->range_param),true));
     
     _End->setConstraints();
   }

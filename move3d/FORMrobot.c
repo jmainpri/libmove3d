@@ -300,7 +300,14 @@ void g3d_add_traj(char *name,int i){
 }
 
 /*************************************************************/
-/* choix de la position courante ou but */
+/* choix de la position courante ou but
+ *
+ * arg is not used, make sure to call fl_set_choice first
+ *
+ * val = 1: select CURRENT
+ * val = 2: select GOTO
+ * val = 3: SWITCH exchange current and goto, select what was last
+ */
 static void CB_goto_obj(FL_OBJECT *ob, long arg)
 {
   int   val = fl_get_choice(ob);
@@ -718,6 +725,7 @@ static void CB_config_obj(FL_OBJECT *ob, long arg)
            &(robotPt->ROBOT_POS));
   if(robotPt->ikSolPos != NULL){
     p3d_destroy_specific_iksol(robotPt->cntrt_manager, robotPt->ikSolPos);
+    robotPt->ikSolPos = NULL;
   }
   p3d_copy_iksol(robotPt->cntrt_manager, robotPt->confcur->ikSol, &(robotPt->ikSolPos));
       } break;
@@ -726,6 +734,7 @@ static void CB_config_obj(FL_OBJECT *ob, long arg)
            &(robotPt->ROBOT_GOTO));
   if(robotPt->ikSolGoto != NULL){
     p3d_destroy_specific_iksol(robotPt->cntrt_manager, robotPt->ikSolGoto);
+    robotPt->ikSolGoto = NULL;
   }
   p3d_copy_iksol(robotPt->cntrt_manager, robotPt->confcur->ikSol, &(robotPt->ikSolGoto));
       } break;
@@ -2603,7 +2612,7 @@ static void FORMrobot_update_traj()
   }
 }
 
-/* Met a jour la fenenre a partir des informations du robot */
+/* Met a jour la fenetre a partir des informations du robot */
 void FORMrobot_update(int ir)
 {
   double val;

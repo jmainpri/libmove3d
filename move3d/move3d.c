@@ -525,12 +525,12 @@ int main(int argc, char ** argv) {
 //	}while(1);
   /* go into loop */
 	
-#if defined(LIGHT_PLANNER) && defined(PQP)
-	if(ENV.getBool(Env::startWithFKCntrt))
-	{
-		p3d_rob* MyRobot = p3d_get_robot_by_name ( ( char* ) "ROBOT" );
+#if defined(LIGHT_PLANNER)
+	//if(ENV.getBool(Env::startWithFKCntrt))
+	//{
+		p3d_rob* MyRobot = p3d_get_robot_by_name ( ( char* ) "JIDOKUKA_ROBOT" );
 		deactivateCcCntrts(MyRobot,-1);
-	}
+	//}
 #endif
 
 #ifdef CXX_PLANNER

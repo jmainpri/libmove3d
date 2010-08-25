@@ -6,7 +6,14 @@
  */
 
 #include "TreePlanner.hpp"
-#include "../API/Grids/ThreeDPoints.h"
+
+#include "API/Grids/ThreeDPoints.h"
+
+#include "API/Roadmap/node.hpp"
+#include "API/Roadmap/compco.hpp"
+#include "API/Roadmap/graph.hpp"
+
+#include "p3d/env.hpp"
 
 #include "Planner-pkg.h"
 
@@ -20,8 +27,7 @@ TreePlanner::TreePlanner(Robot* R, Graph* G) :
         Planner(R,G),
         m_nbConscutiveFailures(0),
         m_nbExpansion(0),
-		m_nbFailedExpansion(0),
-		m_nbInitNodes(G->getNumberOfNodes())
+		m_nbFailedExpansion(0)
 {	
     cout << "TreePlanner::TreePlanner(R,G)" << endl;
 }
@@ -41,11 +47,13 @@ int TreePlanner::init()
     m_nbConscutiveFailures = 0;
     m_nbExpansion = 0;
 
-    ADDED += Planner::setStart(_Robot->getInitialPosition());
-    ADDED += Planner::setGoal(_Robot->getGoTo());
+    ADDED += setStart(_Robot->getInitialPosition());
+    ADDED += setGoal(_Robot->getGoTo());
 
     _Graph->setStart(_Start);
     _Graph->setGoal(_Goal);
+	
+		m_nbInitNodes = _Graph->getNumberOfNodes();
 
     return ADDED;
 }
@@ -138,11 +146,11 @@ bool TreePlanner::checkStopConditions()
     if (/*ENV.getBool(Env::ligandExitTrajectory)*/false)
     {
         double d(_Start->getConfiguration()->dist(
-                *_Graph->getLastnode()->getConfiguration()));
+                *_Graph->getLastNode()->getConfiguration()));
         if (d > 12.0)
         {
             ENV.setBool(Env::expandToGoal, true);
-            _Goal = _Graph->getLastnode();
+            _Goal = _Graph->getLastNode();
             _Graph->getGraphStruct()->search_goal = _Goal->getNodeStruct();
             _Goal->getNodeStruct()->rankFromRoot = 1;
             _Goal->getNodeStruct()->type = ISOLATED;
@@ -226,12 +234,13 @@ bool TreePlanner::connectionToTheOtherCompco(Node* toNode)
 
         Node* closestNode = _Graph->nearestWeightNeighbour(
                 toNode,
-                _Graph->getLastnode()->getConfiguration(),
+                _Graph->getLastNode()->getConfiguration(),
                 false,
                 p3d_GetDistConfigChoice());
 
         ENV.setBool(Env::isWeightedRotation,WeigtedRot);
-        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastnode(), closestNode );
+		
+        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastNode(), closestNode );
     }
 
     if(isConnectedToOtherTree)
@@ -241,15 +250,18 @@ bool TreePlanner::connectionToTheOtherCompco(Node* toNode)
 
     if(ENV.getBool(Env::randomConnectionToGoal))
     {
-        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastnode(), toNode->randomNodeFromComp());
+        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastNode(), toNode->randomNodeFromComp());
     }
     else
     {
-        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastnode(), toNode );
+        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastNode(), toNode );
     }
 
     return isConnectedToOtherTree;
 }
+
+const int nb_Graph_Saved = 100;
+int ith_Graph_Saved = 0;
 
 /*!
  * Main Function of the Tree Planner,
@@ -259,78 +271,86 @@ unsigned int TreePlanner::run()
 {
 	shared_ptr<Configuration> tmp = _Robot->getCurrentPos();
 	
-    //	cout << "ENV.getInt(Env::maxNodeCompco) = " << ENV.getInt(Env::maxNodeCompco) << endl;
-    if(!preConditions())
-    {
+	//	cout << "ENV.getInt(Env::maxNodeCompco) = " << ENV.getInt(Env::maxNodeCompco) << endl;
+	if(!preConditions())
+	{
 		cout << "Stoped in Tree planner, pre condition" << endl;
-        return 0;
-    }
+		return 0;
+	}
 	
-    unsigned int NbCurCreatedNodes = 0;
-    unsigned int NbTotCreatedNodes = 0;
-
-    Node* fromNode = _Start;
-    Node* toNode = _Goal;
-
-    while (!checkStopConditions())
-    {
-        ENV.setInt(Env::progress,(int)(_Graph->getNumberOfNodes()/ENV.getInt(Env::maxNodeCompco)));
-        //                cout << "progress = " << ENV.getInt(Env::progress) << endl;
-        //                cout << (int)(_Graph->getNbNode()/ENV.getInt(Env::maxNodeCompco)) << endl;
-        //		cout << "ENV.getInt(Env::maxNodeCompco) = " << ENV.getInt(Env::maxNodeCompco) << endl;
-        // Do not expand in the case of a balanced bidirectional expansion,
-        // if the components are unbalanced.
-        if (!((ENV.getBool(Env::biDir) && ENV.getBool(Env::expandBalanced))
-            && (fromNode->getCompcoStruct()->nnode
-                > toNode->getCompcoStruct()->nnode + 2)))
-            {
-            // expand one way
-            // one time (Main function of Tree like planners
+	unsigned int NbCurCreatedNodes = 0;
+	unsigned int NbTotCreatedNodes = 0;
+	
+	Node* fromNode = _Start;
+	Node* toNode = _Goal;
+	
+	shared_ptr<Configuration> q_start = _Start->getConfiguration();
+	shared_ptr<Configuration> q_goal = _Goal->getConfiguration();
+	
+	while (!checkStopConditions())
+	{
+		ENV.setInt(Env::progress,(int)(_Graph->getNumberOfNodes()/ENV.getInt(Env::maxNodeCompco)));
+		//                cout << "progress = " << ENV.getInt(Env::progress) << endl;
+		//                cout << (int)(_Graph->getNbNode()/ENV.getInt(Env::maxNodeCompco)) << endl;
+		//		cout << "ENV.getInt(Env::maxNodeCompco) = " << ENV.getInt(Env::maxNodeCompco) << endl;
+		// Do not expand in the case of a balanced bidirectional expansion,
+		// if the components are unbalanced.
+		if (!((ENV.getBool(Env::biDir) && ENV.getBool(Env::expandBalanced))
+					&& (fromNode->getConnectedComponent()->getNumberOfNodes()
+							> toNode->getConnectedComponent()->getNumberOfNodes() + 2)))
+		{
+			// expand one way
+			// one time (Main function of Tree like planners
 			NbCurCreatedNodes = expandOneStep(fromNode,toNode); m_nbExpansion++;
-
-            if (NbCurCreatedNodes > 0)
-            {
-                if(ENV.getBool(Env::drawGraph))
-                {
-                    (*_draw_func)();
-                }
-
-                NbTotCreatedNodes += NbCurCreatedNodes;
-
-//                cout << "NbTotCreatedNodes  = "  << NbTotCreatedNodes << endl;
-                m_nbConscutiveFailures = 0;
-
-                if (ENV.getBool(Env::expandToGoal))
-                {
-                    // If it expands towards a goal
-                    // Tries to link with local method
-                    if( connectionToTheOtherCompco( toNode ) )
-//                    int iter=0;
-//                    while ((!connectNodeToCompco(_Graph->getLastnode(), toNode->randomNodeFromComp())) && (iter < toNode->getCompcoStruct()->nnode ))
-                   {
-//                        iter = iter + 2;
-//						cout << "nb Comp : " << _Graph->getGraphStruct()->ncomp<< endl;
-                        cout << "connected" << endl;
-//                      return (NbTotCreatedNodes);
-                    }
-                }
-            }
-            else
-            {
-                m_nbConscutiveFailures++;
-            }
-        }
-        if (ENV.getBool(Env::biDir))
-        {
-            swap(fromNode, toNode);
-        }
-    }
-    if (ENV.getBool(Env::drawGraph))
-    {
-        (*_draw_func)();
-    }
-    
+			
+//			cout << "Number Of Compco C++ : " << _Graph->getConnectedComponents().size() << endl;
+//			cout << "Number Of Compco C : " << _Graph->getNumberOfCompco() << endl;
+//			cout << "--------------------------------------------" << endl;
+			
+			if (NbCurCreatedNodes > 0)
+			{
+				if( (!ENV.getBool(Env::drawDisabled)) && ENV.getBool(Env::drawGraph))
+				{
+					(*_draw_func)();
+				}
+				
+				NbTotCreatedNodes += NbCurCreatedNodes;
+				
+				//                cout << "NbTotCreatedNodes  = "  << NbTotCreatedNodes << endl;
+				m_nbConscutiveFailures = 0;
+				
+				if (ENV.getBool(Env::expandToGoal))
+				{
+					// If it expands towards a goal
+					// Tries to link with local method
+					if( connectionToTheOtherCompco( toNode ) )
+						//                    int iter=0;
+						//                    while ((!connectNodeToCompco(_Graph->getLastnode(), toNode->randomNodeFromComp())) && (iter < toNode->getCompcoStruct()->nnode ))
+					{
+						//                        iter = iter + 2;
+						//						cout << "nb Comp : " << _Graph->getGraphStruct()->ncomp<< endl;
+						cout << "connected" << endl;
+						//                      return (NbTotCreatedNodes);
+					}
+				}
+			}
+			else
+			{
+				m_nbConscutiveFailures++;
+			}
+		}
+		if (ENV.getBool(Env::biDir))
+		{
+			swap(fromNode, toNode);
+		}
+	}
+	
+	if ( (!ENV.getBool(Env::drawDisabled)) && (ENV.getBool(Env::drawGraph) || ENV.getBool(Env::drawTraj)) )
+	{
+		(*_draw_func)();
+	}
+	
 	ENV.setInt(Env::nbQRand,m_nbExpansion);
 	_Robot->setAndUpdate(*tmp);
-    return (NbTotCreatedNodes);
+	return (NbTotCreatedNodes);
 }

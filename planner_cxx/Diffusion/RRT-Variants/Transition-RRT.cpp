@@ -7,6 +7,8 @@
 
 #include "Transition-RRT.hpp"
 #include "Expansion/TransitionExpansion.h"
+#include "Roadmap/compco.hpp"
+#include "cost_space.hpp"
 
 #ifdef HRI_COSTSPACE
 #include "HRI_CostSpace/HRICS_Workspace.h"
@@ -30,9 +32,9 @@ TransitionRRT::~TransitionRRT()
 
 int TransitionRRT::init()
 {
-    int added = TreePlanner::init();
+	int added = TreePlanner::init();
 
-    _expan = new TransitionExpansion(this->getActivGraph());
+	_expan = new TransitionExpansion(this->getActivGraph());
 	_expan->setDirectionMethod(NAVIGATION_BEFORE_MANIPULATION);
 
 
@@ -41,55 +43,62 @@ int TransitionRRT::init()
 //                           this->getGoal()->getNodeStruct());
 	
 	this->getStart()->getNodeStruct()->temp = ENV.getDouble(Env::initialTemperature);
-    this->getStart()->getNodeStruct()->comp->temperature = ENV.getDouble(Env::initialTemperature);
-    this->getStart()->getNodeStruct()->nbFailedTemp = 0;
+	this->getStart()->getConnectedComponent()->getCompcoStruct()->temperature = ENV.getDouble(Env::initialTemperature);
+	this->getStart()->getNodeStruct()->nbFailedTemp = 0;
 	
 	p3d_SetGlobalNumberOfFail(0);
 	
     //  GlobalNbDown = 0;
     //  Ns->NbDown = 0;
-    p3d_SetNodeCost(this->getActivGraph()->getGraphStruct(),
-					this->getStart()->getNodeStruct(), 
-					this->getStart()->getConfiguration()->cost());
 	
-    p3d_SetCostThreshold(this->getStart()->getNodeStruct()->cost);
+	setNodeCost(this->getStart());
 	
-    p3d_SetInitCostThreshold( 
+//	p3d_SetNodeCost(this->getActivGraph()->getGraphStruct(),
+//					this->getStart()->getNodeStruct(), 
+//					this->getStart()->getConfiguration()->cost());
+	
+  p3d_SetCostThreshold(this->getStart()->getNodeStruct()->cost);
+	
+  p3d_SetInitCostThreshold( 
 					p3d_GetNodeCost(this->getStart()->getNodeStruct()) );
 	
-    if ( ENV.getBool(Env::expandToGoal) && (this->getGoal() != NULL))
-    {
-        this->getGoal()->getNodeStruct()->temp	= ENV.getDouble(Env::initialTemperature);
+	if ( ENV.getBool(Env::expandToGoal) && (this->getGoal() != NULL))
+	{
+		this->getGoal()->getNodeStruct()->temp	= ENV.getDouble(Env::initialTemperature);
 		this->getStart()->getNodeStruct()->temp = ENV.getDouble(Env::initialTemperature);
-        this->getGoal()->getNodeStruct()->comp->temperature = ENV.getDouble(Env::initialTemperature);
-        this->getGoal()->getNodeStruct()->nbFailedTemp = 0;
-        //    Ng->NbDown = 0;
-        p3d_SetNodeCost(this->getActivGraph()->getGraphStruct(), 
-						this->getGoal()->getNodeStruct(), 
-						this->getGoal()->getConfiguration()->cost());
+		this->getGoal()->getConnectedComponent()->getCompcoStruct()->temperature = ENV.getDouble(Env::initialTemperature);
+		this->getGoal()->getNodeStruct()->nbFailedTemp = 0;
+		//    Ng->NbDown = 0;
 		
-        p3d_SetCostThreshold(MAX(
-								 p3d_GetNodeCost(this->getStart()->getNodeStruct()), 
-								 p3d_GetNodeCost(this->getGoal()->getNodeStruct()) ));
+		setNodeCost(this->getGoal());
 		
-//        p3d_SetCostThreshold(MAX(
-//								p3d_GetNodeCost(this->getStart()->getNodeStruct()), 
-//								p3d_GetNodeCost(this->getGoal()->getNodeStruct()) ));
+		p3d_SetCostThreshold(MAX(
+														 p3d_GetNodeCost(this->getStart()->getNodeStruct()), 
+														 p3d_GetNodeCost(this->getGoal()->getNodeStruct()) ));
 		
-        p3d_SetAverQsQgCost(
-						( this->getActivGraph()->getGraphStruct()->search_start->cost
-					  + this->getActivGraph()->getGraphStruct()->search_goal->cost) / 2.);
-    }
-    else
-    {
-        p3d_SetCostThreshold(this->getStart()->getNodeStruct()->cost);
-        p3d_SetInitCostThreshold( this->getStart()->getNodeStruct()->cost );
-        p3d_SetAverQsQgCost( this->getActivGraph()->getGraphStruct()->rob->GRAPH->search_start->cost);
-    }
-
-    return added;
+		//        p3d_SetCostThreshold(MAX(
+		//								p3d_GetNodeCost(this->getStart()->getNodeStruct()), 
+		//								p3d_GetNodeCost(this->getGoal()->getNodeStruct()) ));
+		
+		p3d_SetAverQsQgCost(
+												( this->getActivGraph()->getGraphStruct()->search_start->cost
+												 + this->getActivGraph()->getGraphStruct()->search_goal->cost) / 2.);
+	}
+	else
+	{
+		p3d_SetCostThreshold(this->getStart()->getNodeStruct()->cost);
+		p3d_SetInitCostThreshold( this->getStart()->getNodeStruct()->cost );
+		p3d_SetAverQsQgCost( this->getActivGraph()->getGraphStruct()->rob->GRAPH->search_start->cost);
+	}
+	
+	return added;
 }
 
+
+void TransitionRRT::setNodeCost(Node* node)
+{
+	global_costSpace->setNodeCost(node,node->getConfiguration()->cost());
+}
 
 /**
  * costConnectNodeToComp

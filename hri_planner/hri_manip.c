@@ -1083,7 +1083,7 @@ int hri_shoot_with_btset(p3d_rob *robotPt, hri_bitmapset * btset, int inode, con
       next_target[i][2] = btset->path->zcoord[inode];
     }
 
-    if(hri_gik_compute(robotPt, HRI_GIK, 200, 0.05, 1, 0, next_target,NULL,&q, NULL)){
+    if(hri_gik_compute(robotPt, HRI_GIK, 200, 0.05, next_target,&q, NULL)){
       p3d_set_and_update_this_robot_conf(robotPt, q);
       if(p3d_col_test_robot(robotPt, 0))
         shoot_success = TRUE;
@@ -1728,6 +1728,9 @@ void g3d_hri_display_test( void )
 {
   //g3d_hri_display_surfaces();
   g3d_hri_display_shared_zone();
+  g3d_draw_agent_fov(GLOBAL_AGENTS->humans[0]);
+  g3d_draw_agent_pointing(GLOBAL_AGENTS->humans[0]);
+
 }
 
 

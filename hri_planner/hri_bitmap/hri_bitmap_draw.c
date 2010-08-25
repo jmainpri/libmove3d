@@ -228,21 +228,20 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
           refz = cellz;
         }
 
+        if (!manip) {
+          distance = DISTANCE2D(cellx, celly, refx, refy);
+        } else {
+          distance = DISTANCE3D(cellx, celly, cellz, refx, refy, refz);
+        }
+
         // need to check whether we are outside caps
         if ( (!is_inside_x) &&
             (!is_inside_y) &&
             (!manip || !is_inside_z)) {
           // we are in the cap zone, check distance of grid coordinate to inner rectangle edge
-          // first find the closes edge
-
-          if (!manip) {
-            if (DISTANCE2D(cellx, celly, refx, refy) > expand) {
-              continue;
-            }
-          } else {
-            if (DISTANCE3D(cellx, celly, cellz, refx, refy, refz) > expand) {
-              continue;
-            }
+          if (distance > expand) {
+            //for rounded corners, in the cap zone we cnsider distance to closest edge
+            continue;
           }
         }
 
@@ -251,11 +250,6 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
             ((!is_inside_x) ||
             (!is_inside_y) ||
             (!is_inside_z)) ) {
-          if (!manip) {
-            distance = DISTANCE2D(cellx, celly, refx, refy);
-          } else {
-            distance = DISTANCE3D(cellx, celly, cellz, refx, refy, refz);
-          }
 
           new_val = pow((cos(distance / expand * M_PI_2 )) * btset->parameters->soft_collision_distance_weight, 2) + btset->parameters->soft_collision_base_cost;
         } else if (val == BT_OBST_MARK_CORRIDOR) {
@@ -344,7 +338,7 @@ void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
                   current->parent->x*btset->pace+btset->realx,
                   current->parent->y*btset->pace+btset->realy,
                   0.1,
-                  4, NULL);
+                  Green, NULL);
               current = current->parent;
             }
     } else {
@@ -356,7 +350,7 @@ void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
             current->parent->x*btset->pace+btset->realx,
             current->parent->y*btset->pace+btset->realy,
             current->parent->z*btset->pace+btset->realz,
-            4, NULL);
+            Green, NULL);
         current = current->parent;
       }
     }

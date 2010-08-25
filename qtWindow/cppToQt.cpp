@@ -38,6 +38,7 @@
 #include "Move3d-pkg.h"
 
 #include "qtWindow/cppToQt.hpp"
+#include "API/project.hpp"
 
 #ifdef CXX_PLANNER
 #include "util/CppApi/SaveContext.hpp"
@@ -63,12 +64,33 @@ using namespace tr1;
  */
 void qt_resetGraph()
 {
-#ifdef P3D_PLANNER
-	if(XYZ_GRAPH)
+	try 
 	{
-		p3d_del_graph(XYZ_GRAPH);
-	}
+		if (API_activeGraph) 
+		{
+			delete API_activeGraph;
+			API_activeGraph = NULL;
+			cerr << "Delete C++ API Graph" << endl;
+		}
+		
+#ifdef P3D_PLANNER
+		if( !p3d_del_graph(XYZ_GRAPH) )
+		{
+			cerr << "XYZ_GRAPH allready deleted" << endl;
+		}
+		
+		cerr <<  "XYZ_GRAPH = " << XYZ_GRAPH << endl;
+		
 #endif
+	}
+	catch (string str) 
+	{
+		cerr << str << endl;
+	}
+	catch (...) 
+	{
+		cerr << "Exeption in qt_resetGraph()" << endl;
+	}
 }
 
 /**
@@ -86,28 +108,39 @@ void qt_runDiffusion()
 {
 	cout << "Diffusion" << endl;
 	
+	try 
+	{
 #ifdef P3D_PLANNER
-	p3d_SetStopValue(FALSE);
+		p3d_SetStopValue(FALSE);
 #endif
-	ChronoOn();
-	
-	int res;
-	cout << "ENV.getBool(Env::Env::treePlannerIsEST) = " << ENV.getBool(Env::treePlannerIsEST) << endl;
-	if (ENV.getBool(Env::treePlannerIsEST))
-	{
+		ChronoOn();
+		
+		int res;
+		cout << "ENV.getBool(Env::Env::treePlannerIsEST) = " << ENV.getBool(Env::treePlannerIsEST) << endl;
+		if (ENV.getBool(Env::treePlannerIsEST))
+		{
 #ifdef CXX_PLANNER
-		res = p3d_run_est(XYZ_GRAPH, fct_stop, fct_draw);
-	}
-	else
-	{
-		res = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
+			res = p3d_run_est(XYZ_GRAPH, fct_stop, fct_draw);
+		}
+		else
+		{
+			res = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
 #endif
+		}
+		ChronoPrint("");
+		ChronoOff();
+		
+		g3d_draw_allwin_active();
 	}
-	
-	ChronoPrint("");
-	ChronoOff();
-	
-	g3d_draw_allwin_active();
+	catch (string str) 
+	{
+		cerr << "Exeption in run qt_runDiffusion : " << endl;
+		cerr << str << endl;
+	}
+	catch (...) 
+	{
+		cerr << "Exeption in run qt_runDiffusion" << endl;
+	}
 }
 
 /**
@@ -115,65 +148,77 @@ void qt_runDiffusion()
  */
 void qt_runPRM()
 {
+	try 
+	{
 #ifdef P3D_PLANNER
-	p3d_SetStopValue(FALSE);
+		p3d_SetStopValue(FALSE);
 #endif
-	
-	int res;
-	int fail;
-	
-	ChronoOn();
-	
-	//        cout << "ENV.getInt(Env::PRMType)  = "  << ENV.getInt(Env::PRMType) << endl;
-	
-	switch(ENV.getInt(Env::PRMType))
-	{
-#ifdef CXX_PLANNER
-        case 0:
-            res = p3d_run_prm(XYZ_GRAPH, &fail, fct_stop, fct_draw);
-            break;
-        case 1:
-            res = p3d_run_vis_prm(XYZ_GRAPH, &fail, fct_stop, fct_draw);
-            break;
-        case 2:
-            res = p3d_run_acr(XYZ_GRAPH, &fail, fct_stop, fct_draw);
-            break;
-#endif
-        default:
-            cout << "Error No Other PRM"  << endl;
-            ChronoPrint("");
-            ChronoOff();
-            return;
-	}
-	
-	
-	ChronoPrint("");
-	ChronoOff();
-	
-	if (ENV.getBool(Env::expandToGoal))
-	{
-		if (res)
+		
+		int res;
+		int fail;
+		
+		ChronoOn();
+		
+		//        cout << "ENV.getInt(Env::PRMType)  = "  << ENV.getInt(Env::PRMType) << endl;
+		
+		switch(ENV.getInt(Env::PRMType))
 		{
-			if (ENV.getBool(Env::isCostSpace))
-			{
-#ifdef P3D_PLANNER
-				p3d_ExtractBestTraj(XYZ_GRAPH);
+#ifdef CXX_PLANNER
+			case 0:
+				res = p3d_run_prm(XYZ_GRAPH, &fail, fct_stop, fct_draw);
+				break;
+			case 1:
+				res = p3d_run_vis_prm(XYZ_GRAPH, &fail, fct_stop, fct_draw);
+				break;
+			case 2:
+				res = p3d_run_acr(XYZ_GRAPH, &fail, fct_stop, fct_draw);
+				break;
 #endif
-			}
-			else
+			default:
+				cout << "Error No Other PRM"  << endl;
+				ChronoPrint("");
+				ChronoOff();
+				return;
+		}
+		
+		
+		ChronoPrint("");
+		ChronoOff();
+		
+		if (ENV.getBool(Env::expandToGoal))
+		{
+			if (res)
 			{
-				if (p3d_graph_to_traj(XYZ_ROBOT))
+				if (ENV.getBool(Env::isCostSpace))
 				{
-					g3d_add_traj((char*) "Globalsearch",
-								 p3d_get_desc_number(P3D_TRAJ));
+#ifdef P3D_PLANNER
+					p3d_ExtractBestTraj(XYZ_GRAPH);
+#endif
 				}
 				else
 				{
-					printf("Problem during trajectory extraction\n");
+					if (p3d_graph_to_traj(XYZ_ROBOT))
+					{
+						g3d_add_traj((char*) "Globalsearch",
+												 p3d_get_desc_number(P3D_TRAJ));
+					}
+					else
+					{
+						printf("Problem during trajectory extraction\n");
+					}
 				}
+				g3d_draw_allwin_active();
 			}
-			g3d_draw_allwin_active();
 		}
+	}
+	catch (string str) 
+	{
+		cerr << "Exeption in run qt_runPRM : " << endl;
+		cerr << str << endl;
+	}
+	catch (...) 
+	{
+		cerr << "Exeption in run qt_runPRM" << endl;
 	}
 	
 	ENV.setBool(Env::isRunning,false);

@@ -304,16 +304,15 @@ typedef struct object_Symbolic_Mightability_Maps_Relation
 
  
  
-}object_Symbolic_Mightability_Maps_Relation;
+} object_Symbolic_Mightability_Maps_Relation;
 
 typedef struct robots_indices
 {
 int HRP2;
-int JIDO;
+int JIDO_ROBOT;
 int YELLOW_BOTTLE;
 int HUMAN;
-
-}robots_indices;
+} robots_indices;
 
 
 

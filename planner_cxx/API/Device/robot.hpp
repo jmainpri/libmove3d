@@ -6,8 +6,8 @@
 #include <Eigen/StdVector>
 #include <Eigen/Geometry> 
 
-#include "Device/joint.h"
-#include "ConfigSpace/configuration.hpp"
+#include "API/Device/joint.hpp"
+#include "API/ConfigSpace/configuration.hpp"
 
 namespace API { class Trajectory; }
 

@@ -118,10 +118,8 @@ p3d_node* NearestWeightNeighbor(p3d_graph* GraphPt, p3d_compco* CompPt,
   extern int rrtExpansionPhase;
   int * ikSol = NULL;
   if(p3d_get_ik_choice() == IK_UNIQUE && rrtExpansionPhase == true){
-    ikSol = MY_ALLOC(int, GraphPt->rob->cntrt_manager->ncntrts);
-    for (int i = 0; i < GraphPt->rob->cntrt_manager->ncntrts; i++) {
-      ikSol[i] = p3d_get_random_ikSol(GraphPt->rob->cntrt_manager, i);
-    }
+      int randomIkSol = (int) floor(p3d_random(0, GraphPt->nbUsedIkSols - EPS6));
+      p3d_copy_iksol(GraphPt->rob->cntrt_manager, GraphPt->usedIkSols[randomIkSol], &ikSol);
   }
   
   while (NodeOfCompListPt != NULL) {

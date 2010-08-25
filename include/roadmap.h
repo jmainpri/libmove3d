@@ -231,6 +231,8 @@ typedef struct graph {
   int nb_bkb_q_free;
   int nb_q_closed;
 
+  int ** usedIkSols; //List of iksol in the graph
+  int nbUsedIkSols; //The number of item in the list
   //start path deform
   p3d_list_node *dist_nodes ;/* noeuds du graph pour un tri global par distance */
   p3d_node* start_nodePt;

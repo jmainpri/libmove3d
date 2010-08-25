@@ -10,6 +10,7 @@
 
 typedef enum HRI_AGENT_TYPE_ENUM{
 	HRI_JIDO1,
+  HRI_JIDOKUKA,
 	HRI_HRP214,
 	HRI_B21,
 	HRI_JUSTIN,
@@ -71,6 +72,12 @@ typedef struct STRUCT_HRI_PERSP{
   double foa;
   int pan_jnt_idx;
   int tilt_jnt_idx;
+  
+  p3d_jnt * pointjoint;
+  double point_tolerance;
+  
+  int enable_vision_draw;
+  int enable_pointing_draw;
 } HRI_PERSP;
 
 typedef struct STRUCT_HRI_AGENT{
@@ -90,10 +97,13 @@ typedef struct STRUCT_HRI_AGENT{
 
 
 typedef struct STRUCT_HRI_AGENTS{
-	HRI_AGENT ** robots;
-	int robots_no;
-	HRI_AGENT ** humans;
-	int humans_no;
+  HRI_AGENT ** all_agents; // The list of agents robots+humans
+  int all_agents_no;
+  int source_agent_idx; // This is the index of the agent who is the robot
+  HRI_AGENT ** robots;
+  int robots_no;
+  HRI_AGENT ** humans;
+  int humans_no;
 }HRI_AGENTS;
 
 typedef struct struct_hri_shared_zone{

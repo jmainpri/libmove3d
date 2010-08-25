@@ -180,7 +180,6 @@ void g3d_create_hri_planner_form(void)
   g3d_create_gik_jointsel_form();
   g3d_create_psp_parameters_form();
   
-  GLOBAL_AGENTS = hri_create_agents();
 }
 
 void g3d_show_hri_planner_form(void)
@@ -428,6 +427,9 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
   int dimx,dimy,dimz;
   int i;
   double objx, objy, objz;
+
+  GLOBAL_AGENTS = hri_create_agents();
+  hri_assign_source_agent("JIDOKUKA", GLOBAL_AGENTS);
 
   /* NAVIGATION */
   if(SELECTED_BTSET==1){
@@ -1219,12 +1221,12 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
   q_h = p3d_get_robot_config(agents->humans[0]->robotPt);
   //q_hs = p3d_get_robot_config(agents->humans[1]->robotPt);
   //q_hs_saved = p3d_copy_config(agents->humans[1]->robotPt, agents->humans[1]->robotPt->ROBOT_POS);
+ 
   q_r_saved = p3d_get_robot_config(agents->robots[0]->robotPt);
-  q_h_saved = p3d_copy_config(agents->humans[0]->robotPt, agents->humans[0]->robotPt->ROBOT_POS);
-  //q_h_saved = p3d_get_robot_config(agents->humans[0]->robotPt);
-
+  q_h_saved = p3d_get_robot_config(agents->humans[0]->robotPt);
+  
   for(i=0; i<500; i++){
-
+    
     // Shoot random position
     Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = p3d_random(agents->robots[0]->robotPt->joints[1]->abs_pos[0][3],
                                                             agents->humans[0]->robotPt->joints[1]->abs_pos[0][3]);
@@ -1323,7 +1325,7 @@ void CB_test_button2_obj(FL_OBJECT *obj, long arg)
   p3d_vector3 Tcoord[3];
 
   for(i=0; i<env->nr; i++){
-    if( strcasestr(env->robot[i]->name,"CUP") )
+    if( strcasestr(env->robot[i]->name,"TAPE") )
       break;
   }
   if(i==env->nr){
@@ -1340,7 +1342,7 @@ void CB_test_button2_obj(FL_OBJECT *obj, long arg)
   Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = env->robot[i]->joints[1]->abs_pos[1][3];
   Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = env->robot[i]->joints[1]->abs_pos[2][3]+0.03;
 
-  hri_agent_single_task_manip_move(agents->humans[0], GIK_LATREACH, Tcoord, &q_h);
+  hri_agent_single_task_manip_move(agents->humans[0], GIK_RAREACH, Tcoord, &q_h);
   p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
   hri_agent_single_task_manip_move(agents->robots[0], GIK_LATREACH, Tcoord, &q_r);
   p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r);
@@ -1355,8 +1357,8 @@ void CB_test_button3_obj(FL_OBJECT *obj, long arg)
   int i;
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   //int jointindexes[2][10]={ {0,0,0,15,16,17,18,19,20,21},{2,3,4,0,0,0,0,0,0,0} };
-  int jointindexes1[7] = {15,16,17,18,19,20,21};
-  p3d_vector3 Tcoord[3];
+  int jointindexes1[10] = {2,3,4,15,16,17,18,19,20,21};
+  p3d_vector3 Tcoord;
   p3d_rob * rob;
   configPt q_s;
 
@@ -1370,8 +1372,8 @@ void CB_test_button3_obj(FL_OBJECT *obj, long arg)
   }
   rob = env->robot[i];
   if(!HRI_GIK->GIKInitialized){
-    hri_gik_initialize_gik(HRI_GIK,env->robot[i],FALSE,7);
-    hri_gik_add_task(HRI_GIK, 3, 7, 1, jointindexes1,37);  /* Larm */
+    hri_gik_initialize_gik(HRI_GIK,env->robot[i],10);
+    hri_gik_add_task(HRI_GIK, 3, 10, 1, jointindexes1,37);  /* Larm */
     // hri_gik_add_task(HRI_GIK, 3, 10, 2, jointindexes[1],37);  /* torso */
   }
 
@@ -1384,13 +1386,16 @@ void CB_test_button3_obj(FL_OBJECT *obj, long arg)
     return;
   }
 
-  Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = env->robot[i]->joints[1]->abs_pos[0][3];
-  Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = env->robot[i]->joints[1]->abs_pos[1][3];
-  Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = env->robot[i]->joints[1]->abs_pos[2][3];
+  Tcoord[0] = env->robot[i]->joints[1]->abs_pos[0][3];
+  Tcoord[1] = env->robot[i]->joints[1]->abs_pos[1][3];
+  Tcoord[2] = env->robot[i]->joints[1]->abs_pos[2][3];
 
   q_s = p3d_get_robot_config(rob);
-  hri_gik_compute(rob, HRI_GIK, 500, 0.01, 1, 0, Tcoord,NULL,&q_s, NULL);
+  hri_gik_sdls(rob, HRI_GIK, 500, 0.01, &Tcoord, &q_s, NULL);
 
+  p3d_set_and_update_this_robot_conf(rob, q_s);
+  
+  g3d_draw_allwin_active();
 }
 
 void CB_test_button4_obj(FL_OBJECT *obj, long arg)
@@ -1399,94 +1404,35 @@ void CB_test_button4_obj(FL_OBJECT *obj, long arg)
   int i,j;
   p3d_rob * rob1, * rob2;
   double rob1_cx, rob1_cy, rob1_cz, rob2_cx, rob2_cy, rob2_cz;
-
-  for(i=0; i<env->nr; i++){
-    rob1 = env->robot[i];
-    rob1_cx = (rob1->BB.xmin + rob1->BB.xmax)/2;
-    rob1_cy = (rob1->BB.ymin + rob1->BB.ymax)/2;
-    rob1_cz = (rob1->BB.zmin + rob1->BB.zmax)/2;
-
-    for(j=0; j<env->nr; j++){
-      if(!strcmp(env->robot[i]->name,env->robot[j]->name)){
-        continue;
-      }
-
-      rob2 = env->robot[j];
-      rob2_cx = (rob2->BB.xmin + rob2->BB.xmax)/2;
-      rob2_cy = (rob2->BB.ymin + rob2->BB.ymax)/2;
-      rob2_cz = (rob2->BB.zmin + rob2->BB.zmax)/2;
-
-      /* Compute IN */
-
-      /* Test if rob1 is in rob2 */
-      /* Condition: Rob1 BB should be wholly in rob2 BB */
-
-      if((rob2->BB.xmin <= rob1->BB.xmin) && (rob2->BB.xmax >= rob1->BB.xmax) &&
-         (rob2->BB.ymin <= rob1->BB.ymin) && (rob2->BB.ymax >= rob1->BB.ymax) &&
-         (rob2->BB.zmin <= rob1->BB.zmin) && (rob2->BB.zmax >= rob1->BB.zmax)){
-        printf("%s isIn %s\n",rob1->name,rob2->name);
-      }
-
-      /* Compute ON */
-
-      /* Test if rob1 is on rob2 */
-      /* Condition 1: The center of Rob1 BB should be in the x,y limits of rob2 BB */
-      /* Condition 2: The lower part of Rob1 BB should either intersect with the upper part of rob2 BB */
-      /*              or there should be few cm's */
-
-
-      if((rob1_cx >= rob2->BB.xmin) && (rob1_cx <= rob2->BB.xmax) &&
-         (rob1_cy >= rob2->BB.ymin) && (rob1_cy <= rob2->BB.ymax) &&
-         (rob1_cz >= rob2->BB.zmax)){
-
-        if( ABS(rob1_cz-rob1->BB.zmin)*1.2 >= ABS(rob1_cz-rob2->BB.zmax)){
-          printf("%s isOn %s\n",rob1->name,rob2->name);
-        }
-      }
-
-      /* Compute NEXT */
-
-      /* Test if rob1 is next to rob2 */
-      /* Condition 1: The Z values of rob1 and rob2 BB's should intersect = One should not be wholly above the other */
-      /* Condition 2: The center of rob1 should not be in the BB of rob2*/
-      /* Condition 3: Distance(rob1,rob2) should be less then a constant */
-
-      if(((rob1->BB.zmin > rob2->BB.zmin) && (rob2->BB.zmin > rob1->BB.zmax)) ||
-         ((rob1->BB.zmax > rob2->BB.zmin) && (rob2->BB.zmax > rob1->BB.zmax)) ){
-
-        if((rob1_cx < rob2->BB.xmin) || (rob1_cx > rob2->BB.xmax) ||
-           (rob1_cy < rob2->BB.ymin) || (rob1_cy > rob2->BB.ymax)){
-
-
-
-          if(DISTANCE2D(rob1_cx,rob1_cy,rob2_cx,rob2_cy) < MAX(ABS(rob1->BB.xmin-rob1->BB.xmax),ABS(rob1->BB.ymin-rob1->BB.ymax)) &&
-             DISTANCE2D(rob1_cx,rob1_cy,rob2_cx,rob2_cy) > MAX(ABS(rob1->BB.xmin-rob1->BB.xmax)/2,ABS(rob1->BB.ymin-rob1->BB.ymax)/2)){
-            
-            
-            /* rob1 can be next to rob2 */
-            /* let's check rob2 is nect to rob1 */
-            /* This is basically for robustness */
-            
-            if(((rob2->BB.zmin > rob1->BB.zmin) && (rob1->BB.zmin > rob2->BB.zmax)) ||
-               ((rob2->BB.zmax > rob1->BB.zmin) && (rob1->BB.zmax > rob2->BB.zmax)) ){
-              
-              if((rob2_cx < rob1->BB.xmin) || (rob2_cx > rob1->BB.xmax) ||
-                 (rob2_cy < rob1->BB.ymin) || (rob2_cy > rob1->BB.ymax)){
-                
-                
-                if(DISTANCE2D(rob1_cx,rob1_cy,rob2_cx,rob2_cy) < MAX(ABS(rob2->BB.xmin-rob2->BB.xmax),ABS(rob2->BB.ymin-rob2->BB.ymax)) &&
-                   DISTANCE2D(rob1_cx,rob1_cy,rob2_cx,rob2_cy) > MAX(ABS(rob2->BB.xmin-rob2->BB.xmax)/2,ABS(rob2->BB.ymin-rob2->BB.ymax)/2)){
-                  
-                  printf("%s isNextTo %s\n",rob1->name,rob2->name);
-                }
-              }
-            }
-            
-          }
-        }
-      }
-    }
+  configPt q;
+  
+  //q = p3d_get_robot_config(GLOBAL_AGENTS->humans[0]->robotPt);
+  //hri_agent_compute_posture(GLOBAL_AGENTS->humans[0], GLOBAL_AGENTS->humans[0]->perspective->pan_jnt_idx, 1.3, q);
+  //p3d_set_and_update_this_robot_conf(GLOBAL_AGENTS->humans[0]->robotPt,q); 
+  
+  
+  // Visibility performance test
+  HRI_AGENT *selected_agent;
+  p3d_rob *selected_target;
+  float clock_val = 0;
+  float elapsed_time = 0;
+  int test_no = 10;
+  
+  for (i=0; i<test_no; i++) {  
+    selected_agent = GLOBAL_AGENTS->all_agents[random()%GLOBAL_AGENTS->all_agents_no];
+    selected_target = env->robot[random()%env->nr];
+    
+    clock_val = clock();
+    hri_is_object_visible(selected_agent, selected_target, 50, FALSE);
+    
+    elapsed_time = (clock() - clock_val)/CLOCKS_PER_SEC + elapsed_time;
   }
+  printf("TIME passed for %d visibility tests: %f EACH VIS: %f\n",test_no, elapsed_time,elapsed_time/test_no);
+  // End test
+
+  
+  
+  
 }
 
 void CB_test_button5_obj(FL_OBJECT *obj, long arg)
@@ -1501,113 +1447,51 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
   configPt q_source, q_object;
   double phi, theta;
   int tilt_joint, pan_joint;
-  int visible = FALSE;
-  //double temp_orient;
+  int visible = FALSE;  
   
-  //g3d_screenshot("Move3D");
-  //g3d_screenshot("Perspective");
-
-  
-  //clock_t c0, c1;
-  //double cputime;
-    
   for(i=0; i<env->nr; i++){
     if( strcasestr(env->robot[i]->name,"ROBOT") ){
       robot = env->robot[i];
       continue;
     }
-    if( strcasestr(env->robot[i]->name,"CUP") ){
+    if( strcasestr(env->robot[i]->name,"SPACENAV") ){
       object = env->robot[i];
       continue;
     }    
   }
+
   int visibil;
-  int result;  double elevation = 0, azimuth = 0;
-  result = hri_is_object_visible(GLOBAL_AGENTS->robots[0],object, 50, TRUE);
+  int result;
+  // result = hri_is_object_visible(GLOBAL_AGENTS->robots[0],object, 50, TRUE);
   
-  hri_object_visibility_placement(GLOBAL_AGENTS->robots[0], object, &visibil,&elevation,&azimuth);
-
-
-  pan_joint  = GLOBAL_AGENTS->robots[0]->perspective->pan_jnt_idx;
-  tilt_joint = GLOBAL_AGENTS->robots[0]->perspective->tilt_jnt_idx;
-  robot  = GLOBAL_AGENTS->robots[0]->robotPt;
-
-  q_source = MY_ALLOC(double, robot->nb_dof); /* ALLOC */
-  
-  p3d_get_robot_config_into(robot, &q_source);
-
-
-  /* TURN PAN */
-  azimuth = azimuth +  q_source[robot->joints[pan_joint]->index_dof];
-  if(robot->joints[pan_joint]->dof_data[0].vmin > azimuth){
-    q_source[robot->joints[pan_joint]->index_dof] = robot->joints[pan_joint]->dof_data[0].vmin;
-  }
-  else{
-    if(robot->joints[pan_joint]->dof_data[0].vmax < azimuth){
-      q_source[robot->joints[pan_joint]->index_dof] = robot->joints[pan_joint]->dof_data[0].vmax;
-    }
-    else{
-      q_source[robot->joints[pan_joint]->index_dof] = azimuth; 
-    }
-  } 
-  
-  /* TURN TILT */
-  elevation = -elevation; // Temporary fix. There is a bug in Jido Move3D model. Tilt inversed.
-  elevation = elevation + q_source[robot->joints[tilt_joint]->index_dof];
-  if(robot->joints[tilt_joint]->dof_data[0].vmin > elevation){
-    q_source[robot->joints[tilt_joint]->index_dof] = robot->joints[tilt_joint]->dof_data[0].vmin;
-  }
-  else{
-    if(robot->joints[tilt_joint]->dof_data[0].vmax < elevation){
-      q_source[robot->joints[tilt_joint]->index_dof] = robot->joints[tilt_joint]->dof_data[0].vmax;
-    }
-    else{
-      q_source[robot->joints[tilt_joint]->index_dof] = elevation;  
-    }
-  }
-  
-  p3d_set_and_update_this_robot_conf(robot, q_source);  
-
-  MY_FREE(q_source, double, robot->nb_dof); /* FREE */
-
-
+  // hri_object_visibility_placement(GLOBAL_AGENTS->robots[0], object, &visibil);
   //g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, 50, object, &phi);
   //g3d_object_visibility_placement(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, object, DTOR(90), DTOR(90*0.75), DTOR(50), DTOR(50*0.75), &visibil);
-  
-  printf("VISIBILITY RESULT ROBOT: %d PLACEMENT: %d ELEV: %f AZIM: %f\n ",result,visibil, RTOD(elevation), RTOD(azimuth));
-  
-
-  //g3d_is_object_visible_from_viewpoint(robot->joints[14]->abs_pos, 50, object, &phi);
-
-  //g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, 50, object, &phi);
+  GLOBAL_AGENTS->humans[0]->perspective->enable_vision_draw = TRUE;
+  //GLOBAL_AGENTS->humans[0]->perspective->enable_pointing_draw = TRUE;
+  GLOBAL_AGENTS->humans[1]->perspective->enable_vision_draw = TRUE;
+  GLOBAL_AGENTS->humans[2]->perspective->enable_vision_draw = TRUE;
+  GLOBAL_AGENTS->humans[3]->perspective->enable_vision_draw = TRUE;
+  GLOBAL_AGENTS->humans[3]->perspective->enable_pointing_draw = TRUE;
     
-  //printf("VISIBILITY RESULT ROBOT: %f\n",phi);
+  GLOBAL_AGENTS->robots[0]->perspective->enable_vision_draw = TRUE;
+  //GLOBAL_AGENTS->robots[0]->perspective->enable_pointing_draw = TRUE;
+  GLOBAL_AGENTS->robots[1]->perspective->enable_vision_draw = TRUE;
   
+  return ;
+  //printf("VISIBILITY RESULT ROBOT: %d PLACEMENT: %d\n ",result,visibil);
+  result = hri_is_object_pointed(GLOBAL_AGENTS->humans[0],object, 50, TRUE);
   //g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->humans[0]->perspective->camjoint->abs_pos, 150, object, &phi);
     
-  //printf("VISIBILITY RESULT HUMAN: %f\n",phi);
+  printf("VISIBILITY RESULT HUMAN: %d\n",result);
+  
+  q_source = p3d_get_robot_config(GLOBAL_AGENTS->humans[0]->robotPt);
+  hri_agent_load_default_arm_posture(GLOBAL_AGENTS->humans[0], q_source);
+  hri_agent_compute_posture(GLOBAL_AGENTS->humans[0],1.5 , 2, q_source);
+  p3d_set_and_update_this_robot_conf(GLOBAL_AGENTS->humans[0]->robotPt, q_source);
   
   return;
   
-// TEMP TIME PERFORMANCE TESTS 
-//  c0 = clock();
-//  for (i=0; i<1000; i++) {
-//    foa = psp_is_object_in_fov(robot, object, DTOR(foa_angle) , DTOR(foa_angle)*3/4);
-//  }
-//  c1= clock();
-//  cputime = ((double)(c1 - c0))/(CLOCKS_PER_SEC );
-//  printf ("\tElapsed CPU time INFOV:   %f  sec\n",cputime/1000);
-//  
-//  
-//  c0 = clock();
-//  for (i=0; i<1000; i++) {
-//    visible = psp_is_object_visible(robot, object, 50,TRUE);
-//  }
-//  c1= clock();
-//  cputime = ((double)(c1 - c0))/(CLOCKS_PER_SEC );
-//  printf ("\tElapsed CPU time VISIBLE:   %f  sec\n",cputime/1000);
-  
- 
   foa = psp_is_object_in_fov(robot, object, DTOR(foa_angle) , DTOR(foa_angle)*3/4);
   
   if(foa){

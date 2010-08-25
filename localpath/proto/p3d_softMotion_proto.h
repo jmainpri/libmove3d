@@ -5,6 +5,8 @@
  *   Created: Thu Apr 24 14:01:25 2008
  */
 #ifdef MULTILOCALPATH
+#include "../../lightPlanner/proto/ManipulationStruct.h"
+
 #ifndef __CEXTRACT__
 extern void lm_convert_p3dMatrix_To_GbTh(const p3d_matrix4 M ,Gb_th* th);
 extern void lm_convert_GbTh_To_p3dMatrix(const Gb_th* th, p3d_matrix4 M);
@@ -50,7 +52,7 @@ extern double p3d_softMotion_stay_within_dist(p3d_rob* robotPt, p3d_localpath* l
 extern double p3d_softMotion_cost(p3d_rob *robotPt, p3d_localpath *localpathPt);
 extern p3d_localpath *p3d_extract_softMotion(p3d_rob *robotPt, p3d_localpath *localpathPt, double l1, double l2);
 extern p3d_localpath *p3d_simplify_softMotion(p3d_rob *robotPt, p3d_localpath *localpathPt, int *need_colcheck);
-extern void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char* fileName, bool flagPlot, std::vector <int> lp, std::vector < std::vector <double> > positions, int *nbPositions);
+extern void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char* fileName, bool flagPlot, std::vector <int> &lp, std::vector < std::vector <double> > &positions, MANPIPULATION_TRAJECTORY_STR &segments);
 extern void softMotion_data_copy_into(p3d_rob *robotPt, const p3d_softMotion_data * sm_data, p3d_softMotion_data * softMotion_data);
 extern p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_localpath *localpathPt,	double l1, double l2);
 

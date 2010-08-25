@@ -1,6 +1,5 @@
 #include "GraphState.h"
-#include "../planningAPI.hpp"
-
+#include <vector>
 #include "P3d-pkg.h"
 
 using namespace std;

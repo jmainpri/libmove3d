@@ -7,7 +7,21 @@
 #ifndef P3D_BASE_EXPANSION_HPP
 #define P3D_BASE_EXPANSION_HPP
 
-#include "planningAPI.hpp"
+#include "API/ConfigSpace/configuration.hpp"
+
+#include "p3d/env.hpp"
+
+#ifndef LOCALPATH_HPP
+class LocalPath;
+#endif
+
+#ifndef GRAPH_HPP
+class Graph;
+#endif
+
+#ifndef NODE_HPP
+class Node;
+#endif
 
 /**
  * @ingroup Diffusion
@@ -155,8 +169,8 @@ protected:
 
     Graph* mGraph;
 	
-	Node* m_fromComp;
-	Node* m_toComp;
+		Node* m_fromComp;
+		Node* m_toComp;
 };
 
 #endif

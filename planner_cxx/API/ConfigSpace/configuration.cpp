@@ -9,7 +9,7 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#include "planningAPI.hpp"
+#include "API/ConfigSpace/configuration.hpp"
 
 #include "P3d-pkg.h"
 #include "Collision-pkg.h"
@@ -66,7 +66,7 @@ Configuration::Configuration(Robot* R, double* C, bool noCopy) :
         }
         else
         {
-	  _Configuration = noCopy ? C : p3d_copy_config(_Robot->getRobotStruct(), C);
+					_Configuration = noCopy ? C : p3d_copy_config(_Robot->getRobotStruct(), C);
 	  //            this->initQuaternions();
         }
     }
@@ -589,6 +589,7 @@ double Configuration::cost()
     {
         _Cost = global_costSpace->cost(*this);
         _CostTested = true;
+//				cout << "Cost = " << _Cost << endl;
     }
 	
 	return _Cost;

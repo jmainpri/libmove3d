@@ -538,7 +538,7 @@ double computeRobotConfCostSpecificArm(p3d_rob* robot, configPt refConfig, confi
     }
     double armPotentialCost = 0;
     double configHeight[3] = {ct->pasjnts[0]->abs_pos[2][3], ct->pasjnts[2]->abs_pos[2][3], ct->pasjnts[4]->abs_pos[2][3]};
-    armPotentialCost = ABS((configHeight[1] -configHeight[0]) - (refHeight[1] - refHeight[0])) + ABS((configHeight[2] -configHeight[0]) - (refHeight[2] - refHeight[0]));
+    armPotentialCost = ABS((configHeight[1] - configHeight[0]) - (refHeight[1] - refHeight[0])) + ABS((configHeight[2] -configHeight[0]) - (refHeight[2] - refHeight[0]));
     //normalize ArmPotentialCost
     armPotentialCost /= 1.94;
     if (robot->nbCcCntrts == 2) {
@@ -748,7 +748,7 @@ void removeAloneNodesInGraph(p3d_rob* robot, p3d_graph* graph){
   for(p3d_compco* compco = graph->comp ; compco; compco = compco->suiv){
     if (compco->nnode == 1) {
       p3d_del_node(compco->nodes->N, graph);
-      p3d_remove_compco(graph, compco);
+//      p3d_remove_compco(graph, compco);
     }
   }
 }

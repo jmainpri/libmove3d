@@ -22,7 +22,7 @@ int checkCollisionsOnPathAndReplan(p3d_rob* robot, p3d_traj* traj, p3d_graph* ma
     if (p3d_unvalid_localpath_test(robot, cur, &ntest)) {//le lp est en collision
       ChronoOn();
       graphTrajInCollision = true;
-      configPt startConf = cur->config_at_distance(robot, cur, 0), endConf;
+      configPt startConf = cur->config_at_distance(robot, cur, 0), endConf = NULL;
       
       //find the last node (end of a localpath)
       p3d_localpath * tmpNext = cur;
@@ -131,7 +131,7 @@ int replanForCollidingPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph,
     curDist += tmp->length_lp;
   }
   dist = curDist;
-  for (; cur != NULL && !graphTrajInCollision /*&& dist < curDist + 0.33 * trajLength*/ ; cur = cur->next_lp) {
+  for (; cur != NULL && !graphTrajInCollision && dist < curDist + 0.33 * trajLength ; cur = cur->next_lp) {
     if (p3d_unvalid_localpath_test(robot, cur, &ntest)) {//le lp est en collision
       ChronoOn();
       graphTrajInCollision = true;

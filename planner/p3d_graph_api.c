@@ -258,16 +258,24 @@ int p3d_APInode_shoot_singularity(p3d_rob *rob, configPt* q, int *singNum, int *
   p3d_mark_for_singularity(cntrt_manager,*cntrtNum);
   int *ikSol = MY_ALLOC(int, rob->cntrt_manager->ncntrts);
   int result = 0;
+  int nbMaxShoots = 100, nbShoots = 0;
   do {
     if (rootConfig) {
+//            g3d_draw_allwin_active();
       //p3d_copy_config_into(rob, rootConfig, q);
       double robotSize = 0, translationFactor = 0, rotationFactor = 0;
       p3d_get_BB_rob_max_size(rob, &robotSize);
       translationFactor = robotSize/10;
       rotationFactor = robotSize/30;
-      p3d_gaussian_config2_specific(rob, rootConfig, *q, translationFactor, rotationFactor, true);
       
-      MY_FREE(ikSol, int, rob->cntrt_manager->ncntrts);
+//      p3d_set_and_update_this_robot_conf_without_cntrt(rob, rootConfig);
+//      g3d_draw_allwin_active();
+//      print_config(rob, rootConfig);
+      p3d_gaussian_config2_specific(rob, rootConfig, *q, translationFactor, rotationFactor, true);
+//      p3d_set_and_update_this_robot_conf_without_cntrt(rob, *q);
+//      print_config(rob, *q);
+//      g3d_draw_allwin_active();
+      
       p3d_copy_iksol(rob->cntrt_manager, rootIkSol, &ikSol);
       //rootConfig = NULL; //if the singular config obtained from root Config does not satisfy the constraints sample random
       if (DEBUG_GRAPH_API){
@@ -282,9 +290,11 @@ int p3d_APInode_shoot_singularity(p3d_rob *rob, configPt* q, int *singNum, int *
     p3d_set_robot_config(rob, *q);
     result = p3d_set_robot_singularity(rob, *cntrtNum, singNum);
     p3d_get_robot_config_into(rob, q);
-  } while (!result || (!p3d_set_and_update_this_robot_conf_multisol(rob, *q, NULL, 0, ikSol)));//shoot until we have a valid configuration
+    nbShoots++;
+ //         g3d_draw_allwin_active();
+  } while ((!result || (!p3d_set_and_update_this_robot_conf_multisol(rob, *q, NULL, 0, ikSol))) && (nbShoots < nbMaxShoots));//shoot until we have a valid configuration
   p3d_set_iksol_elem(*cntrtNum, -(*singNum) - 1);
-  
+  MY_FREE(ikSol, int, rob->cntrt_manager->ncntrts);
   if (DEBUG_GRAPH_API){
     PrintInfo(("configuration tirée :\n"));
     print_config(rob, *q);

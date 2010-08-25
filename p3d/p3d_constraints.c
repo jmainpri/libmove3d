@@ -53,6 +53,7 @@
 #include "../graphic/proto/g3d_draw_proto.h"
 
 static int st_iksol_size = 0;
+static int st_nbIkSols = 0;
 static int **st_iksol = NULL;
 static int *st_niksol = NULL;
 static double ***st_ikSolConfig = NULL;//Array to put valids configurations of constraints
@@ -3083,7 +3084,7 @@ static int p3d_fct_lin_rel_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl
   
 	lastvalfo = p3d_jnt_get_dof_deg(ct->pasjnts[0], ct->pas_jnt_dof[0]);
 	p3d_jnt_set_dof_deg(ct->pasjnts[0], ct->pas_jnt_dof[0], valfo);
-	if (st_niksol) {
+	if (st_niksol && st_iksol_size > ct->num) {
 		st_iksol[ct->num][0] = 1;
 		st_niksol[ct->num] = 1;
 		st_ikSolConfig[ct->num][0][0] = (valfo / 180) * M_PI;
@@ -5689,48 +5690,110 @@ static int p3d_set_pa10_6_arm_ik(p3d_cntrt_management * cntrt_manager,
   
 }
 
-/** \brief p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint
+// int p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(
+//                                                                   p3d_rob* robot, configPt q) {
+// 	p3d_jnt *virObjJnt= NULL, *wristJnt= NULL;
+// 	p3d_matrix4 TattInv, Twrist, TvirtObj;
+// 	configPt q0= NULL;
+// 	p3d_cntrt* cntrt_arm = NULL;
+// 	int i=0;
+//   
+// 	for (i=0; i<=robot->njoints; i++) {
+// 		if (robot->joints[i]->name==NULL)
+// 			continue;
+//     
+// 		if (strcmp(robot->joints[i]->name, "virtual_object") == 0) {
+// 			virObjJnt = robot->joints[i];
+// 		}
+// 	}
+//   
+// 	for (i=0; i<=robot->njoints; i++) {
+// 		if (robot->joints[i]->name==NULL)
+// 			continue;
+//     
+// 		if (strcmp(robot->joints[i]->name, "wristJoint") == 0) {
+// 			wristJnt = robot->joints[i];
+// 		}
+// 	}
+//   
+// 	if (virObjJnt==NULL || wristJnt==NULL) {
+// 		printf("FATAL_ERROR: the virtual object does not exist\n");
+// 		return 0;
+// 	}
+// 	/* Look for the arm_IK constraint */
+// 	for (i = 0; i < robot->cntrt_manager->ncntrts; i++) {
+// 		cntrt_arm = robot->cntrt_manager->cntrts[i];
+// 		if (strcmp(cntrt_arm->namecntrt, "p3d_pa10_6_arm_ik")==0) {
+// 			break;
+// 		}
+// 	}
+//   
+// 	if (i == robot->cntrt_manager->ncntrts) {
+// 		printf("FATAL_ERROR : arm_IK constraint does not exist\n");
+// 		return 0;
+// 	}
+// 	if (cntrt_arm->active == 1) {
+// 		return 1;
+// 	}
+// 	q0= p3d_alloc_config(robot);
+// 	p3d_get_robot_config_into(robot, &q0);
+//   
+// 	p3d_set_and_update_this_robot_conf(robot, q);
+//   
+// 	p3d_mat4Copy(wristJnt->abs_pos, Twrist);
+// 	p3d_matInvertXform(cntrt_arm->Tatt, TattInv);
+// 	p3d_mat4Mult(Twrist, TattInv, TvirtObj);
+//   
+// 	p3d_mat4ExtractPosReverseOrder(TvirtObj, &q[virObjJnt->index_dof],
+//                                  &q[virObjJnt->index_dof+1], &q[virObjJnt->index_dof+2],
+//                                  &q[virObjJnt->index_dof+3], &q[virObjJnt->index_dof+4],
+//                                  &q[virObjJnt->index_dof+5]);
+//   
+// 	p3d_activateCntrt(robot, cntrt_arm);
+// 	p3d_set_and_update_this_robot_conf(robot, q);
+//   
+// 	p3d_desactivateCntrt(robot, cntrt_arm);
+//   
+// 	p3d_set_and_update_this_robot_conf(robot, q0);
+// 	p3d_destroy_config(robot, q0);
+// 	return 1;
+// }
+
+#ifdef LIGHT_PLANNER
+/** \brief p3d_update_virtual_object_config_for_arm_ik_constraint
  * return 0 if there is an error
  */
-int p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(
-                                                                  p3d_rob* robot, configPt q) {
-	p3d_jnt *virObjJnt= NULL, *wristJnt= NULL;
+int p3d_update_virtual_object_config_for_arm_ik_constraint( p3d_rob* robot, int armId, configPt q) {
+	p3d_jnt *virObjJnt= NULL,*virObjJnt2= NULL, *wristJnt= NULL, *wristJnt2= NULL;
 	p3d_matrix4 TattInv, Twrist, TvirtObj;
 	configPt q0= NULL;
-	p3d_cntrt* cntrt_arm = NULL;
-	int i=0;
-  
-	for (i=0; i<=robot->njoints; i++) {
-		if (robot->joints[i]->name==NULL)
-			continue;
-    
-		if (strcmp(robot->joints[i]->name, "virtual_object") == 0) {
-			virObjJnt = robot->joints[i];
-		}
+	p3d_cntrt* cntrt_arm = NULL, * cntrt_arm2 = NULL;
+
+	if(robot->nbCcCntrts==0) {
+		printf("%s: %d: p3d_update_virtual_object_config_for_arm_ik_constraint(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robot->name);
+		return FALSE;
 	}
-  
-	for (i=0; i<=robot->njoints; i++) {
-		if (robot->joints[i]->name==NULL)
-			continue;
-    
-		if (strcmp(robot->joints[i]->name, "wristJoint") == 0) {
-			wristJnt = robot->joints[i];
-		}
+	else {
+		virObjJnt= robot->ccCntrts[armId]->actjnts[0];
 	}
-  
+
+	if(robot->nbCcCntrts==0) {
+		printf("%s: %d: p3d_update_virtual_object_config_for_arm_ik_constraint(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robot->name);
+		return FALSE;
+	}
+	else {	  
+		wristJnt= robot->ccCntrts[armId]->pasjnts[robot->ccCntrts[armId]->npasjnts-1];
+	}
+
 	if (virObjJnt==NULL || wristJnt==NULL) {
-		printf("FATAL_ERROR: the virtual object does not exist\n");
+		printf("FATAL_ERROR: the virtual object does not exist or connot find end-eff Jnt\n");
 		return 0;
 	}
+	
 	/* Look for the arm_IK constraint */
-	for (i = 0; i < robot->cntrt_manager->ncntrts; i++) {
-		cntrt_arm = robot->cntrt_manager->cntrts[i];
-		if (strcmp(cntrt_arm->namecntrt, "p3d_pa10_6_arm_ik")==0) {
-			break;
-		}
-	}
-  
-	if (i == robot->cntrt_manager->ncntrts) {
+	cntrt_arm = robot->ccCntrts[armId];
+
+	if (cntrt_arm == NULL) {
 		printf("FATAL_ERROR : arm_IK constraint does not exist\n");
 		return 0;
 	}
@@ -5739,27 +5802,100 @@ int p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(
 	}
 	q0= p3d_alloc_config(robot);
 	p3d_get_robot_config_into(robot, &q0);
-  
+
 	p3d_set_and_update_this_robot_conf(robot, q);
-  
+
 	p3d_mat4Copy(wristJnt->abs_pos, Twrist);
 	p3d_matInvertXform(cntrt_arm->Tatt, TattInv);
 	p3d_mat4Mult(Twrist, TattInv, TvirtObj);
-  
+
 	p3d_mat4ExtractPosReverseOrder(TvirtObj, &q[virObjJnt->index_dof],
                                  &q[virObjJnt->index_dof+1], &q[virObjJnt->index_dof+2],
                                  &q[virObjJnt->index_dof+3], &q[virObjJnt->index_dof+4],
                                  &q[virObjJnt->index_dof+5]);
-  
+
 	p3d_activateCntrt(robot, cntrt_arm);
 	p3d_set_and_update_this_robot_conf(robot, q);
-  
+
 	p3d_desactivateCntrt(robot, cntrt_arm);
-  
+
 	p3d_set_and_update_this_robot_conf(robot, q0);
 	p3d_destroy_config(robot, q0);
 	return 1;
 }
+#endif
+
+#ifdef LIGHT_PLANNER
+/** \brief p3d_update_virtual_object_config
+ * return 0 if there is an error
+ */
+int p3d_update_virtual_object_config(p3d_rob* robot, int armId, configPt q) {
+	p3d_jnt *virObjJnt= NULL, *wristJnt= NULL;
+	p3d_matrix4 TattInv, Twrist, TvirtObj;
+	configPt q0= NULL;
+	p3d_cntrt* cntrt_arm = NULL;
+	int i=0;
+
+	for (i=0; i<=robot->njoints; i++) {
+		if (robot->joints[i]->name==NULL)
+			continue;
+
+		if (strcmp(robot->joints[i]->name, "virtual_object") == 0) {
+			virObjJnt = robot->joints[i];
+		}
+	}
+
+	for (i=0; i<=robot->njoints; i++) {
+		if (robot->joints[i]->name==NULL)
+			continue;
+
+		if (strcmp(robot->joints[i]->name, "wristJoint") == 0) {
+			wristJnt = robot->joints[i];
+		}
+	}
+
+	if (virObjJnt==NULL || wristJnt==NULL) {
+		printf("FATAL_ERROR: the virtual object does not exist\n");
+		return 0;
+	}
+
+	if(robot->nbCcCntrts <=0) {
+		printf("FATAL_ERROR : arm_IK constraint does not exist\n");
+		return 0;
+	}
+	if(armId >robot->nbCcCntrts) {
+		printf("FATAL_ERROR : wrong armId\n");
+		return 0;
+	}
+        cntrt_arm = robot->ccCntrts[armId];
+
+	if (cntrt_arm->active == 1) {
+		return 1;
+	}
+	q0= p3d_alloc_config(robot);
+	p3d_get_robot_config_into(robot, &q0);
+
+	p3d_set_and_update_this_robot_conf(robot, q);
+
+	p3d_mat4Copy(wristJnt->abs_pos, Twrist);
+	p3d_matInvertXform(cntrt_arm->Tatt, TattInv);
+	p3d_mat4Mult(Twrist, TattInv, TvirtObj);
+
+	p3d_mat4ExtractPosReverseOrder(TvirtObj, &q[virObjJnt->index_dof],
+                                 &q[virObjJnt->index_dof+1], &q[virObjJnt->index_dof+2],
+                                 &q[virObjJnt->index_dof+3], &q[virObjJnt->index_dof+4],
+                                 &q[virObjJnt->index_dof+5]);
+
+	p3d_activateCntrt(robot, cntrt_arm);
+	p3d_set_and_update_this_robot_conf(robot, q);
+
+	p3d_desactivateCntrt(robot, cntrt_arm);
+
+	p3d_set_and_update_this_robot_conf(robot, q0);
+	p3d_destroy_config(robot, q0);
+	return 1;
+}
+#endif
 
 /**  
  * Computes Attached Matrix of a Inverse Kinematics constraint
@@ -8592,15 +8728,13 @@ int p3d_cntrt_localpath_classic_test(p3d_rob *robotPt,
 void p3d_init_iksol(p3d_cntrt_management *cntrt_manager) {
 	int i, j;
 	st_iksol_size = cntrt_manager->ncntrts;
+  st_nbIkSols = p3d_get_nb_ikSol(cntrt_manager);
 	st_iksol = MY_ALLOC(int*, st_iksol_size);
-	st_niksol = MY_ALLOC(
-                       int, st_iksol_size);
-  st_ikSolConfig = MY_ALLOC(
-                            double **, st_iksol_size);
+	st_niksol = MY_ALLOC(int, st_iksol_size);
+  st_ikSolConfig = MY_ALLOC(double **, st_iksol_size);
   for (i = 0; i < st_iksol_size; i++) {
     st_ikSolConfig[i] = MY_ALLOC(double*, (cntrt_manager->cntrts[i])->nbSol);
-    st_iksol[i] = MY_ALLOC(
-                           int, (cntrt_manager->cntrts[i])->nbSol);
+    st_iksol[i] = MY_ALLOC(int, (cntrt_manager->cntrts[i])->nbSol);
     for (j = 0; j < (cntrt_manager->cntrts[i])->nbSol; j++) {
       st_ikSolConfig[i][j] = MY_ALLOC(double, (cntrt_manager->cntrts[i])->npasjnts);
       st_iksol[i][j] = -1;
@@ -9069,11 +9203,10 @@ void p3d_get_non_sing_iksol(
  * @param cntrt_manager the constraint mamanger
  * @return the number max of solutions.
  */
-int p3d_get_nb_ikSol(
-                     p3d_cntrt_management *cntrt_manager) {
+int p3d_get_nb_ikSol(p3d_cntrt_management *cntrt_manager) {
   int i = 0, nbSolutions = 0;
   
-  if (p3d_get_ik_choice() != IK_NORMAL) {
+//  if (p3d_get_ik_choice() != IK_NORMAL) {
     for (i = 0, nbSolutions = 1; i
          < cntrt_manager->ncntrts; i++) {//compute the number of solutions.
       if (((cntrt_manager->cntrts[i])->nbSol
@@ -9084,9 +9217,9 @@ int p3d_get_nb_ikSol(
             *= (cntrt_manager->cntrts[i])->nbSol;
           }
     }
-  } else {
-    nbSolutions = 1;
-  }
+//  } else {
+//    nbSolutions = 1;
+//  }
   return nbSolutions;
 }
 
@@ -9272,13 +9405,13 @@ int p3d_isCloseToSingularityConfig(p3d_rob* robot, p3d_cntrt_management *cntrt_m
     p3d_cntrt* cntrt = cntrt_manager->cntrts[i];
     for(int j = 0; j < cntrt->nSingularities; j++){
       p3d_singularity* sing = cntrt->singularities[j];
+      int near = TRUE;
       for(int k = 0; k < sing->nJnt; k++){
         p3d_jnt* jnt = robot->joints[sing->singJntVal[k]->jntNum];
-        int near = TRUE;
         for(int h = 0; h < jnt->dof_equiv_nbr; h++){
           // compute dof range
           double range = jnt->dof_data[h].vmax - jnt->dof_data[h].vmin;
-          if (ABS(config[jnt->index_dof + h] - sing->singJntVal[k]->val[h]) > 30 * range / 100) {
+          if (ABS(config[jnt->index_dof + h] - sing->singJntVal[k]->val[h]) > (1 * range) / 100){//(0.0873 * range) / M_PI) {//5° for a 360° joint range
             near = FALSE;
             break;
           }else {
@@ -9370,6 +9503,43 @@ void p3d_unmark_for_singularity(
   cntrt_manager->cntrts[ctNum]->active = 1; //enable the constraint.
   cntrt_manager->cntrts[ctNum]->markedForSingularity
   = 0;
+}
+
+/**
+ * @brief Check if the given IkSol is inside the given array
+ * @param cntrt_manager the constraint manager
+ * @param ikSol The ikSol to find
+ * @param ikSolArray The ikSol Array to search into
+ * @return true if the ikSol is found, false otherwise
+ */
+int p3d_findIkSolInArray (p3d_cntrt_management* cntrt_manager, int* ikSol, int ** ikSolArray, int nbArrayItems){
+  for(int i =  0; i < nbArrayItems; i++){
+    if(p3d_compare_iksol(cntrt_manager, ikSol, ikSolArray[i])){
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * @brief Check if the given IkSol is inside the given array and add it if do not exist
+ * @param cntrt_manager the constraint manager
+ * @param ikSol The ikSol to find
+ * @param ikSolArray The ikSol Array to search into
+ * @param nbArrayItems The number of items in ikSolArray
+ * @return true if it added, false otherwise
+ */
+int p3d_AddIkSolInArray (p3d_cntrt_management* cntrt_manager, int* ikSol, int ** ikSolArray, int *nbArrayItems){
+  if(ikSol && !p3d_findIkSolInArray(cntrt_manager, ikSol, ikSolArray, *nbArrayItems)){
+    for(int i = 0; i < st_iksol_size; i++){
+      ikSolArray[*nbArrayItems][i] = ikSol[i];
+    }
+    (*nbArrayItems)++;
+    printf("added ");
+    p3d_print_iksol(cntrt_manager, ikSol);
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /** \brief this function find a constraint where the given joint number is passive
@@ -9606,13 +9776,15 @@ int p3d_create_FK_cntrts(p3d_rob* robotPt)
   robotPt->fkCntrts = MY_ALLOC(p3d_cntrt*, robotPt->nbFkCntrts);
 
   for(i=0; i < robotPt->nbFkCntrts; i++)
-    {
+  {
+    if ( robotPt->ccCntrts[i] != NULL) {
       printf("Create FK_CNTRT\n");
       setAndActivateTwoJointsFixCntrt(robotPt, robotPt->ccCntrts[i]->actjnts[0], robotPt->ccCntrts[i]->pasjnts[robotPt->ccCntrts[i]->npasjnts-1]);
       robotPt->fkCntrts[i]= robotPt->cntrt_manager->cntrts[robotPt->cntrt_manager->ncntrts - 1];
       p3d_matInvertXform(robotPt->ccCntrts[i]->Tatt, robotPt->fkCntrts[i]->Tatt);
       p3d_desactivateCntrt(robotPt, robotPt->fkCntrts[i]);
     }
+  }
   
   return 0;
 }

@@ -8,8 +8,14 @@
 #include "TransitionExpansion.h"
 
 #ifdef HRI_COSTSPACE
-#include "../../HRI_CostSpace/HRICS_Workspace.h"
+#include "HRI_CostSpace/HRICS_Workspace.h"
 #endif
+
+#include "API/ConfigSpace/localpath.hpp"
+
+#include "API/Roadmap/node.hpp"
+#include "API/Roadmap/compco.hpp"
+#include "API/Roadmap/graph.hpp"
 
 #include "Localpath-pkg.h"
 #include "Planner-pkg.h"
@@ -266,7 +272,7 @@ bool TransitionExpansion::costTestSucceeded(Node* previousNode, shared_ptr<
         {
             dist = currentConfig->dist(*previousNode->getConfiguration());
 
-            temperature = previousNodePt->comp->temperature;
+            temperature = previousNode->getConnectedComponent()->getCompcoStruct()->temperature;
 
             double NewDelta = p3d_ComputeDeltaStepCost(
                     previousNode->getCost(),
@@ -331,7 +337,7 @@ bool TransitionExpansion::costTestSucceeded(Node* previousNode, shared_ptr<
 
         // get the value of the auto adaptive temperature.
         temperature = p3d_GetIsLocalCostAdapt() ? previousNodePt->temp
-            : previousNodePt->comp->temperature;
+            : previousNode->getConnectedComponent()->getCompcoStruct()->temperature;
 
         if (p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH)
         {
@@ -645,7 +651,7 @@ void TransitionExpansion::adjustTemperature(bool accepted, Node* node)
     if (accepted)
     {
         node->setTemp(node->getTemp() / 2.0);
-        node->getCompcoStruct()->temperature /= 2.0;
+        node->getConnectedComponent()->getCompcoStruct()->temperature /= 2.0;
     }
     else
     {
@@ -653,18 +659,18 @@ void TransitionExpansion::adjustTemperature(bool accepted, Node* node)
                 exp(log(2.) / ENV.getDouble(Env::temperatureRate));
 
         node->setTemp(node->getTemp() * factor );
-        node->getCompcoStruct()->temperature *= factor ;
+        node->getConnectedComponent()->getCompcoStruct()->temperature *= factor ;
     }
 
     if (node->equalCompco(mGraph->getStart()))
     {
         ENV.setDouble(Env::temperatureStart,
-                      node->getCompcoStruct()->temperature);
+                      node->getConnectedComponent()->getCompcoStruct()->temperature);
     }
     else
     {
         ENV.setDouble(Env::temperatureGoal,
-                      node->getCompcoStruct()->temperature);
+                      node->getConnectedComponent()->getCompcoStruct()->temperature);
     }
 }
 
@@ -699,95 +705,94 @@ int TransitionExpansion::extendExpandProcess(Node* expansionNode,
                                        Node* directionNode)
 {
 
-    bool failed(false);
-    int nbCreatedNodes(0);
-
-    double extensionCost;
-
-    Node fromNode(*expansionNode);
-    Node* extensionNode(NULL);
+	bool failed(false);
+	int nbCreatedNodes(0);
+	
+	double extensionCost;
+	
+	Node* fromNode = expansionNode;
+	Node* extensionNode = NULL;
 	
 	// Perform extension toward directionConfig
-    // Additional nodes creation in the nExtend case, but without checking for expansion control
-    LocalPath directionLocalpath(fromNode.getConfiguration(), directionConfig);
+	// Additional nodes creation in the nExtend case, but without checking for expansion control
+	LocalPath directionLocalpath(fromNode->getConfiguration(), directionConfig);
 	
 	if ( ENV.getBool(Env::tRrtComputeGradient) )
+	{
+		if ( directionLocalpath.configAtParam(step())->cost() > fromNode->getConfiguration()->cost() ) 
 		{
-			if ( directionLocalpath.configAtParam(step())->cost() > fromNode.getConfiguration()->cost() ) 
+			
+			if( !mixWithGradient(expansionNode,directionConfig) )
 			{
-				
-				if( !mixWithGradient(expansionNode,directionConfig) )
+				return false;
+			}
+		}
+	}
+	
+	double pathDelta = directionLocalpath.getParamMax() == 0. ? 1.
+	: MIN(1., step() / directionLocalpath.getParamMax() );
+	
+	LocalPath extensionLocalpath(directionLocalpath.getBegin(), pathDelta == 1.
+															 && directionNode ? directionNode->getConfiguration()
+															 : directionLocalpath.configAtParam(pathDelta
+																																	* directionLocalpath.getParamMax()));
+	
+	// Expansion control
+	// Discards potential nodes that are to close to the graph
+	if (ENV.getBool(Env::expandControl) && !expandControl(directionLocalpath,
+																												pathDelta, *expansionNode))
+	{
+		//		cout << "Failed expandControl test in " << __func__ << endl;
+		return 0;
+	}
+	extensionCost = extensionLocalpath.getEnd()->cost();
+	
+	// Transition test and collision check
+	//
+	if (ENV.getBool(Env::costBeforeColl))
+	{
+		if (ENV.getBool(Env::isCostSpace))
+		{
+			if (!transitionTest(*fromNode, extensionLocalpath))
+			{
+				failed = true;
+				//cout << "Failed transition test in " << __func__ << endl;
+			}
+			
+		}
+		if (!failed)
+		{
+			if (!extensionLocalpath.isValid())
+			{
+				failed = true;
+			}
+		}
+	}
+	else
+	{
+		if (!extensionLocalpath.isValid())
+		{
+			failed = true;
+		}
+		if (!failed)
+		{
+			if (ENV.getBool(Env::isCostSpace))
+			{
+				if (!transitionTest(*fromNode, extensionLocalpath))
 				{
-					return false;
+					failed = true;
 				}
 			}
 		}
-
-    double pathDelta = directionLocalpath.getParamMax() == 0. ? 1.
-        : MIN(1., step() / directionLocalpath.getParamMax() );
-
-    LocalPath extensionLocalpath(directionLocalpath.getBegin(), pathDelta == 1.
-                                 && directionNode ? directionNode->getConfiguration()
-                                     : directionLocalpath.configAtParam(pathDelta
-                                                                        * directionLocalpath.getParamMax()));
-
-    // Expansion control
-    // Discards potential nodes that are to close to the graph
-    if (ENV.getBool(Env::expandControl) && !expandControl(directionLocalpath,
-                                                          pathDelta, *expansionNode))
-    {
-//		cout << "Failed expandControl test in " << __func__ << endl;
-        return 0;
-    }
-    extensionCost = extensionLocalpath.getEnd()->cost();
-
-    // Transition test and collision check
-    //
-    if (ENV.getBool(Env::costBeforeColl))
-    {
-        if (ENV.getBool(Env::isCostSpace))
-        {
-            if (!transitionTest(fromNode, extensionLocalpath))
-            {
-                failed = true;
-				//cout << "Failed transition test in " << __func__ << endl;
-            }
-
-        }
-        if (!failed)
-        {
-            if (!extensionLocalpath.isValid())
-            {
-                failed = true;
-            }
-        }
-    }
-    else
-    {
-        if (!extensionLocalpath.isValid())
-        {
-            failed = true;
-        }
-        if (!failed)
-        {
-            if (ENV.getBool(Env::isCostSpace))
-            {
-                if (!transitionTest(fromNode, extensionLocalpath))
-                {
-                    failed = true;
-                }
-            }
-        }
-    }
+	}
 	
-    // Add node to graph if everything succeeded
-    if (!failed)
-    {
-        extensionNode = addNode(&fromNode, 
-								extensionLocalpath, 
-								pathDelta,
-                                directionNode, nbCreatedNodes);
-
+	// Add node to graph if everything succeeded
+	if (!failed)
+	{
+		extensionNode = addNode(fromNode, extensionLocalpath, 
+														pathDelta, directionNode, 
+														nbCreatedNodes);
+		
 		if ( ( directionNode != NULL )&&( extensionNode == directionNode ))
 		{
 			// Components were merged
@@ -795,27 +800,25 @@ int TransitionExpansion::extendExpandProcess(Node* expansionNode,
 			return 0;
 		}
 		
-        fromNode = *extensionNode;
-
-        if ( extensionCost > expansionNode->getConfiguration()->cost())
-        {
-            adjustTemperature(true, &fromNode);
-        }
-    }
-    else
-    {
-        adjustTemperature(false, &fromNode);
+		if ( extensionCost > expansionNode->getConfiguration()->cost())
+		{
+			adjustTemperature(true, extensionNode);
+		}
+	}
+	else
+	{
+		adjustTemperature(false, fromNode);
 		//cout << "New temperature in " << __func__ << " is " << node->temp() << endl;
-        this->expansionFailed(*expansionNode);
-    }
-
-    //	if (ENV.getBool(Env::isCostSpace) && ENV.getInt(Env::costMethodChoice)
-    //			== MAXIMAL_THRESHOLD)
-    //	{
-    //		p3d_updateCostThreshold();
-    //	}
-
-    return nbCreatedNodes;
+		this->expansionFailed(*expansionNode);
+	}
+	
+	//	if (ENV.getBool(Env::isCostSpace) && ENV.getInt(Env::costMethodChoice)
+	//			== MAXIMAL_THRESHOLD)
+	//	{
+	//		p3d_updateCostThreshold();
+	//	}
+	
+	return nbCreatedNodes;
 }
 
 /** 

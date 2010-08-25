@@ -3001,7 +3001,7 @@ int hri_bt_calculate_bitmap_pathwGIK(hri_bitmapset * btset, p3d_vector3 start, p
 
   /* Start node in the graph */
   q_s = p3d_get_robot_config(btset->robot);
-  hri_gik_compute(btset->robot, HRI_GIK, 500, 0.01, 1, 0, startt,NULL,&q_s, NULL);
+  hri_gik_compute(btset->robot, HRI_GIK, 500, 0.01, startt, &q_s, NULL);
   //q_s = p3d_get_robot_config(btset->robot);
 
   G->search_start  = p3d_APInode_make(G,q_s);
@@ -3022,7 +3022,7 @@ int hri_bt_calculate_bitmap_pathwGIK(hri_bitmapset * btset, p3d_vector3 start, p
   /*   */
 
   q_g = p3d_get_robot_config(G->rob);
-  hri_gik_compute(btset->robot, HRI_GIK, 500, 0.01, 1, 0, goall,NULL,&q_g, NULL);
+  hri_gik_compute(btset->robot, HRI_GIK, 500, 0.01, goall, &q_g, NULL);
   //q_g = p3d_get_robot_config(G->rob);
 
   // Should copy q_g to ROBOT_GOTO
@@ -3126,7 +3126,7 @@ int hri_bt_bitmap_to_graphwGIK(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* 
     /*     } */
     /*     giktaskcounter++; */
 
-    res = hri_gik_compute(INTERPOINT->robot, HRI_GIK, 200, 0.01, 1, 0, next_target,NULL,&q, NULL);
+    res = hri_gik_compute(INTERPOINT->robot, HRI_GIK, 200, 0.01, next_target, &q, NULL);
     printf("added a node %d\n",res);
     if(HRI_GIK_CONTINUOUS){
       p3d_set_and_update_this_robot_conf(INTERPOINT->robot,q);

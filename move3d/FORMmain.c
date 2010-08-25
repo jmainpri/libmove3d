@@ -328,44 +328,48 @@ static FL_OBJECT  *robotcur_obj;
 FL_OBJECT  *robotparams_obj;
 
 static void CB_robotcur_obj(FL_OBJECT *ob, long arg)
-{int val = fl_get_choice(ob);
+{int val = fl_get_choice(ob) -1;
  int rcur= p3d_get_desc_curnum(P3D_ROBOT);
  float x,y;
  p3d_localplanner_type lpl_type;
  pp3d_rob robotPt;
 
-  p3d_sel_desc_num(P3D_ROBOT,val-1);
-  robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
-  printf("ancien dmax : %f nouveau dmax robot %s : %f\n", XYZ_ENV->dmax,
-	 robotPt->name, sqrt(SQR(robotPt->BB.xmin-robotPt->BB.xmax) +
-			     SQR(robotPt->BB.ymin-robotPt->BB.ymax) +
-			     SQR(robotPt->BB.zmin-robotPt->BB.zmax))/10.);
+ if(val >= 0 && rcur != val &&
+     p3d_sel_desc_num(P3D_ROBOT, val) != NULL) {
 
-  if(val != 0) {
-    if(rcur != (val-1)) {
-      if(fl_get_button(robotparams_obj)) fl_hide_form(ROBOTS_FORM[rcur].ROBOT_FORM);
-      x = ROBOTS_FORM[rcur].ROBOT_FORM->x;
-      y = ROBOTS_FORM[rcur].ROBOT_FORM->y;
-      if(fl_get_button(robotparams_obj)) {
-	fl_set_form_position(ROBOTS_FORM[val-1].ROBOT_FORM, (FL_COORD) x, (FL_COORD) y);
-	fl_set_form_icon(ROBOTS_FORM[val-1].ROBOT_FORM, GetApplicationIcon( ), 0);
-	fl_show_form(ROBOTS_FORM[val-1].ROBOT_FORM,FL_PLACE_POSITION,TRUE,
-		     p3d_get_desc_curname(P3D_ROBOT));
-      }
+   robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+   printf("ancien dmax : %f nouveau dmax robot %s : %f\n", XYZ_ENV->dmax,
+       robotPt->name, sqrt(SQR(robotPt->BB.xmin-robotPt->BB.xmax) +
+           SQR(robotPt->BB.ymin-robotPt->BB.ymax) +
+           SQR(robotPt->BB.zmin-robotPt->BB.zmax)) / 10.);
 
-      fl_freeze_form(PLANNER_FORM);
-      fl_set_button(ORIENTED_OBJ, p3d_get_ORIENTED());
-      fl_unfreeze_form(PLANNER_FORM);
-      fl_freeze_form(STEERING_FORM);
-      lpl_type = p3d_local_get_planner();
-      fl_set_button(BUTTON_TAB_OBJ[lpl_type],1);
-      fl_unfreeze_form(STEERING_FORM);
+   // notify all other open forms
 
-      /*  printf("Planificateur courant: %s\n",
+   // hide current robot form if shown and open form for new bot instead
+   if(fl_get_button(robotparams_obj)) {
+     fl_hide_form(ROBOTS_FORM[rcur].ROBOT_FORM);
+     x = ROBOTS_FORM[rcur].ROBOT_FORM->x;
+     y = ROBOTS_FORM[rcur].ROBOT_FORM->y;
+     fl_set_form_position(ROBOTS_FORM[val].ROBOT_FORM, (FL_COORD) x, (FL_COORD) y);
+     fl_set_form_icon(ROBOTS_FORM[val].ROBOT_FORM, GetApplicationIcon( ), 0);
+     fl_show_form(ROBOTS_FORM[val].ROBOT_FORM,FL_PLACE_POSITION,TRUE,
+         p3d_get_desc_curname(P3D_ROBOT));
+   }
+
+   fl_freeze_form(PLANNER_FORM);
+   fl_set_button(ORIENTED_OBJ, p3d_get_ORIENTED());
+   fl_unfreeze_form(PLANNER_FORM);
+
+   fl_freeze_form(STEERING_FORM);
+   lpl_type = p3d_local_get_planner();
+   fl_set_button(BUTTON_TAB_OBJ[lpl_type],1);
+   fl_unfreeze_form(STEERING_FORM);
+
+   /*  printf("Planificateur courant: %s\n",
 	  p3d_local_getname_planner(p3d_local_get_planner())); */
-      g3d_draw_allwin_active(); // Modification Fabien
-    }
-  }
+   g3d_draw_allwin_active(); // Modification Fabien
+
+ }
 }
 
 static void g3d_create_robotcur_obj(void)
@@ -1039,8 +1043,8 @@ static void g3d_create_Diffusion_obj(void)
 }
 
 /**********************************************************************/
-/* D�ut modification Fabien */
-/* charge un sc�ario */
+/* Debut modification Fabien */
+/* charge un scenario */
 static FL_OBJECT  *load_scenario_obj;
 
 void read_scenario_by_name(const char *file)
@@ -1055,7 +1059,7 @@ void read_scenario_by_name(const char *file)
       //  		robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
       if (p3d_read_scenario(file)){ // returns false on file no found
         fl_deactivate_all_forms();
-        /* on met �jour les fen�res */
+        /* on met a jour les fenetres */
         nrob = p3d_get_desc_number(P3D_ROBOT);
         for(ir=0; ir<nrob; ir++) {
           FORMrobot_update(ir);
@@ -1075,7 +1079,7 @@ void read_scenario_by_name(const char *file)
 static void CB_load_scenario_obj(FL_OBJECT *ob, long arg)
 {
   const char *file;
-  /* nom par d�aut */
+  /* nom par defaut */
   p3d_rw_scenario_init_name();
 
   file = fl_show_fselector("Scenario filename", p3d_rw_scenario_get_path(),

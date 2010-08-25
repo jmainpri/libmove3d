@@ -480,7 +480,7 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
   if(!exitcode)  // if no error 
   {
      // get the hull vertices:
-     hull_vertices.resize(qh_qh.num_vertices);
+     hull_vertices.resize(qh num_vertices); // qh defined in qhull.h
      cntV= 0;
      FORALLvertices
      {
@@ -489,7 +489,7 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
      }
 
      // now, get the hull faces:
-     hull_faces.resize(qh_qh.num_facets);
+     hull_faces.resize(qh num_facets);// qh defined in qhull.h
      cntF= 0;
      FORALLfacets
      {

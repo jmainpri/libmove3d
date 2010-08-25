@@ -11,6 +11,9 @@
 //
 #include "planner.hpp"
 
+#include "API/Roadmap/node.hpp"
+#include "API/Roadmap/graph.hpp"
+
 #include "P3d-pkg.h"
 #include "Move3d-pkg.h"
 

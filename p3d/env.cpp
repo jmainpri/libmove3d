@@ -102,6 +102,7 @@ void boolContainer::set(bool v) {
 }
 
 Env::Env() {
+		mBoolMap.insert(boolMap_t(Env::use_p3d_structures, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isPRMvsDiffusion, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::treePlannerIsEST, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::drawDisabled, new boolContainer(false)));
@@ -256,7 +257,7 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::findLowCostThreshold, new doubleContainer(0.07)));
     mDoubleMap.insert(doubleMap_t(Env::bestCost, new doubleContainer(0.07)));
     mDoubleMap.insert(doubleMap_t(Env::minimalFinalExpansionGap, new doubleContainer(10.0)));
-	mDoubleMap.insert(doubleMap_t(Env::showTrajFPS, new doubleContainer(1.0)));
+		mDoubleMap.insert(doubleMap_t(Env::showTrajFPS, new doubleContainer(1.0)));
 
 #ifdef QT_LIBRARY
     mStringMap.insert(stringMap_t(Env::nameOfFile, new stringContainer("CostStat")));
@@ -264,7 +265,7 @@ Env::Env() {
     mStringMap.insert(stringMap_t(Env::numberOfLocalPathPerSec, new stringContainer("0 LocalPaths per second")));
     mStringMap.insert(stringMap_t(Env::numberOfCostPerSec, new stringContainer("0 Cost per second")));
     mStringMap.insert(stringMap_t(Env::ObjectToCarry, new stringContainer("Nothing")));
-	mStringMap.insert(stringMap_t(Env::ActiveGrid, new stringContainer("Nothing")));
+		mStringMap.insert(stringMap_t(Env::ActiveGrid, new stringContainer("Nothing")));
 #endif
     mVectorMap.insert(vectorMap_t(Env::costAlongTraj, new vectorContainer()));
 

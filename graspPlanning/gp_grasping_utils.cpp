@@ -2626,7 +2626,8 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
   #ifdef LIGHT_PLANNER
   if(robot->openChainConf!=NULL)
   {
-    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, robot->openChainConf);
+    p3d_update_virtual_object_config_for_arm_ik_constraint(robot, 0, robot->openChainConf);
+    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, robot->openChainConf);
     p3d_set_and_update_this_robot_conf(robot, robot->openChainConf);
     gpGet_arm_configuration(robot, arm_type, q1, q2, q3, q4, q5, q6);
     p3d_set_and_update_this_robot_conf(robot, q0);

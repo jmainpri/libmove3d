@@ -1,7 +1,14 @@
 #ifndef SAMPLING_API_HPP
 #define SAMPLING_API_HPP
 
-#include "../planningAPI.hpp"
+#ifndef CONFIGURATION_HPP
+class Configuration;
+#endif
+#ifndef LOCALPATH_HPP
+class LocalPath;
+#endif
+
+#include <tr1/memory>
 
 class Robot;
 

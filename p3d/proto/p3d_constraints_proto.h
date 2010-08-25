@@ -73,6 +73,8 @@ extern void p3d_destroy_specific_iksol(p3d_cntrt_management *cntrt_manager, int 
 extern void p3d_destroy_specific_niksol ( p3d_cntrt_management *cntrt_manager, int *niksol );
 extern void p3d_mark_for_singularity(p3d_cntrt_management *cntrt_manager, int ctNum);
 extern void p3d_unmark_for_singularity(p3d_cntrt_management *cntrt_manager, int ctNum);
+extern int p3d_findIkSolInArray (p3d_cntrt_management* cntrt_manager, int* ikSol, int ** ikSolArray, int nbArrayItems);
+extern int p3d_AddIkSolInArray (p3d_cntrt_management* cntrt_manager, int* ikSol, int ** ikSolArray, int *nbArrayItems);
 extern int p3d_local_conf_correction(p3d_rob *robotPt, configPt q);
 extern int p3d_test_singularity_connexion(p3d_cntrt_management *cntrt_manager, p3d_node *N1, p3d_node *N2);
 extern int p3d_get_nb_ikSol(p3d_cntrt_management *cntrt_manager);
@@ -83,7 +85,12 @@ extern int p3d_compare_iksol_2(p3d_cntrt_management *cntrt_manager, int *iksol1,
 extern p3d_cntrt * getJntFixedCntrt(p3d_cntrt_management * cntrt_manager, int jntNum);
 
 #ifdef LIGHT_PLANNER
-extern int p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(p3d_rob* robot, configPt q) ;
+
+// extern int p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(p3d_rob* robot, configPt q) ;
+extern int p3d_update_virtual_object_config_for_arm_ik_constraint(p3d_rob* robot, int armId, configPt q);
+
+extern int p3d_update_virtual_object_config(p3d_rob* robot, int armId, configPt q);
+
 extern int p3d_set_virtual_object_pose(p3d_rob *robotPt, p3d_matrix4 T);
 extern int p3d_set_virtual_object_pose2(p3d_rob *robotPt, double x, double y, double z, double rx, double ry, double rz);
 extern int p3d_get_virtual_object_pose(p3d_rob *robotPt, p3d_matrix4 T);
