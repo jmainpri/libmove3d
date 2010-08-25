@@ -881,6 +881,8 @@ void g3d_draw_env(void) {
   g3d_set_default_material();
   g3d_set_light(win->vs);
 
+  if (win->fct_draw2 != NULL) win->fct_draw2();
+
 //deactivate picking until it works perfectly:
   G3D_SELECTED_JOINT= -999; 
 
@@ -1065,7 +1067,7 @@ void g3d_draw_env(void) {
   glPopAttrib();
   //////////////////////END OF FUNCTION MAIN CORE///////////////////
 
-  if (win->fct_draw2 != NULL) win->fct_draw2();
+//   if (win->fct_draw2 != NULL) win->fct_draw2();
   
   if(win->vs.displayJoints) {
     g3d_draw_robot_joints(XYZ_ENV->cur_robot, 0.1);

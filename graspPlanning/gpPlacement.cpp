@@ -296,8 +296,8 @@ int gpPlacement::draw(double length)
 
     g3d_rgb_from_int(ID, color);
     g3d_set_color(Any, color);
-//     if(polyhedron!=NULL)
-//     {   g3d_draw_p3d_polyhedre(polyhedron);  }
+    if(polyhedron!=NULL)
+    {   g3d_draw_p3d_polyhedre(polyhedron);  }
 
     //display the support polygon:
     glColor3f(0, 0, 1);

@@ -2064,37 +2064,37 @@ configPt gpFind_grasp_from_base_configuration ( p3d_rob *robot, p3d_rob *object,
 // 	   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, result);
 //            p3d_set_and_update_this_robot_conf(robot, result);
 #endif
-					p3d_set_and_update_this_robot_conf ( robot, result );
+                                        p3d_set_and_update_this_robot_conf ( robot, result );
 
-					gpSet_grasp_configuration ( robot, *igrasp );
+                                        gpSet_grasp_configuration ( robot, *igrasp );
 
 //            if(!p3d_col_test()) //if no collision
-					if ( !p3d_col_test_robot_statics ( robot, 0 ) && !p3d_col_test_self_collision ( robot, 0 ) ) //if no collision
-					{
-						p3d_get_robot_config_into ( robot, &result );
-						grasp= *igrasp;
+                                        if ( !p3d_col_test_robot_statics ( robot, 0 ) && !p3d_col_test_self_collision ( robot, 0 ) && !p3d_col_test_self_collision ( robot, 0 ) &&! p3d_col_test_robot_other (robot, object, 0) ) //if no collision
+                                        {
+                                                p3d_get_robot_config_into ( robot, &result );
+                                                grasp= *igrasp;
 
-						p3d_set_and_update_this_robot_conf ( robot, q0 );
-						p3d_destroy_config ( robot, q0 );
+                                                p3d_set_and_update_this_robot_conf ( robot, q0 );
+                                                p3d_destroy_config ( robot, q0 );
 
-						return result;
-					}
-				}
-				break;
-			default:
-				printf ( "%s: %d: gpFind_grasp_from_base_configuration(): undefined or unimplemented arm type.\n",__FILE__,__LINE__ );
-				p3d_set_and_update_this_robot_conf ( robot, q0 );
-				p3d_destroy_config ( robot, q0 );
-				return NULL;
-				break;
-		}
+                                                return result;
+                                        }
+                                }
+                                break;
+                        default:
+                                printf ( "%s: %d: gpFind_grasp_from_base_configuration(): undefined or unimplemented arm type.\n",__FILE__,__LINE__ );
+                                p3d_set_and_update_this_robot_conf ( robot, q0 );
+                                p3d_destroy_config ( robot, q0 );
+                                return NULL;
+                                break;
+                }
 
-	}
+        }
 
-	p3d_set_and_update_this_robot_conf ( robot, q0 );
-	p3d_destroy_config ( robot, q0 );
+        p3d_set_and_update_this_robot_conf ( robot, q0 );
+        p3d_destroy_config ( robot, q0 );
 
-	return NULL;
+        return NULL;
 }
 
 

@@ -2992,7 +2992,7 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
 
    glEnable(GL_LIGHTING);
-   g3d_set_color(Green, NULL);
+//    g3d_set_color(Green, NULL);
   // glDisable(GL_LIGHTING);
 //    glShadeModel(GL_SMOOTH);
 //   double c;

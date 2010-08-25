@@ -21,7 +21,7 @@
 static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
 #endif
 
-static char ObjectName[]= "Mug";
+static char ObjectName[]= "Ball";
 static char RobotName[]= GP_ROBOT_NAME;
 static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot
@@ -358,8 +358,37 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 */
 
 void draw_grasp_planner()
-{ 
-p3d_rob *object= p3d_get_robot_by_name("Horse");
+{   
+  //display all the grasps from the list:
+  if( display_grasps )
+  {
+    for ( std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++ )
+    { ( *iter ).draw ( 0.005 );    }
+  }
+
+
+  GRASP.draw(0.05);
+  return;
+//dynamic_grasping(); 
+
+//return;
+int i= 0;
+double color[4];
+glShadeModel(GL_SMOOTH);
+glPushMatrix();
+    glTranslatef(-4,0,0);
+  for ( std::list<gpPlacement>::iterator iter= POSELIST.begin(); iter!=POSELIST.end(); iter++ )
+  {
+    glTranslatef(0.15,0,0);
+    g3d_rgb_from_int(i++, color); 
+    glColor4dv(color);
+    ( *iter ).draw ( 0.03 );
+  }
+glPopMatrix();
+
+return;
+
+p3d_rob *object= p3d_get_robot_by_name("Ball");
 static p3d_vector3 exchange= {0,0,0};
 if(GRID==true)
 {
@@ -367,7 +396,7 @@ glColor3f(1,0,1);
 g3d_draw_solid_sphere(exchange[0], exchange[1], exchange[2], 0.05, 20);
 findBestExchangePositionGraphic(object, Oi, Of, Ai, Af, Bi, Bf, exchange); return;
 }
-  GRASP.draw(0.05);
+
 
 //    chull->draw();
 return;
@@ -381,12 +410,6 @@ return;
 return;
 
 
-  //display all the grasps from the list:
-  if( display_grasps )
-  {
-    for ( std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++ )
-    { ( *iter ).draw ( 0.005 );    }
-  }
 
 
 /*
@@ -1426,7 +1449,6 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
   //gpCompute_grasp_open_config(justin, DOUBLEGRASP, object, 2);
 
-
   gpSet_robot_hand_grasp_configuration(SAHandRight_robot, object, DOUBLEGRASP.grasp1);
   gpSet_robot_hand_grasp_configuration(SAHandLeft_robot, object, DOUBLEGRASP.grasp2);
 
@@ -1436,6 +1458,20 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+// gpExport_bodies_for_coldman((p3d_rob *)p3d_get_robot_by_name("hrp2"));
+gpExport_bodies_for_coldman(XYZ_ENV->cur_robot);
+redraw(); return;
+p3d_rob *mug= (p3d_rob *)p3d_get_robot_by_name("Mug");
+gpCompute_stable_placements(mug, POSELIST); 
+std::list<p3d_rob*> robotList;
+// gpFind_placements_on_object(mug, (p3d_rob *)p3d_get_robot_by_name("table"), robotList, POSELIST, 0.6, 1, 0.01, POSELIST2);
+
+
+
+p3d_set_object_to_carry((p3d_rob*)p3d_get_robot_by_name("JIDO_ROBOT"), "Horse");
+p3d_grab_object2((p3d_rob*)p3d_get_robot_by_name("JIDO_ROBOT"), 0);
+redraw(); return;
+
 static int firstTime2= 1;
 g3d_win *curwin= g3d_get_cur_win();
 g3d_print_win_camera(curwin->vs);
@@ -1446,9 +1482,7 @@ GRID= !GRID;
 // static int first= 1;
 // if(first) { redraw(); first= 0; return; }
 // 
-// gpCompute_stable_placements((p3d_rob *)p3d_get_robot_by_name("Mug"), POSELIST); 
-// p3d_rob *mug= (p3d_rob *)p3d_get_robot_by_name("Mug");
-// POLYHEDRON= mug->o[0]->pol[0]->poly;
+
 // chull= new gpConvexHull3D(POLYHEDRON->the_points, POLYHEDRON->nb_points);
 // chull->compute(false, 0.0001, false);
 // std::cout << "faces " << chull->nbFaces() << " poses " << POSELIST.size() << std::endl;
@@ -1861,28 +1895,27 @@ void dynamic_grasping()
 
   if(firstTime)
   {
-	firstTime= false;  
-	
-	result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
-	
-	if(result==GP_ERROR)
-	{  return;  }
+    firstTime= false;  
+    
+    result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
+    
+    if(result==GP_ERROR)
+    {  return;  }
 
-	object= p3d_get_robot_by_name(ObjectName);
-	if(object==NULL)
-	{  return;  }
+    object= p3d_get_robot_by_name(ObjectName);
+    if(object==NULL)
+    {  return;  }
 
-        robot= p3d_get_robot_by_name(RobotName);
-	if(robot==NULL)
-	{  return;  }
+    robot= p3d_get_robot_by_name(RobotName);
+    if(robot==NULL)
+    {  return;  }
 
-	gpCompute_mass_properties(object->o[0]->pol[0]->poly);
-	
-	handProp.initialize(GRASPLIST.front().hand_type);
-	hand_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
-	if(hand_robot!=NULL)
-	{  p3d_set_freeflyer_pose2(hand_robot, 10, 0, -10, 0, 0, 0);  }
-      
+    gpCompute_mass_properties(object->o[0]->pol[0]->poly);
+    
+    handProp.initialize(GRASPLIST.front().hand_type);
+    hand_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
+    if(hand_robot!=NULL)
+    {  p3d_set_freeflyer_pose2(hand_robot, 10, 0, -10, 0, 0, 0);  }
   }
 
 
@@ -1903,7 +1936,7 @@ void dynamic_grasping()
   objectCenter[2]= objectPose[2][3] + object->o[0]->pol[0]->poly->cmass[2];
 
   win= g3d_get_cur_win();
-//   win->vs.x= objectCenter[0];   win->vs.y= objectCenter[1];   win->vs.z= objectCenter[2];
+  win->vs.x= objectCenter[0];   win->vs.y= objectCenter[1];   win->vs.z= objectCenter[2];
 
   if(GRASPLIST.empty())
   {
@@ -1924,10 +1957,11 @@ void dynamic_grasping()
 //           XYZ_ENV->cur_robot= robot;
     p3d_copy_config_into(robot, qend, &robot->ROBOT_POS);
     p3d_destroy_config(robot, qend);
-    qend= NULL;   XYZ_ENV->cur_robot= object;
+    qend= NULL; 
+    XYZ_ENV->cur_robot= object;
     return;
   }  
-  
+
 /*
   i= 0;
   for ( igrasp=GRASPLIST.begin(); igrasp!=GRASPLIST.end(); igrasp++ )
@@ -1983,8 +2017,6 @@ void dynamic_grasping()
 
   //p3d_set_object_to_carry(robot, "Horse");
   //p3d_grab_object(robot, 0);
-
-  
 
   return;
 }

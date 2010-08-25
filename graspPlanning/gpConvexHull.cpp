@@ -467,7 +467,8 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
     }
     for(j=0; j<dimension_; j++)
     {
-      point_array[3*i+j]= points_[i][j];
+      point_array[dimension_*i+j]= points_[i][j]; 
+    //  point_array[3*i+j]= points_[i][j]; // MAJOR BUG! -> also check previous line
     }
   }
   ismalloc= True;
