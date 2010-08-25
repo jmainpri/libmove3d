@@ -1067,7 +1067,7 @@ void g3d_draw_env(void) {
   glPopAttrib();
   //////////////////////END OF FUNCTION MAIN CORE///////////////////
 
-//   if (win->fct_draw2 != NULL) win->fct_draw2();
+  if (win->fct_draw2 != NULL) win->fct_draw2();
   
   if(win->vs.displayJoints) {
     g3d_draw_robot_joints(XYZ_ENV->cur_robot, 0.1);
@@ -1078,6 +1078,10 @@ void g3d_draw_env(void) {
 
   g3d_draw_env_custom();
 
+  // check if there was no OpenGL errors:
+  char message[128];
+  sprintf(message,"%s: %d: ",__FILE__,__LINE__);
+  g3d_checkGLerrors(message);
 
 #ifdef P3D_COLLISION_CHECKING
 

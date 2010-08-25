@@ -38,4 +38,6 @@ extern void g3d_restore_win_camera ( g3d_states &vs );
 extern int g3d_set_camera_parameters_from_frame(p3d_matrix4 frame, g3d_states &vs);
 extern int g3d_save_state(g3d_win *win, g3d_states *st);
 extern int g3d_load_state(g3d_win *win, g3d_states *st);
+
+extern int g3d_checkGLerrors(char *message);
 #endif // G3D_STATES_PROTO_H
