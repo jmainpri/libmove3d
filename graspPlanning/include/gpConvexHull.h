@@ -81,8 +81,50 @@ class gpFace
 
 
 //! @ingroup convexHull 
-//! This class is used to compute the convex hull of a set of points in arbitrary dimension (via Qhull library).
-//! Special 3D and 6D cases have specific classes (see below).
+//! One of classes used to store the Voronoi diagram of a point set.
+class gpVoronoiRidge
+{
+  friend class gpConvexHull;
+  friend class gpConvexHull2D;
+  friend class gpConvexHull3D;
+
+  private:
+   //!Indices of the two points (in the "points_" array of ConvexHull) that are separated by this ridge.
+   //! If the ridge has only one adjacent voronoi cell, one of the two sites id will be set to UINT_MAX.
+   //! These indices can be used to find the neighbors of a given voronoi cell.
+   unsigned int site1_id_, site2_id_; 
+
+   //! Indices of the ridge vertices (referring to elements in the "voronoi_vertices_" array of ConvexHull).
+   std::vector<unsigned int> vertices_;
+
+   std::vector<float> center_;  /*!< ridge's centrum */
+   std::vector<float> normal_;  /*!< ridge's normal vector: only used in 3D */
+};
+
+
+//! @ingroup convexHull 
+//! One of classes used to store the Voronoi diagram of a point set.
+class gpVoronoiCell
+{
+  friend class gpConvexHull;
+  friend class gpConvexHull2D;
+  friend class gpConvexHull3D;
+
+  private:
+   //!Index of the point (in the "points_" array of ConvexHull) the cell corresponds.
+   unsigned int site_id_;
+
+   //!Indices of the ridges (in the "voronoi_ridges_" array of ConvexHull) that defines the cell boundaries.
+   std::vector< unsigned int > ridges_;
+
+   std::vector<bool> ccw_; /*!< for each ridge, tells if it is counter-clockwise oriented: only used in 3D */
+};
+
+//! @ingroup convexHull 
+//! This class is used to compute the convex hull (or the voronoi regions) of a set of points in arbitrary dimension (via Qhull library).
+//! Special 3D and 6D case has a specific class (see below).
+//! Set the point set at creation or with setPoints() and then call compute() to compute the convex hull
+//! or voronoi() to compute the voronoi regions.
 class gpConvexHull
 {
   protected:
@@ -98,19 +140,29 @@ class gpConvexHull
    //! hull does not contain the origin):
    double largest_ball_radius_;
 
+   int reset();
+
   public:
    std::vector<unsigned int> hull_vertices; /*!<  the hull vertices (indices to elements of the point set) */
 
    //! the hull faces (arrays containing indices to elements of the point set).
    std::vector<gpFace> hull_faces;
 
+   //! for voronoi regions computation:
+   std::vector< std::vector< float > > voronoi_vertices_;
+   std::vector<gpVoronoiRidge> voronoi_ridges_;
+   std::vector<gpVoronoiCell> voronoi_cells_;
+
    gpConvexHull();
-   ~gpConvexHull();
+   gpConvexHull(const std::vector< std::vector<float> > &points);
+   virtual ~gpConvexHull();
+   int setPoints(const std::vector< std::vector<float> > &points);
    unsigned int nbVertices() {  return hull_vertices.size(); }
    unsigned int nbFaces()    {  return hull_faces.size(); }
    int pointCoordinates(unsigned int i, std::vector<double> &coord);
 
    int compute(bool simplicial_facets, double postMergingCentrumRadius, bool verbose= true);
+   virtual int voronoi(bool verbose= true);
    int draw();
    int drawFace(unsigned int face_index);
    int print();
@@ -125,7 +177,9 @@ class gpConvexHull
 class gpConvexHull3D: public gpConvexHull
 {
   public:
-   gpConvexHull3D(p3d_vector3 *point_array, unsigned int nbpoints_);
+   gpConvexHull3D(p3d_vector3 *point_array, unsigned int nbpoints);
+   int setPoints(p3d_vector3 *point_array, unsigned int nbpoints);
+   int voronoi(bool verbose= true);
    int draw(bool wireframe= false);
    int drawFace(unsigned int face_index);
 };

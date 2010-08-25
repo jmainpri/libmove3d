@@ -9,6 +9,8 @@
 #include "UserAppli-pkg.h"
 #include "GraspPlanning-pkg.h"
 #include <stdio.h>
+#include <vector>
+#include <algorithm>
 
 //! Default gpRidge constructor (dimension= 2, size= 2)
 gpRidge::gpRidge()
@@ -366,11 +368,99 @@ gpConvexHull::gpConvexHull()
  largest_ball_radius_= 0.0;
 }
 
+gpConvexHull::gpConvexHull(const std::vector< std::vector<float> > &points)
+{
+  int result;
+
+  reset();
+
+  result= setPoints(points);
+
+  if(result==GP_ERROR)
+  {
+    printf("%s: %d: gpConvexHull::gpConvexHull(): there is something wrong with the input set of points.\n",__FILE__,__LINE__);
+    return;
+  }
+}
+
 gpConvexHull::~gpConvexHull()
 {
   points_.clear();
   hull_vertices.clear();
   hull_faces.clear();
+}
+
+
+//! Sets the point set that will then be used when calling compute() or voronoi().
+//! \param points a vector of vectors whose size will give the dimension of the space
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpConvexHull::setPoints(const std::vector< std::vector<float> > &points)
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpConvexHull::setPoints(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  unsigned int i, j;
+
+  reset();
+
+  if(points.empty())
+  {
+    printf("%s: %d: gpConvexHull::setPoints(): input point set is empty.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  dimension_= points[0].size();
+
+  if(points.size() < dimension_ + 1)
+  {
+    printf("%s: %d: gpConvexHull::setPoints(): at least %d points are needed to build a convex hull in %dD.\n",__FILE__,__LINE__,dimension_+1,dimension_);
+    return GP_ERROR;
+  }
+
+  points_.resize( points.size() );
+
+  for(i=0; i<points.size(); ++i)
+  {
+    points_[i].resize(dimension_);
+    if(points[i].size()!=dimension_)
+    {
+      printf("%s: %d: gpConvexHull::setPoints(): all the input points should be of dimension %d.\n",__FILE__,__LINE__,dimension_);
+      return GP_ERROR;
+    } 
+    else
+    {  
+       for(j=0; j<dimension_; ++j)
+       {
+         points_[i].at(j)= points[i].at(j); 
+       }
+    }
+  }
+
+  return GP_OK;
+}
+
+//! Reinitializes everything.
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpConvexHull::reset()
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpConvexHull::reset(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  dimension_          = 0;
+  up_to_date_         = false;
+  largest_ball_radius_= 0.0;
+
+  points_.clear();
+  hull_vertices.clear();
+  hull_faces.clear();
+
+  return GP_OK;
 }
 
 //! Computes the convex hull of the point set stored in the calling gpConvexHull variable.
@@ -586,6 +676,303 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
   return GP_OK;
 }
 
+
+
+//! Computes the voronoi regions of the point set stored in the calling gpConvexHull variable.
+//! The function does not read into Qhulll's internal data but redirects Qhull's output into
+//! a temporary file and read into this file.
+//! \param verbose selects if Qhull will print its messages in the console or not 
+//! \return GP_OK in case of success, GP_ERROR otherwise.
+//! NB: this function relies on Qhull library's functions and frees the memory used by Qhull once
+//! the computation is done (TODO: check this last point (memory management)).
+int gpConvexHull::voronoi(bool verbose)
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpConvexHull::voronoi(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  bool result, atInfinity;
+  unsigned int i, j, k;
+  unsigned int numpoints;   // number of points
+  coordT *point_array;      // array of coordinates for each point
+  boolT ismalloc;           // True if qhull should free points in qh_freeqhull() or reallocation
+  char flags[128]; // option flags for qhull, see qh_opt.htm
+                               // OPTION 'Qt' is mandatory because we need the output facets to be simplicial
+  FILE *outfile= stdout;    // output from qh_produce_output()
+	                    // use NULL to skip qh_produce_output() 
+  outfile= NULL;
+  FILE *errfile= stderr;    // error messages from qhull code
+
+  int exitcode;             // 0 if no error from qhull
+  int curlong, totlong;	  // memory remaining after qh_memfreeshort
+
+  char name[]= "/tmp/fileXXXXXX";
+  int fd;
+  std::vector<float> v;
+  char buffer[256];
+  std::istringstream iss;
+  unsigned int index, site1, site2, dimension, nbVoronoiVertices, nbVoronoiRidges, nbElements;
+  unsigned long int nbHypercubeVertices, mask;
+  int bit;
+  float coord, scaleFactor;
+  std::vector< std::pair<float,float> > boundaries; // point set bounding box
+  gpVoronoiRidge voronoiRidge;
+  gpVoronoiCell cell;
+
+  // used options:
+  // they are set to get the voronoi vertices plus the voronoi ridges
+  sprintf(flags, "qhull v -p -Fv -Qbb -Qx -Q11 -Qt");
+
+  if(verbose)
+  {  errfile= stderr;  }
+  else
+  {  errfile= fopen("/dev/null", "w");  }
+
+  // we will write the output of qhull into a temporary file:
+  fd= mkstemp(name);
+  outfile= fdopen( fd, "w+");
+
+  // We will use additional points to enclose the original point set in order to replace unbounded regions with bounded ones:
+  nbHypercubeVertices= 1;
+  nbHypercubeVertices <<= dimension_;
+  numpoints= points_.size() + nbHypercubeVertices;
+
+  point_array= (coordT *) malloc(dimension_*numpoints*sizeof(coordT)); //use malloc to allocate memory because Qhull uses free()
+
+  boundaries.resize(dimension_);
+  for(i=0; i<points_.size(); ++i)
+  {
+    if(points_[i].size()!=dimension_)
+    {
+      printf("%s: %d: gpConvexHull::voronoi(): an input point has an incorrect dimension (dimension is %d instead of %d).\n",__FILE__,__LINE__,points_[i].size(),dimension_); 
+      if(!verbose) {  fclose(errfile);  }
+      return GP_ERROR;
+    }
+
+    for(j=0; j<dimension_; ++j)
+    {
+      point_array[dimension_*i + j]= points_[i][j];
+
+      if( (i==0) || (points_[i][j] < boundaries[j].first) )
+      {
+        boundaries[j].first= points_[i][j];
+      }
+      if( (i==0) || (points_[i][j] > boundaries[j].second) )
+      {
+        boundaries[j].second= points_[i][j];
+      }
+    }
+
+  }
+
+  // add the enclosing points (vertices of a hypercube)
+  
+  //scale up a little the bounding cube;
+  scaleFactor= 1.1;
+  for(i=0; i<dimension_; ++i)
+  {
+    if(boundaries[i].first < 0)
+    {  boundaries[i].first*= scaleFactor; }
+    else
+    {  boundaries[i].first*= (1-scaleFactor); }
+
+    if(boundaries[i].second > 0)
+    {  boundaries[i].second*= scaleFactor; }
+    else
+    {  boundaries[i].second*= (1-scaleFactor); }
+  }
+
+  // fill the hypercube vertices:
+  for(i=0; i<nbHypercubeVertices; ++i)
+  {
+    for(j=0; j<dimension_; ++j)
+    {
+      mask= 1;
+      mask <<= j;
+      bit= i & mask;
+      if(bit==0)
+      {
+        point_array[dimension_*(points_.size()+i) + j]= boundaries[j].first;
+      }
+      else
+      {
+        point_array[dimension_*(points_.size()+i) + j]= boundaries[j].second;
+      }
+    }
+  }
+
+
+  ismalloc= True;
+
+  exitcode= qh_new_qhull(dimension_, numpoints, point_array, ismalloc, flags, outfile, errfile);
+
+  voronoi_vertices_.clear();
+  voronoi_ridges_.clear();
+  voronoi_cells_.clear();
+
+  if(!exitcode)  // if no error 
+  {
+     qh_setvoronoi_all();
+
+     // read the output file of qhull: 
+     rewind(outfile);
+     fgets(buffer, 256, outfile);
+     iss.str(buffer);
+     result= (iss >> dimension );
+     if( !result || iss.fail() )
+     {   printf("%s: %d: error\n",__FILE__,__LINE__);   } 
+
+     fgets(buffer, 256, outfile);
+     iss.str(buffer);
+     result= (iss >> nbVoronoiVertices );
+     if( !result || iss.fail() )
+     {   printf("%s: %d: error\n",__FILE__,__LINE__);   } 
+
+     v.resize(dimension);
+     for(i=0; i<nbVoronoiVertices; ++i)
+     {
+       fgets(buffer, 256, outfile);
+       iss.str(buffer);
+
+       for(j=0; j<dimension; ++j)
+       {
+         result= (iss >> coord );
+         if( !result || iss.fail() )
+         {   printf("%s: %d: error\n",__FILE__,__LINE__);   } 
+         v.at(j)= coord;
+       }
+       voronoi_vertices_.push_back(v);
+     }
+
+     fgets(buffer, 256, outfile);
+     iss.str(buffer);
+     result= (iss >> nbVoronoiRidges );
+     if( !result || iss.fail() )
+     {   printf("%s: %d: error\n",__FILE__,__LINE__);   } 
+
+     v.resize(dimension);
+     for(i=0; i<nbVoronoiRidges; ++i)
+     {
+       atInfinity= false;
+
+       fgets(buffer, 256, outfile);
+       iss.str(buffer);
+       result= (iss >> nbElements >> site1 >> site2 );
+       if( !result || iss.fail() )
+       {   printf("%s: %d: error\n",__FILE__,__LINE__);   } 
+       voronoiRidge.site1_id_= site1;
+       voronoiRidge.site2_id_= site2;
+       if(voronoiRidge.site1_id_ >= points_.size()) { voronoiRidge.site1_id_= UINT_MAX;  }
+       if(voronoiRidge.site2_id_ >= points_.size()) { voronoiRidge.site2_id_= UINT_MAX;  }
+
+       if(voronoiRidge.site1_id_==UINT_MAX && voronoiRidge.site2_id_==UINT_MAX )
+       {  continue;  }
+
+       voronoiRidge.vertices_.clear();
+       for(j=0; j<nbElements-2; ++j)
+       {
+         result= (iss >> index );
+         if( !result || iss.fail() )
+         {   printf("%s: %d: error\n",__FILE__,__LINE__);   } 
+       
+         if(index==0) 
+         {  atInfinity= true;  }
+         else
+         {  voronoiRidge.vertices_.push_back(index-1);  }
+       }
+       if(!atInfinity)
+       {  voronoi_ridges_.push_back(voronoiRidge);  }
+     }
+
+     //////////////////////////////////////////////////////////////////
+     // print the result:
+//      printf("nbVVertices= %d, nbVRidges= %d\n", voronoi_vertices_.size(), voronoi_ridges_.size());
+// 
+//      for(i=0; i<voronoi_vertices_.size(); ++i)
+//      {
+//        printf("VVertex[%d]: ",i);
+//        for(j=0; j<voronoi_vertices_[i].size(); ++j)
+//        {
+//          printf(" %f ", voronoi_vertices_[i][j]);
+//        }
+//        printf("\n");
+//      }
+// 
+//      for(i=0; i<voronoi_ridges_.size(); ++i)
+//      {
+//        printf("VRidge[%d]: sites [%d %d] ",i,voronoi_ridges_[i].site1_id_,voronoi_ridges_[i].site2_id_);
+//        for(j=0; j<voronoi_ridges_[i].vertices_.size(); ++j)
+//        {
+//          printf(" %d ", voronoi_ridges_[i].vertices_[j]);
+//        }
+//        printf("\n");
+//      }
+     //////////////////////////////////////////////////////////////////
+
+     // compute the center of each ridge:
+     for(i=0; i<voronoi_ridges_.size(); ++i)
+     {
+        voronoi_ridges_.at(i).center_.assign(dimension_, 0.0);
+
+        for(j=0; j<voronoi_ridges_.at(i).vertices_.size(); ++j)
+        {
+          for(k=0; k<voronoi_ridges_.at(i).center_.size(); ++k)
+          {
+            voronoi_ridges_.at(i).center_.at(k)+=  voronoi_vertices_.at( voronoi_ridges_.at(i).vertices_.at(j) ).at(k);
+          }
+        }
+        for(k=0; k<voronoi_ridges_.at(i).center_.size(); ++k)
+        {  voronoi_ridges_.at(i).center_.at(k)/=  (float) voronoi_ridges_.at(i).vertices_.size();  }
+     }
+
+     // create the voronoi cells from the ridges:
+     voronoi_cells_.resize(points_.size());
+     for(i=0; i<points_.size(); ++i)
+     {
+       voronoi_cells_.at(i).site_id_= i;
+       for(j=0; j<voronoi_ridges_.size(); ++j)
+       {
+         if( voronoi_ridges_.at(j).site1_id_==i || voronoi_ridges_.at(j).site2_id_==i )
+         {
+           voronoi_cells_.at(i).ridges_.push_back(j);
+         }
+       }
+     }
+
+  }
+  else
+  {
+    qh_freeqhull(!qh_ALL);  
+    qh_memfreeshort (&curlong, &totlong);
+    if (curlong || totlong)
+    {
+       fprintf (errfile, "qhull internal warning (main): did not free %d bytes of long memory (%d pieces)\n",  totlong,  curlong); 
+    }
+//     printf("--------------------------------\n");
+//     printf("----QHull reported an error.----\n");
+//     printf("--------------------------------\n");
+    if(!verbose) {  fclose(errfile);  }
+    return GP_ERROR;
+  }
+
+
+  qh_freeqhull(!qh_ALL);  
+  qh_memfreeshort (&curlong, &totlong);
+  if (curlong || totlong)
+  {
+     fprintf(errfile, "qhull internal warning (main): did not free %d bytes of long memory (%d pieces)\n",  totlong, curlong); 
+  }
+ 
+  up_to_date_= true;
+
+  if(!verbose)
+  {  fclose(errfile);  }
+
+  return GP_OK;
+}
+
 //! Gets the coordinates of the i-th input point used for convex hull computation.
 //! \param i index of a point in the input point array (starts from 0)
 //! \param coord where to copy the coordinates of the point
@@ -732,23 +1119,41 @@ int gpConvexHull::isPointInside(std::vector<double> point, bool &inside, double 
 //! indices in hull_vertices and hull_faces correspond to the indices in point_array).
 gpConvexHull3D::gpConvexHull3D(p3d_vector3 *point_array, unsigned int nb_points)
 {
-  unsigned int i;
+//   unsigned int i;
+  int result;
 
   dimension_= 3;
   up_to_date_= false;
   largest_ball_radius_= 0.0;
 
+  result= setPoints(point_array, nb_points);
+
+  if(result==GP_ERROR)
+  {
+    printf("%s: %d: gpConvexHull3D::gpConvexHull3D(): there is something wrong with the input set of points.\n",__FILE__,__LINE__);
+    return;
+  }
+}
+
+
+int gpConvexHull3D::setPoints(p3d_vector3 *point_array, unsigned int nb_points)
+{
+  unsigned int i;
+
+  reset();
+
   if(point_array==NULL)
   {
     printf("%s: %d: gpConvexHull3D::gpConvexHull3D(): point_array is NULL.\n",__FILE__,__LINE__);
-    return;
+    return GP_ERROR;
   }
   if(nb_points < 4)
   {
     printf("%s: %d: gpConvexHull3D::gpConvexHull3D(): at least 4 points are needed to build a convex hull in 3D.\n",__FILE__,__LINE__);
-    return;
+    return GP_ERROR;
   }
 
+  dimension_= 3;
   points_.resize(nb_points);
 
   for(i=0; i<nb_points; i++)
@@ -758,7 +1163,11 @@ gpConvexHull3D::gpConvexHull3D(p3d_vector3 *point_array, unsigned int nb_points)
     points_[i][1]= point_array[i][1];
     points_[i][2]= point_array[i][2];
   }
+
+  return GP_OK;
 }
+
+
 
 
 
@@ -774,8 +1183,10 @@ int gpConvexHull3D::draw(bool wireframe)
     return GP_ERROR;
   }
 
-  unsigned int i, j, k;
-  std::vector<double> normal, center;
+  unsigned int i, j, k, k1, k2;
+//   float s= 0.1;
+  std::vector<float> normal, center;
+  double color[4];
 
   glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT | GL_LINE_BIT | GL_POINT_BIT);
 
@@ -832,14 +1243,14 @@ int gpConvexHull3D::draw(bool wireframe)
    }
   glEnd();
 
-//   glColor3f(1, 0, 1);
-//   glPointSize(6);
-//   glBegin(GL_POINTS);
-//    for(i=0; i<points_.size(); i++)
-//    {
-//      glVertex3f(points_[i][0], points_[i][1], points_[i][2]);
-//    }
-//   glEnd();
+  glColor3f(1, 0, 1);
+  glPointSize(6);
+  glBegin(GL_POINTS);
+   for(i=0; i<points_.size(); i++)
+   {
+     glVertex3f(points_[i][0], points_[i][1], points_[i][2]);
+   }
+  glEnd();
 
   glEnable(GL_CULL_FACE);
   glEnable(GL_LIGHTING);
@@ -850,8 +1261,7 @@ int gpConvexHull3D::draw(bool wireframe)
       for(i=0; i<hull_faces.size(); i++)
       {
         glBegin(GL_POLYGON);
-          normal= hull_faces[i].normal();
-          glNormal3f(normal[0], normal[1], normal[2]);
+          glNormal3f(hull_faces[i].normal().at(0), hull_faces[i].normal().at(1), hull_faces[i].normal().at(2));
           for(j=0; j<hull_faces[i].nbVertices(); j++)
           {
             k= hull_faces[i][j];
@@ -859,6 +1269,76 @@ int gpConvexHull3D::draw(bool wireframe)
           }
         glEnd();
       }
+  }
+
+
+  glLineWidth(1);
+  glEnable(GL_LIGHTING);
+
+  for(i=0; i<voronoi_cells_.size(); ++i)
+  {
+    g3d_rgb_from_int(i, color);
+    glColor3dv(color);
+
+    for(j=0; j<voronoi_cells_[i].ridges_.size(); ++j)
+    {
+      k1= voronoi_cells_[i].ridges_[j];
+
+      if(voronoi_cells_[i].ccw_.at(j)) 
+      {
+        glNormal3f(voronoi_ridges_.at(k1).normal_.at(0), voronoi_ridges_.at(k1).normal_.at(1), voronoi_ridges_.at(k1).normal_.at(2));
+        glBegin(GL_POLYGON);
+            for(k=0; k<voronoi_ridges_.at(k1).vertices_.size(); ++k)
+            {
+              k2= voronoi_ridges_.at(k1).vertices_.at(k);
+              glVertex3f(voronoi_vertices_.at(k2)[0], voronoi_vertices_.at(k2)[1], voronoi_vertices_.at(k2)[2]);
+            }
+        glEnd();
+      }
+      else
+      {
+        glNormal3f(-voronoi_ridges_.at(k1).normal_.at(0), -voronoi_ridges_.at(k1).normal_.at(1), -voronoi_ridges_.at(k1).normal_.at(2));
+        glBegin(GL_POLYGON);
+            for(k=0; k<voronoi_ridges_.at(k1).vertices_.size(); ++k)
+            {
+              k2= voronoi_ridges_.at(k1).vertices_.at(voronoi_ridges_.at(k1).vertices_.size()-1-k);
+              glVertex3f(voronoi_vertices_.at(k2)[0], voronoi_vertices_.at(k2)[1], voronoi_vertices_.at(k2)[2]);
+            }
+        glEnd();
+      }
+
+//       if(voronoi_cells_[i].ccw_.at(j))
+//       {
+//         glBegin(GL_TRIANGLE_FAN);
+//         glNormal3f(voronoi_ridges_.at(k1).normal_.at(0), voronoi_ridges_.at(k1).normal_.at(1), voronoi_ridges_.at(k1).normal_.at(2));
+//         glNormal3f(0.0,0.0,1.0);
+//         glVertex3f(voronoi_ridges_.at(k1).center_.at(0), voronoi_ridges_.at(k1).center_.at(1), voronoi_ridges_.at(k1).center_.at(2));
+//         for(k=0; k<voronoi_ridges_.at(k1).vertices_.size(); ++k)
+//         {
+//           k2= voronoi_ridges_.at(k1).vertices_.at(k);
+//           glVertex3f(voronoi_vertices_.at(k2).at(0), voronoi_vertices_.at(k2).at(1), voronoi_vertices_.at(k2).at(2));
+//         }
+//         k2= voronoi_ridges_.at(k1).vertices_.at(0);
+//         glVertex3f(voronoi_vertices_.at(k2).at(0), voronoi_vertices_.at(k2).at(1), voronoi_vertices_.at(k2).at(2));
+//         glEnd();
+//       }
+//       else
+//       {
+//         glBegin(GL_TRIANGLE_FAN);
+//         glNormal3f(-voronoi_ridges_.at(k1).normal_.at(0), -voronoi_ridges_.at(k1).normal_.at(1), -voronoi_ridges_.at(k1).normal_.at(2));
+//         glVertex3f(voronoi_ridges_.at(k1).center_.at(0), voronoi_ridges_.at(k1).center_.at(1), voronoi_ridges_.at(k1).center_.at(2));
+//         for(k=0; k<voronoi_ridges_.at(k1).vertices_.size(); ++k)
+//         {
+//           k2= voronoi_ridges_.at(k1).vertices_.at(voronoi_ridges_.at(k1).vertices_.size()-1-k);
+//           glVertex3f(voronoi_vertices_.at(k2).at(0), voronoi_vertices_.at(k2).at(1), voronoi_vertices_.at(k2).at(2));
+//         }
+//         k2= voronoi_ridges_.at(k1).vertices_.back();
+//         glVertex3f(voronoi_vertices_.at(k2).at(0), voronoi_vertices_.at(k2).at(1), voronoi_vertices_.at(k2).at(2));
+//         glEnd();
+//       }
+
+    }
+
   }
 
   glPopAttrib();
@@ -911,6 +1391,89 @@ int gpConvexHull3D::drawFace(unsigned int face_index)
   return GP_OK;
 }
 
+
+//! Computes the voronoi regions of the point set stored in the calling gpConvexHull3D variable.
+//! Compared to the version of the parent class, it just adds the computation of the ridge normals and how
+//! the ridge vertices are ordered.
+int gpConvexHull3D::voronoi(bool verbose)
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpConvexHull3D::voronoi(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  unsigned int i, j, k, rindex;
+  float norm, dot;
+  std::vector<float> p1(3), p2(3), op1(3), op2(3), direction(3);
+
+  gpConvexHull::voronoi(verbose);
+ 
+  // compute the normal of each voronoi ridge:
+  for(i=0; i<voronoi_ridges_.size(); ++i)
+  {
+    if( voronoi_ridges_.at(i).site1_id_==UINT_MAX && voronoi_ridges_.at(i).site2_id_==UINT_MAX )
+    {   continue;    }
+
+    p1= voronoi_vertices_.at(voronoi_ridges_.at(i).vertices_.at(0));
+    p2= voronoi_vertices_.at(voronoi_ridges_.at(i).vertices_.at(1));
+
+    for(k=0; k<op1.size(); ++k)
+    {  
+      op1.at(k)= p1.at(k) - voronoi_ridges_.at(i).center_.at(k); 
+      op2.at(k)= p2.at(k) - voronoi_ridges_.at(i).center_.at(k); 
+    }
+
+    voronoi_ridges_.at(i).normal_.resize(3);
+
+    voronoi_ridges_.at(i).normal_.at(0)= op1.at(1)*op2.at(2) - op1.at(2)*op2.at(1);
+    voronoi_ridges_.at(i).normal_.at(1)= op1.at(2)*op2.at(0) - op1.at(0)*op2.at(2);
+    voronoi_ridges_.at(i).normal_.at(2)= op1.at(0)*op2.at(1) - op1.at(1)*op2.at(0);
+
+    norm= 0.0;
+    for(k=0; k<voronoi_ridges_.at(i).normal_.size(); ++k)
+    {   norm+= voronoi_ridges_.at(i).normal_.at(k)*voronoi_ridges_.at(i).normal_.at(k);    }
+    norm= sqrt(norm);
+    for(k=0; k<voronoi_ridges_.at(i).normal_.size(); ++k)
+    {   voronoi_ridges_.at(i).normal_.at(k) /= norm;    }
+
+    if( isnan(voronoi_ridges_.at(i).normal_.at(0)) || isnan(voronoi_ridges_.at(i).normal_.at(1)) || isnan(voronoi_ridges_.at(i).normal_.at(2)) )
+    {
+      printf("ridge #%d, %d vertices\n",i,voronoi_ridges_.at(i).vertices_.size());
+      printf("p1 %f %f %f\n", p1.at(0),p1.at(1),p1.at(2));
+      printf("p2 %f %f %f\n", p2.at(0),p2.at(1),p2.at(2));
+      printf("op1 %f %f %f\n", op1.at(0),op1.at(1),op1.at(2));
+      printf("op2 %f %f %f\n", op2.at(0),op2.at(1),op2.at(2));
+      printf("norm= %f\n",norm);
+      
+      printf("normal %f %f %f\n", voronoi_ridges_.at(i).normal_.at(0),voronoi_ridges_.at(i).normal_.at(1),voronoi_ridges_.at(i).normal_.at(2));
+    }
+ }
+
+  // for each ridge of each voronoi cell, test wether or not the ridge's normal is pointing to the cell site:
+  for(i=0; i<voronoi_cells_.size(); ++i)
+  {
+    voronoi_cells_.at(i).ccw_.resize(voronoi_cells_.at(i).ridges_.size());
+
+    for(j=0; j<voronoi_cells_.at(i).ridges_.size(); ++j)
+    {
+      rindex= voronoi_cells_.at(i).ridges_.at(j);
+
+      dot= 0.0;
+      for(k=0; k<direction.size(); ++k)
+      {  
+        direction.at(k)= voronoi_ridges_.at(rindex).center_.at(k) - points_.at(voronoi_cells_.at(i).site_id_).at(k); 
+        dot+= direction.at(k)*voronoi_ridges_.at(rindex).normal_.at(k);
+      }
+
+      voronoi_cells_.at(i).ccw_.at(j)= (dot > 0);
+    }
+
+  }
+
+
+  return GP_OK;
+}
 
 //! Initializes the input point set from the given array (with the same order so that, after hull computation,
 //! indices in hull_vertices and hull_faces correspond to the indices in point_array).

@@ -416,9 +416,9 @@ double gpGrasp::configCost()
 //! \return the computed distance 
 double gpGraspDistance(const gpGrasp &grasp1, const gpGrasp &grasp2)
 {
-  double d, alpha, beta;
-  p3d_vector3 pos1, pos2, diff, cmass;
-  p3d_vector3 ray1, ray2, direction1, direction2;
+  double d;//, alpha, beta;
+  p3d_vector3 pos1, pos2, diff;//, cmass;
+//   p3d_vector3 ray1, ray2, direction1, direction2;
 
   p3d_mat4ExtractTrans((p3d_matrix_type(*)[4]) grasp1.frame, pos1);
   p3d_mat4ExtractTrans((p3d_matrix_type(*)[4]) grasp2.frame, pos2);

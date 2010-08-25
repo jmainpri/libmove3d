@@ -359,6 +359,9 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 
 void draw_grasp_planner()
 {   
+
+chull->draw();
+return;
   //display all the grasps from the list:
   if( display_grasps )
   {
@@ -698,26 +701,6 @@ return;
 			break;
 		}
 	}
-
-
-	if ( chull!=NULL )
-	{
-		glPushMatrix();
-		glTranslatef ( 0,0,3 );
-		chull->draw ( false );
-		glPopMatrix();
-
-
-		glDisable ( GL_LIGHTING );
-		if ( INSIDE )
-			{ glColor3f ( 0, 0, 1 ); }
-		else
-			{ glColor3f ( 1, 0, 0 ); }
-		g3d_drawColorSphere ( RAND_POINT[0], RAND_POINT[1], RAND_POINT[2], 0.15, Red, NULL);
-		glEnable ( GL_LIGHTING );
-	}
-
-	return;
 }
 
 void draw_test()
@@ -1458,6 +1441,18 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+p3d_vector3 points[20];
+for(int i=0; i<20; ++i)
+{
+  points[i][0]= p3d_random(-1, 1);
+  points[i][1]= p3d_random(-1, 1);
+  points[i][2]= p3d_random(0.5, 1);
+}
+chull= new gpConvexHull3D(points, 20);
+chull->voronoi(true);
+redraw();
+return;
+
 // gpExport_bodies_for_coldman((p3d_rob *)p3d_get_robot_by_name("hrp2"));
 gpExport_bodies_for_coldman(XYZ_ENV->cur_robot);
 redraw(); return;
