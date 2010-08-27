@@ -120,6 +120,10 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robotPt, gpHand_type handType)
    printf("%s: %d: ManipulationPlanner::ManipulationPlanner: cannot find all necessary multiLocalpth groups\n",__FILE__,__LINE__);
    return;
   }
+
+  _handProp.at(0).setArmType(GP_PA10);
+  printf("%s: %d: ManipulationPlanner::ManipulationPlanner: the arm type is set to GP_PA10. Use setArmType() to change it.\n",__FILE__,__LINE__);
+
 }
 
 ManipulationPlanner::ManipulationPlanner(p3d_rob *robotPt, gpHand_type handType1, gpHand_type handType2)//: // _capture(false)
@@ -309,6 +313,25 @@ int ManipulationPlanner::destroyTrajectories() {
   {   p3d_destroy_traj(_robotPt, _robotPt->t[0]);  }
 
   FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+
+  return 0;
+}
+
+//! Sets the type of the robot's arm.
+//! It is used to set the transform matrix telling how the hand is mounted on the arm.
+//! NB: for now, it is set by default by the ManipulationPlanner constructor to GP_PA10.
+int ManipulationPlanner::setArmType(gpArm_type armType) {
+  if(_robotPt==NULL)
+  {
+    printf("%s: %d: ManipulationPlanner::setArmType().\n",__FILE__,__LINE__);
+    undefinedRobotMessage();
+    return 1;
+  }
+  
+  if( !_handProp.empty() ) {
+     _handProp.at(0).setArmType(armType);
+   }
+
 
   return 0;
 }

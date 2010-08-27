@@ -434,6 +434,7 @@ class  ManipulationPlanner {
        return _liftUpDistance;
      }
      
+     int setArmType(gpArm_type armType);
      int setArmQ(int armId, std::vector<double> q);
      int getArmQ(int armId, std::vector<double> &q);
      int setArmX(int armId, double x, double y, double z, double rx, double ry, double rz);
