@@ -963,7 +963,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
 
   int i;
   p3d_vector3 t, axis;
-  p3d_matrix4 R, T, Trinit, Tt1, Tt2, Tr1, Tr2, Tr3, Tr4, Tint1, Tint2;
+  p3d_matrix4 T, Trinit, Tt1, Tt2, Tr1, Tr2, Tr3, Tr4, Tint1, Tint2;
 
   type= hand_type;
 

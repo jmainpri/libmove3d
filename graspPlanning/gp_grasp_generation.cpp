@@ -2112,8 +2112,7 @@ configPt gpFind_grasp_from_base_configuration ( p3d_rob *robot, p3d_rob *object,
 
         gpSet_grasp_configuration ( robot, *igrasp );
 
-        // if(!p3d_col_test()) //if no collision
-        if ( !p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0) && !p3d_col_test_robot_other(robot, object, 0) ) //if no collision
+        if ( !p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0) && !p3d_col_test_robot_other(robot, object, 0) )
         {
           p3d_get_robot_config_into ( robot, &result );
           grasp= *igrasp;
@@ -2152,123 +2151,123 @@ configPt gpFind_grasp_from_base_configuration ( p3d_rob *robot, p3d_rob *object,
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGrasp_visibility_filter ( p3d_rob *robot, p3d_rob *object, p3d_jnt *cam_jnt, double camera_fov, int imageWidth, int imageHeight, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpHand_properties &hand )
 {
-#ifdef GP_DEBUG
-	if ( graspList.empty() )
-	{
-		printf ( "%s: %d: gpGrasp_visibility_filter(): the grasp list is empty.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
-	if ( robot==NULL )
-	{
-		printf ( "%s: %d: gpGrasp_visibility_filter(): input robot is NULL.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
-	if ( object==NULL )
-	{
-		printf ( "%s: %d: gpGrasp_visibility_filter(): input object is NULL.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
-	if ( cam_jnt==NULL )
-	{
-		printf ( "%s: %d: gpGrasp_visibility_filter(): the input camera joint object is NULL.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
-#endif
+  #ifdef GP_DEBUG
+  if ( graspList.empty() )
+  {
+          printf ( "%s: %d: gpGrasp_visibility_filter(): the grasp list is empty.\n",__FILE__,__LINE__ );
+          return GP_ERROR;
+  }
+  if ( robot==NULL )
+  {
+          printf ( "%s: %d: gpGrasp_visibility_filter(): input robot is NULL.\n",__FILE__,__LINE__ );
+          return GP_ERROR;
+  }
+  if ( object==NULL )
+  {
+          printf ( "%s: %d: gpGrasp_visibility_filter(): input object is NULL.\n",__FILE__,__LINE__ );
+          return GP_ERROR;
+  }
+  if ( cam_jnt==NULL )
+  {
+          printf ( "%s: %d: gpGrasp_visibility_filter(): the input camera joint object is NULL.\n",__FILE__,__LINE__ );
+          return GP_ERROR;
+  }
+  #endif
 
-	double visibility;
-	std::list<gpGrasp>::iterator igrasp;
-	GLint viewport[4];
-	p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object, gframe_world, gframe_robot, gframe_robot2;
-	p3d_matrix4 T, Thand, Twrist, cam_frame;
-	configPt q0= NULL; //to store the robot's current configuration
-	configPt result= NULL;
-        g3d_states vs= g3d_get_cur_states();
+  double visibility;
+  std::list<gpGrasp>::iterator igrasp;
+  GLint viewport[4];
+  p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object, gframe_world, gframe_robot, gframe_robot2;
+  p3d_matrix4 T, Thand, Twrist, cam_frame;
+  configPt q0= NULL; //to store the robot's current configuration
+  configPt result= NULL;
+  g3d_states vs= g3d_get_cur_states();
 
-	q0= p3d_get_robot_config ( robot );
+  q0= p3d_get_robot_config ( robot );
 
-	XYZ_ENV->cur_robot= robot;
+  XYZ_ENV->cur_robot= robot;
 
-	// set the robot's configuration so that it has the desired mobile base configuration:
-	p3d_set_and_update_this_robot_conf ( robot, qbase );
-	result= p3d_alloc_config ( robot );
+  // set the robot's configuration so that it has the desired mobile base configuration:
+  p3d_set_and_update_this_robot_conf ( robot, qbase );
+  result= p3d_alloc_config ( robot );
 
-	gpGet_arm_base_frame ( robot, base_frame ); //get the frame of the arm base
-	p3d_matInvertXform ( base_frame, inv_base_frame );
+  gpGet_arm_base_frame ( robot, base_frame ); //get the frame of the arm base
+  p3d_matInvertXform ( base_frame, inv_base_frame );
 
-        // store the original viewport:
-	glGetIntegerv ( GL_VIEWPORT, viewport);
+  // store the original viewport:
+  glGetIntegerv ( GL_VIEWPORT, viewport);
 
-	// reducing the viewport size greatly reduces the computation time:
-	glViewport( 0, 0, ( GLsizei ) imageWidth, ( GLsizei ) imageHeight );
-
-
-	p3d_mat4Copy ( cam_jnt->abs_pos, cam_frame );
-	cam_frame[0][3]+= 0.05*cam_frame[0][0];
-	cam_frame[1][3]+= 0.05*cam_frame[1][0];
-	cam_frame[2][3]+= 0.05*cam_frame[2][0];
-
-	//for each grasp:
-	for ( igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++ )
-	{
-		// by default set as no visible:
-		igrasp->visibility= 0.0;
-
-		p3d_mat4Copy ( igrasp->frame, gframe_object );
-		p3d_get_body_pose ( object, igrasp->body_index, object_frame );
-
-		p3d_mat4Mult ( object_frame, gframe_object, gframe_world ); //object frame -> world frame
-		p3d_mat4Mult ( gframe_world, hand.Tgrasp_frame_hand, Thand );
-		p3d_mat4Mult ( Thand, hand.Thand_wrist, Twrist );
-
-		p3d_mat4Mult ( inv_base_frame, gframe_world, gframe_robot ); //world frame -> robot frame
-		p3d_mat4Mult ( inv_base_frame, T, Twrist );
-
-		switch ( arm_type )
-		{
-			case GP_PA10:
-				p3d_mat4Mult ( gframe_robot, hand.Tgrasp_frame_hand, gframe_robot2 );
-				p3d_mat4Mult ( gframe_robot2, hand.Thand_wrist, gframe_robot );
-
-				p3d_copy_config_into ( robot, qbase, &result );
-
-				if ( gpInverse_geometric_model_PA10 ( robot, gframe_robot, result ) ==GP_OK )
-				{
-					p3d_set_and_update_this_robot_conf ( robot, result );
-
-					gpSet_grasp_configuration ( robot, *igrasp );
-					p3d_get_robot_config_into ( robot, &result );
-
-					if ( g3d_does_robot_hide_object ( cam_frame, camera_fov, robot, object, &visibility ) ==GP_OK )
-					{
-						igrasp->visibility= visibility;
-					}
-				}
-				break;
-			default:
-				printf ( "%s: %d: gpGrasp_visibility_filter(): undefined or unimplemented arm type.\n",__FILE__,__LINE__ );
-				p3d_set_and_update_this_robot_conf ( robot, q0 );
-				p3d_destroy_config ( robot, q0 );
-                                // restore the original viewport and projection matrix:
-                                glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-                                g3d_set_projection_matrix(vs.projection_mode); // do this after restoring the camera fov
-				return GP_ERROR;
-			break;
-		}
-
-	}
-
-	p3d_set_and_update_this_robot_conf ( robot, q0 );
-	p3d_destroy_config ( robot, q0 );
-
-	graspList.sort ( gpCompareVisibility );
-	graspList.reverse();
-
-	// restore the original viewport and projection matrix:
-	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-        g3d_set_projection_matrix(vs.projection_mode); // do this after restoring the camera fov
+  // reducing the viewport size greatly reduces the computation time:
+  glViewport( 0, 0, ( GLsizei ) imageWidth, ( GLsizei ) imageHeight );
 
 
-	return GP_OK;
+  p3d_mat4Copy ( cam_jnt->abs_pos, cam_frame );
+  cam_frame[0][3]+= 0.05*cam_frame[0][0];
+  cam_frame[1][3]+= 0.05*cam_frame[1][0];
+  cam_frame[2][3]+= 0.05*cam_frame[2][0];
+
+  //for each grasp:
+  for ( igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++ )
+  {
+    // by default set as no visible:
+    igrasp->visibility= 0.0;
+
+    p3d_mat4Copy ( igrasp->frame, gframe_object );
+    p3d_get_body_pose ( object, igrasp->body_index, object_frame );
+
+    p3d_mat4Mult ( object_frame, gframe_object, gframe_world ); //object frame -> world frame
+    p3d_mat4Mult ( gframe_world, hand.Tgrasp_frame_hand, Thand );
+    p3d_mat4Mult ( Thand, hand.Thand_wrist, Twrist );
+
+    p3d_mat4Mult ( inv_base_frame, gframe_world, gframe_robot ); //world frame -> robot frame
+    p3d_mat4Mult ( inv_base_frame, T, Twrist );
+
+    switch ( arm_type )
+    {
+        case GP_PA10:
+          p3d_mat4Mult ( gframe_robot, hand.Tgrasp_frame_hand, gframe_robot2 );
+          p3d_mat4Mult ( gframe_robot2, hand.Thand_wrist, gframe_robot );
+
+          p3d_copy_config_into ( robot, qbase, &result );
+
+          if ( gpInverse_geometric_model_PA10 ( robot, gframe_robot, result ) ==GP_OK )
+          {
+            p3d_set_and_update_this_robot_conf ( robot, result );
+
+            gpSet_grasp_configuration ( robot, *igrasp );
+            p3d_get_robot_config_into ( robot, &result );
+
+            if ( g3d_does_robot_hide_object ( cam_frame, camera_fov, robot, object, &visibility ) ==GP_OK )
+            {
+                    igrasp->visibility= visibility;
+            }
+          }
+        break;
+        default:
+          printf ( "%s: %d: gpGrasp_visibility_filter(): undefined or unimplemented arm type.\n",__FILE__,__LINE__ );
+          p3d_set_and_update_this_robot_conf ( robot, q0 );
+          p3d_destroy_config ( robot, q0 );
+          // restore the original viewport and projection matrix:
+          glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+          g3d_set_projection_matrix(vs.projection_mode); // do this after restoring the camera fov
+          return GP_ERROR;
+        break;
+    }
+
+  }
+
+  p3d_set_and_update_this_robot_conf ( robot, q0 );
+  p3d_destroy_config ( robot, q0 );
+
+  graspList.sort ( gpCompareVisibility );
+  graspList.reverse();
+
+  // restore the original viewport and projection matrix:
+  glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+  g3d_set_projection_matrix(vs.projection_mode); // do this after restoring the camera fov
+
+
+  return GP_OK;
 }
 
 
@@ -2360,56 +2359,45 @@ int gpFind_grasp_and_pregrasp_from_base_configuration ( p3d_rob *robot, p3d_rob 
     p3d_mat4Mult ( inv_base_frame, gframe_world1, gframe_robot1 ); //passage repere monde -> repere robot
     p3d_mat4Mult ( inv_base_frame, gframe_world2, gframe_robot2 ); //passage repere monde -> repere robot
 
-    //     gpDeactivate_object_fingertips_collisions(robot, object, hand);
-    switch ( arm_type )
+    gpDeactivate_object_fingertips_collisions(robot, object->o[0], hand);
+
+    p3d_mat4Mult ( gframe_robot1, hand.Tgrasp_frame_hand, tmp );
+    p3d_mat4Mult ( tmp, hand.Thand_wrist, gframe_robot1 );
+
+    p3d_mat4Mult ( gframe_robot2, hand.Tgrasp_frame_hand, tmp );
+    p3d_mat4Mult ( tmp, hand.Thand_wrist, gframe_robot2 );
+
+    p3d_copy_config_into ( robot, qbase, &result1 );
+    p3d_copy_config_into ( robot, qbase, &result2 );
+
+    if ( gpInverse_geometric_model_arm ( robot, arm_type, gframe_robot1, result1 ) ==GP_OK && gpInverse_geometric_model_arm ( robot, arm_type, gframe_robot2, result2 ) ==GP_OK )
     {
-      case GP_PA10:
-        p3d_mat4Mult ( gframe_robot1, hand.Tgrasp_frame_hand, tmp );
-        p3d_mat4Mult ( tmp, hand.Thand_wrist, gframe_robot1 );
+      #ifdef LIGHT_PLANNER
+      //p3d_update_virtual_object_config_for_arm_ik_constraint(robot, 0, result);
+      //            p3d_set_and_update_this_robot_conf(robot, result);
+      #endif
+      p3d_set_and_update_this_robot_conf ( robot, result1 );
+      gpSet_grasp_configuration ( robot, *igrasp, 0 );
+      gpOpen_hand ( robot, hand );
+//       if ( p3d_col_test() )
+      if ( p3d_col_test_robot_statics(robot, 0) || p3d_col_test_self_collision(robot, 0) || p3d_col_test_robot_other(robot, object, 0) )
+      {  continue;  }
 
-        p3d_mat4Mult ( gframe_robot2, hand.Tgrasp_frame_hand, tmp );
-        p3d_mat4Mult ( tmp, hand.Thand_wrist, gframe_robot2 );
+      p3d_set_and_update_this_robot_conf ( robot, result2 );
+      gpOpen_hand ( robot, hand );
+//       if ( p3d_col_test() )
+      if ( p3d_col_test_robot_statics(robot, 0) || p3d_col_test_self_collision(robot, 0) || p3d_col_test_robot_other(robot, object, 0) )
+      {  continue;  }
 
-        p3d_copy_config_into ( robot, qbase, &result1 );
-        p3d_copy_config_into ( robot, qbase, &result2 );
+      grasp= *igrasp;
 
-        if ( gpInverse_geometric_model_PA10 ( robot, gframe_robot1, result1 ) ==GP_OK && gpInverse_geometric_model_PA10 ( robot, gframe_robot2, result2 ) ==GP_OK )
-        {
-          #ifdef LIGHT_PLANNER
-          //p3d_update_virtual_object_config_for_arm_ik_constraint(robot, 0, result);
-          //            p3d_set_and_update_this_robot_conf(robot, result);
-          #endif
-          p3d_set_and_update_this_robot_conf ( robot, result1 );
-          gpSet_grasp_configuration ( robot, *igrasp, 0 );
-          //            if(p3d_col_test())
-          //            {  continue;  }
-          gpOpen_hand ( robot, hand );
-          if ( p3d_col_test() )
-                  {  continue;  }
+      p3d_set_and_update_this_robot_conf ( robot, q0 );
+      p3d_destroy_config ( robot, q0 );
 
-          p3d_set_and_update_this_robot_conf ( robot, result2 );
-          gpOpen_hand ( robot, hand );
-          if ( p3d_col_test() )
-                  {  continue;  }
-
-          grasp= *igrasp;
-
-          p3d_set_and_update_this_robot_conf ( robot, q0 );
-          p3d_destroy_config ( robot, q0 );
-
-          p3d_copy_config_into ( robot, result1, &qgrasp );
-          p3d_copy_config_into ( robot, result2, &qpregrasp );
-          return GP_OK;
-        }
-      break;
-      default:
-       printf ( "%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): undefined or unimplemented arm type.\n",__FILE__,__LINE__ );
-       p3d_set_and_update_this_robot_conf ( robot, q0 );
-       p3d_destroy_config ( robot, q0 );
-       return GP_ERROR;
-      break;
+      p3d_copy_config_into ( robot, result1, &qgrasp );
+      p3d_copy_config_into ( robot, result2, &qpregrasp );
+      return GP_OK;
     }
-
   }
 
   p3d_set_and_update_this_robot_conf ( robot, q0 );
