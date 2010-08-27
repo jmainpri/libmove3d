@@ -1755,3 +1755,14 @@ int kcd_add_obstacle_list(p3d_obj **obstList, int nof_obsts)
  error:
   return FALSE;
 }
+
+//! @ingroup kcd
+//! Prints the names the two objects that were reported as colliding during
+//! the last collision test. This function must be called after a positive collision test.
+void kcd_print_colliding_pair()
+{
+  p3d_obj *o1Pt, *o2Pt;
+  p3d_col_test_choice();
+  p3d_kcd_get_pairObjInCollision ( &o1Pt, &o2Pt );
+  printf("Collision between \"%s\" and \"%s\" \n", o1Pt->name, o2Pt->name);
+}
