@@ -131,6 +131,8 @@ int ikLWRArmSolver(double fixedAngle, double posArray[4][4], double phiArray[8][
 		valid[i] = 1;	 
 		cpt ++;
 	 }
+         else
+         { valid[i] = 0; }
  }
  if(cpt == 0) {
 	return 0;

@@ -21,15 +21,16 @@
 static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
 #endif
 
-static char ObjectName[]= "Ball";
-static char RobotName[]= GP_ROBOT_NAME;
+static char ObjectName[]= "Horse";
+static char RobotName[]= "JIDO_ROBOT";
+static char HandRobotName[]= "JIDO_GRIPPER";
 static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot
 static p3d_rob *HAND_ROBOT= NULL; // the hand robot
 static p3d_rob *OBJECT= NULL; // the object to grasp
 static p3d_polyhedre *POLYHEDRON= NULL; // the polyhedron associated to the object
 static gpHand_properties HAND_PROP;  // information about the used hand
-static gpArm_type ARM_TYPE= GP_PA10; // type of the robot's arm
+static gpArm_type ARM_TYPE= GP_LWR; // type of the robot's arm
 static p3d_vector3 CMASS; // object's center of mass
 static p3d_matrix3 IAXES; // object's main inertia axes
 static double IAABB[6]; // bounding box aligned on the object's inertia axes
@@ -55,8 +56,9 @@ static bool LOAD_LIST= false;
 static bool INIT_IS_DONE= false;
 //static double DMAX_FAR= 0.05;
 static double DMAX_NEAR= 0.003;
-static p3d_vector3 Oi={0.0,0.0,0.0}, Of={0.0,0.0,0.0};
-static p3d_vector3 Ai={0.0,0.0,0.0}, Af={0.0,0.0,0.0}, Bi={0.0,0.0,0.0}, Bf={0.0,0.0,0.0}, E={0.0,0.0,0.0};
+static p3d_vector3 Oi= {0.0,0.0,0.0}, Of= {0.0,0.0,0.0};
+static p3d_vector3 Ai= {0.0,0.0,0.0}, Af= {0.0,0.0,0.0}, Bi= {0.0,0.0,0.0}, Bf= {0.0,0.0,0.0};
+// static p3d_vector3 E= {0.0,0.0,0.0};
 static bool GRID= false;
 
 // static unsigned int CNT= 0;
@@ -70,23 +72,8 @@ void contact_points();
 void key1();
 void key2();
 
-// extern int GP_Init(char *objectName);
-// extern p3d_cntrt* GP_GetArmCntrt(p3d_rob *robotPt);
-// extern int GP_ComputeGraspList(char *objectName);
-// extern configPt GP_FindGraspConfig(bool &needs_to_move);
-// extern int GP_FindPath();
-// extern int GP_FindPathForArmOnly();
-// extern configPt* GP_GetTrajectory(p3d_rob *robotPt, p3d_traj *traj, int &nb_configs);
-// extern configPt* GP_GetAllTrajectoriesAsOne(p3d_rob *robotPt, int &nb_configs);
-// extern int GP_ConcateneAllTrajectories(p3d_rob *robotPt);
-// extern void GP_Reset();
-// extern void Gp_ResetGraph();
-
 double COLOR_TAB[15][3]= {  {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 1.0, 0.0}, {1.0, 0.0, 1.0}, {0.0, 1.0, 1.0} , {1.0, 0.5, 0.5}, {0.5, 1.0, 0.5}, {0.5, 0.5, 1.0}, {1.0, 0.25, 0.5}, {1.0, 0.5, 0.25}, {0.25, 1.0, 0.5}, {0.5, 1.0, 0.25}, {0.25, 0.5, 1.0}, {0.5, 0.25, 1.0}  };
 
-#define NB_POINTS_MAX 10000
-static p3d_vector3 RAND_POINT;
-static bool INSIDE= false;
 static gpConvexHull3D *chull= NULL;
 
 /* --------- FORM VARIABLES ------- */
@@ -359,9 +346,8 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 
 void draw_grasp_planner()
 {   
+// chull->draw();
 
-chull->draw();
-return;
   //display all the grasps from the list:
   if( display_grasps )
   {
@@ -372,6 +358,7 @@ return;
 
   GRASP.draw(0.05);
   return;
+
 //dynamic_grasping(); 
 
 //return;
@@ -734,7 +721,7 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   gpHand_properties handProp;
   std::list<gpGrasp>::iterator igrasp;
 
-  //result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
+//   result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
   result= gpGet_grasp_list_gripper(ObjectName, GRASPLIST);
 
   if(result==GP_ERROR)
@@ -742,18 +729,25 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
 
   object= p3d_get_robot_by_name(ObjectName);
   if(object==NULL)
-  {  return;  }
+  {  
+    printf("%s: %d: there is no robot named \"%s\" \n", __FILE__, __LINE__, ObjectName);
+    return;
+  }
 
   robot= p3d_get_robot_by_name(RobotName);
   if(robot==NULL)
-  {  return;  }
+  {  
+    printf("%s: %d: there is no robot named \"%s\" \n", __FILE__, __LINE__, RobotName);
+    return;
+  }
 
  // hand_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
-  hand_robot= p3d_get_robot_by_name(GP_GRIPPER_ROBOT_NAME);
+  hand_robot= p3d_get_robot_by_name(HandRobotName);
   if(hand_robot==NULL)
-  {  return;  }
-
-//   cur_robot= XYZ_ENV->cur_robot;
+  {  
+    printf("%s: %d: there is no robot named \"%s\" \n", __FILE__, __LINE__, HandRobotName);
+    return;
+  }
 
 /*
 #ifdef LIGHT_PLANNER
@@ -795,27 +789,28 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   //p3d_release_object(robot);
 
 //////////////////////////////////////////////////////é
-  p3d_vector3 wrist_direction, verticalAxis;
-  p3d_matrix4 gframe_object, gframe_world;
+//   p3d_vector3 wrist_direction;
+  p3d_vector3 verticalAxis;
+//   p3d_matrix4 gframe_object, gframe_world;
 
 
   verticalAxis[0]= 0.0;
   verticalAxis[1]= 0.0;
   verticalAxis[2]= -1.0;
 
-  igrasp= GRASPLIST.begin();
-  while(igrasp!=GRASPLIST.end())
-  {
-    p3d_mat4Copy(igrasp->frame, gframe_object);
-    p3d_mat4Mult(objectPose, gframe_object, gframe_world); //passage repere objet -> repere monde
-    p3d_mat4ExtractColumnZ(gframe_world, wrist_direction);
-    p3d_vectNormalize(wrist_direction, wrist_direction);
-
-    igrasp->quality= p3d_vectDotProd(wrist_direction, verticalAxis);
-    igrasp++;
-  }
-  GRASPLIST.sort();
-  GRASPLIST.reverse();
+//   igrasp= GRASPLIST.begin();
+//   while(igrasp!=GRASPLIST.end())
+//   {
+//     p3d_mat4Copy(igrasp->frame, gframe_object);
+//     p3d_mat4Mult(objectPose, gframe_object, gframe_world); //passage repere objet -> repere monde
+//     p3d_mat4ExtractColumnZ(gframe_world, wrist_direction);
+//     p3d_vectNormalize(wrist_direction, wrist_direction);
+// 
+//     igrasp->quality= p3d_vectDotProd(wrist_direction, verticalAxis);
+//     igrasp++;
+//   }
+//   GRASPLIST.sort();
+//   GRASPLIST.reverse();
 //////////////////////////////////////////////////////
 
 
@@ -824,36 +819,34 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   qcur= p3d_alloc_config(robot);
   p3d_get_robot_config_into(robot, &qcur);
   handProp.initialize(GRASPLIST.front().hand_type);
- 
+//   p3d_vector3 axis;
+//   p3d_matrix4 T;
+//   p3d_mat4Copy(p3d_mat4IDENTITY, T);
+// 
+//   axis[0]= 0;
+//   axis[1]= 0;
+//   axis[2]= 1;
+//   p3d_mat4Rot(T, axis, 5*M_PI/8.0);
+//   T[0][3]= 0;
+//   T[1][3]= 0;
+//   T[2][3]= -0.268;
+//   handProp.setThand_wrist(T);
+  handProp.setArmType(GP_LWR);
+
   if(robot!=NULL)
   {
-    for(igrasp=GRASPLIST.begin(); igrasp!=GRASPLIST.end(); igrasp++)
+    for(int i=0; i<50; ++i)
     {
-      qgrasp= gpFind_configuration_from_grasp(robot, object, *igrasp, GP_PA10, handProp);
-      if(qgrasp!=NULL)
-      { printf("GRASP quality %f\n",igrasp->quality);
-        GRASP= *igrasp;
-        p3d_set_and_update_this_robot_conf(robot, qgrasp);
-        p3d_copy_config_into(robot, qgrasp, &robot->ROBOT_POS);
-        p3d_destroy_config(robot, qgrasp);
-        qend= NULL;
-        break;
-      }
-    }
-printf("end\n");
-/*
-    for(i=0; i<250; ++i)
-    {
-        qgrasp= gpRandom_robot_base(robot, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, GP_PA10);
+        qgrasp= gpRandom_robot_base(robot, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter);
 
         if ( qgrasp==NULL )
         {  break;  }
 
         qend= NULL;
-        qend= gpFind_grasp_from_base_configuration(robot, object, GRASPLIST, GP_PA10, qgrasp, GRASP, handProp);
+        qend= gpFind_grasp_from_base_configuration(robot, object, GRASPLIST, ARM_TYPE, qgrasp, GRASP, handProp);
 
         if ( qend!=NULL )
-        { printf("GRASP quality %f\n",GRASP.quality);
+        { 
           p3d_set_and_update_this_robot_conf(robot, qend);
           p3d_copy_config_into(robot, qend, &robot->ROBOT_POS);
           p3d_destroy_config(robot, qend);
@@ -862,7 +855,7 @@ printf("end\n");
         }
         p3d_destroy_config ( robot, qgrasp );
         qgrasp= NULL;
-   }*/
+   }
 /*
    if ( i==250 )
    {  printf ( "No platform configuration was found.\n" );  }
@@ -1467,7 +1460,6 @@ p3d_set_object_to_carry((p3d_rob*)p3d_get_robot_by_name("JIDO_ROBOT"), "Horse");
 p3d_grab_object2((p3d_rob*)p3d_get_robot_by_name("JIDO_ROBOT"), 0);
 redraw(); return;
 
-static int firstTime2= 1;
 g3d_win *curwin= g3d_get_cur_win();
 g3d_print_win_camera(curwin->vs);
 g3d_set_win_camera(curwin->vs, 0.426241, 0.067929, 0.728624, 3.216148, 2.872153, 0.879167, 0.000000, 0.000000, 1.000000);
@@ -1654,7 +1646,7 @@ return;
   redraw();
   return;*/
  static int firstTime= TRUE;
-  static Manipulation *manipulation= NULL;
+//   static Manipulation *manipulation= NULL;
   p3d_matrix4 T;
   p3d_rob *justin= NULL, *object= NULL;
 
@@ -1978,7 +1970,7 @@ void dynamic_grasping()
   {
     for(i=0; i<50; ++i)
     {
-        qgrasp= gpRandom_robot_base(robot, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, GP_PA10);
+        qgrasp= gpRandom_robot_base(robot, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter);
 
         if ( qgrasp==NULL )
         {  break;  }
@@ -2292,35 +2284,35 @@ configPt GP_FindGraspConfig ( bool &needs_to_move )
 
 
 // we must try to find a valid base configuration:
-	needs_to_move= true;
-	p3d_get_body_pose ( OBJECT, 0, objectPose );
-	objectCenter[0]= objectPose[0][3] + CMASS[0];
-	objectCenter[1]= objectPose[1][3] + CMASS[1];
-	objectCenter[2]= objectPose[2][3] + CMASS[2];
+      needs_to_move= true;
+      p3d_get_body_pose ( OBJECT, 0, objectPose );
+      objectCenter[0]= objectPose[0][3] + CMASS[0];
+      objectCenter[1]= objectPose[1][3] + CMASS[1];
+      objectCenter[2]= objectPose[2][3] + CMASS[2];
 
-	nb_iters_max= 300;
-	for ( i=0; i<nb_iters_max; i++ )
-	{
-		qbase= gpRandom_robot_base ( ROBOT, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, ARM_TYPE );
-		if ( qbase==NULL )
-			{   break;   }
+      nb_iters_max= 300;
+      for ( i=0; i<nb_iters_max; i++ )
+      {
+        qbase= gpRandom_robot_base ( ROBOT, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter);
+        if ( qbase==NULL )
+                {   break;   }
 
-		qresult= NULL;
-		qresult= gpFind_grasp_from_base_configuration ( ROBOT, OBJECT, GRASPLIST, ARM_TYPE, qbase, GRASP, HAND_PROP );
+        qresult= NULL;
+        qresult= gpFind_grasp_from_base_configuration ( ROBOT, OBJECT, GRASPLIST, ARM_TYPE, qbase, GRASP, HAND_PROP );
 
-		if ( qresult!=NULL )
-			{   break;   }
-		p3d_destroy_config ( ROBOT, qbase );
-		qbase= NULL;
-	}
-	if ( qbase!=NULL )
-		{  p3d_destroy_config ( ROBOT, qbase );  }
+        if ( qresult!=NULL )
+                {   break;   }
+        p3d_destroy_config ( ROBOT, qbase );
+        qbase= NULL;
+      }
+      if ( qbase!=NULL )
+      {  p3d_destroy_config ( ROBOT, qbase );  }
 
-	if ( i==nb_iters_max )
-	{
-		printf ( "GP_FindGraspConfig: No valid platform configuration was found.\n" );
-		return NULL;
-	}
+      if ( i==nb_iters_max )
+      {
+         printf ( "GP_FindGraspConfig: No valid platform configuration was found.\n" );
+         return NULL;
+      }
 
 	// as the real Jido's gripper can only be completely opened or completely closed,
 	// we set it to max opening:
