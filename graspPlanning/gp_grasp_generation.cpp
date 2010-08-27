@@ -41,211 +41,211 @@
 int gpGrasps_from_grasp_frame_SAHand ( p3d_rob *robot, p3d_rob *object, int body_index, p3d_matrix4 gFrame, gpHand_properties &hand, gpKdTree &kdtree, std::list<class gpGrasp> &graspList )
 {
 #ifdef GP_DEBUG
-	if ( robot==NULL )
-	{
-		printf ( "%s: %d: gpGrasps_from_grasp_frame_SAHand(): robot is NULL.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
-	if ( object==NULL )
-	{
-		printf ( "%s: %d: gpGrasps_from_grasp_frame_SAHand(): object is NULL.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
+    if ( robot==NULL )
+    {
+      printf ( "%s: %d: gpGrasps_from_grasp_frame_SAHand(): robot is NULL.\n",__FILE__,__LINE__ );
+      return GP_ERROR;
+    }
+    if ( object==NULL )
+    {
+      printf ( "%s: %d: gpGrasps_from_grasp_frame_SAHand(): object is NULL.\n",__FILE__,__LINE__ );
+      return GP_ERROR;
+    }
 #endif
 
-	unsigned int i, j;
-	double fingertip_radius;
-	p3d_vector3 p, center, contact_normal, fingerpad_normal;
-	double q[4][4], q_default[4]= {M_PI_2, 0.0, 0.0, 0.0};
-	double qik[4];
-	p3d_matrix4 objectFrame, objectFrame_inv, Twrist, Twrist_world, T;
-	configPt config0= NULL, config= NULL;
+    unsigned int i, j;
+    double fingertip_radius;
+    p3d_vector3 p, center, contact_normal, fingerpad_normal;
+    double q[4][4], q_default[4]= {M_PI_2, 0.0, 0.0, 0.0};
+    double qik[4];
+    p3d_matrix4 objectFrame, objectFrame_inv, Twrist, Twrist_world, T;
+    configPt config0= NULL, config= NULL;
 
-	std::vector<gpContact> contacts;
-	std::list<gpContact> points;
-	std::list<gpContact>::iterator iter;
-	gpGrasp grasp;
+    std::vector<gpContact> contacts;
+    std::list<gpContact> points;
+    std::list<gpContact>::iterator iter;
+    gpGrasp grasp;
 
-	gpActivate_hand_collisions ( robot );
-	XYZ_ENV->cur_robot= robot;
+    gpActivate_hand_collisions ( robot );
+    XYZ_ENV->cur_robot= robot;
 
-	p3d_mat4Mult ( gFrame, hand.Tgrasp_frame_hand, Twrist );
+    p3d_mat4Mult ( gFrame, hand.Tgrasp_frame_hand, Twrist );
 
-	fingertip_radius= hand.fingertip_radius;
-	contacts.reserve(6);
+    fingertip_radius= hand.fingertip_radius;
+    contacts.reserve(6);
 
-	//memorize current robot configuration:
-	config= p3d_alloc_config ( robot );
+    //memorize current robot configuration:
+    config= p3d_alloc_config ( robot );
 
-	config0= p3d_get_robot_config ( robot );
+    config0= p3d_get_robot_config ( robot );
 
-	p3d_get_body_pose ( object, body_index, objectFrame );
-	p3d_matInvertXform ( objectFrame, objectFrame_inv );
+    p3d_get_body_pose ( object, body_index, objectFrame );
+    p3d_matInvertXform ( objectFrame, objectFrame_inv );
 
-	p3d_mat4Mult ( objectFrame_inv, Twrist, Twrist_world );
+    p3d_mat4Mult ( objectFrame_inv, Twrist, Twrist_world );
 
-	gpInverse_geometric_model_freeflying_hand ( robot, objectFrame, gFrame, hand, config );
-	p3d_set_and_update_this_robot_conf ( robot, config );
+    gpInverse_geometric_model_freeflying_hand ( robot, objectFrame, gFrame, hand, config );
+    p3d_set_and_update_this_robot_conf ( robot, config );
 
-	p3d_copy_config_into ( robot, config, &robot->ROBOT_POS );
+    p3d_copy_config_into ( robot, config, &robot->ROBOT_POS );
 
-	// Deactivate the collision for all fingers
-	gpDeactivate_finger_collisions ( robot, 1, hand );
-	gpDeactivate_finger_collisions ( robot, 2, hand );
-	gpDeactivate_finger_collisions ( robot, 3, hand );
-	gpDeactivate_finger_collisions ( robot, 4, hand );
+    // Deactivate the collision for all fingers
+    gpDeactivate_finger_collisions ( robot, 1, hand );
+    gpDeactivate_finger_collisions ( robot, 2, hand );
+    gpDeactivate_finger_collisions ( robot, 3, hand );
+    gpDeactivate_finger_collisions ( robot, 4, hand );
 
-	// If the hand robot is already colliding with the object, it's the palm and there is no way
-	// to find a collision-free configuration:
-	if ( p3d_col_test_robot_other ( robot, object, 0 ) )
-	{
-		gpActivate_finger_collisions ( robot, 1, hand );
-		gpActivate_finger_collisions ( robot, 2, hand );
-		gpActivate_finger_collisions ( robot, 3, hand );
-		gpActivate_finger_collisions ( robot, 4, hand );
-		p3d_set_and_update_this_robot_conf ( robot, config0 );
-		p3d_destroy_config ( robot, config0 );
-		p3d_destroy_config ( robot, config );
-		return GP_ERROR;
-	}
+    // If the hand robot is already colliding with the object, it's the palm and there is no way
+    // to find a collision-free configuration:
+    if ( p3d_col_test_robot_other ( robot, object, 0 ) )
+    {
+      gpActivate_finger_collisions ( robot, 1, hand );
+      gpActivate_finger_collisions ( robot, 2, hand );
+      gpActivate_finger_collisions ( robot, 3, hand );
+      gpActivate_finger_collisions ( robot, 4, hand );
+      p3d_set_and_update_this_robot_conf ( robot, config0 );
+      p3d_destroy_config ( robot, config0 );
+      p3d_destroy_config ( robot, config );
+      return GP_ERROR;
+    }
 
-	for ( i=0; i<4; ++i ) //for each finger:
-	{
-		q[i][0]= q_default[0];
-		q[i][1]= q_default[1];
-		q[i][2]= q_default[2];
-		q[i][3]= q_default[3];
-		gpSet_SAHfinger_joint_angles ( robot, hand, q_default, i+1, 0 );
+    for ( i=0; i<4; ++i ) //for each finger:
+    {
+        q[i][0]= q_default[0];
+        q[i][1]= q_default[1];
+        q[i][2]= q_default[2];
+        q[i][3]= q_default[3];
+        gpSet_SAHfinger_joint_angles ( robot, hand, q_default, i+1, 0 );
 
-		gpActivate_finger_collisions ( robot, i+1, hand );
-		p3d_mat4Mult ( Twrist, hand.Twrist_finger[i], T );
+        gpActivate_finger_collisions ( robot, i+1, hand );
+        p3d_mat4Mult ( Twrist, hand.Twrist_finger[i], T );
 
-		for ( j=0; j<hand.workspace.size(); ++j )
-		{
-			p3d_xformPoint ( T, hand.workspace[j].center, center );
-			points.clear();
-			kdtree.sphereIntersection ( center, hand.workspace[j].radius, points );
-			for ( iter=points.begin(); iter!=points.end(); iter++ )
-			{
-				p3d_xformPoint ( objectFrame_inv, iter->position, p ); //object frame -> world frame
+        for ( j=0; j<hand.workspace.size(); ++j )
+        {
+          p3d_xformPoint ( T, hand.workspace[j].center, center );
+          points.clear();
+          kdtree.sphereIntersection ( center, hand.workspace[j].radius, points );
+          for ( iter=points.begin(); iter!=points.end(); iter++ )
+          {
+              p3d_xformPoint ( objectFrame_inv, iter->position, p ); //object frame -> world frame
+  
+              p3d_xformVect ( objectFrame_inv, iter->normal, contact_normal ); //object frame -> world frame
+              if ( gpSAHfinger_inverse_kinematics ( Twrist_world, hand, p, qik, fingerpad_normal, i+1 ) ==GP_OK )
+              {
+                  // printf("can reach point: finger %d (%f %f %f)\n", i, q[i][1]*RADTODEG, q[i][2]*RADTODEG, q[i][3]*RADTODEG);
 
-				p3d_xformVect ( objectFrame_inv, iter->normal, contact_normal ); //object frame -> world frame
-				if ( gpSAHfinger_inverse_kinematics ( Twrist_world, hand, p, qik, fingerpad_normal, i+1 ) ==GP_OK )
-				{
-//             printf("can reach point: finger %d (%f %f %f)\n", i, q[i][1]*RADTODEG, q[i][2]*RADTODEG, q[i][3]*RADTODEG);
+                // contact normal and fingerpad normal must be in opposite directions:
+                if ( p3d_vectDotProd ( contact_normal, fingerpad_normal ) > -0.3 )
+                        {  continue;  }
 
-					// contact normal and fingerpad normal must be in opposite directions:
-					if ( p3d_vectDotProd ( contact_normal, fingerpad_normal ) > -0.3 )
-						{  continue;  }
+                gpSet_SAHfinger_joint_angles ( robot, hand, qik, i+1, 0 );
 
-					gpSet_SAHfinger_joint_angles ( robot, hand, qik, i+1, 0 );
+                // if collision, bring the finger back to its default configuration
+                if ( p3d_col_test_self_collision ( robot, 0 ) || p3d_col_test_robot_other ( robot, object, 0 ) )
+                {
+                        gpSet_SAHfinger_joint_angles ( robot, hand, q_default, i+1, 0 );
+                        continue;
+                }
+                q[i][0]= qik[0];
+                q[i][1]= qik[1];
+                q[i][2]= qik[2];
+                q[i][3]= qik[3];
 
-					// if collision, bring the finger back to its default configuration
-					if ( p3d_col_test_self_collision ( robot, 0 ) || p3d_col_test_robot_other ( robot, object, 0 ) )
-					{
-						gpSet_SAHfinger_joint_angles ( robot, hand, q_default, i+1, 0 );
-						continue;
-					}
-					q[i][0]= qik[0];
-					q[i][1]= qik[1];
-					q[i][2]= qik[2];
-					q[i][3]= qik[3];
+                contacts.resize ( contacts.size() +1 );
 
-					contacts.resize ( contacts.size() +1 );
+                contacts.back().position[0]= iter->position[0] - hand.fingertip_radius*iter->normal[0];
+                contacts.back().position[1]= iter->position[1] - hand.fingertip_radius*iter->normal[1];
+                contacts.back().position[2]= iter->position[2] - hand.fingertip_radius*iter->normal[2];
 
-					contacts.back().position[0]= iter->position[0] - hand.fingertip_radius*iter->normal[0];
-					contacts.back().position[1]= iter->position[1] - hand.fingertip_radius*iter->normal[1];
-					contacts.back().position[2]= iter->position[2] - hand.fingertip_radius*iter->normal[2];
+                contacts.back().normal[0]= iter->normal[0];
+                contacts.back().normal[1]= iter->normal[1];
+                contacts.back().normal[2]= iter->normal[2];
 
-					contacts.back().normal[0]= iter->normal[0];
-					contacts.back().normal[1]= iter->normal[1];
-					contacts.back().normal[2]= iter->normal[2];
+                contacts.back().surface= object->o[body_index]->pol[0]->poly;
 
-					contacts.back().surface= object->o[body_index]->pol[0]->poly;
+                contacts.back().face= iter->face;
+                contacts.back().fingerID= i+1;
+                contacts.back().computeBarycentricCoordinates();
+                contacts.back().computeCurvature();
+                goto Next;
+              }
+              else {  /*printf("%s: %d: can't reach point\n",__FILE__,__LINE__); printf("finger %d\n",i);*/ }
 
-					contacts.back().face= iter->face;
-					contacts.back().fingerID= i+1;
-					contacts.back().computeBarycentricCoordinates();
-					contacts.back().computeCurvature();
-					goto Next;
-				}
-				else {  /*printf("%s: %d: can't reach point\n",__FILE__,__LINE__); printf("finger %d\n",i);*/ }
+          }
 
-			}
+        }
+        Next:;
+        if ( i==0 && contacts.empty() )
+        {
+          gpActivate_finger_collisions ( robot, 1, hand );
+          gpActivate_finger_collisions ( robot, 2, hand );
+          gpActivate_finger_collisions ( robot, 3, hand );
+          gpActivate_finger_collisions ( robot, 4, hand );
+          p3d_set_and_update_this_robot_conf ( robot, config0 );
+          p3d_destroy_config ( robot, config0 );
+          p3d_destroy_config ( robot, config );
+          return GP_ERROR;
+        }
+    }
 
-		}
-	Next:;
-		if ( i==0 && contacts.empty() )
-		{
-			gpActivate_finger_collisions ( robot, 1, hand );
-			gpActivate_finger_collisions ( robot, 2, hand );
-			gpActivate_finger_collisions ( robot, 3, hand );
-			gpActivate_finger_collisions ( robot, 4, hand );
-			p3d_set_and_update_this_robot_conf ( robot, config0 );
-			p3d_destroy_config ( robot, config0 );
-			p3d_destroy_config ( robot, config );
-			return GP_ERROR;
-		}
-	}
+    if ( contacts.size() < 3 )
+    {
+      gpActivate_finger_collisions ( robot, 1, hand );
+      gpActivate_finger_collisions ( robot, 2, hand );
+      gpActivate_finger_collisions ( robot, 3, hand );
+      gpActivate_finger_collisions ( robot, 4, hand );
+      p3d_set_and_update_this_robot_conf ( robot, config0 );
+      p3d_destroy_config ( robot, config0 );
+      p3d_destroy_config ( robot, config );
+      return GP_ERROR;
+    }
 
-	if ( contacts.size() < 3 )
-	{
-		gpActivate_finger_collisions ( robot, 1, hand );
-		gpActivate_finger_collisions ( robot, 2, hand );
-		gpActivate_finger_collisions ( robot, 3, hand );
-		gpActivate_finger_collisions ( robot, 4, hand );
-		p3d_set_and_update_this_robot_conf ( robot, config0 );
-		p3d_destroy_config ( robot, config0 );
-		p3d_destroy_config ( robot, config );
-		return GP_ERROR;
-	}
+    //test collision for the whole hand configuration:
+    gpActivate_finger_collisions ( robot, 1, hand );
+    gpActivate_finger_collisions ( robot, 2, hand );
+    gpActivate_finger_collisions ( robot, 3, hand );
+    gpActivate_finger_collisions ( robot, 4, hand );
 
-	//test collision for the whole hand configuration:
-	gpActivate_finger_collisions ( robot, 1, hand );
-	gpActivate_finger_collisions ( robot, 2, hand );
-	gpActivate_finger_collisions ( robot, 3, hand );
-	gpActivate_finger_collisions ( robot, 4, hand );
+    if ( p3d_col_test_robot_other ( robot, object, 0 ) || p3d_col_test_self_collision ( robot, 0 ) )
+    {
+      p3d_set_and_update_this_robot_conf ( robot, config0 );
+      p3d_destroy_config ( robot, config0 );
+      p3d_destroy_config ( robot, config );
+      return GP_ERROR;
+    }
 
-	if ( p3d_col_test_robot_other ( robot, object, 0 ) || p3d_col_test_self_collision ( robot, 0 ) )
-	{
-		p3d_set_and_update_this_robot_conf ( robot, config0 );
-		p3d_destroy_config ( robot, config0 );
-		p3d_destroy_config ( robot, config );
-		return GP_ERROR;
-	}
+    grasp.hand_type= hand.type;
+    grasp.ID= graspList.size() + 1;
+    grasp.object= object;
+    grasp.object_name= object->name;
+    grasp.body_index= body_index;
+    p3d_mat4Copy ( gFrame, grasp.frame );
+    grasp.config.resize ( 13 );
 
-	grasp.hand_type= hand.type;
-	grasp.ID= graspList.size() + 1;
-	grasp.object= object;
-	grasp.object_name= object->name;
-	grasp.body_index= body_index;
-	p3d_mat4Copy ( gFrame, grasp.frame );
-	grasp.config.resize ( 13 );
+    grasp.contacts.resize ( contacts.size() );
 
-	grasp.contacts.resize ( contacts.size() );
+    for ( i=0; i<grasp.contacts.size(); i++ )
+    {
+      grasp.contacts[i]   = contacts[i];
+      grasp.contacts[i].mu= GP_FRICTION_COEFFICIENT;
+    }
 
-	for ( i=0; i<grasp.contacts.size(); i++ )
-	{
-		grasp.contacts[i]   = contacts[i];
-		grasp.contacts[i].mu= GP_FRICTION_COEFFICIENT;
-	}
+    grasp.config[0]= M_PI_2; // thumb's first DOF
+    for ( i=0; i<4; i++ )
+    {
+      grasp.config[3*i+1]= q[i][1];
+      grasp.config[3*i+2]= q[i][2];
+      grasp.config[3*i+3]= q[i][3];
+    }
 
-	grasp.config[0]= M_PI_2; // thumb's first DOF
-	for ( i=0; i<4; i++ )
-	{
-		grasp.config[3*i+1]= q[i][1];
-		grasp.config[3*i+2]= q[i][2];
-		grasp.config[3*i+3]= q[i][3];
-	}
+    // grasp.print();
+    p3d_set_and_update_this_robot_conf ( robot, config0 );
+    p3d_destroy_config ( robot, config0 );
+    p3d_destroy_config ( robot, config );
 
-// grasp.print();
-	p3d_set_and_update_this_robot_conf ( robot, config0 );
-	p3d_destroy_config ( robot, config0 );
-	p3d_destroy_config ( robot, config );
+    graspList.push_back ( grasp );
 
-	graspList.push_back ( grasp );
-
-	return GP_OK;
+    return GP_OK;
 }
 
 //! @ingroup graspPlanning
@@ -1492,7 +1492,7 @@ int gpGrasp_generation ( p3d_rob *robot, p3d_rob *object, int body_index, gpHand
 			}
 			break;
 		default:
-			printf ( "%s: %d: gpGrasp_generation(): undefined hand type.\n",__FILE__,__LINE__ );
+			printf ( "%s: %d: gpGrasp_generation(): undefined or unimplemented hand type.\n",__FILE__,__LINE__ );
 			return GP_ERROR;
 			break;
 	}
@@ -1586,59 +1586,52 @@ int gpGrasp_collision_filter ( std::list<gpGrasp> &graspList, p3d_rob *robot, p3
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGrasp_context_collision_filter ( std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &hand )
 {
-#ifdef GP_DEBUG
-	if ( robot==NULL )
-	{
-		printf ( "%s: %d: gpGrasp_context_collision_filter(): robot is NULL.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
-	if ( graspList.empty() )
-	{
-		printf ( "%s: %d: gpGrasp_context_collision_filter(): the grasp list is empty.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
-#endif
+  #ifdef GP_DEBUG
+  if ( robot==NULL )
+  {
+    printf ( "%s: %d: gpGrasp_context_collision_filter(): robot is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+  if ( graspList.empty() )
+  {
+    printf ( "%s: %d: gpGrasp_context_collision_filter(): the grasp list is empty.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+  #endif
 
-	p3d_matrix4 objectFrame;
-	configPt q= p3d_alloc_config ( robot );
-	std::list<gpGrasp>::iterator igrasp;
-
-//   p3d_get_obj_pos(object, objectFrame);
-//   pqp_get_obj_pos(object, objectFrame);
-//   p3d_get_first_joint_pose(object, objectFrame);
-
-//   p3d_mat4Print(objectFrame, object->name);
-
-	p3d_get_robot_config_into ( robot, &q );
-
-	igrasp= graspList.begin();
-	while ( igrasp!=graspList.end() )
-	{
-		p3d_get_body_pose ( object, igrasp->body_index, objectFrame );
-
-		gpInverse_geometric_model_freeflying_hand ( robot, objectFrame, igrasp->frame, hand, q );
-
-		p3d_set_and_update_this_robot_conf ( robot, q );
-
-		gpSet_grasp_configuration ( robot, *igrasp );
-
-		if ( !p3d_col_test_robot_statics ( robot, 1 ) )
-		{
-			igrasp++;
-			continue;
-		}
-		else
-		{
-			igrasp= graspList.erase ( igrasp );
-			continue;
-		}
-	}
+  p3d_matrix4 objectFrame;
+  configPt q= p3d_alloc_config ( robot );
+  std::list<gpGrasp>::iterator igrasp;
 
 
-	p3d_destroy_config ( robot, q );
+  p3d_get_robot_config_into ( robot, &q );
 
+  igrasp= graspList.begin();
+  while ( igrasp!=graspList.end() )
+  {
+    p3d_get_body_pose ( object, igrasp->body_index, objectFrame );
 
-	return GP_OK;
+    gpInverse_geometric_model_freeflying_hand ( robot, objectFrame, igrasp->frame, hand, q );
+
+    p3d_set_and_update_this_robot_conf ( robot, q );
+
+    gpSet_grasp_configuration ( robot, *igrasp );
+
+    if ( !p3d_col_test_robot_statics ( robot, 1 ) )
+    {
+      igrasp++;
+      continue;
+    }
+    else
+    {
+      igrasp= graspList.erase ( igrasp );
+      continue;
+    }
+  }
+
+  p3d_destroy_config ( robot, q );
+
+  return GP_OK;
 }
 
 //! @ingroup graspPlanning
@@ -1852,143 +1845,198 @@ extern int gpForward_geometric_model_PA10 ( p3d_rob *robot, p3d_matrix4 Tend_eff
 //! \param Tend_eff the desired end effector pose matrix (given in the arm base frame)
 //! \param q the solution joint parameter vector (that must be allocated before calling the function)
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpInverse_geometric_model_PA10 ( p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q )
+int gpInverse_geometric_model_PA10 ( p3d_rob *robot, p3d_matrix4 Tend_eff, configPt cfg )
 {
-	if ( robot==NULL )
-	{
-		printf ( "%s: %d: gpInverse_geometric_model_PA10(): robot is NULL.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
+  if(robot==NULL)
+  {
+    printf ( "%s: %d: gpInverse_geometric_model_PA10(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
 
-	int result;
-	Gb_6rParameters arm_parameters;
-	Gb_th eth;
-	Gb_q6 qcurrent, qgoal;
-	Gb_dataMGD d;
-	Gb_th thdep1, thdep2, R6RT, invR6RT, thMatPA10;
-	Gb_dep dep1, dep2;
+  int result;
+  Gb_6rParameters arm_parameters;
+  Gb_th eth;
+  Gb_q6 qcurrent, qgoal;
+  Gb_dataMGD d;
+  Gb_th thdep1, thdep2, R6RT, invR6RT, thMatPA10;
+  Gb_dep dep1, dep2;
+  std::vector<double> q(6);
 
-	arm_parameters.a2 = PA10_ARM_A2;
-	arm_parameters.r4 = PA10_ARM_R4;
-	arm_parameters.epsilon = PA10_ARM_EPSILON;
-	arm_parameters.of1 = PA10_ARM_OF1;
-	arm_parameters.of2 = PA10_ARM_OF2;
-	arm_parameters.of3 = PA10_ARM_OF3;
-	arm_parameters.of4 = PA10_ARM_OF4;
-	arm_parameters.of5 = PA10_ARM_OF5;
-	arm_parameters.of6 = PA10_ARM_OF6;
+  arm_parameters.a2 = PA10_ARM_A2;
+  arm_parameters.r4 = PA10_ARM_R4;
+  arm_parameters.epsilon = PA10_ARM_EPSILON;
+  arm_parameters.of1 = PA10_ARM_OF1;
+  arm_parameters.of2 = PA10_ARM_OF2;
+  arm_parameters.of3 = PA10_ARM_OF3;
+  arm_parameters.of4 = PA10_ARM_OF4;
+  arm_parameters.of5 = PA10_ARM_OF5;
+  arm_parameters.of6 = PA10_ARM_OF6;
 
-	Gb_matrix4_th ( Tend_eff, &eth );
+  Gb_matrix4_th ( Tend_eff, &eth );
 
-	//PA10_TOOL_LENGTH+0.041= distance à ajouter pour que le repere terminal soit à l'extrémité
-	//du dernier corps du bras (celui sur lequel est montée la pince)
-	//On rajoute 0.0685 pour que le repere soit au niveau des "doigts" (hémisphères) de la pince.
-	//Il faut aussi se décaler de O.OOO5 selon x pour que le plan oxy du repere soit bien dans le plan
-	//des trois doigts.
-	Gb_dep_set ( &dep1, 0, 0, PA10_TOOL_LENGTH + PA10_6ARM_LENGTH, 0.0, 1.0, 0.0, -M_PI_2 );
+  //PA10_TOOL_LENGTH+0.041= distance à ajouter pour que le repere terminal soit à l'extrémité
+  //du dernier corps du bras (celui sur lequel est montée la pince)
+  //On rajoute 0.0685 pour que le repere soit au niveau des "doigts" (hémisphères) de la pince.
+  //Il faut aussi se décaler de O.OOO5 selon x pour que le plan oxy du repere soit bien dans le plan
+  //des trois doigts.
+  Gb_dep_set ( &dep1, 0, 0, PA10_TOOL_LENGTH + PA10_6ARM_LENGTH, 0.0, 1.0, 0.0, -M_PI_2 );
 //   Gb_dep_set(&dep2, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, -(M_PI/8.0));
-	Gb_dep_set ( &dep2, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 );
-	Gb_dep_th ( &dep1, &thdep1 );
-	Gb_dep_th ( &dep2, &thdep2 );
-	Gb_th_produit ( &thdep1, &thdep2, &R6RT );
-	Gb_th_inverse ( &R6RT, &invR6RT );
+  Gb_dep_set ( &dep2, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 );
+  Gb_dep_th ( &dep1, &thdep1 );
+  Gb_dep_th ( &dep2, &thdep2 );
+  Gb_th_produit ( &thdep1, &thdep2, &R6RT );
+  Gb_th_inverse ( &R6RT, &invR6RT );
 
-	Gb_th_produit ( &eth, &invR6RT, &thMatPA10 );
+  Gb_th_produit ( &eth, &invR6RT, &thMatPA10 );
 
-	p3d_get_robot_config_into ( robot, &q );
+  p3d_get_robot_config_into ( robot, &cfg );
 
-	qcurrent.q1 = DEGTORAD * PA10_Q1_INIT;
-	qcurrent.q2 = DEGTORAD * PA10_Q2_INIT;
-	qcurrent.q3 = DEGTORAD * PA10_Q3_INIT;
-	qcurrent.q4 = DEGTORAD * PA10_Q4_INIT;
-	qcurrent.q5 = DEGTORAD * PA10_Q5_INIT;
-	qcurrent.q6 = DEGTORAD * PA10_Q6_INIT;
+  qcurrent.q1 = DEGTORAD * PA10_Q1_INIT;
+  qcurrent.q2 = DEGTORAD * PA10_Q2_INIT;
+  qcurrent.q3 = DEGTORAD * PA10_Q3_INIT;
+  qcurrent.q4 = DEGTORAD * PA10_Q4_INIT;
+  qcurrent.q5 = DEGTORAD * PA10_Q5_INIT;
+  qcurrent.q6 = DEGTORAD * PA10_Q6_INIT;
 
-	result= Gb_MGI6rTh_O ( &arm_parameters, &thMatPA10, &qcurrent, &d, &qgoal );
+  result= Gb_MGI6rTh_O ( &arm_parameters, &thMatPA10, &qcurrent, &d, &qgoal );
 
-	switch ( result )
-	{
-		case MGI_OK:
-			//printf("MGI_OK\n");
-			break;
-		case MGI_ERROR:
-			//printf("MGI_ERROR\n");
-			return GP_ERROR;
-			break;
-		case MGI_APPROXIMATE:
-			//printf("MGI_APPROXIMATE\n");
-			break;
-		case MGI_SINGULAR:
-			//printf("MGI_SINGULAR\n");
-			break;
-	}
+  switch ( result )
+  {
+    case MGI_OK:
+    //printf("MGI_OK\n");
+    break;
+    case MGI_ERROR:
+    //printf("MGI_ERROR\n");
+    return GP_ERROR;
+    break;
+    case MGI_APPROXIMATE:
+    //printf("MGI_APPROXIMATE\n");
+    break;
+    case MGI_SINGULAR:
+    //printf("MGI_SINGULAR\n");
+    break;
+  }
 
-	configPt q0= NULL;
+  configPt cfg0= NULL;
 
-	q0= p3d_alloc_config ( robot );
-	p3d_get_robot_config_into ( robot, &q0 );
+  cfg0= p3d_alloc_config ( robot );
+  p3d_get_robot_config_into ( robot, &cfg0 );
 
-	// tests if the joint parameters are within the bounds with gpSet_arm_configuration() function:
-	if ( gpSet_arm_configuration ( robot, GP_PA10, qgoal.q1, qgoal.q2, qgoal.q3, qgoal.q4, qgoal.q5, qgoal.q6 ) ==GP_OK )
-	{
-		p3d_get_robot_config_into ( robot, &q );
-		p3d_set_and_update_this_robot_conf ( robot, q0 );
-		p3d_destroy_config ( robot, q0 );
-		return GP_OK;
-	}
-	else
-	{
-		p3d_set_and_update_this_robot_conf ( robot, q0 );
-		p3d_destroy_config ( robot, q0 );
-		return GP_ERROR;
-	}
+  // tests if the joint parameters are within the bounds with gpSet_arm_configuration() function:
+  q.at(0)= qgoal.q1;
+  q.at(1)= qgoal.q2;
+  q.at(2)= qgoal.q3;
+  q.at(3)= qgoal.q4;
+  q.at(4)= qgoal.q5;
+  q.at(5)= qgoal.q6;
+//   if ( gpSet_arm_configuration ( robot, GP_PA10, qgoal.q1, qgoal.q2, qgoal.q3, qgoal.q4, qgoal.q5, qgoal.q6 ) ==GP_OK )
+  if ( gpSet_arm_configuration ( robot, GP_PA10, q ) ==GP_OK )
+  {
+    p3d_get_robot_config_into ( robot, &cfg );
+    p3d_set_and_update_this_robot_conf ( robot, cfg0 );
+    p3d_destroy_config ( robot, cfg0 );
+    return GP_OK;
+  }
+  else
+  {
+    p3d_set_and_update_this_robot_conf ( robot, cfg0 );
+    p3d_destroy_config ( robot, cfg0 );
+    return GP_ERROR;
+  }
 }
 
 
-#ifdef LIGHT_PLANNER
 //! @ingroup graspPlanning
-int gpInverse_geometric_model ( p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q )
+//! Computes the inverse kinematics of the LWR arm.
+//! \param robot the robot (that must have joints with specific names (see graspPlanning.h))
+//! \param Tend_eff the desired end effector pose matrix (given in the arm base frame)
+//! \param q the solution joint parameter vector (that must be allocated before calling the function)
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpInverse_geometric_model_LWR ( p3d_rob *robot, p3d_matrix4 Tend_eff, configPt cfg )
 {
-	if ( robot==NULL )
-	{
-		printf ( "%s: %d: gpInverse_geometric_model(): robot is NULL.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
+  if(robot==NULL)
+  {
+    printf("%s: %d: gpInverse_geometric_model_LWR(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
 
-	int result;
-	configPt q0= NULL;
+  int i;
+  int valid[8];
+  double qgoal[8][7];
+  std::vector<double> q(7);
+  configPt cfg0= NULL;
 
-	q0= p3d_alloc_config ( robot );
-	p3d_get_robot_config_into ( robot, &q0 );
+  ikLWRArmSolver(M_PI/4.0, Tend_eff, qgoal, valid);
 
-	if ( p3d_set_virtual_object_pose ( robot, Tend_eff ) !=0 )
-	{
-		p3d_destroy_config ( robot, q0 );
-		return GP_ERROR;
-	}
+  cfg0= p3d_alloc_config ( robot );
+  p3d_get_robot_config_into ( robot, &cfg0 );
 
-// activateCcCntrts(robot, -1);
-// result= p3d_update_this_robot_pos(robot);
-	p3d_get_robot_config_into ( robot, &q );
-// print_config(robot, q0);
-// print_config(robot, q);
-	deactivateCcCntrts ( robot, -1 );
-	p3d_set_and_update_this_robot_conf ( robot, q0 );
-	p3d_destroy_config ( robot, q0 );
+  for(i=0; i<8; ++i)
+  {
+    if(!valid[i])
+    {  continue; }
+    else
+    { 
+      // tests if the joint parameters are within the bounds with gpSet_arm_configuration() function:
+      q.at(0)= qgoal[i][0];
+      q.at(1)= qgoal[i][1];
+      q.at(2)= qgoal[i][2];
+      q.at(3)= qgoal[i][3];
+      q.at(4)= qgoal[i][4];
+      q.at(5)= qgoal[i][5];
+      q.at(6)= qgoal[i][6];
+      if(gpSet_arm_configuration( robot, GP_LWR, q )==GP_OK)
+      {
+        p3d_get_robot_config_into( robot, &cfg );
+        p3d_set_and_update_this_robot_conf( robot, cfg0 );
+        p3d_destroy_config( robot, cfg0 );
+        return GP_OK;
+      }
+     }
+  }
 
+  if(i>=8)
+  {
+    p3d_set_and_update_this_robot_conf ( robot, cfg0 );
+    p3d_destroy_config ( robot, cfg0 );
+  }
 
-	return 1;
-	if ( result==FALSE )
-	{
-		return GP_ERROR;
-	}
-	else
-	{
-		return GP_OK;
-	}
-
+  return GP_ERROR;
 }
-#endif
+
+//! @ingroup graspPlanning
+//! Computes the inverse kinematics of robot's arm (PA-10 or LWR).
+//! \param robot the robot (that must have joints with specific names (see graspPlanning.h))
+//! \param arm_type the chosen arm type (see gpArm_type in graspPlanning.h)
+//! \param Tend_eff the desired end effector pose matrix (given in the arm base frame)
+//! \param q the solution joint parameter vector (that must be allocated before calling the function)
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpInverse_geometric_model_arm(p3d_rob *robot, gpArm_type arm_type, p3d_matrix4 Tend_eff, configPt cfg)
+{
+  if( robot==NULL )
+  {
+    printf("%s: %d: gpInverse_geometric_model_arm(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  int result;
+
+  switch(arm_type)
+  {
+    case GP_PA10:
+      result= gpInverse_geometric_model_PA10(robot, Tend_eff, cfg);
+    break;
+    case GP_LWR:
+      result= gpInverse_geometric_model_LWR(robot, Tend_eff, cfg);
+    break;
+    default:
+    printf("%s: %d: gpInverse_geometric_model_arm(): undefined arm type.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+    break;
+  }
+
+  return result;
+}
 
 //! @ingroup graspPlanning
 //! Finds, for a given mobile base configuration of the robot, a grasp from the given grasp list, that is
@@ -2001,100 +2049,87 @@ int gpInverse_geometric_model ( p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q
 //! \param grasp a copy of the grasp that has been found, in case of success
 //! \param hand parameters of the hand
 //! \return a pointer to the computed grasping configuration of the whole robot in case of success, NULL otherwise
-configPt gpFind_grasp_from_base_configuration ( p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand )
+configPt gpFind_grasp_from_base_configuration ( p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &handProp )
 {
-#ifdef GP_DEBUG
-	if ( robot==NULL )
-	{
-		printf ( "%s: %d: gpFind_robot_config_from_grasp(): robot is NULL.\n",__FILE__,__LINE__ );
-		return NULL;
-	}
-	if ( object==NULL )
-	{
-		printf ( "%s: %d: gpFind_robot_config_from_grasp(): object is NULL.\n",__FILE__,__LINE__ );
-		return NULL;
-	}
-#endif
+  #ifdef GP_DEBUG
+  if ( robot==NULL )
+  {
+    printf ( "%s: %d: gpFind_robot_config_from_grasp(): robot is NULL.\n",__FILE__,__LINE__ );
+    return NULL;
+  }
+  if ( object==NULL )
+  {
+    printf ( "%s: %d: gpFind_robot_config_from_grasp(): object is NULL.\n",__FILE__,__LINE__ );
+    return NULL;
+  }
+  #endif
 
-	std::list<gpGrasp>::iterator igrasp;
+  std::list<gpGrasp>::iterator igrasp;
 
-	p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object, gframe_world, gframe_robot, gframe_robot2;
-	p3d_matrix4 T, Thand, Twrist;
-	configPt q0= NULL; //pour memoriser la configuration courante du robot
-	configPt result= NULL;
+  p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object, gframe_world, gframe_robot, gframe_robot2;
+  p3d_matrix4 T, Thand, Twrist;
+  configPt q0= NULL; //pour memoriser la configuration courante du robot
+  configPt result= NULL;
 
+  q0= p3d_get_robot_config ( robot );
 
-	q0= p3d_get_robot_config ( robot );
+  //On met à jour la configuration du robot pour que sa base soit dans la configuration
+  //souhaitée:
+  p3d_set_and_update_this_robot_conf ( robot, qbase );
+  result= p3d_alloc_config ( robot );
 
-	XYZ_ENV->cur_robot= robot;
+  gpGet_arm_base_frame ( robot, base_frame ); //on récupère le repere de la base du bras
+  p3d_matInvertXform ( base_frame, inv_base_frame );
 
-	//On met à jour la configuration du robot pour que sa base soit dans la configuration
-	//souhaitée:
-	p3d_set_and_update_this_robot_conf ( robot, qbase );
-	result= p3d_alloc_config ( robot );
+  gpDeactivate_object_fingertips_collisions(robot, object->o[0], handProp);
 
-	gpGet_arm_base_frame ( robot, base_frame ); //on récupère le repere de la base du bras
-	p3d_matInvertXform ( base_frame, inv_base_frame );
+  //pour chaque prise de la liste:
+  for ( igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++ )
+  {
+    p3d_mat4Copy ( igrasp->frame, gframe_object );
+    p3d_get_body_pose ( object, igrasp->body_index, object_frame );
 
-	//pour chaque prise de la liste:
-	for ( igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++ )
-	{
-		p3d_mat4Copy ( igrasp->frame, gframe_object );
-		p3d_get_body_pose ( object, igrasp->body_index, object_frame );
+    p3d_mat4Mult ( object_frame, gframe_object, gframe_world ); //passage repere objet -> repere monde
+    p3d_mat4Mult ( gframe_world, handProp.Tgrasp_frame_hand, Thand );
+    p3d_mat4Mult ( Thand, handProp.Thand_wrist, Twrist );
 
-		p3d_mat4Mult ( object_frame, gframe_object, gframe_world ); //passage repere objet -> repere monde
-		p3d_mat4Mult ( gframe_world, hand.Tgrasp_frame_hand, Thand );
-		p3d_mat4Mult ( Thand, hand.Thand_wrist, Twrist );
+    p3d_mat4Mult ( inv_base_frame, gframe_world, gframe_robot ); //passage repere monde -> repere robot
+    p3d_mat4Mult ( inv_base_frame, T, Twrist );
 
-		p3d_mat4Mult ( inv_base_frame, gframe_world, gframe_robot ); //passage repere monde -> repere robot
-		p3d_mat4Mult ( inv_base_frame, T, Twrist );
+    //     gpDeactivate_object_fingertips_collisions(robot, object, hand);
+    p3d_mat4Mult ( gframe_robot, handProp.Tgrasp_frame_hand, gframe_robot2 );
+    p3d_mat4Mult ( gframe_robot2, handProp.Thand_wrist, gframe_robot );
 
-//     gpDeactivate_object_fingertips_collisions(robot, object, hand);
-		switch ( arm_type )
-		{
-			case GP_PA10:
-				p3d_mat4Mult ( gframe_robot, hand.Tgrasp_frame_hand, gframe_robot2 );
-				p3d_mat4Mult ( gframe_robot2, hand.Thand_wrist, gframe_robot );
+    p3d_copy_config_into ( robot, qbase, &result );
 
-				p3d_copy_config_into ( robot, qbase, &result );
+    if ( gpInverse_geometric_model_arm( robot, arm_type, gframe_robot, result ) ==GP_OK )
+    {
+        #ifdef LIGHT_PLANNER
+        //p3d_update_virtual_object_config_for_arm_ik_constraint(robot, 0, result);
+        //            p3d_set_and_update_this_robot_conf(robot, result);
+        #endif
+        p3d_set_and_update_this_robot_conf ( robot, result );
 
-				if ( gpInverse_geometric_model_PA10 ( robot, gframe_robot, result ) ==GP_OK )
-				{
-#ifdef LIGHT_PLANNER
-//p3d_update_virtual_object_config_for_arm_ik_constraint(robot, 0, result);
-//            p3d_set_and_update_this_robot_conf(robot, result);
-#endif
-                                        p3d_set_and_update_this_robot_conf ( robot, result );
+        gpSet_grasp_configuration ( robot, *igrasp );
 
-                                        gpSet_grasp_configuration ( robot, *igrasp );
+        // if(!p3d_col_test()) //if no collision
+        if ( !p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0) && !p3d_col_test_robot_other(robot, object, 0) ) //if no collision
+        {
+          p3d_get_robot_config_into ( robot, &result );
+          grasp= *igrasp;
 
-//            if(!p3d_col_test()) //if no collision
-                                        if ( !p3d_col_test_robot_statics ( robot, 0 ) && !p3d_col_test_self_collision ( robot, 0 ) && !p3d_col_test_self_collision ( robot, 0 ) &&! p3d_col_test_robot_other (robot, object, 0) ) //if no collision
-                                        {
-                                                p3d_get_robot_config_into ( robot, &result );
-                                                grasp= *igrasp;
+          p3d_set_and_update_this_robot_conf ( robot, q0 );
+          p3d_destroy_config ( robot, q0 );
 
-                                                p3d_set_and_update_this_robot_conf ( robot, q0 );
-                                                p3d_destroy_config ( robot, q0 );
-
-                                                return result;
-                                        }
-                                }
-                                break;
-                        default:
-                                printf ( "%s: %d: gpFind_grasp_from_base_configuration(): undefined or unimplemented arm type.\n",__FILE__,__LINE__ );
-                                p3d_set_and_update_this_robot_conf ( robot, q0 );
-                                p3d_destroy_config ( robot, q0 );
-                                return NULL;
-                                break;
-                }
-
+          return result;
         }
+    }
+  }
 
-        p3d_set_and_update_this_robot_conf ( robot, q0 );
-        p3d_destroy_config ( robot, q0 );
+  p3d_set_and_update_this_robot_conf ( robot, q0 );
+  p3d_destroy_config ( robot, q0 );
 
-        return NULL;
+  return NULL;
 }
 
 
@@ -2256,43 +2291,43 @@ int gpGrasp_visibility_filter ( p3d_rob *robot, p3d_rob *object, p3d_jnt *cam_jn
 //! NB: The quality score of the grasps is modified inside the function.
 int gpFind_grasp_and_pregrasp_from_base_configuration ( p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand, double distance, configPt qpregrasp, configPt qgrasp )
 {
-#ifdef GP_DEBUG
-	if ( robot==NULL )
-	{
-		printf ( "%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): robot is NULL.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
-	if ( object==NULL )
-	{
-		printf ( "%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): object is NULL.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
-#endif
+    #ifdef GP_DEBUG
+    if ( robot==NULL )
+    {
+            printf ( "%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): robot is NULL.\n",__FILE__,__LINE__ );
+            return GP_ERROR;
+    }
+    if ( object==NULL )
+    {
+            printf ( "%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): object is NULL.\n",__FILE__,__LINE__ );
+            return GP_ERROR;
+    }
+    #endif
 
-	std::list<gpGrasp>::iterator igrasp;
-	p3d_vector3 verticalAxis;
-	p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object1, gframe_object2;
-	p3d_matrix4 gframe_world1, gframe_world2, gframe_robot1, gframe_robot2, tmp;
-	configPt q0= NULL; //pour memoriser la configuration courante du robot
-	configPt result1= NULL, result2= NULL;
-
-
-	q0= p3d_get_robot_config ( robot );
-
-	//On met à jour la configuration du robot pour que sa base soit dans la configuration
-	//souhaitée:
-	p3d_set_and_update_this_robot_conf ( robot, qbase );
-	result1= p3d_alloc_config ( robot );
-	result2= p3d_alloc_config ( robot );
+    std::list<gpGrasp>::iterator igrasp;
+    p3d_vector3 verticalAxis;
+    p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object1, gframe_object2;
+    p3d_matrix4 gframe_world1, gframe_world2, gframe_robot1, gframe_robot2, tmp;
+    configPt q0= NULL; //pour memoriser la configuration courante du robot
+    configPt result1= NULL, result2= NULL;
 
 
-	gpGet_arm_base_frame ( robot, base_frame ); //on récupère le repere de la base du bras
-	p3d_matInvertXform ( base_frame, inv_base_frame );
+    q0= p3d_get_robot_config ( robot );
 
-	//replace the original quality score by a score measuring how well the grasps that are aligned with the vertical axis of the world (pointing downward):
-	verticalAxis[0]= 0.0;
-	verticalAxis[1]= 0.0;
-	verticalAxis[2]= -1.0;
+    //On met à jour la configuration du robot pour que sa base soit dans la configuration
+    //souhaitée:
+    p3d_set_and_update_this_robot_conf ( robot, qbase );
+    result1= p3d_alloc_config ( robot );
+    result2= p3d_alloc_config ( robot );
+
+
+    gpGet_arm_base_frame ( robot, base_frame ); //on récupère le repere de la base du bras
+    p3d_matInvertXform ( base_frame, inv_base_frame );
+
+    //replace the original quality score by a score measuring how well the grasps that are aligned with the vertical axis of the world (pointing downward):
+    verticalAxis[0]= 0.0;
+    verticalAxis[1]= 0.0;
+    verticalAxis[2]= -1.0;
 
 
 //   for(igrasp= graspList.begin(); igrasp!=graspList.end(); igrasp++)
@@ -2308,182 +2343,79 @@ int gpFind_grasp_and_pregrasp_from_base_configuration ( p3d_rob *robot, p3d_rob 
 //   }
 
 
-	//for each grasp of the list:
-	for ( igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++ )
-	{
-		p3d_mat4Copy ( igrasp->frame, gframe_object1 ); //for grasp config test
-		p3d_mat4Copy ( igrasp->frame, gframe_object2 ); //for pre-grasp config test
-		gframe_object2[0][3]-= distance*gframe_object2[0][2];
-		gframe_object2[1][3]-= distance*gframe_object2[1][2];
-		gframe_object2[2][3]-= distance*gframe_object2[2][2];
+  //for each grasp of the list:
+  for ( igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++ )
+  {
+    p3d_mat4Copy ( igrasp->frame, gframe_object1 ); //for grasp config test
+    p3d_mat4Copy ( igrasp->frame, gframe_object2 ); //for pre-grasp config test
+    gframe_object2[0][3]-= distance*gframe_object2[0][2];
+    gframe_object2[1][3]-= distance*gframe_object2[1][2];
+    gframe_object2[2][3]-= distance*gframe_object2[2][2];
 
-		p3d_get_body_pose ( object, igrasp->body_index, object_frame );
+    p3d_get_body_pose ( object, igrasp->body_index, object_frame );
 
-		p3d_mat4Mult ( object_frame, gframe_object1, gframe_world1 ); //passage repere objet -> repere monde
-		p3d_mat4Mult ( object_frame, gframe_object2, gframe_world2 ); //passage repere objet -> repere monde
+    p3d_mat4Mult ( object_frame, gframe_object1, gframe_world1 ); //passage repere objet -> repere monde
+    p3d_mat4Mult ( object_frame, gframe_object2, gframe_world2 ); //passage repere objet -> repere monde
 
-		p3d_mat4Mult ( inv_base_frame, gframe_world1, gframe_robot1 ); //passage repere monde -> repere robot
-		p3d_mat4Mult ( inv_base_frame, gframe_world2, gframe_robot2 ); //passage repere monde -> repere robot
+    p3d_mat4Mult ( inv_base_frame, gframe_world1, gframe_robot1 ); //passage repere monde -> repere robot
+    p3d_mat4Mult ( inv_base_frame, gframe_world2, gframe_robot2 ); //passage repere monde -> repere robot
 
-//     gpDeactivate_object_fingertips_collisions(robot, object, hand);
-		switch ( arm_type )
-		{
-			case GP_PA10:
-				p3d_mat4Mult ( gframe_robot1, hand.Tgrasp_frame_hand, tmp );
-				p3d_mat4Mult ( tmp, hand.Thand_wrist, gframe_robot1 );
+    //     gpDeactivate_object_fingertips_collisions(robot, object, hand);
+    switch ( arm_type )
+    {
+      case GP_PA10:
+        p3d_mat4Mult ( gframe_robot1, hand.Tgrasp_frame_hand, tmp );
+        p3d_mat4Mult ( tmp, hand.Thand_wrist, gframe_robot1 );
 
-				p3d_mat4Mult ( gframe_robot2, hand.Tgrasp_frame_hand, tmp );
-				p3d_mat4Mult ( tmp, hand.Thand_wrist, gframe_robot2 );
+        p3d_mat4Mult ( gframe_robot2, hand.Tgrasp_frame_hand, tmp );
+        p3d_mat4Mult ( tmp, hand.Thand_wrist, gframe_robot2 );
 
-				p3d_copy_config_into ( robot, qbase, &result1 );
-				p3d_copy_config_into ( robot, qbase, &result2 );
+        p3d_copy_config_into ( robot, qbase, &result1 );
+        p3d_copy_config_into ( robot, qbase, &result2 );
 
-				if ( gpInverse_geometric_model_PA10 ( robot, gframe_robot1, result1 ) ==GP_OK && gpInverse_geometric_model_PA10 ( robot, gframe_robot2, result2 ) ==GP_OK )
-				{
-#ifdef LIGHT_PLANNER
-//p3d_update_virtual_object_config_for_arm_ik_constraint(robot, 0, result);
-//            p3d_set_and_update_this_robot_conf(robot, result);
-#endif
-					p3d_set_and_update_this_robot_conf ( robot, result1 );
-					gpSet_grasp_configuration ( robot, *igrasp, 0 );
-//            if(p3d_col_test())
-//            {  continue;  }
-					gpOpen_hand ( robot, hand );
-					if ( p3d_col_test() )
-						{  continue;  }
+        if ( gpInverse_geometric_model_PA10 ( robot, gframe_robot1, result1 ) ==GP_OK && gpInverse_geometric_model_PA10 ( robot, gframe_robot2, result2 ) ==GP_OK )
+        {
+          #ifdef LIGHT_PLANNER
+          //p3d_update_virtual_object_config_for_arm_ik_constraint(robot, 0, result);
+          //            p3d_set_and_update_this_robot_conf(robot, result);
+          #endif
+          p3d_set_and_update_this_robot_conf ( robot, result1 );
+          gpSet_grasp_configuration ( robot, *igrasp, 0 );
+          //            if(p3d_col_test())
+          //            {  continue;  }
+          gpOpen_hand ( robot, hand );
+          if ( p3d_col_test() )
+                  {  continue;  }
 
-					p3d_set_and_update_this_robot_conf ( robot, result2 );
-					gpOpen_hand ( robot, hand );
-					if ( p3d_col_test() )
-						{  continue;  }
+          p3d_set_and_update_this_robot_conf ( robot, result2 );
+          gpOpen_hand ( robot, hand );
+          if ( p3d_col_test() )
+                  {  continue;  }
 
-					grasp= *igrasp;
+          grasp= *igrasp;
 
-					p3d_set_and_update_this_robot_conf ( robot, q0 );
-					p3d_destroy_config ( robot, q0 );
+          p3d_set_and_update_this_robot_conf ( robot, q0 );
+          p3d_destroy_config ( robot, q0 );
 
-					p3d_copy_config_into ( robot, result1, &qgrasp );
-					p3d_copy_config_into ( robot, result2, &qpregrasp );
-					return GP_OK;
-				}
-				break;
-			default:
-				printf ( "%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): undefined or unimplemented arm type.\n",__FILE__,__LINE__ );
-				p3d_set_and_update_this_robot_conf ( robot, q0 );
-				p3d_destroy_config ( robot, q0 );
-				return GP_ERROR;
-				break;
-		}
+          p3d_copy_config_into ( robot, result1, &qgrasp );
+          p3d_copy_config_into ( robot, result2, &qpregrasp );
+          return GP_OK;
+        }
+      break;
+      default:
+       printf ( "%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): undefined or unimplemented arm type.\n",__FILE__,__LINE__ );
+       p3d_set_and_update_this_robot_conf ( robot, q0 );
+       p3d_destroy_config ( robot, q0 );
+       return GP_ERROR;
+      break;
+    }
 
-	}
+  }
 
-	p3d_set_and_update_this_robot_conf ( robot, q0 );
-	p3d_destroy_config ( robot, q0 );
+  p3d_set_and_update_this_robot_conf ( robot, q0 );
+  p3d_destroy_config ( robot, q0 );
 
-	return GP_ERROR;
-}
-
-//! From a grasp, tries to find a configuration for the base and then the arm.
-//! \param robot the robot
-//! \param object the object to grasp (a freeflyer robot)
-//! \param grasp the desired grasp
-//! \param arm_type the robot arm type
-//! \param hand parameters of the hand
-//! \return a pointer to the computed grasping configuration of the whole robot in case of success, NULL otherwise
-configPt gpFind_configuration_from_grasp ( p3d_rob *robot, p3d_rob *object, gpGrasp &grasp, gpArm_type arm_type, gpHand_properties &handProp )
-{
-#ifdef GP_DEBUG
-	if ( robot==NULL )
-	{
-		printf ( "%s: %d: gpFind_configuration_from_grasp(): robot is NULL.\n",__FILE__,__LINE__ );
-		return NULL;
-	}
-	if ( object==NULL )
-	{
-		printf ( "%s: %d: gpFind_configuration_from_grasp(): object is NULL.\n",__FILE__,__LINE__ );
-		return NULL;
-	}
-#endif
-
-	unsigned int i;
-	std::list<gpGrasp>::iterator igrasp;
-	p3d_vector3 objectCenter;
-	p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object, gframe_world;
-	p3d_matrix4 T, Thand, Twrist;
-	configPt q0= NULL, qbase= NULL;
-	configPt result= NULL;
-
-	result=  p3d_alloc_config ( robot );
-	// save the current robot's config:
-	q0= p3d_get_robot_config ( robot );
-
-	// get object center
-	p3d_get_body_pose ( object, 0, object_frame );
-	gpCompute_mass_properties ( object->o[0]->pol[0]->poly );
-	objectCenter[0]= object_frame[0][3] + object->o[0]->pol[0]->poly->cmass[0];
-	objectCenter[1]= object_frame[1][3] + object->o[0]->pol[0]->poly->cmass[1];
-	objectCenter[2]= object_frame[2][3] + object->o[0]->pol[0]->poly->cmass[2];
-
-	// get the desired pose of the end effector, in world frame:
-	p3d_mat4Copy ( grasp.frame, gframe_object );
-	p3d_mat4Mult ( object_frame, gframe_object, gframe_world );
-	p3d_mat4Mult ( gframe_world, handProp.Tgrasp_frame_hand, Thand );
-	p3d_mat4Mult ( Thand, handProp.Thand_wrist, Twrist ); //desired wrist pose in world coordinate
-
-
-
-	for ( i=0; i<200; ++i )
-	{
-		qbase= gpRandom_robot_base ( robot, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, GP_PA10 );
-		p3d_set_and_update_this_robot_conf ( robot, qbase );
-
-		gpGet_arm_base_frame ( robot, base_frame ); // get arm base frame
-		p3d_matInvertXform ( base_frame, inv_base_frame );
-
-		p3d_mat4Mult ( inv_base_frame, Twrist, T ); // wrist pose in arm's frame
-
-
-		switch ( arm_type )
-		{
-			case GP_PA10:
-				p3d_copy_config_into ( robot, qbase, &result );
-
-				if ( gpInverse_geometric_model_PA10 ( robot, T, result ) ==GP_OK )
-				{
-					p3d_set_and_update_this_robot_conf ( robot, result );
-					gpSet_grasp_configuration ( robot, grasp );
-
-					if ( !p3d_col_test_robot_statics ( robot, 0 ) && !p3d_col_test_self_collision ( robot, 0 ) ) //if no collision
-					{
-						p3d_get_robot_config_into ( robot, &result );
-
-						p3d_set_and_update_this_robot_conf ( robot, q0 );
-						p3d_destroy_config ( robot, q0 );
-
-						if ( qbase!=NULL )
-							p3d_destroy_config ( robot,  qbase );
-
-						return result;
-					}
-				}
-				break;
-			default:
-				printf ( "%s: %d: gpFind_configuration_from_grasp(): undefined or unimplemented arm type.\n",__FILE__,__LINE__ );
-				p3d_set_and_update_this_robot_conf ( robot, q0 );
-				p3d_destroy_config ( robot, q0 );
-				return NULL;
-				break;
-		}
-		if ( qbase!=NULL )
-			{  p3d_destroy_config ( robot, qbase ); }
-	}
-
-
-	p3d_set_and_update_this_robot_conf ( robot, q0 );
-	p3d_destroy_config ( robot, q0 );
-
-	return NULL;
-
+  return GP_ERROR;
 }
 
 //! @ingroup graspPlanning

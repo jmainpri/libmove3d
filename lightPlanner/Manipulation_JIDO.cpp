@@ -2063,7 +2063,7 @@ int Manipulation_JIDO::dynamicGrasping(char *robot_name, char *hand_robot_name, 
      nb_iters_max= 100;
      for(i=0; i<nb_iters_max; i++)
      {
-        qbase= gpRandom_robot_base(robotPt, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, GP_PA10);
+        qbase= gpRandom_robot_base(robotPt, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter);
         if(qbase==NULL)
         {  continue;  }
         p3d_set_and_update_this_robot_conf(robotPt, qbase);
@@ -2155,7 +2155,7 @@ int Manipulation_JIDO::robotBaseGraspConfig(char *objectName, double *x, double 
 	for ( i=0; i<nb_iters_max; i++ )
 	{
           if(i!=0) {
-	        qbase= gpRandom_robot_base ( _robotPt, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, GP_PA10 );
+	        qbase= gpRandom_robot_base ( _robotPt, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter );
 		if ( qbase==NULL )
 			{   break;   }
           }

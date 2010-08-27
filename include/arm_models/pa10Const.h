@@ -40,6 +40,8 @@
 #define GP_ARMJOINT3            "armJoint3"
 #define GP_ARMJOINT4            "armJoint4"
 #define GP_ARMJOINT5            "armJoint5"
+#define GP_ARMJOINT6            "armJoint6"
+#define GP_ARMJOINT7            "armJoint7"
 #define GP_WRISTJOINT          "wristJoint"
 #define GP_FINGERJOINT        "fingerJoint"
 #define GP_FREEFLYERJOINT  "freeflyerJoint"

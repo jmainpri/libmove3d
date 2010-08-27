@@ -1001,21 +1001,21 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        T[2][0]=  1.0;  T[2][1]=  0.0;  T[2][2]=  0.0;  T[2][3]=  -0.007;
        T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
 
-//        T[0][0]=  0.0;  T[0][1]=  0.0;  T[0][2]=  1.0;  T[0][3]=  0.0;
-//        T[1][0]= -1.0;  T[1][1]=  0.0;  T[1][2]=  0.0;  T[1][3]=  0.0;
-//        T[2][0]=  0.0;  T[2][1]= -1.0;  T[2][2]=  0.0;  T[2][3]=  0.0;
-//        T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
-//        Thand_wrist[0][0]=  0.0;  Thand_wrist[0][1]= -1.0;  Thand_wrist[0][2]=  0.0;  Thand_wrist[0][3]=  0.0; 
-//        Thand_wrist[1][0]=  0.0;  Thand_wrist[1][1]=  0.0;  Thand_wrist[1][2]= -1.0;  Thand_wrist[1][3]=  0.0;
-//        Thand_wrist[2][0]=  1.0;  Thand_wrist[2][1]=  0.0;  Thand_wrist[2][2]=  0.0;  Thand_wrist[2][3]=  0.065; 
-//        Thand_wrist[3][0]=  0.0;  Thand_wrist[3][1]=  0.0;  Thand_wrist[3][2]=  0.0;  Thand_wrist[3][3]=  1.0;
+// //        T[0][0]=  0.0;  T[0][1]=  0.0;  T[0][2]=  1.0;  T[0][3]=  0.0;
+// //        T[1][0]= -1.0;  T[1][1]=  0.0;  T[1][2]=  0.0;  T[1][3]=  0.0;
+// //        T[2][0]=  0.0;  T[2][1]= -1.0;  T[2][2]=  0.0;  T[2][3]=  0.0;
+// //        T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
+// //        Thand_wrist[0][0]=  0.0;  Thand_wrist[0][1]= -1.0;  Thand_wrist[0][2]=  0.0;  Thand_wrist[0][3]=  0.0; 
+// //        Thand_wrist[1][0]=  0.0;  Thand_wrist[1][1]=  0.0;  Thand_wrist[1][2]= -1.0;  Thand_wrist[1][3]=  0.0;
+// //        Thand_wrist[2][0]=  1.0;  Thand_wrist[2][1]=  0.0;  Thand_wrist[2][2]=  0.0;  Thand_wrist[2][3]=  0.065; 
+// //        Thand_wrist[3][0]=  0.0;  Thand_wrist[3][1]=  0.0;  Thand_wrist[3][2]=  0.0;  Thand_wrist[3][3]=  1.0;
 
 
-       axis[0]= 0;
-       axis[1]= 0;
-       axis[2]= 1;
-       p3d_mat4Rot(R, axis, M_PI/8.0);
-       p3d_matMultXform(R, T, Thand_wrist);
+//        axis[0]= 0;
+//        axis[1]= 0;
+//        axis[2]= 1;
+//        p3d_mat4Rot(R, axis, M_PI/8.0);
+//        p3d_matMultXform(R, T, Thand_wrist);
        //p3d_mat4Copy(T, Thand_wrist);
 
        nb_positions= 2100;
@@ -1202,21 +1202,21 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        qrest[11] = 38.17*DEGTORAD;
        qrest[12] = 49.86*DEGTORAD;
 
-       if(type==GP_SAHAND_RIGHT)
-       {
-          Thand_wrist[0][0]=  0.0;   Thand_wrist[0][1]=  0.0;   Thand_wrist[0][2]= -1.0;   Thand_wrist[0][3]=  0.0;
-          Thand_wrist[1][0]=  0.0;   Thand_wrist[1][1]=  1.0;   Thand_wrist[1][2]=  0.0;   Thand_wrist[1][3]=  0.0;
-          Thand_wrist[2][0]=  1.0;   Thand_wrist[2][1]=  0.0;   Thand_wrist[2][2]=  0.0;   Thand_wrist[2][3]=  0.15;
-          Thand_wrist[3][0]=  0.0;   Thand_wrist[3][1]=  0.0;   Thand_wrist[3][2]=  0.0;   Thand_wrist[3][3]=  1.0;
-       }
-
-       if(type==GP_SAHAND_LEFT)
-       {
-          Thand_wrist[0][0]=  0.0;   Thand_wrist[0][1]=  0.0;   Thand_wrist[0][2]= -1.0;   Thand_wrist[0][3]=  0.0;
-          Thand_wrist[1][0]=  0.0;   Thand_wrist[1][1]= -1.0;   Thand_wrist[1][2]=  0.0;   Thand_wrist[1][3]=  0.0;
-          Thand_wrist[2][0]= -1.0;   Thand_wrist[2][1]=  0.0;   Thand_wrist[2][2]=  0.0;   Thand_wrist[2][3]=  0.15;
-          Thand_wrist[3][0]=  0.0;   Thand_wrist[3][1]=  0.0;   Thand_wrist[3][2]=  0.0;   Thand_wrist[3][3]=  1.0;
-       }
+//        if(type==GP_SAHAND_RIGHT)
+//        {
+//           Thand_wrist[0][0]=  0.0;   Thand_wrist[0][1]=  0.0;   Thand_wrist[0][2]= -1.0;   Thand_wrist[0][3]=  0.0;
+//           Thand_wrist[1][0]=  0.0;   Thand_wrist[1][1]=  1.0;   Thand_wrist[1][2]=  0.0;   Thand_wrist[1][3]=  0.0;
+//           Thand_wrist[2][0]=  1.0;   Thand_wrist[2][1]=  0.0;   Thand_wrist[2][2]=  0.0;   Thand_wrist[2][3]=  0.15;
+//           Thand_wrist[3][0]=  0.0;   Thand_wrist[3][1]=  0.0;   Thand_wrist[3][2]=  0.0;   Thand_wrist[3][3]=  1.0;
+//        }
+// 
+//        if(type==GP_SAHAND_LEFT)
+//        {
+//           Thand_wrist[0][0]=  0.0;   Thand_wrist[0][1]=  0.0;   Thand_wrist[0][2]= -1.0;   Thand_wrist[0][3]=  0.0;
+//           Thand_wrist[1][0]=  0.0;   Thand_wrist[1][1]= -1.0;   Thand_wrist[1][2]=  0.0;   Thand_wrist[1][3]=  0.0;
+//           Thand_wrist[2][0]= -1.0;   Thand_wrist[2][1]=  0.0;   Thand_wrist[2][2]=  0.0;   Thand_wrist[2][3]=  0.15;
+//           Thand_wrist[3][0]=  0.0;   Thand_wrist[3][1]=  0.0;   Thand_wrist[3][2]=  0.0;   Thand_wrist[3][3]=  1.0;
+//        }
 
        //workspace (computed with gpSAHfinger_workspace_approximation (gpWorkspace.h));
        // DO NOT delete the commented lines:
@@ -1422,8 +1422,6 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        workspace.at(50).radius= 0.005209; 
 
 
-
-
        nb_positions= 500;
        nb_directions= 6;
        nb_rotations= 6;
@@ -1434,6 +1432,8 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        return GP_ERROR;
     break;
   }
+
+  setArmType(GP_PA10);
 
   return GP_OK;
 }
@@ -1486,6 +1486,110 @@ p3d_rob* gpHand_properties::initialize()
   return hand_robot;
 }
 
+//! Sets the matrix used to compute the arm wrist position from a given hand frame.
+//! It depends on how the hand is linked to the arm and on the convention used for the arm's kinematics.
+//! Default values are set when calling initialize() (for now they correspond to how the gripper or the SAHand are mounted on the PA-10).
+//! \param T the new value of Thand_wrist
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpHand_properties::setThand_wrist(p3d_matrix4 T)
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpHand_properties::setThand_wrist(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  p3d_mat4Copy(T, Thand_wrist);
+
+  return GP_OK;
+}
+
+//! Sets the arm the hand is supposed to be mounted on. It is used to set Thand_wrist to one of some predefined values.
+//! Default values are set when calling initialize() (for now they correspond to how the gripper or the SAHand are mounted on the PA-10).
+//! \param arm_type the desired arm type
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpHand_properties::setArmType(gpArm_type arm_type)
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpHand_properties::setArm(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+ 
+  p3d_vector3 axis;
+  p3d_matrix4 R, T;
+
+  p3d_mat4Copy(p3d_mat4IDENTITY, Thand_wrist);
+
+  switch(arm_type)
+  {
+    case GP_PA10:
+      switch(type)
+      {
+        case GP_GRIPPER:
+          T[0][0]=  0.0;  T[0][1]= -1.0;  T[0][2]=  0.0;  T[0][3]=  0.0;
+          T[1][0]=  0.0;  T[1][1]=  0.0;  T[1][2]= -1.0;  T[1][3]=  0.0;
+          T[2][0]=  1.0;  T[2][1]=  0.0;  T[2][2]=  0.0;  T[2][3]=  -0.007;
+          T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
+
+          axis[0]= 0;
+          axis[1]= 0;
+          axis[2]= 1;
+          p3d_mat4Rot(R, axis, M_PI/8.0);
+          p3d_matMultXform(R, T, Thand_wrist);
+        break;
+        case GP_SAHAND_RIGHT:
+          Thand_wrist[0][0]=  0.0;   Thand_wrist[0][1]=  0.0;   Thand_wrist[0][2]= -1.0;   Thand_wrist[0][3]=  0.0;
+          Thand_wrist[1][0]=  0.0;   Thand_wrist[1][1]=  1.0;   Thand_wrist[1][2]=  0.0;   Thand_wrist[1][3]=  0.0;
+          Thand_wrist[2][0]=  1.0;   Thand_wrist[2][1]=  0.0;   Thand_wrist[2][2]=  0.0;   Thand_wrist[2][3]=  0.15;
+          Thand_wrist[3][0]=  0.0;   Thand_wrist[3][1]=  0.0;   Thand_wrist[3][2]=  0.0;   Thand_wrist[3][3]=  1.0;
+        break;
+        case GP_SAHAND_LEFT:
+          Thand_wrist[0][0]=  0.0;   Thand_wrist[0][1]=  0.0;   Thand_wrist[0][2]= -1.0;   Thand_wrist[0][3]=  0.0;
+          Thand_wrist[1][0]=  0.0;   Thand_wrist[1][1]= -1.0;   Thand_wrist[1][2]=  0.0;   Thand_wrist[1][3]=  0.0;
+          Thand_wrist[2][0]= -1.0;   Thand_wrist[2][1]=  0.0;   Thand_wrist[2][2]=  0.0;   Thand_wrist[2][3]=  0.15;
+          Thand_wrist[3][0]=  0.0;   Thand_wrist[3][1]=  0.0;   Thand_wrist[3][2]=  0.0;   Thand_wrist[3][3]=  1.0;
+        break;
+        default:
+          printf("%s: %d: gpHand_properties::setArm(): the hand type should have been set before.\n",__FILE__,__LINE__);
+          return GP_ERROR;
+        break;
+      }
+    break;
+    case GP_LWR:
+      switch(type)
+      {
+        case GP_GRIPPER:
+          axis[0]= 0;
+          axis[1]= 0;
+          axis[2]= 1;
+          p3d_mat4Rot(Thand_wrist, axis, 5*M_PI/8.0);
+          Thand_wrist[0][3]= 0;
+          Thand_wrist[1][3]= 0;
+          Thand_wrist[2][3]= -0.268;
+        break;
+        case GP_SAHAND_RIGHT:
+          printf("%s: %d: gpHand_properties::setArm(): transform is not yet defined for GP_LWR + GP_SAHAND_RIGHT.\n",__FILE__,__LINE__);
+          return GP_ERROR;
+        break;
+        case GP_SAHAND_LEFT:
+          printf("%s: %d: gpHand_properties::setArm(): transform is not yet defined for GP_LWR + GP_SAHAND_LEFT.\n",__FILE__,__LINE__);
+          return GP_ERROR;
+        break;
+        default:
+          printf("%s: %d: gpHand_properties::setArm(): the hand type should have been set before.\n",__FILE__,__LINE__);
+          return GP_ERROR;
+        break;
+      }
+    break;
+    default:
+      printf("%s: %d: gpHand_properties::setArm(): undefined or unimplemented arm type.\n",__FILE__,__LINE__);
+      return GP_ERROR;
+    break;
+  }
+
+  return GP_OK;
+}
 
 //! Draws different things that allow to visualize the dimension settings in a gpHand_properties class
 //! by comparing the displayed things to the display of the Move3D model. Must be used in an OpenGL context.
@@ -1498,7 +1602,7 @@ int gpHand_properties::draw(p3d_matrix4 pose)
     printf("%s: %d: gpHand_properties::draw(): the calling instance is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
-static int ws= 0;
+  static int ws= 0;
   unsigned int i;
   int result= GP_OK;
   float matGL[16];

@@ -150,6 +150,7 @@ typedef enum gpHand_type
 typedef enum gpArm_type
 {
   GP_PA10,
+  GP_LWR,
   GP_ARM_NONE,
 } gpArm_type;
 
@@ -172,6 +173,7 @@ class gpHand_properties
 {
  public:
   gpHand_type type;
+
   unsigned int nb_fingers;
 
   //! number of active DOFs of the hand
@@ -229,11 +231,13 @@ class gpHand_properties
   gpHand_properties();
   int initialize(gpHand_type hand_type);
   p3d_rob* initialize();
+  int setThand_wrist(p3d_matrix4 T);
+  int setArmType(gpArm_type arm_type);
   int draw(p3d_matrix4 pose);
 };
-
+  
 //! @ingroup graspPlanning 
-//! A basic class of 3D vectors (that can be used in STL containers unlike p3d_vector3).
+//! A basic class of 3D vectors (that can be used in STL containers unlike p3d_vector3 ^_°).
 class gpVector3D
 {
   public:
