@@ -2411,6 +2411,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
                           fprintf(filepTrajtr,"%f ",qplot_i[w]);
 
                          }
+			 fprintf(filepTrajtr,"%d ", lpId);
                          fprintf(filepTrajtr,"\n");
 			}
   
