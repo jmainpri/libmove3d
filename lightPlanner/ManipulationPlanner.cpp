@@ -2741,14 +2741,16 @@ int  ManipulationPlanner::checkCollisionOnTraj(int currentLpId) {
   if(_cartesian == 0) {
     /* plan in the C_space */
     p3d_multiLocalPath_disable_all_groupToPlan(_robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-arm_lin", 1) ;
+    p3d_multiLocalPath_set_groupToPlan(_robotPt, _UpBodyMLP, 1) ;
+//    p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-arm_lin", 1) ;
     deactivateCcCntrts(_robotPt, -1);
   } else {
     /* plan in the cartesian space */
     qi = p3d_alloc_config(_robotPt);
     qf = p3d_alloc_config(_robotPt);
     p3d_multiLocalPath_disable_all_groupToPlan(_robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-ob_lin", 1) ;
+    p3d_multiLocalPath_set_groupToPlan(_robotPt, _ObjectMLP, 1);
+//    p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-ob_lin", 1) ;
     p3d_copy_config_into(_robotPt, _robotPt->ROBOT_POS, &qi);
     p3d_copy_config_into(_robotPt, _robotPt->ROBOT_GOTO, &qf);
     p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
@@ -2794,14 +2796,16 @@ int  ManipulationPlanner::replanCollidingTraj(int currentLpId, std::vector <int>
   if(_cartesian == 0) {
     /* plan in the C_space */
     p3d_multiLocalPath_disable_all_groupToPlan(_robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-arm_lin", 1) ;
+    p3d_multiLocalPath_set_groupToPlan(_robotPt, _UpBodyMLP, 1) ;
+//    p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-arm_lin", 1) ;
     deactivateCcCntrts(_robotPt, -1);
   } else {
     /* plan in the cartesian space */
     qi = p3d_alloc_config(_robotPt);
     qf = p3d_alloc_config(_robotPt);
     p3d_multiLocalPath_disable_all_groupToPlan(_robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-ob_lin", 1) ;
+    p3d_multiLocalPath_set_groupToPlan(_robotPt, _ObjectMLP, 1);
+//    p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-ob_lin", 1) ;
     p3d_copy_config_into(_robotPt, _robotPt->ROBOT_POS, &qi);
     p3d_copy_config_into(_robotPt, _robotPt->ROBOT_GOTO, &qf);
     p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
