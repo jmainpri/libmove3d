@@ -435,26 +435,47 @@ static void callbacks(FL_OBJECT *ob, long arg){
       
 //Test Multigraph      
       
-//      int maxNodes = p3d_get_NB_NODES();
-//      for (int i = 0; i < 2; i++) {
-//      int i =0;
-//        printf("##########  TEST N %d  ############\n", i+1);
-//        deleteAllGraphs();
-//        p3d_set_NB_NODES(maxNodes);
-//        p3d_set_multiGraph(1);
-//        CB_global_search_obj(NULL,0);
-//        p3d_globalSuperGraphLearn();
-//        p3d_set_NB_NODES(10000);
-//        p3d_set_multiGraph(0);
-//        p3d_specificSuperGraphLearn();
-//        setTotalCountVar(XYZ_GRAPH);
-//        mergeStat(XYZ_GRAPH->stat, XYZ_ENV->stat);
-//        printStatsGraph(XYZ_GRAPH->stat, 1);
-//      }
-//      printStatsEnv(XYZ_ENV->stat, 1);
+      int maxNodes = p3d_get_NB_NODES();
+      int i =0;
+        printf("##########  TEST N %d  ############\n", i+1);
+ //       deleteAllGraphs();
+ //       p3d_set_NB_NODES(maxNodes);
+ //       p3d_set_multiGraph(1);
+ //       CB_global_search_obj(NULL,0);
+ //       p3d_globalSuperGraphLearn();
+        p3d_set_NB_NODES(10000);
+        p3d_set_multiGraph(0);
+        p3d_specificSuperGraphLearn();
+        setTotalCountVar(XYZ_GRAPH);
+        mergeStat(XYZ_GRAPH->stat, XYZ_ENV->stat);
+        printStatsGraph(XYZ_GRAPH->stat, 1);
+      printStatsEnv(XYZ_ENV->stat, 1);
+//        p3d_APInode_shoot_singularity(XYZ_ROBOT, &config, &singularity, &cntrt, rootConfig, XYZ_ROBOT->ikSol);
+//        g3d_draw_allwin_active();
+//        p3d_unmark_for_singularity(XYZ_ROBOT->cntrt_manager, cntrt);
+//        
+//        p3d_destroy_config(XYZ_ROBOT, config);
+//        p3d_destroy_config(XYZ_ROBOT, rootConfig);
+////      }
+//      
+//
+////      ENV.setBool(Env::UseDPGGrids, true);
+//
+//#endif
       
+//Test Closed Chain Hard Exemple
+//      static int i = 0;
+//      unFixAllJointsExceptBaseAndObject(XYZ_ROBOT);
+//      if (!i){
+//        p3d_mat4Print(XYZ_ROBOT->baseJnt->jnt_mat, "baseJntMat");
+//        fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
+//        shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->curObjectJnt, 1);
+//        i = 1;
+//      }else{
+//        unFixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt);
+//        shootTheObjectInTheWorld(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt);
+//        i = 0;
       
-//Test Closed Chain Hard Exemple      
 //      unFixAllJointsExceptBaseAndObject(XYZ_ROBOT);
 //      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
 //      fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
@@ -466,6 +487,14 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //      fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
 //      shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->curObjectJnt, 1);
 //      CB_global_search_obj(NULL,0);
+//      unFixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt);
+//      shootTheObjectInTheWorld(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt);
+//      removeAloneNodesInGraph(XYZ_ROBOT, XYZ_GRAPH);
+//        setTotalCountVar(XYZ_GRAPH);
+//        mergeStat(XYZ_GRAPH->stat, XYZ_ENV->stat);
+//        printStatsGraph(XYZ_GRAPH->stat, 1);
+//      }
+//      printStatsEnv(XYZ_ENV->stat, 1);
 //      unFixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt);
 //      shootTheObjectInTheWorld(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt);
 //      removeAloneNodesInGraph(XYZ_ROBOT, XYZ_GRAPH);
@@ -511,8 +540,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
       for (int i = 0; i < 15; i++) {
         manip.computeOfflineRoadmap();
         char graphFile[1024], mgGraphFile[1024];
-        sprintf(graphFile, "%s/video/regrasp%d.graph", getenv("HOME_MOVE3D"), 15+i);
-        sprintf(mgGraphFile, "%s/video/regraspMg%d.graph", getenv("HOME_MOVE3D"), 15+i);
+        sprintf(graphFile, "%s/video/graphs/regrasp%d.graph", getenv("HOME_MOVE3D"), i);
+        sprintf(mgGraphFile, "%s/video/graphs/regraspMg%d.graph", getenv("HOME_MOVE3D"), i);
         p3d_writeGraph(XYZ_GRAPH, graphFile, DEFAULTGRAPH);
         p3d_writeGraph(XYZ_ROBOT->mg, mgGraphFile, MGGRAPH);
         deleteAllGraphs();
