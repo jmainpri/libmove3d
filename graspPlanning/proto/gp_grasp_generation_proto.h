@@ -16,9 +16,11 @@ extern int gpInverse_geometric_model_freeflying_hand(p3d_rob *robot, p3d_matrix4
 
 extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, bool display);
 
-extern int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q);
+extern int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt cfg);
 
-extern int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q);
+extern int gpInverse_geometric_model_LWR ( p3d_rob *robot, p3d_matrix4 Tend_eff, configPt cfg );
+
+extern int gpInverse_geometric_model_arm ( p3d_rob *robot, gpArm_type arm_type, p3d_matrix4 Tend_eff, configPt cfg );
 
 extern int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &handProp);
 
@@ -37,8 +39,6 @@ extern int gpGrasp_visibility_filter(p3d_rob *robot, p3d_rob *object, p3d_jnt *c
 extern configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &handProp);
 
 extern int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &handProp, double distance, configPt qpregrasp, configPt qgrasp);
-
-extern configPt gpFind_configuration_from_grasp(p3d_rob *robot, p3d_rob *object, gpGrasp &grasp, gpArm_type arm_type, gpHand_properties &handProp);
 
 extern int gpGet_grasp_list_gripper(std::string object_to_grasp, std::list<gpGrasp> &graspList);
 

@@ -1575,13 +1575,13 @@ int Manipulation_JIDO::computePlacementList(){
   forbidWindowEvents();
 
   gpCompute_stable_placements(_object, _placementList);
-  printf("%ld poses found\n",_placementList.size());
+  printf("%d poses found\n",_placementList.size());
 
   // do not test collisions against our robot:
   robotList.push_back(_robotPt);
 //   robotList.push_back(_support);
   gpFind_placements_on_object(_object, _support, robotList, _placementList, _placementTranslationStep, _placementNbOrientations, 0.005, _placementOnSupportList);
-  printf("%ld poses on support found\n",_placementOnSupportList.size());
+  printf("%d poses on support found\n",_placementOnSupportList.size());
 
 
   // do not compute clearance with: our robot, the support, the human:
@@ -2063,7 +2063,7 @@ int Manipulation_JIDO::dynamicGrasping(char *robot_name, char *hand_robot_name, 
      nb_iters_max= 100;
      for(i=0; i<nb_iters_max; i++)
      {
-        qbase= gpRandom_robot_base(robotPt, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, GP_PA10);
+        qbase= gpRandom_robot_base(robotPt, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter);
         if(qbase==NULL)
         {  continue;  }
         p3d_set_and_update_this_robot_conf(robotPt, qbase);
@@ -2155,7 +2155,7 @@ int Manipulation_JIDO::robotBaseGraspConfig(char *objectName, double *x, double 
 	for ( i=0; i<nb_iters_max; i++ )
 	{
           if(i!=0) {
-	        qbase= gpRandom_robot_base ( _robotPt, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, GP_PA10 );
+	        qbase= gpRandom_robot_base ( _robotPt, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter );
 		if ( qbase==NULL )
 			{   break;   }
           }
@@ -2591,7 +2591,7 @@ int Manipulation_JIDO::checkCollisionOnTraj(int currentLpId) {
     return MANIPULATION_TASK_ERROR_UNKNOWN;
   }
   p3d_localpath* currentLp = traj->courbePt;
-  int lpid = 0;
+//   int lpid = 0;
   for(int i = 0; i < currentLpId/2; i++){
     currentLp = currentLp->next_lp;
   }
@@ -2603,8 +2603,8 @@ int Manipulation_JIDO::checkCollisionOnTraj(int currentLpId) {
 int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &lp, std::vector < std::vector <double> > &positions) {
   configPt qi = NULL, qf = NULL;
   p3d_traj *traj = NULL;
-  int ntest=0;
-  double gain;
+//   int ntest=0;
+//   double gain;
   MANPIPULATION_TRAJECTORY_STR segments;
   XYZ_ENV->cur_robot = _robotPt;
   //initialize and get the current linear traj
@@ -2649,7 +2649,7 @@ int Manipulation_JIDO::replanCollidingTraj(int currentLpId, std::vector <int> &l
   for(int i = 0; i < currentLpId/2; i++){
     currentLp = currentLp->next_lp;
   }
-  configPt currentConfig = p3d_get_robot_config(_robotPt);
+//   configPt currentConfig = p3d_get_robot_config(_robotPt);
   int j = 0, returnValue = 0, optimized = traj->isOptimized;
   if(optimized){
     p3dAddTrajToGraph(_robotPt, _robotPt->GRAPH, traj);

@@ -64,5 +64,6 @@ extern void p3d_kcd_closest_points_mo_environment ( p3d_obj *mobjPt, p3d_vector3
 extern void p3d_kcd_closest_points_mo_of_both ( p3d_obj *mobjPt, p3d_vector3 point_mo, p3d_vector3 point_o, double *distance );
 extern int kcd_add_obstacle ( p3d_obj *obst );
 extern int kcd_add_obstacle_list ( p3d_obj **obstList, int nof_obsts );
+extern void kcd_print_colliding_pair();
 
 #endif /* __CEXTRACT__ */

@@ -803,7 +803,10 @@ void p3d_del_node(p3d_node *N, p3d_graph *G)
       /* PrintInfo(("noeud a detruire : %d\n",neighb->N->num)); */
       if(neighb->next != NULL){
 	neighb->next->prev = neighb->prev;
+      }else {//dernier noeud du graphe changer lastnode
+        G->last_node = neighb->prev;
       }
+
       if(neighb->prev != NULL){
 	neighb->prev->next = neighb->next;
       }

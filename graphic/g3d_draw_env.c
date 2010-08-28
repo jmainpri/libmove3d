@@ -881,6 +881,8 @@ void g3d_draw_env(void) {
   g3d_set_default_material();
   g3d_set_light(win->vs);
 
+  if (win->fct_draw2 != NULL) win->fct_draw2();
+
 //deactivate picking until it works perfectly:
   G3D_SELECTED_JOINT= -999; 
 
@@ -1076,6 +1078,10 @@ void g3d_draw_env(void) {
 
   g3d_draw_env_custom();
 
+  // check if there was no OpenGL errors:
+  char message[128];
+  sprintf(message,"%s: %d: ",__FILE__,__LINE__);
+  g3d_checkGLerrors(message);
 
 #ifdef P3D_COLLISION_CHECKING
 

@@ -271,9 +271,9 @@ int gpPlacement::draw(double length)
   double color[4];
   GLfloat matGL[16];
   p3d_matrix4 Tobject;
-  unsigned int i1, i2, j, n;
-  double d, step;
-  p3d_vector3 diff;
+//   unsigned int i1, i2, j, n;
+//   double d, step;
+//   p3d_vector3 diff;
 
   glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT);
   
@@ -296,8 +296,8 @@ int gpPlacement::draw(double length)
 
     g3d_rgb_from_int(ID, color);
     g3d_set_color(Any, color);
-//     if(polyhedron!=NULL)
-//     {   g3d_draw_p3d_polyhedre(polyhedron);  }
+    if(polyhedron!=NULL)
+    {   g3d_draw_p3d_polyhedre(polyhedron);  }
 
     //display the support polygon:
     glColor3f(0, 0, 1);

@@ -25,7 +25,7 @@ extern void gpDraw_friction_cone ( p3d_vector3 c, p3d_vector3 normal, double mu,
 
 extern void gpDraw_friction_cone2(p3d_vector3 c, p3d_vector3 normal, double mu, int nb_slices, double length);
 
-extern configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRadius, p3d_vector3 objLoc, gpArm_type arm_type);
+extern configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRadius, p3d_vector3 objLoc);
 
 extern int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand_properties, double q[4], int finger_index, int handID= 0);
 
@@ -43,9 +43,9 @@ extern int gpGet_platform_configuration(p3d_rob *robot, double &x, double &y, do
 
 extern int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double theta);
  
-extern int gpGet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double &q1, double &q2, double &q3, double &q4, double &q5, double &q6);
+extern int gpGet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, std::vector<double> &q);
 
-extern int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, double q2, double q3, double q4, double q5, double q6, bool verbose= false);
+extern int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, std::vector<double> q, bool verbose= false);
 
 extern int gpGet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID, std::vector<double> &config);
 
@@ -68,7 +68,6 @@ extern int gpSet_grasp_configuration(p3d_rob *robot, const gpGrasp &grasp, confi
 extern int gpSet_grasp_open_configuration(p3d_rob *robot, const gpGrasp &grasp, configPt q, int handID= 0);
 
 extern int gpSet_hand_rest_configuration(p3d_rob *robot, gpHand_properties &hand, configPt q, int handID= 0);
-
 
 extern int gpFold_arm(p3d_rob *robot, gpArm_type arm_type);
 

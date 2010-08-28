@@ -931,6 +931,7 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
     p3d_set_and_update_robot_conf_multisol(qs, robotPt->ikSolPos);
     if(p3d_col_test()){//collision
       PrintInfo(("qs en collision\n"));
+      p3d_print_col_pair();
       return NULL;
     }
     p3d_get_robot_config_into(robotPt, &qs);
@@ -957,6 +958,7 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
     p3d_set_and_update_robot_conf_multisol(qg, robotPt->ikSolGoto);
     if(p3d_col_test()){//collision
       PrintInfo(("qg en collision\n"));
+      p3d_print_col_pair();
       return NULL;
     }
     p3d_get_robot_config_into(robotPt, &qg);

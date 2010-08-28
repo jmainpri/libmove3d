@@ -735,3 +735,26 @@ int g3d_load_state(g3d_win *win, g3d_states *st)
   
   return TRUE;
 }
+
+//! Call this function to see what is the latest error reported by OpenGL.
+//! \param a additional message (it can be left to NULL)
+//! \return O if there was no error, 1 otherwise
+int g3d_checkGLerrors(char *message)
+{
+  int result= 0;
+  GLenum error;
+
+  while ((error = glGetError()) != GL_NO_ERROR) {
+    if(message==NULL)
+    {
+      fprintf(stderr, "OpenGL: Error: %s\n", (char *) gluErrorString(error));
+    }
+    else
+    {
+      fprintf(stderr, "%s OpenGL: Error: %s\n", message, (char *) gluErrorString(error));
+    }
+    result= 1;
+  }
+  
+  return result;
+}

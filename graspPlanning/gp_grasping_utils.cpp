@@ -366,7 +366,7 @@ const int Z = 2;
 //! \param objLoc desired center of the ring (world coordinates)
 //! \param arm_type type of the robot's arm
 //! \return a pointer to the computed robot configuration
-configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRadius, p3d_vector3 objLoc, gpArm_type arm_type)
+configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRadius, p3d_vector3 objLoc)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
@@ -397,7 +397,6 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
     theta+= M_PI + p3d_random(-M_PI/2.0, M_PI/2.0);
 
     gpSet_platform_configuration(robot, x, y, theta);
-//     gpFold_arm(robot, arm_type);
 
     p3d_get_robot_config_into(robot, &result);
 
@@ -1457,26 +1456,62 @@ int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double thet
 //! @ingroup graspPlanning 
 //! Gets the robot's arm configuration (in radians).
 //! \param robot pointer to the robot
-//! \param arm_type arm type (for now, only PA10 is supported)
-//! \param q1 will be filled with value of joint #1
-//! \param q2 will be filled with value of joint #2
-//! \param q3 will be filled with value of joint #3
-//! \param q4 will be filled with value of joint #4
-//! \param q5 will be filled with value of joint #5
-//! \param q6 will be filled with value of joint #6
+//! \param arm_type arm type
+//! \param q vector of the joint angles
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpGet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double &q1, double &q2, double &q3, double &q4, double &q5, double &q6)
+int gpGet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, std::vector<double> &q)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
    {
-      printf("%s: %d: gpGet_arm_configuration(): robot is NULL.\n",__FILE__,__LINE__);
-      return GP_ERROR;
+     printf("%s: %d: gpGet_arm_configuration(): robot is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
    }
   #endif
 
+  unsigned int i, nbArmJoints;
+  std::vector< std::string > jointNames;
   p3d_jnt *armJoint= NULL;
 
+  switch(arm_type)
+  {
+    case GP_PA10: 
+      nbArmJoints= 6;
+      jointNames.resize(6);
+      jointNames.at(0)= GP_ARMJOINT1;
+      jointNames.at(1)= GP_ARMJOINT2;
+      jointNames.at(2)= GP_ARMJOINT3;
+      jointNames.at(3)= GP_ARMJOINT4;
+      jointNames.at(4)= GP_ARMJOINT5;
+      jointNames.at(5)= GP_ARMJOINT6;
+    break;
+    case GP_LWR: 
+      nbArmJoints= 7;
+      jointNames.resize(7);
+      jointNames.at(0)= GP_ARMJOINT1;
+      jointNames.at(1)= GP_ARMJOINT2;
+      jointNames.at(2)= GP_ARMJOINT3;
+      jointNames.at(3)= GP_ARMJOINT4;
+      jointNames.at(4)= GP_ARMJOINT5;
+      jointNames.at(5)= GP_ARMJOINT6;
+      jointNames.at(6)= GP_ARMJOINT7;
+    break;
+    default:
+      printf("%s: %d: gpGet_arm_configuration(): unsupported arm type.\n",__FILE__,__LINE__);
+      return GP_ERROR;
+    break;
+  }
+
+  q.resize(nbArmJoints);
+
+  for(i=0; i<nbArmJoints; ++i)
+  {
+    armJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_ARMJOINT1);
+    if(armJoint==NULL)
+    {  return GP_ERROR; }
+    q.at(i)= armJoint->dof_data[i].v;
+  }
+/*
   switch(arm_type)
   {
     case GP_PA10:
@@ -1514,7 +1549,7 @@ int gpGet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double &q1, dou
       printf("%s: %d: gpGet_arm_configuration(): unsupported arm type.\n",__FILE__,__LINE__);
       return GP_ERROR;
     break;
-  }
+  }*/
 
   return GP_OK;
 }
@@ -1524,262 +1559,105 @@ int gpGet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double &q1, dou
 //! Sets the robot's arm configuration with the given values (in radians).
 //! NB: The respect of joint limits is verified.
 //! \param robot pointer to the robot
-//! \param arm_type arm type (for now, only PA10 is supported)
-//! \param q1 value of joint #1
-//! \param q2 value of joint #2
-//! \param q3 value of joint #3
-//! \param q4 value of joint #4
-//! \param q5 value of joint #5
-//! \param q6 value of joint #6
+//! \param arm_type arm type
+//! \param q vector of the joint angles
 //! \param verbose enable/disable error message display
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, double q2, double q3, double q4, double q5, double q6, bool verbose)
+int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, std::vector<double> q, bool verbose)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
    {
-      printf("%s: %d: gpSet_arm_configuration(): robot is NULL.\n",__FILE__,__LINE__);
-      return GP_ERROR;
+     printf("%s: %d: gpSet_arm_configuration(): robot is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
    }
   #endif
 
   bool isValid;
+  unsigned int i, nbArmJoints;
   double qmin, qmax;
   p3d_jnt *armJoint= NULL;
-  configPt q= NULL;
+  configPt cfg= NULL;
+  std::vector< std::string > jointNames;
 
   #ifdef LIGHT_PLANNER
   deactivateCcCntrts(robot, -1);
   #endif
 
-  q= p3d_alloc_config(robot);
-  p3d_get_robot_config_into(robot, &q);
+  cfg= p3d_alloc_config(robot);
+  p3d_get_robot_config_into(robot, &cfg);
+
 
   switch(arm_type)
   {
-    case GP_PA10:
-        ////////////////////////q1////////////////////////////
-        armJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_ARMJOINT1);
-        if(armJoint==NULL)
-        {
-          p3d_destroy_config(robot, q);
-          return GP_ERROR;
-        }
-        isValid= true;
-        qmin= armJoint->dof_data[0].vmin;
-        qmax= armJoint->dof_data[0].vmax;
-        if(q1 > qmax)
-        {
-          q1-= 2*M_PI;
-          if( (q1 < qmin) || (q1 > qmax) )
-          {  isValid= false; }
-        }
-        if(q1 < qmin)
-        {
-          q1+= 2*M_PI;
-          if( (q1 < qmin) || (q1 > qmax) )
-          {  isValid= false; }
-        }
-        if(isValid)
-        { q[armJoint->index_dof]=  q1;   }
-        else
-        {
-          if(verbose)
-          {
-             printf("%s: %d: gpSet_arm_configuration(): q1 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q1,qmin,qmax);
-          }
-          p3d_destroy_config(robot, q);
-          return GP_ERROR;
-        }
-        /////////////////////////////////////////////////////
-
-
-        ////////////////////////q2////////////////////////////
-        armJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_ARMJOINT2);
-        if(armJoint==NULL)
-        {
-          p3d_destroy_config(robot, q);
-          return GP_ERROR;
-        }
-        isValid= true;
-        qmin= armJoint->dof_data[0].vmin;
-        qmax= armJoint->dof_data[0].vmax;
-        if(q2 > qmax)
-        {
-          q2-= 2*M_PI;
-          if( (q2 < qmin) || (q2 > qmax) )
-          {  isValid= false; }
-        }
-        if(q2 < qmin)
-        {
-          q2+= 2*M_PI;
-          if( (q2 < qmin) || (q2 > qmax) )
-          {  isValid= false; }        }
-        if(isValid)
-        { q[armJoint->index_dof]=  q2;   }
-        else
-        {
-          if(verbose)
-          {
-             printf("%s: %d: gpSet_arm_configuration(): q2 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q2,qmin,qmax);
-          }
-          p3d_destroy_config(robot, q);
-          return GP_ERROR;
-        }
-        /////////////////////////////////////////////////////
-
-
-        ////////////////////////q3////////////////////////////
-        armJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_ARMJOINT3);
-        if(armJoint==NULL)
-        {
-          p3d_destroy_config(robot, q);
-          return GP_ERROR;
-        }
-        isValid= true;
-        qmin= armJoint->dof_data[0].vmin;
-        qmax= armJoint->dof_data[0].vmax;
-        if(q3 > qmax)
-        {
-          q3-= 2*M_PI;
-          if( (q3 < qmin) || (q3 > qmax) )
-          {  isValid= false; }
-        }
-        if(q3 < qmin)
-        {
-          q3+= 2*M_PI;
-          if( (q3 < qmin) || (q3 > qmax) )
-          {  isValid= false; }
-        }
-        if(isValid)
-        { q[armJoint->index_dof]=  q3;   }
-        else
-        {
-          if(verbose)
-          {
-             printf("%s: %d: gpSet_arm_configuration(): q3 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q3,qmin,qmax);
-          }
-          p3d_destroy_config(robot, q);
-          return GP_ERROR;
-        }
-        /////////////////////////////////////////////////////
-
-
-        ////////////////////////q4////////////////////////////
-        armJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_ARMJOINT4);
-        if(armJoint==NULL)
-        {
-          p3d_destroy_config(robot, q);
-          return GP_ERROR;
-        }
-        isValid= true;
-        qmin= armJoint->dof_data[0].vmin;
-        qmax= armJoint->dof_data[0].vmax;
-        if(q4 > qmax)
-        {
-          q4-= 2*M_PI;
-          if( (q4 < qmin) || (q4 > qmax) )
-          {  isValid= false; }
-        }
-        if(q4 < qmin)
-        {
-          q4+= 2*M_PI;
-          if( (q4 < qmin) || (q4 > qmax) )
-          {  isValid= false; }
-        }
-        if(isValid)
-        { q[armJoint->index_dof]=  q4;   }
-        else
-        {
-          if(verbose)
-          {
-             printf("%s: %d: gpSet_arm_configuration(): q4 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q4,qmin,qmax);
-          }
-          p3d_destroy_config(robot, q);
-          return GP_ERROR;
-        }
-        /////////////////////////////////////////////////////
-
-
-        ////////////////////////q5////////////////////////////
-        armJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_ARMJOINT5);
-        if(armJoint==NULL)
-        {
-          p3d_destroy_config(robot, q);
-          return GP_ERROR;
-        }
-        isValid= true;
-        qmin= armJoint->dof_data[0].vmin;
-        qmax= armJoint->dof_data[0].vmax;
-        if(q5 > qmax)
-        {
-          q5-= 2*M_PI;
-          if( (q5 < qmin) || (q5 > qmax) )
-          {  isValid= false; }
-        }
-        if(q5 < qmin)
-        {
-          q5+= 2*M_PI;
-          if( (q5 < qmin) || (q5 > qmax) )
-          {  isValid= false; }
-        }
-        if(isValid)
-        { q[armJoint->index_dof]=  q5;   }
-        else
-        {
-          if(verbose)
-          {
-             printf("%s: %d: gpSet_arm_configuration(): q5 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q5,qmin,qmax);
-          }
-          p3d_destroy_config(robot, q);
-          return GP_ERROR;
-        }
-        /////////////////////////////////////////////////////
-
-
-        ////////////////////////q6////////////////////////////
-        armJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_WRISTJOINT);
-        if(armJoint==NULL)
-        {
-          p3d_destroy_config(robot, q);
-          return GP_ERROR;
-        }
-        isValid= true;
-        qmin= armJoint->dof_data[0].vmin;
-        qmax= armJoint->dof_data[0].vmax;
-        if(q6 > qmax)
-        {
-          q6-= 2*M_PI;
-          if( (q6 < qmin) || (q6 > qmax) )
-          {  isValid= false; }
-        }
-        if(q6 < qmin)
-        {
-          q6+= 2*M_PI;
-          if( (q6 < qmin) || (q6 > qmax) )
-          {  isValid= false; }
-        }
-        if(isValid)
-        { q[armJoint->index_dof]=  q6;   }
-        else
-        {
-          if(verbose)
-          {
-             printf("%s: %d: gpSet_arm_configuration(): q6 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q6,qmin,qmax);
-          }
-          p3d_destroy_config(robot, q);
-          return GP_ERROR;
-        }
+    case GP_PA10: 
+      nbArmJoints= 6;
+      jointNames.resize(6);
+      jointNames.at(0)= GP_ARMJOINT1;
+      jointNames.at(1)= GP_ARMJOINT2;
+      jointNames.at(2)= GP_ARMJOINT3;
+      jointNames.at(3)= GP_ARMJOINT4;
+      jointNames.at(4)= GP_ARMJOINT5;
+      jointNames.at(5)= GP_ARMJOINT6;
+    break;
+    case GP_LWR: 
+      nbArmJoints= 7;
+      jointNames.resize(7);
+      jointNames.at(0)= GP_ARMJOINT1;
+      jointNames.at(1)= GP_ARMJOINT2;
+      jointNames.at(2)= GP_ARMJOINT3;
+      jointNames.at(3)= GP_ARMJOINT4;
+      jointNames.at(4)= GP_ARMJOINT5;
+      jointNames.at(5)= GP_ARMJOINT6;
+      jointNames.at(6)= GP_ARMJOINT7;
     break;
     default:
       printf("%s: %d: gpSet_arm_configuration(): unsupported arm type.\n",__FILE__,__LINE__);
-      p3d_destroy_config(robot, q);
+      p3d_destroy_config(robot, cfg);
       return GP_ERROR;
     break;
   }
 
-  p3d_set_and_update_this_robot_conf(robot, q);
-  p3d_destroy_config(robot, q);
+  for(i=0; i<nbArmJoints; ++i)
+  {
+      ////////////////////////q1////////////////////////////
+      armJoint= p3d_get_robot_jnt_by_name(robot, (char*)(jointNames.at(i)).c_str() );
+      if(armJoint==NULL)
+      {
+        p3d_destroy_config(robot, cfg);
+        return GP_ERROR;
+      }
+      isValid= true;
+      qmin= armJoint->dof_data[0].vmin;
+      qmax= armJoint->dof_data[0].vmax;
+      if(q.at(i) > qmax)
+      {
+        q.at(i)-= 2*M_PI;
+        if( (q.at(i) < qmin) || (q.at(i) > qmax) )
+        {  isValid= false; }
+      }
+      if(q.at(i) < qmin)
+      {
+        q.at(i)+= 2*M_PI;
+        if( (q.at(i) < qmin) || (q.at(i) > qmax) )
+        {  isValid= false; }
+      }
+      if(isValid)
+      {  cfg[armJoint->index_dof]=  q.at(i);   }
+      else
+      {
+        if(verbose)
+        {
+            printf("%s: %d: gpSet_arm_configuration(): q[%d] value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,i,q.at(i),qmin,qmax);
+        }
+        p3d_destroy_config(robot, cfg);
+        return GP_ERROR;
+      }
+        /////////////////////////////////////////////////////
+  }
+
+  p3d_set_and_update_this_robot_conf(robot, cfg);
+  p3d_destroy_config(robot, cfg);
 
   return GP_OK;
 }
@@ -2617,11 +2495,11 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
   #endif
 
   int result;
-  double q1, q2, q3, q4, q5, q6;
-  configPt q0= NULL;
+  std::vector<double> q(6);
+  configPt cfg0= NULL;
 
-  q0= p3d_alloc_config(robot);
-  p3d_get_robot_config_into(robot, &q0);
+  cfg0= p3d_alloc_config(robot);
+  p3d_get_robot_config_into(robot, &cfg0);
 
   #ifdef LIGHT_PLANNER
   if(robot->openChainConf!=NULL)
@@ -2629,50 +2507,50 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
     p3d_update_virtual_object_config_for_arm_ik_constraint(robot, 0, robot->openChainConf);
     //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, robot->openChainConf);
     p3d_set_and_update_this_robot_conf(robot, robot->openChainConf);
-    gpGet_arm_configuration(robot, arm_type, q1, q2, q3, q4, q5, q6);
-    p3d_set_and_update_this_robot_conf(robot, q0);
+    gpGet_arm_configuration(robot, arm_type, q);
+    p3d_set_and_update_this_robot_conf(robot, cfg0);
   }
   #else
     //for horizontal jido:
-    q1= DEGTORAD*(-90);
-    q2= DEGTORAD*(90);
-    q3= DEGTORAD*(45);
-    q4= DEGTORAD*(0);
-    q5= DEGTORAD*(-45);
-    q6= DEGTORAD*(0);
+    q.at(0)= DEGTORAD*(-90);
+    q.at(1)= DEGTORAD*(90);
+    q.at(2)= DEGTORAD*(45);
+    q.at(3)= DEGTORAD*(0);
+    q.at(4)= DEGTORAD*(-45);
+    q.at(5)= DEGTORAD*(0);
 
     //for vertical jido:
-    q1= DEGTORAD*(77.15);
-    q2= DEGTORAD*(-8.99);
-    q3= DEGTORAD*(148.39);
-    q4= DEGTORAD*(80.17);
-    q5= DEGTORAD*(-81.68);
-    q6= DEGTORAD*(-18.51);
+    q.at(0)= DEGTORAD*(77.15);
+    q.at(1)= DEGTORAD*(-8.99);
+    q.at(2)= DEGTORAD*(148.39);
+    q.at(3)= DEGTORAD*(80.17);
+    q.at(4)= DEGTORAD*(-81.68);
+    q.at(5)= DEGTORAD*(-18.51);
   #endif
 
 
   switch(arm_type)
   {
     case GP_PA10:
-      result= gpSet_arm_configuration(robot, GP_PA10, q1, q2, q3, q4, q5, q6);
+      result= gpSet_arm_configuration(robot, GP_PA10, q);
     break;
     default:
       printf("%s: %d: gpFold_arm(): unsupported arm type.\n",__FILE__,__LINE__);
-      p3d_destroy_config(robot, q0);
+      p3d_destroy_config(robot, cfg0);
       return GP_ERROR;
     break;
   }
 
   if(p3d_col_test())
   {
-    p3d_set_and_update_this_robot_conf(robot, q0);
+    p3d_set_and_update_this_robot_conf(robot, cfg0);
     result= GP_ERROR;
   }
 
 //   if(result==0)
 //   {   printf("%s: %d: gpFold_arm(): the arm could not be folded.\n",__FILE__,__LINE__);   }
 
-  p3d_destroy_config(robot, q0);
+  p3d_destroy_config(robot, cfg0);
 
   return result;
 }

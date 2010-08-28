@@ -3146,4 +3146,20 @@ int p3d_col_rob_collision_cloud(p3d_rob *robotPt)
   return 0;
 }
 
-
+//! @ingroup collision
+//! Prints the names the two objects that were reported as colliding during
+//! the last collision test. This function must be called after a positive collision test.
+void p3d_print_col_pair(){  
+  switch (p3d_col_mode){ 
+    case p3d_col_mode_kcd:{
+      kcd_print_colliding_pair();
+      break;
+    }
+#ifdef PQP
+    case p3d_col_mode_pqp:{
+      pqp_print_colliding_pair();
+      break;
+#endif
+    }
+  }
+}
