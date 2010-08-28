@@ -160,8 +160,6 @@ static int p3d_ExpandOneStep(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
   return NbCreatedNodes;
 }
 
-
-
 static int p3d_MonteCarloOneStep(p3d_graph* GraphPt, p3d_compco* CompToExpandPt, 
 		      p3d_compco* GoalCompPt) {
 
