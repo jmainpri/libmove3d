@@ -5,6 +5,7 @@
 #include "Collision-pkg.h"
 #include "P3d-pkg.h"
 #include "Util-pkg.h"
+#include "Move3d-pkg.h"
 #ifdef LIGHT_PLANNER
   #include "../lightPlanner/proto/DlrPlanner.h"
   #include "../lightPlanner/proto/DlrParser.h"
@@ -397,58 +398,110 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 16 :{
-#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-      configPt startConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
-      configPt endConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
-      for (int i = 0; i < 1; i++) {
-//        manip.computeOfflineRoadmap();
-        char file[255];
-        sprintf(file, "%s/video/graphs/simple/mg50x50_%d.graph", getenv("HOME_MOVE3D"), i);
-//        p3d_writeGraph(XYZ_ROBOT->mg, (char *)file, MGGRAPH);
-//        XYZ_ROBOT->preComputedGraphs[1] = NULL;
-        manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), file);
-        manip.clear();
-      }
-      manip.printStatDatas();
-      manip.clear();
-#else
-      configPt config = p3d_alloc_config(XYZ_ROBOT), rootConfig = p3d_get_robot_config(XYZ_ROBOT);
-      int singularity = -1, cntrt = -1;
-      
-//      cntrt = p3d_isCloseToSingularityConfig(XYZ_ROBOT, XYZ_ROBOT->cntrt_manager, rootConfig , &singularity);
-//      if (cntrt != -1) {
-//        
-        p3d_APInode_shoot_singularity(XYZ_ROBOT, &config, &singularity, &cntrt, rootConfig, XYZ_ROBOT->ikSol);
-        g3d_draw_allwin_active();
-        p3d_unmark_for_singularity(XYZ_ROBOT->cntrt_manager, cntrt);
-        
-        p3d_destroy_config(XYZ_ROBOT, config);
-        p3d_destroy_config(XYZ_ROBOT, rootConfig);
+//#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
+//      configPt startConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
+//      configPt endConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
+//      for (int i = 0; i < 1; i++) {
+////        manip.computeOfflineRoadmap();
+//        char file[255];
+//        sprintf(file, "%s/video/graphs/simple/mg50x50_%d.graph", getenv("HOME_MOVE3D"), i);
+////        p3d_writeGraph(XYZ_ROBOT->mg, (char *)file, MGGRAPH);
+////        XYZ_ROBOT->preComputedGraphs[1] = NULL;
+//        manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), file);
+//        manip.clear();
 //      }
+//      manip.printStatDatas();
+//      manip.clear();
+//#else
+//      configPt config = p3d_alloc_config(XYZ_ROBOT), rootConfig = p3d_get_robot_config(XYZ_ROBOT);
+//      int singularity = -1, cntrt = -1;
+//      
+////      cntrt = p3d_isCloseToSingularityConfig(XYZ_ROBOT, XYZ_ROBOT->cntrt_manager, rootConfig , &singularity);
+////      if (cntrt != -1) {
+////        
+//        p3d_APInode_shoot_singularity(XYZ_ROBOT, &config, &singularity, &cntrt, rootConfig, XYZ_ROBOT->ikSol);
+//        g3d_draw_allwin_active();
+//        p3d_unmark_for_singularity(XYZ_ROBOT->cntrt_manager, cntrt);
+//        
+//        p3d_destroy_config(XYZ_ROBOT, config);
+//        p3d_destroy_config(XYZ_ROBOT, rootConfig);
+////      }
+//      
+//
+////      ENV.setBool(Env::UseDPGGrids, true);
+//
+//#endif
       
-
-//      ENV.setBool(Env::UseDPGGrids, true);
-
-#endif
-#ifdef MULTIGRAPH
-      static int mgDraw = 0;
-      static p3d_graph* graph = XYZ_ROBOT->GRAPH;
-      if (mgDraw < XYZ_ROBOT->mg->nbGraphs) {
-        XYZ_GRAPH = XYZ_ROBOT->mg->graphs[mgDraw];
-        XYZ_ROBOT->GRAPH = XYZ_GRAPH;
-        mgDraw++;
-      }else{
-        XYZ_GRAPH = graph;
-        XYZ_ROBOT->GRAPH = XYZ_GRAPH;
-        mgDraw = 0;
-      }
-#endif
+      
+//Test Multigraph      
+      
+//      int maxNodes = p3d_get_NB_NODES();
+//      for (int i = 0; i < 2; i++) {
+//      int i =0;
+//        printf("##########  TEST N %d  ############\n", i+1);
+//        deleteAllGraphs();
+//        p3d_set_NB_NODES(maxNodes);
+//        p3d_set_multiGraph(1);
+//        CB_global_search_obj(NULL,0);
+//        p3d_globalSuperGraphLearn();
+//        p3d_set_NB_NODES(10000);
+//        p3d_set_multiGraph(0);
+//        p3d_specificSuperGraphLearn();
+//        setTotalCountVar(XYZ_GRAPH);
+//        mergeStat(XYZ_GRAPH->stat, XYZ_ENV->stat);
+//        printStatsGraph(XYZ_GRAPH->stat, 1);
+//      }
+//      printStatsEnv(XYZ_ENV->stat, 1);
+      
+      
+//Test Closed Chain Hard Exemple      
+//      unFixAllJointsExceptBaseAndObject(XYZ_ROBOT);
+//      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+//      fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
+//      shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->curObjectJnt, 1);
+//      CB_global_search_obj(NULL,0);
+//      unFixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt);
+//      shootTheObjectInTheWorld(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt);
+//      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
+//      fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
+//      shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->curObjectJnt, 1);
+//      CB_global_search_obj(NULL,0);
+//      unFixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt);
+//      shootTheObjectInTheWorld(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt);
+//      removeAloneNodesInGraph(XYZ_ROBOT, XYZ_GRAPH);
+      
+      manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS), p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO), "",0);
       break;
     }
     case 17:{
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-      manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS), p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO), "",0);
+      configPt startConfig = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS), gotoConfig = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
+      char graphFile[1024];
+      sprintf(graphFile, "%s/video/regrasp15.graph", getenv("HOME_MOVE3D"));
+      
+      if(!manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConfig), p3d_copy_config(XYZ_ROBOT, gotoConfig), "",1)){
+        p3d_destroy_config(XYZ_ROBOT, startConfig);
+        p3d_destroy_config(XYZ_ROBOT, gotoConfig);
+        break;
+      }
+      if(!manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConfig), p3d_copy_config(XYZ_ROBOT, gotoConfig), "",2)){
+        p3d_destroy_config(XYZ_ROBOT, startConfig);
+        p3d_destroy_config(XYZ_ROBOT, gotoConfig);
+        break;
+      }
+      if(!manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConfig), p3d_copy_config(XYZ_ROBOT, gotoConfig), "",3)){
+        p3d_destroy_config(XYZ_ROBOT, startConfig);
+        p3d_destroy_config(XYZ_ROBOT, gotoConfig);
+        break;
+      }
+      if(!manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConfig), p3d_copy_config(XYZ_ROBOT, gotoConfig), "",4)){
+        p3d_destroy_config(XYZ_ROBOT, startConfig);
+        p3d_destroy_config(XYZ_ROBOT, gotoConfig);
+        break;
+      }
       manip.printStatDatas();
+      p3d_destroy_config(XYZ_ROBOT, startConfig);
+      p3d_destroy_config(XYZ_ROBOT, gotoConfig);
 #endif
       break;
     }
@@ -457,8 +510,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
       for (int i = 0; i < 15; i++) {
         manip.computeOfflineRoadmap();
         char graphFile[1024], mgGraphFile[1024];
-        sprintf(graphFile, "%s/video/graphs4/regrasp%d.graph", getenv("HOME_MOVE3D"), 15+i);
-        sprintf(mgGraphFile, "%s/video/graphs4/regraspMg%d.graph", getenv("HOME_MOVE3D"), 15+i);
+        sprintf(graphFile, "%s/video/regrasp%d.graph", getenv("HOME_MOVE3D"), 15+i);
+        sprintf(mgGraphFile, "%s/video/regraspMg%d.graph", getenv("HOME_MOVE3D"), 15+i);
         p3d_writeGraph(XYZ_GRAPH, graphFile, DEFAULTGRAPH);
         p3d_writeGraph(XYZ_ROBOT->mg, mgGraphFile, MGGRAPH);
         deleteAllGraphs();

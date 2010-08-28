@@ -19,7 +19,10 @@ extern void computeOfflineClosedChain(p3d_rob* robot, p3d_matrix4 objectInitPos)
 /** ////////// MISC /////////////*/
 extern void globalPlanner(void);
 extern void findPath(void);
+#ifdef MULTIGRAPH
 extern void p3d_specificSuperGraphLearn(void);
+extern void p3d_globalSuperGraphLearn(void);
+#endif
 extern void p3d_computeTests(void);
 
 #ifdef DPG
