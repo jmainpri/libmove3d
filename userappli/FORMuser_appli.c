@@ -469,8 +469,9 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //      unFixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt);
 //      shootTheObjectInTheWorld(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt);
 //      removeAloneNodesInGraph(XYZ_ROBOT, XYZ_GRAPH);
-      
+#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)      
       manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS), p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO), "",0);
+#endif
       break;
     }
     case 17:{

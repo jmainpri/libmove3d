@@ -3159,7 +3159,7 @@ void p3d_print_col_pair(){
     case p3d_col_mode_pqp:{
       pqp_print_colliding_pair();
       break;
-#endif
     }
+#endif
   }
 }
