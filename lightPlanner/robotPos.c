@@ -462,6 +462,11 @@ double setRobotArmsRest(p3d_rob* robot, p3d_matrix4 objectPos, int armToActivate
           q[jnt->index_dof + k] = restConf[jnt->index_dof + k];
         }
       }
+      //contraintes spéciales
+      if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")) {
+        p3d_jnt* jnt = robot->joints[ct->argu_i[0]]; 
+        q[jnt->index_dof] = restConf[jnt->index_dof];
+      }
     }
   }
   p3d_set_and_update_this_robot_conf(robot, q);
@@ -470,12 +475,12 @@ double setRobotArmsRest(p3d_rob* robot, p3d_matrix4 objectPos, int armToActivate
     double robotSize = 0, translationFactor = 0, rotationFactor = 0;
     p3d_get_BB_rob_max_size(robot, &robotSize);
     translationFactor = robotSize/10;
-    rotationFactor = robotSize/20;
+    rotationFactor = robotSize/5;
     fixJoint(robot, robot->curObjectJnt, objectPos);
     int nTry = 0;
     int shootTry = 0;
     int nbColTests = 0;
-    while (nTry < 10 && shootTry < MaxNumberOfTry/2) {
+    while (nTry < 30 && shootTry < MaxNumberOfTry/2) {
       p3d_gaussian_config2_specific(robot, q, newConf, translationFactor, rotationFactor, true);
       if (p3d_set_and_update_this_robot_conf(robot, newConf)) {
         if(!p3d_col_test()){//collision free
