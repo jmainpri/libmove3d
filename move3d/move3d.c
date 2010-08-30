@@ -78,6 +78,8 @@ int main(int argc, char ** argv) {
   int scenario_set = FALSE;
   int col_det_set = FALSE;
   int col_mode_to_be_set = p3d_col_mode_kcd; /* Nic p3d_col_mode_v_collide;*/
+  int ccntrt_active = TRUE;
+  
   // init English C
   if (! setlocale(LC_ALL, "C"))
     fprintf(stderr, "There was an error while setting the locale to \"C\"\n");
@@ -206,7 +208,19 @@ int main(int argc, char ** argv) {
 #ifdef P3D_PLANNER
       enableStats();
 #endif
-    } else if (strcmp(argv[i], "-udp") == 0) {
+    }
+
+#ifdef LIGHT_PLANNER
+	else if (strcmp(argv[i], "-no-ccntrt") == 0) {
+    	printf("Deactivate ccntrt at startup\n");
+	ccntrt_active = FALSE;
+	++i;
+      }
+#endif
+
+
+
+	else if (strcmp(argv[i], "-udp") == 0) {
       std::string serverIp(argv[i+1]);
       int port = 0;
       sscanf(argv[i+2], "%d", &port);
@@ -239,6 +253,7 @@ int main(int argc, char ** argv) {
       }
 #endif
 #endif
+
  else if (strcmp(argv[i], "bio") == 0) {
         col_mode_to_be_set = p3d_col_mode_bio;
         col_det_set = TRUE;
@@ -526,11 +541,14 @@ int main(int argc, char ** argv) {
   /* go into loop */
 	
 #if defined(LIGHT_PLANNER)
-	//if(ENV.getBool(Env::startWithFKCntrt))
-	//{
-		p3d_rob* MyRobot = p3d_get_robot_by_name ( ( char* ) "JIDOKUKA_ROBOT" );
-		deactivateCcCntrts(MyRobot,-1);
-	//}
+	if(!ccntrt_active) {
+	  for(i = 0; i < XYZ_ENV->nr; i++){
+	    if(XYZ_ENV->robot[i]->nbCcCntrts > 0) {
+	      printf("Deactivate ccntrt for the robot %s\n",XYZ_ENV->robot[i]->name);
+	      deactivateCcCntrts(XYZ_ENV->robot[i],-1);
+	    }
+	   }
+	}
 #endif
 
 #ifdef CXX_PLANNER
@@ -587,5 +605,6 @@ static void use(void) {
   printf("-vol: (only with kcd) minimal relevant size (volume) \n");
   printf("(internal note, kcd: volume of a box around a facet == (surface of box)^(3/2) )\n");
   printf("-nkcdd: (only with -c kcd) return only boolean reply, don't use distance \n");
+  printf("-no-ccntrt: deactivate closed chain constraint at startup \n");
 }
 
