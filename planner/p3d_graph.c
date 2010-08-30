@@ -776,7 +776,9 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
   if(G->rob->mg->fsg && G->rob->mg->fsg->nNodes > 0){//The Super Graph exists
     //initialise start and goal config
     startNode = p3d_isConfigInSuperGraph(G->rob, G->rob->mg->fsg, qs);
-    goalNode = p3d_isConfigInSuperGraph(G->rob, G->rob->mg->fsg, qg);
+    if (ENV.getBool(Env::expandToGoal) == true) {
+      goalNode = p3d_isConfigInSuperGraph(G->rob, G->rob->mg->fsg, qg);
+    }
   }
 #endif
 
@@ -1444,7 +1446,6 @@ int p3d_add_isolate_or_linking_node(p3d_graph *G, int (*fct_stop)(void),
     }
     //create the node from admissible config for the robot
     N = p3d_APInode_shoot_multisol(G, &nbNodes);
-
     if (test == 0) {// reinit the flag for singularity
       singularityCheck = 0;
     }
