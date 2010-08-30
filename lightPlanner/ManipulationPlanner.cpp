@@ -933,7 +933,7 @@ printf("************************************************************************
 		  return MANIPULATION_TASK_NO_TRAJ_FOUND;
 		}
               
-	        cleanRoadmap();
+	        //cleanRoadmap();
 	}
 
 
@@ -1338,7 +1338,11 @@ int ManipulationPlanner::computeRRT(){
   ChronoOff();
 #else
   result= p3d_specific_search((char*)"out.txt");
+//  p3d_col_set_microcollision(TRUE);
+//  p3d_set_env_dmax(p3d_get_env_dmax()/100);
   optimiseTrajectory(100,6);
+//  p3d_col_set_microcollision(FALSE);
+//  p3d_set_env_dmax(p3d_get_env_dmax()*100);
 #endif
   if(!result){
     printf("ArmGotoQ: could not find a path.\n");
@@ -2736,6 +2740,7 @@ int  ManipulationPlanner::checkCollisionOnTraj(int currentLpId) {
       return 1;
     }else{
       traj = _robotPt->t[_robotPt->tcur->num - 2];
+      
     }
   }
   if(_cartesian == 0) {
@@ -2771,7 +2776,7 @@ int  ManipulationPlanner::checkCollisionOnTraj(int currentLpId) {
   p3d_localpath* currentLp = traj->courbePt;
   int lpid = 0;
   for(int i = 0; i < currentLpId/2; i++){
-    currentLp = currentLp->next_lp;
+    currentLp-> = currentLp->next_lp;
   }
   return checkForCollidingPath(_robotPt, traj, currentLp);
 }
