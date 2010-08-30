@@ -507,24 +507,24 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
       configPt startConfig = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS), gotoConfig = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
       char graphFile[1024];
-      sprintf(graphFile, "%s/video/regrasp15.graph", getenv("HOME_MOVE3D"));
+      sprintf(graphFile, "%s/video/regrasp19.graph", getenv("HOME_MOVE3D"));
       
-      if(!manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConfig), p3d_copy_config(XYZ_ROBOT, gotoConfig), "",1)){
+      if(!manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConfig), p3d_copy_config(XYZ_ROBOT, gotoConfig), graphFile,1)){
         p3d_destroy_config(XYZ_ROBOT, startConfig);
         p3d_destroy_config(XYZ_ROBOT, gotoConfig);
         break;
       }
-      if(!manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConfig), p3d_copy_config(XYZ_ROBOT, gotoConfig), "",2)){
+      if(!manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConfig), p3d_copy_config(XYZ_ROBOT, gotoConfig), graphFile,2)){
         p3d_destroy_config(XYZ_ROBOT, startConfig);
         p3d_destroy_config(XYZ_ROBOT, gotoConfig);
         break;
       }
-      if(!manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConfig), p3d_copy_config(XYZ_ROBOT, gotoConfig), "",3)){
+      if(!manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConfig), p3d_copy_config(XYZ_ROBOT, gotoConfig), graphFile,3)){
         p3d_destroy_config(XYZ_ROBOT, startConfig);
         p3d_destroy_config(XYZ_ROBOT, gotoConfig);
         break;
       }
-      if(!manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConfig), p3d_copy_config(XYZ_ROBOT, gotoConfig), "",4)){
+      if(!manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConfig), p3d_copy_config(XYZ_ROBOT, gotoConfig), graphFile,4)){
         p3d_destroy_config(XYZ_ROBOT, startConfig);
         p3d_destroy_config(XYZ_ROBOT, gotoConfig);
         break;
