@@ -21,8 +21,8 @@
 static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
 #endif
 
-static char ObjectName[]= "Horse";
-static char RobotName[]= "JIDO_ROBOT";
+static char ObjectName[]= "GREY_TAPE";
+static char RobotName[]= "JIDOKUKA_ROBOT";
 static char HandRobotName[]= "JIDO_GRIPPER";
 static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot
@@ -723,6 +723,14 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
 
 //   result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
   result= gpGet_grasp_list_gripper(ObjectName, GRASPLIST);
+  igrasp= GRASPLIST.begin();
+   while(igrasp!=GRASPLIST.end()) {
+   if( igrasp->areContactsTooCloseToEdge(30*DEGTORAD, 0.02) ) {
+     igrasp= GRASPLIST.erase(igrasp);
+     continue;
+   }
+   igrasp++;
+  }
 
   if(result==GP_ERROR)
   {  return;  }
