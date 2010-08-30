@@ -2361,7 +2361,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	  lpId ++;
 	  localpathPt = localpathPt->next_lp;
 	}
-	
+
 	localpathPt = traj->courbePt;
 	u = 0.0;
 	lpId = 0;
@@ -2372,15 +2372,6 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 		p3d_desactivateAllCntrts(robotPt);
 		for(int i = 0; i < localpathPt->nbActiveCntrts; i++){
 			p3d_activateCntrt(robotPt, robotPt->cntrt_manager->cntrts[localpathPt->activeCntrts[i]]);
-		}
-
-		if (u > umax - EPS6) {
-			//u -= umax;
-			u=0;
-			end_localpath = 0;
-			localpathPt = localpathPt->next_lp;
-			lpId ++;
-			continue;
 		}
 
 		while (end_localpath < 1) {
@@ -2434,8 +2425,11 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 		}
 		localpathPt = localpathPt->next_lp;
 		lpId ++;
+		u=0;
 		end_localpath = 0;
 	}
+
+        printf("lpId %d traj->nlp %d\n ",lpId, traj->nlp);
 
 	if(filepTrajtr != NULL) {
 	fclose(filepTrajtr);
