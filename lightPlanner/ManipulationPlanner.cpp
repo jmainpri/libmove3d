@@ -1338,10 +1338,10 @@ int ManipulationPlanner::computeRRT(){
   ChronoOff();
 #else
   result= p3d_specific_search((char*)"out.txt");
-//  p3d_col_set_microcollision(TRUE);
+//  p3d_col_set_microcollision(true);
 //  p3d_set_env_dmax(p3d_get_env_dmax()/100);
-  optimiseTrajectory(100,6);
-//  p3d_col_set_microcollision(FALSE);
+  optimiseTrajectory(50,4);
+//  p3d_col_set_microcollision(false);
 //  p3d_set_env_dmax(p3d_get_env_dmax()*100);
 #endif
   if(!result){
@@ -2737,6 +2737,7 @@ int  ManipulationPlanner::checkCollisionOnTraj(int currentLpId) {
   //initialize and get the current linear traj
   if (!traj){
     if(_robotPt->nt < _robotPt->tcur->num - 2){
+      printf("BioMove3D: checkCollisionOnTraj unvalid traj number : nbTraj = %d, robot tcur = %d\n", _robotPt->nt, _robotPt->tcur->num);
       return 1;
     }else{
       traj = _robotPt->t[_robotPt->tcur->num - 2];
@@ -2770,13 +2771,14 @@ int  ManipulationPlanner::checkCollisionOnTraj(int currentLpId) {
       p3d_activateCntrt(_robotPt, _robotPt->ccCntrts[0]);
     }
   }
-  if (currentLpId > traj->nlp){
-    return MANIPULATION_TASK_ERROR_UNKNOWN;
+  if (currentLpId > _robotPt->tcur->nlp){
+    printf("BioMove3D: checkCollisionOnTraj given lpId  = %d > tcur nlp = %d\n", currentLpId, _robotPt->tcur->nlp);
+    currentLpId = 0;
   }
   p3d_localpath* currentLp = traj->courbePt;
   int lpid = 0;
   for(int i = 0; i < currentLpId/2; i++){
-    currentLp-> = currentLp->next_lp;
+    currentLp = currentLp->next_lp;
   }
   return checkForCollidingPath(_robotPt, traj, currentLp);
 }
@@ -2825,8 +2827,10 @@ int  ManipulationPlanner::replanCollidingTraj(int currentLpId, std::vector <int>
       p3d_activateCntrt(_robotPt, _robotPt->ccCntrts[0]);
     }
   }
-  if (currentLpId > traj->nlp){
-    return MANIPULATION_TASK_ERROR_UNKNOWN;
+  if (currentLpId > _robotPt->tcur->nlp){
+    printf("BioMove3D: checkCollisionOnTraj given lpId  = %d > tcur nlp = %d\n", currentLpId, _robotPt->tcur->nlp);
+
+    currentLpId = 0;
   }
   p3d_localpath* currentLp = traj->courbePt;
   for(int i = 0; i < currentLpId/2; i++){

@@ -283,7 +283,7 @@ int checkForCollidingPath(p3d_rob* robot, p3d_traj* traj, p3d_localpath* current
     curDist += tmp->length_lp;
   }
   dist = curDist;
-  for (; cur != NULL && dist < curDist + 0.33 * trajLength ; cur = cur->next_lp) {
+  for (; cur != NULL && dist < /*curDist + 0.33 * */ trajLength ; cur = cur->next_lp) {
     if (p3d_unvalid_localpath_test(robot, cur, &ntest)) {
        p3d_sel_desc_num(P3D_ROBOT, currentRobot->num);
       g3d_draw_allwin_active();
