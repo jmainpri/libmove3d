@@ -122,7 +122,7 @@ static void initManipulationGenom() {
   if (manipulation == NULL) {
 	p3d_rob * robotPt= p3d_get_robot_by_name(GP_ROBOT_NAME);
 	manipulation= new ManipulationPlanner(robotPt, GP_GRIPPER);
-//         manipulation->setArmType(GP_LWR); // set the arm type
+        manipulation->setArmType(GP_LWR); // set the arm type
   }
   return;
 }
