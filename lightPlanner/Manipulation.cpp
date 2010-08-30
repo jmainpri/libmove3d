@@ -93,7 +93,7 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
     computeRegraspTask(p3d_copy_config(_robot, startConfig), p3d_copy_config(_robot, gotoConfig), offlineFile, 0);
   }
   
-  if (_handsDoubleGraspsConfigs.size() > 0) {  // test si les grasp sont deja calculer
+  if (_handsDoubleGraspsConfigs.size() > 0) {  // test si les grasp sont deja calcules
     p3d_copy_config_into(_robot, startConfig, &(_robot->ROBOT_POS));
     p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
     dgData = (*_handsDoubleGraspsConfigs.begin());
@@ -189,7 +189,7 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
       p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
       p3d_traj* graspTraj = gotoObjectByConf(_robot, objectStartPos, firstGraspData->getGraspConfig(), true);
       if (graspTraj) {
-//        p3d_concat_traj(approachTraj, graspTraj);
+        p3d_concat_traj(approachTraj, graspTraj);
       }else {
         statDatas.push_back(-888);
         break;
@@ -219,7 +219,6 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
       fixJoint(_robot, _robot->curObjectJnt, objectStartPos);
       p3d_traj *carryToExchangeApporach = NULL;
       if (offlineFile.compare("")) {
-        //p3d_readGraph(offlineFile.c_str(), DEFAULTGRAPH);
         _robot->preComputedGraphs[3] = loadedGraph;
         if(closestWrist == 0){
           correctGraphForHandsAndObject(_robot, _robot->preComputedGraphs[3], 0, doubleGrasp.grasp1 , 2, doubleGrasp.grasp2, 1, 1);
@@ -262,7 +261,7 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
       p3d_copy_config_into(_robot, dgData->getConfig(), &(_robot->ROBOT_GOTO));
       p3d_traj *carryToExchange = carryObjectByConf(_robot, objectExchangePos, dgData->getConfig(), closestWrist, false, true);
       if (carryToExchange) {
-//        p3d_concat_traj(carryToExchangeApporach, carryToExchange);
+        p3d_concat_traj(carryToExchangeApporach, carryToExchange);
       }else {
         statDatas.push_back(-888);
         break;
@@ -307,7 +306,6 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
       p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
       p3d_traj *carryToDeposit = NULL;
       if (offlineFile.compare("")) {
-        //p3d_readGraph(offlineFile.c_str(), DEFAULTGRAPH);
         _robot->preComputedGraphs[3] = loadedGraph;
         if(closestWrist == 0){
           correctGraphForHandsAndObject(_robot, _robot->preComputedGraphs[3], 2, doubleGrasp.grasp1 , 0, doubleGrasp.grasp2, 1, 2);
@@ -331,13 +329,13 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
           statDatas.push_back(-999);
           _robot->preComputedGraphs[3] = NULL;
         }
-//        p3d_concat_traj(carryToOpenDeposit, carryToDeposit);
+        p3d_concat_traj(carryToOpenDeposit, carryToDeposit);
       }else {
         statDatas.push_back(-999);
         break;
       }
-//      statDatas.push_back(_robot->GRAPH->nnode);
-//      statDatas.push_back(_robot->GRAPH->time);
+      statDatas.push_back(_robot->GRAPH->nnode);
+      statDatas.push_back(_robot->GRAPH->time);
       solutionTraj = carryToOpenDeposit;
       break;
     }
@@ -398,8 +396,8 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
         _robot->preComputedGraphs[1] = NULL;
         statDatas.push_back(-999);
       }
-//      statDatas.push_back(_robot->GRAPH->nnode);
-//      statDatas.push_back(_robot->GRAPH->time);
+      statDatas.push_back(_robot->GRAPH->nnode);
+      statDatas.push_back(_robot->GRAPH->time);
       solutionTraj = endTraj;
       break;
     }
@@ -928,14 +926,17 @@ int Manipulation::getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, 
   q = setTwoArmsRobotGraspPosWithoutBase(_robot, exchangeMat, rTatt, lTatt, TRUE, -1, true);
   if(q){
     //Test the collisions with open hands
+    p3d_desactivateCntrt(_robot, _robot->ccCntrts[0]);
+    p3d_desactivateCntrt(_robot, _robot->ccCntrts[1]);
     configPt doubleGraspOpen = p3d_copy_config(_robot, q);
     gpCompute_grasp_open_config(_robot, doubleGrasp, (p3d_rob*)p3d_get_robot_by_name((char*)GP_OBJECT_NAME_DEFAULT), 1);
     gpSet_grasp_open_configuration (_robot, doubleGrasp.grasp1, doubleGraspOpen, 1);
     p3d_set_and_update_this_robot_conf(_robot, doubleGraspOpen);
+    g3d_draw_allwin_active();
     if (p3d_col_test()) {
       p3d_destroy_config(_robot, q);
       p3d_destroy_config(_robot, doubleGraspOpen);
-      g3d_draw_allwin_active();
+//      g3d_draw_allwin_active();
       return 0;
     }
     //test the other hand
@@ -943,15 +944,14 @@ int Manipulation::getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, 
     gpCompute_grasp_open_config(_robot, doubleGrasp, (p3d_rob*)p3d_get_robot_by_name((char*)GP_OBJECT_NAME_DEFAULT), 2);
     gpSet_grasp_open_configuration (_robot, doubleGrasp.grasp2, doubleGraspOpen, 2);
     p3d_set_and_update_this_robot_conf(_robot, doubleGraspOpen);
+    g3d_draw_allwin_active();
     if (p3d_col_test()) {
       p3d_destroy_config(_robot, q);
       p3d_destroy_config(_robot, doubleGraspOpen);
-      g3d_draw_allwin_active();
+//      g3d_draw_allwin_active();
       return 0;
     }
     p3d_destroy_config(_robot, doubleGraspOpen);
-    p3d_desactivateCntrt(_robot, _robot->ccCntrts[0]);
-    p3d_desactivateCntrt(_robot, _robot->ccCntrts[1]);
     gpSet_grasp_configuration(_robot, doubleGrasp.grasp1, q, 1);
     gpSet_grasp_configuration(_robot, doubleGrasp.grasp2, q, 2);
     p3d_copy_config_into(_robot, q, doubleGraspConfig);
