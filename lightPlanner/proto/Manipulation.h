@@ -452,7 +452,7 @@ class  ManipulationPlanner {
      bool getArmCartesian();
      int setArmTask(MANIPULATION_TASK_TYPE_STR t);
 
-     int armComputePRM();
+     int armComputePRM(double computeTime);
 
      int grabObject(int armId, char* objectName);
      int releaseObject();

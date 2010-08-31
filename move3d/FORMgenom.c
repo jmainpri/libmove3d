@@ -517,7 +517,7 @@ static void CB_genomArmComputePRM_obj(FL_OBJECT *obj, long arg){
   if (manipulation== NULL) {
 	  initManipulationGenom();
   }
-  manipulation->armComputePRM();
+  manipulation->armComputePRM(300);
 }
 
 #ifdef DPG
