@@ -434,7 +434,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
       
       
 //Test Multigraph      
-      
+#ifdef MULTI_GRAPH      
       int maxNodes = p3d_get_NB_NODES();
       int i =0;
         printf("##########  TEST N %d  ############\n", i+1);
@@ -450,6 +450,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
         mergeStat(XYZ_GRAPH->stat, XYZ_ENV->stat);
         printStatsGraph(XYZ_GRAPH->stat, 1);
       printStatsEnv(XYZ_ENV->stat, 1);
+#endif
 //        p3d_APInode_shoot_singularity(XYZ_ROBOT, &config, &singularity, &cntrt, rootConfig, XYZ_ROBOT->ikSol);
 //        g3d_draw_allwin_active();
 //        p3d_unmark_for_singularity(XYZ_ROBOT->cntrt_manager, cntrt);
