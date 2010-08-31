@@ -752,7 +752,11 @@ void validateColGraph(p3d_graph* graph){
 void removeAloneNodesInGraph(p3d_rob* robot, p3d_graph* graph){
   for(p3d_compco* compco = graph->comp ; compco; compco = compco->suiv){
     if (compco->nnode == 1) {
-      p3d_del_node(compco->nodes->N, graph);
+      if(compco->nodes)
+        p3d_del_node(compco->nodes->N, graph);
+      else {
+        p3d_del_node(compco->dist_nodes->N, graph);
+      }
 //      p3d_remove_compco(graph, compco);
     }
   }
