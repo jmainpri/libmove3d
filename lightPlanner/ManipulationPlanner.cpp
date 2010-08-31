@@ -1449,26 +1449,14 @@ int ManipulationPlanner::armComputePRM(double ComputeTime) {
   configPt qi = NULL, qf = NULL;
 
   XYZ_ENV->cur_robot= _robotPt;
-  deleteAllGraphs();
-
-
-  if(_robotPt!=NULL) {
-    while(_robotPt->nt!=0)
-      {   p3d_destroy_traj(_robotPt, _robotPt->t[0]);  }
-    FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
-  }
+  cleanRoadmap();
+  cleanTraj();
 
   if(_cartesian == 0) {
     /* plan in the C_space */
     p3d_multiLocalPath_disable_all_groupToPlan(_robotPt);
     p3d_multiLocalPath_set_groupToPlan(_robotPt, _UpBodyMLP, 1);
-    //p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-arm_lin", 1) ;
-    //              if(robotPt->nbCcCntrts!=0) {
-    //                      p3d_desactivateCntrt(robotPt, robotPt->ccCntrts[0]);
-    //              }
     deactivateCcCntrts(_robotPt, -1);
-    //              p3d_desactivateAllCntrts(robotPt);
-
   } else {
     /* plan in the cartesian space */
     qi = p3d_alloc_config(_robotPt);
@@ -1480,16 +1468,14 @@ int ManipulationPlanner::armComputePRM(double ComputeTime) {
     p3d_copy_config_into(_robotPt, _robotPt->ROBOT_GOTO, &qf);  
     p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qi);
     p3d_update_virtual_object_config_for_arm_ik_constraint(_robotPt, 0, qf);
-    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
-    //p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
     p3d_copy_config_into(_robotPt, qi, &_robotPt->ROBOT_POS);
     p3d_copy_config_into(_robotPt, qf, &_robotPt->ROBOT_GOTO);
     p3d_destroy_config(_robotPt, qi);
     p3d_destroy_config(_robotPt, qf);
     if(_robotPt->nbCcCntrts!=0) {
-      	  for(int w =0; w<_robotPt->nbCcCntrts; w++) {
-	    p3d_activateCntrt(_robotPt, _robotPt->ccCntrts[w]);
-	  }
+      for(int w = 0; w < _robotPt->nbCcCntrts; w++) {
+        p3d_activateCntrt(_robotPt, _robotPt->ccCntrts[w]);
+      }
     }
   }
 
@@ -1507,7 +1493,6 @@ int ManipulationPlanner::armComputePRM(double ComputeTime) {
   p3d_set_test_reductib(0);
   p3d_set_cycles(0);
 
-  p3d_set_and_update_this_robot_conf(_robotPt, _robotPt->ROBOT_POS);
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
   p3d_set_tmax(bakComputeTime);
   return 0;
@@ -1728,13 +1713,13 @@ int ManipulationPlanner::computePlacementList(){
   forbidWindowEvents();
 
   gpCompute_stable_placements(_object, _placementList);
-  printf("%d poses found\n",_placementList.size());
+  printf("%ld poses found\n",_placementList.size());
 
   // do not test collisions against our robot:
   robotList.push_back(_robotPt);
 //   robotList.push_back(_support);
   gpFind_placements_on_object(_object, _support, robotList, _placementList, _placementTranslationStep, _placementNbOrientations, 0.005, _placementOnSupportList);
-  printf("%d poses on support found\n",_placementOnSupportList.size());
+  printf("%ld poses on support found\n",_placementOnSupportList.size());
 
 
   // do not compute clearance with: our robot, the support, the human:
@@ -2769,7 +2754,7 @@ int  ManipulationPlanner::checkCollisionOnTraj(int currentLpId) {
     currentLpId = 0;
   }
   p3d_localpath* currentLp = traj->courbePt;
-  int lpid = 0;
+//  int lpid = 0;
   for(int i = 0; i < currentLpId/2; i++){
     currentLp = currentLp->next_lp;
   }
@@ -2781,8 +2766,8 @@ int  ManipulationPlanner::checkCollisionOnTraj(int currentLpId) {
 int  ManipulationPlanner::replanCollidingTraj(int currentLpId, std::vector <int> &lp, std::vector < std::vector <double> > &positions, MANPIPULATION_TRAJECTORY_STR &segments) {
   configPt qi = NULL, qf = NULL;
   p3d_traj *traj = NULL;
-  int ntest=0;
-  double gain;
+//  int ntest=0;
+//  double gain;
   
   XYZ_ENV->cur_robot = _robotPt;
   //initialize and get the current linear traj
@@ -2838,8 +2823,8 @@ int  ManipulationPlanner::replanCollidingTraj(int currentLpId, std::vector <int>
   do{
     printf("Test %d\n", j);
     j++;
-//    returnValue = replanForCollidingPath(_robotPt, traj, _robotPt->GRAPH, currentConfig, currentLp, optimized);
-   returnValue  = checkCollisionsOnPathAndReplan(_robotPt, traj, _robotPt->GRAPH, optimized);
+    returnValue = replanForCollidingPath(_robotPt, traj, _robotPt->GRAPH, currentConfig, currentLp, optimized);
+//   returnValue  = checkCollisionsOnPathAndReplan(_robotPt, traj, _robotPt->GRAPH, optimized);
     traj = _robotPt->tcur;
     currentLp = traj->courbePt;
   }while(returnValue != 1 && returnValue != 0 && returnValue != -2 && j < 10);
