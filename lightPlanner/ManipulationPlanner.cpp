@@ -1444,7 +1444,7 @@ int ManipulationPlanner::releaseObject(){
 }
 
 //! \return 0 in case of success, !=0 otherwise
-int ManipulationPlanner::armComputePRM() {
+int ManipulationPlanner::armComputePRM(double ComputeTime) {
 
   configPt qi = NULL, qf = NULL;
 
@@ -1497,7 +1497,8 @@ int ManipulationPlanner::armComputePRM() {
   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
   p3d_set_MOTION_PLANNER(P3D_BASIC);
   ENV.setInt(Env::NbTry,100000);
-  p3d_set_tmax(300);
+  double bakComputeTime = p3d_get_tmax();
+  p3d_set_tmax(ComputeTime);
 #ifdef MULTIGRAPH
   p3d_set_multiGraph(FALSE);
 #endif
@@ -1508,15 +1509,7 @@ int ManipulationPlanner::armComputePRM() {
 
   p3d_set_and_update_this_robot_conf(_robotPt, _robotPt->ROBOT_POS);
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
-
-  // reactivate collisions for all other robots:
-  //         for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
-  //                 if(XYZ_ENV->robot[i]==robotPt){
-  //       continue;
-  //     } else {
-  //       p3d_col_activate_robot(XYZ_ENV->robot[i]);
-  //     }
-  //   }
+  p3d_set_tmax(bakComputeTime);
   return 0;
 }
 
