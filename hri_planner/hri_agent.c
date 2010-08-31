@@ -25,23 +25,23 @@ int hri_assign_global_agents(HRI_AGENTS *agents)
   return TRUE;
 }
 
-int hri_assign_source_agent(char *agent_name, HRI_AGENTS *agents)
+HRI_AGENT* hri_assign_source_agent(char *agent_name, HRI_AGENTS *agents)
 {
   int i;
   
   if (agents == NULL) {
     printf("%s:%d - Cannot assign source agent\n",__FILE__, __LINE__);
-    return FALSE;
+    return NULL;
   }
   else {
     for (i=0; i<agents->all_agents_no; i++) {
       if (strcasestr(agents->all_agents[i]->robotPt->name, agent_name)) {
         agents->source_agent_idx = i;
-        return TRUE;
+        return agents->all_agents[i];
       }
     }
   }
-  return FALSE;  
+  return NULL;  
 }
 
 HRI_AGENTS * hri_create_agents()

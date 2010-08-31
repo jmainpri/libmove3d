@@ -1,5 +1,5 @@
 extern int hri_assign_global_agents(HRI_AGENTS *agents);
-extern int hri_assign_source_agent(char *agent_name, HRI_AGENTS *agents);
+extern HRI_AGENT *  hri_assign_source_agent(char *agent_name, HRI_AGENTS *agents);
 extern HRI_AGENTS * hri_create_agents(void);
 extern int hri_destroy_agents(HRI_AGENTS *agents);
 extern HRI_AGENT * hri_create_agent(p3d_rob * robot);
