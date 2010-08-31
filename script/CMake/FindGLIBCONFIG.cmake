@@ -10,7 +10,8 @@
 ## Check for the header files
 
 find_path (GLIBCONFIG_INCLUDE_DIR glibconfig.h
-  PATHS ${GLIBCONFIG_INC} /usr/local/lib/ /usr/lib/ /lib/ /sw/lib/ /opt/local/lib/ /usr/lib/glib-2.0/include/ 
+  PATHS ${GLIBCONFIG_INC} /usr/local/lib/ /usr/lib/ /lib/ /sw/lib/ /opt/local/lib/
+  PATH_SUFFIXES glib-2.0/include/ 
   )
 
 
