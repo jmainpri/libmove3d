@@ -2836,7 +2836,7 @@ int  ManipulationPlanner::replanCollidingTraj(int currentLpId, std::vector <int>
   }
   
   if (optimized && j > 1){
-    optimiseTrajectory(100,6);
+    optimiseTrajectory(50,4);
   }
   if(j > 1){//There is a new traj
     /* COMPUTE THE SOFTMOTION TRAJECTORY */
