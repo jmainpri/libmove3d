@@ -2831,6 +2831,10 @@ int  ManipulationPlanner::replanCollidingTraj(int currentLpId, std::vector <int>
   
   printf("nbTraj after : %d, returnValue = %d\n", _robotPt->nt, returnValue); 
  
+  if(returnValue == 1 && j == 0){ //no collision on traj
+    return armPlanTask(ARM_FREE, 0, currentConfig, _robotPt->ROBOT_GOTO, (char*)"", lp, positions, segments);
+  }
+  
   if (optimized && j > 1){
     optimiseTrajectory(100,6);
   }
