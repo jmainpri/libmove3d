@@ -11,8 +11,6 @@ p3d_halton.c
 p3d_human_arm_ik.c 
 p3d_ik.c 
 p3d_ik_kuka.c 
-p3d_ik_pa10.c 
-p3d_ik_lwr.c
 p3d_info.c 
 p3d_jacobian.c 
 p3d_jnt_base.c 
@@ -40,10 +38,18 @@ p3d_setpos.c
 polyhedre.c 
 env.cpp)
 
+
 IF(P3D_COLLISION_CHECKING)
 BM3D_SRC_SUBDIR_PROCESS(
 p3d_constraints.c 
 )
 ENDIF(P3D_COLLISION_CHECKING)
+
+IF(USE_GBM)
+BM3D_SRC_SUBDIR_PROCESS(
+	 p3d_ik_pa10.c 
+	 p3d_ik_lwr.c	       
+)
+ENDIF(USE_GBM)
 
 BM3D_QT_GENERATE_MOC(env.hpp)

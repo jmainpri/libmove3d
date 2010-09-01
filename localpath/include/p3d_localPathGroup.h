@@ -8,9 +8,9 @@
 #ifndef __P3D_LOCALPATHGROUP_H__
 #define __P3D_LOCALPATHGROUP_H__
 
-
-#include "gbM/gbStruct.h"
-
+#if defined(USE_GBM)
+ #include "gbM/gbStruct.h"
+#endif
 
 typedef enum {
  BASE,

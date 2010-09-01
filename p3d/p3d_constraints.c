@@ -6,7 +6,11 @@
 #include "Bio-pkg.h"
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
+
+#if defined(MULTILOCALPATH)
 #include "gbM/gbStruct.h"
+#endif
+
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include <iostream>
 
@@ -46,9 +50,14 @@
 //modif Mokhtar
 #define CNTRT_MIN_MAX_NAME             "p3d_min_max_dofs"
 #define CNTRT_KUKA_ARM_IK_NAME         "p3d_kuka_arm_ik"
-#define CNTRT_LWR_ARM_IK_NAME          "p3d_lwr_arm_ik"
+
 #define CNTRT_R7_HUMAN_ARM_NAME        "p3d_R7_human_arm_ik"
-#define CNTRT_PA10_6_ARM_IK_NAME       "p3d_pa10_6_arm_ik"
+
+#if defined(USE_GBM)
+  #define CNTRT_PA10_6_ARM_IK_NAME       "p3d_pa10_6_arm_ik"
+  #define CNTRT_LWR_ARM_IK_NAME          "p3d_lwr_arm_ik"
+#endif
+
 #define CNTRT_HEAD_OBJECT_TRACK_NAME   "p3d_head_object_track"
 #include "../graphic/proto/g3d_draw_proto.h"
 
@@ -236,12 +245,15 @@ static int p3d_set_kuka_arm_ik(p3d_cntrt_management * cntrt_manager,
                                double * dVal, int ct_num, int state);
 static int
 p3d_fct_kuka_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl);
+
+#if defined(USE_GBM)
 /* -- functions for LWR arm IK -- */
 static int p3d_set_lwr_arm_ik(p3d_cntrt_management * cntrt_manager,
                               p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                               p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof, int *iVal,
                               double * dVal, int ct_num, int state);
 static int p3d_fct_lwr_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl);
+#endif
 
 static int p3d_set_R7_human_arm_ik(p3d_cntrt_management * cntrt_manager,
                                    int nb_pas, p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
@@ -250,6 +262,7 @@ static int p3d_set_R7_human_arm_ik(p3d_cntrt_management * cntrt_manager,
 static int p3d_fct_R7_human_arm_ik(p3d_cntrt *ct, int iksol, configPt qp,
                                    double dl);
 
+#if defined(USE_GBM)
 /* -- functions for PA10-6 DoF arm IK -- */
 static int p3d_set_pa10_6_arm_ik(p3d_cntrt_management * cntrt_manager,
                                  p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
@@ -257,6 +270,7 @@ static int p3d_set_pa10_6_arm_ik(p3d_cntrt_management * cntrt_manager,
                                  double * dVal, int ct_num, int state);
 static int p3d_fct_pa10_6_arm_ik(p3d_cntrt *ct, int iksol, configPt qp,
                                  double dl);
+#endif
 
 static int p3d_set_head_object_track(p3d_cntrt_management * cntrt_manager,
                                      p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
@@ -409,21 +423,25 @@ void p3d_constraint_get_nb_param(const char *namecntrt, int *nb_Dofpasiv,
 		*nb_Dofactiv = 1;//freeflyerDof
 		*nb_Dval = 0;
 		*nb_Ival = 3;//fixed joint, left or right arm, solution number 1-8
+#if defined(USE_GBM)
 	} else if (strcmp(namecntrt, CNTRT_LWR_ARM_IK_NAME) == 0) {
 		*nb_Dofpasiv = 6;//1-2-4-5-6-7
 		*nb_Dofactiv = 1;//freeflyerDof
 		*nb_Dval = 0;
 		*nb_Ival = 2;//fixed joint, solution number 1-8   
+#endif
 	} else if (strcmp(namecntrt, CNTRT_R7_HUMAN_ARM_NAME) == 0) {
 		*nb_Dofpasiv = 1;
 		*nb_Dofactiv = 1;
 		*nb_Dval = 2;
 		*nb_Ival = 1;
+#if defined(USE_GBM)
 	} else if (strcmp(namecntrt, CNTRT_PA10_6_ARM_IK_NAME) == 0) {
 		*nb_Dofpasiv = 6;//1-2-4-5-6-7
 		*nb_Dofactiv = 1;//freeflyerDof
 		*nb_Dval = 0;
 		*nb_Ival = 1;//solution number 1-8
+#endif
 	} else if (strcmp(namecntrt, CNTRT_HEAD_OBJECT_TRACK_NAME) == 0) {
 		*nb_Dofpasiv = 2;
 		*nb_Dofactiv = 1;//object Dof
@@ -599,24 +617,28 @@ int p3d_create_constraint(p3d_cntrt_management * cntrt_manager,
                                Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv, Ival, Dval,
                                ct_num, state);
 	}
+#if defined(USE_GBM)
 	/* -- functions for LWR ARM IK -- */
 	if (strcmp(namecntrt, CNTRT_LWR_ARM_IK_NAME) == 0) {
 		return p3d_set_lwr_arm_ik(cntrt_manager, pas_jntPt, pas_jnt_dof,
                               Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv, Ival, Dval,
                               ct_num, state);
 	}
+#endif
 	/* -- functions for HUMAN ARM IK -- */
 	if (strcmp(namecntrt, CNTRT_R7_HUMAN_ARM_NAME) == 0) {
 		return p3d_set_R7_human_arm_ik(cntrt_manager, nb_pas, pas_jntPt,
                                    pas_jnt_dof, Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv, Dval,
                                    Ival, ct_num, state);
 	}
+#if defined(USE_GBM)
 	/* -- functions for PA10-6 ARM IK -- */
 	if (strcmp(namecntrt, CNTRT_PA10_6_ARM_IK_NAME) == 0) {
 		return p3d_set_pa10_6_arm_ik(cntrt_manager, pas_jntPt, pas_jnt_dof,
                                  Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv, Ival, Dval,
                                  ct_num, state);
 	}
+#endif
 	if (strcmp(namecntrt, CNTRT_HEAD_OBJECT_TRACK_NAME) == 0) {
 		return p3d_set_head_object_track(cntrt_manager, pas_jntPt, pas_jnt_dof,
                                      Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv, Ival, Dval,
@@ -4802,6 +4824,7 @@ static int p3d_set_kuka_arm_ik(p3d_cntrt_management * cntrt_manager,
   
 }
 
+#if defined(USE_GBM)
 /* -- functions for IK (of LWR ARM) -- */
 static int p3d_set_lwr_arm_ik(p3d_cntrt_management * cntrt_manager,
                               p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
@@ -4858,6 +4881,7 @@ static int p3d_set_lwr_arm_ik(p3d_cntrt_management * cntrt_manager,
 	return (TRUE);
   
 }
+#endif
 
 /** Check if we don't go beyond the bounds of passive joints for all possible constraint
  * solutions
@@ -5184,6 +5208,7 @@ static int p3d_fct_kuka_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
 	return FALSE;
 }
 
+#if defined(USE_GBM)
 /** Compute the inverse kinematic of Kuka LWR Arm. 
  * @param ct the constraint calling this function
  * @param iksol the solution of the ik (given by the planner)
@@ -5334,6 +5359,7 @@ static int p3d_fct_lwr_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
 	}
 	return FALSE;
 }
+#endif
 
 /* -- functions for HUMAN ARM IK (of R7humanArm) -- */
 static int p3d_set_R7_human_arm_ik(p3d_cntrt_management * cntrt_manager,
@@ -5466,6 +5492,7 @@ static int p3d_fct_R7_human_arm_ik(p3d_cntrt *ct, int iksol, configPt qp,
 	return (TRUE);
 }
 
+#if defined(USE_GBM)
 /** Compute the inverse kinematic of pa10_6 Arm. You can use a specific solution
  * of the ik given in the constraint declaration (the p3d file) or use multi solutions
  *
@@ -5689,6 +5716,8 @@ static int p3d_set_pa10_6_arm_ik(p3d_cntrt_management * cntrt_manager,
 	return (TRUE);
   
 }
+
+#endif
 
 // int p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(
 //                                                                   p3d_rob* robot, configPt q) {

@@ -61,7 +61,7 @@ MACRO(BM3D_CheckCompilationFlags)
 ENDMACRO(BM3D_CheckCompilationFlags)
 
 
-BM3D_flag(COMPILE_ON_JIDO "Check this flag to activate all dependencies for Jido" OFF CXX_PLANNER DPG PQP MULTIGRAPH LIGHT_PLANNER HRI_PLANNER HRI_GENERALIZED_IK MULTILOCALPATH GRASP_PLANNING FK_CNTRT USE_GSL USE_MIGHTABILITY_MAPS )
+BM3D_flag(COMPILE_ON_JIDO "Check this flag to activate all dependencies for Jido" OFF USE_GBM CXX_PLANNER DPG PQP MULTIGRAPH LIGHT_PLANNER HRI_PLANNER HRI_GENERALIZED_IK MULTILOCALPATH GRASP_PLANNING FK_CNTRT USE_GSL USE_MIGHTABILITY_MAPS )
 
 BM3D_flag(ANIMATION "Compilation with the module character" OFF)
 
@@ -113,6 +113,7 @@ BM3D_flag(USE_HRP2_GIK "HRP2 GIK Library" OFF)
 BM3D_flag(USE_MIGHTABILITY_MAPS "Mightability Map Calculation and Planning" OFF)
 BM3D_flag(USE_HATP_LIBS "For including HATP libraries" OFF)
 
+BM3D_flag(USE_GBM "Compilation with the gbM package" OFF)
 
 BM3D_CheckCompilationFlags()
 
@@ -195,10 +196,12 @@ ENDIF(WITH_XFORMS)
 
 #-------------- GBM ---------------------------------------
 #----------------------------------------------------------
+IF(USE_GBM)
 FIND_PACKAGE(GBM REQUIRED)
 INCLUDE_directories(${GBM_INCLUDE_DIR})
   SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${GBM_INCLUDE_DIR})
 SET(LIBS ${LIBS} ${GBM_LIBRARIES})
+ENDIF(USE_GBM)
 
 #-------------- GSL ---------------------------------------
 #----------------------------------------------------------

@@ -40,16 +40,19 @@
 #include "../localpath/flat/include/kinematic_flat_proto.h"
 
 // gbM  XB
+#if defined(USE_GBM)
 extern "C"{
 #include "gbM/Proto_gb.h"
 #include "gbM/Proto_gbModeles.h"
 #include "gbM/gbStruct.h"
 }
-#ifdef MULTILOCALPATH
+#endif
+#if defined(MULTILOCALPATH)
 #include "softMotion/softMotionStruct.h"
 #include "softMotion/softMotion.h"
 
 #endif
+
 #include "../localpath/proto/localpath_proto.h"
 
 
