@@ -993,7 +993,93 @@ int hri_agent_compute_posture(HRI_AGENT * agent, double neck_height, int state, 
     return TRUE;
   } 
   else {
-    printf("In %s:%d, Trying to compute the posture of an unsupported robot\n",__FILE__,__LINE__);
+    //printf("In %s:%d, Trying to compute the posture of an unsupported robot\n",__FILE__,__LINE__);
+    return FALSE;
+  }
+  
+}
+
+/**
+ * sets agents joints and state according to head height and state (STANDING, SITTING, MOVING) .
+ */
+int hri_agent_compute_state_posture(HRI_AGENT * agent, int state, configPt q)
+{
+  double hiptoknee_dist, kneetoankle_dist, necktobase_dist, hiptoground_dist; 
+  double basetohip_dist, ankletoground_dist;
+  double lhip_angle, lknee_angle, lankle_angle;
+  double rhip_angle, rknee_angle, rankle_angle;
+  double neck_height;
+  
+  if(agent == NULL) return FALSE;
+  
+  // Only supports ACHILE human model. Everything else returns FALSE.
+  
+  if(agent->type == HRI_ACHILE) {
+    
+    necktobase_dist = agent->robotPt->joints[5]->abs_pos[2][3]-agent->robotPt->joints[1]->abs_pos[2][3];
+    hiptoknee_dist = DISTANCE3D(agent->robotPt->joints[23]->abs_pos[0][3],
+                                agent->robotPt->joints[23]->abs_pos[1][3],
+                                agent->robotPt->joints[23]->abs_pos[2][3],
+                                agent->robotPt->joints[25]->abs_pos[0][3],
+                                agent->robotPt->joints[25]->abs_pos[1][3],
+                                agent->robotPt->joints[25]->abs_pos[2][3]); // Constant -> 0.47
+    kneetoankle_dist = DISTANCE3D(agent->robotPt->joints[25]->abs_pos[0][3],
+                                  agent->robotPt->joints[25]->abs_pos[1][3],
+                                  agent->robotPt->joints[25]->abs_pos[2][3],
+                                  agent->robotPt->joints[27]->abs_pos[0][3],  
+                                  agent->robotPt->joints[27]->abs_pos[1][3],
+                                  agent->robotPt->joints[27]->abs_pos[2][3]); // Constant -> 0.39
+    basetohip_dist = agent->robotPt->joints[1]->abs_pos[2][3]-agent->robotPt->joints[23]->abs_pos[2][3];
+    ankletoground_dist = 0.09; // Fixed distance in ACHILE model
+    
+    switch (state) {
+      case 0: // STANDING 
+        neck_height = 1.6;
+        hiptoground_dist =  neck_height - necktobase_dist - basetohip_dist;
+        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0, 
+                               &lhip_angle, &lknee_angle, &lankle_angle);
+        rhip_angle = lhip_angle;
+        rknee_angle = lknee_angle;
+        rankle_angle = lankle_angle;
+        break;
+      case 1: // SITTING
+        neck_height = 1.1;
+        hiptoground_dist =  neck_height - necktobase_dist - basetohip_dist;
+        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0.4, 
+                               &lhip_angle, &lknee_angle, &lankle_angle);
+        rhip_angle = lhip_angle;
+        rknee_angle = lknee_angle;
+        rankle_angle = lankle_angle;
+        break;
+      case 2: // MOVING
+        neck_height = 1.6;
+        hiptoground_dist =  neck_height - necktobase_dist - basetohip_dist;
+        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0.2, 
+                               &lhip_angle, &lknee_angle, &lankle_angle);
+        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, -0.2, 
+                               &rhip_angle, &rknee_angle, &rankle_angle);
+        break;
+      default:
+        neck_height = 1.6;
+        rhip_angle = lhip_angle = 0;
+        rknee_angle = lknee_angle = 0;
+        rankle_angle = lankle_angle = 0;
+        break;
+    }
+    q[8] = neck_height - necktobase_dist;
+    q[agent->robotPt->joints[23]->index_dof] = -lhip_angle;
+    q[agent->robotPt->joints[25]->index_dof] = lknee_angle;
+    q[agent->robotPt->joints[27]->index_dof] = -lankle_angle;
+    q[agent->robotPt->joints[30]->index_dof] = -rhip_angle;
+    q[agent->robotPt->joints[32]->index_dof] = rknee_angle;
+    q[agent->robotPt->joints[34]->index_dof] = -rankle_angle;
+    
+    agent->actual_state = state;
+    
+    return TRUE;
+  } 
+  else {
+    //printf("In %s:%d, Trying to compute the posture of an unsupported robot\n",__FILE__,__LINE__);
     return FALSE;
   }
   
