@@ -3287,10 +3287,10 @@ int hri_bt_calculate_bitmap_pathwR6IK(hri_bitmapset * btset, p3d_vector3 start, 
 
   q_g = p3d_get_robot_config(G->rob);
 
-  if(!hri_compute_R6IK(btset->robot,btset->object,q_g)){
-    printf("Goal position is in collision\n");
-    return FALSE;
-  }
+/*   if(!hri_compute_R6IK(btset->robot,btset->object,q_g)){ */
+/*     printf("Goal position is in collision\n"); */
+/*     return FALSE; */
+/*   } */
   /*  configPt q_deg; */
   /*   q_deg =  p3d_get_robot_config(G->rob); */
   /*   p3d_convert_config_rad_to_deg(btset->robot,q_g,&q_deg); */

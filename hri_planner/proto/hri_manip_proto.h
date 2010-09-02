@@ -39,7 +39,6 @@ extern int hri_link_node_comp ( p3d_graph *G, p3d_node *N, p3d_compco **compPt )
 extern int hri_APInode_linked ( p3d_graph *graphPt, p3d_node *N1, p3d_node *N2, double *dist );
 extern hri_bitmapset* hri_object_reach_init ( double objx, double objy, double objz );
 extern int hri_exp_find_obj_reach_path ( hri_bitmapset * btset );
-extern int hri_compute_R6IK ( p3d_rob * robotPt, p3d_rob * objectPt, configPt q );
 extern double hri_obj_reach_path_val ( hri_bitmapset* btset, int x, int y, int z );
 
 extern void g3d_hri_display_surfaces( void );

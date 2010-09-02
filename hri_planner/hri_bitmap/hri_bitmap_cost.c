@@ -49,15 +49,15 @@ int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_bitmap_c
 
     p3d_set_and_update_this_robot_conf(btset->object,q_o);
 
-    if(!hri_compute_R6IK(btset->robot,btset->object,qc)){
-      btset->bitmap[BT_3D_OBSTACLES]->data[cell->x][cell->y][cell->z].val = -2;
-      cell->val = -2;
-      p3d_destroy_config(btset->robot, qc); /* FREE */
-    }
-    else{
-      cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
-      cell->q = qc;
-    }
+    /* if(!hri_compute_R6IK(btset->robot,btset->object,qc)){ */
+/*       btset->bitmap[BT_3D_OBSTACLES]->data[cell->x][cell->y][cell->z].val = -2; */
+/*       cell->val = -2; */
+/*       p3d_destroy_config(btset->robot, qc); /\* FREE *\/ */
+/*     } */
+/*     else{ */
+/*       cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z); */
+/*       cell->q = qc; */
+/*     } */
 
     q_o[6] = saved[0];  q_o[7] = saved[1];  q_o[8] = saved[2];
     p3d_set_and_update_this_robot_conf(btset->object,q_o);
