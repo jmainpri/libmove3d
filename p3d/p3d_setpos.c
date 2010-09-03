@@ -1247,6 +1247,104 @@ int p3d_set_freeflyer_pose(p3d_rob *robotPt, p3d_matrix4 pose)
   return 0;
 }
 
+//! Return the configuration of a freeflyer robot from a pose matrix.
+//! NB: Values are clamped to the joint parameter bounds.
+//! \param robotPt pointer to the robot
+//! \param pose desired pose
+//! \return 0 in case of success, 1 otherwise
+int p3d_set_freeflyer_pose_into(p3d_rob *robotPt, p3d_matrix4 pose, configPt q)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_set_freeflyer_pose(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  double tx, ty, tz, alpha, beta, gamma;
+  double tx_min, tx_max, ty_min, ty_max, tz_min, tz_max;
+  double alpha_min, alpha_max, beta_min, beta_max, gamma_min, gamma_max;
+  p3d_jnt *firstJoint= NULL;
+
+  p3d_mat4ExtractPosReverseOrder2(pose, &tx, &ty, &tz, &alpha, &beta, &gamma);
+
+  firstJoint= robotPt->joints[1];
+
+  if(firstJoint->type!=P3D_FREEFLYER)
+  {
+    printf("%s: %d: p3d_set_freeflyer_pose(): the first joint of robot \"%s\" is not of type P3D_FREEFLYER.\n",__FILE__,__LINE__,robotPt->name);
+    return 1;
+  }
+
+  tx_min= firstJoint->dof_data[0].vmin;
+  tx_max= firstJoint->dof_data[0].vmax;
+  ty_min= firstJoint->dof_data[1].vmin;
+  ty_max= firstJoint->dof_data[1].vmax;
+  tz_min= firstJoint->dof_data[2].vmin;
+  tz_max= firstJoint->dof_data[2].vmax;
+
+  alpha_min= firstJoint->dof_data[3].vmin;
+  alpha_max= firstJoint->dof_data[3].vmax;
+  beta_min = firstJoint->dof_data[4].vmin;
+  beta_max = firstJoint->dof_data[4].vmax;
+  gamma_min= firstJoint->dof_data[5].vmin;
+  gamma_max= firstJoint->dof_data[5].vmax;
+
+  if(tx < tx_min)
+  {  tx= tx_min;  }
+  if(tx > tx_max)
+  {  tx= tx_max;  }
+  if(ty < ty_min)
+  {  ty= ty_min;  }
+  if(ty > ty_max)
+  {  ty= ty_max;  }
+  if(tz < tz_min)
+  {  tz= tz_min;  }
+  if(tz > tz_max)
+  {  tz= tz_max;  }
+
+
+  alpha= fmod(alpha, 2*M_PI);
+  beta= fmod(beta, 2*M_PI);
+  gamma= fmod(gamma, 2*M_PI);
+
+  if(alpha < alpha_min)
+  {  alpha+= 2*M_PI;  }
+  if(alpha > alpha_max)
+  {   alpha-= 2*M_PI;  }
+  if(beta < beta_min)
+  {  beta+= 2*M_PI;  }
+  if(beta > beta_max)
+  {   beta-= 2*M_PI;  }
+  if(gamma < gamma_min)
+  {  gamma+= 2*M_PI;  }
+  if(gamma > gamma_max)
+  {   gamma-= 2*M_PI;  }
+
+  if(alpha < alpha_min)
+  {  alpha= alpha_min;  }
+  if(alpha > alpha_max)
+  {  alpha= alpha_max;  }
+  if(beta < beta_min)
+  {  beta= beta_min;  }
+  if(beta > beta_max)
+  {  beta= beta_max;  }
+  if(gamma < gamma_min)
+  {  gamma= gamma_min;  }
+  if(gamma > gamma_max)
+  {  gamma= gamma_max;  }
+  
+  p3d_get_robot_config_into(robotPt, &q);
+  
+  q[firstJoint->index_dof + 0] = tx;
+  q[firstJoint->index_dof + 1] = ty;
+  q[firstJoint->index_dof + 2] = tz;
+  q[firstJoint->index_dof + 3] = alpha;
+  q[firstJoint->index_dof + 4] = beta;
+  q[firstJoint->index_dof + 5] = gamma;
+  
+  return 0;
+}
+
 
 //! Sets the configuration of a freeflyer robot from a 6 parameters.
 //! NB: Values are clamped to the joint parameter bounds.
