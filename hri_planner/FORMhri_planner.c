@@ -1423,7 +1423,7 @@ void CB_test_button4_obj(FL_OBJECT *obj, long arg)
     selected_target = env->robot[random()%env->nr];
     
     clock_val = clock();
-    hri_is_object_visible(selected_agent, selected_target, 50, FALSE);
+    hri_is_object_visible(selected_agent, selected_target, 50, FALSE, TRUE);
     
     elapsed_time = (clock() - clock_val)/CLOCKS_PER_SEC + elapsed_time;
   }

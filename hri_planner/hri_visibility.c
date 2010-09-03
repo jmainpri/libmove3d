@@ -3,7 +3,7 @@
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
 
-int hri_is_object_visible(HRI_AGENT * agent, p3d_rob *object, int threshold, int save)
+int hri_is_object_visible(HRI_AGENT * agent, p3d_rob *object, int threshold, int save, int draw_at_end)
 {
   GLint viewport[4];
   g3d_states st;
@@ -51,7 +51,8 @@ int hri_is_object_visible(HRI_AGENT * agent, p3d_rob *object, int threshold, int
   g3d_restore_win_camera(win->vs);
   g3d_set_projection_matrix(win->vs.projection_mode); // do this after restoring the camera fov
   
-  g3d_draw_win(win);
+  if(draw_at_end)
+    g3d_draw_win(win);
   
   if(100*result>=threshold)
     return TRUE;
@@ -148,7 +149,7 @@ int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, 
   
   g3d_draw_win_back_buffer(win); //only the object should be drawn in red, everthing else is black
   
-  if(save){
+  if(save) {
     sprintf(name, "%sidealview%i.ppm",path, crntcnt++);
     g3d_export_OpenGL_display(name);
   }
@@ -169,8 +170,7 @@ int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, 
   
   // count the pixels corresponding to the object's color:
   idealpixels= 0;
-  for(i=0; i<width*height; i++)
-  {
+  for(i=0; i<width*height; i++) {
     if(image[3*i]> 0.8) {
       idealpixels++;
     }
