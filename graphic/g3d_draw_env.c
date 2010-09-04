@@ -1169,50 +1169,39 @@ void g3d_draw_env(void) {
 void g3d_draw_env_custom()
 {
   G3D_Window *win;
-
+  
   win = g3d_get_cur_win();
 
   p3d_drawRobotMoveMeshs();
-
-  #ifdef HRI_COSTSPACE
-      g3d_draw_costspace();
-      g3d_draw_hrics();
-  #endif
-      g3d_draw_grids();
   
-  #ifdef HRI_PLANNER
-    gpsp_draw_robots_fov(win);
-    psp_draw_elements(win);
-  #endif
-  
-    #ifdef DPG
-    if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
-      XYZ_GRAPH->dpgGrid->draw();
-    }
-    #endif
-  
-  
-  #ifdef HRI_PLANNER
-  if (!win->win_perspective) {
-    //hri_hri_inter_point_test();
-    g3d_hri_bt_draw_active_bitmaps(BTSET);
-    g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
-    g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
-    g3d_hri_bt_draw_targets(BTSET);
-    hri_exp_draw_ordered_points();
-    //g3d_hri_display_test();
-    g3d_draw_all_agents_fovs(GLOBAL_AGENTS);
-    if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
-#if defined(USE_MIGHTABILITY_MAPS) && !defined(COMPILE_ON_JIDO)
-    ////printf("Inside g3d_draw_env_custom() \n");
-    execute_Mightability_Map_functions();
+#ifdef HRI_COSTSPACE
+  g3d_draw_costspace();
+  g3d_draw_hrics();
 #endif
-  } else {
-    if (win->draw_mode!=NORMAL)
-      g3d_set_light_persp();
-    psp_draw_in_perspwin();
+  g3d_draw_grids();
+  
+#ifdef DPG
+  if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
+    XYZ_GRAPH->dpgGrid->draw();
   }
-  #endif
+#endif
+  
+#ifdef HRI_PLANNER
+  //hri_hri_inter_point_test();
+  g3d_hri_bt_draw_active_bitmaps(BTSET);
+  g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
+  g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
+  g3d_hri_bt_draw_targets(BTSET);
+  hri_exp_draw_ordered_points();
+  //g3d_hri_display_test();
+  g3d_draw_all_agents_fovs(GLOBAL_AGENTS);
+  if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
+#if defined(USE_MIGHTABILITY_MAPS) && !defined(COMPILE_ON_JIDO)
+  ////printf("Inside g3d_draw_env_custom() \n");
+  execute_Mightability_Map_functions();
+#endif
+#endif
+  
 }
 
 
@@ -1274,20 +1263,7 @@ void g3d_draw_robots(G3D_Window *win) {
       if(rob->display_mode==P3D_ROB_NO_DISPLAY) {
         continue;
       }
- #ifdef HRI_PLANNER
-	  if (win->win_perspective){
-		if (win->draw_mode==OBJECTIF){
-		  if (rob->caption_selected)
-			  g3d_draw_robot(ir,win);
-		}
-		else
-		{
-		  g3d_draw_robot(ir,win);
-		}
-	  }
-	  else
-#endif
-//            g3d_draw_rob_BB((p3d_rob *) p3d_get_desc_curid(P3D_ROBOT));
+      //g3d_draw_rob_BB((p3d_rob *) p3d_get_desc_curid(P3D_ROBOT));
 	    g3d_draw_robot(ir, win);
     }
     p3d_sel_desc_num(P3D_ROBOT, r);
@@ -1461,17 +1437,6 @@ void g3d_draw_obstacle(G3D_Window *win) {
   o = (p3d_obj *) p3d_get_desc_curid(P3D_OBSTACLE);
 
   g3d_draw_object(o, 0, win);
-#ifdef HRI_PLANNER	  
-  if (!win->win_perspective && o->caption_selected)
-    g3d_draw_obj_BB(o);
-#endif
-  
-#ifdef HRI_PLANNER	
-  else
-	  if ( o->caption_selected)
-		  PSP_CURR_DRAW_OBJ++;
-#endif
-	
 }
 
 
@@ -1605,10 +1570,6 @@ void g3d_draw_body(int coll, G3D_Window* win) {
   o = (p3d_obj *) p3d_get_desc_curid(P3D_BODY);
 
   g3d_draw_object_moved(o, coll, win);
-#ifdef HRI_PLANNER
-   if (!win->win_perspective && o->caption_selected)
-     g3d_draw_obj_BB(o);
-#endif
 }
 
 /*******************************************/
@@ -1645,121 +1606,6 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
   int black;
   glLoadName(o->o_id_in_env);
 
-#ifdef HRI_PLANNER
-  int colorindex = 0;
-  int colltemp, istrans;
-
-  if (PSP_NUM_OBJECTS==0){
-    colorindex = 1;
-  }
-  else{
-    colorindex = (PSP_CURR_DRAW_OBJ+1) * (PSP_MAX_COLOR_IDX/(PSP_NUM_OBJECTS*1.0));
-    PSP_DRAW_OBJ_COL_INDEX[PSP_CURR_DRAW_OBJ] = colorindex;
-  }
-
-  if(win->draw_mode==OBJECTIF){ //If is indicated to draw only the objective
-    if (o->caption_selected){ // if the object if marked as part of the objective
-      colltemp = 2;
-
-      for(i=0;i<o->np;i++){
-                  if (o->pol[i]->TYPE!=P3D_GHOST || win->vs.GHOST == TRUE){
-
-                        //check if the poly is transparent or not to know if we have to display it:
-                          if(coll!=0)
-                          { transparent= 0;   }
-                          else
-                          {  transparent= g3d_is_poly_transparent(o->pol[i]);   }
-                          if(!transparent && win->vs.transparency_mode==G3D_TRANSPARENT)
-                          {  continue; }
-                          if(transparent && win->vs.transparency_mode==G3D_OPAQUE)
-                          {  continue; }
-
-                          //flat shading display:
-                          if( !win->vs.FILAIRE && !win->vs.GOURAUD )
-                          { g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex); }
-                          //smooth shading display:
-                          if( !win->vs.FILAIRE && win->vs.GOURAUD )
-                          { g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex); }
-                          //simple wire display:
-                          if( win->vs.FILAIRE && !win->vs.CONTOUR )
-                          { g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex); }
-                          //contour display:
-                          if(win->vs.CONTOUR)
-                          {
-                            black= win->vs.allIsBlack;
-                            win->vs.allIsBlack= TRUE;
-                            g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);
-                            win->vs.allIsBlack= black;
-                          }
-		  }
-      }
-      PSP_CURR_DRAW_OBJ++;
-      if (PSP_CURR_DRAW_OBJ>=PSP_NUM_OBJECTS)
-		  PSP_CURR_DRAW_OBJ = 0;
-    }
-  }
-  else{
-    if (win->draw_mode==DIFFERENCE){
-      if (o->caption_selected){ // if the object is marked as part of the objective
-	 colltemp = 2;
-      }
-      else{
-	colltemp = 3;
-      }
-    }
-    else
-      colltemp = coll;
-
-    istrans=0;
-    if (win->win_perspective && o->trans){
-      istrans=1;
-    }
-    if (!istrans){
-      for(i=0;i<o->np;i++){
-        if (o->pol[i]->TYPE!=P3D_GHOST || win->vs.GHOST == TRUE){
-	  if(colltemp !=2 && colltemp !=3) { colorindex = o->pol[i]->color;  }
-
-         //check if the poly is transparent or not to know if we have to display it:
-          if(coll!=0)
-          { transparent= 0;   }
-          else
-          {  transparent= g3d_is_poly_transparent(o->pol[i]);   }
-          if(!transparent && win->vs.transparency_mode==G3D_TRANSPARENT)
-          {  continue; }
-          if(transparent && win->vs.transparency_mode==G3D_OPAQUE)
-          {  continue; }
-
-          //flat shading display:
-          if( !win->vs.FILAIRE && !win->vs.GOURAUD )
-            {g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex);}
-          //smooth shading display:
-          if( !win->vs.FILAIRE && win->vs.GOURAUD)
-          {g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex);}
-          //simple wire display:
-          if( win->vs.FILAIRE && !win->vs.CONTOUR )
-          {g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);}
-          //contour display:
-          if(win->vs.CONTOUR)
-          {
-            black= win->vs.allIsBlack;
-            win->vs.allIsBlack= TRUE;
-            g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);
-            win->vs.allIsBlack= black;
-          }
-	}
-      }
-      if (colltemp == 2)
-	PSP_CURR_DRAW_OBJ++;
-      if (PSP_CURR_DRAW_OBJ>=PSP_NUM_OBJECTS)
-	PSP_CURR_DRAW_OBJ = 0;
-    }
-  }
-  if (!win->win_perspective){ // This characteristics are not shown in a perspective window
-    if (o->show_pos_area){
-      g3d_draw_obj_pos_area(o);
-    }
-  }
-#else
   for(i=0;i<o->np;i++){
     if (o->pol[i]->TYPE != P3D_GHOST || win->vs.GHOST == TRUE){
 
@@ -1792,7 +1638,6 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
       }
     }
   }
-#endif
 }
 
 /***************************************************/
