@@ -48,38 +48,36 @@ HRI_AGENTS * hri_create_agents()
 {
   int i, i_r=0, i_h=0;
   HRI_AGENTS * agents;
+  HRI_AGENT * new_agent;
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
 
   agents = MY_ALLOC(HRI_AGENTS,1);
   agents->robots_no = 0;
   agents->humans_no = 0;
+  agents->robots = NULL;
+  agents->humans = NULL;
 
   for(i=0; i<env->nr; i++){
-    if(strcasestr(env->robot[i]->name,"ROBOT"))
-      agents->robots_no++;
-    else
-      if(strcasestr(env->robot[i]->name,"HUMAN"))
-        agents->humans_no++;
-  }
-  agents->all_agents_no = agents->robots_no + agents->humans_no;
-  
-  agents->robots = MY_ALLOC(HRI_AGENT *,agents->robots_no);
-  agents->humans = MY_ALLOC(HRI_AGENT *,agents->humans_no);
-  agents->all_agents = MY_ALLOC(HRI_AGENT *,agents->all_agents_no);
-  
-  for(i=0; i<env->nr; i++){
-    if(strcasestr(env->robot[i]->name,"ROBOT")){
-      agents->robots[i_r] = hri_create_agent(env->robot[i]);
-      i_r++;
+    if(strcasestr(env->robot[i]->name,"ROBOT")) {
+      new_agent = hri_create_agent(env->robot[i]);
+      if( new_agent != NULL) {
+        agents->robots = MY_REALLOC(agents->robots, HRI_AGENT *, agents->robots_no, ++agents->robots_no);
+        agents->robots[agents->robots_no-1] = new_agent;
+      }
     }
     else {
       if(strcasestr(env->robot[i]->name,"HUMAN")) {
-        agents->humans[i_h] = hri_create_agent(env->robot[i]);
-        i_h++;
+        new_agent = hri_create_agent(env->robot[i]);
+        if( new_agent != NULL) {
+          agents->humans = MY_REALLOC(agents->humans, HRI_AGENT *, agents->humans_no, ++agents->humans_no);
+          agents->humans[agents->humans_no-1] = new_agent;
+        }
       }
     }
   }
-  
+    
+  agents->all_agents_no = agents->robots_no + agents->humans_no;
+  agents->all_agents = MY_ALLOC(HRI_AGENT *, agents->all_agents_no);
   i = 0;
   for(i_r=0; i_r<agents->robots_no; i_r++, i++)
     agents->all_agents[i] = agents->robots[i_r];
@@ -116,7 +114,7 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
   HRI_AGENT * hri_agent;
 
   hri_agent = MY_ALLOC(HRI_AGENT,1);
-
+  
   if(strcasestr(robot->name,"SUPERMAN")){
     hri_agent->type = HRI_SUPERMAN;
   }
@@ -174,7 +172,6 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
       }
     }
   }
-  
   hri_agent->robotPt = robot;
   
   hri_agent->navig  = hri_create_agent_navig(hri_agent);
