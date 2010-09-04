@@ -131,9 +131,13 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
           hri_agent->type = HRI_JIDOKUKA;
         }
         else {
-          if(strcasestr(robot->name,"JIDO")){
-            hri_agent->type = HRI_JIDO1;
+          if(strcasestr(robot->name,"PR2")){
+            hri_agent->type = HRI_PR2;
           }
+          else {
+            if(strcasestr(robot->name,"JIDO")){
+              hri_agent->type = HRI_JIDO1;
+            }
           else {
             if(strcasestr(robot->name,"HRP2")){
               hri_agent->type = HRI_HRP214;
@@ -167,6 +171,7 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
                 }
               }
             }
+          }
           }
         }
       }
@@ -248,6 +253,15 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
       persp->pan_jnt_idx  = 2;
       persp->pointjoint = agent->robotPt->joints[18];
       persp->point_tolerance = 20;      
+      break;
+    case HRI_PR2:
+      persp->camjoint = agent->robotPt->joints[24]; 
+      persp->fov = 120; //TODO: put the corrent value
+      persp->foa = 60; //TODO: put the corrent value
+      persp->tilt_jnt_idx = 4;
+      persp->pan_jnt_idx  = 3;
+      persp->pointjoint = agent->robotPt->joints[26];
+      persp->point_tolerance = 20;   
       break;
     case HRI_ACHILE:
       persp->camjoint = agent->robotPt->joints[42];
@@ -371,8 +385,7 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
     case HRI_HRP214:
       *tasklist_no = 7;
       *tasklist = MY_ALLOC(GIK_TASK, *tasklist_no);
-
-
+      
       // These values are the default joint numbers for gik task
       // It is completely dependent to the robot's macro
       // TODO: add a field to p3d to load them automatically
@@ -559,7 +572,65 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       (*tasklist)[4].default_joints_no = 7;
       
       return TRUE;
+     
+    case HRI_PR2:
+      *tasklist_no = 5;
+      *tasklist = MY_ALLOC(GIK_TASK, *tasklist_no);
       
+      (*tasklist)[0].type = GIK_LOOK;
+      (*tasklist)[0].default_joints[0] = 3;
+      (*tasklist)[0].default_joints[1] = 4;
+      (*tasklist)[0].default_joints[2] = 27;
+      (*tasklist)[0].active_joint = 27; /* active joint */
+      (*tasklist)[0].default_joints_no = 3;
+      
+      (*tasklist)[1].type = GIK_RAPOINT;
+      (*tasklist)[1].default_joints[0] = 15;
+      (*tasklist)[1].default_joints[1] = 16;
+      (*tasklist)[1].default_joints[2] = 17;
+      (*tasklist)[1].default_joints[3] = 18;
+      (*tasklist)[1].default_joints[4] = 19;
+      (*tasklist)[1].default_joints[5] = 20;
+      (*tasklist)[1].default_joints[6] = 21;
+      (*tasklist)[1].default_joints[7] = 29;
+      (*tasklist)[1].active_joint = 29; /* active joint */
+      (*tasklist)[1].default_joints_no = 8;
+      
+      (*tasklist)[2].type = GIK_LAPOINT;
+      (*tasklist)[2].default_joints[0] = 5;
+      (*tasklist)[2].default_joints[1] = 6;
+      (*tasklist)[2].default_joints[2] = 7;
+      (*tasklist)[2].default_joints[3] = 8;
+      (*tasklist)[2].default_joints[4] = 9;
+      (*tasklist)[2].default_joints[5] = 10;
+      (*tasklist)[2].default_joints[6] = 11;
+      (*tasklist)[2].default_joints[7] = 28;
+      (*tasklist)[2].active_joint = 28; /* active joint */
+      (*tasklist)[2].default_joints_no = 8;
+      
+      (*tasklist)[3].type = GIK_RAREACH;
+      (*tasklist)[3].default_joints[0] = 15;
+      (*tasklist)[3].default_joints[1] = 16;
+      (*tasklist)[3].default_joints[2] = 17;
+      (*tasklist)[3].default_joints[3] = 18;
+      (*tasklist)[3].default_joints[4] = 19;
+      (*tasklist)[3].default_joints[5] = 20;
+      (*tasklist)[3].default_joints[6] = 21;
+      (*tasklist)[3].active_joint = 26; /* active joint */
+      (*tasklist)[3].default_joints_no = 7;
+      
+      (*tasklist)[4].type = GIK_LAREACH;
+      (*tasklist)[4].default_joints[0] = 5;
+      (*tasklist)[4].default_joints[1] = 6;
+      (*tasklist)[4].default_joints[2] = 7;
+      (*tasklist)[4].default_joints[3] = 8;
+      (*tasklist)[4].default_joints[4] = 9;
+      (*tasklist)[4].default_joints[5] = 10;
+      (*tasklist)[4].default_joints[6] = 11;
+      (*tasklist)[4].active_joint = 25; /* active joint */
+      (*tasklist)[4].default_joints_no = 7;
+      
+      return TRUE;
       
     case HRI_SUPERMAN:
       *tasklist_no = 2;
@@ -595,7 +666,6 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       (*tasklist)[1].default_joints[9] = 26;
       (*tasklist)[1].active_joint = 26; /* active joint */
       (*tasklist)[1].default_joints_no = 10;
-
 
       return TRUE;
 
