@@ -4,9 +4,13 @@
 #ifndef PROTO
         #include <stdlib.h>
         #include <math.h>
-#if defined(MACOSX) && defined(QT_LIBRARY)
+#if defined(MACOSX) 
+#if defined(QT_LIBRARY)
         #include "gl.h"
         #include "glu.h"
+#else
+        #include <GLUT/glut.h>
+#endif
 #else
 		#include "GL/gl.h"
 		#include "GL/glu.h"
