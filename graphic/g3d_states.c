@@ -44,6 +44,7 @@ g3d_states g3d_init_viewer_state(double size)
     vs.displayWalls = 0;
     vs.displayFloor = 0;
     vs.displayTiles = 0;
+    vs.enableAntialiasing = 0;
     vs.allIsBlack = 0;
 
     //Les plans du sol et des murs vont être ajustés sur les coordonnées de
@@ -362,8 +363,9 @@ void g3d_init_OpenGL()
   glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
   glEnable(GL_DEPTH_TEST);
-  glEnable(GL_MULTISAMPLE);
-  
+#ifdef ENABLE_ANTIALIASING
+  glDisable(GL_MULTISAMPLE_ARB);
+#endif
   /** on desactive tout mode OpenGL inutile ***/
   glDisable(GL_STENCIL_TEST);
   glDisable(GL_SCISSOR_TEST);
@@ -699,6 +701,7 @@ int g3d_save_state(g3d_win *win, g3d_states *st)
   st->displayShadows =  win->vs.displayShadows;
   st->displayWalls   =  win->vs.displayWalls;
   st->displayFloor   =  win->vs.displayFloor;
+  st->enableAntialiasing = win->vs.enableAntialiasing;
   st->displayTiles   =  win->vs.displayTiles;
   st->cullingEnabled =  win->vs.cullingEnabled;
   st->bg[0]          =  win->vs.bg[0]; 
@@ -728,6 +731,7 @@ int g3d_load_state(g3d_win *win, g3d_states *st)
   win->vs.displayShadows  = st->displayShadows; 
   win->vs.displayWalls    = st->displayWalls; 
   win->vs.displayFloor    = st->displayFloor;
+  win->vs.enableAntialiasing = st->enableAntialiasing;
   win->vs.displayTiles    = st->displayTiles;
   win->vs.cullingEnabled  = st->cullingEnabled;
   win->vs.bg[0]           = st->bg[0];

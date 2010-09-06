@@ -63,6 +63,8 @@ ENDMACRO(BM3D_CheckCompilationFlags)
 
 BM3D_flag(COMPILE_ON_JIDO "Check this flag to activate all dependencies for Jido" OFF USE_GBM CXX_PLANNER DPG PQP MULTIGRAPH LIGHT_PLANNER HRI_PLANNER HRI_GENERALIZED_IK MULTILOCALPATH GRASP_PLANNING FK_CNTRT USE_GSL USE_MIGHTABILITY_MAPS )
 
+BM3D_flag(ENABLE_ANTIALIASING "Enables antialiasing to draw smooth lines" OFF)
+
 BM3D_flag(ANIMATION "Compilation with the module character" OFF)
 
 BM3D_flag(WITH_XFORMS "Compile the Xform interface" ON)

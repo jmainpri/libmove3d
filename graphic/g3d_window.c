@@ -106,8 +106,12 @@ GLX_RGBA, GLX_DEPTH_SIZE, 1,
 GLX_RED_SIZE, 1, GLX_GREEN_SIZE, 1, GLX_BLUE_SIZE, 1,
 GLX_STENCIL_SIZE,1,
 GLX_DOUBLEBUFFER,
-GLX_SAMPLE_BUFFERS, 1,
-GLX_SAMPLES, 4,
+  
+#ifdef ENABLE_ANTIALIASING
+GLX_SAMPLE_BUFFERS_ARB, 1,
+GLX_SAMPLES_ARB, 4,
+#endif
+  
 None
 };
 
@@ -137,6 +141,7 @@ static void button_floor(FL_OBJECT *ob, long data);
 static void button_tiles(FL_OBJECT *ob, long data);
 static void button_walls(FL_OBJECT *ob, long data);
 static void button_shadows(FL_OBJECT *ob, long data);
+static void button_antialiasing(FL_OBJECT *ob, long data);
 
 
 static G3D_Window *g3d_copy_win(G3D_Window *win);
@@ -194,7 +199,7 @@ G3D_Window
   FL_OBJECT *optiles = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,520,60,20,"Tiles");
   FL_OBJECT *walls= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,540,60,20,"Walls");
   FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,560,60,20,"Shadows");
-
+  FL_OBJECT *antialiasing= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,580,60,20,"Antialiasing"); 
   fl_end_form();
 
 #else
@@ -281,7 +286,7 @@ G3D_Window
   fl_set_object_gravity(optiles,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(walls,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(shadows,FL_NorthEast,FL_NorthEast);
-
+  fl_set_object_gravity(antialiasing,FL_NorthEast,FL_NorthEast);
 
   fl_set_object_callback(done,button_done,(long)win);
   fl_set_object_callback(unselect,button_unselect,(long)win);
@@ -307,6 +312,7 @@ G3D_Window
   fl_set_object_callback(optiles,button_tiles,(long)win);
   fl_set_object_callback(walls,button_walls,(long)win);
   fl_set_object_callback(shadows,button_shadows,(long)win);
+  fl_set_object_callback(antialiasing,button_antialiasing,(long)win);
 
   /* fl_show_form(form,FL_PLACE_FREE,FL_FULLLBORDER,name);*/
   fl_show_form(form,FL_PLACE_MOUSE|FL_FREE_SIZE,FL_FULLBORDER,name);
@@ -344,11 +350,11 @@ G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size)
 	win->point_of_view = 1;
 	win->draw_mode = NORMAL;
 
-        win->vs.FILAIRE = 0;
-        win->vs.CONTOUR = 0;
-        win->vs.GOURAUD = 0;
-        win->vs.ACTIVE = 1;
-        win->vs.list = -1;
+  win->vs.FILAIRE = 0;
+  win->vs.CONTOUR = 0;
+  win->vs.GOURAUD = 0;
+  win->vs.ACTIVE = 1;
+  win->vs.list = -1;
 	win->fct_draw   = NULL;
   win->fct_draw2= NULL;
 	win->next       = NULL;
@@ -356,12 +362,13 @@ G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size)
 	win->cam_frame  = &Id;
 	win->mcamera_but  = NULL;
 
-        win->vs.enableLight = 1;
-        win->vs.displayFloor = 0;
-        win->vs.displayTiles = 0;
-        win->vs.displayWalls = 0;
-        win->vs.displayShadows = 0;
-
+  win->vs.enableLight = 1;
+  win->vs.displayFloor = 0;
+  win->vs.displayTiles = 0;
+  win->vs.displayWalls = 0;
+  win->vs.displayShadows = 0;
+  win->vs.enableAntialiasing = 0;
+  
 	sprintf(win->name,"%s",name);
         g3d_set_win_bgcolor(win->vs,1.0,1.0,1.0);
 	win->next = G3D_WINDOW_LST;
@@ -1671,6 +1678,20 @@ button_walls(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   win->vs.displayWalls = !win->vs.displayWalls;
   g3d_draw_win(win);
+}
+
+static void
+button_antialiasing(FL_OBJECT *ob, long data) {
+#ifdef ENABLE_ANTIALIASING
+  G3D_Window *win = (G3D_Window *)data;
+  if (win->vs.enableAntialiasing = !win->vs.enableAntialiasing) 
+    glEnable(GL_MULTISAMPLE_ARB);
+  else
+    glDisable(GL_MULTISAMPLE_ARB);
+  g3d_draw_win(win);
+#else
+  printf("Antialiasing flag is FALSE. Enable it in cmake\n");
+#endif
 }
 
 static void

@@ -122,6 +122,9 @@ typedef struct g3d_states
 
   //! flag to tell wether or not the floor tiles will be displayed:
   unsigned int displayTiles; 
+  
+  //! flag to tell wether or not antialiasing will be activated:
+  unsigned int enableAntialiasing;
 
   //! this flag is used when planar shadows are enabled to indicate that all bodies must be drawn in black
   //! with no lighting:
