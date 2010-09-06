@@ -362,6 +362,7 @@ void g3d_init_OpenGL()
   glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
   glEnable(GL_DEPTH_TEST);
+  glEnable(GL_MULTISAMPLE);
   
   /** on desactive tout mode OpenGL inutile ***/
   glDisable(GL_STENCIL_TEST);

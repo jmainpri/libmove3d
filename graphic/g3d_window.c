@@ -106,6 +106,8 @@ GLX_RGBA, GLX_DEPTH_SIZE, 1,
 GLX_RED_SIZE, 1, GLX_GREEN_SIZE, 1, GLX_BLUE_SIZE, 1,
 GLX_STENCIL_SIZE,1,
 GLX_DOUBLEBUFFER,
+GLX_SAMPLE_BUFFERS, 1,
+GLX_SAMPLES, 4,
 None
 };
 
@@ -542,7 +544,7 @@ void g3d_draw_win(G3D_Window *win) {
 	//     g3d_draw_frame();
 	//     glPopMatrix();
 	//   }
-
+  
   if(win->fct_draw) (*win->fct_draw)();
 
 
@@ -1646,6 +1648,7 @@ static void
 button_floor(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   win->vs.displayFloor= !win->vs.displayFloor;
+  g3d_set_win_floor_color(win->vs, 1, 0.87, 0.49);
   g3d_draw_win(win);
 }
 
