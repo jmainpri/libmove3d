@@ -1513,13 +1513,14 @@ int gpGrasp_generation ( p3d_rob *robot, p3d_rob *object, int body_index, gpHand
 }
 
 //! @ingroup graspPlanning
-//!  Context independent collision test: removes from a grasp list all the grasps causing a collision between the robot hand and the grasped object.
+//! Context independent collision test: removes from a grasp list all the grasps
+//! causing a collision between the robot hand and the grasped object.
 //! \param graspList the original grasp list
 //! \param robot the hand robot (a freeflying robot only composed of the hand/gripper bodies)
 //! \param object the grasped object
 //! \param hand structure containing information about the hand geometry
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpGrasp_collision_filter ( std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &hand )
+int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &hand )
 {
 #ifdef GP_DEBUG
 	if ( robot==NULL )
@@ -2689,245 +2690,355 @@ int gpGet_grasp_list_SAHand ( std::string object_to_grasp, int hand_to_use, std:
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpExpand_grasp_list ( p3d_rob *robot, std::list<class gpGrasp> &graspList, int nbTries )
 {
-	if ( graspList.empty() )
-	{
-		printf ( "%s: %d: gpExpand_grasp_list(): the input grasp list is empty. First computes a valid one.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
+  if ( graspList.empty() )
+  {
+    printf ( "%s: %d: gpExpand_grasp_list(): the input grasp list is empty. First computes a valid one.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
 
-	int i, body_index;
-	double xmin, xmax, ymin, ymax, zmin, zmax;
-	p3d_vector4 quat;
-	p3d_matrix4 gframe;
-	gpHand_type hand_type;
-	gpHand_properties handProp;
-	p3d_polyhedre *polyhedron= NULL;
-	p3d_rob *object= NULL;
-	std::list<gpGrasp> newGraspList;
-	std::list<gpGrasp>::iterator igrasp;
-	std::list<gpContact> contactList;
-	gpKdTree kdtree;
+  int i, body_index;
+  double xmin, xmax, ymin, ymax, zmin, zmax;
+  p3d_vector4 quat;
+  p3d_matrix4 gframe;
+  gpHand_type hand_type;
+  gpHand_properties handProp;
+  p3d_polyhedre *polyhedron= NULL;
+  p3d_rob *object= NULL;
+  std::list<gpGrasp> newGraspList;
+  std::list<gpGrasp>::iterator igrasp;
+  std::list<gpContact> contactList;
+  gpKdTree kdtree;
 
-	object= graspList.front().object;
+  object= graspList.front().object;
 
-	if ( object==NULL )
-	{
-		printf ( "%s: %d: gpExpand_grasp_list(): the pointer to the object, contained in the input grasp list elements, is not valid .\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
+  if ( object==NULL )
+  {
+    printf ( "%s: %d: gpExpand_grasp_list(): the pointer to the object, contained in the input grasp list elements, is not valid .\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
 
-	hand_type= graspList.front().hand_type;
+  hand_type= graspList.front().hand_type;
 
-	if ( hand_type==GP_HAND_NONE )
-	{
-		printf ( "%s: %d: gpExpand_grasp_list(): the \"hand_type\" field, contained in the input grasp list elements, is not valid .\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
+  if ( hand_type==GP_HAND_NONE )
+  {
+    printf ( "%s: %d: gpExpand_grasp_list(): the \"hand_type\" field, contained in the input grasp list elements, is not valid .\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
 
-	body_index= graspList.front().body_index;
-	if ( ( body_index < 0 ) || ( body_index > object->no ) )
-	{
-		printf ( "%s: %d: gpExpand_grasp_list(): the \"body_index\" field, contained in the input grasp list elements, is not valid .\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
+  body_index= graspList.front().body_index;
+  if ( ( body_index < 0 ) || ( body_index > object->no ) )
+  {
+    printf ( "%s: %d: gpExpand_grasp_list(): the \"body_index\" field, contained in the input grasp list elements, is not valid .\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
 
-	handProp.initialize ( hand_type );
+  handProp.initialize ( hand_type );
 
-	polyhedron= object->o[body_index]->pol[0]->poly;
+  polyhedron= object->o[body_index]->pol[0]->poly;
 
-	gpPolyhedron_AABB ( polyhedron, xmin, xmax, ymin, ymax, zmin, zmax );
+  gpPolyhedron_AABB ( polyhedron, xmin, xmax, ymin, ymax, zmin, zmax );
 
-	switch ( handProp.type )
-	{
-		case GP_GRIPPER:
-			for ( i=0; i<nbTries; ++i )
-			{
-				p3d_random_quaternion ( quat );
-				p3d_quaternion_to_matrix4 ( quat, gframe );
-				gframe[0][3]= p3d_random ( xmin, xmax );
-				gframe[1][3]= p3d_random ( ymin, ymax );
-				gframe[2][3]= p3d_random ( zmin, zmax );
+  switch ( handProp.type )
+  {
+    case GP_GRIPPER:
+        for ( i=0; i<nbTries; ++i )
+        {
+          p3d_random_quaternion ( quat );
+          p3d_quaternion_to_matrix4 ( quat, gframe );
+          gframe[0][3]= p3d_random ( xmin, xmax );
+          gframe[1][3]= p3d_random ( ymin, ymax );
+          gframe[2][3]= p3d_random ( zmin, zmax );
+  
+          gpGrasps_from_grasp_frame_gripper ( polyhedron, gframe, handProp, newGraspList );
+        }
+    break;
+    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
+        gpSample_obj_surface ( object->o[body_index], 0.005, handProp.fingertip_radius, contactList );
+        kdtree.build ( contactList );
+        printf ( "%d samples on object surface \n", contactList.size() );
+        for ( i=0; i<nbTries; ++i )
+        {
+          p3d_random_quaternion ( quat );
+          p3d_quaternion_to_matrix4 ( quat, gframe );
+          gframe[0][3]= p3d_random ( xmin, xmax );
+          gframe[1][3]= p3d_random ( ymin, ymax );
+          gframe[2][3]= p3d_random ( zmin, zmax );
+  
+          gpGrasps_from_grasp_frame_SAHand ( robot, object, body_index, gframe, handProp, kdtree, newGraspList );
+        }
+    break;
+    default:
+        printf ( "%s: %d: gpExpand_grasp_list(): undefined hand type.\n",__FILE__,__LINE__ );
+        return GP_ERROR;
+    break;
+  }
 
-				gpGrasps_from_grasp_frame_gripper ( polyhedron, gframe, handProp, newGraspList );
-			}
-			break;
-	case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-			gpSample_obj_surface ( object->o[body_index], 0.005, handProp.fingertip_radius, contactList );
-			kdtree.build ( contactList );
-			printf ( "%d samples on object surface \n", contactList.size() );
-			for ( i=0; i<nbTries; ++i )
-			{
-				p3d_random_quaternion ( quat );
-				p3d_quaternion_to_matrix4 ( quat, gframe );
-				gframe[0][3]= p3d_random ( xmin, xmax );
-				gframe[1][3]= p3d_random ( ymin, ymax );
-				gframe[2][3]= p3d_random ( zmin, zmax );
+  for ( igrasp=newGraspList.begin(); igrasp!=newGraspList.end(); igrasp++ )
+  {
+    if ( igrasp->object==NULL )
+    {
+      igrasp->object= object;
+      igrasp->body_index= body_index;
+      igrasp->object_name= object->name;
+    }
+    igrasp->openConfig= igrasp->config;
+  }
 
-				gpGrasps_from_grasp_frame_SAHand ( robot, object, body_index, gframe, handProp, kdtree, newGraspList );
-			}
-			break;
-		default:
-			printf ( "%s: %d: gpExpand_grasp_list(): undefined hand type.\n",__FILE__,__LINE__ );
-			return GP_ERROR;
-			break;
-	}
+  switch ( hand_type )
+  {
+    case GP_GRIPPER:
+        gpGrasp_collision_filter ( newGraspList, robot, object, handProp );
+    break;
+    default:
+    break;
+  }
 
-	for ( igrasp=newGraspList.begin(); igrasp!=newGraspList.end(); igrasp++ )
-	{
-		if ( igrasp->object==NULL )
-		{
-			igrasp->object= object;
-			igrasp->body_index= body_index;
-			igrasp->object_name= object->name;
-		}
-		igrasp->openConfig= igrasp->config;
-	}
+  gpGrasp_stability_filter ( newGraspList );
 
-	switch ( hand_type )
-	{
-		case GP_GRIPPER:
-			gpGrasp_collision_filter ( newGraspList, robot, object, handProp );
-			break;
-		default:
-			break;
-	}
+  gpGrasp_quality_filter ( newGraspList );
 
-	gpGrasp_stability_filter ( newGraspList );
+  graspList.merge ( newGraspList );
 
-	gpGrasp_quality_filter ( newGraspList );
-
-	graspList.merge ( newGraspList );
-
-	return GP_OK;
+  return GP_OK;
 }
 
+//! @ingroup graspPlanning
+//! Handover filter: removes from a grasp list L1, computed for a hand H1 and an object O
+//! all the grasps that makes impossible to grasp O with one of the grasps of the list L2, computed
+//! for a hand H2.
+//! \param robot1 pointer to the first robot hand (H1)
+//! \param robot2 pointer to the second robot hand (H2)
+//! \param graspList1 previously computed grasp list for the first robot hand (L1) (will be modified)
+//! \param graspList2 previously computed grasp list for the second robot hand (L2)
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGrasp_handover_filter(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object, std::list<class gpGrasp> &graspList1, const std::list<class gpGrasp> &graspList2)
+{
+  #ifdef GP_DEBUG
+  if(robot1==NULL)
+  {
+    printf ( "%s: %d: gpGrasp_handover_filter(): input robot 1 is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+  if(robot2==NULL)
+  {
+    printf ( "%s: %d: gpGrasp_handover_filter(): input robot 2 is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+  if(object==NULL)
+  {
+    printf ( "%s: %d: gpGrasp_handover_filter(): input object is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+  #endif
+
+  bool handover_grasp_found= false;
+  configPt config1_0, config2_0;
+  configPt config1, config2;
+  gpHand_type handType1, handType2;
+  gpHand_properties handProp1, handProp2;
+  std::list<gpGrasp>::iterator iter1;
+  std::list<gpGrasp>::const_iterator iter2;
+
+
+  config1_0= p3d_alloc_config(robot1);
+  config2_0= p3d_alloc_config(robot2);
+  p3d_get_robot_config_into(robot1, &config1_0);
+  p3d_get_robot_config_into(robot2, &config2_0);
+
+  config1= p3d_alloc_config(robot1);
+  config2= p3d_alloc_config(robot2);
+
+  handType1= graspList1.front().hand_type;
+  handType2= graspList2.front().hand_type;
+  handProp1.initialize(handType1);
+  handProp2.initialize(handType2);
+
+
+  iter1= graspList1.begin();
+  while(iter1!=graspList1.end())
+  {
+    if(iter1->hand_type!=handType1)
+    {
+      printf("%s: %d: gpGrasp_handover_filter(): all the grasps of the first list do not have the same hand type.\n",__FILE__,__LINE__);
+      p3d_destroy_config(robot1, config1);
+      p3d_destroy_config(robot2, config2);
+      p3d_set_and_update_this_robot_conf(robot1, config1_0);
+      p3d_set_and_update_this_robot_conf(robot2, config2_0);
+      p3d_destroy_config(robot1, config1_0);
+      p3d_destroy_config(robot2, config2_0);
+      return GP_ERROR;
+    }
+    gpSet_robot_hand_grasp_configuration(robot1, object, *iter1);
+
+    handover_grasp_found= false;
+    for(iter2=graspList2.begin(); iter2!=graspList2.end(); ++iter2)
+    {
+        if(iter2->hand_type!=handType2)
+        {
+          printf("%s: %d: gpGrasp_handover_filter(): all the grasps of the second list do not have the same hand type.\n",__FILE__,__LINE__);
+          p3d_destroy_config(robot1, config1);
+          p3d_destroy_config(robot2, config2);
+          p3d_set_and_update_this_robot_conf(robot1, config1_0);
+          p3d_set_and_update_this_robot_conf(robot2, config2_0);
+          p3d_destroy_config(robot1, config1_0);
+          p3d_destroy_config(robot2, config2_0);
+          return GP_ERROR;
+        }
+  
+        gpSet_robot_hand_grasp_configuration(robot2, object, *iter2);
+  
+        if( !p3d_col_test_robot_other(robot1, robot2, 0) )
+        {
+          handover_grasp_found= true;
+          break;
+        }
+    }
+
+    if(handover_grasp_found==false)
+    {
+      iter1= graspList1.erase(iter1);
+      continue;
+    }
+
+    iter1++;
+  }
+
+  p3d_set_and_update_this_robot_conf(robot1, config1_0);
+  p3d_set_and_update_this_robot_conf(robot2, config2_0);
+  p3d_destroy_config(robot1, config1_0);
+  p3d_destroy_config(robot2, config2_0);
+
+  return GP_OK;
+}
+
+
+//! @ingroup graspPlanning
 //! Generates a list of double grasps from two lists of simple grasps.
 //! \param robot1 pointer to the first robot hand
-//! \param robot1 pointer to the second robot hand
-//! \param robot1 pointer to the first robot hand
+//! \param robot2 pointer to the second robot hand
 //! \param graspList1 previously computed grasp list for the first robot hand
 //! \param graspList2 previously computed grasp list for the second robot hand
 //! \param doubleGraspList the double grasp list that will be computed
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpDouble_grasp_generation ( p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object, std::list<class gpGrasp> &graspList1, std::list<class gpGrasp> &graspList2, std::list<class gpDoubleGrasp> &doubleGraspList )
+int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object, const std::list<class gpGrasp> &graspList1, const std::list<class gpGrasp> &graspList2, std::list<class gpDoubleGrasp> &doubleGraspList)
 {
-#ifdef GP_DEBUG
-    if ( robot1==NULL )
+  #ifdef GP_DEBUG
+  if(robot1==NULL)
+  {
+    printf ( "%s: %d: gpDouble_grasp_generation(): input robot 1 is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+  if(robot2==NULL)
+  {
+    printf ( "%s: %d: gpDouble_grasp_generation(): input robot 2 is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+  if(object==NULL)
+  {
+    printf ( "%s: %d: gpDouble_grasp_generation(): input object is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+  #endif
+
+  configPt config1_0, config2_0;
+  configPt config1, config2;
+  gpHand_type handType1, handType2;
+  gpHand_properties handProp1, handProp2;
+  gpDoubleGrasp doubleGrasp;
+  std::list<gpGrasp>::const_iterator iter1, iter2;
+  std::list<gpDoubleGrasp>::iterator iter3;
+
+  config1_0= p3d_alloc_config ( robot1 );
+  config2_0= p3d_alloc_config ( robot2 );
+  p3d_get_robot_config_into ( robot1, &config1_0 );
+  p3d_get_robot_config_into ( robot2, &config2_0 );
+
+  config1= p3d_alloc_config ( robot1 );
+  config2= p3d_alloc_config ( robot2 );
+
+  handType1= graspList1.front().hand_type;
+  handType2= graspList2.front().hand_type;
+  handProp1.initialize ( handType1 );
+  handProp2.initialize ( handType2 );
+
+  doubleGraspList.clear();
+
+  for ( iter1=graspList1.begin(); iter1!=graspList1.end(); iter1++ )
+  {
+    if ( iter1->hand_type!=handType1 )
     {
-            printf ( "%s: %d: gpDouble_grasp_generation(): input robot 1 is NULL.\n",__FILE__,__LINE__ );
-            return GP_ERROR;
+      printf ( "%s: %d: gpDouble_grasp_generation(): the initial simple grasps do not have the same hand type.\n",__FILE__,__LINE__ );
+      p3d_destroy_config ( robot1, config1 );
+      p3d_destroy_config ( robot2, config2 );
+      p3d_set_and_update_this_robot_conf ( robot1, config1_0 );
+      p3d_set_and_update_this_robot_conf ( robot2, config2_0 );
+      p3d_destroy_config ( robot1, config1_0 );
+      p3d_destroy_config ( robot2, config2_0 );
+      return GP_ERROR;
     }
-    if ( robot2==NULL )
-    {
-            printf ( "%s: %d: gpDouble_grasp_generation(): input robot 2 is NULL.\n",__FILE__,__LINE__ );
-            return GP_ERROR;
-    }
-    if ( object==NULL )
-    {
-            printf ( "%s: %d: gpDouble_grasp_generation(): input object is NULL.\n",__FILE__,__LINE__ );
-            return GP_ERROR;
-    }
-#endif
-
-//   p3d_matrix4 objectPose1, objectPose2;
-	configPt config1_0, config2_0;
-	configPt config1, config2;
-	gpHand_type handType1, handType2;
-	gpHand_properties handProp1, handProp2;
-	gpDoubleGrasp doubleGrasp;
-	std::list<gpGrasp>::iterator iter1, iter2;
-	std::list<gpDoubleGrasp>::iterator iter3;
-
-	config1_0= p3d_alloc_config ( robot1 );
-	config2_0= p3d_alloc_config ( robot2 );
-	p3d_get_robot_config_into ( robot1, &config1_0 );
-	p3d_get_robot_config_into ( robot2, &config2_0 );
-
-	config1= p3d_alloc_config ( robot1 );
-	config2= p3d_alloc_config ( robot2 );
-
-
-	handType1= graspList1.front().hand_type;
-	handType2= graspList2.front().hand_type;
-	handProp1.initialize ( handType1 );
-	handProp2.initialize ( handType2 );
-
-	doubleGraspList.clear();
-
-	for ( iter1=graspList1.begin(); iter1!=graspList1.end(); iter1++ )
-	{
-		if ( iter1->hand_type!=handType1 )
-		{
-			printf ( "%s: %d: gpDouble_grasp_generation(): the initial simple grasps do not have the same hand type.\n",__FILE__,__LINE__ );
-			p3d_destroy_config ( robot1, config1 );
-			p3d_destroy_config ( robot2, config2 );
-			p3d_set_and_update_this_robot_conf ( robot1, config1_0 );
-			p3d_set_and_update_this_robot_conf ( robot2, config2_0 );
-			p3d_destroy_config ( robot1, config1_0 );
-			p3d_destroy_config ( robot2, config2_0 );
-			return GP_ERROR;
-		}
 //     p3d_get_body_pose(object, iter1->body_index, objectPose1);
 //     gpInverse_geometric_model_freeflying_hand(robot1, objectPose1, iter1->frame, handProp1, config1);
 //     p3d_set_and_update_this_robot_conf(robot1, config1);
 
-		gpSet_robot_hand_grasp_configuration ( robot1, object, *iter1 );
+    gpSet_robot_hand_grasp_configuration ( robot1, object, *iter1 );
 
-		for ( iter2=graspList2.begin(); iter2!=graspList2.end(); iter2++ )
-		{
-			if ( iter2->hand_type!=handType2 )
-			{
-				printf ( "%s: %d: gpDouble_grasp_generation(): the initial simple grasps do not have the same hand type.\n",__FILE__,__LINE__ );
-				p3d_destroy_config ( robot1, config1 );
-				p3d_destroy_config ( robot2, config2 );
-				p3d_set_and_update_this_robot_conf ( robot1, config1_0 );
-				p3d_set_and_update_this_robot_conf ( robot2, config2_0 );
-				p3d_destroy_config ( robot1, config1_0 );
-				p3d_destroy_config ( robot2, config2_0 );
-				return GP_ERROR;
-			}
+    for ( iter2=graspList2.begin(); iter2!=graspList2.end(); iter2++ )
+    {
+        if ( iter2->hand_type!=handType2 )
+        {
+          printf ( "%s: %d: gpDouble_grasp_generation(): the initial simple grasps do not have the same hand type.\n",__FILE__,__LINE__ );
+          p3d_destroy_config ( robot1, config1 );
+          p3d_destroy_config ( robot2, config2 );
+          p3d_set_and_update_this_robot_conf ( robot1, config1_0 );
+          p3d_set_and_update_this_robot_conf ( robot2, config2_0 );
+          p3d_destroy_config ( robot1, config1_0 );
+          p3d_destroy_config ( robot2, config2_0 );
+          return GP_ERROR;
+        }
 
-			gpSet_robot_hand_grasp_configuration ( robot2, object, *iter2 );
+        gpSet_robot_hand_grasp_configuration ( robot2, object, *iter2 );
 
 //       p3d_get_body_pose(object, iter2->body_index, objectPose2);
 //       gpInverse_geometric_model_freeflying_hand(robot2, objectPose2, iter2->frame, handProp2, config2);
 //       p3d_set_and_update_this_robot_conf(robot2, config2);
 
-			if ( !p3d_col_test_robot_other ( robot1, robot2, 0 ) )
-			{
-				doubleGrasp.setFromSingleGrasps ( *iter1, *iter2 );
+        if ( !p3d_col_test_robot_other ( robot1, robot2, 0 ) )
+        {
+          doubleGrasp.setFromSingleGrasps ( *iter1, *iter2 );
 //         doubleGrasp.distance= p3d_col_robot_robot_weighted_distance(robot1, robot2);
 //         doubleGrasp.distance= p3d_col_robot_robot_distance(robot1, robot2);
 //         doubleGrasp.direction=
 //         doubleGrasp.computeDirection();
-				doubleGrasp.computeStability();
-
-				doubleGraspList.push_back ( doubleGrasp );
-				doubleGraspList.back().ID= doubleGraspList.size();
+          doubleGrasp.computeStability();
+  
+          doubleGraspList.push_back ( doubleGrasp );
+          doubleGraspList.back().ID= doubleGraspList.size();
 //         p3d_mat4Distance(doubleGraspList.back().grasp1.frame, doubleGraspList.back().grasp2.frame, double weightR, double weightT)
-			}
-		}
-	}
+        }
+    }
+  }
 
-	gpNormalize_distance_score ( doubleGraspList );
-	gpNormalize_stability ( doubleGraspList );
+  gpNormalize_distance_score ( doubleGraspList );
+  gpNormalize_stability ( doubleGraspList );
 
-	for ( iter3=doubleGraspList.begin(); iter3!=doubleGraspList.end(); iter3++ )
-	{
-		iter3->computeQuality();
-	}
+  for ( iter3=doubleGraspList.begin(); iter3!=doubleGraspList.end(); iter3++ )
+  {
+    iter3->computeQuality();
+  }
 
-	doubleGraspList.sort();
-	doubleGraspList.reverse();
+  doubleGraspList.sort();
+  doubleGraspList.reverse();
 
-	p3d_set_and_update_this_robot_conf ( robot1, config1_0 );
-	p3d_set_and_update_this_robot_conf ( robot2, config2_0 );
-	p3d_destroy_config ( robot1, config1_0 );
-	p3d_destroy_config ( robot2, config2_0 );
+  p3d_set_and_update_this_robot_conf ( robot1, config1_0 );
+  p3d_set_and_update_this_robot_conf ( robot2, config2_0 );
+  p3d_destroy_config ( robot1, config1_0 );
+  p3d_destroy_config ( robot2, config2_0 );
 
-	return GP_OK;
+  return GP_OK;
 }
 
+
+//! @ingroup graspPlanning
 //! Reduces the number of elements of a grasp list.
 //! The criterion used to choose which grasps to remove is the distance between the grasp frame
 //! (see gpGrasp::gpGraspDistance()).

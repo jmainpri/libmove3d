@@ -46,7 +46,9 @@ extern int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use,
 
 extern int gpExpand_grasp_list(p3d_rob *robot, std::list<gpGrasp> &graspList, int nbTries);
 
-extern int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object, std::list<class gpGrasp> &graspList1, std::list<class gpGrasp> &graspList2, std::list<class gpDoubleGrasp> &doubleGraspList);
+extern int gpGrasp_handover_filter(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object, std::list<class gpGrasp> &graspList1, const std::list<class gpGrasp> &graspList2);
+
+extern int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object, const std::list<class gpGrasp> &graspList1, const std::list<class gpGrasp> &graspList2, std::list<class gpDoubleGrasp> &doubleGraspList);
 
 extern int gpReduce_grasp_list_size(const std::list<gpGrasp> &originalList, std::list<gpGrasp> &reducedList, unsigned int maxSize);
 
