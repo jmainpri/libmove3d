@@ -527,3 +527,23 @@ int hri_is_object_pointed(HRI_AGENT * agent, p3d_rob *object, int threshold, int
   
 }
 
+/****************************************************************/
+/*!
+ * \brief Converts a cartesian coordinate to a spherical one
+ *
+ * \param x,y,z point
+ * \param originx,originy,originz origin point
+ * \param phi,theta resulting angles
+ * !
+
+ */
+/****************************************************************/
+void p3d_cartesian2spherical(double x, double y, double z,
+			     double originx, double originy, double originz,
+			     double *phi, double *theta)
+{
+  double distance = DISTANCE3D(x,y,z,originx,originy,originz);
+  
+  *phi = atan2( (y-originy),(x-originx) );
+  *theta = acos( (z-originz)/distance );
+}

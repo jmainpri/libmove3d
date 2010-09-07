@@ -9,3 +9,4 @@ extern int g3d_draw_visibility_by_frame(p3d_matrix4 camera_frame, double Hfov, d
 extern int g3d_draw_agent_pointing(HRI_AGENT *agent);
 extern int hri_is_object_pointed(HRI_AGENT * agent, p3d_rob *object, int threshold, int save);
 extern void g3d_draw_all_agents_fovs(HRI_AGENTS *agents);
+extern void p3d_cartesian2spherical(double x, double y, double z, double originx, double originy, double originz, double *phi, double *theta);
