@@ -1,10 +1,12 @@
+#!/usr/bin/perl
+
 # This perl script reads the input xcode pbxuser file and replaces the execution preferences from a temp file
 
 open(INPUT,"<$ARGV[0]") or exit;
 @temp_file_contents=<INPUT>;
 close(INPUT);
 
-unlink("$ARGV[0]");
+#unlink("$ARGV[0]");
 
 open(OUTPUT,"<$ARGV[1]") or exit;
 @xcode_file_contents=<OUTPUT>;
@@ -23,6 +25,12 @@ if( $temp_file_in_string =~ /argumentStrings(.*?)\;/ims ){
 #  printf($1);
   $saved_data = "argumentStrings" . $1 . ";" ;
   $xcode_file_in_string =~ s/argumentStrings(.*?)\;/$saved_data/mgs;
+}
+
+if( $temp_file_in_string =~ /environmentEntries(.*?)\);/ims ){
+#  printf($1);
+  $saved_data = "environmentEntries" . $1 . ");" ;
+  $xcode_file_in_string =~ s/environmentEntries(.*?)\);/$saved_data/mgs;
 }
 
 #print "$xcode_file_in_string" ;
