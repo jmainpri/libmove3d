@@ -7,6 +7,7 @@
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
 
+
 /* ------- FUNCTION VARIABLES ------- */
 
 hri_bitmapset * ACBTSET = NULL;
@@ -1237,11 +1238,11 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
     // Test if Human can reach that position
     
     p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r_saved);
-    rreached = hri_agent_single_task_manip_move(agents->robots[0], GIK_RATREACH, Tcoord, &q_r);
+    rreached = hri_agent_single_task_manip_move(agents->robots[0], GIK_RATREACH, Tcoord, 0.05, &q_r);
     p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r);
     if(!rreached){
       p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r_saved);
-      rreached = hri_agent_single_task_manip_move(agents->robots[0], GIK_LATREACH, Tcoord, &q_r);
+      rreached = hri_agent_single_task_manip_move(agents->robots[0], GIK_LATREACH, Tcoord, 0.05, &q_r);
       p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r);
     }
     if(!rreached){
@@ -1266,11 +1267,11 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
     // Test if Human can reach that position
     
     p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h_saved);
-    hreached = hri_agent_single_task_manip_move(agents->humans[0], GIK_RATREACH, Tcoord, &q_h);
+    hreached = hri_agent_single_task_manip_move(agents->humans[0], GIK_RATREACH, Tcoord, 0.02, &q_h);
     p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
     if(!hreached){
       p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h_saved);
-      hreached = hri_agent_single_task_manip_move(agents->humans[0], GIK_LATREACH, Tcoord, &q_h);
+      hreached = hri_agent_single_task_manip_move(agents->humans[0], GIK_LATREACH, Tcoord, 0.02, &q_h);
       p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
     }
     if(!hreached){
@@ -1322,7 +1323,6 @@ void CB_test_button2_obj(FL_OBJECT *obj, long arg)
   int i;
   configPt q_h, q_r;
   HRI_AGENTS * agents;
-  p3d_vector3 Tcoord[3];
 
   for(i=0; i<env->nr; i++){
     if( strcasestr(env->robot[i]->name,"TAPE") )
@@ -1338,13 +1338,11 @@ void CB_test_button2_obj(FL_OBJECT *obj, long arg)
   q_h = p3d_get_robot_config(agents->humans[0]->robotPt);
   q_r = p3d_get_robot_config(agents->robots[0]->robotPt);
 
-  Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = env->robot[i]->joints[1]->abs_pos[0][3];
-  Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = env->robot[i]->joints[1]->abs_pos[1][3];
-  Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = env->robot[i]->joints[1]->abs_pos[2][3]+0.03;
-
-  hri_agent_single_task_manip_move(agents->humans[0], GIK_RAREACH, Tcoord, &q_h);
+  hri_agent_single_task_manip_move(agents->humans[0], GIK_RAREACH, env->robot[i], &q_h);
   p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
-  hri_agent_single_task_manip_move(agents->robots[0], GIK_LATREACH, Tcoord, &q_r);
+  hri_agent_single_task_manip_move(agents->robots[0], GIK_LAREACH, env->robot[i], &q_r);
+  p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r);
+  hri_agent_single_task_manip_move(agents->robots[0], GIK_LOOK, env->robot[i], &q_r);
   p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r);
   printf("Agent: %s  Type: %d\n",agents->robots[0]->robotPt->name, agents->robots[0]->type);
   printf("Agent: %s  Type: %d\n",agents->humans[0]->robotPt->name, agents->humans[0]->type);
@@ -1448,6 +1446,7 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
   double phi, theta;
   int tilt_joint, pan_joint;
   int visible = FALSE;  
+  configPt q;
   
   for(i=0; i<env->nr; i++){
     if( strcasestr(env->robot[i]->name,"ROBOT") ){
@@ -1459,24 +1458,38 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
       continue;
     }    
   }
-
-  int visibil;
-  int result;
-  // result = hri_is_object_visible(GLOBAL_AGENTS->robots[0],object, 50, TRUE);
+  double result;
+  g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
+//  g3d_is_object_visible_from_current_viewpoint2(win, object, &result, FALSE, NULL);
+//  return;
   
   // hri_object_visibility_placement(GLOBAL_AGENTS->robots[0], object, &visibil);
   //g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, 50, object, &phi);
   //g3d_object_visibility_placement(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, object, DTOR(90), DTOR(90*0.75), DTOR(50), DTOR(50*0.75), &visibil);
   GLOBAL_AGENTS->humans[0]->perspective->enable_vision_draw = TRUE;
-  //GLOBAL_AGENTS->humans[0]->perspective->enable_pointing_draw = TRUE;
+ // GLOBAL_AGENTS->humans[0]->perspective->enable_pointing_draw = TRUE;
   GLOBAL_AGENTS->humans[1]->perspective->enable_vision_draw = TRUE;
-  GLOBAL_AGENTS->humans[2]->perspective->enable_vision_draw = TRUE;
-  GLOBAL_AGENTS->humans[3]->perspective->enable_vision_draw = TRUE;
-  GLOBAL_AGENTS->humans[3]->perspective->enable_pointing_draw = TRUE;
-    
+ // GLOBAL_AGENTS->humans[1]->perspective->enable_pointing_draw = TRUE;
+  
   GLOBAL_AGENTS->robots[0]->perspective->enable_vision_draw = TRUE;
   //GLOBAL_AGENTS->robots[0]->perspective->enable_pointing_draw = TRUE;
   GLOBAL_AGENTS->robots[1]->perspective->enable_vision_draw = TRUE;
+  //GLOBAL_AGENTS->robots[1]->perspective->enable_pointing_draw = TRUE;
+ 
+  // GLOBAL_AGENTS->humans[1]->perspective->enable_vision_draw = TRUE;
+  //GLOBAL_AGENTS->humans[2]->perspective->enable_vision_draw = TRUE;
+  //GLOBAL_AGENTS->humans[3]->perspective->enable_vision_draw = TRUE;
+  //GLOBAL_AGENTS->humans[3]->perspective->enable_pointing_draw = TRUE;
+    
+  q = p3d_get_robot_config(GLOBAL_AGENTS->humans[0]->robotPt);
+  hri_agent_load_default_arm_posture(GLOBAL_AGENTS->humans[0], q);
+  hri_agent_compute_state_posture(GLOBAL_AGENTS->humans[0], 0, q);
+  p3d_set_and_update_this_robot_conf(GLOBAL_AGENTS->humans[0]->robotPt, q);
+  
+  q = p3d_get_robot_config(GLOBAL_AGENTS->humans[1]->robotPt);
+  hri_agent_load_default_arm_posture(GLOBAL_AGENTS->humans[1], q);
+  hri_agent_compute_state_posture(GLOBAL_AGENTS->humans[1], 0, q);
+  p3d_set_and_update_this_robot_conf(GLOBAL_AGENTS->humans[1]->robotPt, q);
   
   return ;
   //printf("VISIBILITY RESULT ROBOT: %d PLACEMENT: %d\n ",result,visibil);
