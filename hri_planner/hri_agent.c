@@ -842,9 +842,30 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
 
   return FALSE;
 }
-
-
-int hri_agent_single_task_manip_move(HRI_AGENT * agent, HRI_GIK_TASK_TYPE type, p3d_vector3 * goalCoord, configPt *q)
+/* This function computes the tolerance distance of GIK computation depending on the BB of the object */
+/* It then calls for hri_agent_single_task_manip_move */
+int hri_agent_single_task_manip_move(HRI_AGENT * agent, HRI_GIK_TASK_TYPE type, p3d_rob * object, configPt *q)
+{
+  double smallest_edge_dim;
+  p3d_vector3 goalCoord;
+  int res;
+  
+  if(agent==NULL || object==NULL || q==NULL)
+    return FALSE;
+  
+  smallest_edge_dim = (object->BB.xmax-object->BB.xmin < object->BB.ymax-object->BB.ymin)?object->BB.xmax-object->BB.xmin:object->BB.ymax-object->BB.ymin;
+  
+  smallest_edge_dim = (smallest_edge_dim < object->BB.zmax-object->BB.zmin)?smallest_edge_dim:object->BB.zmax-object->BB.zmin;
+  
+  goalCoord[0] = (object->BB.xmax+object->BB.xmin)/2;
+  goalCoord[1] = (object->BB.ymax+object->BB.ymin)/2; 
+  goalCoord[2] = (object->BB.zmax+object->BB.zmin)/2; 
+  
+  res = hri_agent_single_task_manip_move(agent, type, &goalCoord, smallest_edge_dim/2, q);
+    
+  return res;
+}
+int hri_agent_single_task_manip_move(HRI_AGENT * agent, HRI_GIK_TASK_TYPE type, p3d_vector3 * goalCoord, double approach_distance, configPt *q)
 {
   int i;
   //configPt savedq;
@@ -875,7 +896,7 @@ int hri_agent_single_task_manip_move(HRI_AGENT * agent, HRI_GIK_TASK_TYPE type, 
     if(manip->tasklist[manip->activetasks[0]].type == type){
       // Gik is well initialized - This test is only by task type number and not by joints
       if(manip->gik->GIKInitialized){
-        if(!hri_gik_compute(agent->robotPt, manip->gik, 500, 0.01, goalCoord, q, NULL)){
+        if(!hri_gik_compute(agent->robotPt, manip->gik, 500, approach_distance, goalCoord, q, NULL)){
           return FALSE;
         }
         else{
