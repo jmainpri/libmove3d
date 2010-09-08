@@ -2636,7 +2636,20 @@ int p3d_set_removable_bb_for_grasp(p3d_rob* r, int nbJoints, int *joints){
   }
   return TRUE;
 }
+
+/** \brief set the arm data for the manipulation planner class
+    \param r the current robot
+    \param data the data: ccntrtId, mlpGroupId, handType, virtualObjJntId
+    \return TRUE if the operation succeed FALSE otherwise
+*/
+int p3d_set_arm_data(p3d_rob* r, int *data){
+
+
+
+  return TRUE;
+}
 #endif
+
 
 
 #ifdef MULTILOCALPATH

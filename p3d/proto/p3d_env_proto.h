@@ -60,6 +60,7 @@ extern int p3d_set_multi_graph_data(p3d_rob* r, int nbJoints, int *joints);
 #endif
 #ifdef LIGHT_PLANNER
 extern int p3d_set_removable_bb_for_grasp(p3d_rob* r, int nbJoints, int *joints);
+extern int p3d_set_arm_data(p3d_rob* r, int *data);
 #endif
 #ifdef MULTILOCALPATH
 extern int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints, int activated);
