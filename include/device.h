@@ -742,9 +742,12 @@ typedef struct rob
   int nbFkCntrts; //Forward kinematics constraints for the virtual object used by the closed chain constraints 
   struct cntrt ** fkCntrts;
 #endif
-#ifdef LIGHT_PLANNER
+#if  defined(LIGHT_PLANNER)
   int isCarryingObject;
   struct rob *carriedObject; /*!< pointer to the carried object (a freeflyer robot) */
+endif
+#if  defined(LIGHT_PLANNER) && defined(MULTILOCALPATH)
+  std::vector<ArmManipulationData> *armManipulationData;
 #endif
 #ifdef DPG
   int nbDpgCells;
