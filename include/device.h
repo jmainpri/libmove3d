@@ -26,6 +26,10 @@
 /*! \brief Number max of check point positions */
 #define MAX_TRANSITION 10
 
+#if defined (LIGHT_PLANNER) &&  defined (MULTILOCALPATH) && defined (GRASP_PLANNING)
+#include <vector>
+#endif
+
 /*--------------------------------------------------------------------------*/
 /*! \brief Structure to hold the informations on links between joints.
  *  \note  Use only for the interface of joint creation.
@@ -745,9 +749,9 @@ typedef struct rob
 #if  defined(LIGHT_PLANNER)
   int isCarryingObject;
   struct rob *carriedObject; /*!< pointer to the carried object (a freeflyer robot) */
-endif
-#if  defined(LIGHT_PLANNER) && defined(MULTILOCALPATH)
-  std::vector<ArmManipulationData> *armManipulationData;
+#endif
+#if  defined(LIGHT_PLANNER) && defined(MULTILOCALPATH) && defined (GRASP_PLANNING)
+  std::vector<class ArmManipulationData> *armManipulationData;
 #endif
 #ifdef DPG
   int nbDpgCells;

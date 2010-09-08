@@ -20,6 +20,10 @@ static void add_comp(p3d_graph *G, p3d_node *Ns, p3d_node *N);
 static void p3d_del_multiGraphJoint(p3d_multiGraphJoint * mgJoint);
 #endif
 
+#if defined (LIGHT_PLANNER) &&  defined (MULTILOCALPATH) && defined (GRASP_PLANNING)
+#include "Manipulation.h"
+#endif
+
 /*************************************************************************************/
 
 /****************************************/
@@ -443,6 +447,9 @@ int p3d_del_rob(pp3d_rob r)
 #endif
 #ifdef DPG
   MY_FREE(r->dpgCells, DpgCell *, r->nbDpgCells);
+#endif
+#if defined (LIGHT_PLANNER) &&  defined (MULTILOCALPATH) && defined (GRASP_PLANNING)
+  delete(r->armManipulationData);
 #endif
     /* actualisation du tableau des robots de l'environnement */
     nr = env->nr;

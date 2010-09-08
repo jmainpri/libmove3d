@@ -13,6 +13,9 @@
 
 #define sqr(x) ((x) * (x))
 
+#if defined (LIGHT_PLANNER) &&  defined (MULTILOCALPATH) && defined (GRASP_PLANNING)
+#include "Manipulation.h"
+#endif
 
 extern double ZminEnv;
 extern double ZmaxEnv;
@@ -2648,12 +2651,12 @@ int p3d_set_removable_bb_for_grasp(p3d_rob* r, int nbJoints, int *joints){
     \return TRUE if the operation succeed FALSE otherwise
 */
 int p3d_set_arm_data(p3d_rob* r, int *data){
-  ArmManipulationData data;
-  data.setCcCntrt(r, data[0]);
-  data.setCartesianGroup(data[1]);
-  data.setHandProperties(data[2]);
-  data.setManipulationJnt(data[3]);
-  r->armManipulationData.push_back(data);
+  ArmManipulationData armData;
+  armData.setCcCntrt(r, data[0]);
+  armData.setCartesianGroup(data[1]);
+  armData.setHandProperties(data[2]);
+  armData.setManipulationJnt(r, data[3]);
+  r->armManipulationData->push_back(armData);
   return TRUE;
 }
 #endif

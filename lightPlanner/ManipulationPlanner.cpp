@@ -48,10 +48,10 @@ void undefinedCameraMessage() {
 
 ManipulationPlanner::ManipulationPlanner(p3d_rob *robotPt, gpHand_type handType)//: // _capture(false)
 {
-  if(robotPt->nbCcCntrts != 1){
-    cout << "Error: the number of arm  != 1" << endl;
-    return;
-  }
+//   if(robotPt->nbCcCntrts != 1){
+//     cout << "Error: the number of arm  != 1" << endl;
+//     return;
+//   }
 
   _hand_robotPt.resize(1);
   _graspList.resize(1);
