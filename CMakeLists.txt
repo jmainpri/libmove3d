@@ -91,7 +91,7 @@ BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module for Move3D" OFF HR
 BM3D_flag(HRI_GENERALIZED_IK "Human Robot Interaction generalized inverse kinematics" OFF)
 BM3D_flag(HRI_COSTSPACE "Human Robot Interaction planner module for Move3D" OFF)
 
-BM3D_flag(MULTILOCALPATH "Compilation avec le module Multi-Localpath" OFF)
+BM3D_flag(MULTILOCALPATH "Compilation avec le module Multi-Localpath" OFF USE_GBM)
 BM3D_flag(GRASP_PLANNING "Module de planification de prises" OFF PQP)
 
 BM3D_flag(FK_CNTRT "to use the automatic generation of forward kinematics constraints (reciprocal of the closed chained constraints)" OFF LIGHT_PLANNER)
