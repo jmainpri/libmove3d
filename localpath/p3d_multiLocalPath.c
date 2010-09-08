@@ -20,12 +20,14 @@ static int groupToPlan[MAX_MULTILOCALPATH_NB];
  */
 configPt p3d_mergeMultiLocalPathConfig(p3d_rob *r, configPt qRef, int nConfig, configPt *configs, p3d_multiLocalPathJoint ** mlpJoints) {
   configPt q = NULL;
+  int indexJnt = 0;
   if (nConfig >= 1 && configs && mlpJoints) {//simple protection
     q = p3d_copy_config(r, qRef);
     for (int i = 0; i < nConfig; i++) {//pour tous les noeuds de la liste
       if (configs[i] != NULL) {
         for (int j = 0; j < (mlpJoints[i])->nbJoints; j++) {//pour tous les joints correspondants au noeud
-          p3d_jnt* joint = r->joints[(mlpJoints[i])->joints[j]];
+	  indexJnt = (mlpJoints[i])->joints[j];
+          p3d_jnt* joint = r->joints[indexJnt];
           for (int k = 0; k < joint->dof_equiv_nbr; k++) {//pour tous les Dof du joint
             q[joint->index_dof+k] = configs[i][joint->index_dof+k];
           }
@@ -63,13 +65,15 @@ configPt p3d_mergeMultiLocalPathConfig(p3d_rob *r, configPt qRef, int nConfig, c
 // }
 configPt p3d_separateMultiLocalPathConfig(p3d_rob *r, configPt refConfig, configPt config, int mlpID, p3d_multiLocalPathJoint ** mlpJoints) {
   configPt q = NULL;
+  int indexJnt = 0;
   if (mlpJoints) {//simple protection
     q = p3d_copy_config(r, refConfig);
 
 
   for (int j = 0; j < (mlpJoints[mlpID])->nbJoints; j++)
   {//pour tous les joints correspondants
-  p3d_jnt* joint = r->joints[(mlpJoints[mlpID])->joints[j]];
+  indexJnt = (mlpJoints[mlpID])->joints[j];
+  p3d_jnt* joint = r->joints[indexJnt];
   for (int k = 0; k < joint->dof_equiv_nbr; k++)
   {//pour tous les Dof du joint
     q[joint->index_dof+k] = config[joint->index_dof+k];
@@ -684,15 +688,18 @@ void p3d_multiLocalPath_set_groupToPlan(p3d_rob* robotPt, int mlpID, int value) 
     printf("p3d_multiLocalPath_set_groupToPlan : mgID out of nbGroups\n");
     return;
   }
+  int indexJnt = 0;
   if (value == TRUE) {
     groupToPlan[mlpID] = 1;
 		for(int j=0; j<robotPt->mlp->mlpJoints[mlpID]->nbJoints; j++) {
-			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[mlpID]->joints[j]], TRUE);
+		  indexJnt = robotPt->mlp->mlpJoints[mlpID]->joints[j];
+			p3d_jnt_set_is_active_for_planner2(robotPt->joints[indexJnt], TRUE);
 		}
   } else if (value == FALSE) {
     groupToPlan[mlpID] = 0;
 		for(int j=0; j<robotPt->mlp->mlpJoints[mlpID]->nbJoints; j++) {
-			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[mlpID]->joints[j]], FALSE);
+		  indexJnt = robotPt->mlp->mlpJoints[mlpID]->joints[j];
+			p3d_jnt_set_is_active_for_planner2(robotPt->joints[indexJnt], FALSE);
 		}
   } else {
     printf("p3d_multiLocalPath_set_groupToPlan : value %d is incompatible\n", value);
@@ -719,10 +726,12 @@ int i=0;
  * @param robotPt The robot
  */
 void p3d_multiLocalPath_init_groupToPlan(p3d_rob* robotPt) {
+  int indexJnt = 0;
   for (int i = 0; i < MAX_MULTILOCALPATH_NB; i++) {
     groupToPlan[i] = 0;
 		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
-			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[j]], FALSE);
+		  indexJnt = robotPt->mlp->mlpJoints[i]->joints[j];
+			p3d_jnt_set_is_active_for_planner2(robotPt->joints[indexJnt], FALSE);
 		}
   }
 }
@@ -746,10 +755,12 @@ int p3d_multiLocalPath_get_value_groupToPlan(p3d_rob* robotPt, const int mlpID) 
  * @param robotPt The robot
  */
 void p3d_multiLocalPath_disable_all_groupToPlan(p3d_rob* robotPt) {
+  int indexJnt = 0;
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
     groupToPlan[i] = 0;
 		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
-			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[j]], FALSE);
+		   indexJnt = robotPt->mlp->mlpJoints[i]->joints[j];
+			p3d_jnt_set_is_active_for_planner2(robotPt->joints[indexJnt], FALSE);
 		}
   }
 }
@@ -759,10 +770,12 @@ void p3d_multiLocalPath_disable_all_groupToPlan(p3d_rob* robotPt) {
  * @param robotPt The robot
  */
 void p3d_multiLocalPath_enable_all_groupToPlan(p3d_rob* robotPt) {
+  int indexJnt = 0;
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
     groupToPlan[i] = 1;
 		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
-			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[j]], TRUE);
+		   indexJnt = robotPt->mlp->mlpJoints[i]->joints[j];
+			p3d_jnt_set_is_active_for_planner2(robotPt->joints[indexJnt], TRUE);
 		}
   }
 }

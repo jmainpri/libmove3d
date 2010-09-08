@@ -16,6 +16,7 @@ extern FL_OBJECT * MULTILOCALPATH_OBJ;//The button creating this form. (in plann
 static FL_OBJECT *MULTILOCALPATH_LIST = NULL;
 FL_OBJECT  *MGGRAPH_OBJ[MAX_MULTILOCALPATH_NB];
 static FL_OBJECT * CANCEL_BUTTON = NULL;
+static FL_OBJECT * DEACTIVATE_BUTTON = NULL;
 
 //static functions declaration
 //create
@@ -24,7 +25,9 @@ static void g3d_create_multiLocalPathList_obj(void);
    //callbacks
 static int CB_multiLocalPathForm_OnClose(FL_FORM *form, void *arg);
 static void CB_cancel_button(FL_OBJECT *ob, long arg);
+static void CB_deactivate_button(FL_OBJECT *ob, long arg);
 static void CB_multiLocalPathList_obj(FL_OBJECT *ob, long mgID);
+
   //delete
 
 
@@ -38,7 +41,9 @@ void g3d_create_multiLocalPath_form(void){
 
 	g3d_create_multiLocalPathList_obj();
 	g3d_create_button(&CANCEL_BUTTON,FL_NORMAL_BUTTON,50.0,30.0,"Cancel",(void**)&MULTILOCALPATH_FORM,1);
+	g3d_create_button(&DEACTIVATE_BUTTON,FL_NORMAL_BUTTON,50.0,30.0,"Deactivate",(void**)&MULTILOCALPATH_FORM,1);
 	fl_set_call_back(CANCEL_BUTTON,CB_cancel_button,0);
+	fl_set_call_back(DEACTIVATE_BUTTON,CB_deactivate_button,0);
 	fl_end_form();
 	fl_set_form_icon(MULTILOCALPATH_FORM, GetApplicationIcon(), 0);
 	fl_set_form_atclose(MULTILOCALPATH_FORM, CB_multiLocalPathForm_OnClose, 0);
@@ -55,6 +60,27 @@ static void CB_cancel_button(FL_OBJECT *ob, long arg){
 	g3d_destroy_multiLocalPath_Form();
 	
 	fl_set_button(MULTILOCALPATH_OBJ,0);//release the button path_Deformation on planner FORM
+}
+
+
+/****************************************************************************/
+/** \brief CallBack for the cancel button.
+ \param *ob a pointer on the FL_OBJECT
+ \param arg argument for the call back function (not used)
+ */
+/****************************************************************************/
+static void CB_deactivate_button(FL_OBJECT *ob, long arg){
+
+  int i=0;
+  p3d_rob *r = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT); /* current robot */
+  p3d_multiLocalPath_disable_all_groupToPlan(r);
+	
+  for(i=0; i<r->mlp->nblpGp; i++) {
+    
+    fl_set_button(MGGRAPH_OBJ[i],0);
+    
+  }
+  
 }
 /****************************************************************************/
 /** \brief This function is called when the "multiLocalPath" window is closed from the X button
