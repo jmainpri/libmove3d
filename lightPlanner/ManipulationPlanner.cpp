@@ -719,7 +719,8 @@ configPt ManipulationPlanner::robotGoto() {
 //! Computes a path for a given manipulation elementary task.
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, char* objectName, std::vector <int> &lp, std::vector < std::vector <double> > &positions, MANPIPULATION_TRAJECTORY_STR &segments) {
   configPt qi = p3d_copy_config(_robot, qStart), qf = p3d_copy_config(_robot, qGoal);
-  p3d_rob *cur_robot = NULL;
+  p3d_rob *cur_robot = (p3d_rob*)p3d_get_desc_curid(P3D_ROBOT);
+  p3d_sel_desc_id(P3D_ROBOT, _robot);
   p3d_traj *traj = NULL;
 //   bool success;
   int ntest = 0;
@@ -743,6 +744,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       for (uint itraj = 0; itraj < _configTraj.size() - 1; itraj++) {
         if ((traj = computeTrajBetweenTwoConfigs(_configTraj[itraj], _configTraj[itraj+1])) != 0) {
           printf("ERROR armPlanTask(ARM_FREE) on traj");
+          p3d_sel_desc_id(P3D_ROBOT,cur_robot);
           return MANIPULATION_TASK_NO_TRAJ_FOUND;
         }
       }
@@ -1050,6 +1052,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
 //       break;
     default:
       printf("%s: %d: ManipulationPlanner::armPlanTask(): wrong task.\n", __FILE__, __LINE__);
+      p3d_sel_desc_id(P3D_ROBOT,cur_robot);
       return MANIPULATION_TASK_INVALID_TASK;
       break;
   }
@@ -1075,7 +1078,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
   p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
   p3d_copy_config_into(_robot, qf, &_robot->ROBOT_GOTO);
   ENV.setBool(Env::drawTraj, true);
-  XYZ_ENV->cur_robot = cur_robot;
+  p3d_sel_desc_id(P3D_ROBOT,cur_robot);
   g3d_draw_allwin_active();
   printf("BioMove3D: armPlanTask OK\n");
   return MANIPULATION_TASK_OK;
