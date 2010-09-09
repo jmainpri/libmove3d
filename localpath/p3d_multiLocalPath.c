@@ -664,10 +664,16 @@ void lm_destroy_multiLocalPath_params(p3d_rob *robotPt, void *paramPt) {
 
 
 int p3d_multiLocalPath_update_joint_sampling_activation(p3d_rob* robotPt) {
-  for(int j=0; j<robotPt->njoints; j++) {
-    p3d_jnt_set_is_active_for_planner2(robotPt->joints[j], FALSE);
+
+ int indexJnt = 0;
+  for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
+ 
+    		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
+		   indexJnt = robotPt->mlp->mlpJoints[i]->joints[j];
+			p3d_jnt_set_is_active_for_planner2(robotPt->joints[indexJnt], TRUE);
+		}
+    
   }
-  int indexJnt = 0;
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
     if(groupToPlan[i] == 1) {
     		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
@@ -677,6 +683,28 @@ int p3d_multiLocalPath_update_joint_sampling_activation(p3d_rob* robotPt) {
     }
   }
   return 0;
+}
+
+/**
+ * Activate or De-activate the specified group "mlpID" of multilocalpath
+ * only used at the start-up of move3D
+ * @param robotPt  The robot
+ * @param mlpID The ID of the group
+ * @param value The value => 0 : De-activated / 1 : Activated
+ */
+void p3d_multiLocalPath_set_groupToPlanForInit(p3d_rob* robotPt, int mlpID, int value) {
+  if ((mlpID < 0) && (mlpID > (robotPt->mlp->nblpGp - 1))) {
+    printf("p3d_multiLocalPath_set_groupToPlan : mgID out of nbGroups\n");
+    return;
+  }
+  if (value == TRUE) {
+    groupToPlan[mlpID] = 1;
+  } else if (value == FALSE) {
+    groupToPlan[mlpID] = 0;
+  } else {
+    printf("p3d_multiLocalPath_set_groupToPlan : value %d is incompatible\n", value);
+  }
+  return;
 }
 
 /**

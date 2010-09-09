@@ -21,6 +21,9 @@
 #include <iostream>
 
 
+#include "ManipulationPlanner.hpp"
+#include "ManipulationUtils.hpp"
+
 // #if defined(MULTILOCALPATH) && defined(GRASP_PLANNING) && defined(LIGHT_PLANNER)
 
 //#define OBJECT_NAME "DUPLO_OBJECT"
@@ -120,7 +123,7 @@ void g3d_delete_genom_form(void) {
 /* -------------------- MAIN GROUP --------------------- */
 static void initManipulationGenom() {
   if (manipulation == NULL) {
-	p3d_rob * robotPt= p3d_get_robot_by_name(GP_ROBOT_NAME);
+	p3d_rob * robotPt= p3d_get_robot_by_name("justin");
 	manipulation= new ManipulationPlanner(robotPt);
 //         manipulation->setArmType(GP_LWR); // set the arm type
   }
@@ -442,9 +445,13 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	}
 
 	if(FORMGENOM_CARTESIAN == 1) {
-// 	  manipulation->setArmCartesian(true);
+	  for(int i=0; i<manipulation->robot()->armManipulationData->size(); i++) {
+ 	   manipulation->setArmCartesian(i,true);
+	  }
 	} else {
-// 	  manipulation->setArmCartesian(false);
+	  for(int i=0; i<manipulation->robot()->armManipulationData->size(); i++) {
+ 	    manipulation->setArmCartesian(i,false);
+	  }
 	}
 	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(),(char*)"", manipulation->lp, manipulation->positions, manipulation->segments);
 

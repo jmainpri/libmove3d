@@ -9776,40 +9776,10 @@ p3d_cntrt * getJntFixedCntrt(
 //! Creates constraints corresponding to the inverse of the closed chained constraints of the robot.
 //! This is used to automatically update the pose of virtual objects.
 //! \return 0 in case of success, 1 otherwise
-int p3d_create_FK_cntrts(p3d_rob* robotPt)
-{
-  int i;
-  
-  if(robotPt->fkCntrts!=NULL)
-    {
-      for(i=0; i < robotPt->nbFkCntrts; i++)
-	{
-	  if(robotPt->fkCntrts[i]!=NULL)
-	    {
-	      MY_FREE(robotPt->fkCntrts[i], p3d_cntrt, 1);
-	    }
-	}
-      MY_FREE(robotPt->fkCntrts, p3d_cntrt*, robotPt->nbFkCntrts);
-    }
-  
-  robotPt->nbFkCntrts = robotPt->nbCcCntrts;
-  
-  if(robotPt->nbCcCntrts==0)
-    {	return 1;}
-  
-  robotPt->fkCntrts = MY_ALLOC(p3d_cntrt*, robotPt->nbFkCntrts);
-
-  for(i=0; i < robotPt->nbFkCntrts; i++)
-  {
-    if ( robotPt->ccCntrts[i] != NULL) {
-      printf("Create FK_CNTRT\n");
-      setAndActivateTwoJointsFixCntrt(robotPt, robotPt->ccCntrts[i]->actjnts[0], robotPt->ccCntrts[i]->pasjnts[robotPt->ccCntrts[i]->npasjnts-1]);
-      robotPt->fkCntrts[i]= robotPt->cntrt_manager->cntrts[robotPt->cntrt_manager->ncntrts - 1];
-      p3d_matInvertXform(robotPt->ccCntrts[i]->Tatt, robotPt->fkCntrts[i]->Tatt);
-      p3d_desactivateCntrt(robotPt, robotPt->fkCntrts[i]);
-    }
-  }
-  
-  return 0;
-}
+p3d_cntrt* p3d_create_FK_cntrts(p3d_rob* robotPt, p3d_cntrt* armCntrt){
+  p3d_cntrt* fkCntrt = setAndActivateTwoJointsFixCntrt(robotPt, armCntrt->actjnts[0], armCntrt->pasjnts[armCntrt->npasjnts-1]);
+  p3d_matInvertXform(armCntrt->Tatt, fkCntrt->Tatt);
+  p3d_desactivateCntrt(robotPt, fkCntrt);
+  return fkCntrt;
+} 
 #endif

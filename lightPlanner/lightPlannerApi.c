@@ -4,6 +4,8 @@
 #include "P3d-pkg.h"
 #include "Collision-pkg.h"
 
+#include "ManipulationUtils.hpp"
+
 ///////////////////////////
 //// Static functions /////
 ///////////////////////////
@@ -24,16 +26,16 @@ int USE_LIN = 0;
 /**
  * @brief Activate the constraints declared in the initialisation to grasp the objects.
  * @param robot The robot to which the constraints are attached
- * @param cntrtNum the constraint number. If -1 activate all constraints
+ * @param armId the Arm id in robot->ArmManipulationData. If -1 activate all constraints
  */
-void activateCcCntrts(p3d_rob * robot, int cntrtNum, bool nonUsedCntrtDesactivation){
-  if(cntrtNum == -1){
+void activateCcCntrts(p3d_rob * robot, int armId, bool nonUsedCntrtDesactivation){
+  if(armId == -1){
     for(int i = 0; i < robot->nbCcCntrts; i++){
       p3d_activateCntrt(robot, robot->ccCntrts[i]);
     }
   }else{
     for(int i = 0; i < robot->nbCcCntrts; i++){
-      if(i == cntrtNum){
+      if(i == armId){
         p3d_activateCntrt(robot, robot->ccCntrts[i]);
       }else if (nonUsedCntrtDesactivation) {
         p3d_desactivateCntrt(robot, robot->ccCntrts[i]);
@@ -43,47 +45,41 @@ void activateCcCntrts(p3d_rob * robot, int cntrtNum, bool nonUsedCntrtDesactivat
 
   #if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
   //deactivate the forward kinematics constraints (duals of the closed chains constraints):
-  if(cntrtNum == -1){
-    for(int i = 0; i < robot->nbFkCntrts; i++){
-      p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
+  if(armId == -1){
+    for(uint i = 0; i < robot->armManipulationData->size(); i++){
+      p3d_desactivateCntrt(robot, (*robot->armManipulationData)[i].getFkCntrt());
     }
   }else{
-      p3d_desactivateCntrt(robot, robot->fkCntrts[cntrtNum]);
+    p3d_desactivateCntrt(robot, (*robot->armManipulationData)[armId].getFkCntrt());
   }
   #endif
 }
 /**
  * @brief Deactivate the constraints declared in the initialisation to grasp the objects.
  * @param robot The robot to which the constraints are attached
- * @param cntrtNum the constraint number. If -1 activate all constraints
+ * @param armId the Arm id in robot->ArmManipulationData. If -1 activate all constraints
  */
-void deactivateCcCntrts(p3d_rob * robot, int cntrtNum){
+void deactivateCcCntrts(p3d_rob * robot, int armId){
   if (!robot) {
     printf("A null Robot is given to deactivateCcCntrts");
     return;
   }
-  if(cntrtNum == -1){
+  if(armId == -1){
     for(int i = 0; i < robot->nbCcCntrts; i++){
       p3d_desactivateCntrt(robot, robot->ccCntrts[i]);
     }
   }else{
-    p3d_desactivateCntrt(robot, robot->ccCntrts[cntrtNum]);
+    p3d_desactivateCntrt(robot, robot->ccCntrts[armId]);
   }
 
   #if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
   //activate the forward kinematics constraints (duals of the closed chains constraints):
-  if(cntrtNum == -1){
-    for(int i = 0; i < robot->nbFkCntrts; i++){
-      p3d_activateCntrt(robot, robot->fkCntrts[i]);
+  if(armId == -1){
+    for(uint i = 0; i < robot->armManipulationData->size(); i++){
+      p3d_activateCntrt(robot, (*robot->armManipulationData)[i].getFkCntrt());
     }
   }else{
-    for(int i = 0; i < robot->nbFkCntrts; i++){
-      if(i == cntrtNum){
-        p3d_activateCntrt(robot, robot->fkCntrts[i]);
-      }else{
-        p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
-      }
-     }
+    p3d_activateCntrt(robot, (*robot->armManipulationData)[armId].getFkCntrt());
   }
   #endif
 }
@@ -347,8 +343,9 @@ p3d_cntrt * findTwoJointsFixCntrt(p3d_rob* robot, p3d_jnt* passiveJnt, p3d_jnt* 
  * @param robot The robot
  * @param passiveJnt The passive joint in the constraint
  * @param activeJnt The active joint in the constraint
+ * @return the constraint
  */
-void setAndActivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt) {
+p3d_cntrt* setAndActivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt) {
   int passiveJntId[1] = {passiveJnt->num}, activeJntId[1] = {activeJnt->num};
   p3d_cntrt * cntrt = findTwoJointsFixCntrt(robot, passiveJnt, activeJnt);
   //If the constraint is already created
@@ -364,7 +361,7 @@ void setAndActivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_j
   }
   //set the attach Matrix
   getObjectBaseAttachMatrix(activeJnt->abs_pos, passiveJnt->abs_pos, cntrt->Tatt);
-  return;
+  return cntrt;
 }
 
 /**

@@ -101,7 +101,7 @@ extern int p3d_update_virtual_object_pose_in_config(p3d_rob* robotPt, configPt q
 extern void p3d_compute_Tatt(p3d_cntrt *ct);
 
 #if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
-int p3d_create_FK_cntrts(p3d_rob* robotPt);
+p3d_cntrt* p3d_create_FK_cntrts(p3d_rob* robotPt, p3d_cntrt* ccCntrt);
 #endif
 
 

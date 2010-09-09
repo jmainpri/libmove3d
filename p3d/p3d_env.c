@@ -14,7 +14,7 @@
 #define sqr(x) ((x) * (x))
 
 #if defined (LIGHT_PLANNER) &&  defined (MULTILOCALPATH) && defined (GRASP_PLANNING)
-#include "Manipulation.h"
+#include "ManipulationUtils.hpp"
 #endif
 
 extern double ZminEnv;
@@ -2653,9 +2653,11 @@ int p3d_set_removable_bb_for_grasp(p3d_rob* r, int nbJoints, int *joints){
 int p3d_set_arm_data(p3d_rob* r, int *data){
   ArmManipulationData armData;
   armData.setCcCntrt(r, data[0]);
+  armData.setFkCntrt(p3d_create_FK_cntrts(r, armData.getCcCntrt()));
   armData.setCartesianGroup(data[1]);
-  armData.setHandProperties(data[2]);
-  armData.setManipulationJnt(r, data[3]);
+  armData.setCartesianSmGroup(data[2]);
+  armData.setHandProperties(data[3]);
+  armData.setManipulationJnt(r, data[4]);
   r->armManipulationData->push_back(armData);
   return TRUE;
 }
@@ -2699,8 +2701,8 @@ int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints, int act
       (r->mlp->mlpJoints[r->mlp->nblpGp-1])->joints[i] = joints[i];
 			nbDofs += r->joints[r->mlp->mlpJoints[r->mlp->nblpGp-1]->joints[i]]->user_dof_equiv_nbr;
     }
-		(r->mlp->mlpJoints[r->mlp->nblpGp-1])->nbDofs = nbDofs;
-		p3d_multiLocalPath_set_groupToPlan(r, r->mlp->nblpGp-1, activated);
+   (r->mlp->mlpJoints[r->mlp->nblpGp-1])->nbDofs = nbDofs;
+   p3d_multiLocalPath_set_groupToPlanForInit(r, r->mlp->nblpGp-1, 0);
   }else{
     return FALSE;
   }

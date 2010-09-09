@@ -21,7 +21,7 @@ static void p3d_del_multiGraphJoint(p3d_multiGraphJoint * mgJoint);
 #endif
 
 #if defined (LIGHT_PLANNER) &&  defined (MULTILOCALPATH) && defined (GRASP_PLANNING)
-#include "Manipulation.h"
+#include "ManipulationUtils.hpp"
 #endif
 
 /*************************************************************************************/
