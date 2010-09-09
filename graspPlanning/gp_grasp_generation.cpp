@@ -43,12 +43,12 @@ int gpGrasps_from_grasp_frame_SAHand ( p3d_rob *robot, p3d_rob *object, int body
 #ifdef GP_DEBUG
     if ( robot==NULL )
     {
-      printf ( "%s: %d: gpGrasps_from_grasp_frame_SAHand(): robot is NULL.\n",__FILE__,__LINE__ );
+      printf("%s: %d: gpGrasps_from_grasp_frame_SAHand(): robot is NULL.\n",__FILE__,__LINE__ );
       return GP_ERROR;
     }
     if ( object==NULL )
     {
-      printf ( "%s: %d: gpGrasps_from_grasp_frame_SAHand(): object is NULL.\n",__FILE__,__LINE__ );
+      printf("%s: %d: gpGrasps_from_grasp_frame_SAHand(): object is NULL.\n",__FILE__,__LINE__ );
       return GP_ERROR;
     }
 #endif
@@ -291,12 +291,12 @@ int gpGrasps_from_grasp_frame_gripper ( p3d_polyhedre *polyhedron, p3d_matrix4 g
 #ifdef GP_DEBUG
 	if ( polyhedron==NULL )
 	{
-		printf ( "%s: %d: gpGrasp_from_grasp_frame_gripper(): polyhedron=NULL.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpGrasp_from_grasp_frame_gripper(): polyhedron=NULL.\n",__FILE__,__LINE__ );
 		return 0;
 	}
 	if ( hand.type != GP_GRIPPER )
 	{
-		printf ( "%s: %d: gpGrasp_from_grasp_frame_gripper(): this function can not be applied to this hand model.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpGrasp_from_grasp_frame_gripper(): this function can not be applied to this hand model.\n",__FILE__,__LINE__ );
 		return 0;
 	}
 #endif
@@ -368,7 +368,7 @@ int gpGrasps_from_grasp_frame_gripper ( p3d_polyhedre *polyhedron, p3d_matrix4 g
 
 		if ( faces[i].plane==NULL )
 		{
-			printf ( "%s: %d: gpGrasp_from_grasp_frame_gripper(): a plane of a face has not been computed -> call p3d_build_planes() first.\n",__FILE__,__LINE__ );
+			printf("%s: %d: gpGrasp_from_grasp_frame_gripper(): a plane of a face has not been computed -> call p3d_build_planes() first.\n",__FILE__,__LINE__ );
 			continue;
 		}
 
@@ -748,7 +748,7 @@ int gpGrasp_frame_from_inertia_axes ( p3d_matrix3 iaxes, p3d_vector3 cmass, int 
 
 			break;
 		default:
-			printf ( "%s: %d: grasp_frame_from_inertia_axes: one of the input parameters is not valid.\n",__FILE__,__LINE__ );
+			printf("%s: %d: grasp_frame_from_inertia_axes: one of the input parameters is not valid.\n",__FILE__,__LINE__ );
 			return 0;
 			break;
 	}
@@ -765,7 +765,7 @@ int gpGrasp_frame_from_inertia_axes ( p3d_matrix3 iaxes, p3d_vector3 cmass, int 
 			rotAxis[0]=      0;    rotAxis[1]=         0;    rotAxis[2]=           1;
 			break;
 		default:
-			printf ( "%s: %d: grasp_frame_from_inertia_axes: one of the input parameters is not valid.\n",__FILE__,__LINE__ );
+			printf("%s: %d: grasp_frame_from_inertia_axes: one of the input parameters is not valid.\n",__FILE__,__LINE__ );
 			return 0;
 			break;
 	}
@@ -810,12 +810,12 @@ int gpCompute_grasp_open_configs ( std::list<gpGrasp> &graspList, p3d_rob *robot
 #ifdef GP_DEBUG
 	if ( robot==NULL )
 	{
-		printf ( "%s: %d: gpGrasp_compute_open_configs(): robot is NULL.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpGrasp_compute_open_configs(): robot is NULL.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 	if ( object==NULL )
 	{
-		printf ( "%s: %d: gpCompute_grasp_open_configs(): object is NULL.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpCompute_grasp_open_configs(): object is NULL.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 #endif
@@ -859,7 +859,7 @@ int gpCompute_grasp_open_configs ( std::list<gpGrasp> &graspList, p3d_rob *robot
 		case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
 				if ( igrasp->config.size() !=13 || igrasp->openConfig.size() !=13 )
 				{
-					printf ( "%s: %d: gpCompute_grasp_open_configs(): config vector has a bad size.\n",__FILE__,__LINE__ );
+					printf("%s: %d: gpCompute_grasp_open_configs(): config vector has a bad size.\n",__FILE__,__LINE__ );
 					continue;
 				}
 				q.resize ( 13 );
@@ -957,7 +957,7 @@ int gpCompute_grasp_open_configs ( std::list<gpGrasp> &graspList, p3d_rob *robot
 //         }
 				break;
 			default:
-				printf ( "%s: %d: gpCompute_grasp_open_configs(): this hand model is not defined.\n",__FILE__,__LINE__ );
+				printf("%s: %d: gpCompute_grasp_open_configs(): this hand model is not defined.\n",__FILE__,__LINE__ );
 				return GP_ERROR;
 				break;
 		}
@@ -983,22 +983,22 @@ int gpCompute_grasp_open_config ( p3d_rob *robot, gpDoubleGrasp &doubleGrasp, p3
 #ifdef GP_DEBUG
 	if ( robot==NULL )
 	{
-		printf ( "%s: %d: gpCompute_grasp_open_config(): robot is NULL.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpCompute_grasp_open_config(): robot is NULL.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 	if ( object==NULL )
 	{
-		printf ( "%s: %d: gpCompute_grasp_open_config(): object is NULL.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpCompute_grasp_open_config(): object is NULL.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 	if ( ! ( ( doubleGrasp.grasp1.hand_type==GP_SAHAND_RIGHT && doubleGrasp.grasp2.hand_type==GP_SAHAND_LEFT ) || ( doubleGrasp.grasp1.hand_type==GP_SAHAND_LEFT && doubleGrasp.grasp2.hand_type==GP_SAHAND_RIGHT ) ) )
 	{
-		printf ( "%s: %d: gpCompute_grasp_open_config(): hand types of the double grasp should be %s and %s.\n",__FILE__,__LINE__, ( gpHand_type_to_string ( GP_SAHAND_RIGHT ) ).c_str(), ( gpHand_type_to_string ( GP_SAHAND_LEFT ) ).c_str() );
+		printf("%s: %d: gpCompute_grasp_open_config(): hand types of the double grasp should be %s and %s.\n",__FILE__,__LINE__, ( gpHand_type_to_string ( GP_SAHAND_RIGHT ) ).c_str(), ( gpHand_type_to_string ( GP_SAHAND_LEFT ) ).c_str() );
 		return GP_ERROR;
 	}
 	if ( hand_to_open!=1 && hand_to_open!=2 )
 	{
-		printf ( "%s: %d: gpCompute_grasp_open_config(): hand_to_open must be 1 or 2.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpCompute_grasp_open_config(): hand_to_open must be 1 or 2.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 #endif
@@ -1231,7 +1231,7 @@ int gpGrasp_frame_from_inertia_axes ( p3d_matrix3 iaxes, p3d_vector3 cmass, int 
 
 			break;
 		default:
-			printf ( "%s: %d: grasp_frame_from_inertia_axes: one of the input parameters is not valid.\n",__FILE__,__LINE__ );
+			printf("%s: %d: grasp_frame_from_inertia_axes: one of the input parameters is not valid.\n",__FILE__,__LINE__ );
 			return 0;
 			break;
 	}
@@ -1248,7 +1248,7 @@ int gpGrasp_frame_from_inertia_axes ( p3d_matrix3 iaxes, p3d_vector3 cmass, int 
 			rotAxis[0]=      0;    rotAxis[1]=         0;    rotAxis[2]=           1;
 			break;
 		default:
-			printf ( "%s: %d: grasp_frame_from_inertia_axes: one of the input parameters is not valid.\n",__FILE__,__LINE__ );
+			printf("%s: %d: grasp_frame_from_inertia_axes: one of the input parameters is not valid.\n",__FILE__,__LINE__ );
 			return 0;
 			break;
 	}
@@ -1300,7 +1300,7 @@ int gpSample_grasp_frames ( p3d_polyhedre *polyhedron, unsigned int nbPositions,
 #ifdef GP_DEBUG
 	if ( polyhedron==NULL )
 	{
-		printf ( "%s: %d: gpSample_grasp_frames(): input p3d_polyhedre* is NULL.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpSample_grasp_frames(): input p3d_polyhedre* is NULL.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 #endif
@@ -1341,8 +1341,8 @@ int gpSample_grasp_frames ( p3d_polyhedre *polyhedron, unsigned int nbPositions,
 			{  break; }
 		nbSamples= ( unsigned int ) ( 2*nbPositions*nbDirections*nbRotations );
 	}
-	printf ( "nbPositions= %d nbDirections= %d nbRotations= %d \n", nbPositions, nbDirections, nbRotations );
-	printf ( "nbSamples= %d nbFramesMax= %d \n", nbSamples, nbFramesMax );
+	printf("nbPositions= %d nbDirections= %d nbRotations= %d \n", nbPositions, nbDirections, nbRotations );
+	printf("nbSamples= %d nbFramesMax= %d \n", nbSamples, nbFramesMax );
 
 
 	translationStep= pow ( ( dimX*dimY*dimZ ) / ( ( double ) ( nbPositions ) ), ( 1.0/3.0 ) );
@@ -1353,14 +1353,14 @@ int gpSample_grasp_frames ( p3d_polyhedre *polyhedron, unsigned int nbPositions,
 
 	if ( result==GP_ERROR )
 	{
-		printf ( "%s: %d: gpSample_grasp_frames(): position sampling error.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpSample_grasp_frames(): position sampling error.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 
 	result= gpSample_sphere_surface ( 1.0, nbDirections, directions );
 	if ( result==GP_ERROR )
 	{
-		printf ( "%s: %d: gpSample_grasp_frames(): problem with sphere surface sampling.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpSample_grasp_frames(): problem with sphere surface sampling.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 
@@ -1433,17 +1433,17 @@ int gpGrasp_generation ( p3d_rob *robot, p3d_rob *object, int body_index, gpHand
 #ifdef GP_DEBUG
 	if ( robot==NULL )
 	{
-		printf ( "%s: %d: gpGrasp_generation(): input robot is NULL.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpGrasp_generation(): input robot is NULL.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 	if ( object==NULL )
 	{
-		printf ( "%s: %d: gpGrasp_generation(): input object is NULL.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpGrasp_generation(): input object is NULL.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 	if ( ( body_index < 0 ) || ( body_index > object->no-1 ) )
 	{
-		printf ( "%s: %d: gpGrasp_generation(): the index of selected body is not consistent with the number of bodies of the object.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpGrasp_generation(): the index of selected body is not consistent with the number of bodies of the object.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 #endif
@@ -1466,11 +1466,11 @@ int gpGrasp_generation ( p3d_rob *robot, p3d_rob *object, int body_index, gpHand
 
 	if ( result==GP_ERROR || gframes.empty() )
 	{
-		printf ( "%s: %d: gpGrasp_generation(): grasp frames were not correctly generated.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpGrasp_generation(): grasp frames were not correctly generated.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 
-	printf ( "Grasp computation for object \"%s\": %d grasp frames will be used.\n", object->name, gframes.size() );
+	printf("Grasp computation for object \"%s\": %d grasp frames will be used.\n", object->name, gframes.size() );
 
 	switch ( handProp.type )
 	{
@@ -1484,7 +1484,7 @@ int gpGrasp_generation ( p3d_rob *robot, p3d_rob *object, int body_index, gpHand
 	case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
 			gpSample_obj_surface ( object->o[body_index], 0.005, handProp.fingertip_radius, contactList );
 			kdtree.build ( contactList );
-			printf ( "%d samples on object surface \n",contactList.size() );
+			printf("%d samples on object surface \n",contactList.size() );
 			for ( i=0; i<gframes.size(); i++ )
 			{
 				gframes[i].copyIn_p3d_matrix4 ( frame );
@@ -1492,7 +1492,7 @@ int gpGrasp_generation ( p3d_rob *robot, p3d_rob *object, int body_index, gpHand
 			}
 			break;
 		default:
-			printf ( "%s: %d: gpGrasp_generation(): undefined or unimplemented hand type.\n",__FILE__,__LINE__ );
+			printf("%s: %d: gpGrasp_generation(): undefined or unimplemented hand type.\n",__FILE__,__LINE__ );
 			return GP_ERROR;
 			break;
 	}
@@ -1525,17 +1525,17 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
 #ifdef GP_DEBUG
 	if ( robot==NULL )
 	{
-		printf ( "%s: %d: gpGrasp_collision_filter(): robot is NULL.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpGrasp_collision_filter(): robot is NULL.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 	if ( object==NULL )
 	{
-		printf ( "%s: %d: gpGrasp_collision_filter(): object is NULL.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpGrasp_collision_filter(): object is NULL.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 	if ( graspList.empty() )
 	{
-		printf ( "%s: %d: gpGrasp_collision_filter(): the grasp list is empty.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpGrasp_collision_filter(): the grasp list is empty.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 #endif
@@ -1590,12 +1590,12 @@ int gpGrasp_context_collision_filter ( std::list<gpGrasp> &graspList, p3d_rob *r
   #ifdef GP_DEBUG
   if ( robot==NULL )
   {
-    printf ( "%s: %d: gpGrasp_context_collision_filter(): robot is NULL.\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpGrasp_context_collision_filter(): robot is NULL.\n",__FILE__,__LINE__ );
     return GP_ERROR;
   }
   if ( graspList.empty() )
   {
-    printf ( "%s: %d: gpGrasp_context_collision_filter(): the grasp list is empty.\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpGrasp_context_collision_filter(): the grasp list is empty.\n",__FILE__,__LINE__ );
     return GP_ERROR;
   }
   #endif
@@ -1644,7 +1644,7 @@ int gpGrasp_stability_filter ( std::list<gpGrasp> &graspList )
 #ifdef GP_DEBUG
 	if ( graspList.empty() )
 	{
-		printf ( "%s: %d: gpGrasp_stability_filter(): the grasp list is empty.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpGrasp_stability_filter(): the grasp list is empty.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 #endif
@@ -1677,7 +1677,7 @@ int gpGrasp_quality_filter ( std::list<gpGrasp> &graspList )
 #ifdef GP_DEBUG
 	if ( graspList.empty() )
 	{
-		printf ( "%s: %d: gpGrasp_quality_filter(): the grasp list is empty.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpGrasp_quality_filter(): the grasp list is empty.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 #endif
@@ -1711,17 +1711,17 @@ int gpInverse_geometric_model_freeflying_hand ( p3d_rob *robot, p3d_matrix4 obje
 #ifdef GP_DEBUG
 	if ( robot==NULL )
 	{
-		printf ( "%s: %d: gpInverse_geometric_model_freeflying_hand(): input hand robot is NULL.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpInverse_geometric_model_freeflying_hand(): input hand robot is NULL.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 	if ( q==NULL )
 	{
-		printf ( "%s: %d: gpInverse_geometric_model_freeflying_hand(): q is NULL.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpInverse_geometric_model_freeflying_hand(): q is NULL.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 	if ( robot->joints[1]->type!=P3D_FREEFLYER )
 	{
-		printf ( "%s: %d: gpInverse_geometric_model_freeflying_hand(): the first joint (\"%s\") of the hand robot (\"%s\") must  be of type P3D_FREEFLYER.\n",__FILE__,__LINE__,robot->joints[1]->name,robot->name );
+		printf("%s: %d: gpInverse_geometric_model_freeflying_hand(): the first joint (\"%s\") of the hand robot (\"%s\") must  be of type P3D_FREEFLYER.\n",__FILE__,__LINE__,robot->joints[1]->name,robot->name );
 		return GP_ERROR;
 	}
 #endif
@@ -1749,7 +1749,7 @@ extern int gpForward_geometric_model_PA10 ( p3d_rob *robot, p3d_matrix4 Tend_eff
 {
 	if ( robot==NULL )
 	{
-		printf ( "%s: %d: gpForward_geometric_model_PA10(): robot is NULL.\n",__FILE__,__LINE__ );
+		printf("%s: %d: gpForward_geometric_model_PA10(): robot is NULL.\n",__FILE__,__LINE__ );
 		return GP_ERROR;
 	}
 
@@ -1764,32 +1764,32 @@ extern int gpForward_geometric_model_PA10 ( p3d_rob *robot, p3d_matrix4 Tend_eff
 
 	gpGet_arm_base_frame ( robot, armBaseFrame );
 
-	armJoint= p3d_get_robot_jnt_by_name ( robot, ( char* ) GP_ARMBASEJOINT );
+	armJoint= p3d_get_robot_jnt_by_name ( robot, (char*) GP_ARMBASEJOINT );
 	if ( armJoint==NULL )
 		{  return GP_ERROR; }
 	q.q1= robot->ROBOT_POS[armJoint->index_dof];
 
-	armJoint= p3d_get_robot_jnt_by_name ( robot, ( char* ) GP_ARMJOINT2 );
+	armJoint= p3d_get_robot_jnt_by_name ( robot, (char*) GP_ARMJOINT2 );
 	if ( armJoint==NULL )
 		{  return GP_ERROR; }
 	q.q2= robot->ROBOT_POS[armJoint->index_dof];
 
-	armJoint= p3d_get_robot_jnt_by_name ( robot, ( char* ) GP_ARMJOINT3 );
+	armJoint= p3d_get_robot_jnt_by_name ( robot, (char*) GP_ARMJOINT3 );
 	if ( armJoint==NULL )
 		{  return GP_ERROR; }
 	q.q3= robot->ROBOT_POS[armJoint->index_dof];
 
-	armJoint= p3d_get_robot_jnt_by_name ( robot, ( char* ) GP_ARMJOINT4 );
+	armJoint= p3d_get_robot_jnt_by_name ( robot, (char*) GP_ARMJOINT4 );
 	if ( armJoint==NULL )
 		{  return GP_ERROR; }
 	q.q4= robot->ROBOT_POS[armJoint->index_dof];
 
-	armJoint= p3d_get_robot_jnt_by_name ( robot, ( char* ) GP_ARMJOINT5 );
+	armJoint= p3d_get_robot_jnt_by_name ( robot, (char*) GP_ARMJOINT5 );
 	if ( armJoint==NULL )
 		{  return GP_ERROR; }
 	q.q5= robot->ROBOT_POS[armJoint->index_dof];
 
-	armJoint= p3d_get_robot_jnt_by_name ( robot, ( char* ) GP_WRISTJOINT );
+	armJoint= p3d_get_robot_jnt_by_name ( robot, (char*) GP_WRISTJOINT );
 	if ( armJoint==NULL )
 		{  return GP_ERROR; }
 	q.q6= robot->ROBOT_POS[armJoint->index_dof];
@@ -1850,7 +1850,7 @@ int gpInverse_geometric_model_PA10 ( p3d_rob *robot, p3d_matrix4 Tend_eff, confi
 {
   if(robot==NULL)
   {
-    printf ( "%s: %d: gpInverse_geometric_model_PA10(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    printf("%s: %d: gpInverse_geometric_model_PA10(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
 
@@ -2055,12 +2055,12 @@ configPt gpFind_grasp_from_base_configuration ( p3d_rob *robot, p3d_rob *object,
   #ifdef GP_DEBUG
   if ( robot==NULL )
   {
-    printf ( "%s: %d: gpFind_robot_config_from_grasp(): robot is NULL.\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpFind_robot_config_from_grasp(): robot is NULL.\n",__FILE__,__LINE__ );
     return NULL;
   }
   if ( object==NULL )
   {
-    printf ( "%s: %d: gpFind_robot_config_from_grasp(): object is NULL.\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpFind_robot_config_from_grasp(): object is NULL.\n",__FILE__,__LINE__ );
     return NULL;
   }
   #endif
@@ -2155,22 +2155,22 @@ int gpGrasp_visibility_filter ( p3d_rob *robot, p3d_rob *object, p3d_jnt *cam_jn
   #ifdef GP_DEBUG
   if ( graspList.empty() )
   {
-          printf ( "%s: %d: gpGrasp_visibility_filter(): the grasp list is empty.\n",__FILE__,__LINE__ );
+          printf("%s: %d: gpGrasp_visibility_filter(): the grasp list is empty.\n",__FILE__,__LINE__ );
           return GP_ERROR;
   }
   if ( robot==NULL )
   {
-          printf ( "%s: %d: gpGrasp_visibility_filter(): input robot is NULL.\n",__FILE__,__LINE__ );
+          printf("%s: %d: gpGrasp_visibility_filter(): input robot is NULL.\n",__FILE__,__LINE__ );
           return GP_ERROR;
   }
   if ( object==NULL )
   {
-          printf ( "%s: %d: gpGrasp_visibility_filter(): input object is NULL.\n",__FILE__,__LINE__ );
+          printf("%s: %d: gpGrasp_visibility_filter(): input object is NULL.\n",__FILE__,__LINE__ );
           return GP_ERROR;
   }
   if ( cam_jnt==NULL )
   {
-          printf ( "%s: %d: gpGrasp_visibility_filter(): the input camera joint object is NULL.\n",__FILE__,__LINE__ );
+          printf("%s: %d: gpGrasp_visibility_filter(): the input camera joint object is NULL.\n",__FILE__,__LINE__ );
           return GP_ERROR;
   }
   #endif
@@ -2245,7 +2245,7 @@ int gpGrasp_visibility_filter ( p3d_rob *robot, p3d_rob *object, p3d_jnt *cam_jn
           }
         break;
         default:
-          printf ( "%s: %d: gpGrasp_visibility_filter(): undefined or unimplemented arm type.\n",__FILE__,__LINE__ );
+          printf("%s: %d: gpGrasp_visibility_filter(): undefined or unimplemented arm type.\n",__FILE__,__LINE__ );
           p3d_set_and_update_this_robot_conf ( robot, q0 );
           p3d_destroy_config ( robot, q0 );
           // restore the original viewport and projection matrix:
@@ -2294,12 +2294,12 @@ int gpFind_grasp_and_pregrasp_from_base_configuration ( p3d_rob *robot, p3d_rob 
     #ifdef GP_DEBUG
     if ( robot==NULL )
     {
-            printf ( "%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): robot is NULL.\n",__FILE__,__LINE__ );
+            printf("%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): robot is NULL.\n",__FILE__,__LINE__ );
             return GP_ERROR;
     }
     if ( object==NULL )
     {
-            printf ( "%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): object is NULL.\n",__FILE__,__LINE__ );
+            printf("%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): object is NULL.\n",__FILE__,__LINE__ );
             return GP_ERROR;
     }
     #endif
@@ -2418,8 +2418,10 @@ int gpFind_grasp_and_pregrasp_from_base_configuration ( p3d_rob *robot, p3d_rob 
 //! \param object_to_grasp the name of the object to grasp (a freeflyer robot)
 //! \param graspList the computed grasp list
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpGet_grasp_list_gripper ( std::string object_to_grasp, std::list<gpGrasp> &graspList )
+int gpGet_grasp_list_gripper(const std::string &object_to_grasp, std::list<gpGrasp> &graspList)
 {
+  return gpGet_grasp_list(object_to_grasp, GP_GRIPPER, graspList);
+/*
   float clock0, elapsedTime;
   gpHand_properties handProp;
   p3d_rob *hand_robot= NULL;
@@ -2431,23 +2433,23 @@ int gpGet_grasp_list_gripper ( std::string object_to_grasp, std::list<gpGrasp> &
 
   if ( getenv ( "HOME_MOVE3D" ) ==NULL )
   {
-    printf ( "%s: %d: gpGet_grasp_list_gripper(): the environment variable \"HOME_MOVE3D\" must have been defined .\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpGet_grasp_list_gripper(): the environment variable \"HOME_MOVE3D\" must have been defined .\n",__FILE__,__LINE__ );
     return GP_ERROR;
   }
 
   handProp.initialize ( GP_GRIPPER );
-  hand_robot= p3d_get_robot_by_name ( ( char* ) GP_GRIPPER_ROBOT_NAME );
+  hand_robot= p3d_get_robot_by_name((char*) GP_GRIPPER_ROBOT_NAME );
   if ( hand_robot==NULL )
   {
-    printf ( "%s: %d: gpGet_grasp_list_gripper(): a robot \"%s\" is required.\n",__FILE__,__LINE__, ( char* ) GP_GRIPPER_ROBOT_NAME );
+    printf("%s: %d: gpGet_grasp_list_gripper(): a robot \"%s\" is required.\n",__FILE__,__LINE__, (char*) GP_GRIPPER_ROBOT_NAME );
     return GP_ERROR;
   }
 
-  object= p3d_get_robot_by_name ( ( char * ) object_to_grasp.c_str() );
+  object= p3d_get_robot_by_name(( char * ) object_to_grasp.c_str() );
 
   if ( object==NULL )
   {
-    printf ( "%s: %d: gpGet_grasp_list_gripper(): there is no robot (the object to grasp) named \"%s\".\n", __FILE__, __LINE__, object_to_grasp.c_str() );
+    printf("%s: %d: gpGet_grasp_list_gripper(): there is no robot (the object to grasp) named \"%s\".\n", __FILE__, __LINE__, object_to_grasp.c_str() );
     return GP_ERROR;
   }
 
@@ -2467,7 +2469,7 @@ int gpGet_grasp_list_gripper ( std::string object_to_grasp, std::list<gpGrasp> &
     // directory needs to be created:
     if ( mkdir ( handFolderName.c_str(), S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH ) ==-1 )
     {
-            printf ( "%s: %d: gpGet_grasp_list_gripper(): failed to create directory \"%s\".\n", __FILE__, __LINE__, handFolderName.c_str() );
+            printf("%s: %d: gpGet_grasp_list_gripper(): failed to create directory \"%s\".\n", __FILE__, __LINE__, handFolderName.c_str() );
             return GP_ERROR;
     }
   }
@@ -2485,8 +2487,8 @@ int gpGet_grasp_list_gripper ( std::string object_to_grasp, std::list<gpGrasp> &
   {
     if ( p3d_col_get_mode() !=p3d_col_mode_pqp )
     {
-            printf ( "%s: %d: gpGet_grasp_list_gripper(): The collision detector must be PQP to use graspPlanning module.\n",__FILE__,__LINE__ );
-            printf ( "The graspPlanning module will not work.\n" );
+            printf("%s: %d: gpGet_grasp_list_gripper(): The collision detector must be PQP to use graspPlanning module.\n",__FILE__,__LINE__ );
+            printf("The graspPlanning module will not work.\n" );
             return GP_ERROR;
     }
 
@@ -2505,7 +2507,7 @@ int gpGet_grasp_list_gripper ( std::string object_to_grasp, std::list<gpGrasp> &
   //     gpGrasp_compute_open_configs(graspList, hand_robot, object, handProp);
 
     elapsedTime= ( clock()-clock0 ) /CLOCKS_PER_SEC;
-    printf ( "Computation time: %2.1fs= %dmin%ds, %d grasps computed\n",elapsedTime, ( int ) ( elapsedTime/60.0 ), ( int ) ( elapsedTime - 60* ( ( int ) ( elapsedTime/60.0 ) ) ), graspList.size() );
+    printf("Computation time: %2.1fs= %dmin%ds, %d grasps computed\n",elapsedTime, ( int ) ( elapsedTime/60.0 ), ( int ) ( elapsedTime - 60* ( ( int ) ( elapsedTime/60.0 ) ) ), graspList.size() );
 
     gpSave_grasp_list ( graspList, graspListFile );
   }
@@ -2513,19 +2515,19 @@ int gpGet_grasp_list_gripper ( std::string object_to_grasp, std::list<gpGrasp> &
   {
     if ( gpCheck_grasp_list_validity ( graspList, object_to_grasp ) ==GP_ERROR )
     {
-      printf ( "%s: %d: gpGet_grasp_list_gripper(): file \"%s\" has been loaded successfully but its content does not look to be valid.\n", __FILE__, __LINE__,graspListFile.c_str() );
-      printf ( "Recompute the grasp list.\n" );
+      printf("%s: %d: gpGet_grasp_list_gripper(): file \"%s\" has been loaded successfully but its content does not look to be valid.\n", __FILE__, __LINE__,graspListFile.c_str() );
+      printf("Recompute the grasp list.\n" );
     }
     else
     {
-      printf ( "%s: %d: gpGet_grasp_list_gripper(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str() );
+      printf("%s: %d: gpGet_grasp_list_gripper(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str() );
     }
   }
 
   gpCompute_mass_properties(graspList.front().object->o[graspList.front().body_index]->pol[0]->poly);
 
 
-  return GP_OK;
+  return GP_OK;*/
 }
 
 
@@ -2554,7 +2556,7 @@ int gpGet_grasp_list_SAHand ( std::string object_to_grasp, int hand_to_use, std:
 
   if ( getenv ( "HOME_MOVE3D" ) ==NULL )
   {
-          printf ( "%s: %d: gpGet_grasp_list_SAHand(): the environment variable \"HOME_MOVE3D\" must have been defined .\n",__FILE__,__LINE__ );
+          printf("%s: %d: gpGet_grasp_list_SAHand(): the environment variable \"HOME_MOVE3D\" must have been defined .\n",__FILE__,__LINE__ );
           return GP_ERROR;
   }
 
@@ -2562,33 +2564,33 @@ int gpGet_grasp_list_SAHand ( std::string object_to_grasp, int hand_to_use, std:
   {
           case 1:
                   handProp.initialize ( GP_SAHAND_RIGHT );
-                  hand_robot= p3d_get_robot_by_name ( ( char* ) GP_SAHAND_RIGHT_ROBOT_NAME );
+                  hand_robot= p3d_get_robot_by_name((char*) GP_SAHAND_RIGHT_ROBOT_NAME );
                   if ( hand_robot==NULL )
                   {
-                          printf ( "%s: %d: gpGet_grasp_list_SAHand(): a robot \"%s\" is required.\n",__FILE__,__LINE__, ( char* ) GP_SAHAND_RIGHT_ROBOT_NAME );
+                          printf("%s: %d: gpGet_grasp_list_SAHand(): a robot \"%s\" is required.\n",__FILE__,__LINE__, (char*) GP_SAHAND_RIGHT_ROBOT_NAME );
                           return GP_ERROR;
                   }
                   break;
           case 2:
                   handProp.initialize ( GP_SAHAND_LEFT );
-                  hand_robot= p3d_get_robot_by_name ( ( char* ) GP_SAHAND_LEFT_ROBOT_NAME );
+                  hand_robot= p3d_get_robot_by_name((char*) GP_SAHAND_LEFT_ROBOT_NAME );
                   if ( hand_robot==NULL )
                   {
-                          printf ( "%s: %d: gpGet_grasp_list_SAHand(): a robot \"%s\" is required.\n",__FILE__,__LINE__, ( char* ) GP_SAHAND_LEFT_ROBOT_NAME );
+                          printf("%s: %d: gpGet_grasp_list_SAHand(): a robot \"%s\" is required.\n",__FILE__,__LINE__, (char*) GP_SAHAND_LEFT_ROBOT_NAME );
                           return GP_ERROR;
                   }
                   break;
           default:
-                  printf ( "%s: %d: gpGet_grasp_list_SAHand(): \"hand_to_use\" parameter must be 1 (right hand) or 2 (left hand).\n",__FILE__,__LINE__ );
+                  printf("%s: %d: gpGet_grasp_list_SAHand(): \"hand_to_use\" parameter must be 1 (right hand) or 2 (left hand).\n",__FILE__,__LINE__ );
                   return GP_ERROR;
                   break;
   }
 
-  object= p3d_get_robot_by_name ( ( char * ) object_to_grasp.c_str() );
+  object= p3d_get_robot_by_name(( char * ) object_to_grasp.c_str() );
 
   if ( object==NULL )
   {
-          printf ( "%s: %d: gpGet_grasp_list_SAHand(): there is no robot (the object to grasp) named \"%s\".\n", __FILE__, __LINE__, object_to_grasp.c_str() );
+          printf("%s: %d: gpGet_grasp_list_SAHand(): there is no robot (the object to grasp) named \"%s\".\n", __FILE__, __LINE__, object_to_grasp.c_str() );
           return GP_ERROR;
   }
 
@@ -2608,7 +2610,7 @@ int gpGet_grasp_list_SAHand ( std::string object_to_grasp, int hand_to_use, std:
       // directory needs to be created:
       if ( mkdir ( handFolderName.c_str(), S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH ) ==-1 )
       {
-              printf ( "%s: %d: gpGet_grasp_list_SAHand(): failed to create directory \"%s\".\n", __FILE__, __LINE__, handFolderName.c_str() );
+              printf("%s: %d: gpGet_grasp_list_SAHand(): failed to create directory \"%s\".\n", __FILE__, __LINE__, handFolderName.c_str() );
               return GP_ERROR;
       }
   }
@@ -2629,8 +2631,8 @@ int gpGet_grasp_list_SAHand ( std::string object_to_grasp, int hand_to_use, std:
   {
       if ( p3d_col_get_mode() !=p3d_col_mode_pqp )
       {
-          printf ( "%s: %d: gpGet_grasp_list_SAHand(): The collision detector must be PQP to use compute a grasp list with the graspPlanning module.\n",__FILE__,__LINE__ );
-          printf ( "The graspPlanning module will not work.\n" );
+          printf("%s: %d: gpGet_grasp_list_SAHand(): The collision detector must be PQP to use compute a grasp list with the graspPlanning module.\n",__FILE__,__LINE__ );
+          printf("The graspPlanning module will not work.\n" );
           return GP_ERROR;
       }
 
@@ -2649,8 +2651,8 @@ int gpGet_grasp_list_SAHand ( std::string object_to_grasp, int hand_to_use, std:
 
       elapsedTime= ( clock()-clock0 ) /CLOCKS_PER_SEC;
 
-      printf ( "%d grasps were computed.\n",graspList.size() );
-      printf ( "Computation time: %2.1fs= %dmin%ds\n",elapsedTime, ( int ) ( elapsedTime/60.0 ), ( int ) ( elapsedTime - 60* ( ( int ) ( elapsedTime/60.0 ) ) ) );
+      printf("%d grasps were computed.\n",graspList.size() );
+      printf("Computation time: %2.1fs= %dmin%ds\n",elapsedTime, ( int ) ( elapsedTime/60.0 ), ( int ) ( elapsedTime - 60* ( ( int ) ( elapsedTime/60.0 ) ) ) );
 
       gpSave_grasp_list ( graspList, graspListFile );
   }
@@ -2658,13 +2660,13 @@ int gpGet_grasp_list_SAHand ( std::string object_to_grasp, int hand_to_use, std:
   {
       if ( gpCheck_grasp_list_validity ( graspList, object_to_grasp ) ==GP_ERROR )
       {
-              printf ( "%s: %d: gpGet_grasp_list_SAHand(): file \"%s\" has been loaded successfully but its content does not look to be valid.\n", __FILE__, __LINE__,graspListFile.c_str() );
-              printf ( "Recompute the grasp list.\n" );
+              printf("%s: %d: gpGet_grasp_list_SAHand(): file \"%s\" has been loaded successfully but its content does not look to be valid.\n", __FILE__, __LINE__,graspListFile.c_str() );
+              printf("Recompute the grasp list.\n" );
       }
       else
       {
-              printf ( "%s: %d: gpGet_grasp_list_SAHand(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str() );
-              printf ( "It contains %d grasps.\n",graspList.size() );
+              printf("%s: %d: gpGet_grasp_list_SAHand(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str() );
+              printf("It contains %d grasps.\n",graspList.size() );
       }
   }
 
@@ -2680,6 +2682,159 @@ int gpGet_grasp_list_SAHand ( std::string object_to_grasp, int hand_to_use, std:
 
 
 
+//! @ingroup graspPlanning
+//! Computes (or loads if it has been previously computed) a grasp list for a given object with the given hand type
+//! The computed list will be saved in a file.
+//! NB: The world needs to have a robot corresponding to the chosen hand (see graspPlanning.h).
+//! The grasps are tested for "internal" collisions (hand self collisions and hand vs object collisions ) and stability.
+//! Collision against environment depends on the context and must be tested separately.
+//! The grasp list file is searched for in a directory graspPlanning/graspList/"hand name"
+//! inside the directory $HOME_MOVE3D. If it does not exist, it will be created by the function.
+//! \param object_to_grasp the name of the object to grasp (a freeflyer robot)
+//! \param hand_type  type of the hand (defined in graspPlanning.h)
+//! \param graspList the computed grasp list
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, std::list<gpGrasp> &graspList)
+{
+  float clock0, elapsedTime;
+  gpHand_properties handProp;
+  p3d_rob *hand_robot= NULL;
+  p3d_rob *object= NULL;
+  p3d_polyhedre *poly= NULL;
+  std::string pathName, handFolderName, graspListFile, graspListFileOld;
+  DIR *directory= NULL;
+  std::list<gpGrasp>::iterator iter;
+
+  if ( getenv ( "HOME_MOVE3D" ) ==NULL )
+  {
+    printf("%s: %d: gpGet_grasp_list(): the environment variable \"HOME_MOVE3D\" must have been defined .\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+
+  switch(hand_type)
+  {
+     case GP_GRIPPER:
+        handProp.initialize(GP_GRIPPER);
+        hand_robot= p3d_get_robot_by_name((char*) GP_GRIPPER_ROBOT_NAME);
+        if(hand_robot==NULL)
+        {
+          printf("%s: %d: gpGet_grasp_list(): a robot \"%s\" is required.\n",__FILE__,__LINE__, (char*)GP_GRIPPER_ROBOT_NAME);
+          return GP_ERROR;
+        }
+      break;
+      case GP_SAHAND_RIGHT:
+        handProp.initialize(GP_SAHAND_RIGHT);
+        hand_robot= p3d_get_robot_by_name((char*) GP_SAHAND_RIGHT_ROBOT_NAME);
+        if(hand_robot==NULL)
+        {
+          printf("%s: %d: gpGet_grasp_list(): a robot \"%s\" is required.\n",__FILE__,__LINE__, (char*)GP_SAHAND_RIGHT_ROBOT_NAME);
+          return GP_ERROR;
+        }
+      break;
+      case GP_SAHAND_LEFT:
+        handProp.initialize(GP_SAHAND_LEFT);
+        hand_robot= p3d_get_robot_by_name((char*) GP_SAHAND_LEFT_ROBOT_NAME);
+        if(hand_robot==NULL)
+        {
+          printf("%s: %d: gpGet_grasp_list(): a robot \"%s\" is required.\n",__FILE__,__LINE__, (char*)GP_SAHAND_LEFT_ROBOT_NAME);
+          return GP_ERROR;
+        }
+      break;
+      default:
+        printf("%s: %d: gpGet_grasp_list(): undefined hand type.\n",__FILE__,__LINE__ );
+        return GP_ERROR;
+      break;
+  }
+
+  object= p3d_get_robot_by_name(( char * ) object_to_grasp.c_str() );
+
+  if ( object==NULL )
+  {
+          printf("%s: %d: gpGet_grasp_list_SAHand(): there is no robot (the object to grasp) named \"%s\".\n", __FILE__, __LINE__, object_to_grasp.c_str() );
+          return GP_ERROR;
+  }
+
+  //geometric treatment on the object mesh:
+  poly= object->o[0]->pol[0]->poly;
+  poly_build_planes ( poly );
+  p3d_create_surface_GTS ( poly );
+  p3d_compute_mean_curvature_GTS ( poly );
+
+  pathName= std::string(getenv("HOME_MOVE3D")) + std::string("/graspPlanning/graspLists/");
+  handFolderName= pathName + gpHand_type_to_folder_name (handProp.type);
+
+  // look for a directory for the chosen hand:
+  directory= opendir ( handFolderName.c_str() );
+  if ( directory==NULL )
+  {
+    // directory needs to be created:
+    if ( mkdir ( handFolderName.c_str(), S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH ) ==-1 )
+    {
+      printf("%s: %d: gpGet_grasp_list(): failed to create directory \"%s\".\n", __FILE__, __LINE__, handFolderName.c_str() );
+      return GP_ERROR;
+    }
+  }
+  else
+  {
+    closedir ( directory );
+  }
+
+
+  graspListFile= handFolderName  + std::string ( "/" ) + std::string ( object_to_grasp ) + std::string ( "Grasps.xml" );
+  graspListFileOld= handFolderName  + std::string ( "/" ) + std::string ( object_to_grasp ) + std::string ( "Grasps_old.xml" );
+
+
+
+  graspList.clear();
+
+  if ( gpLoad_grasp_list ( graspListFile, graspList ) ==GP_ERROR ) //grasp list needs to be computed
+  {
+    if ( p3d_col_get_mode() !=p3d_col_mode_pqp )
+    {
+      printf("%s: %d: gpGet_grasp_list_SAHand(): The collision detector must be PQP to use compute a grasp list with the graspPlanning module.\n",__FILE__,__LINE__ );
+      printf("The graspPlanning module will not work.\n" );
+      return GP_ERROR;
+    }
+
+    clock0= clock();
+    rename ( graspListFile.c_str(), graspListFileOld.c_str() ); //store the current grasp file (if it exists)
+
+
+    gpGrasp_generation ( hand_robot, object, 0, handProp, handProp.nb_positions, handProp.nb_directions, handProp.nb_rotations, graspList );
+    // printf("before stability %d\n",graspList.size());
+    gpGrasp_stability_filter ( graspList );
+    // printf("after stability %d\n",graspList.size());
+    gpGrasp_quality_filter ( graspList );
+    // printf("after %d\n",graspList.size());
+
+    gpCompute_grasp_open_configs ( graspList, hand_robot, object );
+
+    elapsedTime= ( clock()-clock0 ) /CLOCKS_PER_SEC;
+
+    printf("%d grasps were computed.\n",graspList.size() );
+    printf("Computation time: %2.1fs= %dmin%ds\n",elapsedTime, ( int ) ( elapsedTime/60.0 ), ( int ) ( elapsedTime - 60* ( ( int ) ( elapsedTime/60.0 ) ) ) );
+
+    gpSave_grasp_list ( graspList, graspListFile );
+  }
+  else
+  {
+    if ( gpCheck_grasp_list_validity ( graspList, object_to_grasp ) ==GP_ERROR )
+    {
+      printf("%s: %d: gpGet_grasp_list_SAHand(): file \"%s\" has been loaded successfully but its content does not look to be valid.\n", __FILE__, __LINE__,graspListFile.c_str() );
+      printf("Recompute the grasp list.\n" );
+    }
+    else
+    {
+      printf("%s: %d: gpGet_grasp_list_SAHand(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str() );
+      printf("It contains %d grasps.\n",graspList.size() );
+    }
+  }
+
+  gpCompute_mass_properties(graspList.front().object->o[graspList.front().body_index]->pol[0]->poly);
+
+  return GP_OK;
+}
+
 //! Computes grasps and adds them to an input grasp list.
 //! The grasp list must not be empty because it is used to know some information
 //! (what is the object to grasp, the hand to use, etc.).
@@ -2692,7 +2847,7 @@ int gpExpand_grasp_list ( p3d_rob *robot, std::list<class gpGrasp> &graspList, i
 {
   if ( graspList.empty() )
   {
-    printf ( "%s: %d: gpExpand_grasp_list(): the input grasp list is empty. First computes a valid one.\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpExpand_grasp_list(): the input grasp list is empty. First computes a valid one.\n",__FILE__,__LINE__ );
     return GP_ERROR;
   }
 
@@ -2713,7 +2868,7 @@ int gpExpand_grasp_list ( p3d_rob *robot, std::list<class gpGrasp> &graspList, i
 
   if ( object==NULL )
   {
-    printf ( "%s: %d: gpExpand_grasp_list(): the pointer to the object, contained in the input grasp list elements, is not valid .\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpExpand_grasp_list(): the pointer to the object, contained in the input grasp list elements, is not valid .\n",__FILE__,__LINE__ );
     return GP_ERROR;
   }
 
@@ -2721,14 +2876,14 @@ int gpExpand_grasp_list ( p3d_rob *robot, std::list<class gpGrasp> &graspList, i
 
   if ( hand_type==GP_HAND_NONE )
   {
-    printf ( "%s: %d: gpExpand_grasp_list(): the \"hand_type\" field, contained in the input grasp list elements, is not valid .\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpExpand_grasp_list(): the \"hand_type\" field, contained in the input grasp list elements, is not valid .\n",__FILE__,__LINE__ );
     return GP_ERROR;
   }
 
   body_index= graspList.front().body_index;
   if ( ( body_index < 0 ) || ( body_index > object->no ) )
   {
-    printf ( "%s: %d: gpExpand_grasp_list(): the \"body_index\" field, contained in the input grasp list elements, is not valid .\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpExpand_grasp_list(): the \"body_index\" field, contained in the input grasp list elements, is not valid .\n",__FILE__,__LINE__ );
     return GP_ERROR;
   }
 
@@ -2755,7 +2910,7 @@ int gpExpand_grasp_list ( p3d_rob *robot, std::list<class gpGrasp> &graspList, i
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
         gpSample_obj_surface ( object->o[body_index], 0.005, handProp.fingertip_radius, contactList );
         kdtree.build ( contactList );
-        printf ( "%d samples on object surface \n", contactList.size() );
+        printf("%d samples on object surface \n", contactList.size() );
         for ( i=0; i<nbTries; ++i )
         {
           p3d_random_quaternion ( quat );
@@ -2768,7 +2923,7 @@ int gpExpand_grasp_list ( p3d_rob *robot, std::list<class gpGrasp> &graspList, i
         }
     break;
     default:
-        printf ( "%s: %d: gpExpand_grasp_list(): undefined hand type.\n",__FILE__,__LINE__ );
+        printf("%s: %d: gpExpand_grasp_list(): undefined hand type.\n",__FILE__,__LINE__ );
         return GP_ERROR;
     break;
   }
@@ -2816,17 +2971,17 @@ int gpGrasp_handover_filter(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object, s
   #ifdef GP_DEBUG
   if(robot1==NULL)
   {
-    printf ( "%s: %d: gpGrasp_handover_filter(): input robot 1 is NULL.\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpGrasp_handover_filter(): input robot 1 is NULL.\n",__FILE__,__LINE__ );
     return GP_ERROR;
   }
   if(robot2==NULL)
   {
-    printf ( "%s: %d: gpGrasp_handover_filter(): input robot 2 is NULL.\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpGrasp_handover_filter(): input robot 2 is NULL.\n",__FILE__,__LINE__ );
     return GP_ERROR;
   }
   if(object==NULL)
   {
-    printf ( "%s: %d: gpGrasp_handover_filter(): input object is NULL.\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpGrasp_handover_filter(): input object is NULL.\n",__FILE__,__LINE__ );
     return GP_ERROR;
   }
   #endif
@@ -2925,17 +3080,17 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
   #ifdef GP_DEBUG
   if(robot1==NULL)
   {
-    printf ( "%s: %d: gpDouble_grasp_generation(): input robot 1 is NULL.\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpDouble_grasp_generation(): input robot 1 is NULL.\n",__FILE__,__LINE__ );
     return GP_ERROR;
   }
   if(robot2==NULL)
   {
-    printf ( "%s: %d: gpDouble_grasp_generation(): input robot 2 is NULL.\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpDouble_grasp_generation(): input robot 2 is NULL.\n",__FILE__,__LINE__ );
     return GP_ERROR;
   }
   if(object==NULL)
   {
-    printf ( "%s: %d: gpDouble_grasp_generation(): input object is NULL.\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpDouble_grasp_generation(): input object is NULL.\n",__FILE__,__LINE__ );
     return GP_ERROR;
   }
   #endif
@@ -2967,7 +3122,7 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
   {
     if ( iter1->hand_type!=handType1 )
     {
-      printf ( "%s: %d: gpDouble_grasp_generation(): the initial simple grasps do not have the same hand type.\n",__FILE__,__LINE__ );
+      printf("%s: %d: gpDouble_grasp_generation(): the initial simple grasps do not have the same hand type.\n",__FILE__,__LINE__ );
       p3d_destroy_config ( robot1, config1 );
       p3d_destroy_config ( robot2, config2 );
       p3d_set_and_update_this_robot_conf ( robot1, config1_0 );
@@ -2986,7 +3141,7 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
     {
         if ( iter2->hand_type!=handType2 )
         {
-          printf ( "%s: %d: gpDouble_grasp_generation(): the initial simple grasps do not have the same hand type.\n",__FILE__,__LINE__ );
+          printf("%s: %d: gpDouble_grasp_generation(): the initial simple grasps do not have the same hand type.\n",__FILE__,__LINE__ );
           p3d_destroy_config ( robot1, config1 );
           p3d_destroy_config ( robot2, config2 );
           p3d_set_and_update_this_robot_conf ( robot1, config1_0 );
@@ -3050,7 +3205,7 @@ int gpReduce_grasp_list_size(const std::list<gpGrasp> &originalList, std::list<g
 {
   if(originalList.empty())
   {
-    printf ( "%s: %d: gpReduce_grasp_list_size(): the input list is empty.\n",__FILE__,__LINE__ );
+    printf("%s: %d: gpReduce_grasp_list_size(): the input list is empty.\n",__FILE__,__LINE__ );
     return GP_ERROR;
   }
   if(originalList.size() < maxSize)
