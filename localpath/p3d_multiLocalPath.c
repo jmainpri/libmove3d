@@ -50,46 +50,30 @@ configPt p3d_mergeMultiLocalPathConfig(p3d_rob *r, configPt qRef, int nConfig, c
  * @param mlpJoints The list of multiLocalpathJoints
  * @return
  */
-// configPt p3d_separateMultiLocalPathConfig(p3d_rob *r, configPt refConfig, configPt config, int mlpID, p3d_multiLocalPathJoint ** mlpJoints) {
-//   configPt q = NULL;
-//   if (mlpJoints) {//simple protection
-//     q = p3d_copy_config(r, refConfig);
-//     for (int j = 0; j < (mlpJoints[mlpID])->nbJoints; j++) {//pour tous les joints correspondants
-//       p3d_jnt* joint = r->joints[(mlpJoints[mlpID])->joints[j]];
-//       for (int k = 0; k < joint->dof_equiv_nbr; k++) {//pour tous les Dof du joint
-//         q[joint->index_dof+k] = config[joint->index_dof+k];
-//       }
-//     }
-//   }
-//   return q;
-// }
 configPt p3d_separateMultiLocalPathConfig(p3d_rob *r, configPt refConfig, configPt config, int mlpID, p3d_multiLocalPathJoint ** mlpJoints) {
   configPt q = NULL;
   int indexJnt = 0;
   if (mlpJoints) {//simple protection
     q = p3d_copy_config(r, refConfig);
-
-
-  for (int j = 0; j < (mlpJoints[mlpID])->nbJoints; j++)
-  {//pour tous les joints correspondants
-  indexJnt = (mlpJoints[mlpID])->joints[j];
-  p3d_jnt* joint = r->joints[indexJnt];
-  for (int k = 0; k < joint->dof_equiv_nbr; k++)
-  {//pour tous les Dof du joint
-    q[joint->index_dof+k] = config[joint->index_dof+k];
-  }
-	}
+    for (int j = 0; j < (mlpJoints[mlpID])->nbJoints; j++) {
+      //pour tous les joints correspondants
+      indexJnt = (mlpJoints[mlpID])->joints[j];
+      p3d_jnt* joint = r->joints[indexJnt];
+      for (int k = 0; k < joint->dof_equiv_nbr; k++) {
+	//pour tous les Dof du joint
+	q[joint->index_dof+k] = config[joint->index_dof+k];
       }
-
-
-    for (int k = 0; k < r->nb_dof; k++)
-    {//pour tous les joints correspondant
-    if (r->cntrt_manager->in_cntrt[k] == 2)
-    {
-    q[k] = config[k];
     }
-    }
-  return q;
+   }
+
+   // Copy the passive jnt : needed for the stay within dist
+   for (int k = 0; k < r->nb_dof; k++) {
+     //pour tous les joints correspondant
+     if (r->cntrt_manager->in_cntrt[k] == 2) {
+      q[k] = config[k];
+     }
+   }
+   return q;
 }
 
 /**
@@ -677,6 +661,24 @@ void lm_destroy_multiLocalPath_params(p3d_rob *robotPt, void *paramPt) {
   return;
 }
 
+
+
+int p3d_multiLocalPath_update_joint_sampling_activation(p3d_rob* robotPt) {
+  for(int j=0; j<robotPt->njoints; j++) {
+    p3d_jnt_set_is_active_for_planner2(robotPt->joints[j], FALSE);
+  }
+  int indexJnt = 0;
+  for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
+    if(groupToPlan[i] == 1) {
+    		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
+		   indexJnt = robotPt->mlp->mlpJoints[i]->joints[j];
+			p3d_jnt_set_is_active_for_planner2(robotPt->joints[indexJnt], TRUE);
+		}
+    }
+  }
+  return 0;
+}
+
 /**
  * Activate or De-activate the specified group "mlpID" of multilocalpath
  * @param robotPt  The robot
@@ -688,22 +690,14 @@ void p3d_multiLocalPath_set_groupToPlan(p3d_rob* robotPt, int mlpID, int value) 
     printf("p3d_multiLocalPath_set_groupToPlan : mgID out of nbGroups\n");
     return;
   }
-  int indexJnt = 0;
   if (value == TRUE) {
     groupToPlan[mlpID] = 1;
-		for(int j=0; j<robotPt->mlp->mlpJoints[mlpID]->nbJoints; j++) {
-		  indexJnt = robotPt->mlp->mlpJoints[mlpID]->joints[j];
-			p3d_jnt_set_is_active_for_planner2(robotPt->joints[indexJnt], TRUE);
-		}
   } else if (value == FALSE) {
     groupToPlan[mlpID] = 0;
-		for(int j=0; j<robotPt->mlp->mlpJoints[mlpID]->nbJoints; j++) {
-		  indexJnt = robotPt->mlp->mlpJoints[mlpID]->joints[j];
-			p3d_jnt_set_is_active_for_planner2(robotPt->joints[indexJnt], FALSE);
-		}
   } else {
     printf("p3d_multiLocalPath_set_groupToPlan : value %d is incompatible\n", value);
   }
+  p3d_multiLocalPath_update_joint_sampling_activation(robotPt);
   return;
 }
 
@@ -718,6 +712,7 @@ int i=0;
 	if(i==robotPt->mlp->nblpGp) {
 		printf("p3d_multiLocalPath_set_groupToPlan_by_name can not fing the group %s\n",name);
 	}
+	p3d_multiLocalPath_update_joint_sampling_activation(robotPt);
 
 }
 
@@ -726,14 +721,10 @@ int i=0;
  * @param robotPt The robot
  */
 void p3d_multiLocalPath_init_groupToPlan(p3d_rob* robotPt) {
-  int indexJnt = 0;
   for (int i = 0; i < MAX_MULTILOCALPATH_NB; i++) {
     groupToPlan[i] = 0;
-		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
-		  indexJnt = robotPt->mlp->mlpJoints[i]->joints[j];
-			p3d_jnt_set_is_active_for_planner2(robotPt->joints[indexJnt], FALSE);
-		}
   }
+  p3d_multiLocalPath_update_joint_sampling_activation(robotPt);
 }
 
 /**
@@ -755,14 +746,10 @@ int p3d_multiLocalPath_get_value_groupToPlan(p3d_rob* robotPt, const int mlpID) 
  * @param robotPt The robot
  */
 void p3d_multiLocalPath_disable_all_groupToPlan(p3d_rob* robotPt) {
-  int indexJnt = 0;
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
     groupToPlan[i] = 0;
-		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
-		   indexJnt = robotPt->mlp->mlpJoints[i]->joints[j];
-			p3d_jnt_set_is_active_for_planner2(robotPt->joints[indexJnt], FALSE);
-		}
   }
+  p3d_multiLocalPath_update_joint_sampling_activation(robotPt);
 }
 
 /**
@@ -770,20 +757,14 @@ void p3d_multiLocalPath_disable_all_groupToPlan(p3d_rob* robotPt) {
  * @param robotPt The robot
  */
 void p3d_multiLocalPath_enable_all_groupToPlan(p3d_rob* robotPt) {
-  int indexJnt = 0;
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
     groupToPlan[i] = 1;
-		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
-		   indexJnt = robotPt->mlp->mlpJoints[i]->joints[j];
-			p3d_jnt_set_is_active_for_planner2(robotPt->joints[indexJnt], TRUE);
-		}
   }
+  p3d_multiLocalPath_update_joint_sampling_activation(robotPt);
 }
 
-int p3d_multiLocalPath_get_group_by_name(p3d_rob* robotPt, char* name)
-{
+int p3d_multiLocalPath_get_group_by_name(p3d_rob* robotPt, char* name) {
    int i=0;
-
    for( i=0; i<robotPt->mlp->nblpGp; i++) {
      if(strcmp(name, robotPt->mlp->mlpJoints[i]->gpName) == 0) {
 	return i;
@@ -793,8 +774,11 @@ int p3d_multiLocalPath_get_group_by_name(p3d_rob* robotPt, char* name)
    if(i==robotPt->mlp->nblpGp) {
      printf("p3d_multiLocalPath_get_group_by_name: can not find the group %s\n",name);
    }
-   return -1;
+   p3d_multiLocalPath_update_joint_sampling_activation(robotPt);
+   return 0;
 }
+
+
 
 
 #endif

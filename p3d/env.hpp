@@ -248,7 +248,9 @@ public:
 		colorThreshold2,
 		findLowCostThreshold,
 		bestCost,
-		minimalFinalExpansionGap
+        minimalFinalExpansionGap,
+        //Optimisation time
+        timeOptimize
 	};
 	
 	enum stringParameter {

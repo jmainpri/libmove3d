@@ -121,8 +121,8 @@ void g3d_delete_genom_form(void) {
 static void initManipulationGenom() {
   if (manipulation == NULL) {
 	p3d_rob * robotPt= p3d_get_robot_by_name(GP_ROBOT_NAME);
-	manipulation= new ManipulationPlanner(robotPt, GP_GRIPPER);
-        manipulation->setArmType(GP_LWR); // set the arm type
+	manipulation= new ManipulationPlanner(robotPt);
+//         manipulation->setArmType(GP_LWR); // set the arm type
   }
   return;
 }
@@ -300,7 +300,7 @@ static void CB_read_X(FL_OBJECT *ob, long arg) {
    printf("Expected format of XGOAL input: x y z rx ry rz\n");
    XGOAL[0]= XGOAL[1]= XGOAL[2]= XGOAL[3]= XGOAL[4]= XGOAL[5]= 0.0;
  }
- manipulation->setArmX(XGOAL[0], XGOAL[1], XGOAL[2], XGOAL[3], XGOAL[4], XGOAL[5]);
+//  manipulation->setArmX(XGOAL[0], XGOAL[1], XGOAL[2], XGOAL[3], XGOAL[4], XGOAL[5]);
  p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_GOTO);
 
 
@@ -314,7 +314,7 @@ static void CB_read_X(FL_OBJECT *ob, long arg) {
  }
  printf("%lf %lf %lf %lf %lf %lf \n", XCUR[0], XCUR[1], XCUR[2], XCUR[3], XCUR[4], XCUR[5]);
 
- manipulation->setArmX(XCUR[0], XCUR[1], XCUR[2], XCUR[3], XCUR[4], XCUR[5]);
+//  manipulation->setArmX(XCUR[0], XCUR[1], XCUR[2], XCUR[3], XCUR[4], XCUR[5]);
  
  g3d_draw_allwin_active();
  fl_hide_form(INPUT_FORM);
@@ -345,9 +345,9 @@ static void CB_genomSetQ_obj(FL_OBJECT *obj, long arg) {
   FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
   q0= p3d_get_robot_config(robotPt);
   
-  manipulation->getArmQ(&QCUR[0], &QCUR[1], &QCUR[2], &QCUR[3], &QCUR[4], &QCUR[5]);
+//   manipulation->getArmQ(&QCUR[0], &QCUR[1], &QCUR[2], &QCUR[3], &QCUR[4], &QCUR[5]);
   p3d_set_and_update_this_robot_conf(robotPt, robotPt->ROBOT_GOTO);
-  manipulation->getArmQ( &QGOAL[0], &QGOAL[1], &QGOAL[2], &QGOAL[3], &QGOAL[4], &QGOAL[5]);
+//   manipulation->getArmQ( &QGOAL[0], &QGOAL[1], &QGOAL[2], &QGOAL[3], &QGOAL[4], &QGOAL[5]);
   p3d_set_and_update_this_robot_conf(robotPt, q0);
   p3d_set_ROBOT_START(q0);
   p3d_destroy_config(robotPt, q0);
@@ -396,10 +396,10 @@ static void CB_genomSetX_obj(FL_OBJECT *obj, long arg) {
   robotPt= (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
   FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
   q0= p3d_get_robot_config(robotPt);
-  manipulation->getArmX(&XCUR[0], &XCUR[1], &XCUR[2], &XCUR[3], &XCUR[4], &XCUR[5]);
+//   manipulation->getArmX(&XCUR[0], &XCUR[1], &XCUR[2], &XCUR[3], &XCUR[4], &XCUR[5]);
 
   p3d_set_and_update_this_robot_conf(robotPt, robotPt->ROBOT_GOTO);
-  manipulation->getArmX( &XGOAL[0], &XGOAL[1], &XGOAL[2], &XGOAL[3], &XGOAL[4], &XGOAL[5]);
+//   manipulation->getArmX( &XGOAL[0], &XGOAL[1], &XGOAL[2], &XGOAL[3], &XGOAL[4], &XGOAL[5]);
   p3d_set_and_update_this_robot_conf(robotPt, q0);
   p3d_set_ROBOT_START(q0);
   p3d_destroy_config(robotPt, q0);
@@ -442,9 +442,9 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	}
 
 	if(FORMGENOM_CARTESIAN == 1) {
-	  manipulation->setArmCartesian(true);
+// 	  manipulation->setArmCartesian(true);
 	} else {
-	  manipulation->setArmCartesian(false);
+// 	  manipulation->setArmCartesian(false);
 	}
 	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(),(char*)"", manipulation->lp, manipulation->positions, manipulation->segments);
 
@@ -492,13 +492,13 @@ int genomArmGotoX(p3d_rob* robotPt, int cartesian, double x, double y, double z,
   }
 
   
-  manipulation->setArmX( x, y, z, rx, ry, rz);
+//   manipulation->setArmX( x, y, z, rx, ry, rz);
   p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_GOTO);
 
   	if(FORMGENOM_CARTESIAN == 1) {
-	  manipulation->setArmCartesian(true);
+// 	  manipulation->setArmCartesian(true);
 	} else {
-	  manipulation->setArmCartesian(false);
+// 	  manipulation->setArmCartesian(false);
 	}
 
 
@@ -517,7 +517,7 @@ static void CB_genomArmComputePRM_obj(FL_OBJECT *obj, long arg){
   if (manipulation== NULL) {
 	  initManipulationGenom();
   }
-  manipulation->armComputePRM(300);
+//   manipulation->armComputePRM(300);
 }
 
 #ifdef DPG
@@ -525,7 +525,7 @@ void CB_checkColOnTraj(FL_OBJECT *obj, long arg){
   if (manipulation== NULL) {
 	  initManipulationGenom();
 	}
-  manipulation->checkCollisionOnTraj();
+//   manipulation->checkCollisionOnTraj();
 }
 void CB_replanColTraj(FL_OBJECT *obj, long arg){
   if (manipulation== NULL) {
@@ -533,7 +533,7 @@ void CB_replanColTraj(FL_OBJECT *obj, long arg){
 	}
 
   
-  manipulation->replanCollidingTraj(0, manipulation->lp, manipulation->positions, manipulation->segments);
+//   manipulation->replanCollidingTraj(0, manipulation->lp, manipulation->positions, manipulation->segments);
 }
 #endif
 
@@ -562,9 +562,9 @@ static void CB_grab_object(FL_OBJECT *obj, long arg) {
 	  initManipulationGenom();
 	}
 	FORMGENOM_OBJECTGRABED = 1;
-	if(manipulation->grabObject(0, (char*)OBJECT_NAME)!=0){
-	  FORMGENOM_OBJECTGRABED = 0;
-	}
+// 	if(manipulation->grabObject(0, (char*)OBJECT_NAME)!=0){
+// 	  FORMGENOM_OBJECTGRABED = 0;
+// 	}
 
 	printf("grab = %d\n",FORMGENOM_OBJECTGRABED);
 	return;
@@ -580,7 +580,7 @@ static void CB_release_object(FL_OBJECT *obj, long arg) {
 	if (manipulation== NULL) {
 	  initManipulationGenom();
 	}
-	manipulation->releaseObject();
+// 	manipulation->releaseObject();
 	printf("grab = %d\n",FORMGENOM_OBJECTGRABED);
 	return;
 }
@@ -728,7 +728,7 @@ void genomDraw()
  	if (manipulation== NULL) {
 	  initManipulationGenom();
 	}
-	manipulation->draw(0);
+// 	manipulation->draw(0);
 }
 
 
@@ -741,7 +741,7 @@ void genomKey()
 //   printf("CAPTURE= %d\n", manipulation->getCapture());
 
 //   manipulation->displayPlacements= !manipulation->displayPlacements;
-  manipulation->centerCamera();
+//   manipulation->centerCamera();
   g3d_draw_allwin_active();
 }
 
@@ -767,7 +767,7 @@ static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg) {
 //  genomFindGraspConfiguration(robotPt, hand_robotPt, OBJECT_NAME, &q1, &q2, &q3, &q4, &q5, &q6);
 // genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, (char*)OBJECT_NAME, 0.0, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6);
 // manipulation->findPregraspAndGraspConfiguration()
-    manipulation->setArmQ(q1, q2, q3, q4, q5, q6);
+//     manipulation->setArmQ(q1, q2, q3, q4, q5, q6);
     g3d_win *win= NULL;
     win= g3d_get_cur_win();
 
@@ -890,13 +890,13 @@ static void CB_genomGraspObject(FL_OBJECT *obj, long arg) {
 
        qgrasp = p3d_alloc_config(manipulation->robot());
        qpregrasp = p3d_alloc_config(manipulation->robot());
-       manipulation->setObjectToManipulate((char*)OBJECT_NAME);
-       if(manipulation->isObjectGraspable(0, (char*)OBJECT_NAME) == false) {
+//        manipulation->setObjectToManipulate((char*)OBJECT_NAME);
+/*       if(manipulation->isObjectGraspable(0, (char*)OBJECT_NAME) == false) {
 	  std::cout << "this object is not graspable " << std::endl;
 	  return;
-       }
+       }*/
 
-       manipulation->findPregraspAndGraspConfiguration(0, distance, &qpregrasp, &qgrasp);
+//        manipulation->findPregraspAndGraspConfiguration(0, distance, &qpregrasp, &qgrasp);
 
        p3d_set_and_update_this_robot_conf(manipulation->robot(), qgrasp);
 //        manipulation->setArmQ(q1, q2, q3, q4, q5, q6);
@@ -915,16 +915,16 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
 	}
 
 	if(FORMGENOM_CARTESIAN == 1) {
-	  manipulation->setArmCartesian(true);
+// 	  manipulation->setArmCartesian(true);
 	} else {
-	  manipulation->setArmCartesian(false);
+// 	  manipulation->setArmCartesian(false);
 	}
 
-        manipulation->setObjectToManipulate((char*)OBJECT_NAME);
-        manipulation->setSupport((char*)SUPPORT_NAME);
-        manipulation->setCameraJnt((char*)CAMERA_JNT_NAME);
-        manipulation->setCameraFOV(CAMERA_FOV);
-        manipulation->setCameraImageSize(200, 200);
+//         manipulation->setObjectToManipulate((char*)OBJECT_NAME);
+//         manipulation->setSupport((char*)SUPPORT_NAME);
+//         manipulation->setCameraJnt((char*)CAMERA_JNT_NAME);
+//         manipulation->setCameraFOV(CAMERA_FOV);
+//         manipulation->setCameraImageSize(200, 200);
         manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(),
 				  (char*)OBJECT_NAME,  manipulation->lp,  manipulation->positions, manipulation->segments);
 
@@ -945,12 +945,12 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
 	}
 
 	if(FORMGENOM_CARTESIAN == 1) {
-	  manipulation->setArmCartesian(true);
+// 	  manipulation->setArmCartesian(true);
 	} else {
-	  manipulation->setArmCartesian(false);
+// 	  manipulation->setArmCartesian(false);
 	}
 
-        manipulation->setObjectToManipulate((char*)OBJECT_NAME);
+//         manipulation->setObjectToManipulate((char*)OBJECT_NAME);
 	
         manipulation->armPlanTask(ARM_PICK_TAKE_TO_FREE,0,manipulation->robotStart(), manipulation->robotGoto(),
 				  (char*)OBJECT_NAME,  manipulation->lp,  manipulation->positions, manipulation->segments);
@@ -969,14 +969,14 @@ static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg) {
   }
 
   if(FORMGENOM_CARTESIAN == 1) {
-    manipulation->setArmCartesian(true);
+//     manipulation->setArmCartesian(true);
   } else {
-    manipulation->setArmCartesian(false);
+//     manipulation->setArmCartesian(false);
   }
   
-  manipulation->setObjectToManipulate((char*)OBJECT_NAME);
-  manipulation->setSupport((char*)SUPPORT_NAME);
-  manipulation->setHuman((char*)HUMAN_NAME);
+//   manipulation->setObjectToManipulate((char*)OBJECT_NAME);
+//   manipulation->setSupport((char*)SUPPORT_NAME);
+//   manipulation->setHuman((char*)HUMAN_NAME);
 
   manipulation->armPlanTask(ARM_PICK_TAKE_TO_PLACE,0,manipulation->robotStart(), manipulation->robotGoto(),
 			    (char*)OBJECT_NAME, manipulation->lp, manipulation->positions, manipulation->segments);
@@ -994,14 +994,14 @@ static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
   }
 
   if(FORMGENOM_CARTESIAN == 1) {
-    manipulation->setArmCartesian(true);
+//     manipulation->setArmCartesian(true);
   } else {
-    manipulation->setArmCartesian(false);
+//     manipulation->setArmCartesian(false);
   }
   
-  manipulation->setObjectToManipulate((char*)OBJECT_NAME);
-  manipulation->setSupport((char*)SUPPORT_NAME);
-  manipulation->setHuman((char*)HUMAN_NAME);
+//   manipulation->setObjectToManipulate((char*)OBJECT_NAME);
+//   manipulation->setSupport((char*)SUPPORT_NAME);
+//   manipulation->setHuman((char*)HUMAN_NAME);
 
   manipulation->armPlanTask(ARM_PLACE_FROM_FREE,0,manipulation->robotStart(), manipulation->robotGoto(),
 			    (char*)OBJECT_NAME, manipulation->lp, manipulation->positions, manipulation->segments);

@@ -338,7 +338,8 @@ class ArmManipulationData {
     p3d_cntrt * _fkCntrt;
     /** Arm corresopnding Forward kinematic Constraint*/
     p3d_jnt * _manipulationJnt;
-    
+    /** < choose to plan the arm motion in cartesian space (for the end effector) or joint space  */
+    bool _cartesian; 
      /******************/
      /* Multilocalpath */
      /******************/
@@ -373,9 +374,20 @@ class ArmManipulationData {
       _carriedObject = NULL;
       _placement = NULL;
       _human = NULL;
+      _cartesian = false;
     };
 
     virtual ~ArmManipulationData(){};
+
+    /*************/
+    /* Functions */
+    /*************/
+    /** Fix hand dof, Disable autocollisions, and set the arm to rest configuration*/
+    void fixHand(p3d_rob* robot);
+    /** Unfix hand dof, Enable autocollisions*/
+    void unFixHand(p3d_rob* robot);
+
+    
     /***********/
     /* Setters */
     /***********/
@@ -415,6 +427,10 @@ class ArmManipulationData {
     inline void setHandProperties(int handId){
       _handProp.initialize((gpHand_type)handId);
     };
+    inline void setCartesian(bool cartesian){
+      cartesian = _cartesian;
+    };
+    
     /***********/
     /* Getters */
     /***********/
@@ -446,6 +462,9 @@ class ArmManipulationData {
     inline gpHand_properties getHandProperties(){
       return _handProp;
     };
+    inline bool getCartesian(void){
+      return _cartesian;
+    };
 };
 
 //! @ingroup manipulation
@@ -454,11 +473,11 @@ class  ManipulationPlanner {
      /**************/
      /* The robots */
      /**************/
-     p3d_rob * _robotPt; /*!< pointer to the robot */
+     p3d_rob * _robot; /*!< pointer to the robot */
      std::vector<p3d_rob *> _hand_robotPt;  /*!< pointer to the hand robot (a freeflyer robot with the same structure as the robot's hand) */
-     p3d_rob * _object; /*!< the list of objects to work with (a freeflyer robot) */
-     p3d_rob * _support; /*!< the supports to possibly place the objects on (a freeflyer robot) */
-     p3d_rob *_human; /*!< the human that may interact with the robot */
+//     p3d_rob * _object; /*!< the list of objects to work with (a freeflyer robot) */
+//     p3d_rob * _support; /*!< the supports to possibly place the objects on (a freeflyer robot) */
+//     p3d_rob *_human; /*!< the human that may interact with the robot */
 
       /******************************************/
      /* The attributes of the manipulator robot */
@@ -467,17 +486,17 @@ class  ManipulationPlanner {
      int _HeadMLP; /*!< Multilocalpath Id for the head*/
      int _UpBodyMLP; /*!< Multilocalpath Id for the upper body (arms + torso) with linear localplanner*/
      int _UpBodySmMLP; /*!< Multilocalpath Id for the upper body (arms + torso) with softMotion localplanner*/
-     int _ObjectMLP; /*!< Multilocalpath Id for the virtual object with linear localplanner*/
-     int _ObjectSmMLP; /*!< Multilocalpath Id for the virtual object with softMotion localplanner*/
-     int _nbArms;
+//     int _ObjectMLP; /*!< Multilocalpath Id for the virtual object with linear localplanner*/
+//     int _ObjectSmMLP; /*!< Multilocalpath Id for the virtual object with softMotion localplanner*/
+//     int _nbArms;
 
      /********************************/
      /* The attributes of the grasp  */
      /********************************/
-     std::vector<gpHand_properties>  _handProp;  /*!< information about the used hand */
-     std::vector<std::list<gpGrasp> > _graspList;
-     std::vector<gpGrasp>            _grasp;   /*!< the current grasp */
-     std::vector<unsigned int>       _graspID; /*!< the current grasp ID */
+//     std::vector<gpHand_properties>  _handProp;  /*!< information about the used hand */
+//     std::vector<std::list<gpGrasp> > _graspList;
+//     std::vector<gpGrasp>            _grasp;   /*!< the current grasp */
+//     std::vector<unsigned int>       _graspID; /*!< the current grasp ID */
      int _nbGraspsToTestForPickGoto; /*!< the  _nbGraspsToTestForPickGoto first grasps of the grasp list will be tested for the ARM_PICK_GOTO task planning */
 
      std::map < int, std::map<int, ManipulationData*, std::less<int> >, std::less<int> > _handsGraspsConfig;
@@ -487,17 +506,20 @@ class  ManipulationPlanner {
      static const int _maxColGrasps = 10;
      p3d_matrix4 _exchangeMat;
      std::vector<std::vector<double> > _statDatas;
-
+     /** Number of steps for the optimisation*/
+    int _optimizeSteps;
+    /** Time limit for the optimisation*/
+    double _optimizeTime;
      /********************************/
      /* The attributes of the motion */
      /********************************/
-     configPt _configRest;
-     configPt _configStart;
-     configPt _configGoto;
-     configPt _configApproach;
+//      configPt _configRest;
+//      configPt _configStart;
+//      configPt _configGoto;
+//      configPt _configApproach;
 
      std::vector<configPt> _configTraj; /*!< this array stores the key configurations that will be used to compute a sequence of trajectory*/
-     bool _cartesian; /*!< choose to plan the arm motion in cartesian space (for the end effector) or joint space  */
+//     bool _cartesian; /*!< choose to plan the arm motion in cartesian space (for the end effector) or joint space  */
      double _liftUpDistance;  /*!< the distance the object is lifted up after it is grasped, before any other movement */
 
      /***********************************/
@@ -520,13 +542,12 @@ class  ManipulationPlanner {
      bool _capture;
 
   public:
-    
-     ManipulationPlanner(p3d_rob * robotPt, gpHand_type handType);
-     ManipulationPlanner(p3d_rob * robotPt, gpHand_type handType1, gpHand_type handType2);
+
+     ManipulationPlanner(p3d_rob * robotPt);
      virtual ~ManipulationPlanner();
-     
+
      void clear();
-     
+
      int cleanRoadmap();
      int cleanTraj();
      
@@ -554,8 +575,7 @@ class  ManipulationPlanner {
      double liftUpDistance() {
        return _liftUpDistance;
      }
-     
-     int setArmType(gpArm_type armType);
+
      int setArmQ(int armId, std::vector<double> q);
      int getArmQ(int armId, std::vector<double> &q);
      int setArmX(int armId, double x, double y, double z, double rx, double ry, double rz);
@@ -563,14 +583,16 @@ class  ManipulationPlanner {
      int getArmX(int armId, double* x, double* y, double* z, double* rx, double* ry, double* rz);
 
           /*Functions relative to JIDO */
-     int setArmQ(double q1, double q2, double q3, double q4, double q5, double q6);
-     int getArmQ(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
-     int setArmX(double x, double y, double z, double rx, double ry, double rz);
-     int setArmX(double x, double y, double z, unsigned int nbTries= 30);
-     int getArmX(double* x, double* y, double* z, double* rx, double* ry, double* rz);
+//      int setArmQ(double q1, double q2, double q3, double q4, double q5, double q6);
+//      int getArmQ(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
+//      int setArmX(double x, double y, double z, double rx, double ry, double rz);
+//      int setArmX(double x, double y, double z, unsigned int nbTries= 30);
+//      int getArmX(double* x, double* y, double* z, double* rx, double* ry, double* rz);
 
-     void setArmCartesian(bool v);
-     bool getArmCartesian();
+    void checkConfigForCartesianMode(configPt q);
+     void setArmCartesian(int armId, bool cartesian);
+     bool getArmCartesian(int armId);
+     
      int setArmTask(MANIPULATION_TASK_TYPE_STR t);
 
      int armComputePRM(double computeTime);
@@ -589,6 +611,11 @@ class  ManipulationPlanner {
      /*******************/
      /* grasp's members */
      /*******************/
+    /** Fix the sampling of all the robots hands, desactivate hands self collisions and set the to rest configuration*/
+     void fixAllHands(configPt q);
+    /** UnFix the sampling of all the robots hands, activate hands self collision*/
+     void unFixAllHands();
+     
      bool displayGrasps; /*!< boolean to enable/disable the display of the grasps of the current grasp list */
      bool displayPlacements; /*!<  boolean to enable/disable the display of the placements of the current object pose list */
      int setNbGraspsToTestForPickGoto(int n);
@@ -622,13 +649,16 @@ class  ManipulationPlanner {
      /* The getters */
      /***************/
      p3d_rob* robot() {
-	return _robotPt;
+      return _robot;
      }
      configPt robotStart();
      configPt robotGoto();
-     configPt robotRest();
-     configPt robotApproach();
+    int getOptimizeSteps(void);
+    double getOptimizeTime(void);
+    void setOptimizeSteps(int nbSteps);
+    void setOptimizeTime(double time);
 
+     
      /********/
      /* Util */
      /********/
@@ -675,13 +705,13 @@ class  ManipulationPlanner {
       
   protected:
      
-     int computeTrajBetweenTwoConfigs(bool cartesian, configPt qi, configPt qf);
+     p3d_traj* computeTrajBetweenTwoConfigs(configPt qi, configPt qf);
      int computeGraspList(int armId);
      int findSimpleGraspConfiguration(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
 //      int findSimpleGraspConfiguration(int armId, configPt* qGrasp);
      int computePlacementList();
      int markGraspAsTested(int armId, int id);
-     int computeRRT();
+     int computeRRT(int smoothingSteps, double smootingTime, bool biDir);
      int computeOptimTraj();
 
      // Moky imported functions

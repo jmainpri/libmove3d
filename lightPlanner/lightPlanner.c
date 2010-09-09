@@ -409,9 +409,7 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
   }
 //  p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
 //  p3d_col_env_set_traj_method(TEST_TRAJ_OTHER_ROBOTS_CLASSIC_ALL);
-#ifndef GRASP_PLANNING
   unFixAllJointsExceptBaseAndObject(robot);
-#endif
   fixJoint(robot, robot->curObjectJnt, objectStartPos);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
   p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
