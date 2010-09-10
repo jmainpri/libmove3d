@@ -9,7 +9,7 @@
 #define COST_OPTIMIZATION_HPP_
 
 #include "API/ConfigSpace/configuration.hpp"
-#include "API/Trajectory/Smoothing.hpp"
+#include "API/Trajectory/smoothing.hpp"
 
 /**
  * @ingroup Trajectory

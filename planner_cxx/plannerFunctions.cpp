@@ -7,7 +7,7 @@
 
 #include "planners_cxx.hpp"
 #include "plannerFunctions.hpp"
-#include "API/Trajectory/CostOptimization.hpp"
+#include "API/Trajectory/costOptimization.hpp"
 
 #ifdef HRI_COSTSPACE
 #include "HRI_CostSpace/HRICS_costspace.h"

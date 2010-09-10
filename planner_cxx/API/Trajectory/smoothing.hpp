@@ -11,7 +11,7 @@
 #undef Trajectory
 
 #include "API/Trajectory/trajectory.hpp"
-#include "API/Trajectory/Smoothing.hpp"
+#include "API/Trajectory/smoothing.hpp"
 
 /**
  * @ingroup Trajectory

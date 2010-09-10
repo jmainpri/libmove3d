@@ -20,10 +20,10 @@
 #include "util/CppApi/SaveContext.hpp"
 #include "planner_cxx/API/planningAPI.hpp"
 #include "planner_cxx/API/Trajectory/trajectory.hpp"
-#include "planner_cxx/API/Trajectory/Smoothing.hpp"
+#include "planner_cxx/API/Trajectory/smoothing.hpp"
 //Warning contains boos function that conlicts with Qt
 //#include "planner_cxx/API/Trajectory/RoboptimTrajectory.h"
-#include "planner_cxx/API/Trajectory/CostOptimization.hpp"
+#include "planner_cxx/API/Trajectory/costOptimization.hpp"
 #include "planner_cxx/API/Grids/GridToGraph/gridtograph.h"
 #include "planner_cxx/API/Search/GraphState.h"
 #include "planner_cxx/API/Grids/ThreeDPoints.h"
