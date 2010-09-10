@@ -8,7 +8,7 @@ extern int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matr
 
 extern int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_index, p3d_matrix4 gFrame, gpHand_properties &handProp, gpKdTree &kdtree, std::list<class gpGrasp> &graspList);
 
-extern int gpGrasp_frame_from_inertia_axes ( p3d_matrix3 iaxes, p3d_vector3 cmass, int direction, double displacement, int axis, double angle, p3d_matrix4 gframe );
+extern int gpGrasp_frame_from_inertia_axes(p3d_matrix3 iaxes, p3d_vector3 cmass, int direction, double displacement, int axis, double angle, p3d_matrix4 gframe);
 
 extern int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, int body_index, gpHand_properties &handProp, unsigned int nbPositions, unsigned int nbDirections, unsigned int nbRotations, std::list<class gpGrasp> &graspList);
 
@@ -18,9 +18,15 @@ extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, 
 
 extern int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt cfg);
 
-extern int gpInverse_geometric_model_LWR ( p3d_rob *robot, p3d_matrix4 Tend_eff, configPt cfg );
+extern int gpInverse_geometric_model_and_collision_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt cfg);
 
-extern int gpInverse_geometric_model_arm ( p3d_rob *robot, gpArm_type arm_type, p3d_matrix4 Tend_eff, configPt cfg );
+extern int gpInverse_geometric_model_LWR(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt cfg);
+
+extern int gpInverse_geometric_model_and_collision_LWR(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt cfg);
+
+extern int gpInverse_geometric_model_arm(p3d_rob *robot, gpArm_type arm_type, p3d_matrix4 Tend_eff, configPt cfg);
+
+extern int gpInverse_geometric_model_and_collision_arm(p3d_rob *robot, gpArm_type arm_type, p3d_matrix4 Tend_eff, configPt cfg);
 
 extern int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &handProp);
 

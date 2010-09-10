@@ -21,16 +21,16 @@
 static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
 #endif
 
-static char ObjectName[]= "GREY_TAPE";
-static char RobotName[]= "JIDOKUKA_ROBOT";
-static char HandRobotName[]= "JIDO_GRIPPER";
+static char ObjectName[]= "Horse";
+static char RobotName[]= "JIDO_ROBOT";
+static char HandRobotName[]= "SAHandRight_robot";
 static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot
 static p3d_rob *HAND_ROBOT= NULL; // the hand robot
 static p3d_rob *OBJECT= NULL; // the object to grasp
 static p3d_polyhedre *POLYHEDRON= NULL; // the polyhedron associated to the object
 static gpHand_properties HAND_PROP;  // information about the used hand
-static gpArm_type ARM_TYPE= GP_LWR; // type of the robot's arm
+static gpArm_type ARM_TYPE= GP_PA10; // type of the robot's arm
 static p3d_vector3 CMASS; // object's center of mass
 static p3d_matrix3 IAXES; // object's main inertia axes
 static double IAABB[6]; // bounding box aligned on the object's inertia axes
@@ -721,8 +721,8 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   gpHand_properties handProp;
   std::list<gpGrasp>::iterator igrasp;
 
-//   result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
-  result= gpGet_grasp_list_gripper(ObjectName, GRASPLIST);
+  result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
+//   result= gpGet_grasp_list_gripper(ObjectName, GRASPLIST);
   igrasp= GRASPLIST.begin();
    while(igrasp!=GRASPLIST.end()) {
    if( igrasp->areContactsTooCloseToEdge(30*DEGTORAD, 0.02) ) {
@@ -839,21 +839,25 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
 //   T[1][3]= 0;
 //   T[2][3]= -0.268;
 //   handProp.setThand_wrist(T);
-  handProp.setArmType(GP_LWR);
+  handProp.setArmType(ARM_TYPE);
+
+  p3d_col_deactivate_robot(hand_robot);
+
+  qgrasp= p3d_get_robot_config(robot);
 
   if(robot!=NULL)
   {
     for(int i=0; i<50; ++i)
     {
-        qgrasp= gpRandom_robot_base(robot, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter);
+//         qgrasp= gpRandom_robot_base(robot, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter);
 
-        if ( qgrasp==NULL )
+        if(qgrasp==NULL)
         {  break;  }
 
         qend= NULL;
         qend= gpFind_grasp_from_base_configuration(robot, object, GRASPLIST, ARM_TYPE, qgrasp, GRASP, handProp);
 
-        if ( qend!=NULL )
+        if(qend!=NULL)
         { 
           p3d_set_and_update_this_robot_conf(robot, qend);
           p3d_copy_config_into(robot, qend, &robot->ROBOT_POS);
@@ -861,7 +865,7 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
           qend= NULL;
           break;
         }
-        p3d_destroy_config ( robot, qgrasp );
+        p3d_destroy_config(robot, qgrasp);
         qgrasp= NULL;
    }
 /*
