@@ -99,6 +99,8 @@ class  ManipulationPlanner {
              char* objectName, std::vector <int> &lp,
              std::vector < std::vector <double> > &positions,
              MANPIPULATION_TRAJECTORY_STR &segments);
+	     
+     int computeSoftMotion(p3d_traj* traj, std::vector <int> &lp, std::vector < std::vector <double> > &positions, MANPIPULATION_TRAJECTORY_STR &segments);
 
      std::vector < std::vector <double> > positions;
      MANPIPULATION_TRAJECTORY_STR segments;

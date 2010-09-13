@@ -718,13 +718,13 @@ configPt ManipulationPlanner::robotGoto() {
 
 //! Computes a path for a given manipulation elementary task.
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, char* objectName, std::vector <int> &lp, std::vector < std::vector <double> > &positions, MANPIPULATION_TRAJECTORY_STR &segments) {
+  
   configPt qi = p3d_copy_config(_robot, qStart), qf = p3d_copy_config(_robot, qGoal);
   p3d_rob *cur_robot = (p3d_rob*)p3d_get_desc_curid(P3D_ROBOT);
   p3d_sel_desc_id(P3D_ROBOT, _robot);
   p3d_traj *traj = NULL;
 //   bool success;
-  int ntest = 0;
-  double gain = 0;
+
 
   p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1);
   checkConfigForCartesianMode(qi);
@@ -733,7 +733,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
   fixAllHands(qf);
 
   switch (task) {
-    case ARM_FREE:
+    case ARM_FREE:{
       clearConfigTraj();
       printf("plan for ARM_FREE task\n");
 
@@ -742,17 +742,16 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       copyConfigTrajToFORM();
 
       for (uint itraj = 0; itraj < _configTraj.size() - 1; itraj++) {
-        if ((traj = computeTrajBetweenTwoConfigs(_configTraj[itraj], _configTraj[itraj+1])) != 0) {
+        if ((traj = computeTrajBetweenTwoConfigs(_configTraj[itraj], _configTraj[itraj+1])) == NULL) {
           printf("ERROR armPlanTask(ARM_FREE) on traj");
           p3d_sel_desc_id(P3D_ROBOT,cur_robot);
           return MANIPULATION_TASK_NO_TRAJ_FOUND;
         }
       }
       break;
-//     case  ARM_PICK_GOTO:
-//       for (std::list<gpGrasp>::iterator igrasp = _graspList.at(armId).begin(); igrasp != _graspList.at(armId).end(); ++igrasp) {
-//         igrasp->tested = false;
-//       }
+    }
+//     case  ARM_PICK_GOTO:{
+//       
 // 
 //       for (i = 0; i < _nbGraspsToTestForPickGoto; ++i) {
 //         success = true;
@@ -836,6 +835,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
 //       p3d_destroy_config(_robot, qpregrasp);
 // 
 //       break;
+//     }
 //     case  ARM_PICK_TAKE_TO_FREE:
 //       printf("plan for ARM_TAKE_TO_FREE task\n");
 // 
@@ -1057,22 +1057,11 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       break;
   }
 
+
+
   /* COMPUTE THE SOFTMOTION TRAJECTORY */
-//   if (!traj) {
-//     printf("SoftMotion : ERREUR : no generated traj\n");
-//     XYZ_ENV->cur_robot = cur_robot;
-//     return MANIPULATION_TASK_ERROR_UNKNOWN;
-//   }
-//   if (!traj || traj->nlp < 1) {
-//     printf("Optimization with softMotion not possible: current trajectory contains one or zero local path\n");
-//     XYZ_ENV->cur_robot = cur_robot;
-//     return MANIPULATION_TASK_ERROR_UNKNOWN;
-//   }
-  /*if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions, segments) == 1){
-//     printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
-//     XYZ_ENV->cur_robot = cur_robot;
-//     return MANIPULATION_TASK_ERROR_UNKNOWN;
-  }*/
+  computeSoftMotion(traj, lp, positions, segments);
+
 
   p3d_copy_config_into(_robot, qi, &_robot->ROBOT_POS);
   p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
@@ -1082,6 +1071,25 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
   g3d_draw_allwin_active();
   printf("BioMove3D: armPlanTask OK\n");
   return MANIPULATION_TASK_OK;
+}
+
+int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, std::vector <int> &lp, std::vector < std::vector <double> > &positions, MANPIPULATION_TRAJECTORY_STR &segments) {
+  int ntest = 0;
+  double gain = 0;
+  
+  if (!traj) {
+    printf("SoftMotion : ERREUR : no generated traj\n");
+    return MANIPULATION_TASK_ERROR_UNKNOWN;
+  }
+  if (!traj || traj->nlp < 1) {
+    printf("Optimization with softMotion not possible: current trajectory contains one or zero local path\n");
+    return MANIPULATION_TASK_ERROR_UNKNOWN;
+  }
+  if (p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions, segments) == 1) {
+    printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
+    return MANIPULATION_TASK_ERROR_UNKNOWN;
+  }
+ return 0;
 }
 
 int ManipulationPlanner::cleanRoadmap() {
@@ -2280,13 +2288,13 @@ p3d_traj* ManipulationPlanner::computeTrajBetweenTwoConfigs(configPt qi, configP
   /* RRT */
   if (this->computeRRT(_optimizeSteps, _optimizeTime, 1) != 0) {
     ManipulationUtils::allowWindowEvents();
-    return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+    return NULL;
   }
   printf("End RRT\n");
 
     ManipulationUtils::allowWindowEvents();
 
-  return NULL;
+  return  (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 }
 
 // //! \return 0 in case of success, 1 otherwise
