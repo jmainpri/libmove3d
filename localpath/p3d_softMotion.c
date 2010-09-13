@@ -2292,7 +2292,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	MANIPULATION_SEGMENT_AXIS_DATA_STR manip_seg_data;
 	int I_can = 0;
 	int lpId = 0;
-	int arm_mlpID = -1;
+	int upBodySm_mlpID = -1;
 	
 	if ((filepTrajtr = fopen("arm.traj","w+"))==NULL) {
 		printf("cannot open File arm.traj");
@@ -2300,22 +2300,18 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 
 	index = 0;
 	for(int iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
-		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-arm_lin") == 0) {
-			arm_mlpID = iGraph;
-		}
-		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "upBody") == 0) {
-			arm_mlpID = iGraph;
-		}
-		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "kuka-rarm_lin") == 0) {
-			arm_mlpID = iGraph;
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "upBodySm") == 0) {
+			upBodySm_mlpID = iGraph;
+			break;
 		}
 	}
-	if(arm_mlpID == -1) {
+	if(upBodySm_mlpID == -1) {
 	  printf("ERROR p3d_softMotion_write_curve_for_bltplot unknow robot type \n");
 	  return;
 	}
 	
-	nbGpJnt = robotPt->mlp->mlpJoints[arm_mlpID]->nbJoints;
+	nbGpJnt = robotPt->mlp->mlpJoints[upBodySm_mlpID]->nbJoints;
+	std::cout << "there are " << nbGpJnt << std::endl;
 	int nb_armDof =0;
 	q_armOld.clear();
 	vqi.clear();
@@ -2324,17 +2320,17 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	segments.seg.clear();
 	
 
-	index_dof = robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[0]]->index_dof;
+	index_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[0]]->index_dof;
 	double min_i=0.0, max_i=0.0;
 	
 	for(int v=0; v<nbGpJnt; v++) {
 
-	  nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[v]]->dof_equiv_nbr;
+	  nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
+	  std::cout << " jnt " << v << " dof " << nb_dof << std::endl;
 	  for(int k=0; k<nb_dof; k++) {
-	
-		q_armOld.push_back(traj->courbePt->specific.softMotion_data->q_init[index_dof + k]);
+		q_armOld.push_back(traj->courbePt->mlpLocalpath[upBodySm_mlpID]->specific.softMotion_data->q_init[index_dof + k]);
 		vqi.push_back(0.0);
-		p3d_jnt_get_dof_bounds(robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[v]], 0, &min_i, &max_i);
+		p3d_jnt_get_dof_bounds(robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]], 0, &min_i, &max_i);
 		min.push_back(min_i);
 		max.push_back(max_i);
 		j++;
@@ -2342,14 +2338,11 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	  }
 	}
 	
-// 	index_dof = robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[0]]->index_dof;
-
-	
 	positions.clear();
 	localpathPt = traj->courbePt;
 	lpId = 0;
 	while (localpathPt !=NULL) {
-	  specificPt = localpathPt->specific.softMotion_data;
+	  specificPt = localpathPt->mlpLocalpath[upBodySm_mlpID]->specific.softMotion_data;
 	  for(int s=1; s<=7;s++) {
 	    manip_seg.time = 0.0;
 	    if(s==1) { manip_seg.time = specificPt->specific->motion[0].Times.Tjpa;}
@@ -2387,7 +2380,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	u = 0.0;
 	lpId = 0;
 	while (localpathPt != NULL) {
-		specificPt = localpathPt->specific.softMotion_data;
+		specificPt = localpathPt->mlpLocalpath[upBodySm_mlpID]->specific.softMotion_data;
 		umax = localpathPt->range_param;
 		//activate the constraint for the local path
 		p3d_desactivateAllCntrts(robotPt);
