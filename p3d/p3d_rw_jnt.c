@@ -885,6 +885,7 @@ int p3d_parse_jnt_desc(FILE * f, char ** line, int * size,
         continue;
      }
 
+     // set the velocity max in rad/s
      if (strcmp(fct,"p3d_set_dof_velocity_max")==0) {
       if(!p3d_read_string_double(&pos, data->nb_dof, data->velocity_max))
 	  { no_error = FALSE; }
@@ -892,7 +893,7 @@ int p3d_parse_jnt_desc(FILE * f, char ** line, int * size,
 	  { data->flag_velocity_max = TRUE; }
         continue;
      }
-
+    // set the accleration max in rad/s²
     if (strcmp(fct,"p3d_set_dof_acceleration_max")==0) {
       if(!p3d_read_string_double(&pos, data->nb_dof, data->acceleration_max))
 	  { no_error = FALSE; }
@@ -900,7 +901,7 @@ int p3d_parse_jnt_desc(FILE * f, char ** line, int * size,
 	  { data->flag_acceleration_max = TRUE; }
         continue;
      }
-
+     // set the accleration max in rad/s³
      if (strcmp(fct,"p3d_set_dof_jerk_max")==0) {
       if(!p3d_read_string_double(&pos, data->nb_dof, data->jerk_max))
 	  { no_error = FALSE; }
