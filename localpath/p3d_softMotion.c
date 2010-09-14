@@ -1878,10 +1878,25 @@ psoftMotion_str lm_create_softMotion(p3d_rob *robotPt, int mlpId) {
 	for(int i=0; i<nbJoints; i++) {
 	   jnt= robotPt->joints[robotPt->mlp->mlpJoints[mlpId]->joints[i]];
 	       for(int j=0; j< jnt->user_dof_equiv_nbr; j++) {
-		softMotion_params->specific->V_max[k] = jnt->dof_data[j].velocity_max;
-		softMotion_params->specific->A_max[k] = jnt->dof_data[j].acceleration_max;
-		softMotion_params->specific->J_max[k] = jnt->dof_data[j].jerk_max;
-		k++;
+		 if(jnt->dof_data[j].velocity_max != 0.0) {
+		     softMotion_params->specific->V_max[k] = jnt->dof_data[j].velocity_max;
+		 } else {
+		    softMotion_params->specific->V_max[k] = 0.5;
+		     printf("!!! ERROR (joint: %d dof: %d) velocity max of the dof not given, set to default (0.5)!!!\n", robotPt->mlp->mlpJoints[mlpId]->joints[i],j);
+		 }
+		 if(jnt->dof_data[j].acceleration_max != 0.0) {
+		     softMotion_params->specific->A_max[k] = jnt->dof_data[j].acceleration_max;
+		 } else {
+		   softMotion_params->specific->A_max[k] = 1.0;
+		     printf("!!! ERROR (joint: %d dof: %d) acceleration max of the dof not given, set to default (1.0)!!!\n", robotPt->mlp->mlpJoints[mlpId]->joints[i],j);
+		 }
+		if(jnt->dof_data[j].jerk_max != 0.0) {
+		     softMotion_params->specific->J_max[k] = jnt->dof_data[j].jerk_max;
+		 } else {
+		   softMotion_params->specific->J_max[k] = 3.0;
+		     printf("!!! ERROR (joint: %d dof: %d) jerk max of the dof not given, set to default (3.0)!!!\n", robotPt->mlp->mlpJoints[mlpId]->joints[i],j);
+		 }
+		 k++;
 	       }
 	}
 
