@@ -9,7 +9,7 @@ extern void compute_length_array ( pp3d_rob robotPt );
 extern void *p3d_beg_desc ( int type, char *name );
 extern int p3d_end_desc ( void );
 extern int p3d_inside_desc ( void );
-extern int p3d_add_desc_jnt_deg ( p3d_type_joint type, p3d_matrix4 pos, double * dtab, int prev, double * dtab2, double scale, double *dtab3 );
+extern int p3d_add_desc_jnt_deg ( p3d_type_joint type, p3d_matrix4 pos, double * dtab, int prev, double * dtab2, double scale, double *dtab3, double *velocity_max, double *acceleration_max, double *jerk_max);
 extern void p3d_add_desc_poly ( char name[20], int type );
 extern void p3d_add_desc_vert ( double x, double y, double z );
 extern void p3d_add_desc_face ( int *listeV, int nb_Vert );

@@ -311,13 +311,14 @@ void p3d_jnt_base_calc_dof(p3d_jnt * jntPt)
 p3d_jnt * p3d_jnt_base_create(p3d_matrix4 pos, double * v, 
 			      double * vmin, double * vmax, 
 			      double * vmin_rand, double * vmax_rand,
+			      double *velocity_max, double *acceleration_max, double *jerk_max,
 			      double * param)
 {
   p3d_jnt * jntPt;
 
   p3d_mat4Copy(p3d_mat4IDENTITY, pos);
   jntPt = p3d_jnt_freeflyer_create(pos, v, vmin, vmax, 
-				   vmin_rand, vmax_rand, param);
+				   vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, param);
   if (jntPt == NULL) {
     PrintError(("p3d_jnt_base_create: Cannot create the joint !!!\n"));
     return NULL;
@@ -352,7 +353,8 @@ p3d_jnt * p3d_jnt_base_create(p3d_matrix4 pos, double * v,
  */
 p3d_jnt * p3d_jnt_base_create_deg(p3d_matrix4 pos, double * v, 
 		  double * vmin, double * vmax, 
-		  double * vmin_rand, double * vmax_rand, double * param)
+		  double * vmin_rand, double * vmax_rand,
+		   double *velocity_max, double *acceleration_max, double *jerk_max, double * param)
 {
   int i;
 
@@ -363,7 +365,7 @@ p3d_jnt * p3d_jnt_base_create_deg(p3d_matrix4 pos, double * v,
     vmin_rand[i] = DTOR(vmin_rand[i]);
     vmax_rand[i] = DTOR(vmax_rand[i]); 
   }
-  return p3d_jnt_base_create(pos, v, vmin, vmax, vmin_rand, vmax_rand,
+  return p3d_jnt_base_create(pos, v, vmin, vmax, vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max,
 			     param);
 }
 

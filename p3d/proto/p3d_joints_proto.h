@@ -68,7 +68,7 @@ extern void p3d_jnt_set_mat_pos_and_jac ( p3d_jnt * jntPt, p3d_matrix4 * abs_pos
 extern void p3d_jnt_clean_update ( p3d_jnt * jntPt );
 extern p3d_jnt * p3d_jnt_create_common ( p3d_matrix4 pos );
 extern p3d_jnt * p3d_jnt_create ( p3d_type_joint type, p3d_matrix4 pos, double * v, double * vmin, double * vmax, double * vmin_rand, double * vmax_rand, double * velocity_max, double * torque_max, double * param );
-extern p3d_jnt * p3d_jnt_create_deg ( int type, p3d_matrix4 pos, double * v, double * vmin, double * vmax, double * vmin_rand, double * vmax_rand, double * velocity_max, double * torque_max, double * param );
+extern p3d_jnt * p3d_jnt_create_deg ( int type, p3d_matrix4 pos, double * v, double * vmin, double * vmax, double * vmin_rand, double * vmax_rand, double * velocity_max, double *acceleration_max, double *jerk_max, double * torque_max, double * param );
 extern void p3d_jnt_get_nb_param ( p3d_type_joint type, int * nb_dof, int * nb_param );
 extern void p3d_jnt_scale ( p3d_jnt * jntPt, double scale );
 extern void p3d_jnt_change_pos0 ( p3d_jnt * jntPt, p3d_matrix4 pos0 );

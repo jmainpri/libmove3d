@@ -590,6 +590,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 	p3d_matrix4 pos;
 	pp3d_rob robotPt = NULL;
 	int old_style = FALSE;
+	double vel_max[JNT_NB_DOF_MAX], acc_max[JNT_NB_DOF_MAX], jerk_max[JNT_NB_DOF_MAX];
 
 	while ( fscanf ( fd, "%s", fct ) != EOF )
 	{
@@ -1352,7 +1353,12 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 					p3d_convert_axe_to_mat ( pos, dtab );
 				}
 			}
-			p3d_add_desc_jnt_deg ( ( p3d_type_joint ) type, pos, dtab + 6, itab[0], dtab2, scale, dtab3 );
+			for(int w=0; w<nb_dof;w++) {
+			  vel_max[w] = 0.0;
+			  acc_max[w] = 0.0;
+			  jerk_max[w] = 0.0;
+			}
+			p3d_add_desc_jnt_deg ( ( p3d_type_joint ) type, pos, dtab + 6, itab[0], dtab2, scale, dtab3, vel_max, acc_max, jerk_max );
 			continue;
 		}
 
@@ -3179,30 +3185,24 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 				char tempChar;
 				if ( fscanf ( fd, "%c", &tempChar ) != 1 ) return ( read_desc_error ( fct ) );
 				if ( tempChar == '-' ) {fscanf ( fd, "%c", &tempChar );}
-				if ( tempChar == '>' )
-				{
+				if ( tempChar == '>' ) {
 					int lastJnt = 0;
-					if ( fscanf ( fd, "%d", &lastJnt ) != 1 )
-					{
+					if ( fscanf ( fd, "%d", &lastJnt ) != 1 ) {
 						return ( read_desc_error ( fct ) );
 					}
-					else
-					{
-						for ( i = 1; i < lastJnt; i++ )
-						{
+					else {
+						for ( i = 1; i < lastJnt; i++ ) {
 							itab[i] = itab[0] + i;
 						}
 					}
 				}
-				else
-				{
+				else {
 					return ( read_desc_error ( fct ) );
 				}
 			}
 			if ( !p3d_set_multi_localpath_group ( robotPt, argnum[0], itab, activated ) ) return ( read_desc_error ( fct ) );//joint already declared
 			continue;
 		}
-
 
 		/* Need to be call immediatly after p3d_multi_localpath_group */
 		if ( strcmp ( fct, "p3d_multi_localpath_data" ) == 0 )
@@ -3221,34 +3221,12 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			{
 				return ( read_desc_error ( fct ) );
 			}
-			if ( strcmp ( name2,"Soft-Motion" ) ==0 )
-			{
-				if ( strcmp ( name,"freeflyer" ) ==0 )
-				{
-					if ( !read_desc_double ( fd, ( 3 * robotPt->mlp->mlpJoints[robotPt->mlp->nblpGp-1]->nbDofs ),dtab ) )
-					{
-						return ( num_data_error ( fct ) );
-					}
-				}
-				else if ( strcmp ( name,"joint" ) ==0 )
-				{
-					if ( !read_desc_double ( fd, ( 3 * robotPt->mlp->mlpJoints[robotPt->mlp->nblpGp-1]->nbDofs ),dtab ) )
-					{
-						return ( num_data_error ( fct ) );
-					}
-				}
-				else
-				{
-					printf ( "group not declared for multiLocalPath with softMotion\n" );
-					return ( num_data_error ( fct ) );
-				}
+			if ( strcmp ( name2,"Soft-Motion" ) ==0 ) {
 				if ( !p3d_set_multi_localpath_data ( robotPt, name3, name, name2, dtab ) ) return ( read_desc_error ( fct ) );
 				continue;
 			}
-			else if ( strcmp ( name2,"R&S+linear" ) ==0 )
-			{
+			else if ( strcmp ( name2,"R&S+linear" ) ==0 ) {
 				lm_reeds_shepp_str *rsheep;
-
 				if ( !read_desc_double ( fd,1,dtab ) ) return ( read_desc_error ( fct ) );
 				if ( !read_desc_int ( fd,NB_JNT_REEDS_SHEPP,itab ) ) { return ( read_desc_error ( fct ) ); }
 				if ( read_desc_int ( fd,3-NB_JNT_REEDS_SHEPP,itab+NB_JNT_REEDS_SHEPP ) )
@@ -3264,14 +3242,11 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 				if ( !p3d_set_multi_localpath_data ( robotPt, name3, name, name2, dtab ) ) return ( read_desc_error ( fct ) );
 				continue;
 			}
-			else if ( strcmp ( name2,"Linear" ) ==0 )
-			{
+			else if ( strcmp ( name2,"Linear" ) ==0 ) {
 				if ( !p3d_set_multi_localpath_data ( robotPt, name3, name, name2, NULL ) ) return ( read_desc_error ( fct ) );
 				continue;
 			}
-			else
-			{
-
+			else {
 				printf ( "localpath not declared for multiLocalPath\n" );
 				return ( num_data_error ( fct ) );
 			}

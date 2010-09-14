@@ -236,7 +236,7 @@ void p3d_jnt_rotate_calc_mat_jac(p3d_jnt * jntPt)
  */
 p3d_jnt * p3d_jnt_rotate_create(p3d_matrix4 pos, double * v, 
 		double * vmin, double * vmax, 
-		double * vmin_rand, double * vmax_rand, double * velocity_max, double * torque_max, double * param)
+		double * vmin_rand, double * vmax_rand, double * velocity_max, double* acceleration_max, double *jerk_max, double * torque_max, double * param)
 {
   p3d_jnt * jntPt;
 
@@ -263,6 +263,8 @@ p3d_jnt * p3d_jnt_rotate_create(p3d_matrix4 pos, double * v,
   p3d_jnt_set_dof_bounds(jntPt, 0, vmin[0], vmax[0]); 
   p3d_jnt_set_dof_rand_bounds(jntPt, 0, vmin_rand[0], vmax_rand[0]); 
   jntPt->dof_data[0].velocity_max= velocity_max[0];
+  jntPt->dof_data[0].acceleration_max = acceleration_max[0];
+  jntPt->dof_data[0].jerk_max= jerk_max[0];
   jntPt->dof_data[0].torque_max  = torque_max[0]; 
   if (LEQ(vmax[0], vmin[0]))
     { jntPt->dof_data[0].is_user = FALSE; }
@@ -297,17 +299,17 @@ p3d_jnt * p3d_jnt_rotate_create(p3d_matrix4 pos, double * v,
  */
 p3d_jnt * p3d_jnt_rotate_create_deg(p3d_matrix4 pos, double * v, 
 		double * vmin, double * vmax, 
-		double * vmin_rand, double * vmax_rand, double * velocity_max, double * torque_max, double * param)
+		double * vmin_rand, double * vmax_rand, double * velocity_max, double * acceleration_max, double * jerk_max, double * torque_max, double * param)
 {
   v[0] = DTOR(v[0]);
   vmin[0] = DTOR(vmin[0]);
   vmax[0] = DTOR(vmax[0]);
   vmin_rand[0] = DTOR(vmin_rand[0]);
   vmax_rand[0] = DTOR(vmax_rand[0]); 
-  velocity_max[0] = DTOR(velocity_max[0]); 
+//   velocity_max[0] = DTOR(velocity_max[0]); 
   
   return p3d_jnt_rotate_create(pos, v, vmin, vmax,  
-			       vmin_rand, vmax_rand, velocity_max, torque_max, param);
+			       vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, torque_max, param);
 }
 
 //start path deform

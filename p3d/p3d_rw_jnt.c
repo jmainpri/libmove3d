@@ -196,6 +196,9 @@ p3d_read_jnt_data * p3d_create_read_jnt_data(p3d_type_joint type)
   data->vmin_rand = MY_ALLOC(double, data->nb_dof);
   data->vmax_rand = MY_ALLOC(double, data->nb_dof);
   data->velocity_max = MY_ALLOC(double, data->nb_dof);
+  data->acceleration_max = MY_ALLOC(double, data->nb_dof);
+  data->jerk_max = MY_ALLOC(double, data->nb_dof);
+  
   data->torque_max = MY_ALLOC(double, data->nb_dof);
   data->is_user   = MY_ALLOC(int,    data->nb_dof);
   data->is_active_for_planner   = MY_ALLOC(int,    data->nb_dof);
@@ -204,7 +207,8 @@ p3d_read_jnt_data * p3d_create_read_jnt_data(p3d_type_joint type)
       ((data->v == NULL) || (data->v_pos0 == NULL) ||
        (data->vmin == NULL) || (data->vmax == NULL) || 
        (data->vmin_rand == NULL) || (data->vmax_rand == NULL) ||
-       (data->is_user == NULL) || (data->is_active_for_planner == NULL))) {
+       (data->is_user == NULL) || (data->is_active_for_planner == NULL) ||
+           ( data->velocity_max == NULL) || (data->acceleration_max == NULL) || ( data->jerk_max == NULL) )) {
     PrintError(("Not enough memory !!!\n"));
     return NULL;
   }
@@ -213,6 +217,8 @@ p3d_read_jnt_data * p3d_create_read_jnt_data(p3d_type_joint type)
   data->flag_vmin         = FALSE;
   data->flag_vmax         = FALSE;
   data->flag_velocity_max = FALSE;
+  data->flag_acceleration_max = FALSE;
+  data->flag_jerk_max = FALSE;
   data->flag_torque_max   = FALSE;
   data->flag_vmin_rand    = FALSE;
   data->flag_vmax_rand    = FALSE;
@@ -258,6 +264,8 @@ void p3d_destroy_read_jnt_data(p3d_read_jnt_data * data)
     MY_FREE(data->vmin,      double, data->nb_dof);
     MY_FREE(data->vmax,      double, data->nb_dof);
     MY_FREE(data->velocity_max, double, data->nb_dof);
+    MY_FREE(data->acceleration_max, double, data->nb_dof);
+    MY_FREE(data->jerk_max, double, data->nb_dof);
     MY_FREE(data->torque_max,   double, data->nb_dof);   
     MY_FREE(data->vmin_rand, double, data->nb_dof);
     MY_FREE(data->vmax_rand, double, data->nb_dof);
@@ -306,17 +314,26 @@ static int s_p3d_check_data(p3d_read_jnt_data * data, int num_line)
       return FALSE;
     }
     
-    if ( data->flag_velocity_max && data->type!=P3D_ROTATE )  {
-      printf("!!! WARNING (line %i) p3d_set_dof_velocity_max only works with P3D_ROTATE joints !!!\n",
+    if ( data->flag_velocity_max && !(data->type==P3D_ROTATE ||data->type==P3D_FREEFLYER || data->type==P3D_BASE) )  {
+      printf("!!! WARNING (line %i) p3d_set_dof_velocity_max only works with P3D_ROTATE, P3D_FREEFLYER and P3D_BASE joints !!!\n",
 		    num_line);
     }
+
+    if ( data->flag_acceleration_max && !(data->type==P3D_ROTATE ||data->type==P3D_FREEFLYER || data->type==P3D_BASE  ) )  {
+      printf("!!! WARNING (line %i) p3d_set_dof_acceleration_max only works with P3D_ROTATE, P3D_FREEFLYER and P3D_BASE joints !!!\n",
+		    num_line);
+    }
+    if ( data->flag_jerk_max && !(data->type==P3D_ROTATE ||data->type==P3D_FREEFLYER || data->type==P3D_BASE  ) )  {
+      printf("!!! WARNING (line %i) p3d_set_dof_jerk_max only works with P3D_ROTATE, P3D_FREEFLYER and P3D_BASE joints !!!\n",
+		    num_line);
+    }
+    
     if ( data->flag_torque_max && data->type!=P3D_ROTATE)  {
     	printf("!!! WARNING (line %i) p3d_set_dof_torque_max only works with P3D_ROTATE joints !!!\n",
 		    num_line);
     }
   }
-  
-  
+
   if (!((data->nb_param==0) || (data->flag_param))) {
     PrintWarning(("!!! ERROR (line %i) joint parameters not given !!!\n", 
 		  num_line));
@@ -340,6 +357,14 @@ static int s_p3d_check_data(p3d_read_jnt_data * data, int num_line)
   if (!(data->flag_velocity_max)) {
     for (i=0; i<data->nb_dof; i++)
       { data->velocity_max[i] = 0; }
+  }
+  if (!(data->flag_acceleration_max)) {
+    for (i=0; i<data->nb_dof; i++)
+      { data->acceleration_max[i] = 0; }
+  }
+  if (!(data->flag_jerk_max)) {
+    for (i=0; i<data->nb_dof; i++)
+      { data->jerk_max[i] = 0; }
   }
   if (!(data->flag_torque_max)) {
     for (i=0; i<data->nb_dof; i++)
@@ -369,6 +394,7 @@ static int s_p3d_check_data(p3d_read_jnt_data * data, int num_line)
 static int s_p3d_build_jnt_data(p3d_read_jnt_data * data)
 {
   double * dofs, * dofs_rand;
+  double * velocity_max = NULL, * acceleration_max = NULL, * jerk_max = NULL;
   double * velocity_torque_max;  
   int i;
   p3d_matrix4 tmp_mat;
@@ -383,6 +409,10 @@ static int s_p3d_build_jnt_data(p3d_read_jnt_data * data)
   dofs      = MY_ALLOC(double, 3 * (data->nb_dof));
   dofs_rand = MY_ALLOC(double, 2 * (data->nb_dof));
   velocity_torque_max = MY_ALLOC(double, 2 * (data->nb_dof));
+
+ velocity_max = MY_ALLOC(double, (data->nb_dof));
+ acceleration_max = MY_ALLOC(double, (data->nb_dof));
+ jerk_max = MY_ALLOC(double, (data->nb_dof));
   
   if ((data->nb_dof>0) && ((dofs == NULL) || (dofs_rand == NULL))) {
     PrintError(("Not enough memory !!!\n"));
@@ -399,13 +429,21 @@ static int s_p3d_build_jnt_data(p3d_read_jnt_data * data)
     dofs_rand[2*i]   = data->vmin_rand[i];
     dofs_rand[2*i+1] = data->vmax_rand[i];
     velocity_torque_max[2*i]   = data->velocity_max[i];
-    velocity_torque_max[2*i+1] = data->torque_max[i];    
+    velocity_torque_max[2*i+1] = data->torque_max[i];
+    
+    velocity_max[i] = data->velocity_max[i];
+    acceleration_max[i] = data->acceleration_max[i];
+    jerk_max[i] = data->jerk_max[i];
   }
   p3d_add_desc_jnt_deg(data->type, data->pos, dofs, data->prev_jnt,
-		       dofs_rand, data->scale, velocity_torque_max);
+		       dofs_rand, data->scale, velocity_torque_max, velocity_max, acceleration_max, jerk_max);
   MY_FREE(dofs, double, 3 * (data->nb_dof));
   MY_FREE(dofs_rand, double, 2 * (data->nb_dof));
 
+  MY_FREE(velocity_max, double, (data->nb_dof));
+  MY_FREE(acceleration_max, double, (data->nb_dof));
+  MY_FREE(jerk_max, double, (data->nb_dof));
+  
   jntPt = XYZ_ROBOT->joints[XYZ_ROBOT->njoints];
 
   if (data->flag_v_pos0) {
@@ -839,20 +877,37 @@ int p3d_parse_jnt_desc(FILE * f, char ** line, int * size,
     }
     /*--------------------------------------------------*/
     /* Joint velocity and torque bounds */
-    if (strcmp(fct,"p3d_set_dof_velocity_max")==0) {
-      if(!p3d_read_string_double(&pos, data->nb_dof, data->velocity_max))
-	  { no_error = FALSE; }
-      else
-	  { data->flag_velocity_max = TRUE; }
-        continue;
-    }    
     if (strcmp(fct,"p3d_set_dof_torque_max")==0) {
       if(!p3d_read_string_double(&pos, data->nb_dof, data->torque_max))
 	    { no_error = FALSE; }
       else
 	    { data->flag_torque_max = TRUE; }
         continue;
-     }      
+     }
+
+     if (strcmp(fct,"p3d_set_dof_velocity_max")==0) {
+      if(!p3d_read_string_double(&pos, data->nb_dof, data->velocity_max))
+	  { no_error = FALSE; }
+      else
+	  { data->flag_velocity_max = TRUE; }
+        continue;
+     }
+
+    if (strcmp(fct,"p3d_set_dof_acceleration_max")==0) {
+      if(!p3d_read_string_double(&pos, data->nb_dof, data->acceleration_max))
+	  { no_error = FALSE; }
+      else
+	  { data->flag_acceleration_max = TRUE; }
+        continue;
+     }
+
+     if (strcmp(fct,"p3d_set_dof_jerk_max")==0) {
+      if(!p3d_read_string_double(&pos, data->nb_dof, data->jerk_max))
+	  { no_error = FALSE; }
+      else
+	  { data->flag_jerk_max = TRUE; }
+        continue;
+     }
     
     /*--------------------------------------------------*/
     /* Joint links */
