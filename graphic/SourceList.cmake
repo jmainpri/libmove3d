@@ -7,8 +7,13 @@ g3d_draw_graph.c
 g3d_draw_traj.c 
 g3d_states.c
 g3d_draw_cost.cpp
+)
+
+IF(USE_SHADERS)
+BM3D_SRC_SUBDIR_PROCESS(
 g3d_extensions.c
 )
+ENDIF(USE_SHADERS)
 
 IF(WITH_XFORMS)
 BM3D_SRC_SUBDIR_PROCESS(
@@ -16,6 +21,8 @@ g3d_draw_ui.c
 g3d_window.c
 )
 ENDIF(WITH_XFORMS)
+
+
 
 IF(P3D_COLLISION_CHECKING)
 BM3D_SRC_SUBDIR_PROCESS(

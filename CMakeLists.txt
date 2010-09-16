@@ -223,7 +223,7 @@ IF(USE_SHADERS)
   INCLUDE_directories(${GLEW_INCLUDE_DIR})
   SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${GLEW_INCLUDE_DIR})
   SET(LIBS ${LIBS} ${GLEW_LIBRARIES})
-ENDIF(USE_GLEW)
+ENDIF(USE_SHADERS)
 
 #-------------- CXX_PLANNER -------------------------------
 #----------------------------------------------------------
