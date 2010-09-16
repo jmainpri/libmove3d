@@ -2,6 +2,14 @@
 #include "P3d-pkg.h"
 #include "Util-pkg.h"
 
+#ifdef USE_SHADERS
+ #include <GL/glew.h>
+
+ GLuint G3D_PROGRAMS[100];
+ unsigned int G3D_NB_PROGRAMS;
+ unsigned int G3D_CURRENT_PROGRAM;
+#endif
+
 g3d_states g3d_init_viewer_state(double size)
 {
     g3d_states vs;
@@ -45,6 +53,11 @@ g3d_states g3d_init_viewer_state(double size)
     vs.displayFloor = 0;
     vs.displayTiles = 0;
     vs.enableAntialiasing = 0;
+    #ifdef USE_SHADERS
+    vs.enableShaders = 1;
+    #else
+    vs.enableShaders = 0;
+    #endif
     vs.allIsBlack = 0;
 
     //Les plans du sol et des murs vont être ajustés sur les coordonnées de
@@ -370,8 +383,75 @@ void g3d_init_OpenGL()
   glDisable(GL_STENCIL_TEST);
   glDisable(GL_SCISSOR_TEST);
   glDisable(GL_ALPHA_TEST);
+
+
+  #ifdef USE_SHADERS
+  char *move3Dpath= NULL;
+  char path[128];
+//   std::list<std::string> vsname, fsname;
+  char vsname[128], fsname[128];
+
+  /* initialize  glew */
+  static int firstTime= 1;
   
+  if(firstTime)
+  {
+    firstTime= 0;
+    glewInit();
+      
+    if(!g3d_init_extensions())
+    { return;  }
+  
+    move3Dpath= getenv("HOME_MOVE3D");
+
+    if(move3Dpath==NULL)  {
+      strcpy(path, "..");
+    }
+    else  { 
+      strcpy(path, move3Dpath);
+    }
+
+   G3D_NB_PROGRAMS= 0;
+   sprintf(vsname, "%s/graphic/shaders/default.vert", path);
+   sprintf(fsname, "%s/graphic/shaders/default.frag", path);
+   G3D_PROGRAMS[G3D_NB_PROGRAMS++] = g3d_load_program(vsname, fsname);
+
+   sprintf(vsname, "%s/graphic/shaders/cell_shading.vert", path);
+   sprintf(fsname, "%s/graphic/shaders/cell_shading.frag", path);
+   G3D_PROGRAMS[G3D_NB_PROGRAMS++] = g3d_load_program(vsname, fsname);
+
+   sprintf(vsname, "%s/graphic/shaders/normals.vert", path);
+   sprintf(fsname, "%s/graphic/shaders/normals.frag", path);
+   G3D_PROGRAMS[G3D_NB_PROGRAMS++] = g3d_load_program(vsname, fsname);
+
+   sprintf(vsname, "%s/graphic/shaders/default.vert", path);
+   sprintf(fsname, "%s/graphic/shaders/depth.frag", path);
+   G3D_PROGRAMS[G3D_NB_PROGRAMS++] = g3d_load_program(vsname, fsname);
+
+   G3D_CURRENT_PROGRAM= 0;
+
+   glUseProgram( G3D_PROGRAMS[G3D_CURRENT_PROGRAM] );
+  }
+
+
+  #endif
 }
+
+#ifdef USE_SHADERS
+int g3d_load_next_shader()
+{
+  G3D_CURRENT_PROGRAM++;
+
+  if(G3D_CURRENT_PROGRAM > G3D_NB_PROGRAMS-1) {
+    G3D_CURRENT_PROGRAM= 0;
+  }
+
+  glUseProgram( G3D_PROGRAMS[G3D_CURRENT_PROGRAM] );
+
+  return 0;
+}
+#endif
+
 
 //! @ingroup graphic
 //! Sets the OpenGL projection matrix used by default by the g3d_windows.
@@ -695,18 +775,19 @@ int g3d_save_state(g3d_win *win, g3d_states *st)
   }
   
   //save useful things
-  st->fov            =  win->vs.fov;
-  st->displayFrame   =  win->vs.displayFrame;
-  st->displayJoints  =  win->vs.displayJoints;
-  st->displayShadows =  win->vs.displayShadows;
-  st->displayWalls   =  win->vs.displayWalls;
-  st->displayFloor   =  win->vs.displayFloor;
+  st->fov                =  win->vs.fov;
+  st->displayFrame       =  win->vs.displayFrame;
+  st->displayJoints      =  win->vs.displayJoints;
+  st->displayShadows     =  win->vs.displayShadows;
+  st->displayWalls       =  win->vs.displayWalls;
+  st->displayFloor       =  win->vs.displayFloor;
   st->enableAntialiasing = win->vs.enableAntialiasing;
-  st->displayTiles   =  win->vs.displayTiles;
-  st->cullingEnabled =  win->vs.cullingEnabled;
-  st->bg[0]          =  win->vs.bg[0]; 
-  st->bg[1]          =  win->vs.bg[1]; 
-  st->bg[2]          =  win->vs.bg[2]; 
+  st->enableShaders      = win->vs.enableShaders;
+  st->displayTiles       =  win->vs.displayTiles;
+  st->cullingEnabled     =  win->vs.cullingEnabled;
+  st->bg[0]              =  win->vs.bg[0]; 
+  st->bg[1]              =  win->vs.bg[1]; 
+  st->bg[2]              =  win->vs.bg[2]; 
   
   return TRUE;
 }

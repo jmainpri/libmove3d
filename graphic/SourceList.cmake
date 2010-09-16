@@ -7,6 +7,7 @@ g3d_draw_graph.c
 g3d_draw_traj.c 
 g3d_states.c
 g3d_draw_cost.cpp
+g3d_extensions.c
 )
 
 IF(WITH_XFORMS)

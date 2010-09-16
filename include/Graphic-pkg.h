@@ -81,7 +81,18 @@ extern Move3D2OpenGl* pipe2openGl;
 /* proto */
 #include "../graphic/proto/graphic_proto.h"
 
-#ifdef UNIX
+#ifdef USE_SHADERS
+ #include "../graphic/proto/g3d_extensions_proto.h"
+
+ //! array of OpenGL IDs of the existing shader programs:
+ extern GLuint G3D_PROGRAMS[100];
+
+ //! number of existing shaders:
+ extern unsigned int G3D_NB_PROGRAMS;
+
+ //! index (in the array 'programs') of the current program (the one that is used now):
+ extern unsigned int G3D_CURRENT_PROGRAM;
 #endif
+
 
 #endif /* #ifndef GRAPHIC_PKG_H */

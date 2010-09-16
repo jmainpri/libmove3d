@@ -881,7 +881,6 @@ void g3d_draw_env(void) {
   g3d_set_default_material();
   g3d_set_light(win->vs);
 
-  if (win->fct_draw2 != NULL) win->fct_draw2();
 
 //deactivate picking until it works perfectly:
   G3D_SELECTED_JOINT= -999; 
@@ -1068,7 +1067,7 @@ void g3d_draw_env(void) {
   //////////////////////END OF FUNCTION MAIN CORE///////////////////
 
   if (win->fct_draw2 != NULL) win->fct_draw2();
-  
+
   if(win->vs.displayJoints) {
     g3d_draw_robot_joints(XYZ_ENV->cur_robot, 0.1);
     //g3d_draw_robot_kinematic_chain(XYZ_ENV->cur_robot);
@@ -1466,7 +1465,7 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
     g3d_draw_body(coll, win);
   }
   p3d_sel_desc_num(P3D_BODY,b);
-  
+
   p3d_rob *r;
   r=(p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   

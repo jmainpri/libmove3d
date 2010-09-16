@@ -117,6 +117,8 @@ BM3D_flag(USE_HATP_LIBS "For including HATP libraries" OFF)
 
 BM3D_flag(USE_GBM "Compilation with the gbM package" OFF)
 
+BM3D_flag(USE_SHADERS "Enables use of OpenGL shaders" OFF)
+
 BM3D_CheckCompilationFlags()
 
 #################################################################
@@ -214,6 +216,15 @@ IF(USE_GSL)
   SET(LIBS ${LIBS} ${GSL_LIBRARIES})
 ENDIF(USE_GSL)
 
+#-------------- GLEW ---------------------------------------
+#----------------------------------------------------------
+IF(USE_SHADERS)
+  FIND_PACKAGE(GLEW REQUIRED)
+  INCLUDE_directories(${GLEW_INCLUDE_DIR})
+  SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${GLEW_INCLUDE_DIR})
+  SET(LIBS ${LIBS} ${GLEW_LIBRARIES})
+ENDIF(USE_GLEW)
+
 #-------------- CXX_PLANNER -------------------------------
 #----------------------------------------------------------
 IF(CXX_PLANNER)
@@ -288,6 +299,8 @@ IF(USE_HRP2_GIK)
   SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${HRP2_GIK_INCLUDE_DIR})
   SET(LIBS ${LIBS} ${HRP2_GIK_LIBRARIES})
 ENDIF(USE_HRP2_GIK)
+
+
 
 #-------------- HATP LIBRARY --------------------------------------
 #----------------------------------------------------------

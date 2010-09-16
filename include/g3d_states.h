@@ -1,6 +1,10 @@
 #ifndef _G3D_STATES_H
 #define _G3D_STATES_H
 
+#ifdef USE_SHADERS
+ #include <GL/glew.h>
+#endif
+
 #ifndef PROTO
         #include <stdlib.h>
         #include <math.h>
@@ -126,10 +130,13 @@ typedef struct g3d_states
   //! flag to tell wether or not antialiasing will be activated:
   unsigned int enableAntialiasing;
 
+  //! flag to tell wether or not shaders will be activated:
+  unsigned int enableShaders;
+
   //! this flag is used when planar shadows are enabled to indicate that all bodies must be drawn in black
   //! with no lighting:
   unsigned int allIsBlack; 
- 
+
 } g3d_states;
 
 #endif
