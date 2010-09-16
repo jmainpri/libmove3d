@@ -722,7 +722,6 @@ int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList)
   }
 
 
-	
   //Read all the grasp elements:
   for(cur= root->xmlChildrenNode; cur!=NULL; cur= cur->next)
   {

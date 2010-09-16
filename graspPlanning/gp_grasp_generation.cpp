@@ -3010,6 +3010,7 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
 
   if ( gpLoad_grasp_list ( graspListFile, graspList ) ==GP_ERROR ) //grasp list needs to be computed
   {
+    printf("A new grasp list will be computed.\n" );
     if ( p3d_col_get_mode() !=p3d_col_mode_pqp )
     {
       printf("%s: %d: gpGet_grasp_list_SAHand(): The collision detector must be PQP to use compute a grasp list with the graspPlanning module.\n",__FILE__,__LINE__ );
@@ -3451,7 +3452,7 @@ int gpReduce_grasp_list_size(const std::list<gpGrasp> &originalList, std::list<g
   while(reducedList.size() > maxSize)
   {
     firstTest= true;
-    // look for the two grasp that are the closest to each other:
+    // look for the two grasps that are the closest to each other:
     for(iter1=reducedList.begin(); iter1!=reducedList.end(); iter1++)
     {
       for(iter2=reducedList.begin(); iter2!=reducedList.end(); iter2++)

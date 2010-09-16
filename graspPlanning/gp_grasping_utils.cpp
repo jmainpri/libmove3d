@@ -289,7 +289,10 @@ void gpDraw_friction_cone(p3d_vector3 c, p3d_vector3 normal, double mu, int nb_s
   p3d_vec3Mat3Mult(R, normal, u);
   p3d_mat3Rot(Ri, normal, 2*M_PI/nb_slices);
 
+  glPushAttrib(GL_LIGHTING_BIT | GL_LINE_BIT);
+  glDisable(GL_LIGHTING);
   glLineWidth(1.5);
+
   glBegin(GL_LINE_LOOP);
    for(i=0; i<nb_slices;i++)
    {
@@ -311,6 +314,8 @@ void gpDraw_friction_cone(p3d_vector3 c, p3d_vector3 normal, double mu, int nb_s
      p3d_vec3Mat3Mult(R, normal, u);
    }
   glEnd();
+
+  glPopAttrib();
 }
 
 

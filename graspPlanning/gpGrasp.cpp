@@ -987,8 +987,8 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        qrest[0]= qmax[0];
 
        p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp_frame_hand);
-      // Tgrasp_frame_hand[2][3]= 0.007;
-       Tgrasp_frame_hand[2][3]= 0.018;
+      Tgrasp_frame_hand[2][3]= 0.007;
+//        Tgrasp_frame_hand[2][3]= 0.018;
 
       //transformation grasp frame -> arm's wrist frame:
       /*
@@ -998,7 +998,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
       */
        T[0][0]=  0.0;  T[0][1]= -1.0;  T[0][2]=  0.0;  T[0][3]=  0.0;
        T[1][0]=  0.0;  T[1][1]=  0.0;  T[1][2]= -1.0;  T[1][3]=  0.0;
-       T[2][0]=  1.0;  T[2][1]=  0.0;  T[2][2]=  0.0;  T[2][3]=  -0.007;
+       T[2][0]=  1.0;  T[2][1]=  0.0;  T[2][2]=  0.0;  T[2][3]= -0.007;
        T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
 
 // //        T[0][0]=  0.0;  T[0][1]=  0.0;  T[0][2]=  1.0;  T[0][3]=  0.0;
@@ -1023,10 +1023,10 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        nb_rotations= 6;
        max_nb_grasp_frames= 160000;
 
-       nb_positions= 1000;
+       nb_positions= 100;
        nb_directions= 12;
        nb_rotations= 6;
-       max_nb_grasp_frames= 10000;
+       max_nb_grasp_frames= 5000;
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
        nb_fingers= 4;

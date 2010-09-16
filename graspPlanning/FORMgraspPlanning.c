@@ -21,7 +21,7 @@
 static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
 #endif
 
-static char ObjectName[]= "Horse";
+static char ObjectName[]= "OrangeBottle";
 static char RobotName[]= "JIDO_ROBOT";
 static char HandRobotName[]= "SAHandRight_robot";
 static bool display_grasps= false;
@@ -71,8 +71,6 @@ void dynamic_grasping();
 void contact_points();
 void key1();
 void key2();
-
-double COLOR_TAB[15][3]= {  {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 1.0, 0.0}, {1.0, 0.0, 1.0}, {0.0, 1.0, 1.0} , {1.0, 0.5, 0.5}, {0.5, 1.0, 0.5}, {0.5, 0.5, 1.0}, {1.0, 0.25, 0.5}, {1.0, 0.5, 0.25}, {0.25, 1.0, 0.5}, {0.5, 1.0, 0.25}, {0.25, 0.5, 1.0}, {0.5, 0.25, 1.0}  };
 
 static gpConvexHull3D *chull= NULL;
 
@@ -347,16 +345,36 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 void draw_grasp_planner()
 {   
 // chull->draw();
+  G3D_Window *win;
+//   p3d_rob *hand_robot= p3d_get_robot_by_name((char*)(GP_GRIPPER_ROBOT_NAME));
+  p3d_rob *hand_robot= p3d_get_robot_by_name((char*)(GP_SAHAND_RIGHT_ROBOT_NAME));
+  p3d_rob *object_robot= p3d_get_robot_by_name(ObjectName);
+
+  win = g3d_get_cur_win();
 
   //display all the grasps from the list:
-  if( display_grasps )
+  if(display_grasps)
   {
-    for ( std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++ )
+    for(std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); ++iter)
     { ( *iter ).draw ( 0.005 );    }
   }
 
+  glPushAttrib(GL_ENABLE_BIT);
+  glEnable(GL_LIGHTING);
+  for(std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); ++iter)
+  { 
+    gpSet_robot_hand_grasp_configuration(hand_robot, object_robot, *iter);
 
-  GRASP.draw(0.05);
+    win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+    g3d_draw_robot(hand_robot->num, win);
+  }
+  glPopAttrib();
+
+
+
+//   GRASP.draw(0.05);
+//   DOUBLEGRASP.draw(0.5);
+
   return;
 
 //dynamic_grasping(); 
@@ -560,7 +578,7 @@ glPopMatrix();
 //   p3d_rob *horse= p3d_get_robot_by_name("Horse");
 //   g3d_draw_p3d_polyhedre(horse->o[0]->pol[0]->poly); return;
   
-//   DOUBLEGRASP.draw(0.5);
+
 
 
 return;
@@ -899,6 +917,7 @@ static void CB_gripper_obj ( FL_OBJECT *obj, long arg )
   {
     firstTime= 0;
     gpGet_grasp_list_gripper(ObjectName, GRASPLIST);
+    gpReduce_grasp_list_size(GRASPLIST, GRASPLIST, 35);
   }
 
   i= 0;
@@ -953,14 +972,16 @@ static void CB_SAHandLeft_obj ( FL_OBJECT *obj, long arg )
 
 
 static void CB_SAHandRight_obj ( FL_OBJECT *obj, long arg )
-{ printf("CB_SAHandRight\n");
+{ 
+printf("CB_SAHandRight\n");
   unsigned int i;
   static unsigned int count= 0, firstTime= TRUE;
   
   if(firstTime)
   {
     firstTime= 0;
-    gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
+    gpGet_grasp_list(ObjectName, GP_SAHAND_RIGHT, GRASPLIST);
+    gpReduce_grasp_list_size(GRASPLIST, GRASPLIST, 7);
   }
 
   i= 0;
@@ -1404,20 +1425,25 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
   static int unsigned firstTime= TRUE, count= 0;
   unsigned int i;
   gpHand_properties handProp;
-  p3d_rob *SAHandRight_robot, *SAHandLeft_robot, *object, *justin;
+  p3d_rob *hand1, *hand2, *object, *justin;
   std::list<gpGrasp> graspList1, graspList2;
 
-  SAHandRight_robot= p3d_get_robot_by_name("SAHandRight_robot");
-  SAHandLeft_robot= p3d_get_robot_by_name("SAHandLeft_robot");
-  object= p3d_get_robot_by_name("Horse");
+  hand1= p3d_get_robot_by_name("JIDO_GRIPPER");
+  hand2= p3d_get_robot_by_name("SAHandRight_robot");
+
+  object= p3d_get_robot_by_name(ObjectName);
   justin= p3d_get_robot_by_name("ROBOT");
 
   if(firstTime)
   {  
-   gpGet_grasp_list_SAHand("Horse", 1, graspList1);
-   gpGet_grasp_list_SAHand("Horse", 2, graspList2);
+   gpGet_grasp_list(ObjectName, GP_GRIPPER, graspList1);
+   gpGet_grasp_list(ObjectName, GP_SAHAND_RIGHT, graspList2);
 
-   gpDouble_grasp_generation(SAHandRight_robot, SAHandLeft_robot, object, graspList1, graspList2, DOUBLEGRASPLIST);
+
+   gpReduce_grasp_list_size(graspList1, graspList1, 50);
+   gpReduce_grasp_list_size(graspList2, graspList2, 50);
+
+   gpDouble_grasp_generation(hand1, hand2, object, graspList1, graspList2, DOUBLEGRASPLIST);
    firstTime= false;  
    printf("%d double grasps\n",DOUBLEGRASPLIST.size());
   }
@@ -1437,8 +1463,8 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
   //gpCompute_grasp_open_config(justin, DOUBLEGRASP, object, 2);
 
-  gpSet_robot_hand_grasp_configuration(SAHandRight_robot, object, DOUBLEGRASP.grasp1);
-  gpSet_robot_hand_grasp_configuration(SAHandLeft_robot, object, DOUBLEGRASP.grasp2);
+  gpSet_robot_hand_grasp_configuration(hand1, object, DOUBLEGRASP.grasp1);
+  gpSet_robot_hand_grasp_configuration(hand2, object, DOUBLEGRASP.grasp2);
 
   redraw();
 }
