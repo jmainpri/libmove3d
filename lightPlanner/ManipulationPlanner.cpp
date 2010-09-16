@@ -121,8 +121,8 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robotPt, gpHand_type handType)
    return;
   }
 
-  _handProp.at(0).setArmType(GP_LWR);
-  printf("%s: %d: ManipulationPlanner::ManipulationPlanner: the arm type is set to GP_LWR. Use setArmType() to change it.\n",__FILE__,__LINE__);
+  _handProp.at(0).setArmType(GP_PA10);
+  printf("%s: %d: ManipulationPlanner::ManipulationPlanner: the arm type is set to GP_PA10. Use setArmType() to change it.\n",__FILE__,__LINE__);
 
 }
 
@@ -1950,7 +1950,7 @@ int ManipulationPlanner::findPregraspAndGraspConfiguration(int armId, double dis
     }
   }
 
-  result= gpFind_grasp_and_pregrasp_from_base_configuration(_robotPt, _object, untestedGrasps, GP_LWR, qcur, _grasp.at(armId), _handProp.at(armId), _liftUpDistance, qpregrasp, qgrasp);
+  result= gpFind_grasp_and_pregrasp_from_base_configuration(_robotPt, _object, untestedGrasps, GP_PA10, qcur, _grasp.at(armId), _handProp.at(armId), _liftUpDistance, qpregrasp, qgrasp);
 
   _graspID.at(armId)= _grasp.at(armId).ID;
 

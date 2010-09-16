@@ -81,6 +81,10 @@ typedef struct p3d_read_jnt_data {
   int flag_relative_pos;
   double * velocity_max;
   int flag_velocity_max;
+  double * acceleration_max;
+  int flag_acceleration_max;
+  double * jerk_max;
+  int flag_jerk_max;
   double * torque_max;
   int flag_torque_max;
   
@@ -120,6 +124,12 @@ typedef struct
   
   /*! \brief velocity without payload of the degree of freedom. */
   double velocity_max;
+
+  /*! \brief acceleration without payload of the degree of freedom. */
+  double acceleration_max;
+
+  /*! \brief jerk without payload of the degree of freedom. */
+  double jerk_max;
 
   /*! \brief Maximum torque of the degree of freedom. */
   double torque_max;

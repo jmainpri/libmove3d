@@ -5,7 +5,7 @@
  *      Author: jmainpri
  */
 
-#include "CostOptimization.hpp"
+#include "costOptimization.hpp"
 
 #include "planningAPI.hpp"
 

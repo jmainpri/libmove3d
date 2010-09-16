@@ -25,7 +25,7 @@ extern void lm_destroy_softMotion_params ( p3d_rob * robotPt, void *paramPt);
 extern void p3d_destroy_softMotion_data(p3d_rob* robotPt, p3d_softMotion_data* softMotion_dataPt);
 extern void p3d_softMotion_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt);
 extern p3d_localpath *p3d_copy_softMotion_localpath(p3d_rob* robotPt, p3d_localpath* localpathPt);
-extern psoftMotion_str lm_create_softMotion(p3d_rob *robotPt, p3d_group_type gpType, int nbJoints, int nbDofs, double *dtab);
+extern psoftMotion_str lm_create_softMotion(p3d_rob *robotPt, int mlpId);
 extern psoftMotion_str lm_get_softMotion_lm_param(p3d_rob *robotPt);
 extern psoftMotion_str lm_get_softMotion_lm_param_multilocalpath(p3d_rob *robotPt, int nbGraphs);
 

@@ -1696,15 +1696,15 @@ p3d_jnt * p3d_jnt_create_common(p3d_matrix4 pos) {
  * \return the new joint.
  */
 p3d_jnt * p3d_jnt_create(p3d_type_joint type, p3d_matrix4 pos, double * v,
-                         double * vmin, double * vmax, double * vmin_rand, double *velocity_max, double *torque_max,
+                         double * vmin, double * vmax, double * vmin_rand, double *velocity_max, double *acceleration_max, double *jerk_max, double *torque_max,
                          double * vmax_rand, double * param) {
   switch(type) {
     case P3D_BASE:
       return p3d_jnt_base_create(pos, v, vmin, vmax,
-                                 vmin_rand, vmax_rand, param);
+                                 vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, param);
     case P3D_FREEFLYER:
       return p3d_jnt_freeflyer_create(pos, v, vmin, vmax,
-                                      vmin_rand, vmax_rand, param);
+                                      vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, param);
     case P3D_PLAN:
       return p3d_jnt_plan_create(pos, v, vmin, vmax,
                                  vmin_rand, vmax_rand, param);
@@ -1713,7 +1713,7 @@ p3d_jnt * p3d_jnt_create(p3d_type_joint type, p3d_matrix4 pos, double * v,
                                  vmin_rand, vmax_rand, param);
     case P3D_ROTATE:
       return p3d_jnt_rotate_create(pos, v, vmin, vmax,
-                                   vmin_rand, vmax_rand, velocity_max, torque_max, param);
+                                   vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, torque_max, param);
     case P3D_TRANSLATE:
       return p3d_jnt_translate_create(pos, v, vmin, vmax,
                                       vmin_rand, vmax_rand, param);
@@ -1745,15 +1745,15 @@ p3d_jnt * p3d_jnt_create(p3d_type_joint type, p3d_matrix4 pos, double * v,
 p3d_jnt * p3d_jnt_create_deg(int type, p3d_matrix4 pos, double * v,
                              double * vmin, double * vmax,
                              double * vmin_rand, double * vmax_rand,
-                             double *velocity_max, double *torque_max,
-                             double * param) {
+                             double *velocity_max, double *acceleration_max, double *jerk_max,
+			     double *torque_max, double * param) {
   switch(type) {
     case P3D_BASE:
       return p3d_jnt_base_create_deg(pos, v, vmin, vmax,
-                                     vmin_rand, vmax_rand, param);
+                                     vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, param);
     case P3D_FREEFLYER:
       return p3d_jnt_freeflyer_create_deg(pos, v, vmin, vmax,
-                                          vmin_rand, vmax_rand, param);
+                                          vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, param);
     case P3D_PLAN:
       return p3d_jnt_plan_create_deg(pos, v, vmin, vmax,
                                      vmin_rand, vmax_rand, param);
@@ -1762,7 +1762,7 @@ p3d_jnt * p3d_jnt_create_deg(int type, p3d_matrix4 pos, double * v,
                                      vmin_rand, vmax_rand, param);
     case P3D_ROTATE:
       return p3d_jnt_rotate_create_deg(pos, v, vmin, vmax,
-                                       vmin_rand, vmax_rand, velocity_max, torque_max, param);
+                                       vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, torque_max, param);
     case P3D_TRANSLATE:
       return p3d_jnt_translate_create(pos, v, vmin, vmax,
                                       vmin_rand, vmax_rand, param);
