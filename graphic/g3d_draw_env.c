@@ -9,6 +9,11 @@
 #include "Planner-pkg.h"
 #endif
 
+#ifdef CXX_PLANNER
+//#include "Roadmap/graph.hpp"
+#include "planningAPI.hpp"
+#endif
+
 #include "Graphic-pkg.h"
 
 #ifdef HRI_PLANNER
@@ -119,134 +124,6 @@ void buildShadowMatrix(GLdouble fMatrix[16], GLfloat fLightPos[4], GLdouble fPla
   fMatrix[7]  = 0.0f - fLightPos[3] * fPlane[1];
   fMatrix[11] = 0.0f - fLightPos[3] * fPlane[2];
   fMatrix[15] = dotp - fLightPos[3] * fPlane[3];
-}
-
-
-//! Draws a simple rectangle with its normal vector parallel to z axis.
-//! \param bottomLeftCornerX x coordinate of the bottom left corner of the rectangle when seen from the top
-//! \param bottomLeftCornerX y coordinate of the bottom left corner of the rectangle when seen from the top
-//! \param z z coordinate of the rectangle
-//! \param dimX side length of the rectangle along x axis
-//! \param dimY side length of the rectangle along y axis
-void g3d_draw_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float z, float dimX, float dimY)
-{
-  glPushAttrib(GL_ENABLE_BIT);
-
-  glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);
-
-  glBegin(GL_QUADS);
-   glNormal3f(0.0, 0.0, 1.0);
-   glVertex3f(bottomLeftCornerX, bottomLeftCornerY, z);
-   glNormal3f(0.0, 0.0, 1.0);
-   glVertex3f(bottomLeftCornerX + dimX, bottomLeftCornerY, z);
-   glNormal3f(0.0, 0.0, 1.0);
-   glVertex3f(bottomLeftCornerX + dimX, bottomLeftCornerY + dimY, z);
-   glNormal3f(0.0, 0.0, 1.0);
-   glVertex3f(bottomLeftCornerX, bottomLeftCornerY + dimY, z);
-  glEnd();
-
-  glPopAttrib();
-}
-
-//! Draws a tesselated rectangle with its normal vector parallel to z axis.
-//! \param bottomLeftCornerX x coordinate of the bottom left corner of the rectangle when seen from the top
-//! \param bottomLeftCornerX y coordinate of the bottom left corner of the rectangle when seen from the top
-//! \param z z coordinate of the rectangle
-//! \param dimX side length of the rectangle along x axis
-//! \param dimY side length of the rectangle along y axis
-//! \param delta side length of the small squares used to tesselate the rectangle
-void g3d_draw_tesselated_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float z, float dimX, float dimY, float delta)
-{
-  unsigned int i, j, nx, ny;
-  float x1, x2, y, xmax, ymax;
-
-  xmax= bottomLeftCornerX + dimX;
-  ymax= bottomLeftCornerY + dimY;
-
-  nx= (unsigned int) ceil(dimX/delta);
-  ny= (unsigned int) ceil(dimY/delta);
-
-  glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT);
-
-  glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);
-  glShadeModel(GL_SMOOTH);
-
-  for(i=0; i<=nx; i++)
-  {
-    x1= bottomLeftCornerX + i*delta;
-    if(x1>xmax)
-    {  break;  }
-    x2= bottomLeftCornerX + (i+1)*delta;
-    if(x2>xmax)
-    {  x2= xmax;  }
-
-    glBegin(GL_TRIANGLE_STRIP);
-      for(j=0; j<=ny; j++)
-      {
-        y= bottomLeftCornerY + j*delta;
-
-        if(y>ymax)
-        {  y= ymax; }
-
-        glNormal3f(0.0f, 0.0f, 1.0f);
-        glTexCoord2f(x1/dimX, y/dimY);
-        glVertex3f(x1, y, z);
-        glTexCoord2f(x2/dimX, y/dimY);
-        glVertex3f(x2, y, z);
-      }
-    glEnd();
-  }
-
-  glPopAttrib();
-}
-
-
-//! Displays an axis-aligned wire box.
-//! \param xmin smallest coordinate of the box along X-axis
-//! \param xmax biggest coordinate of the box along X-axis
-//! \param ymin smallest coordinate of the box along Y-axis
-//! \param ymax biggest coordinate of the box along Y-axis
-//! \param zmin smallest coordinate of the box along Z-axis
-//! \param zmax biggest coordinate of the box along Z-axis
-void g3d_draw_AA_box(double xmin, double xmax, double ymin, double ymax, double zmin, double zmax) {
-
-  glPushAttrib(GL_LINE_BIT);
-  glLineWidth(3);
-
-  glColor3f(0.0, 0.0, 0.0);
-
-  glBegin(GL_LINES);
-  glVertex3f(xmin, ymin, zmin);
-  glVertex3f(xmin, ymin, zmax);
-
-  glVertex3f(xmax, ymin, zmin);
-  glVertex3f(xmax, ymin, zmax);
-
-  glVertex3f(xmax,  ymax, zmin);
-  glVertex3f(xmax,  ymax, zmax);
-
-  glVertex3f(xmin, ymax, zmin);
-  glVertex3f(xmin, ymax, zmax);
-  glEnd();
-
-
-  glBegin(GL_LINE_LOOP);
-  glVertex3f(xmin, ymin, zmin);
-  glVertex3f(xmax, ymin, zmin);
-  glVertex3f(xmax, ymax, zmin);
-  glVertex3f(xmin, ymax, zmin);
-  glEnd();
-
-  glBegin(GL_LINE_LOOP);
-  glVertex3f(xmin, ymin, zmax);
-  glVertex3f(xmax, ymin, zmax);
-  glVertex3f(xmax, ymax, zmax);
-  glVertex3f(xmin, ymax, zmax);
-  glEnd();
-
-  glPopAttrib();
 }
 
 
@@ -724,15 +601,6 @@ void g3d_draw_backwall(int wall) {
   glPopAttrib();
 }
 
-
-/**********************************************/
-/* Fonction reglant les lumieres et affichant */
-/* l'environnement                            */
-/**********************************************/
-void g3d_draw() {
-  g3d_draw_env();
-}
-
 /*******************************************************/
 /* Fonction initialisant graphiquement l'environnement */
 /* si besoin est et l'affichant                        */
@@ -813,396 +681,6 @@ void g3d_sky_box(double x, double y, double z)
 
   glPopAttrib(); 
 }
-
-//! @ingroup graphic 
-//! This function is the main display function called each time an OpenGL window is refreshed.
-//! KEEP ONLY WHAT IS NECESSARY INSIDE IT!!:
-//! DEFINE YOUR OWN win->fct_draw2() AND PUT YOUR ADDITIONAL DISPLAY INSIDE.
-//! OR USE g3d_draw_env_custom() just below this function.
-void g3d_draw_env(void) {
-  static int firstTime= TRUE;
-  pp3d_env e;
-  pp3d_rob robotPt;
-  G3D_Window *win;
-  GLdouble *projection_matrix;
-
-  win = g3d_get_cur_win();
-  e = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-  robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
- 
- g3d_extract_frustum(win);
-
-  if (e->INIT) {
-    ChronoOn();
-    g3d_init_all_poly();
-    boxlist = -1;
-#ifdef P3D_COLLISION_CHECKING
-    p3d_reset_robotboxlist();
-#endif
-    e->INIT = 0;
-    ChronoPrint("INIT TIME");
-    ChronoOff();
-  }
-
-  if (win->vs.GOURAUD) {
-    glShadeModel(GL_SMOOTH);
-    g3d_init_all_poly_gouraud();
-  }
-  else {
-    glShadeModel(GL_FLAT);
-  }
-
-  // set the background color: 
-  glClearColor(win->vs.bg[0], win->vs.bg[1], win->vs.bg[2], 0.0);
-
-  
-  // set the light source position to the camera position (a little bit higher though)
-  // The render is not good if shadows are displayed, so do it only if shadows
-  // are disabled:
-  if(win->vs.cameraBoundedLight && !win->vs.displayShadows) {
-    win->vs.lightPosition[0]= win->vs.cameraPosition[0];
-    win->vs.lightPosition[1]= win->vs.cameraPosition[1];
-    win->vs.lightPosition[2]= win->vs.cameraPosition[2];
-  }
-  
-  double xmin, xmax, ymin, ymax, zmin, zmax;
-  p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
-
-  //////////////////////BEGINNING OF FUNCTION MAIN CORE///////////////////
-  if(firstTime) 
-  {
-    g3d_init_OpenGL();
-    firstTime= FALSE;
-  } 
-  #ifdef HRI_PLANNER
-  glEnable(GL_COLOR_MATERIAL);
-  #endif
-
-  g3d_set_default_material();
-  g3d_set_light(win->vs);
-
-
-//deactivate picking until it works perfectly:
-  G3D_SELECTED_JOINT= -999; 
-
-  glPushAttrib(GL_ENABLE_BIT);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  if(win->vs.enableLight)
-  {   
-    glEnable(GL_LIGHT0);
-    glEnable(GL_LIGHTING);
-  }
-  else
-  {   glDisable(GL_LIGHTING);   }
-
-  if(!win->vs.displayShadows)
-  {
-    //draw opaque objects first:
-    win->vs.transparency_mode= G3D_OPAQUE;
-    if(win->vs.cullingEnabled==1) {
-      glEnable(GL_CULL_FACE);
-    }
-    else {
-      glDisable(GL_CULL_FACE);
-    }
-
-    g3d_draw_robots(win);
-    g3d_draw_obstacles(win);
-	  
-
-   //g3d_sky_box(win->vs.x, win->vs.y, win->vs.z);
-
-    if(win->vs.displayFloor)
-    {  g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);   }
-
-    if(win->vs.displayWalls)
-    {
-      g3d_draw_wall(1, win->vs.wallColor, 16);
-      g3d_draw_wall(2, win->vs.wallColor, 16);
-      g3d_draw_wall(3, win->vs.wallColor, 16);
-      g3d_draw_wall(4, win->vs.wallColor, 16);
-      glDisable(GL_LIGHTING);
-
-      g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
-      glEnable(GL_LIGHTING);
-    }
-    //draw transparent objects to finish:
-    win->vs.transparency_mode= G3D_TRANSPARENT;
-    glEnable(GL_CULL_FACE);
-    g3d_draw_robots(win);
-    g3d_draw_obstacles(win);
-    glDisable(GL_CULL_FACE);
-  }
-  else
-  {
-    glDisable(GL_STENCIL_TEST);
-
-    win->vs.transparency_mode= G3D_NO_TRANSPARENCY;
-
-    g3d_draw_robots(win);
-    g3d_draw_obstacles(win);
-
-///////////////////////////////
-// The following commented lines are to be used instead of the three previous ones
-// to have shadows plus transparency.
-// There is still a little problem: shadows can not be seen through transparent obstacles.
-//     glDisable(GL_DEPTH_TEST);
-//     g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);
-//     if(win->vs.displayWalls)
-//     {  
-//      for(int i=1; i<=4; ++i)
-//      {   g3d_draw_wall(i, win->vs.wallColor, 16);  }
-//     }
-//     glEnable(GL_DEPTH_TEST);
-// 
-//     win->vs.transparency_mode= G3D_OPAQUE;
-//     g3d_draw_robots(win);
-//     g3d_draw_obstacles(win);
-//     glEnable(GL_CULL_FACE);
-//     win->vs.transparency_mode= G3D_TRANSPARENT;
-//     g3d_draw_robots(win);
-//     g3d_draw_obstacles(win);
-//     glEnable(GL_CULL_FACE);
-//     glColorMask(0,0,0,0);
-//     win->vs.transparency_mode= G3D_NO_TRANSPARENCY;
-//     g3d_draw_robots(win);
-//     g3d_draw_obstacles(win);
-//     glColorMask(1,1,1,1);
-///////////////////////////////
-
-    glClear(GL_STENCIL_BUFFER_BIT);
-    glEnable(GL_STENCIL_TEST);
-    glStencilFunc(GL_ALWAYS, 0x2, 0x0);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);
-
-    glDisable(GL_DEPTH_TEST);
-    glMatrixMode(GL_MODELVIEW);
-    projection_matrix = win->vs.floorShadowMatrix;
-    glStencilFunc(GL_EQUAL, 0x3, 0x2);
-
-    glColorMask(0,0,0,0);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    glDisable(GL_LIGHTING);
-
-    glPushMatrix();
-      glMultMatrixd(projection_matrix);
-      win->vs.allIsBlack= TRUE;
-      g3d_draw_robots(win);
-      g3d_draw_obstacles(win);
-    glPopMatrix();
-    glColorMask(1,1,1,1);
-
-    win->vs.allIsBlack= FALSE;
-
-    glStencilFunc(GL_EQUAL, 0x1, 0x1);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-    g3d_set_dim_light();
-    g3d_set_shade_material();
-    glEnable(GL_LIGHTING);
-    g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);
-
-    if(win->vs.displayWalls)
-    {
-      for(int i=1; i<=4; ++i)
-      {
-        glClear(GL_STENCIL_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_STENCIL_TEST);
-        glStencilFunc(GL_ALWAYS, 0x2, 0x0);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-  
-        win->vs.allIsBlack= FALSE;
-        g3d_set_light(win->vs);
-        g3d_set_default_material();
-
-        if(win->vs.enableLight)
-        {   
-          glEnable(GL_LIGHT0);
-          glEnable(GL_LIGHTING);
-        }
-        else
-        {   glDisable(GL_LIGHTING);   }
-
-        g3d_set_light(win->vs);
-        g3d_set_default_material();
-        g3d_draw_wall(i, win->vs.wallColor, 16);
-
-        glColorMask(0,0,0,0);
-        glDisable(GL_DEPTH_TEST);
-        glMatrixMode(GL_MODELVIEW);
-        projection_matrix = win->vs.wallShadowMatrix[i-1];
-        glStencilFunc(GL_EQUAL, 0x3, 0x2);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-        glPushMatrix();
-          glMultMatrixd(projection_matrix);
-          win->vs.allIsBlack= TRUE;
-          g3d_draw_robots(win);
-          g3d_draw_obstacles(win);
-        glPopMatrix();
-        glColorMask(1,1,1,1);
-        win->vs.allIsBlack= FALSE;
-
-        glStencilFunc(GL_EQUAL, 0x1, 0x1);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-        g3d_set_dim_light();
-        g3d_set_shade_material();
-        glEnable(GL_LIGHTING);
-        g3d_draw_wall(i, win->vs.wallColor, 1);
-      }
-
-      g3d_set_light(win->vs);
-      g3d_set_default_material();
-      glEnable(GL_DEPTH_TEST); 
-      glDisable(GL_STENCIL_TEST);
-      g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
-    }
-
-
-    glEnable(GL_DEPTH_TEST); 
-    glDisable(GL_STENCIL_TEST);
-  }
-  glPopAttrib();
-  //////////////////////END OF FUNCTION MAIN CORE///////////////////
-
-  if (win->fct_draw2 != NULL) win->fct_draw2();
-
-  if(win->vs.displayJoints) {
-    g3d_draw_robot_joints(XYZ_ENV->cur_robot, 0.1);
-    //g3d_draw_robot_kinematic_chain(XYZ_ENV->cur_robot);
-  }
- 
-  g3d_draw_collision_cloud();
-
-  g3d_draw_env_custom();
-
-  // check if there was no OpenGL errors:
-  char message[128];
-  sprintf(message,"%s: %d: ",__FILE__,__LINE__);
-  g3d_checkGLerrors(message);
-
-#ifdef P3D_COLLISION_CHECKING
-
-  g3d_kcd_draw_all_aabbs();     // draw AABBs around static primitives
-  g3d_kcd_draw_aabb_hier();     // draw AABB tree on static objects
-  g3d_kcd_draw_robot_obbs();    // draw all obbs of current robot
-  g3d_kcd_draw_all_obbs();      // draw all static obbs
-
-  g3d_kcd_draw_closest_points();
-#endif
-	
-
-  /* Debut Modification Thibaut */
-  if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win);
-  /* Fin Modification Thibaut */
-
-#ifdef P3D_PLANNER
-  if(XYZ_GRAPH && ENV.getBool(Env::drawGraph)){
-	  g3d_draw_graph();
-  }
-#endif
-
-  if (ENV.getBool(Env::drawTraj)) {
-    g3d_draw_all_tcur();
-  }
-
-  if (G3D_DRAW_TRACE) {
-    p3d_set_and_update_robot_conf(robotPt->ROBOT_POS);
-    /* collision checking */
-#ifdef P3D_COLLISION_CHECKING
-    p3d_numcoll = p3d_col_test_all();
-#endif
-    win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
-    g3d_draw_robot(robotPt->num, win);
-    p3d_set_and_update_robot_conf(robotPt->ROBOT_GOTO);
-    /* collision checking */
-#ifdef P3D_COLLISION_CHECKING
-    p3d_numcoll = p3d_col_test_all();
-#endif
-    win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
-    g3d_draw_robot(robotPt->num, win);
-    win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
-    g3d_draw_trace_all_tcur();
-  }
-
-//     //On dessine la source de lumière sous la forme d'une sphère:
-//   glDisable( GL_LIGHTING );
-//   glColor3f(1.0, 1.0, 0.0);
-//   glPushMatrix();
-//   {
-//    glLightdv( GL_LIGHT0, GL_POSITION, win->vs.lightPosition );
-//    glTranslatef( win->vs.lightPosition[0], win->vs.lightPosition[1], win->vs.lightPosition[2] );
-//    g3d_drawColorSphere(0, 0, 0, 50, Yellow, NULL);
-//   }
-//   glPopMatrix();
-//   glEnable( GL_LIGHTING );
-
-  if (G3D_MODIF_VIEW && win->vs.displayFrame) {
-    glPushMatrix();
-    glTranslatef(win->vs.x, win->vs.y, win->vs.z);
-	if(ENV.getBool(Env::drawFrame))
-	{
-	  g3d_draw_frame();
-	}
-    glPopMatrix();
-  }
-
-
-  if(ENV.getBool(Env::drawLightSource))
-  {
-       glDisable( GL_LIGHTING );
-       glColor3f(1.0, 1.0, 0.0);
-       glPushMatrix();
-       {
-           glLightfv( GL_LIGHT0, GL_POSITION, win->vs.lightPosition );
-           glTranslatef( win->vs.lightPosition[0], win->vs.lightPosition[1], win->vs.lightPosition[2] );
-           g3d_drawColorSphere(0, 0, 0, 0.10, Yellow, NULL);
-       }
-       glPopMatrix();
-       glEnable( GL_LIGHTING );
-   }
-}
-
-
-void g3d_draw_env_custom()
-{
-  G3D_Window *win;
-  
-  win = g3d_get_cur_win();
-
-  p3d_drawRobotMoveMeshs();
-  
-#ifdef HRI_COSTSPACE
-  g3d_draw_costspace();
-  g3d_draw_hrics();
-#endif
-  g3d_draw_grids();
-  
-#ifdef DPG
-  if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
-    XYZ_GRAPH->dpgGrid->draw();
-  }
-#endif
-  
-#ifdef HRI_PLANNER
-  //hri_hri_inter_point_test();
-  g3d_hri_bt_draw_active_bitmaps(BTSET);
-  g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
-  g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
-  g3d_hri_bt_draw_targets(BTSET);
-  hri_exp_draw_ordered_points();
-  //g3d_hri_display_test();
-  g3d_draw_all_agents_fovs(GLOBAL_AGENTS);
-  if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
-#if defined(USE_MIGHTABILITY_MAPS) && !defined(COMPILE_ON_JIDO)
-  ////printf("Inside g3d_draw_env_custom() \n");
-  execute_Mightability_Map_functions();
-#endif
-#endif
-  
-}
-
 
 /**********************************************************/
 /* Fonction tracant tous les obstacles d'un environnement */
@@ -1699,7 +1177,7 @@ static void g3d_draw_ocur_special(G3D_Window *win) {
 //             g3d_draw_a_box(x1, x2, y1, y2, z1, z2, Yellow, 0));
 // }
 
-void showConfig(configPt conf){
+void showConfig(configPt conf) {
   p3d_set_and_update_robot_conf(conf);
   g3d_refresh_allwin_active();
   sleep(1);
@@ -1843,3 +1321,427 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, double camera_fov, p3d_
   return 0;
 }  
 
+void g3d_draw_env_custom()
+{
+  G3D_Window *win;
+  
+  win = g3d_get_cur_win();
+	
+  p3d_drawRobotMoveMeshs();
+  
+#ifdef HRI_COSTSPACE
+  g3d_draw_costspace();
+  g3d_draw_hrics();
+#endif
+  g3d_draw_grids();
+  
+#ifdef DPG
+  if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
+    XYZ_GRAPH->dpgGrid->draw();
+  }
+#endif
+  
+#ifdef HRI_PLANNER
+  //hri_hri_inter_point_test();
+  g3d_hri_bt_draw_active_bitmaps(BTSET);
+  g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
+  g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
+  g3d_hri_bt_draw_targets(BTSET);
+  hri_exp_draw_ordered_points();
+  //g3d_hri_display_test();
+  g3d_draw_all_agents_fovs(GLOBAL_AGENTS);
+  if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
+#if defined(USE_MIGHTABILITY_MAPS) && !defined(COMPILE_ON_JIDO)
+  ////printf("Inside g3d_draw_env_custom() \n");
+  execute_Mightability_Map_functions();
+#endif
+#endif
+  
+}
+
+//! @ingroup graphic 
+//! This function calls all object displaying function
+void g3d_draw_env()
+{
+	pp3d_env e;
+  pp3d_rob robotPt;
+  G3D_Window *win;
+  GLdouble *projection_matrix;
+	
+  win = g3d_get_cur_win();
+  e = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+	
+	if (win->fct_draw2 != NULL) win->fct_draw2();
+	
+  if(win->vs.displayJoints) {
+    g3d_draw_robot_joints(XYZ_ENV->cur_robot, 0.1);
+    //g3d_draw_robot_kinematic_chain(XYZ_ENV->cur_robot);
+  }
+	
+  g3d_draw_collision_cloud();
+	
+  g3d_draw_env_custom();
+	
+  // check if there was no OpenGL errors:
+  char message[128];
+  sprintf(message,"%s: %d: ",__FILE__,__LINE__);
+  g3d_checkGLerrors(message);
+	
+#ifdef P3D_COLLISION_CHECKING
+	
+  g3d_kcd_draw_all_aabbs();     // draw AABBs around static primitives
+  g3d_kcd_draw_aabb_hier();     // draw AABB tree on static objects
+  g3d_kcd_draw_robot_obbs();    // draw all obbs of current robot
+  g3d_kcd_draw_all_obbs();      // draw all static obbs
+	
+  g3d_kcd_draw_closest_points();
+#endif
+	
+	
+  /* Debut Modification Thibaut */
+  if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win);
+  /* Fin Modification Thibaut */
+	
+#ifdef CXX_PLANNER
+	//std::cout << "API_activeGraph : " << API_activeGraph << std::endl;
+	if (API_activeGraph && ENV.getBool(Env::drawGraph) ) 
+	{
+		try
+		{
+			if (API_activeGraph->isGraphChanged()) 
+			{
+				XYZ_GRAPH = API_activeGraph->exportCppToGraphStruct();
+			}
+		}
+		catch(std::string str)
+		{
+			std::cout << "Exception in exporting the cpp graph" << std::endl;
+			std::cout << str << std::endl;
+		}
+	}
+#endif
+#ifdef P3D_PLANNER
+	//std::cout << "XYZ_GRAPH : " << XYZ_GRAPH << std::endl;
+  if(XYZ_GRAPH && ENV.getBool(Env::drawGraph))
+	{
+	  g3d_draw_graph();
+  }
+#endif
+	
+  if (ENV.getBool(Env::drawTraj)) 
+	{
+    g3d_draw_all_tcur();
+  }
+	
+  if (G3D_DRAW_TRACE) {
+    p3d_set_and_update_robot_conf(robotPt->ROBOT_POS);
+    /* collision checking */
+#ifdef P3D_COLLISION_CHECKING
+    p3d_numcoll = p3d_col_test_all();
+#endif
+    win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+    g3d_draw_robot(robotPt->num, win);
+    p3d_set_and_update_robot_conf(robotPt->ROBOT_GOTO);
+    /* collision checking */
+#ifdef P3D_COLLISION_CHECKING
+    p3d_numcoll = p3d_col_test_all();
+#endif
+    win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+    g3d_draw_robot(robotPt->num, win);
+    win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+    g3d_draw_trace_all_tcur();
+  }
+	
+	// // On dessine la source de lumière sous la forme d'une sphère:
+	//   glDisable( GL_LIGHTING );
+	//   glColor3f(1.0, 1.0, 0.0);
+	//   glPushMatrix();
+	//   {
+	//    glLightdv( GL_LIGHT0, GL_POSITION, win->vs.lightPosition );
+	//    glTranslatef( win->vs.lightPosition[0], win->vs.lightPosition[1], win->vs.lightPosition[2] );
+	//    g3d_drawColorSphere(0, 0, 0, 50, Yellow, NULL);
+	//   }
+	//   glPopMatrix();
+	//   glEnable( GL_LIGHTING );
+	
+  if (G3D_MODIF_VIEW && win->vs.displayFrame) 
+	{
+    glPushMatrix();
+    glTranslatef(win->vs.x, win->vs.y, win->vs.z);
+		if(ENV.getBool(Env::drawFrame))
+		{
+			g3d_draw_frame();
+		}
+    glPopMatrix();
+  }
+	
+  if(ENV.getBool(Env::drawLightSource))
+  {
+		glDisable( GL_LIGHTING );
+		glColor3f(1.0, 1.0, 0.0);
+		glPushMatrix();
+		{
+			glLightfv( GL_LIGHT0, GL_POSITION, win->vs.lightPosition );
+			glTranslatef( win->vs.lightPosition[0], win->vs.lightPosition[1], win->vs.lightPosition[2] );
+			g3d_drawColorSphere(0, 0, 0, 0.10, Yellow, NULL);
+		}
+		glPopMatrix();
+		glEnable( GL_LIGHTING );
+	}
+}	
+
+//! @ingroup graphic 
+//! This function is the main display function called each time an OpenGL window is refreshed.
+//! KEEP ONLY WHAT IS NECESSARY INSIDE IT!!:
+//! DEFINE YOUR OWN win->fct_draw2() AND PUT YOUR ADDITIONAL DISPLAY INSIDE.
+//! OR USE g3d_draw_env() or g3d_draw_env_custome() defined just before this function.
+void g3d_draw(void) 
+{
+  static int firstTime= TRUE;
+  pp3d_env e;
+  pp3d_rob robotPt;
+  G3D_Window *win;
+  GLdouble *projection_matrix;
+	
+  win = g3d_get_cur_win();
+  e = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+	
+	g3d_extract_frustum(win);
+	
+  if (e->INIT) {
+    ChronoOn();
+    g3d_init_all_poly();
+    boxlist = -1;
+#ifdef P3D_COLLISION_CHECKING
+    p3d_reset_robotboxlist();
+#endif
+    e->INIT = 0;
+    ChronoPrint("INIT TIME");
+    ChronoOff();
+  }
+	
+  if (win->vs.GOURAUD) {
+    glShadeModel(GL_SMOOTH);
+    g3d_init_all_poly_gouraud();
+  }
+  else {
+    glShadeModel(GL_FLAT);
+  }
+	
+  // set the background color: 
+  glClearColor(win->vs.bg[0], win->vs.bg[1], win->vs.bg[2], 0.0);
+	
+  
+  // set the light source position to the camera position (a little bit higher though)
+  // The render is not good if shadows are displayed, so do it only if shadows
+  // are disabled:
+  if(win->vs.cameraBoundedLight && !win->vs.displayShadows) {
+    win->vs.lightPosition[0]= win->vs.cameraPosition[0];
+    win->vs.lightPosition[1]= win->vs.cameraPosition[1];
+    win->vs.lightPosition[2]= win->vs.cameraPosition[2];
+  }
+  
+  double xmin, xmax, ymin, ymax, zmin, zmax;
+  p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
+	
+  //////////////////////BEGINNING OF FUNCTION MAIN CORE///////////////////
+  if(firstTime) 
+  {
+    g3d_init_OpenGL();
+    firstTime= FALSE;
+  } 
+#ifdef HRI_PLANNER
+  glEnable(GL_COLOR_MATERIAL);
+#endif
+	
+  g3d_set_default_material();
+  g3d_set_light(win->vs);
+	
+	
+	//deactivate picking until it works perfectly:
+  G3D_SELECTED_JOINT= -999; 
+	
+  glPushAttrib(GL_ENABLE_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+  if(win->vs.enableLight)
+  {   
+    glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHTING);
+  }
+  else
+  {   glDisable(GL_LIGHTING);   }
+	
+  if(!win->vs.displayShadows)
+  {
+    //draw opaque objects first:
+    win->vs.transparency_mode= G3D_OPAQUE;
+    if(win->vs.cullingEnabled==1) {
+      glEnable(GL_CULL_FACE);
+    }
+    else {
+      glDisable(GL_CULL_FACE);
+    }
+		
+    g3d_draw_robots(win);
+    g3d_draw_obstacles(win);
+	  
+		
+		//g3d_sky_box(win->vs.x, win->vs.y, win->vs.z);
+		
+    if(win->vs.displayFloor)
+    {  g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);   }
+		
+    if(win->vs.displayWalls)
+    {
+      g3d_draw_wall(1, win->vs.wallColor, 16);
+      g3d_draw_wall(2, win->vs.wallColor, 16);
+      g3d_draw_wall(3, win->vs.wallColor, 16);
+      g3d_draw_wall(4, win->vs.wallColor, 16);
+      glDisable(GL_LIGHTING);
+			
+      g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
+      glEnable(GL_LIGHTING);
+    }
+    //draw transparent objects to finish:
+    win->vs.transparency_mode= G3D_TRANSPARENT;
+    glEnable(GL_CULL_FACE);
+    g3d_draw_robots(win);
+    g3d_draw_obstacles(win);
+    glDisable(GL_CULL_FACE);
+  }
+  else
+  {
+    glDisable(GL_STENCIL_TEST);
+		
+    win->vs.transparency_mode= G3D_NO_TRANSPARENCY;
+		
+    g3d_draw_robots(win);
+    g3d_draw_obstacles(win);
+		
+		///////////////////////////////
+		// The following commented lines are to be used instead of the three previous ones
+		// to have shadows plus transparency.
+		// There is still a little problem: shadows can not be seen through transparent obstacles.
+		//     glDisable(GL_DEPTH_TEST);
+		//     g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);
+		//     if(win->vs.displayWalls)
+		//     {  
+		//      for(int i=1; i<=4; ++i)
+		//      {   g3d_draw_wall(i, win->vs.wallColor, 16);  }
+		//     }
+		//     glEnable(GL_DEPTH_TEST);
+		// 
+		//     win->vs.transparency_mode= G3D_OPAQUE;
+		//     g3d_draw_robots(win);
+		//     g3d_draw_obstacles(win);
+		//     glEnable(GL_CULL_FACE);
+		//     win->vs.transparency_mode= G3D_TRANSPARENT;
+		//     g3d_draw_robots(win);
+		//     g3d_draw_obstacles(win);
+		//     glEnable(GL_CULL_FACE);
+		//     glColorMask(0,0,0,0);
+		//     win->vs.transparency_mode= G3D_NO_TRANSPARENCY;
+		//     g3d_draw_robots(win);
+		//     g3d_draw_obstacles(win);
+		//     glColorMask(1,1,1,1);
+		///////////////////////////////
+		
+    glClear(GL_STENCIL_BUFFER_BIT);
+    glEnable(GL_STENCIL_TEST);
+    glStencilFunc(GL_ALWAYS, 0x2, 0x0);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);
+		
+    glDisable(GL_DEPTH_TEST);
+    glMatrixMode(GL_MODELVIEW);
+    projection_matrix = win->vs.floorShadowMatrix;
+    glStencilFunc(GL_EQUAL, 0x3, 0x2);
+		
+    glColorMask(0,0,0,0);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    glDisable(GL_LIGHTING);
+		
+    glPushMatrix();
+		glMultMatrixd(projection_matrix);
+		win->vs.allIsBlack= TRUE;
+		g3d_draw_robots(win);
+		g3d_draw_obstacles(win);
+    glPopMatrix();
+    glColorMask(1,1,1,1);
+		
+    win->vs.allIsBlack= FALSE;
+		
+    glStencilFunc(GL_EQUAL, 0x1, 0x1);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    g3d_set_dim_light();
+    g3d_set_shade_material();
+    glEnable(GL_LIGHTING);
+    g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);
+		
+    if(win->vs.displayWalls)
+    {
+      for(int i=1; i<=4; ++i)
+      {
+        glClear(GL_STENCIL_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_STENCIL_TEST);
+        glStencilFunc(GL_ALWAYS, 0x2, 0x0);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+				
+        win->vs.allIsBlack= FALSE;
+        g3d_set_light(win->vs);
+        g3d_set_default_material();
+				
+        if(win->vs.enableLight)
+        {   
+          glEnable(GL_LIGHT0);
+          glEnable(GL_LIGHTING);
+        }
+        else
+        {   glDisable(GL_LIGHTING);   }
+				
+        g3d_set_light(win->vs);
+        g3d_set_default_material();
+        g3d_draw_wall(i, win->vs.wallColor, 16);
+				
+        glColorMask(0,0,0,0);
+        glDisable(GL_DEPTH_TEST);
+        glMatrixMode(GL_MODELVIEW);
+        projection_matrix = win->vs.wallShadowMatrix[i-1];
+        glStencilFunc(GL_EQUAL, 0x3, 0x2);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+        glPushMatrix();
+				glMultMatrixd(projection_matrix);
+				win->vs.allIsBlack= TRUE;
+				g3d_draw_robots(win);
+				g3d_draw_obstacles(win);
+        glPopMatrix();
+        glColorMask(1,1,1,1);
+        win->vs.allIsBlack= FALSE;
+				
+        glStencilFunc(GL_EQUAL, 0x1, 0x1);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        g3d_set_dim_light();
+        g3d_set_shade_material();
+        glEnable(GL_LIGHTING);
+        g3d_draw_wall(i, win->vs.wallColor, 1);
+      }
+			
+      g3d_set_light(win->vs);
+      g3d_set_default_material();
+      glEnable(GL_DEPTH_TEST); 
+      glDisable(GL_STENCIL_TEST);
+      g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
+    }
+		
+		
+    glEnable(GL_DEPTH_TEST); 
+    glDisable(GL_STENCIL_TEST);
+  }
+  glPopAttrib();
+  
+	g3d_draw_env();
+}

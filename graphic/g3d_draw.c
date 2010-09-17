@@ -437,6 +437,133 @@ void g3d_drawOneLine(double x1,double y1,double z1,double x2,double y2,double z2
   glPopAttrib();
 }
 
+//! Draws a simple rectangle with its normal vector parallel to z axis.
+//! \param bottomLeftCornerX x coordinate of the bottom left corner of the rectangle when seen from the top
+//! \param bottomLeftCornerX y coordinate of the bottom left corner of the rectangle when seen from the top
+//! \param z z coordinate of the rectangle
+//! \param dimX side length of the rectangle along x axis
+//! \param dimY side length of the rectangle along y axis
+void g3d_draw_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float z, float dimX, float dimY)
+{
+  glPushAttrib(GL_ENABLE_BIT);
+	
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
+	
+  glBegin(GL_QUADS);
+	glNormal3f(0.0, 0.0, 1.0);
+	glVertex3f(bottomLeftCornerX, bottomLeftCornerY, z);
+	glNormal3f(0.0, 0.0, 1.0);
+	glVertex3f(bottomLeftCornerX + dimX, bottomLeftCornerY, z);
+	glNormal3f(0.0, 0.0, 1.0);
+	glVertex3f(bottomLeftCornerX + dimX, bottomLeftCornerY + dimY, z);
+	glNormal3f(0.0, 0.0, 1.0);
+	glVertex3f(bottomLeftCornerX, bottomLeftCornerY + dimY, z);
+  glEnd();
+	
+  glPopAttrib();
+}
+
+//! Draws a tesselated rectangle with its normal vector parallel to z axis.
+//! \param bottomLeftCornerX x coordinate of the bottom left corner of the rectangle when seen from the top
+//! \param bottomLeftCornerX y coordinate of the bottom left corner of the rectangle when seen from the top
+//! \param z z coordinate of the rectangle
+//! \param dimX side length of the rectangle along x axis
+//! \param dimY side length of the rectangle along y axis
+//! \param delta side length of the small squares used to tesselate the rectangle
+void g3d_draw_tesselated_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float z, float dimX, float dimY, float delta)
+{
+  unsigned int i, j, nx, ny;
+  float x1, x2, y, xmax, ymax;
+	
+  xmax= bottomLeftCornerX + dimX;
+  ymax= bottomLeftCornerY + dimY;
+	
+  nx= (unsigned int) ceil(dimX/delta);
+  ny= (unsigned int) ceil(dimY/delta);
+	
+  glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT);
+	
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
+  glShadeModel(GL_SMOOTH);
+	
+  for(i=0; i<=nx; i++)
+  {
+    x1= bottomLeftCornerX + i*delta;
+    if(x1>xmax)
+    {  break;  }
+    x2= bottomLeftCornerX + (i+1)*delta;
+    if(x2>xmax)
+    {  x2= xmax;  }
+		
+    glBegin(GL_TRIANGLE_STRIP);
+		for(j=0; j<=ny; j++)
+		{
+			y= bottomLeftCornerY + j*delta;
+			
+			if(y>ymax)
+			{  y= ymax; }
+			
+			glNormal3f(0.0f, 0.0f, 1.0f);
+			glTexCoord2f(x1/dimX, y/dimY);
+			glVertex3f(x1, y, z);
+			glTexCoord2f(x2/dimX, y/dimY);
+			glVertex3f(x2, y, z);
+		}
+    glEnd();
+  }
+	
+  glPopAttrib();
+}
+
+
+//! Displays an axis-aligned wire box.
+//! \param xmin smallest coordinate of the box along X-axis
+//! \param xmax biggest coordinate of the box along X-axis
+//! \param ymin smallest coordinate of the box along Y-axis
+//! \param ymax biggest coordinate of the box along Y-axis
+//! \param zmin smallest coordinate of the box along Z-axis
+//! \param zmax biggest coordinate of the box along Z-axis
+void g3d_draw_AA_box(double xmin, double xmax, double ymin, double ymax, double zmin, double zmax) {
+	
+  glPushAttrib(GL_LINE_BIT);
+  glLineWidth(3);
+	
+  glColor3f(0.0, 0.0, 0.0);
+	
+  glBegin(GL_LINES);
+  glVertex3f(xmin, ymin, zmin);
+  glVertex3f(xmin, ymin, zmax);
+	
+  glVertex3f(xmax, ymin, zmin);
+  glVertex3f(xmax, ymin, zmax);
+	
+  glVertex3f(xmax,  ymax, zmin);
+  glVertex3f(xmax,  ymax, zmax);
+	
+  glVertex3f(xmin, ymax, zmin);
+  glVertex3f(xmin, ymax, zmax);
+  glEnd();
+	
+	
+  glBegin(GL_LINE_LOOP);
+  glVertex3f(xmin, ymin, zmin);
+  glVertex3f(xmax, ymin, zmin);
+  glVertex3f(xmax, ymax, zmin);
+  glVertex3f(xmin, ymax, zmin);
+  glEnd();
+	
+  glBegin(GL_LINE_LOOP);
+  glVertex3f(xmin, ymin, zmax);
+  glVertex3f(xmax, ymin, zmax);
+  glVertex3f(xmax, ymax, zmax);
+  glVertex3f(xmin, ymax, zmax);
+  glEnd();
+	
+  glPopAttrib();
+}
+
 //! @ingroup graphic
 void g3d_drawSphMoveObj(p3d_matrix4 mat ,double length){
   p3d_vector3 axis;
@@ -558,7 +685,7 @@ void g3d_draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, do
    p[1]/= length;
    p[2]/= length;
 
-   cone_height= 0.1* length;
+   cone_height= 0.4* length;
 
    glPushAttrib(GL_LIGHTING_BIT | GL_LINE_BIT);
    glLineWidth(5);

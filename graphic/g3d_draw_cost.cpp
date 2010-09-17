@@ -3,7 +3,7 @@
  *  BioMove3D
  *
  *  Created by Jim Mainprice on 30/04/10.
- *  Copyright 2010 __MyCompanyName__. All rights reserved.
+ *  Copyright 2010 LAAS/CNRS. All rights reserved.
  *
  */
 
@@ -19,9 +19,13 @@
 #endif
 
 #ifdef CXX_PLANNER
-#include "planningAPI.hpp"
 #include "Grids/gridsAPI.hpp"
+#include <Eigen/Core>
+#define EIGEN_USE_NEW_STDVECTOR
+#include <Eigen/StdVector>
+#include <Eigen/Geometry> 
 std::vector<Eigen::Vector3d> CXX_drawBox; 
+Eigen::Vector3d global_DrawnSphere;
 #endif
 
 #include <iostream>
@@ -34,7 +38,7 @@ std::vector<double> vect_jim;
 
 #ifdef CXX_PLANNER
 //! @ingroup graphic
-//! Fonction Drawing a box the V7 is bellow V5
+//! Function drawing a box the V7 is bellow V5
 //  
 //     V5 -- V6
 //    /      / |
@@ -91,53 +95,26 @@ void g3d_draw_eigen_box(	const Eigen::Vector3d& v1, const Eigen::Vector3d& v2, c
  * @ingroup graphics
  * Draws the things related to cost spaces
  */
-
 void g3d_draw_costspace()
 {
-	if((ENV.getBool(Env::drawDistance)||ENV.getBool(Env::HRIPlannerWS)) && ENV.getBool(Env::drawDistance))
+	if( ENV.getBool(Env::isCostSpace) )
 	{
-#ifdef HRI_COSTSPACE
-		vect_jim = HRICS_activeDist->getVectorJim();
-#endif
-		glLineWidth(3.);
-		
-		for (unsigned int i = 0; i < vect_jim.size() / 6; i++)
+		for (int num = 0; num < 2; num++)
 		{
-			g3d_drawOneLine(vect_jim[0 + 6 * i], vect_jim[1 + 6 * i],
-							vect_jim[2 + 6 * i], vect_jim[3 + 6 * i],
-							vect_jim[4 + 6 * i], vect_jim[5 + 6 * i], Red, NULL);
-		}
-		
-		glLineWidth(1.);
-	}
-#ifdef HRI_COSTSPACE	
-	if ( ENV.getBool(Env::drawGaze) && ( ENV.getBool(Env::HRIPlannerWS) ||  ENV.getBool(Env::HRIPlannerCS) ) )
-	{
-		vector<double> Gaze;
-		Gaze.clear();
-		
-		//cout << "Draw Gaze" << endl;
-		
-		Gaze = HRICS_MotionPL->getVisibility()->getGaze();
-		
-		glLineWidth(3.);
-		
-		if( (Gaze.size() == 6))
-		{		
-			g3d_drawOneLine(Gaze[0], Gaze[1],
-							Gaze[2], Gaze[3],
-							Gaze[4], Gaze[5], Blue, NULL);
-		}
-		
-		glLineWidth(1.);
-	}
-	
-//	if ( HRICS_Natural != NULL ) 
-//	{
-//		HRICS_Natural->printBodyPos();
-//		ENV.setBool(Env::drawPoints,true);
-//	}
+			for (int it = 0; it < 3; it++)
+			{
+#ifdef P3D_COLLISION_CHECKING
+				if (vectMinDist[num][it] != 0)
+				{
+					g3d_drawOneLine(vectMinDist[0][0], vectMinDist[0][1], 
+													vectMinDist[0][2], vectMinDist[1][0], 
+													vectMinDist[1][1], vectMinDist[1][2], Red, NULL);
+					break;
+				}
 #endif
+			}
+		}
+	}
 }
 
 void g3d_draw_grids()
@@ -154,8 +131,8 @@ void g3d_draw_grids()
 			if (!CXX_drawBox.empty()) 
 			{
 				g3d_draw_eigen_box(	CXX_drawBox[0], CXX_drawBox[1], CXX_drawBox[2], CXX_drawBox[3],
-									CXX_drawBox[4], CXX_drawBox[5], CXX_drawBox[6], CXX_drawBox[7],
-									Red, 0, 3);
+														CXX_drawBox[4], CXX_drawBox[5], CXX_drawBox[6], CXX_drawBox[7],
+													 Red, 0, 3);
 			}
 		}
 	}
@@ -167,8 +144,8 @@ void g3d_draw_grids()
 		if (!CXX_drawBox.empty()) 
 		{
 			g3d_draw_eigen_box(	CXX_drawBox[0], CXX_drawBox[1], CXX_drawBox[2], CXX_drawBox[3],
-								CXX_drawBox[4], CXX_drawBox[5], CXX_drawBox[6], CXX_drawBox[7],
-								Red, 0, 3);
+													CXX_drawBox[4], CXX_drawBox[5], CXX_drawBox[6], CXX_drawBox[7],
+													Red, 0, 3);
 		}
 	}
 	
@@ -187,6 +164,11 @@ void g3d_draw_grids()
 			PointsToDraw->drawAllPoints();
 		}
 	}
+	
+	// Draws a sphere of 10 cm of radius
+//	g3d_drawSphere(global_DrawnSphere(0),
+//								 global_DrawnSphere(1),
+//								 global_DrawnSphere(2), 0.1 );
 #endif
 }
 
@@ -204,40 +186,55 @@ void g3d_draw_hrics()
 			//          printf("Draw 2d path\n");
 			dynamic_cast<HRICS::ConfigSpace*>(HRICS_MotionPL)->draw2dPath();
 		}
-	}
-	
-	if( ENV.getBool(Env::isCostSpace) )
-	{
-		if( ENV.getBool(Env::enableHri) )
+		
+		if( ENV.getBool(Env::isCostSpace) )
 		{
-			if( ENV.getBool(Env::HRIPlannerWS) && ENV.getBool(Env::drawTraj) )
+			if( ENV.getBool(Env::enableHri) )
 			{
-				//              printf("Draw 3d path\n");
-				dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->draw3dPath();
-			}
-		}
-		else
-		{
-			if( ENV.getBool(Env::isCostSpace) )
-			{
-				for (int num = 0; num < 2; num++)
+				if( ENV.getBool(Env::HRIPlannerWS) && ENV.getBool(Env::drawTraj) )
 				{
-					for (int it = 0; it < 3; it++)
-					{
-#ifdef P3D_COLLISION_CHECKING
-						if (vectMinDist[num][it] != 0)
-						{
-							g3d_drawOneLine(vectMinDist[0][0],
-											vectMinDist[0][1], vectMinDist[0][2],
-											vectMinDist[1][0], vectMinDist[1][1],
-											vectMinDist[1][2], Red, NULL);
-							break;
-						}
-#endif
-					}
+					//              printf("Draw 3d path\n");
+					dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->draw3dPath();
 				}
 			}
 		}
+	}
+	
+	if( ENV.getBool(Env::drawDistance) && HRICS_activeDist )
+	{
+		vect_jim = HRICS_activeDist->getVectorJim();
+		
+		glLineWidth(3.);
+		
+		for (unsigned int i = 0; i < vect_jim.size() / 6; i++)
+		{
+			g3d_drawOneLine(vect_jim[0 + 6 * i], vect_jim[1 + 6 * i],
+											vect_jim[2 + 6 * i], vect_jim[3 + 6 * i],
+											vect_jim[4 + 6 * i], vect_jim[5 + 6 * i], Red, NULL);
+		}
+		
+		glLineWidth(1.);
+	}
+
+	if ( ENV.getBool(Env::drawGaze) && ( ENV.getBool(Env::HRIPlannerWS) ||  ENV.getBool(Env::HRIPlannerCS) ) )
+	{
+		vector<double> Gaze;
+		Gaze.clear();
+		
+		//cout << "Draw Gaze" << endl;
+		
+		Gaze = HRICS_MotionPL->getVisibility()->getGaze();
+		
+		glLineWidth(3.);
+		
+		if( (Gaze.size() == 6))
+		{		
+			g3d_drawOneLine(Gaze[0], Gaze[1],
+											Gaze[2], Gaze[3],
+											Gaze[4], Gaze[5], Blue, NULL);
+		}
+		
+		glLineWidth(1.);
 	}
 }
 #endif
