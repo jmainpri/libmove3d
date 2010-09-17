@@ -136,7 +136,7 @@ Node* Edge::getEnd()
     return m_End;
 }
 
-double Edge::getEdgeCost()
+double Edge::cost()
 {
 	p3d_SetEdgeCost(m_Robot->getRobotStruct(),m_Edge);
 	return p3d_getEdgeCost(m_Edge);
@@ -157,6 +157,7 @@ BGL_Edge Edge::getDescriptor()
 	else 
 	{
 		m_is_BGL_Descriptor_Valid = true;
-		return m_Graph->findEdgeDescriptor(this);
+		m_BGL_Descriptor = m_Graph->findEdgeDescriptor(this);
+		return m_BGL_Descriptor;
 	}
 }

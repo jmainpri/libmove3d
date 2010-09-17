@@ -7,5 +7,6 @@ ESTExpansion.cpp
 RRTExpansion.cpp 
 TransitionExpansion.cpp
 ThresholdExpansion.cpp
+StarExpansion.cpp
 )
 SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME_TMP2})

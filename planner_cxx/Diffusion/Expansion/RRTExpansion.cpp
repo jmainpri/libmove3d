@@ -1,4 +1,4 @@
-#include "RRTExpansion.h"
+#include "RRTExpansion.hpp"
 
 #include "API/Device/robot.hpp"
 #include "API/ConfigSpace/configuration.hpp"
@@ -251,12 +251,17 @@ int RRTExpansion::expandProcess(Node* expansionNode, shared_ptr<
         directionLocalpath = shared_ptr<LocalPath> (new LocalPath(
                 fromNode->getConfiguration(), directionConfig));
 
-		// Expand one step along the local path "extensionLocalpath"
+				// Expand one step along the local path "extensionLocalpath"
         extensionSucceeded = nextStep(*directionLocalpath, directionNode,
                                             positionAlongDirection, extensionLocalpath, method);
 
 //        cout << directionLocalpath->length() << endl;
 //        cout << positionAlongDirection << endl;
+			
+			/*if( extensionSucceeded) 
+			{
+				cout << "Extension succeded " << endl;
+			}*/
 
         failed |= !extensionSucceeded;
 

@@ -56,7 +56,7 @@
 #include "API/Search/Dijkstra/dijkstra.hpp"
 
 //#include "API/Trajectory/CostOptimization.hpp"
-//#include "API/Trajectory/Smoothing.hpp"
+//#include "API/Trajectory/smoothing.hpp"
 #include "API/Trajectory/trajectory.hpp"
 
 #include "API/scene.hpp"

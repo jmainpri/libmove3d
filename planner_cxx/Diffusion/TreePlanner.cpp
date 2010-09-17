@@ -24,12 +24,12 @@ using namespace tr1;
  * Constructor
  */
 TreePlanner::TreePlanner(Robot* R, Graph* G) :
-        Planner(R,G),
-        m_nbConscutiveFailures(0),
-        m_nbExpansion(0),
-		m_nbFailedExpansion(0)
+Planner(R,G),
+m_nbConscutiveFailures(0),
+m_nbExpansion(0),
+m_nbFailedExpansion(0)
 {	
-    cout << "TreePlanner::TreePlanner(R,G)" << endl;
+	cout << "TreePlanner::TreePlanner(R,G)" << endl;
 }
 
 /*!
@@ -37,25 +37,25 @@ TreePlanner::TreePlanner(Robot* R, Graph* G) :
  */
 TreePlanner::~TreePlanner()
 {
-
+	
 }
 
 int TreePlanner::init()
 {
-    int ADDED = 0;
-    Planner::init();
-    m_nbConscutiveFailures = 0;
-    m_nbExpansion = 0;
-
-    ADDED += setStart(_Robot->getInitialPosition());
-    ADDED += setGoal(_Robot->getGoTo());
-
-    _Graph->setStart(_Start);
-    _Graph->setGoal(_Goal);
+	int ADDED = 0;
+	Planner::init();
+	m_nbConscutiveFailures = 0;
+	m_nbExpansion = 0;
 	
-		m_nbInitNodes = _Graph->getNumberOfNodes();
-
-    return ADDED;
+	ADDED += setStart(_Robot->getInitialPosition());
+	ADDED += setGoal(_Robot->getGoTo());
+	
+	_Graph->setStart(_Start);
+	_Graph->setGoal(_Goal);
+	
+	m_nbInitNodes = _Graph->getNumberOfNodes();
+	
+	return ADDED;
 }
 
 /*!
@@ -64,43 +64,44 @@ int TreePlanner::init()
  */
 bool TreePlanner::preConditions()
 {
-//    cout << "Entering preCondition" << endl;
-
-    if (ENV.getBool(Env::isCostSpace) && (ENV.getExpansionMethod()
-        == Env::Connect))
-        {
-        cout
-                << "Warning: Connect expansion strategy \
-                is usually unadapted for cost spaces\n"
-                << endl;
-    }
-
-    if ((ENV.getBool(Env::biDir) && ENV.getBool(Env::expandToGoal))
-        && (*_Start->getConfiguration() == *_Goal->getConfiguration()) )
-        {
-        cout << "TreePlanner::preConditions => Tree Expansion failed: root nodes are the same" << endl;
-        return false;
-    }
-
+	//    cout << "Entering preCondition" << endl;
+	
+	if (ENV.getBool(Env::isCostSpace) && (ENV.getExpansionMethod()
+																				== Env::Connect))
+	{
+		cout
+		<< "Warning: Connect expansion strategy \
+		is usually unadapted for cost spaces\n"
+		<< endl;
+	}
+	
+	if ((ENV.getBool(Env::biDir) && ENV.getBool(Env::expandToGoal))
+			&& (*_Start->getConfiguration() == *_Goal->getConfiguration()) )
+	{
+		cout << "TreePlanner::preConditions => Tree Expansion failed: root nodes are the same" << endl;
+		return false;
+	}
+	
 	if (_Start->getConfiguration()->isOutOfBounds())
-    {
-        cout << "TreePlanner::preConditions => Start is out of bounds" << endl;
-        return false;
-    }
+	{
+		cout << "TreePlanner::preConditions => Start is out of bounds" << endl;
+		return false;
+	}
 	
-    if (_Start->getConfiguration()->isInCollision())
-    {
-        cout << "TreePlanner::preConditions => Start in collision" << endl;
-        return false;
-    }
-
-//    if (!(_Start->getConfiguration()->setConstraints()))
-//    {
-//        cout << "Start does not respect constraints" << endl;
-//        return false;
-//    }
+	if (_Start->getConfiguration()->isInCollision())
+	{
+		cout << "TreePlanner::preConditions => Start in collision" << endl;
+		// TODO print out collision status!!! See FORMenv print call
+		return false;
+	}
 	
-    if (ENV.getBool(Env::expandToGoal))
+	//    if (!(_Start->getConfiguration()->setConstraints()))
+	//    {
+	//        cout << "Start does not respect constraints" << endl;
+	//        return false;
+	//    }
+	
+	if (ENV.getBool(Env::expandToGoal))
 	{
 		if( _Goal->getConfiguration()->isOutOfBounds() )
 		{
@@ -111,25 +112,26 @@ bool TreePlanner::preConditions()
 		if( _Goal->getConfiguration()->isInCollision() )
 		{
 			cout << "TreePlanner::preConditions => Goal in collision" << endl;
+			// TODO print out collision status!!! See FORMenv print call
 			return false;
 		}
 	}
 	
-//    if (ENV.getBool(Env::expandToGoal)
-//        && (!(_Goal->getConfiguration()->setConstraints())))
-//        {
-//        cout << "Goal in does not respect constraints" << endl;
-//        return false;
-//    }
-
-//    cout << "Tree Planner precondition: OK" << endl;
-
-    if(ENV.getBool(Env::drawPoints))
-    {
-        PointsToDraw = new ThreeDPoints;
-    }
-
-    return true;
+	//    if (ENV.getBool(Env::expandToGoal)
+	//        && (!(_Goal->getConfiguration()->setConstraints())))
+	//        {
+	//        cout << "Goal in does not respect constraints" << endl;
+	//        return false;
+	//    }
+	
+	//    cout << "Tree Planner precondition: OK" << endl;
+	
+	if(ENV.getBool(Env::drawPoints))
+	{
+		PointsToDraw = new ThreeDPoints;
+	}
+	
+	return true;
 }
 
 /*!
@@ -138,73 +140,73 @@ bool TreePlanner::preConditions()
  */
 bool TreePlanner::checkStopConditions()
 {
-    if (ENV.getBool(Env::expandToGoal) && trajFound())
-    {
-        cout << "Success: the start and goal components are connected." << endl;
-        return (true);
-    }
-    if (/*ENV.getBool(Env::ligandExitTrajectory)*/false)
-    {
-        double d(_Start->getConfiguration()->dist(
-                *_Graph->getLastNode()->getConfiguration()));
-        if (d > 12.0)
-        {
-            ENV.setBool(Env::expandToGoal, true);
-            _Goal = _Graph->getLastNode();
-            _Graph->getGraphStruct()->search_goal = _Goal->getNodeStruct();
-            _Goal->getNodeStruct()->rankFromRoot = 1;
-            _Goal->getNodeStruct()->type = ISOLATED;
-            _Robot->getGoTo() = _Goal->getConfiguration()->copy();
-            cout << "Success: distance from start is " << d << endl;
-            return (true);
-        }
-    }
-
-    if (_Start->maximumNumberNodes())
-    {
-        cout
-                << "Failure: the maximum number of nodes in the start component is reached."
-                << endl;
-        return (true);
-    }
-
-    if (ENV.getBool(Env::biDir) && ENV.getBool(Env::expandToGoal) )
-    {
-        if (_Goal->maximumNumberNodes())
-        {
-            cout
-                    << "Failure: the maximum number of nodes in the goal component is reached."
-                    << endl;
-            return (true);
-        }
-    }
-
-    if (_Graph->getNumberOfNodes() >= ((unsigned int)ENV.getInt(Env::maxNodeCompco)))
-    {
-        cout << "Failure: the maximum number of nodes is reached." << endl;
-        return (true);
-    }
-
-    if ((int)m_nbConscutiveFailures > ENV.getInt(Env::NbTry))
-    {
-        cout
-                << "Failure: the maximum number of consecutive failures to expand a component is reached."
-                << endl;
-        return (true);
-    }
-
-    if (!(*_stop_func)())
-    {
-        p3d_SetStopValue(true);
-    }
-
-    if (p3d_GetStopValue())
-    {
-        cout << "Tree expansion cancelled." << endl;
-        return (true);
-    }
-
-    return (false);
+	if (ENV.getBool(Env::expandToGoal) && trajFound())
+	{
+		cout << "Success: the start and goal components are connected." << endl;
+		return (true);
+	}
+	if (/*ENV.getBool(Env::ligandExitTrajectory)*/false)
+	{
+		double d(_Start->getConfiguration()->dist(
+																							*_Graph->getLastNode()->getConfiguration()));
+		if (d > 12.0)
+		{
+			ENV.setBool(Env::expandToGoal, true);
+			_Goal = _Graph->getLastNode();
+			_Graph->getGraphStruct()->search_goal = _Goal->getNodeStruct();
+			_Goal->getNodeStruct()->rankFromRoot = 1;
+			_Goal->getNodeStruct()->type = ISOLATED;
+			_Robot->getGoTo() = _Goal->getConfiguration()->copy();
+			cout << "Success: distance from start is " << d << endl;
+			return (true);
+		}
+	}
+	
+	if (_Start->maximumNumberNodes())
+	{
+		cout
+		<< "Failure: the maximum number of nodes in the start component is reached."
+		<< endl;
+		return (true);
+	}
+	
+	if (ENV.getBool(Env::biDir) && ENV.getBool(Env::expandToGoal) )
+	{
+		if (_Goal->maximumNumberNodes())
+		{
+			cout
+			<< "Failure: the maximum number of nodes in the goal component is reached."
+			<< endl;
+			return (true);
+		}
+	}
+	
+	if (_Graph->getNumberOfNodes() >= ((unsigned int)ENV.getInt(Env::maxNodeCompco)))
+	{
+		cout << "Failure: the maximum number of nodes is reached." << endl;
+		return (true);
+	}
+	
+	if ((int)m_nbConscutiveFailures > ENV.getInt(Env::NbTry))
+	{
+		cout
+		<< "Failure: the maximum number of consecutive failures to expand a component is reached."
+		<< endl;
+		return (true);
+	}
+	
+	if (!(*_stop_func)())
+	{
+		p3d_SetStopValue(true);
+	}
+	
+	if (p3d_GetStopValue())
+	{
+		cout << "Tree expansion cancelled." << endl;
+		return (true);
+	}
+	
+	return (false);
 }
 
 /*!
@@ -213,51 +215,51 @@ bool TreePlanner::checkStopConditions()
  */
 bool TreePlanner::connectNodeToCompco(Node* N, Node* Compco)
 {
-//    return p3d_ConnectNodeToComp(N->getGraph()->getGraphStruct(),
-//                                 N->getNodeStruct(), CompNode->getCompcoStruct());
+	//    return p3d_ConnectNodeToComp(N->getGraph()->getGraphStruct(),
+	//                                 N->getNodeStruct(), CompNode->getCompcoStruct());
 	
 	return _Graph->connectNodeToCompco(N,Compco);
 }
 
 /*!
-  * Main function to connect 
-  * to the other component
-  */
+ * Main function to connect 
+ * to the other component
+ */
 bool TreePlanner::connectionToTheOtherCompco(Node* toNode)
 {
-    bool isConnectedToOtherTree(false);
-
-    if( ENV.getBool(Env::tryClosest))
-    {
-        bool WeigtedRot = ENV.getBool(Env::isWeightedRotation);
-        ENV.setBool(Env::isWeightedRotation,false);
-
-        Node* closestNode = _Graph->nearestWeightNeighbour(
-                toNode,
-                _Graph->getLastNode()->getConfiguration(),
-                false,
-                p3d_GetDistConfigChoice());
-
-        ENV.setBool(Env::isWeightedRotation,WeigtedRot);
+	bool isConnectedToOtherTree(false);
+	
+	if( ENV.getBool(Env::tryClosest))
+	{
+		bool WeigtedRot = ENV.getBool(Env::isWeightedRotation);
+		ENV.setBool(Env::isWeightedRotation,false);
 		
-        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastNode(), closestNode );
-    }
-
-    if(isConnectedToOtherTree)
-    {
-        return true;
-    }
-
-    if(ENV.getBool(Env::randomConnectionToGoal))
-    {
-        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastNode(), toNode->randomNodeFromComp());
-    }
-    else
-    {
-        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastNode(), toNode );
-    }
-
-    return isConnectedToOtherTree;
+		Node* closestNode = _Graph->nearestWeightNeighbour(
+																											 toNode,
+																											 _Graph->getLastNode()->getConfiguration(),
+																											 false,
+																											 p3d_GetDistConfigChoice());
+		
+		ENV.setBool(Env::isWeightedRotation,WeigtedRot);
+		
+		isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastNode(), closestNode );
+		
+		if(isConnectedToOtherTree)
+		{
+			return true;
+		}
+	}
+	
+	if(ENV.getBool(Env::randomConnectionToGoal))
+	{
+		isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastNode(), toNode->randomNodeFromComp());
+	}
+	else
+	{
+		isConnectedToOtherTree = connectNodeToCompco( _Graph->getLastNode(), toNode );
+	}
+	
+	return isConnectedToOtherTree;
 }
 
 const int nb_Graph_Saved = 100;
@@ -287,7 +289,7 @@ unsigned int TreePlanner::run()
 	shared_ptr<Configuration> q_start = _Start->getConfiguration();
 	shared_ptr<Configuration> q_goal = _Goal->getConfiguration();
 	
-	while (!checkStopConditions())
+	while ( !checkStopConditions() )
 	{
 		ENV.setInt(Env::progress,(int)(_Graph->getNumberOfNodes()/ENV.getInt(Env::maxNodeCompco)));
 		//                cout << "progress = " << ENV.getInt(Env::progress) << endl;
@@ -303,9 +305,9 @@ unsigned int TreePlanner::run()
 			// one time (Main function of Tree like planners
 			NbCurCreatedNodes = expandOneStep(fromNode,toNode); m_nbExpansion++;
 			
-//			cout << "Number Of Compco C++ : " << _Graph->getConnectedComponents().size() << endl;
-//			cout << "Number Of Compco C : " << _Graph->getNumberOfCompco() << endl;
-//			cout << "--------------------------------------------" << endl;
+			//			cout << "Number Of Compco C++ : " << _Graph->getConnectedComponents().size() << endl;
+			//			cout << "Number Of Compco C : " << _Graph->getNumberOfCompco() << endl;
+			//			cout << "--------------------------------------------" << endl;
 			
 			if (NbCurCreatedNodes > 0)
 			{

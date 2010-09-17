@@ -234,33 +234,40 @@ Eigen::Quaterniond Configuration::getQuaternion()
   */
 double Configuration::dist(Configuration& Conf)
 {
-    double ljnt = 0.;
-    int njnt = _Robot->getRobotStruct()->njoints;
-    p3d_jnt * jntPt;
-    int* IsConstraintedDof = _Robot->getRobotStruct()->cntrt_manager->in_cntrt;
-    int k = 0;
-
-    bool ActivQuaterion = _flagInitQuaternions && Conf._flagInitQuaternions;
-
-    for (int i = 0; i <= njnt; i++) {
-        jntPt = _Robot->getRobotStruct()->joints[i];
-        for (int j = 0; j < jntPt->dof_equiv_nbr; j++)
-        {
-            k = jntPt->index_dof + j;
-            if (IsConstraintedDof[k] != DOF_PASSIF)
-            {
-                if ( ActivQuaterion && ( (k) >= _QuatDof ) && ( (k) < (_QuatDof+3) ))
-                {
-
-                }
-                else
-                {
-                    //cout << "Joint "  << i << "  is = "  << SQR(p3d_jnt_calc_dof_dist(jntPt, j, _Configuration, Conf.getConfigStruct())) << endl;
-                    ljnt += SQR(p3d_jnt_calc_dof_dist(jntPt, j, _Configuration, Conf.getConfigStruct()));
-                }
-            }
-        }
-    }
+	return p3d_dist_config(_Robot->getRobotStruct(), 
+												 _Configuration, 
+												 Conf.getConfigStruct());
+	/*
+	double ljnt = 0.;
+	int njnt = _Robot->getRobotStruct()->njoints;
+	p3d_jnt * jntPt;
+	int* IsConstraintedDof = _Robot->getRobotStruct()->cntrt_manager->in_cntrt;
+	int k = 0;
+	
+	bool ActivQuaterion = _flagInitQuaternions && Conf._flagInitQuaternions;
+	
+	for (int i = 0; i <= njnt; i++) 
+	{
+		jntPt = _Robot->getRobotStruct()->joints[i];
+		
+		for (int j = 0; j < jntPt->dof_equiv_nbr; j++)
+		{
+			k = jntPt->index_dof + j;
+			if (IsConstraintedDof[k] != DOF_PASSIF)
+			{
+				if ( ActivQuaterion && ( (k) >= _QuatDof ) && ( (k) < (_QuatDof+3) ))
+				{
+					
+				}
+				else
+				{
+					double dist_n = SQR(p3d_jnt_calc_dof_dist_2(jntPt, j, _Configuration, Conf.getConfigStruct()));
+					cout << "Joint "  << k << "  is = " << dist_n << endl;
+					ljnt += dist_n;
+				}
+			}
+		}
+	}
 
 
 //    if(ActivQuaterion)
@@ -270,7 +277,7 @@ double Configuration::dist(Configuration& Conf)
 
     double dist = sqrt(ljnt);
 //    cout << " Dist is = "  << dist << endl;
-    return dist;
+    return dist;*/
 }
 
 double Configuration::dist(Configuration& q, int distChoice)
@@ -510,7 +517,7 @@ Eigen::VectorXd Configuration::getEigenVector()
 	unsigned int nbDof=0;
 	unsigned int njnt = _Robot->getNumberOfJoints();
 
-	// Get  number of Dofs
+	// Get  number of Dofs of all joints
 	for (unsigned int i = 0; i < njnt; i++) 
 		nbDof += _Robot->getJoint(i)->getNumberOfDof();
 	

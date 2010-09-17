@@ -27,14 +27,12 @@ public:
 	 */
 	LocalPath(std::tr1::shared_ptr<Configuration> B, std::tr1::shared_ptr<
 			Configuration> E);
-
-	/*contruit un localpath a partir d'un localpath et d'un parametre*/
+	
 	/**
-	 * constructeur de la classe
-	 * @param path un LocalPath
-	 * @param p in/out le paramètre correspondant à la dernière Configauration valide
+	 * smaller local path (for the extend method)
 	 */
-	LocalPath(LocalPath& path, double& p);
+	LocalPath(LocalPath& path, double& pathDelta , bool lastValidConfig = true);
+	
 
 	/**
 	 * Copy constructor
@@ -107,6 +105,12 @@ public:
 	 */
 	std::tr1::shared_ptr<Configuration> getLastValidConfig(double& p);
 
+	
+	/**
+	 * Set the localpath as untested
+	 */
+	void setLocalpathAsNotTested() { _Evaluated = false; }
+	
 	/**
 	 * teste si le LocalPath est valide
 	 * @return le LocalPath est valide

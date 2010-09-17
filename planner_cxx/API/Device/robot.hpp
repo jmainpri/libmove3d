@@ -223,6 +223,11 @@ public:
 	jnt* getBaseJnt();
 	
 	/**
+	 * Shoots a random direction
+	 */
+	std::tr1::shared_ptr<Configuration> shootRandomDirection();
+	
+	/**
 	 * Shoots the base Joint of the robot
 	 */
 	std::tr1::shared_ptr<Configuration> shootBase();

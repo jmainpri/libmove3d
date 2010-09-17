@@ -97,7 +97,7 @@ public:
 	/**
 	 * Computes the edge cost and returns it
 	 */
-	double getEdgeCost();
+	double cost();
 	
 	/**
 	 * Get the LocalPath associated

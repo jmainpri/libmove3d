@@ -7,7 +7,7 @@
  *
  */
 
-#include "ThresholdExpansion.h"
+#include "ThresholdExpansion.hpp"
 
 #include "API/ConfigSpace/localpath.hpp"
 #include "API/Roadmap/node.hpp"

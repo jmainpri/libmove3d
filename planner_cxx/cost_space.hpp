@@ -14,8 +14,8 @@
  */
 enum CostSpaceDeltaStepMethod 
 {
-	cs_mechanical_work,
 	cs_integral,
+	cs_mechanical_work,
 	cs_visibility,
 	cs_average,
 	cs_config_cost_and_dist,

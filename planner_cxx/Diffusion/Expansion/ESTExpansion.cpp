@@ -5,7 +5,7 @@
  *      Author: jmainpri
  */
 
-#include "ESTExpansion.h"
+#include "ESTExpansion.hpp"
 
 #include "API/Roadmap/node.hpp"
 #include "API/Roadmap/graph.hpp"
@@ -161,11 +161,11 @@ Node* ESTExpansion::expandProcessEST( Node* expansionNode,
                                 pathDelta, ptrToNode,
                                 nbCreatedNodes);
 
-        //			double sum = newNode->getSumCost();
+        //			double sum = newNode->sumCost();
         //
-        //			cout << "Sum = " << newNode->getSumCost() << endl;
+        //			cout << "Sum = " << newNode->sumCost() << endl;
         //			cout << "Cost = " << newNode->getCost() << endl;
-        newNode->setSelectCost( newNode->getSumCost() );
+        newNode->setSelectCost( newNode->sumCost() );
 
         //		cout << "nbCreatedNodes = " << nbCreatedNodes << endl;
         return newNode;

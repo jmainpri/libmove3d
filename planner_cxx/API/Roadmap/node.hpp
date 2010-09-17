@@ -123,15 +123,21 @@ public:
 	void setId(unsigned int id);
 	
 	/**
+	 * returns a reference to the node parent when in a tree like structure
+	 * the pointer is editable
+	 */
+	Node*& parent() { return m_parent; }
+	
+	/**
 	 * obtient le cout du Node
 	 * @return le cout du Node
 	 */
-	double getCost();
+	double cost();
 	
 	/**
 	 * Returns the Sum of cost along the path
 	 */
-	double getSumCost();
+	double& sumCost();
 	
 	/**
 	 * obtient la temperature du Node
@@ -307,8 +313,8 @@ public:
 	//--------------------------------------
 	// BGL
 	BGL_Vertex	getDescriptor();
-	void				setDescriptor(const BGL_Vertex& V) { m_is_BGL_Descriptor_Valid=true; m_BGL_Descriptor=V; }
-	void				unSetDescriptor() { m_is_BGL_Descriptor_Valid=false; }
+	void				setDescriptor(const BGL_Vertex& V);
+	void				unSetDescriptor();
 	
 private:
 	
@@ -320,6 +326,9 @@ private:
 	Graph* _Graph;
 	Robot* _Robot;
 	ConnectedComponent* m_Compco;
+	
+	// In tree graphs
+	Node* m_parent;
 	
 	std::tr1::shared_ptr<Configuration> _Configuration;
 	bool _activ;

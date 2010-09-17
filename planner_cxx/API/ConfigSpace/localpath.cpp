@@ -44,29 +44,60 @@ LocalPath::LocalPath(shared_ptr<Configuration> B, shared_ptr<Configuration> E) :
 	 {
 	 cout << "Error: LocalPath _Begin == _End" << endl;
 	 }*/
+	
+	if ( _Begin->getRobot() != _End->getRobot() ) 
+	{
+		cout << "_Begin->getRobot() != _End->getRobot() in LocalPath" << endl;
+	}
 }
 
-// Creates a new localpath from path, according to the connect extension method.
-LocalPath::LocalPath(LocalPath& path, double& p) :
-  _Robot(path.getRobot()),
-  _Begin(path._Begin),
-  _End(path.getLastValidConfig(p)),
-  _LocalPath(NULL),
-  //	_Graph(path.getGraph()),
-  // The new path represents the valid part
-  // of the path given to the constructor.
-  // If the parameter p is > 0,
-  // the given path is at least partially valid
-  // and consequently the new path is valid.
-  _Valid(p > 0),
-  _Evaluated(path._Evaluated), _lastValidParam(p > 0 ? 1.0 : 0.0),
-  _lastValidEvaluated(true),
-  _NbColTest(path._NbColTest),
-  _costEvaluated(false),  _Cost(path._Cost),
-  _ResolEvaluated(false), _Resolution(0.0),
-  _Type(path._Type)
+/**
+ * Construct a smaller localpath from the extend method
+ */
+LocalPath::LocalPath(LocalPath& path, double& p , bool lastValidConfig) :
+_Robot(path.getRobot()),
+_Begin(path._Begin),
+_LocalPath(NULL)
+//_Graph(_Robot->getActivGraph()),
+
 {
+	// For extend (Construct a smaller local path)
+	// This function is used in Base Expansion
+	if(!lastValidConfig)
+	{
+		_End = path.configAtParam(p * path.getParamMax());
+		_Valid =false;
+		_Evaluated = false;
+		_lastValidParam = 0.0;
+		_lastValidEvaluated = false;
+		_NbColTest = 0;
+		_costEvaluated = false; 
+		_Cost = 0.0;
+		_ResolEvaluated = false;
+		_Resolution = 0.0;
+		_Type = LINEAR;
+	}
+	else 
+	{
+		// The new path represents the valid part
+		// of the path given to the constructor.
+		// If the parameter p is > 0,
+		// the given path is at least partially valid
+		// and consequently the new path is valid.
+		_End = path.getLastValidConfig(p);
+		_Valid = (p > 0);
+		_Evaluated = (path._Evaluated), 
+		_lastValidParam = (p > 0 ? 1.0 : 0.0);
+		_lastValidEvaluated = true;
+		_NbColTest = path._NbColTest;
+		_costEvaluated = false ;
+		_Cost = path._Cost;
+		_ResolEvaluated = false;
+		_Resolution = 0.0;
+		_Type = path._Type;
+	}
 }
+
 
 LocalPath::LocalPath(const LocalPath& path) :
   _Robot(path._Robot),
@@ -87,6 +118,7 @@ LocalPath::LocalPath(const LocalPath& path) :
   _Type(path._Type)
 {
 }
+
 
 LocalPath::LocalPath(Robot* R, p3d_localpath* lpPtr) :
   _Robot(R),

@@ -16,7 +16,7 @@
  *      Author: jmainpri
  */
 
-#include "Expansion/TransitionExpansion.h"
+#include "Expansion/TransitionExpansion.hpp"
 #include "Roadmap/node.hpp"
 #include "Roadmap/graph.hpp"
 

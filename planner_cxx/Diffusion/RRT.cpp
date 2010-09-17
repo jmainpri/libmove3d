@@ -24,9 +24,9 @@ using namespace tr1;
 using namespace Eigen;
 
 RRT::RRT(Robot* R, Graph* G) :
-        TreePlanner(R,G)
+TreePlanner(R,G)
 {
-    cout << "RRT::RRT(R,G)" << endl;
+	cout << "RRT::RRT(R,G)" << endl;
 }
 
 RRT::~RRT()
@@ -38,13 +38,12 @@ RRT::~RRT()
  */
 bool RRT::checkStopConditions()
 {
-    if(TreePlanner::checkStopConditions())
-    {
-        return true;
-    }
-
-    return false;
-
+	if(TreePlanner::checkStopConditions())
+	{
+		return true;
+	}
+	
+	return false;
 }
 
 /**
@@ -52,33 +51,33 @@ bool RRT::checkStopConditions()
  */
 bool RRT::preConditions()
 {
-    if(TreePlanner::preConditions())
-    {
-        if (ENV.getBool(Env::expandToGoal))
-        {
-            if(trajFound())
-            {
-                cout << "Start And Goal in same component" << endl;
-                return true;
-            }
-
-            if(!ENV.getBool(Env::isCostSpace))
-            {
-                LocalPath direct(_Start->getConfiguration(), _Goal->getConfiguration());
-                if (direct.isValid())
-                {
-                    connectNodeToCompco(_Start,_Goal);
-                    cout << "Direct connection" << endl;
-                    return true;
-                }
-            }
-        }
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+	if(TreePlanner::preConditions())
+	{
+		if (ENV.getBool(Env::expandToGoal))
+		{
+			if(trajFound())
+			{
+				cout << "Start And Goal in same component" << endl;
+				return true;
+			}
+			
+			if(!ENV.getBool(Env::isCostSpace))
+			{
+				LocalPath direct(_Start->getConfiguration(), _Goal->getConfiguration());
+				if (direct.isValid())
+				{
+					connectNodeToCompco(_Start,_Goal);
+					cout << "Direct connection" << endl;
+					return true;
+				}
+			}
+		}
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 /**
@@ -86,11 +85,11 @@ bool RRT::preConditions()
  */
 int  RRT::init()
 {
-    int added = TreePlanner::init();
-    _expan = new RRTExpansion(_Graph);
+	int added = TreePlanner::init();
+	_expan = new RRTExpansion(_Graph);
 	//_expan->setDirectionMethod(NAVIGATION_BEFORE_MANIPULATION);
-    setInit(true);
-    return added;
+	setInit(true);
+	return added;
 }
 
 /**
@@ -110,40 +109,40 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
 	_expan->setFromComp(fromComp);
 	_expan->setToComp(toComp);
 	
-    Node* directionNode(NULL);
-    Node* expansionNode(NULL);
-    shared_ptr<Configuration> directionConfig;
-
-    // get direction
-    directionConfig = _expan->getExpansionDirection(fromComp, 
-													toComp, 
-													false,
-                                                    directionNode);
+	Node* directionNode(NULL);
+	Node* expansionNode(NULL);
+	shared_ptr<Configuration> directionConfig;
+	
+	// get direction
+	directionConfig = _expan->getExpansionDirection(fromComp, 
+																									toComp, 
+																									false,
+																									directionNode);
 #ifdef LIGTH_PLANNER
-    if(ENV.getBool(Env::drawPoints))
-    {
-        PointsToDraw->push_back(directionConfig->getTaskPos());
-    }
+	if(ENV.getBool(Env::drawPoints))
+	{
+		PointsToDraw->push_back(directionConfig->getTaskPos());
+	}
 #endif
-
-//    cout << "***********************************************************"  << endl;
-//    cout << "directionConfig->print()"  << endl;
-//   directionConfig->print();
-
-    // get node for expansion
-    expansionNode = _expan->getExpansionNode(fromComp, 
-																						 directionConfig,
-                                             ENV.getInt(Env::DistConfigChoice));
-
-//    cout << "***********************************************************"  << endl;
-//    cout << "expansionNode->print()"  << endl;
-//    expansionNode->getConfiguration()->print();
-
-    // expansion in one direction
-    int nbNodeCreated = _expan->expandProcess(expansionNode, 
-																							directionConfig, 
-																							directionNode,
-																							ENV.getExpansionMethod());
+	
+	//    cout << "***********************************************************"  << endl;
+	//    cout << "directionConfig->print()"  << endl;
+	//   directionConfig->print();
+	
+	// get node for expansion
+	expansionNode = _expan->getExpansionNode(fromComp, 
+																					 directionConfig,
+																					 ENV.getInt(Env::DistConfigChoice));
+	
+	//    cout << "***********************************************************"  << endl;
+	//    cout << "expansionNode->print()"  << endl;
+	//    expansionNode->getConfiguration()->print();
+	
+	// expansion in one direction
+	int nbNodeCreated = _expan->expandProcess(expansionNode, 
+																						directionConfig, 
+																						directionNode,
+																						ENV.getExpansionMethod());
 	
 	if ( nbNodeCreated < 1 ) 
 	{
@@ -151,6 +150,6 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
 	}
 	
 	return nbNodeCreated;
-    //	}
+	//	}
 }
 

@@ -62,7 +62,7 @@ public:
 	/**
 	 * Main function to connect to the other Connected Component
 	 */
-	bool connectionToTheOtherCompco(Node* toNode);
+	virtual bool connectionToTheOtherCompco(Node* toNode);
 
 	/**
 	 * Expands tree from component fromComp

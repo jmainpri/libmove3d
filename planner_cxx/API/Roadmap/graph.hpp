@@ -105,13 +105,13 @@ public:
 	/**
 	 * create node list
 	 */
-	list_node* createNodeList(std::map<Node*,node*>& NodeMap, std::vector<Node*> nodes, list_node* end = NULL) ;
+	list_node* createNodeList(std::map<Node*,node*>& NodeMap, const std::vector<Node*>& nodes, list_node* end = NULL) ;
 	
 	
 	/**
 	 * create edge list
 	 */
-	list_edge* createEdgeList(std::map<Edge*,edge*>& EdgeMap, std::vector<Edge*> edges, list_edge* end = NULL) ;
+	list_edge* createEdgeList(std::map<Edge*,edge*>& EdgeMap, const std::vector<Edge*>& edges, list_edge* end = NULL) ;
 
 	
 	/**
@@ -346,7 +346,17 @@ public:
 	 * @param N2 l'autre extrémité des Edge
 	 * @param Long la longueur des Edge
 	 */
-	void addEdges(Node* N1, Node* N2, double Long);
+	void addEdges(Node* N1, Node* N2, double Length , bool computeLength = false );
+	
+	/**
+	 * Remove edges between source node and target node
+	 */
+	void removeEdge( Node* source, Node* target );
+	
+	/**
+	 * Remove the edges between the nodes N1 and N2
+	 */
+	void removeEdges( Node* N1, Node* N2 );
 	
 	/**
 	 * Removes an edge from the graph
@@ -382,7 +392,7 @@ public:
 	/**
 	 * Remove Node from graph
 	 */
-	void removeNodeFromGraph(Node* N);
+	void removeNode(Node* N);
 	
 	/**
 	 * lie un Node au Graph
@@ -446,6 +456,16 @@ public:
 	bool connectNodeToCompco(Node* node, Node* compco);
 	
 	/**
+	 * Compute the K nearest nodes
+	 * @param K the maximal number of neighbors
+	 */
+	std::vector<Node*> KNearestWeightNeighbour(std::tr1::shared_ptr<Configuration> config,
+																							int K,
+																							double radius,
+																							bool weighted, 
+																							int distConfigChoice);
+	
+	/**
 	 * obtient le plus proche voisin d'une composante connexe
 	 * @param compco la composante connexe dans laquelle on cherche le Node
 	 * @param C la Configuration dont on veut determier le plus proche voisin
@@ -483,6 +503,12 @@ public:
 	int mergeComp(Node* CompCo1, Node* CompCo2, double DistNodes);
 	
 	/**
+	 * Rebuild the connected component
+	 * using the strongly connected component algo from the BGL
+	 */
+	void rebuildCompcoFromBoostGraph();
+	
+	/**
 	 * teste si des composantes connexes doivent être merger et le fait le cas échéant
 	 */
 	void mergeCheck();
@@ -490,7 +516,7 @@ public:
 	/**
 	 * Delete the compco
 	 */
-	void deleteCompco(ConnectedComponent* CompCo);
+	void removeCompco(ConnectedComponent* CompCo);
 	
 	/**
 	 * Check C and C++ Connected Components
@@ -525,6 +551,7 @@ public:
 	BGL_Edge		findEdgeDescriptor(Edge* E);
 	void				saveBGLGraphToDotFile(const std::string& filename);
 	BGL_Graph&	get_BGL_Graph() { return m_BoostGraph; }
+	void				setAllDescriptorsInvalid();
 	
 	
 private:

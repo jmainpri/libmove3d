@@ -15,23 +15,37 @@
  * @ingroup Trajectory
  * @brief Genera Cost Optimization of a trajectory
  */
-namespace API {
-	
-	class CostOptimization : public Smoothing {
-		
+namespace API 
+{
+	class CostOptimization : public Smoothing 
+	{
 	public:
+		
+		/**
+		 * Constructors and Destructors of the class
+		 */
 		CostOptimization();
 		CostOptimization(const Trajectory& T);
 		CostOptimization(Robot* R,p3d_traj* t);
 		
 		~CostOptimization();
 		
+		/**
+		 * Returns 3 random configurations along the trajtectory
+		 * @param the step between the 3 configuration
+		 * @return vector of configuration
+		 * @return 
+		 */
 		std::vector< std::tr1::shared_ptr<Configuration> > get3RandSuccesConfAlongTraj(
 																																									 double& prevDistPt,
 																																									 double& randDistPt,
 																																									 double& nextDistPt,
 																																									 double step);
 		
+		/**
+		 * Returns the 3 configurations that are the closest to the input configuration
+		 * @param 
+		 */
 		std::vector< std::tr1::shared_ptr<Configuration> > getClosestConfOnTraj(
 																																						double& prevDistPt,
 																																						double& randDistPt,
@@ -39,36 +53,67 @@ namespace API {
 																																						std::tr1::shared_ptr<Configuration> ptrConf,
 																																						double step);
 		
+		/**
+		 * Cheat for Justin
+		 */
 		std::tr1::shared_ptr<Configuration> cheat();
 		
-		bool oneLoopDeform(double step);
+		/**
+		 * One loop of the deformation strategy
+		 * @param step is the distance between 2 configurations
+		 */
+		bool oneLoopDeform( double step );
 		
-		bool oneLoopDeformRecompute(double step);
+		/**
+		 * One loop of the deformation strategy with recomputing 
+		 * of the trajectory portion cost as it might change
+		 * @param step is the distance between 2 configurations
+		 */
+		bool oneLoopDeformRecompute( double step );
 		
-		double getMinCost(){return mincost;}
+		/**
+		 * Get the minimal cost
+		 */
+		double getMinCost() { return m_mincost; }
 		
+		/**
+		 * Create new trajectories to show in debug mode
+		 * also calls the g3d_draw function to plot in the OpenGl display
+		 */
 		void debugShowTraj(double lPrev,double lNext,std::tr1::shared_ptr<Configuration> qNew , int color);
 		
+		/**
+		 * Prints debug information
+		 */
 		void printDebugInfo();
 		
-		bool deformInCollision() {return inCollision;}
 		
-		void setCheat() { _cheat = true; }
+		/**
+		 * Returns true if the new trajectory is in collision
+		 */
+		bool deformInCollision() { return m_inCollision; }
 		
+		/**
+		 * Set the cheat 
+		 */
+		void setCheat() { m_cheat = true; }
+		
+		/**
+		 * 
+		 */
 		void runDeformation( int nbIteration , int idRun=0 );
 		
 		
 	private:
 		
-		bool _cheat;
-		double mincost;
-		uint nbErrors;
-		std::vector<double> Errors;
-		bool DeformBiased;
-		bool inCollision;
+		bool									m_cheat;
+		double								m_mincost;
+		unsigned int					m_nbErrors;
+		std::vector<double>		m_Errors;
+		bool									m_DeformBiased;
+		bool									m_inCollision;
 		
 		//	bool oneLoopShortCut(double step);
-		
 	};
 }
 

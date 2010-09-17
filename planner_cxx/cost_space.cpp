@@ -49,7 +49,7 @@ void CostSpace::setCost(string name)
 }
 //------------------------------------------------------------------------------
 void CostSpace::addCost(string name, 
-						boost::function<double(Configuration&)> f)
+												boost::function<double(Configuration&)> f)
 {
 	if(mFunctions.find(name) == mFunctions.end())
 	{
@@ -93,18 +93,19 @@ std::vector<string> CostSpace::getAllCost()
  * Compute the cost of a portion of path */
 double CostSpace::deltaStepCost(double cost1, double cost2, double length)
 {
-    double epsilon = 0.002;
-    //double alpha;
-    double kb = 0.00831, temp = 310.15;
+	double epsilon = 0.002;
+	//double alpha;
+	double kb = 0.00831, temp = 310.15;
 	
-    //length *= ENV.getDouble(Env::KlengthWeight);
+	//length *= ENV.getDouble(Env::KlengthWeight);
 	double powerOnIntegral = ENV.getDouble(Env::KlengthWeight);
 	
-    if ( ENV.getBool(Env::isCostSpace) )
-    {
-        switch (m_deltaMethod)
-        {
+	if ( ENV.getBool(Env::isCostSpace) )
+	{
+		switch (m_deltaMethod)
+		{
 			case cs_mechanical_work:
+				
 				double cost;
 				if (cost2 > cost1)
 				{
@@ -147,10 +148,10 @@ double CostSpace::deltaStepCost(double cost1, double cost2, double length)
 				
 			default:
 				std::cout << "Warning: " << __func__ <<  std::endl;
-        }
-    }
-    //no cost function
-    return length;
+		}
+	}
+	//no cost function
+	return length;
 }
 //----------------------------------------------------------------------
 void CostSpace::setNodeCost(Node* node, double cost)
@@ -158,7 +159,7 @@ void CostSpace::setNodeCost(Node* node, double cost)
 	//	p3d_SetNodeCost(this->getActivGraph()->getGraphStruct(), 
 	//									this->getGoal()->getNodeStruct(), 
 	//									this->getGoal()->getConfiguration()->cost());
-//	double cost = node->getConfiguration()->cost();
+	//	double cost = node->getConfiguration()->cost();
 	p3d_node* NodePt = node->getNodeStruct();
 	
 	NodePt->cost = cost;
@@ -188,12 +189,12 @@ void CostSpace::setNodeCost(Node* node, double cost)
 	= MAX(cost,node->getConnectedComponent()->getCompcoStruct()->maxCost );
 	
 	/*if (p3d_GetCostMethodChoice() == URMSON_TRANSITION)
-	{
-		node->getConnectedComponent()->getCompcoStruct()->maxUrmsonCost
-		= MAX(NodePt->sumCost +
-					p3d_ComputeUrmsonCostToGoal(_Graph->getGraphStruct(),NodePt) ,
-					node->getConnectedComponent()->getCompcoStruct()->maxUrmsonCost);
-	}	*/
+	 {
+	 node->getConnectedComponent()->getCompcoStruct()->maxUrmsonCost
+	 = MAX(NodePt->sumCost +
+	 p3d_ComputeUrmsonCostToGoal(_Graph->getGraphStruct(),NodePt) ,
+	 node->getConnectedComponent()->getCompcoStruct()->maxUrmsonCost);
+	 }	*/
 }
 //----------------------------------------------------------------------
 double CostSpace::cost(LocalPath& path)
@@ -217,11 +218,11 @@ double CostSpace::cost(LocalPath& path)
 	//                cout << "DeltaStep  = "  << DeltaStep << endl;
 	unsigned int nStep = path.getParamMax() / DeltaStep;
 	
-//	cout << "nStep = " << nStep <<  endl;
+	//	cout << "nStep = " << nStep <<  endl;
 	
 	shared_ptr<Configuration> confPtr;
 	prevCost = path.getBegin()->cost();
-//	cout << "prevCost = " << prevCost << endl;
+	//	cout << "prevCost = " << prevCost << endl;
 	
 #ifdef LIGHT_PLANNER
 	// If the value of Env::HRIPlannerWS changes while executing this
@@ -260,7 +261,7 @@ double CostSpace::cost(LocalPath& path)
 		prevCost = currentCost;
 	}
 	
-//	cout << "Path Cost = " << Cost << endl;
+	//	cout << "Path Cost = " << Cost << endl;
 	
 	return Cost;
 }
@@ -282,9 +283,9 @@ double computeIntersectionWithGround(Configuration& conf)
 	if(GroundCostObj)
 	{
 		GHintersectionVerticalLineWithGround(GroundCostObj, 
-											 conf.getConfigStruct()[6],
-											 conf.getConfigStruct()[7], 
-											 &cost);
+																				 conf.getConfigStruct()[6],
+																				 conf.getConfigStruct()[7], 
+																				 &cost);
 	}
 	return(cost);
 }
@@ -295,7 +296,7 @@ double computeDistanceToObstacles(Configuration& conf)
 	shared_ptr<Configuration> qActual = robotPt->getCurrentPos();
 	robotPt->setAndUpdate(conf);
 	double cost = p3d_GetMinDistCost(robotPt->getRobotStruct());
-//	cout << "cost = "<< cost << endl;
+	//	cout << "cost = "<< cost << endl;
 	robotPt->setAndUpdate(*qActual);
 	return cost;
 }
@@ -311,8 +312,8 @@ void CostSpace::initMotionPlanning(Graph* graph, Node* start, Node* goal)
 	//  GlobalNbDown = 0;
 	//  Ns->NbDown = 0;
 	p3d_SetNodeCost(graph->getGraphStruct(),
-					start->getNodeStruct(), 
-					start->getConfiguration()->cost());
+									start->getNodeStruct(), 
+									start->getConfiguration()->cost());
 	
 	p3d_SetCostThreshold(start->getNodeStruct()->cost);
 	
@@ -326,19 +327,19 @@ void CostSpace::initMotionPlanning(Graph* graph, Node* start, Node* goal)
 		goal->getNodeStruct()->nbFailedTemp = 0;
 		//    Ng->NbDown = 0;
 		p3d_SetNodeCost(graph->getGraphStruct(), 
-						goal->getNodeStruct(), 
-						goal->getConfiguration()->cost());
+										goal->getNodeStruct(), 
+										goal->getConfiguration()->cost());
 		
 		p3d_SetCostThreshold(MAX(start->getNodeStruct()->cost, 
-								  goal->getNodeStruct()->cost));
+														 goal->getNodeStruct()->cost));
 		
 		//        p3d_SetCostThreshold(MAX(
 		//								p3d_GetNodeCost(this->getStart()->getNodeStruct()), 
 		//								p3d_GetNodeCost(this->getGoal()->getNodeStruct()) ));
 		
 		p3d_SetAverQsQgCost(
-							( graph->getGraphStruct()->search_start->cost
-							 +graph->getGraphStruct()->search_goal->cost) / 2.);
+												( graph->getGraphStruct()->search_start->cost
+												 +graph->getGraphStruct()->search_goal->cost) / 2.);
 	}
 	else
 	{

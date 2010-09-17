@@ -12,6 +12,8 @@
 #include "GroundHeight-pkg.h"
 #include "Planner-pkg.h"
 
+#include "cost_space.hpp"
+
 #if defined( HRI_COSTSPACE ) && defined ( HRI_PLANNER )
 #include "planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #endif
@@ -105,7 +107,7 @@ Trajectory& Trajectory::operator=(const Trajectory& t)
 	return *this;
 }
 
-Trajectory::Trajectory(std::vector<shared_ptr<Configuration> >& C) :
+Trajectory::Trajectory( vector< shared_ptr<Configuration> >& C) :
 HighestCostId(0), isHighestCostIdSet(false)
 {
 	if ( !C.empty() )
@@ -113,10 +115,11 @@ HighestCostId(0), isHighestCostIdSet(false)
 		name = "";
 		file = "";
 		
-		//nloc = C.size() - 1; /* Number of localpath */
-		mRobot = C.at(0)->getRobot();
+		nloc = C.size() - 1; /* Number of localpath */
+		mRobot	= C.at(0)->getRobot();
 		
-		mBegin = C.at(0);
+		mBegin	= C.at(0);
+		//mEnd		= C.back();
 		mEnd = C.at(nloc);
 
 		range_param = 0;
@@ -418,7 +421,15 @@ bool Trajectory::getValid()
 	return true;
 }
 
-double Trajectory::computeSubPortionCost(vector<LocalPath*> portion)
+void Trajectory::resetCostComputed()
+{
+	for (unsigned int i = 0; i < mCourbe.size(); i++)
+	{
+		mCourbe[i]->resetCostComputed();
+	}
+}
+
+double Trajectory::computeSubPortionCost(vector<LocalPath*>& portion)
 {
 	double sumCost(0.0);
 	double cost(0.0);
@@ -433,7 +444,7 @@ double Trajectory::computeSubPortionCost(vector<LocalPath*> portion)
 	return sumCost;
 }
 
-double Trajectory::ReComputeSubPortionCost(vector<LocalPath*> portion)
+double Trajectory::ReComputeSubPortionCost(vector<LocalPath*>& portion)
 {
 	double sumCost(0.0);
 	double cost(0.0);
@@ -449,7 +460,7 @@ double Trajectory::ReComputeSubPortionCost(vector<LocalPath*> portion)
 	return sumCost;
 }
 
-double Trajectory::computeSubPortionIntergralCost(vector<LocalPath*> portion)
+double Trajectory::computeSubPortionIntergralCost(vector<LocalPath*>& portion)
 {
 	double cost(0.0);
 	//	double dmax = p3d_get_env_dmax()/2;
@@ -469,8 +480,10 @@ double Trajectory::computeSubPortionIntergralCost(vector<LocalPath*> portion)
 	double currentParam(0.0);
 	
 	double currentCost, prevCost;
-	Vector3d taskPos, prevTaskPos;
+	
 #ifdef LIGHT_PLANNER
+	Vector3d taskPos, prevTaskPos;
+	
 	prevCost = portion[0]->getBegin()->cost();
 	if( ENV.getBool(Env::HRIPlannerWS) )
 	{
@@ -490,7 +503,6 @@ double Trajectory::computeSubPortionIntergralCost(vector<LocalPath*> portion)
 		confPtr = configAtParam(currentParam);
 		currentCost = confPtr->cost();
 		
-		distStep = dmax;
 #ifdef LIGHT_PLANNER
 		// Case of task space
 		if( ENV.getBool(Env::HRIPlannerWS) )
@@ -502,7 +514,9 @@ double Trajectory::computeSubPortionIntergralCost(vector<LocalPath*> portion)
 #endif
 		//the cost associated to a small portion of curve
 		double step_cost =
-		p3d_ComputeDeltaStepCost(prevCost, currentCost, distStep);
+		//p3d_ComputeDeltaStepCost(prevCost, currentCost, distStep);
+		global_costSpace->deltaStepCost(prevCost,currentCost,distStep);
+		
 		cost += step_cost;
 		prevCost = currentCost;
 		nbStep++;
@@ -513,7 +527,7 @@ double Trajectory::computeSubPortionIntergralCost(vector<LocalPath*> portion)
 	return cost;
 }
 
-double Trajectory::computeSubPortionCostVisib( vector<LocalPath*> portion )
+double Trajectory::computeSubPortionCostVisib( vector<LocalPath*>& portion )
 {
 	double epsilon = 0.002;
 	double cost(0.0);
@@ -573,9 +587,9 @@ double Trajectory::computeSubPortionCostVisib( vector<LocalPath*> portion )
 			currentCost = currentConf->cost();
 			//the cost associated to a small portion of curve
 			
-			
-			step_cost =
-			p3d_ComputeDeltaStepCost(prevCost, currentCost, distStep);
+			step_cost = 
+			global_costSpace->deltaStepCost(prevCost, currentCost,distStep);
+//			p3d_ComputeDeltaStepCost(prevCost, currentCost, distStep);
 			
 			cout << " Step Cost = " << step_cost << endl;
 			

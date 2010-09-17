@@ -16,6 +16,12 @@
 Global std::vector<Planner*> plannerlist;
 
 /**
+ * @ingroup NEW_CPP_MODULE
+ * This function sets the idRun for multi run cases
+ */
+void p3d_planner_functions_SetRunId( unsigned int idRun );
+
+/**
   @ingroup NEW_CPP_MODULE
  * \fn int p3d_run_prm(p3d_graph* Graph_Pt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
  * \brief fonction de lancement de l'algorithme PRM

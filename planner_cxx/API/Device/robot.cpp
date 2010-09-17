@@ -180,57 +180,6 @@ void Robot::initObjectBox()
 	
 }
 
-shared_ptr<Configuration> Robot::shoot(bool samplePassive)
-{
-    shared_ptr<Configuration> q(new Configuration(this));
-#ifdef LIGHT_PLANNER
-    if(ENV.getBool(Env::FKShoot))
-    {
-        deactivateCcCntrts(_Robot,-1);
-        p3d_shoot(_Robot, q->getConfigStruct(), false);
-        setAndUpdate(*q);
-        q = getCurrentPos();
-        activateCcCntrts(_Robot,-1,true);
-
-		if (ENV.getBool(Env::drawPoints)) {
-			PointsToDraw->push_back(q->getTaskPos());
-			//g3d_draw_allwin_active();
-		}
-
-        return q;
-    }
-    else
-    {
-        p3d_shoot(_Robot, q->getConfigStruct(), samplePassive);
-        return q;
-    }
-#else
-    p3d_shoot(_Robot, q->getConfigStruct(), samplePassive);
-    return q;
-#endif
-}
-
-shared_ptr<Configuration> Robot::shootDir(bool samplePassive)
-{
-    shared_ptr<Configuration> q(new Configuration(this));
-    //	p3d_RandDirShoot(_Robot, q->getConfigStruct(), samplePassive);
-    p3d_RandNShpereDirShoot(_Robot, q->getConfigStruct(), samplePassive);
-    return q;
-}
-
-shared_ptr<Configuration> Robot::shootFreeFlyer(double* box)
-{
-//    cout << "box  = ( " << box[0] << " , " ;
-//    cout << box[1] << " , " ;
-//    cout << box[2] << " , " ;
-//    cout << box[3] << " , " ;
-//    cout << box[4] << " , " ;
-//    cout << box[5] << " )" << endl;
-    shared_ptr<Configuration> q(new Configuration(this));
-    p3d_FreeFlyerShoot(_Robot, q->getConfigStruct(), box);
-    return q;
-}
-
 #ifdef LIGHT_PLANNER
 
 bool Robot::isActiveCcConstraint()
@@ -267,14 +216,15 @@ void Robot::deactivateCcConstraint()
  */
 int Robot::getObjectDof() 
 {
-	if (_Robot->curObjectJnt) {
+	if (_Robot->curObjectJnt) 
+	{
 		return _Robot->curObjectJnt->index_dof;
 	}
-	else {
+	else 
+	{
 		return 0;
 		std::cout << "Robot::getObjectDof()::Warning" << std::endl;
 	}
-	
 }
 
 /**
@@ -285,6 +235,15 @@ p3d_jnt* Robot::getBaseJnt()
 	return _Robot->baseJnt;
 }
 
+/**
+ * Shoots a random direction
+ */
+shared_ptr<Configuration> Robot::shootRandomDirection()
+{
+	shared_ptr<Configuration> q( new Configuration(this) );
+	p3d_RandDirShoot( _Robot, q->getConfigStruct() , false );
+	return q;
+}
 
 /**
  * Shoots the base Joint of the robot
@@ -353,6 +312,58 @@ bool Robot::setAndUpdateAllExceptBase(Configuration& q)
 	
 	return p3d_update_this_robot_pos(_Robot);
 }
+
+shared_ptr<Configuration> Robot::shoot(bool samplePassive)
+{
+	shared_ptr<Configuration> q(new Configuration(this));
+#ifdef LIGHT_PLANNER
+	if(ENV.getBool(Env::FKShoot))
+	{
+		deactivateCcCntrts(_Robot,-1);
+		p3d_shoot(_Robot, q->getConfigStruct(), false);
+		setAndUpdate(*q);
+		q = getCurrentPos();
+		activateCcCntrts(_Robot,-1,true);
+		
+		if (ENV.getBool(Env::drawPoints)) {
+			PointsToDraw->push_back(q->getTaskPos());
+			//g3d_draw_allwin_active();
+		}
+		
+		return q;
+	}
+	else
+	{
+		p3d_shoot(_Robot, q->getConfigStruct(), samplePassive);
+		return q;
+	}
+#else
+	p3d_shoot(_Robot, q->getConfigStruct(), samplePassive);
+	return q;
+#endif
+}
+
+shared_ptr<Configuration> Robot::shootDir(bool samplePassive)
+{
+	shared_ptr<Configuration> q(new Configuration(this));
+	//	p3d_RandDirShoot(_Robot, q->getConfigStruct(), samplePassive);
+	p3d_RandNShpereDirShoot(_Robot, q->getConfigStruct(), samplePassive);
+	return q;
+}
+
+shared_ptr<Configuration> Robot::shootFreeFlyer(double* box)
+{
+	//    cout << "box  = ( " << box[0] << " , " ;
+	//    cout << box[1] << " , " ;
+	//    cout << box[2] << " , " ;
+	//    cout << box[3] << " , " ;
+	//    cout << box[4] << " , " ;
+	//    cout << box[5] << " )" << endl;
+	shared_ptr<Configuration> q(new Configuration(this));
+	p3d_FreeFlyerShoot(_Robot, q->getConfigStruct(), box);
+	return q;
+}
+
 
 void Robot::shootObjectJoint(Configuration& Conf)
 {

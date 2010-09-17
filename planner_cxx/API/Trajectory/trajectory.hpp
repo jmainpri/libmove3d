@@ -73,16 +73,17 @@ namespace API {
 		
 		//---------------------------------------------------------
 		// Cost
-		double computeSubPortionIntergralCost(std::vector<LocalPath*> portion);
-		double computeSubPortionCost(std::vector<LocalPath*> portion);
-		double ReComputeSubPortionCost(std::vector<LocalPath*> portion);
-		double computeSubPortionCostVisib( std::vector<LocalPath*> portion );
+		double computeSubPortionIntergralCost(std::vector<LocalPath*>& portion);
+		double computeSubPortionCost(std::vector<LocalPath*>& portion);
+		double ReComputeSubPortionCost(std::vector<LocalPath*>& portion);
+		double computeSubPortionCostVisib( std::vector<LocalPath*>& portion );
 		double costOfPortion(double param1,double param2);
 		double extractCostPortion(double param1, double param2);
 		double cost();
 		double costNoRecompute();
 		double costDeltaAlongTraj();
 		std::vector<double> getCostAlongTrajectory(int nbSample);
+		void resetCostComputed();
 		
 		
 		//---------------------------------------------------------

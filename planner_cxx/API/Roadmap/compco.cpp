@@ -35,7 +35,7 @@ m_Id(-1)
 {
 	p3d_create_compco(m_Graph->getGraphStruct(), N->getNodeStruct());
 	m_Compco = m_Graph->getGraphStruct()->last_comp;
-	N->setConnectedComponent(this);
+	//cout << "new compco : " << m_Compco << endl;
 	addNode(N);
 	//cerr << "Add Compco for Node " << N->getNodeStruct() << endl;
 }
@@ -48,8 +48,8 @@ ConnectedComponent::~ConnectedComponent()
 	}
 	else 
 	{
-		//cout << "Delete compoc num : " << m_Compco->num << endl;
-		delete m_Compco;
+		//cout << "Delete compoc num : " <<  m_Compco->num << endl;
+		free( m_Compco );
 	}
 }
 
@@ -70,6 +70,7 @@ unsigned int ConnectedComponent::getId()
 void ConnectedComponent::addNode(Node* N)
 {
 	m_Nodes.push_back(N);
+	N->setConnectedComponent(this);
 }
 
 unsigned int ConnectedComponent::getNumberOfNodes()
@@ -87,7 +88,7 @@ unsigned int ConnectedComponent::getNumberOfNodes()
 }
 
 
-std::vector<Node*>& ConnectedComponent::getNodes()
+const std::vector<Node*>& ConnectedComponent::getNodes() const
 {
 	/*cout << "--------------------------------------" << endl;
 	vector<Node*>::iterator it;
@@ -192,7 +193,7 @@ void ConnectedComponent::mergeWith(ConnectedComponent* CompcoPt)
 	}
 	
 	/* C2 is deleted from the graph */
-	m_Graph->deleteCompco( CompcoPt );
+	m_Graph->removeCompco( CompcoPt );
 	
 	// Throw an exception if the p3d and C++ are not the same
 	getNumberOfNodes();
@@ -203,7 +204,9 @@ void ConnectedComponent::mergeWith(ConnectedComponent* CompcoPt)
 	}
 }
 
-Node* ConnectedComponent::nearestWeightNeighbour(shared_ptr<Configuration> q, bool weighted, int distConfigChoice)
+Node* ConnectedComponent::nearestWeightNeighbour(shared_ptr<Configuration> q, 
+																								 bool weighted, 
+																								 int distConfigChoice)
 {
 	double CurrentDist, CurrentScore, DistOfBestNode;
 	double BestScore = numeric_limits<double>::max();

@@ -55,7 +55,7 @@ public:
 	 * Returns the nodes in the connected Compco
 	 * @return the nodes
 	 */
-	std::vector<Node*>& getNodes();
+	const std::vector<Node*>& getNodes() const;
 	
 	/**
 	 * Add the compco to the reachable Compco
