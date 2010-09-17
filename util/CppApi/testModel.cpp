@@ -6,6 +6,12 @@
  */
 #include "testModel.hpp"
 
+#include "API/project.hpp"
+#include "API/Device/robot.hpp"
+#include "API/ConfigSpace/configuration.hpp"
+
+#include <iostream>
+
 #include "Util-pkg.h"
 #include "Collision-pkg.h"
 

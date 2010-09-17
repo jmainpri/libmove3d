@@ -2,6 +2,8 @@
 #include "SaveContext.hpp"
 #include "planner_cxx/planners_cxx.hpp"
 #include "planner_cxx/plannerFunctions.hpp"
+#include "API/Trajectory/smoothing.hpp"
+#include "API/Trajectory/costOptimization.hpp"
 //#include "planner_cxx/Greedy/GreedyCost.hpp"
 #include "cppToQt.hpp"
 //#include "PlanningThread.h"
@@ -101,7 +103,6 @@ void MultiRun::runMutliRRT()
 	mNames.push_back("Time (Tot)");
 	mNames.push_back("NbQRand");
 	mNames.push_back("NbNodes");
-	mNames.push_back("NbOfFail");
 	mNames.push_back("Cost1");
 	mNames.push_back("Cost2");
 	mNames.push_back("Integral");
@@ -109,13 +110,19 @@ void MultiRun::runMutliRRT()
 	
 	mVectDoubles.resize(8);
 	
+	unsigned int context = 0;
+	
 	for (unsigned int j = 0; j < storedContext.getNumberStored(); j++)
 	{
-		storedContext.switchCurrentEnvTo(j);
+		storedContext.switchCurrentEnvTo( j );
 		// storedContext.getTime(j).clear();
 		// vector<double> time = storedContext.getTime(j);
+		
 		for (int i = 0; i < ENV.getInt(Env::nbMultiRun); i++)
 		{
+			unsigned int rounds = j == 0 ? 0 : std::pow( (double)10 , (int)j );
+			context =  rounds + i;
+			
 			double tu(0.0);
 			double ts(0.0);
 			
@@ -123,12 +130,29 @@ void MultiRun::runMutliRRT()
 			
 			p3d_SetStopValue(FALSE);
 			
-			int nbNodes = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
+			int nbNodes;
+			
+			if ( XYZ_GRAPH ) p3d_del_graph(XYZ_GRAPH);
+			
+			try 
+			{
+				p3d_planner_functions_SetRunId( context );
+				nbNodes = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
+			}
+			catch (string str) 
+			{
+				cerr << "Exeption in run p3d_run_rrt : " << endl;
+				cerr << str << endl;
+			}
+			catch (...) 
+			{
+				cerr << "Exeption in run p3d_run_rrt" << endl;
+			}
 			
 			if( nbNodes > 0 )
 			{
 				ChronoPrint("");
-				ChronoTimes(&tu, &ts);
+				//ChronoTimes(&tu, &ts);
 				ChronoOff();
 				mTime.push_back(tu);
 				
@@ -140,7 +164,7 @@ void MultiRun::runMutliRRT()
 														 currRobot.getTrajStruct());
 				
 				mVectDoubles[0].push_back(XYZ_GRAPH->rrtTime);
-				mVectDoubles[1].push_back(tu);
+				mVectDoubles[1].push_back(XYZ_GRAPH->totTime);
 				
 				mVectDoubles[2].push_back( ENV.getInt(Env::nbQRand) );
 				mVectDoubles[3].push_back( nbNodes );
@@ -163,16 +187,24 @@ void MultiRun::runMutliRRT()
 				}
 				
 				int tmp = ENV.getInt(Env::costDeltaMethod);
+				cout << "Tmp : " << tmp << endl;
 				
 				// Before and after Smoothing
 				mVectDoubles[4].push_back( XYZ_GRAPH->rrtCost1 );
 				mVectDoubles[5].push_back( XYZ_GRAPH->rrtCost2 );
 				
-				ENV.setInt(Env::costDeltaMethod,INTEGRAL);
+				Traj.resetCostComputed();
+				
+				cout << "Saving Integral cost" << endl;
+				ENV.setInt( Env::costDeltaMethod , INTEGRAL );
 				mVectDoubles[6].push_back( Traj.cost() );
 				
-				ENV.setInt(Env::costDeltaMethod,MECHANICAL_WORK);
-				mVectDoubles[7].push_back( Traj.costDeltaAlongTraj() );
+				Traj.resetCostComputed();
+				
+				cout << "Saving Minimal-W cost" << endl;
+				ENV.setInt( Env::costDeltaMethod, MECHANICAL_WORK );
+				mVectDoubles[7].push_back( Traj.cost() );
+				cout << "Traj W Cost : " << Traj.cost() << endl;
 				
 				ENV.setInt(Env::costDeltaMethod,tmp);
 				
@@ -206,11 +238,14 @@ void MultiRun::runMutliRRT()
 				cout << "--------------------------------------------------------------"  << endl;
 			}
 			
-			p3d_del_graph(XYZ_GRAPH);
+			if( ENV.getBool(Env::use_p3d_structures) )
+			{
+				p3d_del_graph(XYZ_GRAPH);
+			}
 		}
-		
-		storedContext.addTime(mTime);
-		saveVectorToFile(j);
+
+		storedContext.addTime( mTime );
+		saveVectorToFile( j );
 		ENV.setBool(Env::StopMultiRun,false);
 		cout << "Save to file" << endl;
 	}

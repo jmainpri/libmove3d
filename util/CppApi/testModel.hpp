@@ -8,7 +8,9 @@
 #ifndef TESTMODEL_HPP_
 #define TESTMODEL_HPP_
 
-#include "planner_cxx/API/planningAPI.hpp"
+#ifndef ROBOT_HPP
+class Robot;
+#endif
 
 /**
   * @defgroup USER_APPLI User Applications
