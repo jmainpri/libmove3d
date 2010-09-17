@@ -38,6 +38,7 @@ extern int p3d_equal_config ( p3d_rob *robotPt, configPt q_i, configPt q_f );
 extern int p3d_equal_config_n_offset(int nb_dof, int offset, configPt q_i, configPt q_f);
 
 extern double p3d_dist_config ( p3d_rob * robotPt, configPt q_i, configPt q_f );
+extern double p3d_dist_config_2 ( p3d_rob * robotPt, configPt q_i, configPt q_f );
 extern void p3d_convert_config_deg_to_rad ( p3d_rob *robotPt, configPt q_deg, configPt *q_rad );
 extern void p3d_convert_config_rad_to_deg ( p3d_rob *robotPt, configPt q_rad, configPt *q_deg );
 extern void p3d_destroy_config_n ( int nb_dof, configPt cfg );

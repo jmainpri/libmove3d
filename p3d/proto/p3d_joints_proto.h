@@ -59,6 +59,7 @@ extern void p3d_jnt_stay_within_dist ( p3d_stay_within_dist_data * prev_data, p3
 extern double p3d_GetWeightRotations(void);
 extern void p3d_SetWeightRotations(double RotationWeight);
 extern double p3d_jnt_calc_dof_dist ( p3d_jnt * jntPt, int i_dof, configPt q_init, configPt q_end );
+extern double p3d_jnt_calc_dof_dist_2 ( p3d_jnt * jntPt, int i_dof, configPt q_init, configPt q_end );
 extern double p3d_jnt_calc_dof_value ( p3d_jnt * jntPt, int i_dof, configPt q_init, configPt q_end, double alpha );
 extern void p3d_jnt_calc_jnt_mat ( p3d_jnt * jntPt );
 extern int p3d_jnt_calc_mat_pos ( p3d_link_between_joint * link_jntPt );

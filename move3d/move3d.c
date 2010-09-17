@@ -84,6 +84,8 @@ int main(int argc, char ** argv) {
   if (! setlocale(LC_ALL, "C"))
     fprintf(stderr, "There was an error while setting the locale to \"C\"\n");
 
+  int grid_set = FALSE;
+  std::string grid_path;
   // modif Brice SALVA
 
 #ifdef BIO
@@ -149,10 +151,8 @@ int main(int argc, char ** argv) {
 	else if (strcmp(argv[i], "-s") == 0) {
       ++i;
       if ((i < argc)) {
-#ifdef P3D_PLANNER
         p3d_init_random_seed(atoi(argv[i]));
         seed_set = TRUE;
-#endif
         ++i;
       } else {
         use();
@@ -208,6 +208,22 @@ int main(int argc, char ** argv) {
 #ifdef P3D_PLANNER
       enableStats();
 #endif
+    } 
+#if defined(HRI_COSTSPACE) && defined(QT_GL)
+	else if (strcmp(argv[i], "-grid") == 0) {
+		++i;
+		if ((i < argc)) {
+			grid_path = argv[i];
+			//printf("Grid is at : %s\n",gridPath.c_str());
+			grid_set = TRUE;
+			++i;
+		} else {
+			use();
+			return 0;
+		}
+	}
+#endif
+	else if (strcmp(argv[i], "-udp") == 0) {
     }
 
 #ifdef LIGHT_PLANNER
@@ -285,10 +301,10 @@ int main(int argc, char ** argv) {
 
   if (!dir_set)
     strcpy(file_directory, "../../demo");
-#ifdef P3D_PLANNER
+	
   if (!seed_set)
     p3d_init_random();
-#endif
+
   if (!col_det_set){
     // modif Juan
 
@@ -395,12 +411,20 @@ int main(int argc, char ** argv) {
     if (!file) {
       exit(0);
     }
+	  
 #ifdef P3D_COLLISION_CHECKING
     p3d_col_set_mode(p3d_col_mode_none);
     p3d_BB_set_mode_close();
 #endif
-	//printf("Reading desc %s",file);
-    p3d_read_desc((char *) file);
+			
+	printf("\n");
+	printf("  ----------------------------\n");
+	printf("  -- p3d file parsing start --\n");
+	printf("  ----------------------------\n");
+	printf("\n");
+		
+	p3d_read_desc((char *) file);
+
 #endif
     if (!p3d_get_desc_number(P3D_ENV)) {
 	printf("loading done...\n");
@@ -413,9 +437,9 @@ int main(int argc, char ** argv) {
   }
 	
 	printf("\n");
-	printf("  ---------------------------\n");
-	printf("  -- p3d file parsing done --\n");
-	printf("  ---------------------------\n");
+	printf("  ----------------------------\n");
+	printf("  -- p3d file parsing done  --\n");
+	printf("  ----------------------------\n");
 	printf("\n");
 
   MY_ALLOC_INFO("After p3d_read_desc");
@@ -464,11 +488,6 @@ int main(int argc, char ** argv) {
 
   printf("MAX_DDLS  %d\n", MAX_DDLS);
 
-#ifdef CXX_PLANNER
-// initialize the cost function object.
-  global_costSpace = new CostSpace();
-#endif
-
   // modif Juan
 #ifdef BIO
   if (col_mode_to_be_set == p3d_col_mode_bio) {
@@ -505,8 +524,7 @@ int main(int argc, char ** argv) {
   p3d_init_iksol(XYZ_ROBOT->cntrt_manager);
 #endif
 
-
-
+	
 
   /* creation du FORM main */
 #ifdef WITH_XFORMS
@@ -540,23 +558,25 @@ int main(int argc, char ** argv) {
 //	}while(1);
   /* go into loop */
 	
-#if defined(LIGHT_PLANNER)
-	if(!ccntrt_active) {
-	  for(i = 0; i < XYZ_ENV->nr; i++){
-	    if(XYZ_ENV->robot[i]->nbCcCntrts > 0) {
-	      printf("Deactivate ccntrt for the robot %s\n",XYZ_ENV->robot[i]->name);
-	      deactivateCcCntrts(XYZ_ENV->robot[i],-1);
-	    }
-	   }
+#if defined(LIGHT_PLANNER) && defined(PQP)
+	if(ENV.getBool(Env::startWithFKCntrt))
+	{
+		p3d_rob* MyRobot = p3d_get_robot_by_name_containing ( ( char* ) "ROBOT" );
+		deactivateCcCntrts(MyRobot,-1);
 	}
 #endif
-
 #ifdef CXX_PLANNER
-global_Project = new Project(new Scene(XYZ_ENV));
-#endif	
-
+	global_Project = new Project(new Scene(XYZ_ENV));
+#endif
+#if defined(HRI_COSTSPACE) && defined(QT_GL)
+	if(grid_set)
+	{
+		std::cout << "Reading HRICS Grid " << grid_path << std::endl;
+		qt_load_HRICS_Grid(grid_path);
+	}
+#endif
 #ifdef QT_GL
-  sem->release();
+	sem->release();
 #endif
 
 //  double c, color[4];

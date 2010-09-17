@@ -429,7 +429,9 @@ void
 p3d_APInode_desalloc(p3d_graph *graphPt, p3d_node *nodePt) {
   p3d_rob * robotPt = graphPt ? graphPt->rob : XYZ_ROBOT;
 
-  p3d_destroy_config(robotPt, nodePt->q);
+  if (nodePt->q) {
+	p3d_destroy_config(robotPt, nodePt->q);
+  }
   if (nodePt->list_closed_flex_sc != NULL) {
     free(nodePt->list_closed_flex_sc);
   }

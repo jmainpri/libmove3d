@@ -9,7 +9,10 @@
 using namespace std;
 
 #ifdef CXX_PLANNER
-#include "planningAPI.hpp"
+#include "API/project.hpp"
+#include "API/Device/robot.hpp"
+#include "API/ConfigSpace/configuration.hpp"
+#include "API/ConfigSpace/localpath.hpp"
 #endif
 
 #if defined(LIGHT_PLANNER) && !defined(HRI_COSTSPACE)
@@ -838,7 +841,8 @@ void p3d_SetEdgeCost(p3d_rob* robotPt, p3d_edge* edgePt)
     length = edgePt->longueur;
 	
 #ifdef CXX_PLANNER
-	LocalPath path(new Robot(robotPt),edgePt->path);
+	Robot* rob = global_Project->getActiveScene()->getRobotByName(robotPt->name);
+	LocalPath path(rob,edgePt->path);
 	cost = path.cost();
 #else
 	cost = p3d_ComputeDeltaStepCost(cost1, cost2, length);

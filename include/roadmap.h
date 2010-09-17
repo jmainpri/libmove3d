@@ -218,6 +218,8 @@ typedef struct graph {
   class DpgGrid * dpgGrid;
 #endif
 #ifdef CXX_PLANNER
+	// Planning on graph stat
+	double totTime;
   double rrtTime;
   double rrtCost1;
   double rrtCost2;

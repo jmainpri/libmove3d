@@ -649,6 +649,15 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 
 		if ( strcmp ( fct,"p3d_CostEnvironment" ) == 0 )
 		{
+#ifdef CXX_PLANNER
+			// initialize the cost function object.
+			global_costSpace = new CostSpace();
+			
+			std::cout << "Initializing the 2d costmap cost function" << std::endl;
+			global_costSpace->addCost("costDistToObst",boost::bind(computeDistanceToObstacles, _1));
+			global_costSpace->setCost("costDistToObst");
+#endif
+			
 			ENV.setBool ( Env::isCostSpace,true );
 			continue;
 		}
@@ -685,27 +694,12 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 		}
 #endif
 		
-		/*if(strcmp(fct,"p3d_set_hri_manip_jnt") == 0) {
-			if(!read_desc_double(fd, 1, dtab)) return (read_desc_error(fct));
-
-			ENV.setInt(Env::akinJntId,(int)dtab[0]);
-
-			p3d_rob* theRobot = XYZ_ENV->robot[0];
-
-			hriSpace = new HriSpaceCost(theRobot,ENV.getInt(Env::akinJntId));
-			ENV.setBool(Env::isCostSpace,true);
-			ENV.setBool(Env::isHriTS,true);
-
-			std::cout << "Env::enableHri is set to true, joint number is :"<< ENV.getInt(Env::akinJntId) << std::endl;
-			std::cout << "Robot is :" << theRobot->name << std::endl;
-
-		    continue;
-		    }*/
-
-//    if(strcmp(fct,"p3d_HriTSCostEnv") == 0) {
-//    	ENV.setBool(Env::enableHri,true);
-//    	hriSpace = new HriSpaceCost(XYZ_ROBOT,28);
-//    }
+		if (strcmp(fct, "p3d_set_camera_pos") == 0) {
+			if ( !read_desc_double ( fd, 10, dtab ) ) return ( read_desc_error ( fct ) );
+      //if (!p3d_read_string_n_double(&pos, 10, &dtab, &size_max_dtab)) return(read_desc_error(fct));
+      g3d_load_saved_camera_params(dtab);      
+      continue;
+    }   
 
 		if ( ( strcmp ( fct, "p3d_contact_surface" ) == 0 ) || ( strcmp ( fct, "M3D_contact_surface" ) == 0 ) )
 		{

@@ -4,6 +4,9 @@
 #include "Graphic-pkg.h"
 //#include "Collision-pkg.h"
 
+#include <iostream> 
+using namespace std;
+
 #define DEBUG_LINEAR 0
 /* allocation of a data structure specific to the linear local method */
 p3d_lin_data * p3d_alloc_spec_lin_localpath(configPt q_i, configPt q_f)
@@ -124,6 +127,8 @@ double p3d_lin_dist(p3d_rob *robotPt, p3d_localpath *localpathPt)
   if (localpathPt->type_lp != LINEAR){
     PrintError(("p3d_lin_dist: linear local local path expected\n"));
   }
+	// Care full this distance does't take into account the 
+	// Body length multiplication
   return  p3d_dist_config(robotPt, specificPt->q_init, specificPt->q_end);
 }
 
@@ -263,6 +268,7 @@ configPt p3d_lin_config_at_distance(p3d_rob *robotPt,
 		for (j=0; j<jntPt->dof_equiv_nbr; j++) {
 			k = jntPt->index_dof+j;
 			q[k] = p3d_jnt_calc_dof_value(jntPt, j, q_init, q_end, alpha);
+			//cout << "Joint " << k << " q : " << q[k] << endl;
 		}
 	}
 #endif

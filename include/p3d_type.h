@@ -294,8 +294,8 @@ typedef enum {
  of an elementary path in function of the
  cost of the extremites configurations
 **************************************************/
-#define INTEGRAL 0
-#define MECHANICAL_WORK 1
+#define MECHANICAL_WORK 0
+#define INTEGRAL 1
 #define AVERAGE_CONFIG_COST 2
 #define CONFIG_COST_AND_DIST 3
 #define BOLTZMANN_COST 4

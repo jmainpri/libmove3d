@@ -2152,7 +2152,7 @@ void p3d_valid_edge(p3d_graph* graph, p3d_edge* edge){
  */
 void p3d_saveGraphToDotFormat(int ithGraph)
 {
-	const bool print_inConsole = false;
+	const bool print_inConsole = true;
 	
 	p3d_graph *G = XYZ_GRAPH;
 	p3d_compco *comp;

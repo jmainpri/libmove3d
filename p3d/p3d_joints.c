@@ -1277,6 +1277,23 @@ double p3d_jnt_calc_dof_dist(p3d_jnt * jntPt, int i_dof,
   return fabs(q_end[k] - q_init[k]);
 }
 
+// Same as above without weigthing
+// This function computes the distance without consideration of W
+double p3d_jnt_calc_dof_dist_2(p3d_jnt * jntPt, int i_dof,
+                             configPt q_init, configPt q_end) 
+{
+  int k = jntPt->index_dof + i_dof;
+	
+  if (p3d_jnt_is_dof_angular(jntPt, i_dof)) 
+	{
+    if (p3d_jnt_is_dof_circular(jntPt, i_dof)) 
+      return fabs(dist_circle(q_init[k], q_end[k]));
+    else
+      return fabs(q_end[k] - q_init[k]);
+  }
+  return fabs(q_end[k] - q_init[k]);
+}
+
 
 /*--------------------------------------------------------------------------*/
 /*!
@@ -1304,7 +1321,8 @@ double p3d_jnt_calc_dof_value(p3d_jnt * jntPt, int i_dof,
   double vmin,vmax;
 
   alpha = MAX(0.,MIN(1.,alpha));
-  if (p3d_jnt_is_dof_circular(jntPt, i_dof)) {
+  if (p3d_jnt_is_dof_circular(jntPt, i_dof)) 
+	{
     p3d_jnt_get_dof_bounds_deg(jntPt, i_dof, &vmin, &vmax);
     if(vmin < 0.0) {
       return angle_limit_PI(q_init[k] + alpha *

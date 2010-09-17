@@ -587,12 +587,33 @@ double p3d_dist_config(p3d_rob * robotPt, configPt q_i, configPt q_f)
     jntPt = robotPt->joints[i];
     for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
       if (robotPt->cntrt_manager->in_cntrt[jntPt->index_dof + j] != DOF_PASSIF) {
-        ljnt += SQR(p3d_jnt_calc_dof_dist(jntPt, j, q_i, q_f));
+				double dist = SQR(p3d_jnt_calc_dof_dist(jntPt, j, q_i, q_f));
+				//printf(" dist[%d] = %f\n",jntPt->index_dof + j,dist);
+        ljnt += dist;
       }
     }
   }
   l = sqrt(ljnt);
 
+  return l;
+}
+
+// Same as above without weigthing
+// This function computes the distance without consideration of W
+double p3d_dist_config_2(p3d_rob * robotPt, configPt q_i, configPt q_f)
+{
+  double l = 0., ljnt = 0.;
+  int i, j, njnt = robotPt->njoints;
+  p3d_jnt * jntPt;
+	
+  for (i = 0; i <= njnt; i++) {
+    jntPt = robotPt->joints[i];
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+        ljnt += SQR(p3d_jnt_calc_dof_dist_2(jntPt, j, q_i, q_f));
+    }
+  }
+  l = sqrt(ljnt);
+	
   return l;
 }
 
