@@ -16,7 +16,7 @@
 
 namespace Ui
 {
-    class MotionPlanner;
+	class MotionPlanner;
 }
 
 /**
@@ -25,56 +25,58 @@ namespace Ui
  */
 class MotionPlanner : public QWidget
 {
-    Q_OBJECT
+	Q_OBJECT
 	
 public:
-    MotionPlanner(QWidget *parent = 0);
-    ~MotionPlanner();
+	MotionPlanner(QWidget *parent = 0);
+	~MotionPlanner();
 	
 	void setMainWindow(MainWindow *ptrMW) { m_mainWindow = ptrMW; }
 	
 private slots:
-// Optim -----------------------------
-    void computeGrid();
-    void runMultiSmooth();
-    void optimizeCost();
-    void shortCutCost();
-    void removeRedundant();
-    void extractBestTraj();
+	// Optim -----------------------------
+	void computeGrid();
+	void runMultiSmooth();
+	void optimizeCost();
+	void shortCutCost();
+	void removeRedundant();
+	void extractBestTraj();
 	void setCostCriterium(int choise);
+	void eraseDebugTraj();
 	
-// Multi-Run -------------------------
-    void saveContext();
-    void printContext();
-    void printAllContext();
-    void resetContext();
-    void setToSelected();
-    void runAllRRT();
-    void runAllGreedy();
-    void showHistoWindow();
+	// Multi-Run -------------------------
+	void saveContext();
+	void printContext();
+	void printAllContext();
+	void resetContext();
+	void setToSelected();
+	void runAllRRT();
+	void runAllGreedy();
+	void showHistoWindow();
 	
-// General ---------------------------
+	// General ---------------------------
 	void checkAllEdges();
 	void envDmaxSpinBoxValueChanged( double dmax );
 	
-// Show ------------------------------
+	// Show ------------------------------
 	void nodeToShowChanged();
+	void removeNode();
 	
 private:
-    Ui::MotionPlanner *m_ui;
+	Ui::MotionPlanner *m_ui;
 	
 	MainWindow *m_mainWindow;
 	
 	QListWidget* contextList;
-    std::vector<QListWidgetItem*> itemList;
-
+	std::vector<QListWidgetItem*> itemList;
+	
 #ifdef QWT
 	HistoWindow* histoWin;
 #endif
 	
 	void initDiffusion();
 	void initMultiRRT();
-    void initPRM();
+	void initPRM();
 	void initMultiRun();
 	void initOptim();
 	void initGeneral();
@@ -112,5 +114,5 @@ protected:
 	void run();
 	bool m_isRRT;
 };
-	
+
 #endif

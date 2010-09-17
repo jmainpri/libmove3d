@@ -38,15 +38,19 @@ extern G3D_Window *G3D_WIN;
 extern QSemaphore* sem;
 #endif
 
+// Planner functions
 void qt_resetGraph();
 void qt_drawAllWinActive();
 void qt_runDiffusion();
 void qt_runPRM();
 void qt_shortCut();
 void qt_optimize();
+
+// Read/Write functions
 void qt_readScenario();
 void qt_saveScenario();
 void qt_readTraj();
+
 #ifdef HRI_COSTSPACE
 void qt_load_HRICS_Grid(std::string gridName);
 #endif

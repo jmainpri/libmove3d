@@ -88,7 +88,7 @@ void BasicPlot::alignScales()
     }
 }
 
-//void rescale()
+//void BasicPlot::rescale()
 //{
 //    Max_y = *std::max_element(d_y,d_y+PLOT_SIZE);
 //    setAxisScale(QwtPlot::yLeft, 0.0,Max_y*1.10);
@@ -100,7 +100,12 @@ void BasicPlot::setData(std::vector<double> y)
 //    cout << "Adding data to plot" << endl;
     if(ENV.getBool(Env::initPlot) == false )
     {
+//				for (unsigned int i=0; i<y.size(); i++) {
+//					cout << "y [" << i << "] = " << y[i] << endl;
+//				}
+			
         Max_y = *std::max_element(y.begin(),y.end());
+//				cout << "Max_y = " << Max_y << endl;
 //        cout << "Setting fixed Axis"<< endl;
         setAxisScale(QwtPlot::yLeft, 0.0,Max_y*1.10);
         ENV.setBool(Env::initPlot,true);
@@ -113,8 +118,9 @@ void BasicPlot::setData(std::vector<double> y)
     }
 
     replot();
+//		rescale()
 //    updateLayout();
-//    alignScales();
+ //   alignScales();
 
 //    cout << "Replot" << endl;
 }

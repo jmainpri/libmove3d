@@ -1,5 +1,6 @@
+#ifdef QT_OPENGL_SIDE
 #include "qtMyWindows/qtMainWindow.hpp"
-
+#endif
 #ifdef QT_UI_XML_FILES
 #include "qtMainInterface/mainwindow.hpp"
 #endif
@@ -9,6 +10,7 @@
 #include <iostream>
 #include <fcntl.h>
 #include "cppToQt.hpp"
+#include <QDesktopWidget>
 
 #ifdef QT_GL
 QSemaphore* sem;
@@ -70,7 +72,7 @@ Main_threads::~Main_threads()
 int Main_threads::run(int argc, char** argv)
 {
     app = new QApplication(argc, argv);
-	app->setWindowIcon(QIcon::QIcon(QPixmap::QPixmap(molecule_xpm)));
+		app->setWindowIcon(QIcon::QIcon(QPixmap::QPixmap(molecule_xpm)));
 //    app->setStyle(new QCleanlooksStyle());
 //    app->setStyle(new QWindowsStyle());
 //    app->setStyle(new QMacStyle());
@@ -80,7 +82,7 @@ int Main_threads::run(int argc, char** argv)
     move3dthread.start();
 
 #ifdef QT_GL
-	cout << "Qt :: Waiting to draw OpenGL"<< endl;
+		cout << "Qt :: Waiting to draw OpenGL"<< endl;
     sem->acquire();
     waitDrawAllWin = new QWaitCondition();
     lockDrawAllWin = new QMutex();
@@ -97,10 +99,20 @@ int Main_threads::run(int argc, char** argv)
 
 
 #ifdef QT_UI_XML_FILES
-    MainWindow w;
-    w.showMaximized();
-	//w.show();
+	MainWindow w;
+  //w.showMaximized();
+	w.show();
 	w.raise();
+	QRect g = QApplication::desktop()->screenGeometry();
+	cout << " x = " << g.x() << " y = " << g.y() << endl;
+	cout << " width = " << g.width() << " height = " << g.height() << endl;
+	
+	QRect g_window = w.geometry();
+	g_window.setWidth( g.width() );
+	g_window.setHeight( 0.707*g.height() ); // sqrt(2) / 2
+	g_window.moveTo( 0, 0 );
+	
+	w.setGeometry( g_window );
 #endif
 
     return app->exec();

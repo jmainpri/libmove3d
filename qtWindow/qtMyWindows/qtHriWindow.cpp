@@ -121,6 +121,7 @@ void qtHriWindow::setWhichTestSlot(int test)
 #ifdef HRI_COSTSPACE
     hriSpace->changeTest(test);
     cout << "Change test to :" << test << endl;
+		m_ui->whichTestBox->setCurrentIndex(test);
 #else
     cout << "HRI Planner not compiled nor linked" << endl;
 #endif

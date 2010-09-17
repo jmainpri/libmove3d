@@ -20,8 +20,11 @@
 
 #include "cppToQt.hpp"
 #include "planner_cxx/cost_space.hpp"
+#include "planner_cxx/API/project.hpp"
+#include "planner_cxx/API/Roadmap/compco.hpp"
 
 #include "util/CppApi/SaveContext.hpp"
+#include "util/CppApi/MultiRun.hpp"
 
 using namespace std;
 using namespace tr1;
@@ -166,56 +169,29 @@ void MotionPlanner::initPRM()
 // OPTIM
 //---------------------------------------------------------------------
 void MotionPlanner::initOptim()
-{
-	//    QPushButton* computeGridAndExtract = new QPushButton("2D Best Path");
-	//    connect(computeGridAndExtract, SIGNAL(clicked()),this, SLOT(computeGridAndExtract()));
+{	
+    m_mainWindow->connectCheckBoxToEnv( m_ui->checkBoxCostSpace2,				Env::isCostSpace );
+    m_mainWindow->connectCheckBoxToEnv( m_ui->checkBoxDebug2,						Env::debugCostOptim );
+    m_mainWindow->connectCheckBoxToEnv( m_ui->checkBoxSaveTrajCost,			Env::saveTrajCost );
+    m_mainWindow->connectCheckBoxToEnv( m_ui->checkBoxWithDeform,				Env::withDeformation );
+    m_mainWindow->connectCheckBoxToEnv( m_ui->checkBoxWithShortCut,			Env::withShortCut );
+		m_mainWindow->connectCheckBoxToEnv( m_ui->checkBoxWithTimeLimit,		Env::withTimeLimit );
+		m_mainWindow->connectCheckBoxToEnv( m_ui->checkBoxWithGainLimit,		Env::withGainLimit );
+		m_mainWindow->connectCheckBoxToEnv( m_ui->checkBoxWithIterLimit,		Env::withMaxIteration );
 	
-	//    LabeledSlider* numberIterations = createSlider(tr("Number of iteration"), Env::nbCostOptimize, 0, 5000 );
-	
-	//    QPushButton* optimize = new QPushButton("Cost Optimize");
-	//    connect(optimize, SIGNAL(clicked()),this, SLOT(optimizeCost()),Qt::DirectConnection);
-	
-	//    QPushButton* shortCut = new QPushButton("Cost ShortCut");
-	//    connect(shortCut, SIGNAL(clicked()),this, SLOT(shortCutCost()),Qt::DirectConnection);
-	//
-	//    QPushButton* removeNodes = new QPushButton("Remove Redundant Nodes");
-	//    connect(removeNodes, SIGNAL(clicked()),this, SLOT(removeRedundant()),Qt::DirectConnection);
-	
-	//    QPushButton* testGraphSearch = new QPushButton("Dijkstra");
-	//    connect(testGraphSearch, SIGNAL(clicked()),this, SLOT(graphSearchTest()),Qt::DirectConnection);
-	
-	//    QComboBox* costCriterium = new QComboBox();
-	//    costCriterium->insertItem(INTEGRAL, "Integral");
-	//    costCriterium->insertItem(MECHANICAL_WORK, "Mechanical Work");
-	//    costCriterium->setCurrentIndex((int)(INTEGRAL));
-	//    connect(costCriterium, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)), Qt::DirectConnection);
-	
-	//    LabeledDoubleSlider* step = createDoubleSlider(tr("Step"), Env::MinStep, 0, 100 );
-	
-    //    m_ui->optimizeLayout->addWidget(computeGridAndExtract);
-    //    m_ui->optimizeLayout->addWidget(numberIterations);
-    //    m_ui->optimizeLayout->addWidget(step);
-    //    m_ui->optimizeLayout->addWidget(optimize);
-    //    m_ui->optimizeLayout->addWidget(shortCut);
-    //    m_ui->optimizeLayout->addWidget(removeNodes);
-    //    m_ui->optimizeLayout->addWidget(testGraphSearch);
-    //    m_ui->optimizeLayout->addWidget(costCriterium);
-	
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxCostSpace2,Env::isCostSpace);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxDebug2,Env::debugCostOptim);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxSaveTrajCost,Env::saveTrajCost);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxWithDeform,Env::withDeformation);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxWithShortCut,Env::withShortCut);
-	
-    connect(m_ui->pushButtonRandomShortCut,SIGNAL(clicked()),this,SLOT(shortCutCost()));
-    connect(m_ui->pushButtonRemoveRedundantNodes,SIGNAL(clicked()),this,SLOT(removeRedundant()));
+    connect(m_ui->pushButtonRandomShortCut,				SIGNAL(clicked()),this,SLOT(shortCutCost()));
+    connect(m_ui->pushButtonRemoveRedundantNodes,	SIGNAL(clicked()),this,SLOT(removeRedundant()));
+		connect(m_ui->pushButtonEraseDebugTraj,				SIGNAL(clicked()),this,SLOT(eraseDebugTraj()));
+
 	
     connect(m_ui->pushButtonTriangleDeformation,SIGNAL(clicked()),this,SLOT(optimizeCost()));
 	
     // costCriterium
-    connect(m_ui->comboBoxTrajCostExtimation, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)));   
-    connect(ENV.getObject(Env::costDeltaMethod), SIGNAL(valueChanged(int)),m_ui->comboBoxTrajCostExtimation, SLOT(setCurrentIndex(int)));
-    m_ui->comboBoxTrajCostExtimation->setCurrentIndex( MECHANICAL_WORK /*INTEGRAL*/ );
+		connect( ENV.getObject(Env::costDeltaMethod),	SIGNAL(valueChanged(int)),this,		SLOT(setCostCriterium(int)), Qt::DirectConnection );
+//		connect( ENV.getObject(Env::costDeltaMethod),	SIGNAL(valueChanged(int)),				m_ui->comboBoxTrajCostExtimation, SLOT(setCurrentIndex(int)));
+		connect( m_ui->comboBoxTrajCostExtimation,		SIGNAL(currentIndexChanged(int)),	this, SLOT(setCostCriterium(int)) );
+		m_ui->comboBoxTrajCostExtimation->setCurrentIndex( MECHANICAL_WORK /*INTEGRAL*/ );
+		setCostCriterium(MECHANICAL_WORK);
 	
     new QtShiva::SpinBoxSliderConnector(
 										this, m_ui->doubleSpinBoxNbRounds, m_ui->horizontalSliderNbRounds_2 , Env::nbCostOptimize );
@@ -227,27 +203,44 @@ void MotionPlanner::initOptim()
 										this, m_ui->doubleSpinBoxMinDeformStep, m_ui->horizontalSliderMinDeformStep ,Env::MinStep );
 	
     new QtShiva::SpinBoxSliderConnector(
-										this, m_ui->doubleSpinBoxMaxDeformStep, m_ui->horizontalSliderMaxDeformStep ,Env::MaxFactor );
+										this, m_ui->doubleSpinBoxTimeLimit, m_ui->horizontalSliderTimeLimit ,Env::optimTimeLimit );
 	
     connect(m_ui->pushButtonRunMultiSmooth,SIGNAL(clicked()),this,SLOT(runMultiSmooth()));
+	
+	// ------------------------------------------------------------
+	// ------------------------------------------------------------
+	
+	new QtShiva::SpinBoxSliderConnector(
+																			this, m_ui->doubleSpinBoxMaxDeformStep, m_ui->horizontalSliderMaxDeformStep , Env::MaxFactor );
+	
+	
 }
 
-void MotionPlanner::setCostCriterium(int choice) {
-    cout << "Set Delta Step Choise to " << choice << endl;
+void MotionPlanner::eraseDebugTraj()
+{
+	trajToDraw.clear();
+}
+
+void MotionPlanner::setCostCriterium(int choice) 
+{
+  cout << "Set Delta Step Choise to " << choice << endl;
+	
 #ifdef P3D_PLANNER
     p3d_SetDeltaCostChoice(choice);
 #endif
+	
 	map<int,CostSpaceDeltaStepMethod> methods;
 	
-	methods.insert ( pair<int,CostSpaceDeltaStepMethod>(0,cs_mechanical_work) );
-	methods.insert ( pair<int,CostSpaceDeltaStepMethod>(1,cs_integral) );
+	methods.insert ( pair<int,CostSpaceDeltaStepMethod>(MECHANICAL_WORK,cs_mechanical_work) );
+	methods.insert ( pair<int,CostSpaceDeltaStepMethod>(INTEGRAL,cs_integral) );
 	methods.insert ( pair<int,CostSpaceDeltaStepMethod>(2,cs_visibility) );
 	methods.insert ( pair<int,CostSpaceDeltaStepMethod>(3,cs_average) );
 	methods.insert ( pair<int,CostSpaceDeltaStepMethod>(4,cs_config_cost_and_dist) );
 	
 	global_costSpace->setDeltaStepMethod( methods[choice] );
 	
-    ENV.setInt(Env::costDeltaMethod,choice);
+	ENV.setInt(Env::costDeltaMethod,choice);
+	//m_ui->comboBoxTrajCostExtimation->setCurrentIndex(choice);
 }
 
 void MotionPlanner::computeGrid()
@@ -510,12 +503,17 @@ void MotionPlanner::initShowGraph()
 {
 	//connect(m_ui->spinBoxNodeToShow, SIGNAL(valueChanged(int)),ENV.getObject(Env::cellToShow),SLOT(set(int)), Qt::DirectConnection);
 	connect(m_ui->spinBoxNodeToShow, SIGNAL(valueChanged(int)),this,SLOT(nodeToShowChanged()), Qt::QueuedConnection);
-}
+	connect(m_ui->pushButtonRemoveNode, SIGNAL(clicked()),this,SLOT(removeNode()) );
 
+}
 
 void MotionPlanner::nodeToShowChanged()
 {
-	Graph* graph = global_Project->getActiveScene()->getActiveGraph();
+	if ( !API_activeGraph ) {
+		return;
+	}
+	
+	Graph* graph = API_activeGraph;
 	vector<Node*> nodes = graph->getNodes();
 	
 	if (nodes.empty()) {
@@ -530,12 +528,59 @@ void MotionPlanner::nodeToShowChanged()
 	if ( (ith >= 0) && ( ((int)nodes.size()) > ith) ) 
 	{
 		graph->getRobot()->setAndUpdate(*nodes[ith]->getConfiguration());
+		cout << "Node number : " << nodes[ith]->getNodeStruct()->num << endl ;
+		cout << "Connected Component : " << nodes[ith]->getConnectedComponent()->getId() << endl ;
 	}
-	else {
+	else 
+	{
 		shared_ptr<Configuration> q_init = graph->getRobot()->getInitialPosition();
 		graph->getRobot()->setAndUpdate(*q_init);
 		cout << "Exede the number of nodes" << endl;
 	}
 	m_mainWindow->drawAllWinActive();
 }
+
+void MotionPlanner::removeNode()
+{
+	if ( !API_activeGraph ) 
+	{
+		return;
+	}
+	
+	try 
+	{
+		Graph* graph = API_activeGraph;
+		
+		vector<Node*> nodes = graph->getNodes();
+		
+		if ( nodes.empty() ) 
+		{
+			cout << "Warning :: nodes is empty!!!" << endl;
+		}
+		
+		int ith = m_ui->spinBoxNodeToShow->value();
+		
+		cout << "Removing node nb : " << ith << endl;
+		cout << "graph size nb : " << nodes.size() << endl;
+		
+		if ( (ith >= 0) && ( ((int)nodes.size()) > ith) ) 
+		{
+			graph->removeNode( nodes[ith] );
+		}
+		else 
+		{
+			shared_ptr<Configuration> q_init = graph->getRobot()->getInitialPosition();
+			graph->getRobot()->setAndUpdate(*q_init);
+			cout << "Exede the number of nodes" << endl;
+		}
+	}
+	catch (std::string str) 
+	{
+		cerr << "Exeption in MotionPlanner::removeNode()" << endl;
+		cerr << str << endl;
+	}
+	
+	m_mainWindow->drawAllWinActive();
+}
+
 

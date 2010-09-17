@@ -4,9 +4,11 @@ SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME}/qtMainInterface)
 BM3D_SRC_SUBDIR_PROCESS(
 kcdpropertieswindow.cpp 
 mainwindow.cpp
+mainwindowTestFunctions.cpp
 qtMotionPlanner.cpp
 qtCost.cpp
 qtRobot.cpp
+qtUtil.cpp
 qdebugstream.cpp
 )
 
@@ -15,9 +17,11 @@ BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME})
 BM3D_QT_GENERATE_MOC(
 kcdpropertieswindow.hpp 
 mainwindow.hpp
+mainwindowTestFunctions.hpp
 qtMotionPlanner.hpp
 qtCost.hpp
 qtRobot.hpp
+qtUtil.hpp
 )
 
 BM3D_QT_GENERATE_UI_HEADERS(
@@ -26,6 +30,7 @@ mainwindow.ui
 qtMotionPlanner.ui
 qtCost.ui
 qtRobot.ui
+qtUtil.ui
 )
 
 IF(HRI_COSTSPACE)

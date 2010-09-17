@@ -1,6 +1,8 @@
 #ifndef QTLIBRARY_HPP
 #define QTLIBRARY_HPP
 
+#include "Graphic-pkg.h"
+
 #undef Status
 #undef Bool
 #undef Black
@@ -13,6 +15,8 @@
 #undef FontChange
 #undef Unsorted
 
+#include <QtOpenGL/QGLWidget>
+
 #include <QtCore/QObject>
 
 #include <QtCore/QThread>
@@ -23,8 +27,6 @@
 #include <QtCore/QDebug>
 #include <QtCore/QWaitCondition>
 #include <QtCore/QMutex>
-
-#include <QtOpenGL/QGLWidget>
 
 //#include <QtGui>
 #include <QtGui/QCDEStyle>

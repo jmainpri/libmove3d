@@ -32,31 +32,8 @@ qtGLWindow::qtGLWindow()
 	optiles->setChecked(true);
 	walls->setChecked(true);
 
-	/*connect(xSlider, SIGNAL(valueChanged(int)), glWidget,
-			SLOT(setXRotation(int)));
-	connect(glWidget, SIGNAL(xRotationChanged(int)), xSlider,
-			SLOT(setValue(int)));
-	connect(ySlider, SIGNAL(valueChanged(int)), glWidget,
-			SLOT(setYRotation(int)));
-	connect(glWidget, SIGNAL(yRotationChanged(int)), ySlider,
-			SLOT(setValue(int)));
-	connect(zSlider, SIGNAL(valueChanged(int)), glWidget,
-			SLOT(setZRotation(int)));
-	connect(glWidget, SIGNAL(zRotationChanged(int)), zSlider,
-			SLOT(setValue(int)));
-	connect(zoom, SIGNAL(valueChanged(int)), glWidget,
-				SLOT(setZoomValue(int)));
-	connect(glWidget, SIGNAL(zoomChanged(int)), zoom,
-				SLOT(setValue(int)));*/
-
 	QHBoxLayout *mainLayout = new QHBoxLayout;
 	mainLayout->addWidget(glWidget);
-
-	/*mainLayout->addWidget(xSlider);
-	mainLayout->addWidget(ySlider);
-	mainLayout->addWidget(zSlider);*/
-
-	/*mainLayout->addWidget(zoom);*/
 
 	QPushButton* saveView = new QPushButton("Save View");
 	connect(saveView,SIGNAL(clicked()),glWidget, SLOT(saveView()));

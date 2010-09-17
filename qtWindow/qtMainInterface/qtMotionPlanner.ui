@@ -6,25 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>479</width>
-    <height>735</height>
+    <width>530</width>
+    <height>690</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
-   <property name="leftMargin">
-    <number>12</number>
-   </property>
-   <property name="topMargin">
+   <property name="margin">
     <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>12</number>
-   </property>
-   <property name="bottomMargin">
-    <number>12</number>
    </property>
    <item>
     <widget class="QTabWidget" name="tabsPlanning">
@@ -35,7 +26,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <property name="documentMode">
       <bool>true</bool>
@@ -45,6 +36,18 @@
        <string>Diffusion</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_39">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>5</number>
+       </property>
        <item>
         <widget class="QScrollArea" name="scrollArea">
          <property name="horizontalScrollBarPolicy">
@@ -58,7 +61,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>307</width>
+            <width>511</width>
             <height>610</height>
            </rect>
           </property>
@@ -339,212 +342,248 @@
        <string>PRM</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_25">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>5</number>
+       </property>
        <item>
-        <layout class="QHBoxLayout" name="prmHorizontalLayout">
-         <item>
-          <widget class="QGroupBox" name="planningStrategyGroupBox">
-           <property name="title">
-            <string>Planning strategy</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_28">
-            <item>
-             <widget class="QComboBox" name="comboBoxPRMType">
-              <item>
-               <property name="text">
-                <string>PRM</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Visibility</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>ACR</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_9">
-              <property name="text">
-               <string>Oriented</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="connectionGroupBox">
-           <property name="title">
-            <string>Connection strategy</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_27">
-            <item>
-             <widget class="QComboBox" name="comboBox_3">
-              <item>
-               <property name="text">
-                <string>Nb Edges</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Distance</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_2">
-         <property name="title">
-          <string>Node connection</string>
+        <widget class="QScrollArea" name="scrollArea_4">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Max Connect Nodes</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSpinBox" name="spinBoxMaxConnect">
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>100</number>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>526</width>
+            <height>461</height>
+           </rect>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <item>
+            <widget class="QWidget" name="widget_3" native="true">
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item>
+               <widget class="QGroupBox" name="planningStrategyGroupBox">
+                <property name="title">
+                 <string>Planning strategy</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_28">
+                 <item>
+                  <widget class="QComboBox" name="comboBoxPRMType">
+                   <item>
+                    <property name="text">
+                     <string>PRM</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Visibility</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>ACR</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="checkBox_9">
+                   <property name="text">
+                    <string>Oriented</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="connectionGroupBox">
+                <property name="title">
+                 <string>Connection strategy</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_27">
+                 <item>
+                  <widget class="QComboBox" name="comboBox_3">
+                   <item>
+                    <property name="text">
+                     <string>Nb Edges</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Distance</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="groupBox_2">
+             <property name="title">
+              <string>Node connection</string>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
+               <widget class="QLabel" name="label">
+                <property name="text">
+                 <string>Max Connect Nodes</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="spinBoxMaxConnect">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="SamplingGroupBox">
+             <property name="title">
+              <string>Sampling strategy</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_8">
+              <item row="0" column="0">
+               <widget class="QRadioButton" name="radioButton">
+                <property name="text">
+                 <string>Random</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QRadioButton" name="radioButton_3">
+                <property name="text">
+                 <string>Halton</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="QRadioButton" name="radioButton_2">
+                <property name="text">
+                 <string>Gaussian</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QRadioButton" name="radioButton_4">
+                <property name="text">
+                 <string>Bridge</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QRadioButton" name="radioButton_5">
+                <property name="text">
+                 <string>OBPRM</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBoxUseDistance">
+             <property name="text">
+              <string>Use Distance</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="groupBox_4">
+             <property name="title">
+              <string>Show</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_2">
+              <item row="0" column="1">
+               <widget class="QSpinBox" name="spinBoxNodeToShow"/>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_4">
+                <property name="text">
+                 <string>Show node</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="3">
+               <spacer name="horizontalSpacer_6">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_6">
+                <property name="text">
+                 <string>Show edge</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QSpinBox" name="spinBoxEdgeToShow"/>
+              </item>
+              <item row="0" column="2">
+               <widget class="QPushButton" name="pushButtonRemoveNode">
+                <property name="text">
+                 <string>Remove</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="SamplingGroupBox">
-         <property name="title">
-          <string>Sampling strategy</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_8">
-          <item row="0" column="0">
-           <widget class="QRadioButton" name="radioButton">
-            <property name="text">
-             <string>Random</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QRadioButton" name="radioButton_3">
-            <property name="text">
-             <string>Halton</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QRadioButton" name="radioButton_2">
-            <property name="text">
-             <string>Gaussian</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QRadioButton" name="radioButton_4">
-            <property name="text">
-             <string>Bridge</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QRadioButton" name="radioButton_5">
-            <property name="text">
-             <string>OBPRM</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBoxUseDistance">
-         <property name="text">
-          <string>Use Distance</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_4">
-         <property name="title">
-          <string>Show</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="1">
-           <widget class="QSpinBox" name="spinBoxNodeToShow"/>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>Show node</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <spacer name="horizontalSpacer_6">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_6">
-            <property name="text">
-             <string>Show edge</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QSpinBox" name="spinBoxEdgeToShow"/>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>
@@ -553,26 +592,44 @@
        <string>Smoothing</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_36">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>5</number>
+       </property>
        <item row="0" column="0" rowspan="4">
-        <widget class="QScrollArea" name="scrollArea_3">
+        <widget class="QScrollArea" name="PostProcessingScrollArea">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="horizontalScrollBarPolicy">
           <enum>Qt::ScrollBarAlwaysOff</enum>
          </property>
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents_3">
+         <widget class="QWidget" name="PostProcessingScrollAreaLayout">
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
-            <width>312</width>
-            <height>749</height>
+            <y>-2</y>
+            <width>511</width>
+            <height>965</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_37">
            <item>
-            <widget class="QFrame" name="frame_9">
+            <widget class="QFrame" name="PostProcessingLayout">
              <layout class="QVBoxLayout" name="verticalLayout_26">
               <item>
                <widget class="QCheckBox" name="checkBoxSaveTrajCost">
@@ -589,6 +646,13 @@
                </widget>
               </item>
               <item>
+               <widget class="QCheckBox" name="checkBoxWithGainLimit">
+                <property name="text">
+                 <string>With Gain Limit</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QCheckBox" name="checkBoxCostSpace2">
                 <property name="text">
                  <string>Cost Space</string>
@@ -596,30 +660,83 @@
                </widget>
               </item>
               <item>
-               <widget class="QWidget" name="widget_9" native="true">
-                <layout class="QGridLayout" name="gridLayout_26">
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_12">
+               <widget class="QPushButton" name="pushButtonEraseDebugTraj">
+                <property name="text">
+                 <string>Erase Debug Traj</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="groupBox_5">
+                <property name="title">
+                 <string>Iteration Limit</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_5">
+                 <item>
+                  <widget class="QCheckBox" name="checkBoxWithIterLimit">
                    <property name="text">
-                    <string>Nb. of Rounds</string>
+                    <string>With Iteration Limit</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="1">
-                  <widget class="QDoubleSpinBox" name="doubleSpinBoxNbRounds">
-                   <property name="decimals">
-                    <number>0</number>
-                   </property>
-                   <property name="maximum">
-                    <double>10000.000000000000000</double>
+                 <item>
+                  <widget class="QWidget" name="widget_6" native="true">
+                   <layout class="QHBoxLayout" name="horizontalLayout_7">
+                    <item>
+                     <widget class="QLabel" name="label_12">
+                      <property name="text">
+                       <string>Nb. of Rounds</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QDoubleSpinBox" name="doubleSpinBoxNbRounds">
+                      <property name="decimals">
+                       <number>0</number>
+                      </property>
+                      <property name="maximum">
+                       <double>10000.000000000000000</double>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QSlider" name="horizontalSliderNbRounds_2">
+                      <property name="maximum">
+                       <number>10000</number>
+                      </property>
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="groupBoxTimeLimit">
+                <property name="title">
+                 <string>Time Limit</string>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_3">
+                 <item row="0" column="0" colspan="2">
+                  <widget class="QCheckBox" name="checkBoxWithTimeLimit">
+                   <property name="text">
+                    <string>With Time Limit</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="2">
-                  <widget class="QSlider" name="horizontalSliderNbRounds_2">
+                 <item row="1" column="0">
+                  <widget class="QDoubleSpinBox" name="doubleSpinBoxTimeLimit">
                    <property name="maximum">
-                    <number>10000</number>
+                    <double>60.000000000000000</double>
                    </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QSlider" name="horizontalSliderTimeLimit">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -629,7 +746,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QGroupBox" name="groupBox_23">
+               <widget class="QGroupBox" name="groupBoxShortCut">
                 <property name="title">
                  <string>Shortcut</string>
                 </property>
@@ -642,7 +759,7 @@
                   </widget>
                  </item>
                  <item row="3" column="1">
-                  <widget class="QWidget" name="widget_23" native="true">
+                  <widget class="QWidget" name="ShortcutButtons" native="true">
                    <layout class="QGridLayout" name="gridLayout_44">
                     <item row="1" column="1">
                      <widget class="QPushButton" name="pushButtonRemoveRedundantNodes">
@@ -678,13 +795,13 @@
                </widget>
               </item>
               <item>
-               <widget class="QGroupBox" name="groupBox_25">
+               <widget class="QGroupBox" name="DeformationBox">
                 <property name="title">
                  <string>Deformation</string>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_27">
                  <item row="3" column="0">
-                  <widget class="QFrame" name="frame">
+                  <widget class="QFrame" name="DeformationSteps">
                    <property name="frameShape">
                     <enum>QFrame::StyledPanel</enum>
                    </property>
@@ -700,7 +817,7 @@
                      </widget>
                     </item>
                     <item row="0" column="0">
-                     <widget class="QLabel" name="label_27">
+                     <widget class="QLabel" name="labelMaxStep">
                       <property name="text">
                        <string>Max Step</string>
                       </property>
@@ -717,7 +834,7 @@
                      </widget>
                     </item>
                     <item row="1" column="0">
-                     <widget class="QLabel" name="label_21">
+                     <widget class="QLabel" name="labelMinStep">
                       <property name="text">
                        <string>Min Step</string>
                       </property>
@@ -777,7 +894,7 @@
                   </widget>
                  </item>
                  <item row="4" column="0">
-                  <widget class="QWidget" name="widget_21" native="true">
+                  <widget class="QWidget" name="StartDeformation" native="true">
                    <layout class="QGridLayout" name="gridLayout_38">
                     <item row="0" column="1">
                      <spacer name="horizontalSpacer_27">
@@ -891,10 +1008,22 @@
        <string>Multi-Run</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_20">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>5</number>
+       </property>
        <item>
         <widget class="QScrollArea" name="scrollArea_2">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -910,62 +1039,72 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>380</width>
-            <height>315</height>
+            <width>526</width>
+            <height>461</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_35">
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_12">
-             <property name="sizeConstraint">
-              <enum>QLayout::SetDefaultConstraint</enum>
+            <widget class="QWidget" name="widget_4" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
-             <item>
-              <widget class="QLabel" name="label_17">
-               <property name="text">
-                <string>New Context Name</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lineEditContext"/>
-             </item>
-             <item>
-              <widget class="QPushButton" name="pushButtonSaveContext">
-               <property name="text">
-                <string>Add</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
+             <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <item>
+               <widget class="QLabel" name="label_17">
+                <property name="text">
+                 <string>New Context Name</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="lineEditContext"/>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButtonSaveContext">
+                <property name="text">
+                 <string>Add</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_13">
-             <property name="sizeConstraint">
-              <enum>QLayout::SetDefaultConstraint</enum>
+            <widget class="QWidget" name="widget_5" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
-             <item>
-              <widget class="QPushButton" name="pushButtonResetContext">
-               <property name="text">
-                <string>Reset Stack</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="pushButtonPrintAllContext">
-               <property name="text">
-                <string>Print Stack</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="pushButtonPrintSelected">
-               <property name="text">
-                <string>Print Selected</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
+             <layout class="QHBoxLayout" name="horizontalLayout_6">
+              <item>
+               <widget class="QPushButton" name="pushButtonResetContext">
+                <property name="text">
+                 <string>Reset Stack</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButtonPrintAllContext">
+                <property name="text">
+                 <string>Print Stack</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButtonPrintSelected">
+                <property name="text">
+                 <string>Print Selected</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
            </item>
            <item>
             <layout class="QVBoxLayout" name="multiRunLayout">

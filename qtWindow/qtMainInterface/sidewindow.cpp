@@ -1,29 +1,29 @@
 #include "sidewindow.hpp"
 #include "ui_sidewindow.h"
 
-#include "../qtBase/SpinBoxSliderConnector_p.hpp"
-#include "../cppToQt.hpp"
+#include "qtBase/SpinBoxSliderConnector_p.hpp"
+#include "cppToQt.hpp"
 
-#include "../../util/CppApi/testModel.hpp"
+#include "util/CppApi/testModel.hpp"
 
-#include "../../planner_cxx/API/planningAPI.hpp"
-#include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"
-#include "../../planner_cxx/API/Trajectory/Smoothing.hpp"
+#include "planningAPI.hpp"
+#include "API/Trajectory/CostOptimization.hpp"
+#include "API/Trajectory/smoothing.hpp"
 
-#include "../../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
-#include "../../planner_cxx/HRI_CostSpace/HRICS_old.h"
-#include "../../planner_cxx/HRI_CostSpace/Grid/HRICS_Grid.h"
-#include "../../planner_cxx/HRI_CostSpace/Grid/HRICS_GridState.h"
-#include "../../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
+#include "HRI_CostSpace/HRICS_HAMP.h"
+#include "HRI_CostSpace/HRICS_old.h"
+#include "HRI_CostSpace/Grid/HRICS_Grid.h"
+#include "HRI_CostSpace/Grid/HRICS_GridState.h"
+#include "HRI_CostSpace/HRICS_Planner.h"
 
-#include "../../planner_cxx/API/3DGrid/GridToGraph/gridtograph.h"
-#include "../../planner_cxx/API/Search/GraphState.h"
+#include "API/3DGrid/GridToGraph/gridtograph.h"
+#include "API/Search/GraphState.h"
 
-#include "../../planner_cxx/API/3DGrid/points.h"
+#include "API/3DGrid/points.h"
 
 #ifdef QWT
-#include "../qtPlot/basicPlot.hpp"
-#include "../qtPlot/tempWin.hpp"
+#include "qtPlot/basicPlot.hpp"
+#include "qtPlot/tempWin.hpp"
 #endif
 
 using namespace std;

@@ -40,6 +40,12 @@
 #include "qtWindow/cppToQt.hpp"
 #include "API/project.hpp"
 
+#include "API/Trajectory/smoothing.hpp"
+#include "API/Trajectory/CostOptimization.hpp"
+//#include "planner_cxx/Greedy/GreedyCost.hpp"
+#include "API/Search/Dijkstra/dijkstra.hpp"
+#include "util/CppApi/MultiRun.hpp"
+
 #ifdef CXX_PLANNER
 #include "util/CppApi/SaveContext.hpp"
 #endif
@@ -225,7 +231,7 @@ void qt_runPRM()
 }
 
 /**
- * Short Cut
+ * Shortcut optimization
  */
 void qt_shortCut()
 {
@@ -241,6 +247,9 @@ void qt_shortCut()
 	ENV.setBool(Env::isRunning,false);
 }
 
+/**
+ * Deformation optimization
+ */
 void qt_optimize()
 {
 	cout << "Random : Deformation "  << endl;

@@ -8,33 +8,31 @@
 //const int PLOT_SIZE = 100;      // 0 to 200
 
 /**
-  * @ingroup qtPlot
-  * @brief Qt simple plot relies on qwt
-  */
+ * @ingroup qtPlot
+ * @brief Qt simple plot relies on qwt
+ */
 class DoublePlot : public QwtPlot
 {
-    Q_OBJECT
-
+	Q_OBJECT
+	
 public:
-    DoublePlot(QWidget* = NULL);
-
-    int getPlotSize() { return PLOT_SIZE; }
-    void setData(std::vector<double> data1,std::vector<double> data2);
-    void rescale();
-
+	DoublePlot(QWidget* = NULL);
+	
+	int getPlotSize() { return PLOT_SIZE; }
+	void setData(const std::vector< std::string >& names , 
+							 const std::vector< std::vector <double> >& data );
+	void rescale();
+	
 private:
-    void alignScales();
-
-    double d_x[PLOT_SIZE];
-    double d_y[PLOT_SIZE];
-    double d_z[PLOT_SIZE];
-
-    bool init;
-    double Max_y;
-    double Max_z;
-
-    QwtPlotCurve *cData1;
-    QwtPlotCurve *cData2;
+	void alignScales();
+	
+	QwtArray< double >								d_x;
+	std::vector< QwtArray< double > > d_y;
+	
+	bool init;
+	
+	std::vector<double> Max_y;
+	std::vector< QwtPlotCurve* > cData;
 };
 
 #endif // DOUBLEPLOT_HPP

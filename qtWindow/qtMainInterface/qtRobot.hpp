@@ -10,13 +10,13 @@
 #ifndef QT_ROBOT_H
 #define QT_ROBOT_H
 
-#include "../qtLibrary.h"
+#include "qtLibrary.h"
 #include "qtFormRobot/moverobot.hpp"
 #include "mainwindow.hpp"
 
 namespace Ui
 {
-    class RobotWidget;
+	class RobotWidget;
 }
 
 /**
@@ -25,41 +25,41 @@ namespace Ui
  */
 class RobotWidget : public QWidget
 {
-    Q_OBJECT
+	Q_OBJECT
 	
 public:
-    RobotWidget(QWidget *parent = 0);
-    ~RobotWidget();
+	RobotWidget(QWidget *parent = 0);
+	~RobotWidget();
 	
 	void setMainWindow(MainWindow *ptrMW) { m_mainWindow = ptrMW; }
 	
 	void initRobot();
 	
-	MoveRobot* getFormRobot();
+	MoveRobot* getMoveRobot();
 	
-private slots:
+	private slots:
 	
-// Test Model -------------------------
+	// Test Model -------------------------
 	void costTest();
-    void collisionsTest();
-    void localpathsTest();
-    void allTests();
-    void setAttMatrix();
-
-// Hri Planner ------------------------
+	void collisionsTest();
+	void localpathsTest();
+	void allTests();
+	void setAttMatrix();
+	
+	// Hri Planner ------------------------
 #if defined (HRI_GENERALIZED_IK)
 	void computeHriGikLARM() { this->computeHriGik(true); }
 	void computeHriGikRARM() { this->computeHriGik(false); }
 #endif
 	
-// Grab Object ------------------------
+	// Grab Object ------------------------
 	
-    void GrabObject();
-    void ReleaseObject();
-    void currentObjectChange(int i);
-    void SetObjectToCarry();
+	void GrabObject();
+	void ReleaseObject();
+	void currentObjectChange(int i);
+	void SetObjectToCarry();
 	
-// MISC -------------------------------
+	// MISC -------------------------------
 	void printCurrentPos();
 	
 #ifdef LIGHT_PLANNER
@@ -67,13 +67,13 @@ private slots:
 #endif
 	
 	/*void initVoxelCollisionChecker();
-	void createVoxelCC();
-	void deleteVoxelCC();
-	
-	void voxelCCTest();*/
+	 void createVoxelCC();
+	 void deleteVoxelCC();
+	 
+	 void voxelCCTest();*/
 	
 private:
-    Ui::RobotWidget *m_ui;
+	Ui::RobotWidget *m_ui;
 	
 	MainWindow *m_mainWindow;
 	

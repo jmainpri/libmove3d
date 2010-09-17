@@ -5,11 +5,13 @@
 #include "qtBase/SpinBoxSliderConnector_p.hpp"
 #include "qtOpenGL/glwidget.hpp"
 #include "qtOpenGL/qtMobileCamera.h"
+#include "mainwindowTestFunctions.hpp"
 
 #include "P3d-pkg.h"
 #include "Util-pkg.h"
 
 #include "Move3d-pkg.h"
+#include "Planner-pkg.h"
 
 #include <iostream>
 #include <tr1/memory>
@@ -33,11 +35,6 @@
 #include "planner_cxx/cost_space.hpp"
 #endif
 
-#ifdef HRI_COSTSPACE
-#include "ui_qtHrics.h"
-#include "planner_cxx/HRI_CostSpace/HRICS_costspace.h"
-#endif
-
 Move3D2OpenGl* pipe2openGl;
 
 
@@ -54,7 +51,8 @@ MainWindow::MainWindow(QWidget *parent)
 	m_ui->tabCost->setMainWindow(this);
 	m_ui->tabCost->setMotionWidget(this->m_ui->tabMotionPlanner);
 	m_ui->tabCost->initCost();
-	m_ui->tabCost->initThreshold();
+	
+	m_ui->tabUtil->setMainWindow(this);
 	
 #ifdef HRI_COSTSPACE
 	m_ui->tabCost->getHriWidget()->setMainWindow(this);
@@ -67,22 +65,17 @@ MainWindow::MainWindow(QWidget *parent)
 	m_ui->tabRobot->setMainWindow(this);
 	m_ui->tabRobot->initRobot();
 	
-	mKCDpropertiesWindow = new KCDpropertiesWindow();
-	
-	//    m_ui->OpenGL->setWinSize(G3D_WIN->size);
+	// m_ui->OpenGL->setWinSize(G3D_WIN->size);
 	m_ui->OpenGL->setWinSize(600);
+	m_ui->OpenGL->setMainWindow(this);
 	pipe2openGl = new Move3D2OpenGl(m_ui->OpenGL);
 	
-	//    m_ui->sidePannel->setMainWindow(this);
-	
-	//UITHINGQPalette pal(m_ui->centralWidget->palette()); // copy widget's palette to non const QPalette
-	//UITHINGQColor myColor(Qt::darkGray);
-	//UITHINGpal.setColor(QPalette::Window,myColor);
-	//UITHINGm_ui->centralWidget->setPalette( pal );        // set the widget's palette
-	
+	mKCDpropertiesWindow = new KCDpropertiesWindow();
 	cout << "pipe2openGl = new Move3D2OpenGl(m_ui->OpenGL)" << endl;
 	
-	//    connect(m_ui->actionOpen,SIGNAL(triggered()),this,SLOT(open()));
+	m_testFunctions = new MainWindowTestFunctions(this);
+	
+	// Connect Menu slots
 	connect(m_ui->actionOpenScenario,SIGNAL(triggered()),this,SLOT(openScenario()));
 	connect(m_ui->actionSaveScenario,SIGNAL(triggered()),this,SLOT(saveScenario()));
 	connect(m_ui->actionKCDPropietes,SIGNAL(triggered()),mKCDpropertiesWindow,SLOT(show()));
@@ -94,19 +87,15 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(m_ui->actionLoadTrajectory,SIGNAL(triggered()),this,SLOT(loadTraj()));
 	connect(m_ui->actionSaveTrajectory,SIGNAL(triggered()),this,SLOT(saveTraj()));
 	
-	//    connect(m_ui->pagesOfStakedWidget, SIGNAL(activated(int)),m_ui->stackedWidget, SLOT(setCurrentIndex(int)));
+	// connect(m_ui->pagesOfStakedWidget, SIGNAL(activated(int)),m_ui->stackedWidget, SLOT(setCurrentIndex(int)));
 	
 	connectCheckBoxes();
 	
-	// MainWindow
+	// MainWindow init functions
 	initRunButtons();
 	initViewerButtons();
 	initLightSource();
-	
-	initUtil();
-	
 	initRobotsMenu();
-	initTests();
 }
 
 MainWindow::~MainWindow()
@@ -155,7 +144,7 @@ void MainWindow::openScenario()
 	{
 		qt_fileName = fileName.toStdString().c_str();
 		qt_readScenario();
-		m_ui->tabRobot->getFormRobot()->updateAllRobotInitPos();
+		m_ui->tabRobot->getMoveRobot()->updateAllRobotInitPos();
 		this->drawAllWinActive();
 	}
 }
@@ -213,9 +202,12 @@ void MainWindow::saveGraph()
 
 void MainWindow::saveXYZGraphToDot()
 {
+	string filename("/Users/jmainpri/workspace/BioMove3D/video/graph_BGL.dot");
+	cout << "Saving graph to Dot file : " << filename <<  endl;
 	if (!ENV.getBool(Env::isRunning)) 
 	{
 		p3d_saveGraphToDotFormat(0);
+		API_activeGraph->saveBGLGraphToDotFile(filename);
 	}
 }
 
@@ -579,6 +571,8 @@ void MainWindow::initRunButtons()
 	m_ui->radioButtonDiff->setChecked(!ENV.getBool(Env::isPRMvsDiffusion));
 	
 	connectCheckBoxToEnv(m_ui->checkBoxWithSmoothing,      Env::withSmoothing);
+	connectCheckBoxToEnv(m_ui->checkBoxUseP3DStructures,      Env::use_p3d_structures);
+
 	
 	connect( ENV.getObject(Env::isRunning), SIGNAL(valueChanged(bool)), this, SLOT(planningFinished(void)) , Qt::QueuedConnection );
 }
@@ -649,6 +643,7 @@ void MainWindow::reset()
 	std::string str = "ResetGraph";
 	write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 #else
+	cout <<  "1 - XYZ_GRAPH = " << XYZ_GRAPH << endl;
 	qt_resetGraph();
 #endif
 	m_ui->pushButtonRun->setDisabled(false);
@@ -657,6 +652,7 @@ void MainWindow::reset()
 #ifdef P3D_PLANNER
 	p3d_SetStopValue(false);
 #endif
+	cout <<  "2 - XYZ_GRAPH = " << XYZ_GRAPH << endl;
 	this->drawAllWinActive();
 }
 
@@ -807,156 +803,4 @@ void MainWindow::changeEvent(QEvent *e)
 	}
 }
 
-
-
-//---------------------------------------------------------------------
-// GREEDY
-//---------------------------------------------------------------------
-void MainWindow::initUtil()
-{
-	// Greedy
-	greedy = new QPushButton("Greedy Planner");
-	connect(greedy, SIGNAL(clicked()),this, SLOT(greedyPlan()),Qt::DirectConnection);
-	
-	connectCheckBoxToEnv(m_ui->checkBoxDebug,               Env::debugCostOptim);
-	connectCheckBoxToEnv(m_ui->checkBoxRecomputeTrajCost,   Env::trajCostRecompute);
-	//    connectCheckBoxToEnv(m_ui->checkBoxWithShortCut,        Env::withShortCut);
-	connectCheckBoxToEnv(m_ui->checkBoxUseTRRT,             Env::useTRRT);
-	
-	LabeledSlider* nbGreedyTraj = createSlider(tr("Number of trajectories"), Env::nbGreedyTraj, 1, 10 );
-	LabeledSlider* hight = createSlider(tr("Height Factor"), Env::heightFactor, 1, 10 );
-	LabeledSlider* numberIterations = createSlider(tr("Number of iteration"), Env::nbCostOptimize, 0, 500 );
-	LabeledDoubleSlider* maxFactor = createDoubleSlider(tr("Start Factor"), Env::MaxFactor, 0, 2000 );
-	LabeledDoubleSlider* minStep = createDoubleSlider(tr("Min step"), Env::MinStep, 0, 1000 );
-	LabeledDoubleSlider* costStep = createDoubleSlider(tr("Cost Step"), Env::costStep, 0.01, 10 );
-	
-	//	double dmax=0;
-	//	p3d_col_get_dmax(&dmax);
-	//
-	//	minStep->setValue(dmax);
-	numberIterations->setValue(ENV.getInt(Env::nbCostOptimize));
-	
-	//    QPushButton* biasPos = new QPushButton("Biased Pos");
-	//    connect(biasPos, SIGNAL(clicked()),this, SLOT(biasPos()),Qt::DirectConnection);
-	
-	//    QComboBox* costCriterium = new QComboBox();
-	//    costCriterium->insertItem(INTEGRAL, "Integral");
-	//    costCriterium->insertItem(MECHANICAL_WORK, "Mechanical Work");
-	//    costCriterium->insertItem(VISIBILITY, "Visibility");
-	//    costCriterium->setCurrentIndex((int)(INTEGRAL));
-	//
-	//    connect(costCriterium, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)), Qt::DirectConnection);
-	
-	m_ui->greedyLayout->addWidget(greedy);
-	m_ui->greedyLayout->addWidget(nbGreedyTraj);
-	m_ui->greedyLayout->addWidget(numberIterations);
-	m_ui->greedyLayout->addWidget(hight);
-	m_ui->greedyLayout->addWidget(maxFactor);
-	m_ui->greedyLayout->addWidget(minStep);
-	m_ui->greedyLayout->addWidget(costStep);
-	//    m_ui->greedyLayout->addWidget(costCriterium);
-	//    m_ui->greedyLayout->addWidget(biasPos);
-	
-}
-
-void MainWindow::biasPos() {
-	//    Robot* R = new Robot(XYZ_ROBOT);
-	//    CostOptimization* costOptim = new CostOptimization(R,R->getTrajStruct());
-	//    tr1::shared_ptr<Configuration> q = costOptim->cheat();
-	//    costOptim->getRobot()->setAndUpdate(*q);
-	//    this->drawAllWinActive();
-}
-
-void MainWindow::greedyPlan() {
-	//	  runButton->setDisabled(true);
-	//	  resetButton->setDisabled(true);
-	std::string str = "p3d_RunGreedy";
-	
-	isPlanning();
-	
-	write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-}
-
-//-----------------------------------------------------------------
-// Tests
-//-----------------------------------------------------------------
-void MainWindow::initTests()
-{
-	connect(m_ui->pushButtonTest1,SIGNAL(clicked()),this,SLOT(test1()));
-	connect(m_ui->pushButtonTest2,SIGNAL(clicked()),this,SLOT(test2()));
-	connect(m_ui->pushButtonTest3,SIGNAL(clicked()),this,SLOT(test3()));
-}
-
-void MainWindow::test1()
-{
-	ENV.setBool(Env::tRrtComputeGradient,true);
-	ENV.setDouble(Env::extensionStep,3.0);
-	global_costSpace->setCost("costMap2D");
-}
-
-void MainWindow::test2()
-{
-#ifdef HRI_COSTSPACE
-	ENV.setDouble(Env::Knatural,0.0);
-	ENV.setDouble(Env::Kreachable,0.0);
-	ENV.setDouble(Env::extensionStep,3.0);
-	ENV.setDouble(Env::CellSize,0.2);
-	ENV.setDouble(Env::zone_size,0.0);
-	
-#ifdef LIGHT_PLANNER
-	Robot* rob = global_Project->getActiveScene()->getRobotByNameContaining("ROBOT");
-	if(rob)
-	{
-		rob->activateCcConstraint();
-	}
-#endif
-	
-	if (HRICS_MotionPL) {
-		delete HRICS_MotionPL;
-		HRICS_MotionPL= NULL;
-	}
-	
-	HRICS_MotionPL = new HRICS::Workspace;
-	dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->initGrid();
-	dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->initDistance();
-	dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->initVisibility();
-	dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->initNatural();
-	dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->initReachable();
-	
-	PointsToDraw = new ThreeDPoints;
-	
-	m_ui->tabCost->getHriWidget()->getUi()->HRICSPlanner->setDisabled(false);
-	ENV.setBool(Env::HRIPlannerWS,true);
-	ENV.setDouble(Env::zone_size,0.5);
-	HRICS_activeDist = HRICS_MotionPL->getDistance();
-	
-	API_activeGrid = dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->getGrid();
-	
-	m_ui->tabCost->getHriWidget()->getUi()->pushButtonMakeGrid->setDisabled(true);
-	m_ui->tabCost->getHriWidget()->getUi()->pushButtonDeleteGrid->setDisabled(false);
-	
-	ENV.setBool(Env::enableHri,true);
-	ENV.setBool(Env::isCostSpace,true);
-	ENV.setBool(Env::drawGrid,true);
-	drawAllWinActive();
-	
-	
-	/*dynamic_cast<HRICS::Workspace*>(HRICS_MotionPL)->getGrid()->computeVectorField();
-	 ENV.setBool(Env::drawGrid,true);
-	 ENV.setBool(Env::drawVectorField,true);
-	 drawAllWinActive();*/
-#endif
-}
-
-void MainWindow::test3()
-{
-	/*roboptim::RoboptimTrajectory OptimTraj;
-	OptimTraj.run_CostMap();*/
-	
-	//boost_test_1();
-	//boost_test_2();
-	//boost_test_3();
-	///boost_test_4();
-
-}
 

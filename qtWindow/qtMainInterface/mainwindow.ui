@@ -12,8 +12,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1482</width>
-    <height>928</height>
+    <width>1440</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -49,7 +49,7 @@
      <number>2</number>
     </property>
     <item>
-     <widget class="QSplitter" name="splitter">
+     <widget class="QSplitter" name="vSplitter">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
@@ -70,7 +70,7 @@
         <item>
          <widget class="QTabWidget" name="mainTabWidget">
           <property name="currentIndex">
-           <number>4</number>
+           <number>0</number>
           </property>
           <property name="documentMode">
            <bool>true</bool>
@@ -80,8 +80,17 @@
             <string>Motion Planner</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_19">
-            <property name="topMargin">
+            <property name="leftMargin">
              <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>5</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>5</number>
             </property>
            </layout>
           </widget>
@@ -90,8 +99,17 @@
             <string>Cost</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_11">
-            <property name="topMargin">
+            <property name="leftMargin">
              <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>5</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>5</number>
             </property>
            </layout>
           </widget>
@@ -100,12 +118,21 @@
             <string>Robot</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_12">
-            <property name="topMargin">
+            <property name="leftMargin">
              <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>5</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>5</number>
             </property>
            </layout>
           </widget>
-          <widget class="QWidget" name="tabUtils">
+          <widget class="UtilWidget" name="tabUtil">
            <property name="focusPolicy">
             <enum>Qt::NoFocus</enum>
            </property>
@@ -113,100 +140,18 @@
             <string>Utils</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_17">
-            <property name="topMargin">
+            <property name="leftMargin">
              <number>0</number>
             </property>
-            <item>
-             <widget class="QTabWidget" name="tabWidget_3">
-              <property name="currentIndex">
-               <number>0</number>
-              </property>
-              <property name="documentMode">
-               <bool>true</bool>
-              </property>
-              <widget class="QWidget" name="tab_3">
-               <attribute name="title">
-                <string>Greedy</string>
-               </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_18">
-                <item>
-                 <layout class="QGridLayout" name="gridLayout_6">
-                  <item row="0" column="1">
-                   <widget class="QCheckBox" name="checkBoxDebug">
-                    <property name="text">
-                     <string>Debug</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="QCheckBox" name="checkBoxRecomputeTrajCost">
-                    <property name="text">
-                     <string>Recompute Traj Cost</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="2">
-                   <widget class="QCheckBox" name="checkBoxWithShortCut_2">
-                    <property name="text">
-                     <string>With Short Cut</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="2">
-                   <widget class="QCheckBox" name="checkBoxUseTRRT">
-                    <property name="text">
-                     <string>With T-RRT</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0">
-                   <spacer name="horizontalSpacer_13">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item row="1" column="3">
-                   <spacer name="horizontalSpacer_14">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                 </layout>
-                </item>
-                <item>
-                 <layout class="QVBoxLayout" name="greedyLayout"/>
-                </item>
-                <item>
-                 <spacer name="verticalSpacer_8">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-               </layout>
-              </widget>
-             </widget>
-            </item>
+            <property name="topMargin">
+             <number>5</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>5</number>
+            </property>
            </layout>
           </widget>
           <widget class="QWidget" name="tabViewerSettings">
@@ -214,6 +159,18 @@
             <string>Viewer Settings</string>
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>5</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>5</number>
+            </property>
             <item>
              <widget class="QScrollArea" name="scrollArea">
               <property name="horizontalScrollBarPolicy">
@@ -228,7 +185,7 @@
                  <x>0</x>
                  <y>0</y>
                  <width>357</width>
-                 <height>822</height>
+                 <height>785</height>
                 </rect>
                </property>
                <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -248,6 +205,9 @@
                        <widget class="QCheckBox" name="checkBoxDrawGraph">
                         <property name="text">
                          <string>Draw Graph</string>
+                        </property>
+                        <property name="checked">
+                         <bool>false</bool>
                         </property>
                        </widget>
                       </item>
@@ -640,7 +600,7 @@
          <number>2</number>
         </property>
         <item>
-         <widget class="QSplitter" name="splitter_2">
+         <widget class="QSplitter" name="hSplitter">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
@@ -658,7 +618,7 @@
             </size>
            </property>
           </widget>
-          <widget class="QWidget" name="widget_3" native="true">
+          <widget class="QWidget" name="controlWidget" native="true">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -718,19 +678,19 @@
                   </property>
                   <property name="styleSheet">
                    <string notr="true">QPushButton {
-border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playback-stop.svg) 1 1 1 1 ;
+border-image:url(images/media-playback-stop.svg) 1 1 1 1 ;
 }
 
 QPushButton:hover {
-border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playback-stop.svg) -2 -2 -2 -2 ;
+border-image:url(images/media-playback-stop.svg) -2 -2 -2 -2 ;
 }
 
 QPushButton:pressed {
-border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playback-stop.svg) -5 -5 -5 -5 ;
+border-image:url(images/media-playback-stop.svg) -5 -5 -5 -5 ;
 }
 
 QPushButton:disabled {
-border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playback-stop-disabled.svg) 1 1 1 1 ;
+border-image:url(images/media-playback-stop-disabled.svg) 1 1 1 1 ;
 }</string>
                   </property>
                   <property name="text">
@@ -740,7 +700,7 @@ border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playb
                  <widget class="QPushButton" name="pushButtonResetGraph">
                   <property name="geometry">
                    <rect>
-                    <x>160</x>
+                    <x>150</x>
                     <y>10</y>
                     <width>117</width>
                     <height>32</height>
@@ -791,19 +751,19 @@ border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playb
                   </property>
                   <property name="styleSheet">
                    <string notr="true">QPushButton {
-border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playback-start.svg) 1 1 1 1 ;
+border-image:url(images/media-playback-start.svg) 1 1 1 1 ;
 }
 
 QPushButton:hover {
-border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playback-start.svg) -2 -2 -2 -2 ;
+border-image:url(images/media-playback-start.svg) -2 -2 -2 -2 ;
 }
 
 QPushButton:pressed {
-border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playback-start.svg) -8 -8 -8 -8 ;
+border-image:url(images/media-playback-start.svg) -8 -8 -8 -8 ;
 }
 
 QPushButton:disabled {
-border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playback-start-disabled.svg) 1 1 1 1 ;
+border-image:url(images/media-playback-start-disabled.svg) 1 1 1 1 ;
 }</string>
                   </property>
                   <property name="text">
@@ -851,19 +811,19 @@ border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playb
                   </property>
                   <property name="styleSheet">
                    <string notr="true">QPushButton {
-border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playback-pause.svg) 1 1 1 1 ;
+border-image:url(images/media-playback-pause.svg) 1 1 1 1 ;
 }
 
 QPushButton:hover {
-border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playback-pause.svg) -2 -2 -2 -2 ;
+border-image:url(images/media-playback-pause.svg) -2 -2 -2 -2 ;
 }
 
 QPushButton:pressed {
-border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playback-pause.svg) -5 -5 -5 -5 ;
+border-image:url(images/media-playback-pause.svg) -5 -5 -5 -5 ;
 }
 
 QPushButton:disabled {
-border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playback-pause-disabled.svg) 1 1 1 1 ;
+border-image:url(images/media-playback-pause-disabled.svg) 1 1 1 1 ;
 }</string>
                   </property>
                   <property name="text">
@@ -915,6 +875,13 @@ p, li { white-space: pre-wrap; }
                   <widget class="QCheckBox" name="checkBoxWithSmoothing">
                    <property name="text">
                     <string>With Smoothing</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="checkBoxUseP3DStructures">
+                   <property name="text">
+                    <string>p3d Structs</string>
                    </property>
                   </widget>
                  </item>
@@ -1048,7 +1015,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1482</width>
+     <width>1440</width>
      <height>22</height>
     </rect>
    </property>
@@ -1215,6 +1182,12 @@ p, li { white-space: pre-wrap; }
    <class>RobotWidget</class>
    <extends>QWidget</extends>
    <header>qtRobot.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>UtilWidget</class>
+   <extends>QWidget</extends>
+   <header>qtUtil.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

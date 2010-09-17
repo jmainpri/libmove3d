@@ -10,7 +10,7 @@
 #include "qtColisionTestWindow.hpp"
 #include "qtPRMWindow.hpp"
 
-#include "../planner_cxx/API/planningAPI.hpp"
+#include "planningAPI.hpp"
 
 using namespace std;
 

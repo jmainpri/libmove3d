@@ -10,21 +10,23 @@
 #ifndef QT_COST_H
 #define QT_COST_H
 
-#include "../qtLibrary.h"
+#include "qtLibrary.h"
 #include "mainwindow.hpp"
 #include "qtMotionPlanner.hpp"
+
+#include <string>
 
 #ifdef HRI_COSTSPACE
 #include "qtHrics.hpp"
 #endif
 
 #ifdef QWT
-#include "../qtPlot/basicPlotWindow.hpp"
+#include "qtPlot/basicPlotWindow.hpp"
 #endif
 
 namespace Ui
 {
-    class CostWidget;
+	class CostWidget;
 };
 
 /**
@@ -33,12 +35,12 @@ namespace Ui
  */
 class CostWidget : public QWidget
 {
-    Q_OBJECT
+	Q_OBJECT
 	
 public:
-    CostWidget(QWidget *parent = 0);
-    ~CostWidget();
-
+	CostWidget(QWidget *parent = 0);
+	~CostWidget();
+	
 	void initCost();
 	void initCostFunctions();
 	void initThreshold();
@@ -50,48 +52,34 @@ public:
 	HricsWidget* getHriWidget();
 #endif
 	
+public slots:
+	void setCostFunction(std::string function);
+	void setCostFunction(int costFunctionId);
+	
 private slots:
 	
-// General Cost --------------------------------
-	void setCostFunction(int costFunctionId);
+	// General Cost --------------------------------
 	void stonesGraph();
 	void extractBestPath();
 	void newGraphAndReComputeCost();
-    void showTrajCost();
-    void showHRITrajCost();
-    void showTemperature();
-    void setPlotedVector(std::vector<double> v);
-    void putGridInGraph();
-    void computeAStar();
+	void showTrajCost();
+	void showHRITrajCost();
+	void showTemperature();
+	void setPlotedVector(std::vector<double> v);
+	void putGridInGraph();
+	void computeAStar();
 	//void computeGridAndExtract();
 	void graphSearchTest();
-	void runThresholdPlanner();
 	
 private:
-    Ui::CostWidget*		m_ui;
+	Ui::CostWidget*		m_ui;
 	
 	MotionPlanner*		m_motionWidget;
 	MainWindow*			m_mainWindow;
 	
 #ifdef QWT
-    BasicPlotWindow *plot;
+	BasicPlotWindow *plot;
 #endif
-	
-};
-
-/**
- * @ingroup qtWindow
- * @brief Planner thread class 
- */
-class TestPlannerthread: public QThread
-{
-	Q_OBJECT
-	
-public:
-	TestPlannerthread(QObject* parent = 0);
-	
-protected:
-	void run();
 	
 };
 

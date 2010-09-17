@@ -33,6 +33,18 @@
        <string>General</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_9">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>5</number>
+       </property>
        <item>
         <widget class="QScrollArea" name="costScrollArea">
          <property name="horizontalScrollBarPolicy">
@@ -46,8 +58,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>426</width>
-            <height>1052</height>
+            <width>466</width>
+            <height>876</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout">
@@ -366,71 +378,6 @@
             </widget>
            </item>
            <item>
-            <widget class="QGroupBox" name="groupBox_2">
-             <property name="title">
-              <string>Threshold</string>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_2">
-              <item>
-               <widget class="QCheckBox" name="checkBoxIsCostThreshold">
-                <property name="text">
-                 <string>Thresh-RRT</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QWidget" name="widget_2" native="true">
-                <layout class="QGridLayout" name="gridLayout_2">
-                 <item row="0" column="1">
-                  <widget class="QDoubleSpinBox" name="doubleSpinBoxCostThresh"/>
-                 </item>
-                 <item row="0" column="2">
-                  <widget class="QSlider" name="horizontalSliderCostThresh">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_2">
-                   <property name="text">
-                    <string>Seuil</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QWidget" name="widget_3" native="true">
-                <layout class="QGridLayout" name="gridLayout_3">
-                 <item row="0" column="1">
-                  <widget class="QPushButton" name="pushButtonThresholdPlanner">
-                   <property name="text">
-                    <string>T-Planner</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <spacer name="horizontalSpacer_6">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
             <widget class="QGroupBox" name="groupBox_24">
              <property name="title">
               <string>2D Landscape</string>
@@ -535,7 +482,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QWidget" name="tabHri" native="true"/>
+        <widget class="HricsWidget" name="tabHri" native="true"/>
        </item>
       </layout>
      </widget>
@@ -543,6 +490,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>HricsWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">qtHrics.hpp</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
