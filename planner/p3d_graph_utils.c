@@ -436,11 +436,11 @@ void p3d_remove_node_compco(p3d_node * node, p3d_compco * compco, int reorder) {
     if(nodes->N == node){//remove the node from the list Temporaly
       if(nodes->prev){
         nodes->prev->next = nodes->next;
+      }else{
+        compco->nodes = nodes->next;
       }
       if(nodes->next){
         nodes->next->prev = nodes->prev;
-      }else{
-        compco->nodes = nodes->prev;
       }
       MY_FREE(nodes, p3d_list_node, 1);
       break;
