@@ -181,7 +181,7 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
   
   hri_agent->navig  = hri_create_agent_navig(hri_agent);
   hri_agent->manip = hri_create_agent_manip(hri_agent);
-  hri_agent->perspective = hri_create_agent_perspective(hri_agent);
+  hri_agent->perspective = hri_create_agent_perspective(hri_agent, robot->env);
   
   hri_agent->exists = FALSE;
 
@@ -220,11 +220,12 @@ HRI_MANIP * hri_create_empty_agent_manip()
   return manip;
 }
 
-HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
+HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env)
 {
-  HRI_PERSP * persp = NULL;
+  int i;
+  HRI_PERSP *persp;
   
-  persp = MY_ALLOC(HRI_PERSP,1);
+  persp = MY_ALLOC(HRI_PERSP, 1);
   
   switch (agent->type) {
     case HRI_JIDO1:
@@ -286,6 +287,12 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
       persp->foa = 0;
       break;
   }
+  persp->currently_sees.vis_nb = env->nr;
+  persp->currently_sees.vis = MY_ALLOC(HRI_VISIBILITY, persp->currently_sees.vis_nb);
+  for (i=0; i<persp->currently_sees.vis_nb; i++) {
+    persp->currently_sees.vis[i] = HRI_INVISIBLE;
+  }
+  
   persp->enable_vision_draw = FALSE;
   persp->enable_pointing_draw = FALSE;
   
@@ -293,8 +300,10 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
 }
 
 int hri_destroy_agent_perspective(HRI_PERSP *persp)
-{
+{  
+  MY_FREE(persp->currently_sees.vis, HRI_VISIBILITY, persp->currently_sees.vis_nb);  
   MY_FREE(persp,HRI_PERSP,1);  
+  
   return TRUE;
 }
 

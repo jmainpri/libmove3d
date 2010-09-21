@@ -8,7 +8,7 @@
 #define GIK_MAX_TASK_NO 5
 #define GIK_CONSTRAINTS 3
 
-typedef enum HRI_AGENT_TYPE_ENUM{
+typedef enum HRI_AGENT_TYPE_ENUM {
 	HRI_JIDO1,
   HRI_JIDOKUKA,
   HRI_PR2,
@@ -24,7 +24,7 @@ typedef enum HRI_AGENT_TYPE_ENUM{
 	HRI_MOBILE_JUSTIN
 }	HRI_AGENT_TYPE;
 
-typedef enum HRI_GIK_TASK_TYPE_ENUM{
+typedef enum HRI_GIK_TASK_TYPE_ENUM {
 	GIK_LOOK,
 	GIK_RAREACH,
 	GIK_LAREACH,
@@ -39,7 +39,7 @@ typedef enum HRI_GIK_TASK_TYPE_ENUM{
 	GIK_NOTASK
 } HRI_GIK_TASK_TYPE;
 
-typedef struct STRUCT_GIK_TASK{
+typedef struct STRUCT_GIK_TASK {
 	HRI_GIK_TASK_TYPE type;
 	int default_joints[GIK_MAX_JOINT_NO];
 	int default_joints_no;
@@ -49,7 +49,7 @@ typedef struct STRUCT_GIK_TASK{
 	double target[GIK_CONSTRAINTS];
 } GIK_TASK;
 
-typedef struct STRUCT_HRI_MANIP{
+typedef struct STRUCT_HRI_MANIP {
 	hri_gik * gik;
 
 	signed int gik_max_step; //TODO: add these two to hri_gik structure
@@ -62,26 +62,41 @@ typedef struct STRUCT_HRI_MANIP{
   int activetasks_no;
 } HRI_MANIP;
 
-typedef struct STRUCT_HRI_NAVIG{
+typedef struct STRUCT_HRI_NAVIG {
   hri_bitmapset * btset;
 	int btset_initialized;
 } HRI_NAVIG;
 
-typedef struct STRUCT_HRI_PERSP{
+typedef enum ENUM_HRI_VISIBILITY {
+  HRI_VISIBLE = 0,
+  HRI_INVISIBLE = 1
+} HRI_VISIBILITY;
+
+typedef struct STRUCT_HRI_VISIBILITY_LIST {
+  HRI_VISIBILITY *vis; /* The index is the same as env->nb */
+  int vis_nb; /* Normally this number should be = to the number of robots in the env */
+} HRI_VISIBILITY_LIST;
+
+
+typedef struct STRUCT_HRI_PERSP {
+  /* Visual Perspective */
   p3d_jnt * camjoint;
   double fov;
   double foa;
   int pan_jnt_idx;
   int tilt_jnt_idx;
+  HRI_VISIBILITY_LIST currently_sees;
   
+  /* Reachability Perspective */
   p3d_jnt * pointjoint;
   double point_tolerance;
   
+  /* Graphics */
   int enable_vision_draw;
   int enable_pointing_draw;
 } HRI_PERSP;
 
-typedef struct STRUCT_HRI_AGENT{
+typedef struct STRUCT_HRI_AGENT {
 	HRI_AGENT_TYPE type;
 	p3d_rob * robotPt;
 	HRI_MANIP * manip;
@@ -97,7 +112,7 @@ typedef struct STRUCT_HRI_AGENT{
 } HRI_AGENT;
 
 
-typedef struct STRUCT_HRI_AGENTS{
+typedef struct STRUCT_HRI_AGENTS {
   HRI_AGENT ** all_agents; // The list of agents robots+humans
   int all_agents_no;
   int source_agent_idx; // This is the index of the agent who is the robot
@@ -107,7 +122,8 @@ typedef struct STRUCT_HRI_AGENTS{
   int humans_no;
 }HRI_AGENTS;
 
-typedef struct struct_hri_shared_zone{
+/* A test structure */
+typedef struct struct_hri_shared_zone {
   double x;
   double y;
   double z;
