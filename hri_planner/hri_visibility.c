@@ -1,7 +1,7 @@
 #include "Util-pkg.h"
-#include "P3d-pkg.h"
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
+#include "GL/glx.h"
 
 int hri_is_object_visible(HRI_AGENT * agent, p3d_rob *object, int threshold, int save, int draw_at_end)
 {
@@ -40,7 +40,7 @@ int hri_is_object_visible(HRI_AGENT * agent, p3d_rob *object, int threshold, int
   g3d_set_projection_matrix(win->vs.projection_mode);
   
   //everything is ready now.
-  g3d_is_object_visible_from_current_viewpoint(win, object,&result,save,(char*)"");
+  g3d_is_object_visible_from_current_viewpoint(win, object, &result, save, (char*)"");
   
   //restore viewport
   if(!save){
@@ -113,7 +113,7 @@ int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera
     glViewport(0,0,(GLint)viewport[2],(GLint)viewport[3]);
   }
   g3d_load_state(win, &st);
-
+  
   g3d_restore_win_camera(win->vs);
   g3d_set_projection_matrix(win->vs.projection_mode); // do this after restoring the camera fov
   
@@ -126,7 +126,7 @@ int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, 
 {
   int idealpixels;
   int visiblepixels;
-  unsigned char *image= NULL;
+  unsigned char *image;
   int i, width, height;
   GLint viewport[4];
   static int crntcnt= 0, idlcnt = 0;
@@ -177,7 +177,7 @@ int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, 
   }
   
   if(idealpixels!=0){    
-    // display everything in blur except the object which is in red
+    // display everything in blue except the object which is in red
     for(i=0; i<XYZ_ENV->no; ++i) {
       p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_UNLIT_BLUE_DISPLAY);
     }
@@ -235,6 +235,123 @@ int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, 
   return TRUE;
 }
 
+/* Computes visibility in one image acquisition for given objects */
+//TODO: There should be an option to draw an object in a desired color
+int g3d_compute_visibility_for_given_objects_in_current_viewpoint(g3d_win* win, p3d_rob *objects, int objects_nb, HRI_VISIBILITY *res, int save, char *path)
+{
+  int idealpixels;
+  int visiblepixels;
+  unsigned char *image;
+  int i, width, height;
+  GLint viewport[4];
+  static int crntcnt = 0, idlcnt = 0;
+  char name[256];  
+  p3d_rob *object;
+  double *result;
+  // disable the display of all obstacles and of all the robots of no interest:
+  for(i=0; i<XYZ_ENV->no; ++i) {
+    p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_NO_DISPLAY);
+  }
+  for(i=0; i<XYZ_ENV->nr; ++i) {
+    if(XYZ_ENV->robot[i]==object) {
+      continue;
+    }
+    else {
+      p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_NO_DISPLAY);
+    }
+  }
+  // display the object in red
+  p3d_set_robot_display_mode(object, P3D_ROB_UNLIT_RED_DISPLAY);
+  
+  g3d_draw_win_back_buffer(win); //only the object should be drawn in red, everthing else is black
+  
+  if(save) {
+    sprintf(name, "%sidealview%i.ppm", path, crntcnt++);
+    g3d_export_OpenGL_display(name);
+  }
+  
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  width = viewport[2];
+  height= viewport[3];
+  
+  // get the OpenGL image buffer:
+  image = (unsigned char*) malloc(3*width*height*sizeof(unsigned char));
+  glReadBuffer(GL_BACK);  // use back buffer as we are in a double-buffered configuration
+  
+  // choose 1-byte alignment:
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  
+  // get the image pixels (from (0,0) position):
+  glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image);
+  
+  // count the pixels corresponding to the object's color:
+  idealpixels= 0;
+  for(i=0; i<width*height; i++) {
+    if(image[3*i]> 0.8) {
+      idealpixels++;
+    }
+  }
+  
+  if(idealpixels!=0){    
+    // display everything in blue except the object which is in red
+    for(i=0; i<XYZ_ENV->no; ++i) {
+      p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_UNLIT_BLUE_DISPLAY);
+    }
+    for(i=0; i<XYZ_ENV->nr; ++i) {
+      if(XYZ_ENV->robot[i]==object) {
+        continue;
+      }
+      else {
+        p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_UNLIT_BLUE_DISPLAY);
+      }
+    }  
+    
+    g3d_draw_win_back_buffer(win);
+    
+    if(save){
+      //save the image. All is blue, the object is red.
+      sprintf(name, "%scurrentview%i.ppm", path, idlcnt++);
+      g3d_export_OpenGL_display(name);
+    }    
+    glReadBuffer(GL_BACK);  // use back buffer as we are in a double-buffered configuration
+    
+    // choose 1-byte alignment:
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    
+    // get the image pixels (from (0,0) position):
+    
+    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image);
+    
+    visiblepixels= 0;
+    for(i=0; i<width*height; i++){
+      if(image[3*i]> 0.8) {
+        visiblepixels++;
+      }
+    }
+    
+    // visiblepixels present the pixels that we see and not blocked by obstructions
+    
+    *result= ((double) visiblepixels)/((double) idealpixels);
+  }
+  else{
+    //printf("Not looking at the object: %s\n",object->name);
+    *result = -1;
+  }
+  
+  free(image);
+  
+  // reset the display modes of everything
+  for(i=0; i<XYZ_ENV->no; ++i){
+    p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_DEFAULT_DISPLAY);
+  }
+  for(i=0; i<XYZ_ENV->nr; ++i){
+    p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_DEFAULT_DISPLAY);
+  }
+  
+  return TRUE;
+}
+
+
 /****************************************************************/
 /*!
  * \brief Converts a cartesian coordinate to a spherical one
@@ -251,6 +368,28 @@ void p3d_cartesian2spherical(double x, double y, double z, double *rho, double *
   *theta = atan2(y,x);
   *phi   = atan2(z,DISTANCE2D(x,y,0,0));
 }
+
+/****************************************************************/
+/*!
+ * \brief Converts a cartesian coordinate to a spherical one with a given origin
+ *
+ * \param x,y,z point
+ * \param originx,originy,originz origin point
+ * \param phi,theta resulting angles
+ * !
+ 
+ */
+/****************************************************************/
+void p3d_cartesian2spherical(double x, double y, double z,
+                             double originx, double originy, double originz,
+                             double *phi, double *theta)
+{
+  double distance = DISTANCE3D(x,y,z,originx,originy,originz);
+  
+  *phi = atan2( (y-originy),(x-originx) );
+  *theta = acos( (z-originz)/distance );
+}
+
 
 int hri_object_visibility_placement(HRI_AGENT *agent, p3d_rob *object, int *result, double *elevation, double *azimuth)
 {
@@ -290,7 +429,7 @@ int g3d_object_visibility_placement(p3d_matrix4 camera_frame, p3d_rob *object, d
   double rho,phi,theta;
   
   p3d_get_robot_center(object, objectCenter);
- 
+  
   p3d_matInvertXform(camera_frame,invM);
   p3d_matvec4Mult(invM, objectCenter, objectCenterCamFr);
   
@@ -348,7 +487,7 @@ int g3d_draw_agent_pointing(HRI_AGENT *agent)
   else {
     return FALSE;
   }
-
+  
 }
 
 int g3d_draw_agent_fov(HRI_AGENT *agent)
@@ -357,9 +496,9 @@ int g3d_draw_agent_fov(HRI_AGENT *agent)
   GLdouble GreenColorT[4] =   { 0.0, 0.5, 0.0, 0.0 };
   GLdouble GreyColor[4] =   { 0.5, 0.5, 0.5, 0.5 };
   GLdouble GreyColorT[4] =   { 0.5, 0.5, 0.5, 0.0 };
- 
+  
   if(agent!=NULL && agent->perspective->enable_vision_draw){
-      
+    
     g3d_draw_visibility_by_frame(agent->perspective->camjoint->abs_pos,
                                  DTOR(agent->perspective->foa),
                                  DTOR(agent->perspective->foa*0.75),
@@ -370,12 +509,12 @@ int g3d_draw_agent_fov(HRI_AGENT *agent)
                                  DTOR(agent->perspective->fov*0.75),
                                  1, GreyColor, GreyColorT);
     
-        return TRUE;
+    return TRUE;
   }
   else {
     return FALSE;
   }
-
+  
 }
 
 int g3d_draw_visibility_by_frame(p3d_matrix4 camera_frame, double Hfov, double Vfov, double max_dist, GLdouble source_color[], GLdouble  dest_color[])
@@ -383,11 +522,11 @@ int g3d_draw_visibility_by_frame(p3d_matrix4 camera_frame, double Hfov, double V
   double x_source, y_source, z_source;
   p3d_vector4 left_up, left_down, right_up, right_down;
   p3d_vector4 left_up_abs, left_down_abs, right_up_abs, right_down_abs;
-    
+  
   x_source = camera_frame[0][3];
   y_source = camera_frame[1][3];
   z_source = camera_frame[2][3];
-    
+  
   left_up[0] = max_dist;
   left_up[1] = atan(Hfov/2)*max_dist;
   left_up[2] = atan(Vfov/2)*max_dist;
@@ -463,9 +602,9 @@ int g3d_draw_visibility_by_frame(p3d_matrix4 camera_frame, double Hfov, double V
   glColor4dv(source_color);
   glVertex3f(x_source,y_source,z_source);
   glEnd();
-   
+  
   glDisable(GL_BLEND);
- 
+  
   return TRUE;
 }
 
@@ -523,27 +662,126 @@ int hri_is_object_pointed(HRI_AGENT * agent, p3d_rob *object, int threshold, int
   if(100*result>=threshold)
     return TRUE;
   else
-    return FALSE;
-  
+    return FALSE;  
 }
-
-/****************************************************************/
-/*!
- * \brief Converts a cartesian coordinate to a spherical one
- *
- * \param x,y,z point
- * \param originx,originy,originz origin point
- * \param phi,theta resulting angles
- * !
-
- */
-/****************************************************************/
-void p3d_cartesian2spherical(double x, double y, double z,
-			     double originx, double originy, double originz,
-			     double *phi, double *theta)
+void DrawSmallCube(double x, double y, double z)
 {
-  double distance = DISTANCE3D(x,y,z,originx,originy,originz);
   
-  *phi = atan2( (y-originy),(x-originx) );
-  *theta = acos( (z-originz)/distance );
+  /* We tell we want to draw quads */
+  glBegin(GL_QUADS);
+  
+  /* Every four calls to glVertex, a quad is drawn */
+  glVertex3f(-1+x, -1+y, -1+z);
+  glVertex3f(-1+x, -1+y,  1+z);
+  glVertex3f(-1+x,  1+y,  1+z);
+  glVertex3f(-1+x,  1+y, -1+z);
+  
+  glVertex3f( 1+x, -1+y, -1+z);
+  glVertex3f( 1+x, -1+y,  1+z);
+  glVertex3f( 1+x,  1+y,  1+z);
+  glVertex3f( 1+x,  1+y, -1+z);
+  
+  glVertex3f(-1+x, -1+y, -1+z);
+  glVertex3f(-1+x, -1+y,  1+z);
+  glVertex3f( 1+x, -1+y,  1+z);
+  glVertex3f( 1+x, -1+y, -1+z);
+  
+  glVertex3f(-1+x,  1+y, -1+z);
+  glVertex3f(-1+x,  1+y,  1+z);
+  glVertex3f( 1+x,  1+y,  1+z);
+  glVertex3f( 1+x,  1+y, -1+z);
+  
+  glVertex3f(-1+x, -1+y, -1+z);
+  glVertex3f(-1+x,  1+y, -1+z);
+  glVertex3f( 1+x,  1+y, -1+z);
+  glVertex3f( 1+x, -1+y, -1+z);
+  
+  glVertex3f(-1+x, -1+y,  1+z);
+  glVertex3f(-1+x,  1+y,  1+z);
+  glVertex3f( 1+x,  1+y,  1+z);
+  glVertex3f( 1+x, -1+y,  1+z);
+  
+  /* No more quads */
+  glEnd();
+  
 }
+
+/* Occlusion test using GPU ARB extensions */
+/* It's not functional but it's left here to keep valuable code */
+int g3d_is_object_visible_from_current_viewpoint2(g3d_win* win, p3d_rob *object, double *result, int save, char *path)
+{
+/*  int i;
+  
+  GLuint queries = -1;
+  GLuint sampleCount;
+  GLint available;
+  GLint bitsSupported;
+  
+  glDrawBuffer(GL_BACK);
+  
+  glClearColor(1,1,0,1);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  
+  glGetQueryiv(GL_SAMPLES_PASSED, GL_QUERY_COUNTER_BITS, &bitsSupported);
+  
+  glGenQueriesARB(1, &queries);
+  
+  // Here draw occluders.
+  //g3d_draw_win_back_buffer(win);
+  FL_OBJECT *ob = ((FL_OBJECT *)win->canvas);
+  g3d_drawSphere(0, 0, 0, 2);
+  //DrawSmallCube(0,0,0);
+  glXSwapBuffers(fl_display,fl_get_canvas_id(ob));
+  //DrawSmallCube(0,0,0);
+  g3d_drawSphere(0, 0, 0, 2);
+  glXSwapBuffers(fl_display,fl_get_canvas_id(ob));
+  glFlush();
+  return 1;
+  //glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+  glDepthMask(GL_FALSE);
+  // also disable texturing and any fancy shaders
+  
+  glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queries);
+  
+  // Draw target object
+  //p3d_set_robot_display_mode(XYZ_ENV->robot[num], P3D_ROB_UNLIT_BLUE_DISPLAY);
+  //g3d_draw_robot(FALSE, win);
+  //DrawSmallCube(2,-1,0);
+  g3d_drawSphere(4, -4, 1, 1);
+  
+  glEndQueryARB(GL_SAMPLES_PASSED_ARB);
+  
+  
+  glFlush();
+  
+  // Do other work until "most" of the queries are back, to avoid
+  // wasting time spinning
+  i = 0; // instead of N-1, to prevent the GPU from going idle
+  do {
+    
+    glGetQueryObjectivARB(queries,
+                          GL_QUERY_RESULT_AVAILABLE_ARB,
+                          &available);
+  } while (!available);
+  
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glDepthMask(GL_TRUE);
+  // reenable other state, such as texturing
+  
+  glGetQueryObjectuivARB(queries, GL_QUERY_RESULT_ARB,
+                         &sampleCount);
+  if (sampleCount > 0) {
+    printf("VISIBLE count:%d\n",sampleCount);    
+  }
+  else {
+    printf("INVISIBLE\n");
+ } 
+ g3d_drawSphere(4, -4, 1, 1);
+ 
+ */
+ 
+  return TRUE;
+}
+
