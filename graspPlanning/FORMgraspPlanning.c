@@ -1472,6 +1472,20 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+static int test= 0;
+double color[4]= {1,1,0,1};
+g3d_no_shader();
+if(!test) {
+test= 1;
+p3d_set_robot_display_mode((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), P3D_ROB_UNLIT_CUSTOM_COLOR_DISPLAY,color);
+}
+else {
+test= 0;
+p3d_set_robot_display_mode((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), P3D_ROB_DEFAULT_DISPLAY);
+}
+
+return;
+
 p3d_vector3 points[20];
 for(int i=0; i<20; ++i)
 {
@@ -1487,7 +1501,7 @@ return;
 // gpExport_bodies_for_coldman((p3d_rob *)p3d_get_robot_by_name("hrp2"));
 gpExport_bodies_for_coldman(XYZ_ENV->cur_robot);
 redraw(); return;
-p3d_rob *mug= (p3d_rob *)p3d_get_robot_by_name("Mug");
+p3d_rob *mug= (p3d_rob *)p3d_get_robot_by_name("mug");
 gpCompute_stable_placements(mug, POSELIST); 
 std::list<p3d_rob*> robotList;
 // gpFind_placements_on_object(mug, (p3d_rob *)p3d_get_robot_by_name("table"), robotList, POSELIST, 0.6, 1, 0.01, POSELIST2);
