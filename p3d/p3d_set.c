@@ -582,8 +582,10 @@ void p3d_set_robot_steering_method(const char * name)
 //! Changes the way an object will be displayed.
 //! \param o pointer to the object
 //! \param new_mode the mode to apply to the object
+//! \param color the color (double[4]) to use to display the object (only used for some of the possible modes),
+//!  can be left to NULL if unused
 //! \return 0 in case of success, 1 otherwise
-int p3d_set_obj_display_mode(p3d_obj *o, p3d_obj_display_mode new_mode)
+int p3d_set_obj_display_mode(p3d_obj *o, p3d_obj_display_mode new_mode, double *color)
 {
   if(o==NULL)
   {
@@ -624,10 +626,23 @@ int p3d_set_obj_display_mode(p3d_obj *o, p3d_obj_display_mode new_mode)
     case P3D_OBJ_BLUE_DISPLAY:
        new_poly_mode= POLY_BLUE_DISPLAY;
     break;
+    case P3D_OBJ_CUSTOM_COLOR_DISPLAY:
+       new_poly_mode= POLY_CUSTOM_COLOR_DISPLAY;
+    break;
+    case P3D_OBJ_UNLIT_CUSTOM_COLOR_DISPLAY:
+       new_poly_mode= POLY_UNLIT_CUSTOM_COLOR_DISPLAY;
+    break;
+  }
+
+  if(new_poly_mode==POLY_CUSTOM_COLOR_DISPLAY || new_poly_mode==POLY_UNLIT_CUSTOM_COLOR_DISPLAY)  {
+    if(color==NULL)    {
+      printf("%s: %d: p3d_set_obj_display_mode(): color should not be NULL.\n",__FILE__,__LINE__);
+      return 1;
+    }
   }
 
   for(i=0; i<o->np; ++i) {
-    p3d_set_poly_display_mode(o->pol[i], new_poly_mode);
+    p3d_set_poly_display_mode(o->pol[i], new_poly_mode, color);
   }
 
   return 0;
@@ -636,8 +651,10 @@ int p3d_set_obj_display_mode(p3d_obj *o, p3d_obj_display_mode new_mode)
 //! Changes the way a robot will be displayed.
 ///! \param robotPt pointer to the robot
 //! \param new_mode the mode to apply to the robot
+//! \param color the color (double[4]) to use to display the robot (only used for some of the possible modes),
+//!  can be left to NULL if unused
 //! \return 0 in case of success, 1 otherwise
-int p3d_set_robot_display_mode(p3d_rob *robotPt, p3d_rob_display_mode new_mode)
+int p3d_set_robot_display_mode(p3d_rob *robotPt, p3d_rob_display_mode new_mode, double *color)
 {
   if(robotPt==NULL)
   {
@@ -678,10 +695,23 @@ int p3d_set_robot_display_mode(p3d_rob *robotPt, p3d_rob_display_mode new_mode)
     case P3D_ROB_BLUE_DISPLAY:
        new_obj_mode= P3D_OBJ_BLUE_DISPLAY;
     break;
+    case P3D_ROB_CUSTOM_COLOR_DISPLAY:
+       new_obj_mode= P3D_OBJ_CUSTOM_COLOR_DISPLAY;
+    break;
+    case P3D_ROB_UNLIT_CUSTOM_COLOR_DISPLAY:
+       new_obj_mode= P3D_OBJ_UNLIT_CUSTOM_COLOR_DISPLAY;
+    break;
+  }
+
+  if(new_mode==P3D_ROB_CUSTOM_COLOR_DISPLAY || new_mode==P3D_ROB_UNLIT_CUSTOM_COLOR_DISPLAY)  {
+    if(color==NULL)    {
+      printf("%s: %d: p3d_set_robot_display_mode(): color should not be NULL.\n",__FILE__,__LINE__);
+      return 1;
+    }
   }
 
   for(i=0; i<robotPt->no; ++i) {
-    p3d_set_obj_display_mode(robotPt->o[i], new_obj_mode);
+    p3d_set_obj_display_mode(robotPt->o[i], new_obj_mode, color);
   }
 
   return 0;

@@ -508,6 +508,8 @@ typedef enum {
   P3D_ROB_GREEN_DISPLAY, /*!< will be displayed in green */
   P3D_ROB_UNLIT_BLUE_DISPLAY, /*!< will be displayed in blue with no light */
   P3D_ROB_BLUE_DISPLAY, /*!< will be displayed in blue with */
+  P3D_ROB_CUSTOM_COLOR_DISPLAY,  /*!< will be displayed in custom color */
+  P3D_ROB_UNLIT_CUSTOM_COLOR_DISPLAY,  /*!< will be displayed in custom color with no light */
 } p3d_rob_display_mode;
 
 
@@ -685,7 +687,6 @@ typedef struct rob
 #endif
 
   p3d_rob_display_mode display_mode;  /*!< used to modify how the robot will be displayed (default display, red display,etc.)*/
-
 
 #ifdef HRI_PLANNER
 /* Modif Luis */

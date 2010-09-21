@@ -45,6 +45,6 @@ extern p3d_vector3 *sample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_
 extern int p3d_export_robot_as_one_body(p3d_rob *robot, configPt q);
 extern int p3d_export_robot_as_multipart_OBJ(p3d_rob *robot, configPt q);
 extern int p3d_export_robot_as_point_cloud(p3d_rob *robot, double step, char *prefix, configPt q);
-extern int p3d_set_poly_display_mode(p3d_poly *poly, poly_display_mode new_mode);
+extern int p3d_set_poly_display_mode(p3d_poly *poly, poly_display_mode new_mode, double *color=NULL);
 #endif /* __CEXTRACT__ */
 

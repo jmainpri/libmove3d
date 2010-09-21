@@ -26,8 +26,8 @@ extern void p3d_set_robot_steering_method ( const char * name );
 extern void p3d_set_robot_singularty(p3d_rob *robotPt);
 extern void p3d_pushRobotTransitionsDegToRad(configPt q_deg, int position);
 
-extern int p3d_set_obj_display_mode(p3d_obj *o, p3d_obj_display_mode);
-extern int p3d_set_robot_display_mode(p3d_rob *robotPt, p3d_rob_display_mode);
+extern int p3d_set_obj_display_mode(p3d_obj *o, p3d_obj_display_mode, double *color=NULL);
+extern int p3d_set_robot_display_mode(p3d_rob *robotPt, p3d_rob_display_mode, double *color=NULL);
 
 #ifdef PQP
 extern int p3d_set_robot_carrying_joint(p3d_rob *robotPt, p3d_jnt *joint);

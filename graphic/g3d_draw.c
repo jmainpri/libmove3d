@@ -1546,6 +1546,14 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
     case POLY_BLUE_DISPLAY:
       glColor3f(0.0, 0.0, 1.0);
     break;
+    case POLY_UNLIT_CUSTOM_COLOR_DISPLAY:
+      glDisable(GL_LIGHTING);
+      glDisable(GL_LIGHT0);
+      glColor4dv(p->custom_color);
+    break;
+    case POLY_CUSTOM_COLOR_DISPLAY:
+      glColor4dv(p->custom_color);
+    break;
   }
 
   /******************************************************************/
@@ -1723,6 +1731,14 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
     break;
     case POLY_BLUE_DISPLAY: 
       glColor3f(0.0, 0.0, 1.0);
+    break;
+    case POLY_UNLIT_CUSTOM_COLOR_DISPLAY:
+      glDisable(GL_LIGHTING);
+      glDisable(GL_LIGHT0);
+      glColor4dv(p->custom_color);
+    break;
+    case POLY_CUSTOM_COLOR_DISPLAY:
+      glColor4dv(p->custom_color);
     break;
   }
 
