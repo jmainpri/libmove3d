@@ -978,8 +978,10 @@ int p3d_export_robot_as_point_cloud(p3d_rob *robot, double step, char *prefix, c
 //! Changes the way a p3d_polyhedre will be displayed.
 ///! \param poly pointer to the poluhedron
 //! \param new_mode the mode to apply to the object
+//! \param color the color (double[4]) to use to display the poly (only used for some of the possible modes),
+//!  can be left to NULL if unused
 //! \return 0 in case of success, 1 otherwise
-int p3d_set_poly_display_mode(p3d_poly *poly, poly_display_mode new_mode)
+int p3d_set_poly_display_mode(p3d_poly *poly, poly_display_mode new_mode, double *color)
 {
   if(poly==NULL)
   {
@@ -988,6 +990,22 @@ int p3d_set_poly_display_mode(p3d_poly *poly, poly_display_mode new_mode)
   }
 
   poly->display_mode= new_mode;
+
+  if(new_mode==POLY_CUSTOM_COLOR_DISPLAY || new_mode==POLY_UNLIT_CUSTOM_COLOR_DISPLAY)
+  {
+    if(color!=NULL)
+    {
+      poly->custom_color[0]= color[0];
+      poly->custom_color[1]= color[1];
+      poly->custom_color[2]= color[2];
+      poly->custom_color[3]= color[3];
+    }
+    else
+    {
+      printf("%s: %d: p3d_set_poly_display_mode(): color should not be NULL.\n",__FILE__,__LINE__);
+      return 1;
+    }
+  }
 
   return 0;
 }

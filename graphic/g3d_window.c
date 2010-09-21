@@ -1689,7 +1689,8 @@ static void
 button_antialiasing(FL_OBJECT *ob, long data) {
 #ifdef ENABLE_ANTIALIASING
   G3D_Window *win = (G3D_Window *)data;
-  if (win->vs.enableAntialiasing = !win->vs.enableAntialiasing) 
+  win->vs.enableAntialiasing = !win->vs.enableAntialiasing;
+  if (win->vs.enableAntialiasing) 
     glEnable(GL_MULTISAMPLE_ARB);
   else
     glDisable(GL_MULTISAMPLE_ARB);
@@ -1703,7 +1704,8 @@ static void
 button_shaders(FL_OBJECT *ob, long data) {
   #ifdef USE_SHADERS
   G3D_Window *win = (G3D_Window *)data;
-  if(win->vs.enableShaders = !win->vs.enableShaders) 
+  win->vs.enableShaders = !win->vs.enableShaders;
+  if(win->vs.enableShaders) 
   { g3d_load_next_shader(); }
   else
   { glUseProgram(0); }

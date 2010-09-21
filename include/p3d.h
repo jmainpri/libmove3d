@@ -137,6 +137,8 @@ typedef enum {
   POLY_GREEN_DISPLAY, /*!< will be displayed in green */
   POLY_UNLIT_BLUE_DISPLAY, /*!< will be displayed in blue with no light */
   POLY_BLUE_DISPLAY, /*!< will be displayed in blue */
+  POLY_CUSTOM_COLOR_DISPLAY, /*!< will be displayed in the custom color */
+  POLY_UNLIT_CUSTOM_COLOR_DISPLAY /*!< will be displayed in custom color with no light */
 } poly_display_mode;
 
 /* Structure de polyhedre permettant d'utiliser I_COLLIDE */
@@ -165,6 +167,8 @@ typedef struct p3d_poly
   int MODIF ;
 
   poly_display_mode display_mode; /*!< used to modify how the poly will be displayed (default display, red display,etc.)*/
+  double custom_color[4];  /*!< used to temporarily change the poly's color while keeping the original color */
+
 
   /* Modif BIO */
 #ifdef BIO
@@ -209,6 +213,8 @@ typedef enum {
   P3D_OBJ_GREEN_DISPLAY, /*!< will be displayed in green */
   P3D_OBJ_UNLIT_BLUE_DISPLAY, /*!< will be displayed in blue with no light */
   P3D_OBJ_BLUE_DISPLAY, /*!< will be displayed in blue */
+  P3D_OBJ_CUSTOM_COLOR_DISPLAY,  /*!< will be displayed in custom color */
+  P3D_OBJ_UNLIT_CUSTOM_COLOR_DISPLAY,  /*!< will be displayed in custom color with no light */
 } p3d_obj_display_mode;
 
 /* Structure d'objet (obstacle ou corps d'un robot) */

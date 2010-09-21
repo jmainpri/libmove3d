@@ -450,6 +450,23 @@ int g3d_load_next_shader()
 
   return 0;
 }
+
+//! Deactivates the use of shaders.
+int g3d_no_shader()
+{
+  glUseProgram(0);
+
+  return 0;
+}
+
+//! Activates the use of shaders.
+int g3d_use_shader()
+{
+  glUseProgram(G3D_PROGRAMS[G3D_CURRENT_PROGRAM]);
+
+  return 0;
+}
+
 #endif
 
 

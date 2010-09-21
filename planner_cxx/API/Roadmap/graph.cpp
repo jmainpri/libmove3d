@@ -1897,7 +1897,7 @@ void Graph::createRandConfs(int NMAX)
 		{
 			this->insertNode(new Node(this, C));
 			inode = inode + 1;
-			if (fct_draw)
+			if (fct_draw!=NULL)
 				(*fct_draw)();
 			else
 			{
