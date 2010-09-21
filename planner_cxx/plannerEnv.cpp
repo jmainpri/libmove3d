@@ -7,7 +7,7 @@
  *
  */
 
-#include "PlannerEnv.hpp"
+#include "plannerEnv.hpp"
 
 #include <iostream>
 
