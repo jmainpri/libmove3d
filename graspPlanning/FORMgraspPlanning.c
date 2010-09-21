@@ -1474,7 +1474,9 @@ static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
 static int test= 0;
 double color[4]= {1,1,0,1};
+#ifdef USE_SHADERS
 g3d_no_shader();
+#endif
 if(!test) {
 test= 1;
 p3d_set_robot_display_mode((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), P3D_ROB_UNLIT_CUSTOM_COLOR_DISPLAY,color);

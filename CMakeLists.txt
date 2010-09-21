@@ -72,7 +72,7 @@ BM3D_flag(P3D_CONSTRAINTS "Compilation with module Constraints" ON)
 BM3D_flag(P3D_COLLISION_CHECKING "Compilation with module Collision Checking" ON)
 BM3D_flag(P3D_LOCALPATH "Compilation with module Localpath" ON)
 BM3D_flag(P3D_PLANNER "Compilation with module Planner" ON)
-BM3D_flag(BIO "Compilation with module Bio" ON)
+BM3D_flag(BIO "Compilation with module Bio" OFF)
 BM3D_flag(ENERGY "Compilation with module Bio-Energy" OFF)
 
 BM3D_flag(KCD_CP_IS_SOLID "Convex polyhedron as a solid instead of as a collection of convex facets in KCD" OFF P3D_COLLISION_CHECKING)
