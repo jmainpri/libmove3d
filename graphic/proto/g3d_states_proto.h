@@ -27,6 +27,7 @@ void recalc_cam_up(g3d_states &vs, p3d_matrix4 transf);
 void recalc_mouse_param(g3d_states &vs, p3d_vector4 Xc, p3d_vector4 Xw);
 void g3d_init_OpenGL();
 int g3d_load_next_shader();
+int g3d_no_shader();
 void g3d_set_projection_matrix(g3d_projection_mode mode);
 int g3d_export_OpenGL_display(char *filename);
 void g3d_set_dim_light();
