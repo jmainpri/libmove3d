@@ -1483,8 +1483,10 @@ p3d_set_robot_display_mode((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot")
 }
 else {
 test= 0;
+#ifdef USE_SHADERS
 g3d_use_shader();
 p3d_set_robot_display_mode((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), P3D_ROB_DEFAULT_DISPLAY);
+#endif
 }
 
 return;
