@@ -710,7 +710,7 @@ void DrawSmallCube(double x, double y, double z)
 /* It's not functional but it's left here to keep valuable code */
 int g3d_is_object_visible_from_current_viewpoint2(g3d_win* win, p3d_rob *object, double *result, int save, char *path)
 {
-  int i;
+/*  int i;
   
   GLuint queries = -1;
   GLuint sampleCount;
@@ -777,9 +777,11 @@ int g3d_is_object_visible_from_current_viewpoint2(g3d_win* win, p3d_rob *object,
   }
   else {
     printf("INVISIBLE\n");
-  } 
-  g3d_drawSphere(4, -4, 1, 1);
-  
+ } 
+ g3d_drawSphere(4, -4, 1, 1);
+ 
+ */
+ 
   return TRUE;
 }
 
