@@ -36,7 +36,9 @@ p3d_rw_util.c
 p3d_set.c 
 p3d_setpos.c 
 polyhedre.c 
-env.cpp)
+env.cpp
+ParametersEnv.cpp
+)
 
 
 IF(P3D_COLLISION_CHECKING)
@@ -52,4 +54,7 @@ BM3D_SRC_SUBDIR_PROCESS(
 )
 ENDIF(USE_GBM)
 
-BM3D_QT_GENERATE_MOC(env.hpp)
+BM3D_QT_GENERATE_MOC(
+env.hpp
+ParametersEnv.hpp
+)

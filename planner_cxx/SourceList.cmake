@@ -4,6 +4,7 @@ BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME})
 BM3D_SRC_SUBDIR_PROCESS(
 planner.cpp 
 plannerFunctions.cpp 
+plannerEnv.cpp
 untitled.cpp 
 cost_space.cpp
 )
