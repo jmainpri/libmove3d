@@ -18,6 +18,7 @@ hri_visibility.c
 hri_wave_exp.c 
 p3d_perspective.c
 hri_manip.c 
+hri_graphic.c
 )
 IF(USE_MIGHTABILITY_MAPS)
 BM3D_SRC_SUBDIR_PROCESS(Mightability_Maps.c FORM_HRI_affordance.c)
