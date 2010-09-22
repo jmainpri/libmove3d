@@ -12,12 +12,12 @@ BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME})
 BM3D_QT_GENERATE_MOC(
 kcdpropertieswindow.hpp 
 mainwindow.hpp
+mainwindowGenerated.hpp
 mainwindowTestFunctions.hpp
 )
 
 BM3D_QT_GENERATE_UI_HEADERS(
 kcdpropertieswindow.ui 
-mainwindow.ui 
 )
 
 include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/sideWidgets/SourceList.cmake)

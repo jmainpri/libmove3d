@@ -12,7 +12,7 @@
 
 #include "qtLibrary.h"
 #include "p3d/env.hpp"
-#include "mainwindow.hpp"
+#include "qtMainInterface/mainwindow.hpp"
 
 namespace Ui
 {
