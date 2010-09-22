@@ -45,7 +45,9 @@ void initPlannerParameters()
 	
 	myDoubleMap.insert(std::make_pair(PlanParam::eleven,	new doubleContainer(11.0)));
 
+#ifdef QT_LIBRARY
 	myStringMap.insert(std::make_pair(PlanParam::titi,		new stringContainer("titi")));
+#endif
 	
 	std::vector<double> tutu;
 	tutu.push_back( 1 ); tutu.push_back( 8 );
