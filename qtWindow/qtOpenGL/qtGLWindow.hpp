@@ -5,8 +5,8 @@
 #ifndef QT_GL_WINDOW_H
 #define QT_GL_WINDOW_H
 
-#include "../qtLibrary.h"
-#include "../../include/Graphic-pkg.h"
+#include "qtLibrary.h"
+#include "Graphic-pkg.h"
 
 /**
   * @ingroup qtOldWidget

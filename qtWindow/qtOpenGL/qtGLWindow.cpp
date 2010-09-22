@@ -12,6 +12,7 @@
 qtGLWindow::qtGLWindow()
 {
 	glWidget = new GLWidget;
+	
 	win = G3D_WIN;
 	
 	g3d_set_win_floor_color(g3d_get_cur_states(), 0.5, 1.0, 1.0);

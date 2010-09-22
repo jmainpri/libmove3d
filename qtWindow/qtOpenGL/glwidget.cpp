@@ -4,7 +4,7 @@
 
 #include "glwidget.hpp"
 #include "qtMainInterface/mainwindow.hpp"
-#include "ui_mainwindow.h"
+#include "qtMainInterface/mainwindowGenerated.hpp"
 
 #include "P3d-pkg.h"
 #include "Move3d-pkg.h"
