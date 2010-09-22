@@ -227,6 +227,7 @@ int Robot::getObjectDof()
 	}
 }
 
+
 /**
  * Returns the base Joint
  */
@@ -313,42 +314,9 @@ bool Robot::setAndUpdateAllExceptBase(Configuration& q)
 	return p3d_update_this_robot_pos(_Robot);
 }
 
-shared_ptr<Configuration> Robot::shoot(bool samplePassive)
+shared_ptr<Configuration> Robot::shoot()
 {
-	shared_ptr<Configuration> q(new Configuration(this));
-#ifdef LIGHT_PLANNER
-	if(ENV.getBool(Env::FKShoot))
-	{
-		deactivateCcCntrts(_Robot,-1);
-		p3d_shoot(_Robot, q->getConfigStruct(), false);
-		setAndUpdate(*q);
-		q = getCurrentPos();
-		activateCcCntrts(_Robot,-1,true);
-		
-		if (ENV.getBool(Env::drawPoints)) {
-			PointsToDraw->push_back(q->getTaskPos());
-			//g3d_draw_allwin_active();
-		}
-		
-		return q;
-	}
-	else
-	{
-		p3d_shoot(_Robot, q->getConfigStruct(), samplePassive);
-		return q;
-	}
-#else
-	p3d_shoot(_Robot, q->getConfigStruct(), samplePassive);
-	return q;
-#endif
-}
-
-shared_ptr<Configuration> Robot::shootDir(bool samplePassive)
-{
-	shared_ptr<Configuration> q(new Configuration(this));
-	//	p3d_RandDirShoot(_Robot, q->getConfigStruct(), samplePassive);
-	p3d_RandNShpereDirShoot(_Robot, q->getConfigStruct(), samplePassive);
-	return q;
+	return this->shoot(false);
 }
 
 shared_ptr<Configuration> Robot::shootFreeFlyer(double* box)
@@ -404,6 +372,44 @@ void Robot::shootObjectJoint(Configuration& Conf)
 	//p3d_JointFreeFlyerShoot(_Robot,_Robot->curObjectJnt,q->getConfigStruct(),box);
 }
 #endif
+
+shared_ptr<Configuration> Robot::shoot(bool samplePassive)
+{
+	shared_ptr<Configuration> q(new Configuration(this));
+#ifdef LIGHT_PLANNER
+	if(ENV.getBool(Env::FKShoot))
+	{
+		deactivateCcCntrts(_Robot,-1);
+		p3d_shoot(_Robot, q->getConfigStruct(), false);
+		setAndUpdate(*q);
+		q = getCurrentPos();
+		activateCcCntrts(_Robot,-1,true);
+		
+		if (ENV.getBool(Env::drawPoints)) {
+			PointsToDraw->push_back(q->getTaskPos());
+			//g3d_draw_allwin_active();
+		}
+		
+		return q;
+	}
+	else
+	{
+		p3d_shoot(_Robot, q->getConfigStruct(), samplePassive);
+		return q;
+	}
+#else
+	p3d_shoot(_Robot, q->getConfigStruct(), samplePassive);
+	return q;
+#endif
+}
+
+shared_ptr<Configuration> Robot::shootDir(bool samplePassive)
+{
+	shared_ptr<Configuration> q(new Configuration(this));
+	//	p3d_RandDirShoot(_Robot, q->getConfigStruct(), samplePassive);
+	p3d_RandNShpereDirShoot(_Robot, q->getConfigStruct(), samplePassive);
+	return q;
+}
 
 /**
  * Returns false if does not respect the 

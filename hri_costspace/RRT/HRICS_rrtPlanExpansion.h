@@ -3,7 +3,7 @@
 
 #include "API/planningAPI.hpp"
 #include "Diffusion/Expansion/TransitionExpansion.hpp"
-#include "HRI_CostSpace/Grid/HRICS_TwoDGrid.hpp"
+#include "hri_costspace/Grid/HRICS_TwoDGrid.hpp"
 
 /**
   @ingroup HRICS

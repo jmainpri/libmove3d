@@ -11,8 +11,8 @@
 #define HRICS_NATURAL_HPP
 
 #include "planningAPI.hpp"
-#include "HRI_CostSpace/Grid/HRICS_NaturalGrid.h"
-#include "HRI_CostSpace/Grid/HRICS_NaturalCell.h"
+#include "hri_costspace/Grid/HRICS_NaturalGrid.h"
+#include "hri_costspace/Grid/HRICS_NaturalCell.h"
 
 #ifdef HRI_GENERALIZED_IK
 #include "Hri_planner-pkg.h"

@@ -54,7 +54,7 @@
 //#include "HRICS_costspace.h"
 //#endif
 #ifdef HRI_COSTSPACE
-#include "planner_cxx/HRI_CostSpace/HRICS_costspace.h"
+#include "hri_costspace/HRICS_costspace.h"
 #endif
 
 const char *qt_fileName = NULL;

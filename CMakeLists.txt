@@ -329,7 +329,24 @@ SET(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 #####################################################################
 #### Add here a src directory containing a SourceList.cmake file ####
 #####################################################################
-SET(BM3D_SOURCE_DIRECTORIES animation bio collision graphic graspPlanning groundHeight hri_planner lightPlanner localpath move3d p3d planner planner_cxx qtWindow userappli util)
+SET(BM3D_SOURCE_DIRECTORIES 
+animation 
+bio 
+collision 
+graphic 
+graspPlanning 
+groundHeight 
+hri_planner 
+hri_costspace 
+lightPlanner 
+localpath 
+move3d 
+p3d 
+planner 
+planner_cxx 
+qtWindow 
+userappli 
+util)
 
 MACRO(BM3D_SRC_SUBDIR_PROCESS)
   FOREACH(srcfile ${ARGV})

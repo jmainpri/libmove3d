@@ -1,5 +1,5 @@
 /*
- *  HRI_CostSpace.h
+ *  hri_costspace.h
  *  BioMove3D
  *
  *  Created by Jim Mainprice on 27/04/10.
