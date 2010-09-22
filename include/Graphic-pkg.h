@@ -53,7 +53,7 @@ extern std::vector<API::Trajectory> trajToDraw;
 #endif
 
 #ifdef QT_GL
-#include "qtWindow/qtOpenGL/Widget.hpp"
+#include "qtWindow/qtOpenGL/glwidget.hpp"
 #endif
 
 /* proto */
