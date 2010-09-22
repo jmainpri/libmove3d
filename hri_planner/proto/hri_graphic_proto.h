@@ -7,4 +7,5 @@
  *
  */
 
-extern void g3d_put_color_masks(HRI_COLOR_MASK * color_masks);
+extern void g3d_hri_display_visible_objects(HRI_AGENT *agent);
+extern void g3d_hri_display_all_agents_sees(HRI_AGENTS *agents);

@@ -94,6 +94,7 @@ typedef struct STRUCT_HRI_PERSP {
   /* Graphics */
   int enable_vision_draw;
   int enable_pointing_draw;
+  int enable_visible_objects_draw;
 } HRI_PERSP;
 
 typedef struct STRUCT_HRI_AGENT {

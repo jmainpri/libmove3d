@@ -53,11 +53,12 @@ void initPlannerParameters()
 	myDoubleMap.insert(std::make_pair(PlannerParameters::eleven,		new doubleContainer(11.0)));
 	myDoubleMap.insert(std::make_pair(PlannerParameters::twelve,		new doubleContainer(12.0)));
 
+#ifdef QT_LIBRARY
 	myStringMap.insert(std::make_pair(PlannerParameters::thirteen,	new stringContainer("thirteen")));
 	myStringMap.insert(std::make_pair(PlannerParameters::fifteen,		new stringContainer("fifteen")));
 	myStringMap.insert(std::make_pair(PlannerParameters::sixteen,		new stringContainer("sixteen")));
 	myStringMap.insert(std::make_pair(PlannerParameters::seventeen,	new stringContainer("seventeen")));
-	
+#endif
 	
 	std::vector<double> a,b;
 	a.push_back( 1 ); a.push_back( 8 );
@@ -96,11 +97,12 @@ void initPlannerParameters()
 	cout << PlannerEnv->getDouble(PlannerParameters::ten) << endl;
 	cout << PlannerEnv->getDouble(PlannerParameters::eleven) << endl;
 	cout << PlannerEnv->getDouble(PlannerParameters::twelve) << endl;
-	
+#ifdef QT_LIBRARY
 	cout << PlannerEnv->getString(PlannerParameters::thirteen).toStdString() << endl;
 	cout << PlannerEnv->getString(PlannerParameters::fifteen).toStdString() << endl;
 	cout << PlannerEnv->getString(PlannerParameters::sixteen).toStdString() << endl;
 	cout << PlannerEnv->getString(PlannerParameters::seventeen).toStdString() << endl;
+#endif
 //	
 //	cout << PlannerEnv.getVector(PlannerParameters::eighteen) << endl;
 //	cout << PlannerEnv.getVector(PlannerParameters::nineteen) << endl;

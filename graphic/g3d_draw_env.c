@@ -1350,6 +1350,7 @@ void g3d_draw_env_custom()
   hri_exp_draw_ordered_points();
   //g3d_hri_display_test();
   g3d_draw_all_agents_fovs(GLOBAL_AGENTS);
+  g3d_hri_display_all_agents_sees(GLOBAL_AGENTS);
   if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
 #if defined(USE_MIGHTABILITY_MAPS) && !defined(COMPILE_ON_JIDO)
   ////printf("Inside g3d_draw_env_custom() \n");
