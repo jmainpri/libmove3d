@@ -102,7 +102,6 @@ BM3D_flag(LIST_OF_PLANNERS "Sets the planning API to be default in Move3D" OFF)
 
 BM3D_flag(QT_LIBRARY "Sets QtLibrary compiling mode" OFF)
 BM3D_flag(QT_GL "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
-BM3D_flag(QT_OPENGL_SIDE "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
 BM3D_flag(QT_UI_XML_FILES "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
 BM3D_flag(QWT "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
 
