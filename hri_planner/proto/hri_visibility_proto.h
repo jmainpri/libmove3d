@@ -1,7 +1,8 @@
 extern int hri_is_object_visible(HRI_AGENT * agent,p3d_rob *object, int threshold, int save, int draw_at_end);
 extern int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera_fov, p3d_rob *object, double *result);
+extern int g3d_are_given_objects_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera_fov, p3d_rob **objects, int objects_nb, double *results);
 extern int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, double *result, int save, char *path);
-extern int g3d_compute_visibility_for_given_objects_in_current_viewpoint(g3d_win* win, p3d_rob *objects, int objects_nb,  HRI_VISIBILITY *res, int save, char *path);
+extern int g3d_compute_visibility_for_given_objects_in_current_viewpoint(g3d_win* win, p3d_rob **objects, int objects_nb,  double *res, int save, char *path);
 extern int hri_object_visibility_placement(HRI_AGENT *agent, p3d_rob *object, int *result, double *elevation, double *azimuth);
 extern int hri_object_pointing_placement(HRI_AGENT *agent, p3d_rob *object, int *result, double *elevation, double *azimuth);
 extern int g3d_object_visibility_placement(p3d_matrix4 camera_frame, p3d_rob *object, double Hfov, double Vfov, double Hfoa, double Vfoa, int *result, double *phi_result, double *theta_result);
@@ -12,3 +13,4 @@ extern int hri_is_object_pointed(HRI_AGENT * agent, p3d_rob *object, int thresho
 extern void g3d_draw_all_agents_fovs(HRI_AGENTS *agents);
 extern void p3d_cartesian2spherical(double x, double y, double z, double *phi, double *theta);
 extern int g3d_is_object_visible_from_current_viewpoint2(g3d_win* win, p3d_rob *object, double *result, int save, char *path);
+extern int hri_compute_agent_sees(HRI_AGENT * agent, int threshold, int save, int draw_at_end);

@@ -122,6 +122,67 @@ int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera
   return TRUE;
 }
 
+//! This function return how much % of the object is visible from a given viewpoint.
+//! \param camera_frame the frame of the viewpoint (the looking direction is X, Y points downward and Z to the left)
+//! \param camera_fov the field of view angle of the robot's camera (in degrees)
+//! \param object pointer to the object
+//! \param result return the ratio of the visibility of the object
+//! \return TRUE in case of success, FALSE otherwise
+int g3d_are_given_objects_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera_fov, p3d_rob **objects, int objects_nb, double *results)
+{
+  GLint viewport[4];
+  g3d_states st;
+  g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
+  int save = TRUE;
+  
+  if(objects==NULL){
+    printf("%s: %d: input objects are NULL.\n",__FILE__,__LINE__);
+    return FALSE;
+  }  
+  
+  //Change the size of the viewport if you want speed
+  if(!save){
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    glViewport(0,0,(GLint)(viewport[2]/3),(GLint)(viewport[3]/3));
+  }
+  
+  g3d_save_win_camera(win->vs);
+  g3d_save_state(win, &st);
+  
+  // only keep what is necessary:
+  win->vs.fov            = camera_fov;
+  win->vs.displayFrame   = FALSE;
+  win->vs.displayJoints  = FALSE;
+  win->vs.displayShadows = FALSE;
+  win->vs.displayWalls   = FALSE;
+  win->vs.displayFloor   = FALSE;
+  win->vs.displayTiles   = FALSE;
+  win->vs.cullingEnabled=  1;
+  //do not forget to set the backgroung to black:
+  g3d_set_win_bgcolor(win->vs, 0, 0, 0);
+  
+  // move the camera to the desired pose and apply the new projection matrix:
+  g3d_set_camera_parameters_from_frame(camera_frame, win->vs);
+  g3d_set_projection_matrix(win->vs.projection_mode);
+  
+  //everything is ready now.
+  g3d_compute_visibility_for_given_objects_in_current_viewpoint(win, objects, objects_nb, results, TRUE, (char*)"/Users/easisbot/Work/BioMove3D/screenshots/");
+  
+  //restore viewport
+  if(!save){
+    glViewport(0,0,(GLint)viewport[2],(GLint)viewport[3]);
+  }
+  g3d_load_state(win, &st);
+  
+  g3d_restore_win_camera(win->vs);
+  g3d_set_projection_matrix(win->vs.projection_mode); // do this after restoring the camera fov
+  
+  g3d_draw_win(win);
+  
+  return TRUE;
+}
+
+
 int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, double *result, int save, char *path)
 {
   int idealpixels;
@@ -236,38 +297,27 @@ int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, 
 }
 
 /* Computes visibility in one image acquisition for given objects */
-//TODO: There should be an option to draw an object in a desired color
-int g3d_compute_visibility_for_given_objects_in_current_viewpoint(g3d_win* win, p3d_rob *objects, int objects_nb, HRI_VISIBILITY *res, int save, char *path)
+int g3d_compute_visibility_for_given_objects_in_current_viewpoint(g3d_win* win, p3d_rob **objects, int objects_nb, double *res, int save, char *path)
 {
-  int idealpixels;
-  int visiblepixels;
+  int idealpixels[objects_nb];
+  int visiblepixels[objects_nb];
   unsigned char *image;
-  int i, width, height;
+  int i, j, width, height;
   GLint viewport[4];
-  static int crntcnt = 0, idlcnt = 0;
+  static int crntcnt = 0;
   char name[256];  
-  p3d_rob *object;
-  double *result;
-  // disable the display of all obstacles and of all the robots of no interest:
+  double color[4]= {0,0,0,1}; 
+  
+#ifdef USE_SHADERS
+  g3d_no_shader();
+#endif
+  
+  // disable the display of all obstacles and of all the robots:
   for(i=0; i<XYZ_ENV->no; ++i) {
     p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_NO_DISPLAY);
   }
   for(i=0; i<XYZ_ENV->nr; ++i) {
-    if(XYZ_ENV->robot[i]==object) {
-      continue;
-    }
-    else {
-      p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_NO_DISPLAY);
-    }
-  }
-  // display the object in red
-  p3d_set_robot_display_mode(object, P3D_ROB_UNLIT_RED_DISPLAY);
-  
-  g3d_draw_win_back_buffer(win); //only the object should be drawn in red, everthing else is black
-  
-  if(save) {
-    sprintf(name, "%sidealview%i.ppm", path, crntcnt++);
-    g3d_export_OpenGL_display(name);
+    p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_NO_DISPLAY);
   }
   
   glGetIntegerv(GL_VIEWPORT, viewport);
@@ -281,61 +331,55 @@ int g3d_compute_visibility_for_given_objects_in_current_viewpoint(g3d_win* win, 
   // choose 1-byte alignment:
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
   
-  // get the image pixels (from (0,0) position):
-  glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image);
-  
-  // count the pixels corresponding to the object's color:
-  idealpixels= 0;
-  for(i=0; i<width*height; i++) {
-    if(image[3*i]> 0.8) {
-      idealpixels++;
-    }
-  }
-  
-  if(idealpixels!=0){    
-    // display everything in blue except the object which is in red
-    for(i=0; i<XYZ_ENV->no; ++i) {
-      p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_UNLIT_BLUE_DISPLAY);
-    }
-    for(i=0; i<XYZ_ENV->nr; ++i) {
-      if(XYZ_ENV->robot[i]==object) {
-        continue;
-      }
-      else {
-        p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_UNLIT_BLUE_DISPLAY);
-      }
-    }  
+  // display each object separately and get its pixel count
+  for(i=0; i<objects_nb; i++) {
+    p3d_set_robot_display_mode(objects[i], P3D_ROB_UNLIT_RED_DISPLAY);
     
-    g3d_draw_win_back_buffer(win);
+    g3d_draw_win_back_buffer(win); //only the object should be drawn in red, everthing else is black
     
-    if(save){
-      //save the image. All is blue, the object is red.
-      sprintf(name, "%scurrentview%i.ppm", path, idlcnt++);
+    if(save) {
+      sprintf(name, "%sidealview%i.ppm", path, crntcnt++);
       g3d_export_OpenGL_display(name);
-    }    
-    glReadBuffer(GL_BACK);  // use back buffer as we are in a double-buffered configuration
-    
-    // choose 1-byte alignment:
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    }
     
     // get the image pixels (from (0,0) position):
-    
     glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image);
     
-    visiblepixels= 0;
-    for(i=0; i<width*height; i++){
-      if(image[3*i]> 0.8) {
-        visiblepixels++;
+    // count the pixels corresponding to the object's color:
+    idealpixels[i]= 0;
+    visiblepixels[i] = 0;
+    for(j=0; j<width*height; j++) {
+      if(image[3*j]> 0.8) {
+        idealpixels[i]++;
       }
     }
-    
-    // visiblepixels present the pixels that we see and not blocked by obstructions
-    
-    *result= ((double) visiblepixels)/((double) idealpixels);
+    p3d_set_robot_display_mode(objects[i], P3D_ROB_NO_DISPLAY);
   }
-  else{
-    //printf("Not looking at the object: %s\n",object->name);
-    *result = -1;
+  
+  // display all the objects in a single image in the different colors of red
+  for(i=0; i<objects_nb; i++) {
+    color[0]+=(10.0/255.0);
+    p3d_set_robot_display_mode(objects[i], P3D_ROB_UNLIT_CUSTOM_COLOR_DISPLAY, color);
+  }
+  
+  g3d_draw_win_back_buffer(win); //only the object should be drawn in red, everthing else is black
+  
+  if(save) {
+    sprintf(name, "%scurrentview%i.ppm", path, crntcnt++);
+    g3d_export_OpenGL_display(name);
+  }
+  
+  glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image);
+  
+  for(j=0; j<width*height; j++){
+    if(image[3*j]>0) {
+      visiblepixels[(int)((image[3*j])/10)-1]++;
+    }
+  }
+  
+  // visiblepixels present the pixels that we see and not blocked by obstructions
+  for (i=0; i<objects_nb; i++) {
+    res[i] = ((double) visiblepixels[i])/((double) idealpixels[i]);
   }
   
   free(image);
@@ -784,4 +828,95 @@ int g3d_is_object_visible_from_current_viewpoint2(g3d_win* win, p3d_rob *object,
  
   return TRUE;
 }
+
+int hri_compute_agent_sees(HRI_AGENT * agent, int threshold, int save, int draw_at_end)
+{
+  GLint viewport[4];
+  int i;
+  g3d_states st;
+  g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
+  p3d_env *env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  double elevation, azimuth;
+  p3d_rob **test_obj_list;
+  int obj_idx = 0;
+  int placement_res;
+  double *vis_res;
+  
+  if(agent==NULL){
+    printf("%s: %d: input agent is NULL.\n",__FILE__,__LINE__);
+    return FALSE;
+  }  
+  //Change the size of the viewport if you want speed
+  if(!save){
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    glViewport(0,0,(GLint)(viewport[2]/3),(GLint)(viewport[3]/3));
+  }
+  
+  g3d_save_win_camera(win->vs);
+  g3d_save_state(win, &st);
+  
+  // only keep what is necessary:
+  win->vs.fov            = agent->perspective->fov;
+  win->vs.displayFrame   = FALSE;
+  win->vs.displayJoints  = FALSE;
+  win->vs.displayShadows = FALSE;
+  win->vs.displayWalls   = FALSE;
+  win->vs.displayFloor   = FALSE;
+  win->vs.displayTiles   = FALSE;
+  win->vs.cullingEnabled =  1;
+  //do not forget to set the backgroung to black:
+  g3d_set_win_bgcolor(win->vs, 0, 0, 0);
+  
+  // move the camera to the desired pose and apply the new projection matrix:
+  g3d_set_camera_parameters_from_frame(agent->perspective->camjoint->abs_pos, win->vs);
+  g3d_set_projection_matrix(win->vs.projection_mode);
+  
+  // everything is ready now.
+  // 1- Select the objects that are in fov
+  
+  test_obj_list = MY_ALLOC(p3d_rob*,env->nr);
+  
+  for(i=0; i<env->nr; i++) {
+    hri_object_visibility_placement(agent, env->robot[i], &placement_res, &elevation, &azimuth);
+    if(placement_res == 1 || placement_res == 2) {
+      test_obj_list[obj_idx] = env->robot[i];
+      obj_idx++;
+    }
+    else {
+      agent->perspective->currently_sees.vis[i] = HRI_INVISIBLE;
+    }    
+  }
+    
+  // 2- Fetch their visibility
+  
+  vis_res = MY_ALLOC(double,obj_idx);
+  
+  g3d_compute_visibility_for_given_objects_in_current_viewpoint(win, test_obj_list, obj_idx, vis_res, save, (char*)"");
+  
+  //restore viewport
+  if(!save){
+    glViewport(0,0,(GLint)viewport[2],(GLint)viewport[3]);
+  }
+  g3d_load_state(win, &st);
+  
+  g3d_restore_win_camera(win->vs);
+  g3d_set_projection_matrix(win->vs.projection_mode); // do this after restoring the camera fov
+  
+  if(draw_at_end)
+    g3d_draw_win(win);
+  
+  for(i=0; i<obj_idx; i++) {
+    if(100*vis_res[i]>=threshold){
+      agent->perspective->currently_sees.vis[test_obj_list[i]->num] = HRI_VISIBLE;
+      //printf("%s is VISIBLE\n",test_obj_list[i]->name);
+    }
+    else {
+      agent->perspective->currently_sees.vis[test_obj_list[i]->num] = HRI_INVISIBLE;
+      //printf("%s is INVISIBLE\n",test_obj_list[i]->name);
+    } 
+  }
+  
+  return TRUE;
+}
+
 
