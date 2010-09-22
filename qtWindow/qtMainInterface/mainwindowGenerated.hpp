@@ -693,28 +693,36 @@ public:
 				//----------------------------------------------------------------------
         OpenGL = new GLWidget(hSplitter);
         OpenGL->setObjectName(QString::fromUtf8("OpenGL"));
+			
         QSizePolicy sizePolicy3(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy3.setHorizontalStretch(2);
         sizePolicy3.setVerticalStretch(2);
         sizePolicy3.setHeightForWidth(OpenGL->sizePolicy().hasHeightForWidth());
+			
         OpenGL->setSizePolicy(sizePolicy3);
         OpenGL->setMinimumSize(QSize(400, 300));
+			
         hSplitter->addWidget(OpenGL);
+			
         controlWidget = new QWidget(hSplitter);
         controlWidget->setObjectName(QString::fromUtf8("controlWidget"));
         sizePolicy.setHeightForWidth(controlWidget->sizePolicy().hasHeightForWidth());
         controlWidget->setSizePolicy(sizePolicy);
+			
         horizontalLayout_3 = new QHBoxLayout(controlWidget);
         horizontalLayout_3->setSpacing(6);
         horizontalLayout_3->setContentsMargins(11, 11, 11, 11);
         horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
         horizontalLayout_3->setContentsMargins(-1, -1, -1, 2);
+			
         groupBoxRunButtons = new QGroupBox(controlWidget);
         groupBoxRunButtons->setObjectName(QString::fromUtf8("groupBoxRunButtons"));
+			
         gridLayout_30 = new QGridLayout(groupBoxRunButtons);
         gridLayout_30->setSpacing(6);
         gridLayout_30->setContentsMargins(11, 11, 11, 11);
         gridLayout_30->setObjectName(QString::fromUtf8("gridLayout_30"));
+			
         widget_4 = new QWidget(groupBoxRunButtons);
         widget_4->setObjectName(QString::fromUtf8("widget_4"));
         QSizePolicy sizePolicy4(QSizePolicy::Fixed, QSizePolicy::Fixed);
