@@ -340,7 +340,7 @@ void RobotWidget::ReleaseObject()
 	 m_ui->mainWindow->drawAllWindowActive();
 	 */
 	
-#ifdef LIGHT_PLANNER
+#if defined ( LIGHT_PLANNER ) && defined( PQP )
 	//    m_ui->comboBoxGrabObject-
 	//    p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
 	p3d_release_object(robotPt);
