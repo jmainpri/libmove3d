@@ -6,47 +6,39 @@
  *  Copyright 2010 LAAS/CNRS. All rights reserved.
  *
  */
+#ifndef PLANNER_ENV_HPP
+#define PLANNER_ENV_HPP
 
 #include "p3d/ParametersEnv.hpp"
 
-namespace  PlannerParameters 
+namespace  PlanParam
 {
 	enum boolParameter 
 	{
-		one,
-		two,
-		three,
-		four
+		isMaxDisNeigh,
+		isWeightedChoice,
+		stopPlanner
 	};
 	
 	enum intParameter 
 	{
-		five,
-		six,
-		seven,
-		eight
+		tata
 	};
 	
 	enum doubleParameter 
 	{
-		nine,
-		ten,
 		eleven,
-		twelve
+		
 	};
 	
 	enum stringParameter 
 	{
-		thirteen,
-		fifteen,
-		sixteen,
-		seventeen
+		titi
 	};
 	
 	enum vectorParameter 
 	{
-		eighteen,
-		nineteen,
+		tutu
 	};
 	
 };
@@ -54,12 +46,14 @@ namespace  PlannerParameters
 // Object that holds all parameters
 // Of the planner Environment
 extern Parameters<
-PlannerParameters::boolParameter,
-PlannerParameters::intParameter,
-PlannerParameters::doubleParameter,
-PlannerParameters::stringParameter,
-PlannerParameters::vectorParameter>* PlannerEnv;
+PlanParam::boolParameter,
+PlanParam::intParameter,
+PlanParam::doubleParameter,
+PlanParam::stringParameter,
+PlanParam::vectorParameter>* PlanEnv;
 
 // Functions that initializes the planner
 // Parameters
 void initPlannerParameters();
+
+#endif
