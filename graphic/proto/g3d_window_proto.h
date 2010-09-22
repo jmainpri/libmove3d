@@ -7,7 +7,6 @@
 
 
 extern G3D_Window *g3d_new_win ( const char *name, int w, int h, float size );
-extern G3D_Window *g3d_new_win_wo_buttons( char *name, int w, int h, float size ); 
 extern void g3d_del_win ( G3D_Window *win );
 extern int g3d_win_id ( G3D_Window *win );
 extern void g3d_refresh_allwin_active ( void );

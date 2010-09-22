@@ -947,20 +947,6 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
   p3d_rob *r;
   r=(p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   
-#ifdef HRI_PLANNER
-  if (r==PSP_ROBOT)
-    if (win->win_perspective && PSP_DEACTIVATE_AUTOHIDE) // This characteristics are shown in a perspective window
-      return;
-
-  if (!win->win_perspective) // This characteristics are not shown in a perspective window
-    {
-      if (p3d_is_pos_area_showed(r))
-	g3d_draw_rob_pos_area();
-     // if (p3d_is_view_field_showed(r))
-	//g3d_draw_rob_cone();
-    }
-#endif
-
 #ifdef DPG
   if(ENV.getBool(Env::drawGrid) && r->GRAPH && r->GRAPH->dpgGrid){
     for(int i = 0; i < r->nbDpgCells; i++){
@@ -1553,9 +1539,6 @@ void g3d_draw(void)
     g3d_init_OpenGL();
     firstTime= FALSE;
   } 
-#ifdef HRI_PLANNER
-  glEnable(GL_COLOR_MATERIAL);
-#endif
 	
   g3d_set_default_material();
   g3d_set_light(win->vs);

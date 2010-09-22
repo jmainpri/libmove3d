@@ -67,7 +67,7 @@ G3D_Window *g3d_show_persp_win()
   fl_get_winsize(FL_ObjWin(ob),&w,&h);
   //sprintf(str,"%s->copy",win->name);
 
-  newwin = g3d_new_win_wo_buttons((char*)"Perspective",w/2,w/3,win->vs.size); /* 1.33 is the standard ratio of camera images */
+  //newwin = g3d_new_win_wo_buttons((char*)"Perspective",w/2,w/3,win->vs.size); /* 1.33 is the standard ratio of camera images */
 
   /* pour associer un context identique au canvas de la fenetre */
   FL_OBJECT   *newob = ((FL_OBJECT *)newwin->canvas);

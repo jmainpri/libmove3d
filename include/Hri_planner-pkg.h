@@ -88,10 +88,6 @@ extern p3d_rob * PSP_ROBOT;
 extern int HRI_DRAW_TRAJ;
 extern HRI_AGENTS * GLOBAL_AGENTS;
 
-#ifdef HRI_PLANNER
-extern HRI_COLOR_MASK *HRI_GLOBAL_COLOR_MASK;
-#endif
-
 #ifdef USE_MIGHTABILITY_MAPS
 extern int SHOW_MM_BASED_OBJECT_REACHABLE;
 extern int SHOW_MM_BASED_OBJECT_VISIBLE;
@@ -107,7 +103,6 @@ extern struct SOLUTION_CONFIGS_FOR_HRP2 cur_gik_sol_configs;//It will store the 
 /* proto */
 #ifdef HRI_PLANNER
 #include "../hri_planner/proto/hri_planner_proto.h"
-#include "../hri_planner/proto/hri_agent_proto.h"
 #include "../hri_planner/graphic/proto/hri_graphic_proto.h"
 #endif
 #ifdef USE_MIGHTABILITY_MAPS

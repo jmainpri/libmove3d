@@ -878,7 +878,7 @@ int hri_compute_agent_sees(HRI_AGENT * agent, int threshold, int save, int draw_
   
   for(i=0; i<env->nr; i++) {
     hri_object_visibility_placement(agent, env->robot[i], &placement_res, &elevation, &azimuth);
-    if(placement_res == 1 || placement_res == 2) {
+    if(placement_res == 1) {
       test_obj_list[obj_idx] = env->robot[i];
       obj_idx++;
     }

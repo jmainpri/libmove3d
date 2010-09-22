@@ -9,9 +9,7 @@
 
 #include "Move3d-pkg.h"
 #include "Collision-pkg.h"
-#ifdef HRI_PLANNER
-#include "Hri_planner-pkg.h"
-#endif
+
 extern void* GroundCostObj;
 
 #include <iostream>
@@ -244,12 +242,6 @@ G3D_Window
   win->fct_key2= NULL;
 
 
-#ifdef HRI_PLANNER
-  win->win_perspective = 0;
-  win->point_of_view = 0;
-  win->draw_mode = NORMAL;
-#endif
-
 #ifndef QT_GL
   /* Attributs/Handlers du canvas */
   fl_set_glcanvas_attributes(can,G3D_GLCONFIG);
@@ -335,63 +327,6 @@ G3D_Window
   return(win);
 }
 
-#ifdef HRI_PLANNER
-G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size)
-{
-	G3D_Window *win = (G3D_Window *)malloc(sizeof(G3D_Window));
-
-	FL_FORM    *form= fl_bgn_form(FL_UP_BOX,w+20,h+20);
-	FL_OBJECT  *can = fl_add_glcanvas(FL_NORMAL_CANVAS,10,10,w,h,"NoButtons");
-
-	fl_end_form();
-
-
-	/* Window parameters */
-	win->form       = (void *)form;
-	win->canvas     = (void *)can;
-        win->vs.size       = size;
-
-	win->win_perspective = 1;
-	win->point_of_view = 1;
-	win->draw_mode = NORMAL;
-
-  win->vs.FILAIRE = 0;
-  win->vs.CONTOUR = 0;
-  win->vs.GOURAUD = 0;
-  win->vs.ACTIVE = 1;
-  win->vs.list = -1;
-	win->fct_draw   = NULL;
-  win->fct_draw2= NULL;
-	win->next       = NULL;
-	win->fct_mobcam   = NULL;
-	win->cam_frame  = &Id;
-	win->mcamera_but  = NULL;
-
-  win->vs.enableLight = 1;
-  win->vs.displayFloor = 0;
-  win->vs.displayTiles = 0;
-  win->vs.displayWalls = 0;
-  win->vs.displayShadows = 0;
-  win->vs.enableAntialiasing = 0;
-  
-	sprintf(win->name,"%s",name);
-        g3d_set_win_bgcolor(win->vs,1.0,1.0,1.0);
-	win->next = G3D_WINDOW_LST;
-	G3D_WINDOW_LST = win;
-
-	/* Attributs/Handlers du canvas */
-	fl_set_glcanvas_attributes(can,G3D_GLCONFIG);
-	fl_set_object_gravity(can,FL_NorthWest,FL_SouthEast);
-
-	fl_add_canvas_handler(can,Expose,canvas_expose_special,(void *)win);
-
-	fl_show_form(form,FL_PLACE_MOUSE|FL_FREE_SIZE,FL_FULLBORDER,name);
-
-	G3D_WINDOW_CUR = win;
-	return(win);
-}
-#endif
-
 void
 g3d_del_win(G3D_Window *win)
 /* used in static function for forms
@@ -440,30 +375,18 @@ g3d_refresh_allwin_active(void)
   int winw,winh;
 
   while(w) {
-
+    
     if(w->vs.ACTIVE == 1) {
-
+      
       w->vs.list = -1;
-
+      
       glMatrixMode(GL_PROJECTION);
       glLoadIdentity();
       ob = ((FL_OBJECT *)w->canvas);
-		fl_get_winsize(FL_ObjWin(ob),&winw,&winh);
-	
-#ifdef HRI_PLANNER
-		if(w->win_perspective)
-		{
-			//printf("refreshing\n");
-			canvas_expose_special(ob, NULL, winw, winh, NULL, w);
-		}
-		else
-		{
-#endif
-			canvas_expose(ob, NULL, winw, winh, NULL, w);
-
-#ifdef HRI_PLANNER			
-		}
-#endif	
+      fl_get_winsize(FL_ObjWin(ob),&winw,&winh);
+      
+      canvas_expose(ob, NULL, winw, winh, NULL, w);
+      
     }
     w = w->next;
   }
@@ -2225,19 +2148,14 @@ g3d_draw_allwin(void) {
 #ifndef QT_GL
   G3D_Window *w = G3D_WINDOW_LST;
   while (w) {
-#ifdef HRI_PLANNER
-    if(w->win_perspective)
-      g3d_refresh_win(w);
-    else
-#endif
-			g3d_draw_win(w);
+    g3d_draw_win(w);
     w = w->next;
   }
 #else
   if(pipe2openGl)
-  {
-	  pipe2openGl->update();
-  }
+    {
+      pipe2openGl->update();
+    }
 #endif
 }
 
@@ -2247,20 +2165,15 @@ g3d_draw_allwin_active(void) {
   G3D_Window *w = G3D_WINDOW_LST;
   while (w) {
     if (w->vs.ACTIVE == 1) {
-#ifdef HRI_PLANNER
-if(w->win_perspective)
-    g3d_refresh_win(w);
-else
-#endif
-    g3d_draw_win(w);
+      g3d_draw_win(w);
     }
     w = w->next;
   }
 #else
   if(pipe2openGl)
-  {
-	  pipe2openGl->update();
-  }
+    {
+      pipe2openGl->update();
+    }
 #endif
 }
 
@@ -2454,40 +2367,14 @@ calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw) {
   p3d_matrix4 m_aux;
   p3d_vector4 Xx;
 
-#ifdef HRI_PLANNER
-  if (win->point_of_view==0){
-#endif
-		get_lookat_vector(win->vs, Xx);
-		get_pos_cam_matrix(win->vs, Txc);
 
-		p3d_mat4Mult(*win->cam_frame,Txc,m_aux);
-		p3d_matvec4Mult(m_aux,Xx,Xc);
-		p3d_matvec4Mult(*win->cam_frame,Xx,Xw);
-#ifdef HRI_PLANNER
-	}
-  else {
-    //Modified Luis
-    if (PSP_ROBOT){
-      p3d_rob *r = PSP_ROBOT;
-      p3d_obj *objPt = r->o[r->cam_body_index];
-      p3d_jnt *jntPt = objPt->jnt;
+  get_lookat_vector(win->vs, Xx);
+  get_pos_cam_matrix(win->vs, Txc);
+  
+  p3d_mat4Mult(*win->cam_frame,Txc,m_aux);
+  p3d_matvec4Mult(m_aux,Xx,Xc);
+  p3d_matvec4Mult(*win->cam_frame,Xx,Xw);
 
-      //Robot cam
-      //Setting up camera position
-      Xx[0]=r->cam_pos[0];
-      Xx[1]=r->cam_pos[1];
-      Xx[2]=r->cam_pos[2];
-      Xx[3]=1;
-      p3d_matvec4Mult(jntPt->abs_pos,Xx,Xc);
-      //Setting up camera orientation
-      Xx[0]=r->cam_dir[0];
-      Xx[1]=r->cam_dir[1];
-      Xx[2]=r->cam_dir[2];
-      p3d_matvec4Mult(jntPt->abs_pos,Xx,Xw);
-
-		}
-	}
-#endif
 }
 
 //Edit Mokhtar
