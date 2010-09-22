@@ -70,7 +70,7 @@
         <item>
          <widget class="QTabWidget" name="mainTabWidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>4</number>
           </property>
           <property name="documentMode">
            <bool>true</bool>
@@ -172,7 +172,7 @@
              <number>5</number>
             </property>
             <item>
-             <widget class="QScrollArea" name="scrollArea">
+             <widget class="QScrollArea" name="scrollAreaViewer">
               <property name="horizontalScrollBarPolicy">
                <enum>Qt::ScrollBarAlwaysOff</enum>
               </property>
@@ -183,20 +183,20 @@
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>0</y>
+                 <y>-169</y>
                  <width>357</width>
                  <height>785</height>
                 </rect>
                </property>
                <layout class="QHBoxLayout" name="horizontalLayout_2">
                 <item>
-                 <widget class="QWidget" name="widget_2" native="true">
+                 <widget class="QWidget" name="widgetViewer" native="true">
                   <layout class="QVBoxLayout" name="verticalLayout_3">
                    <property name="margin">
                     <number>0</number>
                    </property>
                    <item>
-                    <widget class="QGroupBox" name="groupBox_4">
+                    <widget class="QGroupBox" name="groupBoxDrawEnv">
                      <property name="title">
                       <string>Draw Env</string>
                      </property>
@@ -253,7 +253,7 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QWidget" name="widget_5" native="true">
+                    <widget class="QWidget" name="widgetMobCamButton" native="true">
                      <layout class="QHBoxLayout" name="horizontalLayout_5">
                       <item>
                        <widget class="QPushButton" name="pushButtonMobileCamera">
@@ -387,7 +387,7 @@
                      </property>
                      <layout class="QGridLayout" name="gridLayout_21">
                       <item row="0" column="0">
-                       <widget class="QWidget" name="widget_20" native="true">
+                       <widget class="QWidget" name="widgetLightSliders" native="true">
                         <layout class="QGridLayout" name="gridLayout_43">
                          <item row="0" column="0">
                           <widget class="QDoubleSpinBox" name="doubleSpinBoxLightX"/>
@@ -406,14 +406,14 @@
                           <widget class="QDoubleSpinBox" name="doubleSpinBoxLightY"/>
                          </item>
                          <item row="0" column="1">
-                          <widget class="QLabel" name="label_2">
+                          <widget class="QLabel" name="label_X">
                            <property name="text">
                             <string>X</string>
                            </property>
                           </widget>
                          </item>
                          <item row="1" column="1">
-                          <widget class="QLabel" name="label_3">
+                          <widget class="QLabel" name="label_Y">
                            <property name="text">
                             <string>Y</string>
                            </property>
@@ -433,7 +433,7 @@
                           <widget class="QDoubleSpinBox" name="doubleSpinBoxLightZ"/>
                          </item>
                          <item row="2" column="1">
-                          <widget class="QLabel" name="label_4">
+                          <widget class="QLabel" name="label_Z">
                            <property name="text">
                             <string>Z</string>
                            </property>
@@ -453,7 +453,7 @@
                        </widget>
                       </item>
                       <item row="0" column="1">
-                       <widget class="QWidget" name="widget" native="true">
+                       <widget class="QWidget" name="widgetLightButtons" native="true">
                         <layout class="QVBoxLayout" name="verticalLayout_22">
                          <item>
                           <widget class="QPushButton" name="pushButtonRestoreLight">
@@ -496,7 +496,7 @@
                        </widget>
                       </item>
                       <item row="1" column="1">
-                       <spacer name="horizontalSpacer_23">
+                       <spacer name="horizontalSpacerViewer">
                         <property name="orientation">
                          <enum>Qt::Horizontal</enum>
                         </property>
@@ -630,7 +630,7 @@
              <number>2</number>
             </property>
             <item>
-             <widget class="QGroupBox" name="groupBox_20">
+             <widget class="QGroupBox" name="groupBoxRunButtons">
               <property name="title">
                <string>Run Motion Planning</string>
               </property>
@@ -856,7 +856,7 @@ p, li { white-space: pre-wrap; }
                 </widget>
                </item>
                <item row="1" column="1">
-                <layout class="QHBoxLayout" name="horizontalLayout_24">
+                <layout class="QHBoxLayout" name="horizontalLayoutRunStrategy">
                  <item>
                   <widget class="QRadioButton" name="radioButtonDiff">
                    <property name="text">
@@ -891,15 +891,15 @@ p, li { white-space: pre-wrap; }
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_19">
+             <widget class="QGroupBox" name="groupBoxTrajectory">
               <property name="title">
                <string>Trajectory</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_34">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_4">
+                <layout class="QHBoxLayout" name="horizontalLayoutShowTraj">
                  <item>
-                  <spacer name="horizontalSpacer_19">
+                  <spacer name="horizontalSpacerShowTraj1">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -919,7 +919,7 @@ p, li { white-space: pre-wrap; }
                   </widget>
                  </item>
                  <item>
-                  <spacer name="horizontalSpacer_20">
+                  <spacer name="horizontalSpacerShowTraj2">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -934,7 +934,7 @@ p, li { white-space: pre-wrap; }
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_25">
+                <layout class="QHBoxLayout" name="horizontalLayoutTrajSpeed">
                  <item>
                   <widget class="QLabel" name="label">
                    <property name="text">
@@ -1051,7 +1051,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="actionLoadTrajectory"/>
     <addaction name="actionSaveTrajectory"/>
    </widget>
-   <widget class="QMenu" name="menuEnvironement_2">
+   <widget class="QMenu" name="menuEnvironement">
     <property name="title">
      <string>Environement</string>
     </property>
@@ -1066,7 +1066,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="menuRobot"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuEnvironement_2"/>
+   <addaction name="menuEnvironement"/>
    <addaction name="menuGraph"/>
    <addaction name="menuCollisionCheker"/>
    <addaction name="menuHelp"/>

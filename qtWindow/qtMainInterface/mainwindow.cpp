@@ -60,7 +60,10 @@ MainWindow::MainWindow(QWidget *parent)
 	m_ui->tabCost->getHriWidget()->initHRI();
 #endif
 	
-	m_ui->tabCost->initCostFunctions();
+	if ( ENV.getBool(Env::isCostSpace) )
+	{
+		m_ui->tabCost->initCostFunctions();
+	}
 	
 	m_ui->tabRobot->setMainWindow(this);
 	m_ui->tabRobot->initRobot();
