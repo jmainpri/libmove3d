@@ -291,7 +291,7 @@ void RobotWidget::SetObjectToCarry()
 void RobotWidget::GrabObject()
 {
 	
-#ifdef LIGHT_PLANNER
+#if defined( LIGHT_PLANNER ) && defined( PQP )
 	p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
 	cout << "Robot = " << robotPt->name <<  endl;
 	p3d_set_object_to_carry(robotPt,ENV.getString(Env::ObjectToCarry).toStdString().c_str());
