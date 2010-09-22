@@ -237,26 +237,6 @@ p3d_jnt* Robot::getBaseJnt()
 }
 
 /**
- * Shoots a random direction
- */
-shared_ptr<Configuration> Robot::shootRandomDirection()
-{
-	shared_ptr<Configuration> q( new Configuration(this) );
-	p3d_RandDirShoot( _Robot, q->getConfigStruct() , false );
-	return q;
-}
-
-/**
- * Shoots the base Joint of the robot
- */
-shared_ptr<Configuration> Robot::shootBase()
-{
-	shared_ptr<Configuration> q( new Configuration(this));
-	m_Joints[_Robot->baseJnt->num]->shoot(*q);
-	return q;
-}
-
-/**
  * Shoots the base Joint of the robot
  */
 shared_ptr<Configuration> Robot::shootBaseWithoutCC()
@@ -314,11 +294,6 @@ bool Robot::setAndUpdateAllExceptBase(Configuration& q)
 	return p3d_update_this_robot_pos(_Robot);
 }
 
-shared_ptr<Configuration> Robot::shoot()
-{
-	return this->shoot(false);
-}
-
 shared_ptr<Configuration> Robot::shootFreeFlyer(double* box)
 {
 	//    cout << "box  = ( " << box[0] << " , " ;
@@ -372,6 +347,26 @@ void Robot::shootObjectJoint(Configuration& Conf)
 	//p3d_JointFreeFlyerShoot(_Robot,_Robot->curObjectJnt,q->getConfigStruct(),box);
 }
 #endif
+
+/**
+ * Shoots a random direction
+ */
+shared_ptr<Configuration> Robot::shootRandomDirection()
+{
+	shared_ptr<Configuration> q( new Configuration(this) );
+	p3d_RandDirShoot( _Robot, q->getConfigStruct() , false );
+	return q;
+}
+
+/**
+ * Shoots the base Joint of the robot
+ */
+shared_ptr<Configuration> Robot::shootBase()
+{
+	shared_ptr<Configuration> q( new Configuration(this));
+	m_Joints[_Robot->baseJnt->num]->shoot(*q);
+	return q;
+}
 
 shared_ptr<Configuration> Robot::shoot(bool samplePassive)
 {
