@@ -1,6 +1,3 @@
-#ifdef QT_OPENGL_SIDE
-#include "qtMyWindows/qtMainWindow.hpp"
-#endif
 #ifdef QT_UI_XML_FILES
 #include "qtMainInterface/mainwindow.hpp"
 #endif
@@ -15,10 +12,6 @@
 #ifdef QT_GL
 QSemaphore* sem;
 GLWidget* openGlWidget;
-#endif
-
-#ifdef QT_OPENGL_SIDE
-Move3D2OpenGl* pipe2openGl;
 #endif
 
 
@@ -82,19 +75,10 @@ int Main_threads::run(int argc, char** argv)
     move3dthread.start();
 
 #ifdef QT_GL
-		cout << "Qt :: Waiting to draw OpenGL"<< endl;
+		cout << "Waiting end of parser to draw OpenGL and create Qt Forms ..."<< endl;
     sem->acquire();
     waitDrawAllWin = new QWaitCondition();
     lockDrawAllWin = new QMutex();
-
-#ifdef QT_OPENGL_SIDE
-    g3dWin = new qtGLWindow();
-    g3dWin->show();
-    pipe2openGl = new Move3D2OpenGl(g3dWin->getOpenGLWidget());
-	
-    sideWin = new MainWidget();
-    sideWin->show();
-#endif
 #endif
 
 

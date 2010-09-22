@@ -8,7 +8,7 @@
  */
 
 #include "mainwindowTestFunctions.hpp"
-#include "ui_mainwindow.h"
+#include "mainwindowGenerated.hpp"
 
 #include <iostream>
 #include <tr1/memory>
