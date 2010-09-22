@@ -29,8 +29,8 @@
 #include "qtPlot/tempWin.hpp"
 #endif
 
-#include "mainwindow.hpp"
-#include "mainwindowGenerated.hpp"
+#include "qtWindow/qtMainInterface/mainwindow.hpp"
+#include "qtWindow/qtMainInterface/mainwindowGenerated.hpp"
 
 #include "qtMotionPlanner.hpp"
 
