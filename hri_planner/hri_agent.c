@@ -295,6 +295,7 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env)
   
   persp->enable_vision_draw = FALSE;
   persp->enable_pointing_draw = FALSE;
+  persp->enable_visible_objects_draw = FALSE;
   
   return persp;
 }
