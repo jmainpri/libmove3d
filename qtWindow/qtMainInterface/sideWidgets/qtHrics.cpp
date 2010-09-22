@@ -30,7 +30,7 @@
 #endif
 
 #include "mainwindow.hpp"
-#include "ui_mainwindow.h"
+#include "mainwindowGenerated.hpp"
 
 #include "qtMotionPlanner.hpp"
 

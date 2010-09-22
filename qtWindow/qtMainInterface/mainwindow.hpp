@@ -4,12 +4,13 @@
 #include "p3d_sys.h"
 #include "p3d/env.hpp"
 #include "kcdpropertieswindow.hpp"
-
+#include "qtBase/qt_widgets.hpp"
 #include "qtFormRobot/moverobot.hpp"
+
 #ifdef QWT
 #include "qtPlot/histoWin.hpp"
 #endif
-#include "qtBase/qt_widgets.hpp"
+
 #ifndef GLWIDGET_H
 class GLWidget;
 #endif
