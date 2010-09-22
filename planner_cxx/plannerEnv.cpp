@@ -16,7 +16,7 @@ using namespace std;
 // A new container is created for each module
 // First declaire the maps of praramters
 // Then fill in the maps that associate the enum to the Qt container
-// When Qt is disables this just acts as a cormal container
+// When Qt is disabled this just acts as a normal container
 
 // Definition of the parameter container
 Parameters<
