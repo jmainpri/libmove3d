@@ -1,6 +1,41 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.6.4)
 PROJECT (BioMove3D C CXX)
 
+
+#--------- Set the project version
+
+if( NOT BIOMOVE3D_VERSION)
+
+if( NOT PROJECT_MAJOR_VERSION)
+set( PROJECT_MAJOR_VERSION 3)
+endif( NOT PROJECT_MAJOR_VERSION)
+
+if( NOT PROJECT_MINOR_VERSION)
+set( PROJECT_MINOR_VERSION 7)
+endif( NOT PROJECT_MINOR_VERSION)
+
+set( BIOMOVE3D_VERSION "${PROJECT_MAJOR_VERSION}.${PROJECT_MINOR_VERSION}")
+
+endif( NOT BIOMOVE3D_VERSION)
+
+if( NOT DEFINED PROJECT_MAJOR_VERSION)
+message( FATAL_ERROR "The project major version has not been defined.")
+endif( NOT DEFINED PROJECT_MAJOR_VERSION)
+	
+if( NOT DEFINED PROJECT_MINOR_VERSION)
+message( FATAL_ERROR "The project minor version has not been defined.")
+endif( NOT DEFINED PROJECT_MINOR_VERSION)
+
+message( STATUS "Current project version is ${BIOMOVE3D_VERSION}")
+
+# Define the project version
+
+if( NOT NON_NATIVE_TARGET)
+add_definitions( -DBIOMOVE3D_VERSION="${BIOMOVE3D_VERSION}")
+endif( NOT NON_NATIVE_TARGET)
+
+#--------- 
+
 # -------------------------------------------------------------
 # --- Default compilation option : ----------------------------
 # --- DO NOT MODIFY!!! use ccmake -----------------------------
@@ -23,13 +58,14 @@ ENDMACRO(BM3D_flag)
 MACRO(BM3D_CheckCompilationFlags)
   SET(BM3D_ActiveFlags "")
   MESSAGE ("Active Flags :")
-  FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "#Generated File Do not modify!!!\n" )
-  FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "MOVE3D_COMPILATION_FLAGS = ")
+#  FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "#Generated File Do not modify!!!\n" )
+#  FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "MOVE3D_COMPILATION_FLAGS = ")
   FOREACH(flag ${BM3D_CompilationFlags})
     IF(${flag})
-      FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "-D${flag} ")
+      SET(MOVE3D_COMPILATION_FLAGS ${MOVE3D_COMPILATION_FLAGS} ${flag})
+#      FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags " -D${flag} ")
       MESSAGE("${flag}")
-      ADD_DEFINITIONS("-D${flag}")
+      ADD_DEFINITIONS(" -D${flag}")
       LIST(APPEND BM3D_ActiveFlags ${flag})
     ENDIF()
   ENDFOREACH(flag)
@@ -50,9 +86,10 @@ MACRO(BM3D_CheckCompilationFlags)
 	ENDFOREACH(activeFlag2)
 	IF(${isAlreadyActive} EQUAL 0)
 	  SET(${linkFlagToActivate} ON)
-          FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "-D${linkFlagToActivate}")
+	  SET(MOVE3D_COMPILATION_FLAGS ${MOVE3D_COMPILATION_FLAGS} ${linkFlagToActivate})
+#          FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags " -D${linkFlagToActivate}")
           MESSAGE("${activeFlag} -> ${linkFlagToActivate}")
-          ADD_DEFINITIONS("-D${linkFlagToActivate}")
+          ADD_DEFINITIONS(" -D${linkFlagToActivate}")
 	ENDIF(${isAlreadyActive} EQUAL 0)
       ENDIF(${linkFlag} MATCHES "${activeFlag}:(.*)")
     ENDFOREACH(linkFlag)
@@ -315,8 +352,18 @@ ENDIF(USE_HATP_LIBS)
 # INCLUDE_directories(${<PACKAGE>_INCLUDE_DIR})
 # SET(LIBS ${LIBS} ${<PACKAGE>_LIBRARIES})
 
+#------------------- PKG_CONFIG ---------------------------
+#----------------------------------------------------------
+STRING(REPLACE ";" " -D" MOVE3D_COMPILATION_FLAGS "-D${MOVE3D_COMPILATION_FLAGS}")
 STRING(REPLACE ";" " -I" MOVE3D_COMPILATION_INCLUDES "${INCLUDE_DIRS}")
-FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "\nMOVE3D_COMPILATION_INCLUDES = -I${MOVE3D_COMPILATION_INCLUDES}")
+STRING(REPLACE ";" " " MOVE3D_COMPILATION_LIBS "${LIBS}")
+#FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "\nMOVE3D_COMPILATION_INCLUDES = -I${MOVE3D_COMPILATION_INCLUDES}")
+
+add_subdirectory(pkgconfig)
+
+
+#----------------------------------------------------------
+
 
 # -------------------------------------------------------------
 # --- SUBDIR PROCESS ------------------------------------------
