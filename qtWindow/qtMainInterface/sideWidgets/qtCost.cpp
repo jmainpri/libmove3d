@@ -324,8 +324,9 @@ void CostWidget::showHRITrajCost()
 		cerr << "No trajectory" << endl;
 		return;
 	}
-	
+#if defined(HRI_COSTSPACE)
 	ENV.setInt(Env::hriCostType,HRICS_Combine);
+#endif
 	
 	DoublePlot* myPlot = new DoublePlot(this->plot);
 	myPlot->setGeometry(this->plot->getPlot()->geometry());

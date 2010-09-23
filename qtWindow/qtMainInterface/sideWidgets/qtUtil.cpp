@@ -12,6 +12,8 @@
 
 #include "cppToQt.hpp"
 
+#include "planner_cxx/API/project.hpp"
+
 
 using namespace std;
 using namespace tr1;
