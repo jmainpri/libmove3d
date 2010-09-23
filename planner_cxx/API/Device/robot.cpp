@@ -346,7 +346,6 @@ void Robot::shootObjectJoint(Configuration& Conf)
 	
 	//p3d_JointFreeFlyerShoot(_Robot,_Robot->curObjectJnt,q->getConfigStruct(),box);
 }
-#endif
 
 /**
  * Shoots a random direction
@@ -367,6 +366,8 @@ shared_ptr<Configuration> Robot::shootBase()
 	m_Joints[_Robot->baseJnt->num]->shoot(*q);
 	return q;
 }
+
+#endif
 
 shared_ptr<Configuration> Robot::shoot(bool samplePassive)
 {
