@@ -5,7 +5,7 @@ lightPlannerApi.c lightPlanner.c robotPos.c DlrObject.cpp DlrParser.cpp DlrPlan.
 IF(GRASP_PLANNING)
   BM3D_SRC_SUBDIR_PROCESS(Manipulation.cpp)
 IF(CXX_PLANNER) 
-IF(MULTILOCALPATH)
+IF(MULTILOCALPATH AND !QT_LIBRARY )
   BM3D_SRC_SUBDIR_PROCESS(Manipulation_JIDO.cpp)
   BM3D_SRC_SUBDIR_PROCESS(ManipulationPlanner.cpp)
 ENDIF(MULTILOCALPATH)

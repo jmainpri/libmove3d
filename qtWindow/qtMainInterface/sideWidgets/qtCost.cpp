@@ -311,7 +311,11 @@ void CostWidget::showHRITrajCost()
 	{
 		cerr << "Hri is not enabled" << endl;
 		return;
-	}
+	}	
+
+  double kDistanceTmp = ENV.getDouble(Env::Kdistance);
+	double kVisibiliTmp = ENV.getDouble(Env::Kvisibility);
+	double kReachablTmp = ENV.getDouble(Env::Kreachable);
 
 #if defined(QWT) && defined(CXX_PLANNER)
 	cout << "--------------------------------" << endl;
@@ -337,9 +341,7 @@ void CostWidget::showHRITrajCost()
 	
 	cout << "Traj cost = " << traj.costDeltaAlongTraj() << endl;
 	
-	double kDistanceTmp = ENV.getDouble(Env::Kdistance);
-	double kVisibiliTmp = ENV.getDouble(Env::Kvisibility);
-	double kReachablTmp = ENV.getDouble(Env::Kreachable);
+
 	
 	ENV.setDouble(Env::Kreachable,0.0);
 	ENV.setDouble(Env::Kvisibility,0.0);
@@ -465,6 +467,7 @@ void CostWidget::showHRITrajCost()
 	ENV.setDouble(Env::Kdistance,		kDistanceTmp);
 	ENV.setDouble(Env::Kvisibility,	kVisibiliTmp);
 	ENV.setDouble(Env::Kreachable,	kReachablTmp);
+
 	
 }
 
