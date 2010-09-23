@@ -482,7 +482,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="HricsWidget" name="tabHri" native="true"/>
+        <widget class="QWidget" name="tabHri" native="true"/>
        </item>
       </layout>
      </widget>
@@ -490,14 +490,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>HricsWidget</class>
-   <extends>QWidget</extends>
-   <header location="global">qtHrics.hpp</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>
