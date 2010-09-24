@@ -19,6 +19,7 @@
 #ifdef QT_LIBRARY
 #include "../qtWindow/cppToQt.hpp"
 #endif
+#include "molecule.xpm"
 
 typedef void (*fct_interface)(void);
 
@@ -27,6 +28,20 @@ typedef struct {
   fct_interface creator, show, hide, destructor;
 } fct_option_interface;
 
+#ifdef WITH_XFORMS
+Pixmap ApplicationIcon = 0;
+Pixmap GetApplicationIcon();
+Pixmap GetApplicationIcon() {
+  static unsigned int width, height;
+  if (ApplicationIcon == 0)
+    ApplicationIcon = fl_create_from_pixmapdata(fl_root, molecule_xpm, &width, &height, 0, 0, 0, 0);
+  /*   Pixmap fl_create_from_pixmapdata(Window win, char **data,
+      unsigned *width, unsigned *height,
+      Pixmap *shape_mask,
+      int *hotx, int *hoty, FL_COLOR tran) */
+  return ApplicationIcon;
+}
+#endif
 
 G3D_Window *G3D_WIN;
 int        G3D_ACTIVE_CC = TRUE;

@@ -34,21 +34,15 @@
 #endif
 
 static int FILTER_TO_BE_SET_ACTIVE = FALSE;
-#ifdef WITH_XFORMS
-Pixmap ApplicationIcon = 0;
-#endif
-
 //extern void g3d_create_main_form(void);
 //extern void g3d_loop(void);
 //extern void p3d_col_set_mode(int);
 //extern void kcd_set_user_defined_small_volume(double);
 //extern double p3d_get_env_dmax(void);
 static void use(void);
-#ifdef WITH_XFORMS
-Pixmap GetApplicationIcon();
-#endif
 
-#if defined QT_LIBRARY || BioMove3D_EXPORTS
+
+#if defined QT_LIBRARY || BioMove3D_EXPORTS || MAKELIB
 int mainMhp(int argc, char ** argv) {
 #else
 int main(int argc, char ** argv) {
@@ -596,19 +590,6 @@ int main(int argc, char ** argv) {
 #endif
   return 0;
 }
-
-#ifdef WITH_XFORMS
-Pixmap GetApplicationIcon() {
-  static unsigned int width, height;
-  if (ApplicationIcon == 0)
-    ApplicationIcon = fl_create_from_pixmapdata(fl_root, molecule_xpm, &width, &height, 0, 0, 0, 0);
-  /*   Pixmap fl_create_from_pixmapdata(Window win, char **data,
-      unsigned *width, unsigned *height,
-      Pixmap *shape_mask,
-      int *hotx, int *hoty, FL_COLOR tran) */
-  return ApplicationIcon;
-}
-#endif
 
 /* fonction de rappel des formats des arguments */
 static void use(void) {
