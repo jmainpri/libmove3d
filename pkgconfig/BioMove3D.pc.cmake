@@ -9,5 +9,5 @@ BioMove3DLibs=@MOVE3D_COMPILATION_LIBS@
 Name: BioMove3D
 Description: Motion Planning Platform
 Version: @BIOMOVE3D_VERSION@
-Libs: -rpath,${BioMove3DLibs} -L${libdir} -lm3d
+Libs: ${BioMove3DLibs} -L${libdir} -lm3d
 Cflags: -I${includedir}/BioMove3D/include -I${BioMove3DIncludes} ${BioMove3DFlags} 
