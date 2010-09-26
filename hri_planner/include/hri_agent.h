@@ -72,8 +72,15 @@ typedef enum ENUM_HRI_VISIBILITY {
   HRI_INVISIBLE = 1
 } HRI_VISIBILITY;
 
+typedef enum ENUM_HRI_VISIBILITY_PLACEMENT {
+  HRI_FOA = 1,
+  HRI_FOV = 2,
+  HRI_OOF = 3
+} HRI_VISIBILITY_PLACEMENT;
+
 typedef struct STRUCT_HRI_VISIBILITY_LIST {
   HRI_VISIBILITY *vis; /* The index is the same as env->nb */
+  HRI_VISIBILITY_PLACEMENT *vispl; /* The index is the same as env->nb */
   int vis_nb; /* Normally this number should be = to the number of robots in the env */
 } HRI_VISIBILITY_LIST;
 

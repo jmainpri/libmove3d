@@ -9,6 +9,7 @@ int hri_is_object_visible(HRI_AGENT * agent, p3d_rob *object, int threshold, int
   g3d_states st;
   g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
   double result;
+  int point,fov,visobj;
   
   if(object==NULL || agent==NULL){
     printf("%s: %d: g3d_is_object_visible_from_viewpoint(): input object is NULL.\n",__FILE__,__LINE__);
@@ -23,6 +24,10 @@ int hri_is_object_visible(HRI_AGENT * agent, p3d_rob *object, int threshold, int
   g3d_save_win_camera(win->vs);
   g3d_save_state(win, &st);
   
+  point = agent->perspective->enable_pointing_draw;
+  fov = agent->perspective->enable_vision_draw;
+  visobj = agent->perspective->enable_visible_objects_draw;  
+  
   // only keep what is necessary:
   win->vs.fov            = agent->perspective->fov;
   win->vs.displayFrame   = FALSE;
@@ -31,7 +36,15 @@ int hri_is_object_visible(HRI_AGENT * agent, p3d_rob *object, int threshold, int
   win->vs.displayWalls   = FALSE;
   win->vs.displayFloor   = FALSE;
   win->vs.displayTiles   = FALSE;
-  win->vs.cullingEnabled =  1;
+  win->vs.cullingEnabled = 1;
+  agent->perspective->enable_pointing_draw = FALSE;
+  agent->perspective->enable_vision_draw = FALSE;
+  agent->perspective->enable_visible_objects_draw = FALSE;
+  
+#ifdef USE_SHADERS
+  g3d_no_shader();
+#endif
+  
   //do not forget to set the backgroung to black:
   g3d_set_win_bgcolor(win->vs, 0, 0, 0);
   
@@ -40,13 +53,22 @@ int hri_is_object_visible(HRI_AGENT * agent, p3d_rob *object, int threshold, int
   g3d_set_projection_matrix(win->vs.projection_mode);
   
   //everything is ready now.
-  g3d_is_object_visible_from_current_viewpoint(win, object, &result, save, (char*)"");
+  g3d_is_object_visible_from_current_viewpoint(win, object, &result, save, (char*)"/Users/easisbot/Work/BioMove3D/screenshots/");
   
   //restore viewport
   if(!save){
     glViewport(0,0,(GLint)viewport[2],(GLint)viewport[3]);
   }
   g3d_load_state(win, &st);
+  agent->perspective->enable_pointing_draw = point;
+  agent->perspective->enable_vision_draw = fov;
+  agent->perspective->enable_visible_objects_draw = visobj;
+  
+#ifdef USE_SHADERS
+  if (win->vs.enableShaders) {
+    g3d_use_shader();
+  }
+#endif
   
   g3d_restore_win_camera(win->vs);
   g3d_set_projection_matrix(win->vs.projection_mode); // do this after restoring the camera fov
@@ -74,6 +96,7 @@ int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera
   g3d_states st;
   g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
   int save = TRUE;
+  int point,fov,visobj;
   
   if(object==NULL){
     printf("%s: %d: g3d_is_object_visible_from_viewpoint(): input object is NULL.\n",__FILE__,__LINE__);
@@ -98,6 +121,14 @@ int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera
   win->vs.displayFloor   = FALSE;
   win->vs.displayTiles   = FALSE;
   win->vs.cullingEnabled=  1;
+  agent->perspective->enable_pointing_draw = FALSE;
+  agent->perspective->enable_vision_draw = FALSE;
+  agent->perspective->enable_visible_objects_draw = FALSE;
+  
+#ifdef USE_SHADERS
+  g3d_no_shader();
+#endif
+  
   //do not forget to set the backgroung to black:
   g3d_set_win_bgcolor(win->vs, 0, 0, 0);
   
@@ -106,13 +137,22 @@ int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera
   g3d_set_projection_matrix(win->vs.projection_mode);
   
   //everything is ready now.
-  g3d_is_object_visible_from_current_viewpoint(win, object,result,TRUE,(char*)"/Users/easisbot/Work/BioMove3D/screenshots");
+  g3d_is_object_visible_from_current_viewpoint(win, object,result,TRUE,(char*)"/Users/easisbot/Work/BioMove3D/screenshots/");
   
   //restore viewport
   if(!save){
     glViewport(0,0,(GLint)viewport[2],(GLint)viewport[3]);
   }
   g3d_load_state(win, &st);
+  agent->perspective->enable_pointing_draw = point;
+  agent->perspective->enable_vision_draw = fov;
+  agent->perspective->enable_visible_objects_draw = visobj;
+  
+#ifdef USE_SHADERS
+  if (win->vs.enableShaders) {
+    g3d_use_shader();
+  }
+#endif
   
   g3d_restore_win_camera(win->vs);
   g3d_set_projection_matrix(win->vs.projection_mode); // do this after restoring the camera fov
@@ -250,6 +290,8 @@ int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, 
         p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_UNLIT_BLUE_DISPLAY);
       }
     }  
+    // display the object in red
+    p3d_set_robot_display_mode(object, P3D_ROB_UNLIT_RED_DISPLAY);
     
     g3d_draw_win_back_buffer(win);
     
@@ -307,11 +349,7 @@ int g3d_compute_visibility_for_given_objects_in_current_viewpoint(g3d_win* win, 
   static int crntcnt = 0;
   char name[256];  
   double color[4]= {0,0,0,1}; 
-  
-#ifdef USE_SHADERS
-  g3d_no_shader();
-#endif
-  
+    
   // disable the display of all obstacles and of all the robots:
   for(i=0; i<XYZ_ENV->no; ++i) {
     p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_NO_DISPLAY);
@@ -338,7 +376,7 @@ int g3d_compute_visibility_for_given_objects_in_current_viewpoint(g3d_win* win, 
     g3d_draw_win_back_buffer(win); //only the object should be drawn in red, everthing else is black
     
     if(save) {
-      sprintf(name, "%sidealview%i.ppm", path, crntcnt++);
+      sprintf(name, "/%sidealview%i.ppm", path, crntcnt++);
       g3d_export_OpenGL_display(name);
     }
     
@@ -356,6 +394,14 @@ int g3d_compute_visibility_for_given_objects_in_current_viewpoint(g3d_win* win, 
     p3d_set_robot_display_mode(objects[i], P3D_ROB_NO_DISPLAY);
   }
   
+  
+  for(i=0; i<XYZ_ENV->no; ++i) {
+    p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_UNLIT_BLUE_DISPLAY);
+  }
+  for(i=0; i<XYZ_ENV->nr; ++i) {
+    p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_UNLIT_BLUE_DISPLAY);
+  }  
+  
   // display all the objects in a single image in the different colors of red
   for(i=0; i<objects_nb; i++) {
     color[0]+=(10.0/255.0);
@@ -365,7 +411,7 @@ int g3d_compute_visibility_for_given_objects_in_current_viewpoint(g3d_win* win, 
   g3d_draw_win_back_buffer(win); //only the object should be drawn in red, everthing else is black
   
   if(save) {
-    sprintf(name, "%scurrentview%i.ppm", path, crntcnt++);
+    sprintf(name, "/%scurrentview%i.ppm", path, crntcnt++);
     g3d_export_OpenGL_display(name);
   }
   
@@ -841,11 +887,15 @@ int hri_compute_agent_sees(HRI_AGENT * agent, int threshold, int save, int draw_
   int obj_idx = 0;
   int placement_res;
   double *vis_res;
+  int saved_sees_display_mode;
+  int point,fov,visobj;
   
   if(agent==NULL){
     printf("%s: %d: input agent is NULL.\n",__FILE__,__LINE__);
     return FALSE;
   }  
+  saved_sees_display_mode = agent->perspective->enable_visible_objects_draw;
+  agent->perspective->enable_visible_objects_draw = FALSE;
   //Change the size of the viewport if you want speed
   if(!save){
     glGetIntegerv(GL_VIEWPORT, viewport);
@@ -864,6 +914,14 @@ int hri_compute_agent_sees(HRI_AGENT * agent, int threshold, int save, int draw_
   win->vs.displayFloor   = FALSE;
   win->vs.displayTiles   = FALSE;
   win->vs.cullingEnabled =  1;
+  agent->perspective->enable_pointing_draw = FALSE;
+  agent->perspective->enable_vision_draw = FALSE;
+  agent->perspective->enable_visible_objects_draw = FALSE;
+  
+#ifdef USE_SHADERS
+  g3d_no_shader();
+#endif
+  
   //do not forget to set the backgroung to black:
   g3d_set_win_bgcolor(win->vs, 0, 0, 0);
   
@@ -878,26 +936,45 @@ int hri_compute_agent_sees(HRI_AGENT * agent, int threshold, int save, int draw_
   
   for(i=0; i<env->nr; i++) {
     hri_object_visibility_placement(agent, env->robot[i], &placement_res, &elevation, &azimuth);
-    if(placement_res == 1) {
-      test_obj_list[obj_idx] = env->robot[i];
-      obj_idx++;
+    switch (placement_res) {
+      case 1:
+        agent->perspective->currently_sees.vispl[i] = HRI_FOA;
+        test_obj_list[obj_idx] = env->robot[i];
+        obj_idx++;
+        break;
+      case 2:
+        agent->perspective->currently_sees.vispl[i] = HRI_FOV;
+        test_obj_list[obj_idx] = env->robot[i];
+        obj_idx++;
+        break;
+      default:
+        agent->perspective->currently_sees.vispl[i] = HRI_OOF;
+        agent->perspective->currently_sees.vis[i] = HRI_INVISIBLE;
+        break;
     }
-    else {
-      agent->perspective->currently_sees.vis[i] = HRI_INVISIBLE;
-    }    
   }
     
   // 2- Fetch their visibility
   
   vis_res = MY_ALLOC(double,obj_idx);
   
-  g3d_compute_visibility_for_given_objects_in_current_viewpoint(win, test_obj_list, obj_idx, vis_res, save, (char*)"");
+  g3d_compute_visibility_for_given_objects_in_current_viewpoint(win, test_obj_list, obj_idx, vis_res, save, (char*)"/Users/easisbot/Work/BioMove3D/screenshots/");
   
   //restore viewport
   if(!save){
     glViewport(0,0,(GLint)viewport[2],(GLint)viewport[3]);
   }
   g3d_load_state(win, &st);
+ 
+  agent->perspective->enable_pointing_draw = point;
+  agent->perspective->enable_vision_draw = fov;
+  agent->perspective->enable_visible_objects_draw = visobj;
+  
+#ifdef USE_SHADERS
+  if (win->vs.enableShaders) {
+    g3d_use_shader();
+  }
+#endif  
   
   g3d_restore_win_camera(win->vs);
   g3d_set_projection_matrix(win->vs.projection_mode); // do this after restoring the camera fov
@@ -915,6 +992,8 @@ int hri_compute_agent_sees(HRI_AGENT * agent, int threshold, int save, int draw_
       //printf("%s is INVISIBLE\n",test_obj_list[i]->name);
     } 
   }
+  
+  agent->perspective->enable_visible_objects_draw = saved_sees_display_mode;
   
   return TRUE;
 }

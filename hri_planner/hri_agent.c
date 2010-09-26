@@ -274,12 +274,12 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env)
       persp->point_tolerance = 20;      
     break;
     case HRI_SUPERMAN:
-      persp->camjoint = agent->robotPt->joints[1]; //TODO: put the corrent value
+      persp->camjoint = agent->robotPt->joints[1]; //TODO: put the correct value
       persp->fov = 160;
       persp->foa = 30;
       persp->tilt_jnt_idx = 55;
       persp->pan_jnt_idx  = 54;
-      persp->pointjoint = agent->robotPt->joints[1]; //TODO: put the corrent value
+      persp->pointjoint = agent->robotPt->joints[1]; //TODO: put the correct value
       persp->point_tolerance = 20;      
       break;
     default:
@@ -289,8 +289,10 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env)
   }
   persp->currently_sees.vis_nb = env->nr;
   persp->currently_sees.vis = MY_ALLOC(HRI_VISIBILITY, persp->currently_sees.vis_nb);
+  persp->currently_sees.vispl = MY_ALLOC(HRI_VISIBILITY_PLACEMENT, persp->currently_sees.vis_nb);
   for (i=0; i<persp->currently_sees.vis_nb; i++) {
     persp->currently_sees.vis[i] = HRI_INVISIBLE;
+    persp->currently_sees.vispl[i] = HRI_OOF;
   }
   
   persp->enable_vision_draw = FALSE;
