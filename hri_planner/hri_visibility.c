@@ -96,7 +96,6 @@ int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera
   g3d_states st;
   g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
   int save = TRUE;
-  int point,fov,visobj;
   
   if(object==NULL){
     printf("%s: %d: g3d_is_object_visible_from_viewpoint(): input object is NULL.\n",__FILE__,__LINE__);
@@ -121,9 +120,6 @@ int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera
   win->vs.displayFloor   = FALSE;
   win->vs.displayTiles   = FALSE;
   win->vs.cullingEnabled=  1;
-  agent->perspective->enable_pointing_draw = FALSE;
-  agent->perspective->enable_vision_draw = FALSE;
-  agent->perspective->enable_visible_objects_draw = FALSE;
   
 #ifdef USE_SHADERS
   g3d_no_shader();
@@ -144,9 +140,6 @@ int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera
     glViewport(0,0,(GLint)viewport[2],(GLint)viewport[3]);
   }
   g3d_load_state(win, &st);
-  agent->perspective->enable_pointing_draw = point;
-  agent->perspective->enable_vision_draw = fov;
-  agent->perspective->enable_visible_objects_draw = visobj;
   
 #ifdef USE_SHADERS
   if (win->vs.enableShaders) {
