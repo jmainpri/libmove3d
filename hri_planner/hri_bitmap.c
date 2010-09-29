@@ -895,6 +895,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
               bitmapset->parameters->start_cell_tolerance);
       if(new_search_start == NULL) {
         bitmapset->pathexist = FALSE;
+        PrintWarning(("No free search start cell for (%f, %f) in cell range %f\n", qs[0], qs[1], bitmapset->parameters->start_cell_tolerance));
         return HRI_PATH_SEARCH_ERROR_NAV_START_IN_OBSTACLE;
       }
     } else {
