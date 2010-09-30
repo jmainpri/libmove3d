@@ -49,15 +49,21 @@ typedef struct STRUCT_GIK_TASK {
 	double target[GIK_CONSTRAINTS];
 } GIK_TASK;
 
+typedef enum HRI_MANIP_TYPE_ENUM {
+  ONE_ARMED,
+  TWO_ARMED
+} HRI_MANIP_TYPE;
+
 typedef struct STRUCT_HRI_MANIP {
 	hri_gik * gik;
-
+  HRI_MANIP_TYPE type;
+  
 	signed int gik_max_step; //TODO: add these two to hri_gik structure
 	double reach_tolerance;
-
+  
 	GIK_TASK * tasklist;
 	int tasklist_no;
-
+  
 	int activetasks[GIK_MAX_TASK_NO];
   int activetasks_no;
 } HRI_MANIP;
@@ -106,6 +112,7 @@ typedef struct STRUCT_HRI_PERSP {
 
 typedef struct STRUCT_HRI_AGENT {
 	HRI_AGENT_TYPE type;
+  int is_human; //TODO: put something more generic, at least an enum. I don't like these stupid flags.
 	p3d_rob * robotPt;
 	HRI_MANIP * manip;
 	HRI_NAVIG * navig;

@@ -117,50 +117,62 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
   
   if(strcasestr(robot->name,"SUPERMAN")){
     hri_agent->type = HRI_SUPERMAN;
+    hri_agent->is_human = TRUE;
   }
   else {
     if(strcasestr(robot->name,"ACHILE")){
       hri_agent->type = HRI_ACHILE;
+      hri_agent->is_human = TRUE;
     }
     else {
       if(strcasestr(robot->name,"TINMAN")){
         hri_agent->type = HRI_TINMAN;
+        hri_agent->is_human = TRUE;
       }
       else {
         if(strcasestr(robot->name,"JIDOKUKA")){
           hri_agent->type = HRI_JIDOKUKA;
+          hri_agent->is_human = FALSE;
         }
         else {
           if(strcasestr(robot->name,"PR2")){
             hri_agent->type = HRI_PR2;
+            hri_agent->is_human = FALSE;
           }
           else {
             if(strcasestr(robot->name,"JIDO")){
               hri_agent->type = HRI_JIDO1;
+              hri_agent->is_human = FALSE;
             }
           else {
             if(strcasestr(robot->name,"HRP2")){
               hri_agent->type = HRI_HRP214;
+              hri_agent->is_human = FALSE;
             }
             else {
               if(strcasestr(robot->name,"B21")){
                 hri_agent->type = HRI_B21;
+                hri_agent->is_human = FALSE;
               }
               else {
                 if(strcasestr(robot->name,"JUSTIN")){
                   hri_agent->type = HRI_MOBILE_JUSTIN;
+                  hri_agent->is_human = FALSE;
                 }
                 else {
                   if(strcasestr(robot->name,"BH")){
                     hri_agent->type = HRI_BH;
+                    hri_agent->is_human = FALSE;
                   }
                   else {
                     if(strcasestr(robot->name,"ICUB")){
                       hri_agent->type = HRI_ICUB;
+                      hri_agent->is_human = FALSE;
                     }
                     else {
                       if(strcasestr(robot->name,"BERT")){
                         hri_agent->type = HRI_BERT;
+                        hri_agent->is_human = FALSE;
                       }
                       else {
                         PrintWarning(("Robot is unknown! Cannot initialize agents.\n"));
@@ -367,7 +379,7 @@ HRI_MANIP * hri_create_agent_manip(HRI_AGENT * agent)
   manip->tasklist = NULL;
   manip->tasklist_no = 0;
 
-  res = hri_create_fill_agent_default_manip_tasks(&manip->tasklist, &manip->tasklist_no, agent->type);
+  res = hri_create_fill_agent_default_manip_tasks(manip, &manip->tasklist, &manip->tasklist_no, agent->type);
 
   if(res == FALSE){
     PrintError(("Fill default task failed"));
@@ -390,11 +402,12 @@ int hri_destroy_agent_manip(HRI_MANIP *manip)
   }
 }
 
-int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * tasklist_no, HRI_AGENT_TYPE type)
+int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tasklist, int * tasklist_no, HRI_AGENT_TYPE type)
 {
 
   switch (type) {
     case HRI_HRP214:
+      manip->type = TWO_ARMED;
       *tasklist_no = 7;
       *tasklist = MY_ALLOC(GIK_TASK, *tasklist_no);
       
@@ -476,6 +489,7 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       return TRUE;
 
     case HRI_JIDO1:
+      manip->type = ONE_ARMED;
       *tasklist_no = 5;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
       
@@ -529,6 +543,7 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       return TRUE;
 
     case HRI_JIDOKUKA:
+      manip->type = ONE_ARMED;
       *tasklist_no = 5;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
       
@@ -586,6 +601,7 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       return TRUE;
      
     case HRI_PR2:
+      manip->type = TWO_ARMED;
       *tasklist_no = 5;
       *tasklist = MY_ALLOC(GIK_TASK, *tasklist_no);
       
@@ -645,6 +661,7 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       return TRUE;
       
     case HRI_SUPERMAN:
+      manip->type = TWO_ARMED;
       *tasklist_no = 2;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
 
@@ -682,6 +699,7 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       return TRUE;
 
     case HRI_ACHILE:
+      manip->type = TWO_ARMED;
       *tasklist_no = 9;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
       
@@ -791,6 +809,7 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       return TRUE;
 
     case HRI_BERT:
+      manip->type = TWO_ARMED;
       *tasklist_no = 2;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
 
@@ -818,40 +837,41 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
 		  
 		  
 	  case HRI_MOBILE_JUSTIN:
-	  *tasklist_no = 2;
-	  *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
+      manip->type = TWO_ARMED;
+      *tasklist_no = 2;
+      *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
 		  
-	  (*tasklist)[0].type = GIK_RAREACH;
-	  (*tasklist)[0].default_joints[0] = 9;
-	  (*tasklist)[0].default_joints[1] = 10;
-	  (*tasklist)[0].default_joints[2] = 11;
-	  (*tasklist)[0].default_joints[3] = 12;
-	  (*tasklist)[0].default_joints[4] = 13;
-	  (*tasklist)[0].default_joints[5] = 14;
-	  (*tasklist)[0].default_joints[6] = 15;
-	  (*tasklist)[0].default_joints[7] = 16;
-	  (*tasklist)[0].active_joint = 26; /* active joint */
-	  (*tasklist)[0].default_joints_no = 8;
+      (*tasklist)[0].type = GIK_RAREACH;
+      (*tasklist)[0].default_joints[0] = 9;
+      (*tasklist)[0].default_joints[1] = 10;
+      (*tasklist)[0].default_joints[2] = 11;
+      (*tasklist)[0].default_joints[3] = 12;
+      (*tasklist)[0].default_joints[4] = 13;
+      (*tasklist)[0].default_joints[5] = 14;
+      (*tasklist)[0].default_joints[6] = 15;
+      (*tasklist)[0].default_joints[7] = 16;
+      (*tasklist)[0].active_joint = 26; /* active joint */
+      (*tasklist)[0].default_joints_no = 8;
 		  
-	  (*tasklist)[1].type = GIK_LAREACH;
-	  (*tasklist)[1].default_joints[0] = 17;
-	  (*tasklist)[1].default_joints[1] = 18;
-	  (*tasklist)[1].default_joints[2] = 19;
-	  (*tasklist)[1].default_joints[3] = 20;
-	  (*tasklist)[1].default_joints[4] = 21;
-	  (*tasklist)[1].default_joints[5] = 22;
-	  (*tasklist)[1].default_joints[6] = 23;
-	  (*tasklist)[1].default_joints[7] = 24;
-	  (*tasklist)[1].active_joint = 28; /* active joint */
-	  (*tasklist)[1].default_joints_no = 8;
+      (*tasklist)[1].type = GIK_LAREACH;
+      (*tasklist)[1].default_joints[0] = 17;
+      (*tasklist)[1].default_joints[1] = 18;
+      (*tasklist)[1].default_joints[2] = 19;
+      (*tasklist)[1].default_joints[3] = 20;
+      (*tasklist)[1].default_joints[4] = 21;
+      (*tasklist)[1].default_joints[5] = 22;
+      (*tasklist)[1].default_joints[6] = 23;
+      (*tasklist)[1].default_joints[7] = 24;
+      (*tasklist)[1].active_joint = 28; /* active joint */
+      (*tasklist)[1].default_joints_no = 8;
 		  
-	return TRUE;
-
+      return TRUE;
+      
     default:
       PrintError(("Agent type unknown\n"));
       return FALSE;
   }
-
+  
   return FALSE;
 }
 /* This function computes the tolerance distance of GIK computation depending on the BB of the object */
