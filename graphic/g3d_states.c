@@ -816,6 +816,7 @@ int g3d_save_state(g3d_win *win, g3d_states *st)
   st->enableShaders      =  win->vs.enableShaders;
   st->displayTiles       =  win->vs.displayTiles;
   st->cullingEnabled     =  win->vs.cullingEnabled;
+  st->enableLogo         =  win->vs.enableLogo;
   st->bg[0]              =  win->vs.bg[0]; 
   st->bg[1]              =  win->vs.bg[1]; 
   st->bg[2]              =  win->vs.bg[2]; 
@@ -847,6 +848,7 @@ int g3d_load_state(g3d_win *win, g3d_states *st)
   win->vs.displayTiles    = st->displayTiles;
   win->vs.cullingEnabled  = st->cullingEnabled;
   win->vs.enableShaders   = st->enableShaders;
+  win->vs.enableLogo      = st->enableLogo;
   win->vs.bg[0]           = st->bg[0];
   win->vs.bg[1]           = st->bg[1];
   win->vs.bg[2]           = st->bg[2];
@@ -941,8 +943,9 @@ int g3d_display_logo(g3d_states &vs, float offsetX, float offsetY, float scale)
   glGetIntegerv(GL_VIEWPORT, viewport);
   width  = viewport[2];
   height = viewport[3];
-
+#ifdef USE_SHADERS
   g3d_no_shader();
+#endif
   glPushAttrib(GL_ENABLE_BIT | GL_TRANSFORM_BIT);
    glMatrixMode(GL_PROJECTION);
    glPushMatrix();
@@ -964,7 +967,8 @@ int g3d_display_logo(g3d_states &vs, float offsetX, float offsetY, float scale)
         glTexCoord2f(1.0f,0.0f);  glVertex2f(offsetX + scale*LOGO_WIDTH, offsetY + scale*LOGO_HEIGHT);
         glTexCoord2f(0.0f,0.0f);  glVertex2f(offsetX, offsetY + scale*LOGO_HEIGHT);
         glTexCoord2f(0.0f,1.0f);  glVertex2f(offsetX, offsetY);
-      glEnd();  
+      glEnd(); 
+ 
       glPopMatrix(); 
     glMatrixMode(GL_PROJECTION);
    glPopMatrix();

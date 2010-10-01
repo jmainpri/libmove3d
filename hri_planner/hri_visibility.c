@@ -120,6 +120,7 @@ int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera
   win->vs.displayFloor   = FALSE;
   win->vs.displayTiles   = FALSE;
   win->vs.cullingEnabled=  1;
+  win->vs.enableLogo = 0;
   
 #ifdef USE_SHADERS
   g3d_no_shader();
@@ -907,6 +908,7 @@ int hri_compute_agent_sees(HRI_AGENT * agent, int threshold, int save, int draw_
   win->vs.displayFloor   = FALSE;
   win->vs.displayTiles   = FALSE;
   win->vs.cullingEnabled =  1;
+  win->vs.enableLogo     =  0;
   agent->perspective->enable_pointing_draw = FALSE;
   agent->perspective->enable_vision_draw = FALSE;
   agent->perspective->enable_visible_objects_draw = FALSE;
