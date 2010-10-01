@@ -812,8 +812,8 @@ int g3d_save_state(g3d_win *win, g3d_states *st)
   st->displayShadows     =  win->vs.displayShadows;
   st->displayWalls       =  win->vs.displayWalls;
   st->displayFloor       =  win->vs.displayFloor;
-  st->enableAntialiasing = win->vs.enableAntialiasing;
-  st->enableShaders      = win->vs.enableShaders;
+  st->enableAntialiasing =  win->vs.enableAntialiasing;
+  st->enableShaders      =  win->vs.enableShaders;
   st->displayTiles       =  win->vs.displayTiles;
   st->cullingEnabled     =  win->vs.cullingEnabled;
   st->bg[0]              =  win->vs.bg[0]; 
@@ -846,6 +846,7 @@ int g3d_load_state(g3d_win *win, g3d_states *st)
   win->vs.enableAntialiasing = st->enableAntialiasing;
   win->vs.displayTiles    = st->displayTiles;
   win->vs.cullingEnabled  = st->cullingEnabled;
+  win->vs.enableShaders   = st->enableShaders;
   win->vs.bg[0]           = st->bg[0];
   win->vs.bg[1]           = st->bg[1];
   win->vs.bg[2]           = st->bg[2];
