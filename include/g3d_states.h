@@ -137,6 +137,12 @@ typedef struct g3d_states
   //! with no lighting:
   unsigned int allIsBlack; 
 
+  //! used to display the logo texture (texture ID used by OpenGL):
+  GLuint logoTexture; 
+
+//! flag to tell wether or not the LAAS logo will be displayed:
+  unsigned int enableLogo; 
+
 } g3d_states;
 
 #endif

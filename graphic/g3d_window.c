@@ -347,6 +347,8 @@ g3d_del_win(G3D_Window *win)
 	else  while(w) {if(w->next == win) {w->next = win->next; break;}w=w->next;}
   win->form = NULL;
 
+  g3d_free_viewer_state(win->vs);
+
   free(win);
 }
 

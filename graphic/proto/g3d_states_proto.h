@@ -4,6 +4,7 @@
 #include "g3d_states.h"
 
 g3d_states g3d_init_viewer_state(double size);
+int g3d_free_viewer_state(g3d_states vs);
 void g3d_findPlane( GLdouble plane[4], GLdouble v0[3], GLdouble v1[3], GLdouble v2[3] );
 extern void g3d_build_shadow_matrices(g3d_states &vs);
 void g3d_set_win_bgcolor(g3d_states &vs, float r, float v, float b);
@@ -41,6 +42,9 @@ extern void g3d_restore_win_camera ( g3d_states &vs );
 extern int g3d_set_camera_parameters_from_frame(p3d_matrix4 frame, g3d_states &vs);
 extern int g3d_save_state(g3d_win *win, g3d_states *st);
 extern int g3d_load_state(g3d_win *win, g3d_states *st);
-
 extern int g3d_checkGLerrors(char *message);
+
+int g3d_load_logo_texture(g3d_states &vs);
+int g3d_display_logo(g3d_states &vs, float offsetX, float offsetY, float scale);
+
 #endif // G3D_STATES_PROTO_H

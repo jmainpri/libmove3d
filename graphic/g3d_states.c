@@ -2,6 +2,8 @@
 #include "P3d-pkg.h"
 #include "Util-pkg.h"
 
+#include "../graphic/proto/g3d_logo.h"
+
 #ifdef USE_SHADERS
  #include <GL/glew.h>
 
@@ -10,6 +12,7 @@
  unsigned int G3D_CURRENT_PROGRAM;
 #endif
 
+//! Call this function just after the creation of a g3d_states variable.
 g3d_states g3d_init_viewer_state(double size)
 {
     g3d_states vs;
@@ -111,7 +114,18 @@ g3d_states g3d_init_viewer_state(double size)
     vs.lightPosition[2]= 0.9*(zmin+zmax);
     vs.lightPosition[3]= 1.0;
 
+    vs.logoTexture = 0;
+    vs.enableLogo  = 1;
+
     return vs;
+}
+
+//! Call this function before the destruction of a g3d_states variable.
+int g3d_free_viewer_state(g3d_states vs)
+{
+  if(vs.logoTexture!=0) {
+    glDeleteTextures(1, &(vs.logoTexture));
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -432,7 +446,7 @@ void g3d_init_OpenGL()
 
    glUseProgram( G3D_PROGRAMS[G3D_CURRENT_PROGRAM] );
   }
-
+  glEnable(GL_MULTISAMPLE_ARB);
 
   #endif
 }
@@ -861,3 +875,100 @@ int g3d_checkGLerrors(char *message)
   
   return result;
 }
+
+//! Loads the logo contained in g3d_logo.h
+//! \param vs the g3d_states that will contained the texture name
+//! \return 0 in case of success, 1 otherwise
+int g3d_load_logo_texture(g3d_states &vs)
+{
+  unsigned char pixel[3];
+  glGenTextures(1, &(vs.logoTexture));
+
+  glBindTexture(GL_TEXTURE_2D, vs.logoTexture);
+
+
+  unsigned char *data= new unsigned char[4*LOGO_WIDTH*LOGO_HEIGHT];
+
+  for(int i= 0; i<LOGO_WIDTH*LOGO_HEIGHT; ++i)
+  {
+    LOGO_PIXEL(LOGO_DATA, pixel);
+    data[4*i]     = pixel[0];
+    data[4*i + 1] = pixel[1];
+    data[4*i + 2] = pixel[2];
+    data[4*i + 3] = 128;
+  }
+
+  //set pixel unpacking mode
+  glPixelStorei(GL_UNPACK_SWAP_BYTES, 0);
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+  glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+  
+  glTexImage2D (GL_TEXTURE_2D, 0, 3, LOGO_WIDTH, LOGO_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+  delete [] data;
+
+  glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  return 0;
+}
+
+
+//! Displays the LAAS logo.
+//! \param offsetX X position of the logo lower-left corner (from the image lower-left corner)
+//! \param offsetY Y position of the logo lower-left corner (from the image lower-left corner)
+//! \param scale scale factor to apply to the logo (original size in g3d_logo.h)
+//! \return 0 in case of success, 1 otherwise
+int g3d_display_logo(g3d_states &vs, float offsetX, float offsetY, float scale)
+{
+  static int firstTime= TRUE;
+
+  if(firstTime==TRUE)
+  {
+    firstTime= FALSE;
+    // create the texture used to display the LAAS logo:
+    g3d_load_logo_texture(vs);
+   }
+
+  GLint viewport[4];
+  int width, height;
+
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  width  = viewport[2];
+  height = viewport[3];
+
+  g3d_no_shader();
+  glPushAttrib(GL_ENABLE_BIT | GL_TRANSFORM_BIT);
+   glMatrixMode(GL_PROJECTION);
+   glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0, width, 0, height, -1, 1);
+    glMatrixMode(GL_MODELVIEW);
+      glPushMatrix();
+      glLoadIdentity(); 
+      glEnable(GL_BLEND);
+      glDisable(GL_LIGHTING); 
+      glDisable(GL_DEPTH_TEST);
+      glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);	 
+      glEnable(GL_TEXTURE_2D);
+       glColor4f(1.0, 1.0, 1.0, 0.5);
+      glBindTexture(GL_TEXTURE_2D, vs.logoTexture);
+      glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+      glBegin (GL_QUADS);
+        glTexCoord2f(1.0f,1.0f);  glVertex2f(offsetX + scale*LOGO_WIDTH, offsetY);
+        glTexCoord2f(1.0f,0.0f);  glVertex2f(offsetX + scale*LOGO_WIDTH, offsetY + scale*LOGO_HEIGHT);
+        glTexCoord2f(0.0f,0.0f);  glVertex2f(offsetX, offsetY + scale*LOGO_HEIGHT);
+        glTexCoord2f(0.0f,1.0f);  glVertex2f(offsetX, offsetY);
+      glEnd();  
+      glPopMatrix(); 
+    glMatrixMode(GL_PROJECTION);
+   glPopMatrix();
+ glPopAttrib();
+
+ return 0;
+}
+

@@ -51,7 +51,8 @@ int g3d_init_extensions(void)
     if(!g3d_is_extension_supported("GL_ARB_shading_language_100") ||
        !g3d_is_extension_supported("GL_ARB_shader_objects") ||
        !g3d_is_extension_supported("GL_ARB_vertex_shader") ||
-       !g3d_is_extension_supported("GL_ARB_fragment_shader")
+       !g3d_is_extension_supported("GL_ARB_fragment_shader") ||
+       !g3d_is_extension_supported("GL_ARB_multisample") 
        /* add here the extensions you want*/)
     {
         state = 0;

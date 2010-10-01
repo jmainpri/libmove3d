@@ -1347,10 +1347,9 @@ void g3d_draw_env_custom()
 }
 
 //! @ingroup graphic 
-//! This function calls all object displaying function
 void g3d_draw_env()
 {
-	pp3d_env e;
+  pp3d_env e;
   pp3d_rob robotPt;
   G3D_Window *win;
   GLdouble *projection_matrix;
@@ -1359,7 +1358,7 @@ void g3d_draw_env()
   e = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 	
-	if (win->fct_draw2 != NULL) win->fct_draw2();
+  if (win->fct_draw2 != NULL) win->fct_draw2();
 	
   if(win->vs.displayJoints) {
     g3d_draw_robot_joints(XYZ_ENV->cur_robot, 0.1);
@@ -1482,7 +1481,7 @@ void g3d_draw_env()
 //! This function is the main display function called each time an OpenGL window is refreshed.
 //! KEEP ONLY WHAT IS NECESSARY INSIDE IT!!:
 //! DEFINE YOUR OWN win->fct_draw2() AND PUT YOUR ADDITIONAL DISPLAY INSIDE.
-//! OR USE g3d_draw_env() or g3d_draw_env_custome() defined just before this function.
+//! OR USE g3d_draw_env() or g3d_draw_env_custom() defined just before this function.
 void g3d_draw(void) 
 {
   static int firstTime= TRUE;
@@ -1605,33 +1604,33 @@ void g3d_draw(void)
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
 		
-		///////////////////////////////
-		// The following commented lines are to be used instead of the three previous ones
-		// to have shadows plus transparency.
-		// There is still a little problem: shadows can not be seen through transparent obstacles.
-		//     glDisable(GL_DEPTH_TEST);
-		//     g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);
-		//     if(win->vs.displayWalls)
-		//     {  
-		//      for(int i=1; i<=4; ++i)
-		//      {   g3d_draw_wall(i, win->vs.wallColor, 16);  }
-		//     }
-		//     glEnable(GL_DEPTH_TEST);
-		// 
-		//     win->vs.transparency_mode= G3D_OPAQUE;
-		//     g3d_draw_robots(win);
-		//     g3d_draw_obstacles(win);
-		//     glEnable(GL_CULL_FACE);
-		//     win->vs.transparency_mode= G3D_TRANSPARENT;
-		//     g3d_draw_robots(win);
-		//     g3d_draw_obstacles(win);
-		//     glEnable(GL_CULL_FACE);
-		//     glColorMask(0,0,0,0);
-		//     win->vs.transparency_mode= G3D_NO_TRANSPARENCY;
-		//     g3d_draw_robots(win);
-		//     g3d_draw_obstacles(win);
-		//     glColorMask(1,1,1,1);
-		///////////////////////////////
+    ///////////////////////////////
+    // The following commented lines are to be used instead of the three previous ones
+    // to have shadows plus transparency.
+    // There is still a little problem: shadows can not be seen through transparent obstacles.
+    //     glDisable(GL_DEPTH_TEST);
+    //     g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);
+    //     if(win->vs.displayWalls)
+    //     {  
+    //      for(int i=1; i<=4; ++i)
+    //      {   g3d_draw_wall(i, win->vs.wallColor, 16);  }
+    //     }
+    //     glEnable(GL_DEPTH_TEST);
+    // 
+    //     win->vs.transparency_mode= G3D_OPAQUE;
+    //     g3d_draw_robots(win);
+    //     g3d_draw_obstacles(win);
+    //     glEnable(GL_CULL_FACE);
+    //     win->vs.transparency_mode= G3D_TRANSPARENT;
+    //     g3d_draw_robots(win);
+    //     g3d_draw_obstacles(win);
+    //     glEnable(GL_CULL_FACE);
+    //     glColorMask(0,0,0,0);
+    //     win->vs.transparency_mode= G3D_NO_TRANSPARENCY;
+    //     g3d_draw_robots(win);
+    //     g3d_draw_obstacles(win);
+    //     glColorMask(1,1,1,1);
+    ///////////////////////////////
 		
     glClear(GL_STENCIL_BUFFER_BIT);
     glEnable(GL_STENCIL_TEST);
@@ -1649,10 +1648,10 @@ void g3d_draw(void)
     glDisable(GL_LIGHTING);
 		
     glPushMatrix();
-		glMultMatrixd(projection_matrix);
-		win->vs.allIsBlack= TRUE;
-		g3d_draw_robots(win);
-		g3d_draw_obstacles(win);
+    glMultMatrixd(projection_matrix);
+    win->vs.allIsBlack= TRUE;
+    g3d_draw_robots(win);
+    g3d_draw_obstacles(win);
     glPopMatrix();
     glColorMask(1,1,1,1);
 		
@@ -1698,10 +1697,10 @@ void g3d_draw(void)
         glStencilFunc(GL_EQUAL, 0x3, 0x2);
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
         glPushMatrix();
-				glMultMatrixd(projection_matrix);
-				win->vs.allIsBlack= TRUE;
-				g3d_draw_robots(win);
-				g3d_draw_obstacles(win);
+        glMultMatrixd(projection_matrix);
+        win->vs.allIsBlack= TRUE;
+        g3d_draw_robots(win);
+        g3d_draw_obstacles(win);
         glPopMatrix();
         glColorMask(1,1,1,1);
         win->vs.allIsBlack= FALSE;
@@ -1727,5 +1726,10 @@ void g3d_draw(void)
   }
   glPopAttrib();
   
-	g3d_draw_env();
+  g3d_draw_env();
+
+  float scale= 0.7;
+  if(win->vs.enableLogo==1) {
+    g3d_display_logo(win->vs, 10.0, 10.0, 0.7);
+  }
 }

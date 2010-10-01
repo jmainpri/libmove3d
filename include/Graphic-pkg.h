@@ -59,6 +59,7 @@ extern std::vector<API::Trajectory> trajToDraw;
 /* proto */
 #include "../graphic/proto/graphic_proto.h"
 
+
 #ifdef USE_SHADERS
  #include "../graphic/proto/g3d_extensions_proto.h"
 
