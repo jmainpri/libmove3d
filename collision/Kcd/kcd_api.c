@@ -2620,6 +2620,7 @@ int kcd_robot_collides_something(int i, int with_report, double *min_dist_estima
   if(( with_report==DISTANCE_ESTIMATE) && (i>=0)) {
     kcd_modify_nearest_obstacle(i,nearest_obstacle);
   }
+  i_collides = collides; //If there is collision with the environement stop col check
   for(j=0; (j<nr_robots) && ((!i_collides) || (with_report) || (i<0)) ; j++) {
     if (i == j) { /* Autocollision */
       i_collides = kcd_robot_collides_itself(i,with_report,min_dist_estimate,
@@ -2630,6 +2631,7 @@ int kcd_robot_collides_something(int i, int with_report, double *min_dist_estima
       }
       collides = collides || i_collides;
     } else {
+      //TODO Add Non Testable (fictive) robots (like Hands for grasp planning)
       /* Carl: mo's now return dist estimate: */
       i_collides = kcd_robot_vs_robot(i, j, with_report, min_dist_estimate,
 				      &nearest_obstacle);	
