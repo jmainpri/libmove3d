@@ -123,6 +123,7 @@ public:
 		withSmoothing,
 		withShortCut,
 		withDeformation,
+		withCleaning,
 		
 		useTRRT,
 		useBoxDist,

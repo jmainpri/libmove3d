@@ -20,7 +20,7 @@ Env::Env() {
 	mBoolMap.insert(boolMap_t(Env::drawDisabled, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawFrame, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::drawGraph, new boolContainer(false)));
-	mBoolMap.insert(boolMap_t(Env::drawTraj, new boolContainer(true)));
+	mBoolMap.insert(boolMap_t(Env::drawTraj, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawTrajVector, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawAll, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawGrid, new boolContainer(false)));
@@ -81,6 +81,7 @@ Env::Env() {
 	mBoolMap.insert(boolMap_t(Env::withSmoothing, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::withShortCut, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::withDeformation, new boolContainer(false)));
+  mBoolMap.insert(boolMap_t(Env::withCleaning, new boolContainer(true)));
 	
 	mBoolMap.insert(boolMap_t(Env::useTRRT, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::isRunning, new boolContainer(false)));
