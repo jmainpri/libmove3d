@@ -1741,12 +1741,25 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
     return TRUE;
   }
   distances_f = MY_ALLOC(double, njnt + 1);
-
+  if(DEBUG_COL_TRAJ){
+    printf("########\tEnd\t##########\n");
+    printf("######\t%f\t#####\n", lenlp);
+  }
   for (j = 0; j <= njnt; j++) {
     distances_f[j] = dist0;
+    if(DEBUG_COL_TRAJ){
+      printf("%f\n", distances_f[j]);
+    }
   }
   /* Compute the lenght of left interval */
   dist = lpPt->stay_within_dist(robotPt, lpPt, lenlp, BACKWARD, distances_f);
+  if(DEBUG_COL_TRAJ){
+    printf("######\tSWD %f\t#####\n", dist);
+    for (j = 0; j <= njnt; j++) {
+      printf("%f\n", distances_f[j]);
+    }
+    printf("##################\n\n");
+  }
   dist = MAX(dist, dmax);
   intervals[0].len -= dist;
   if (intervals[0].len < EPS6) {
@@ -1761,15 +1774,29 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
     MY_FREE(distances_f, double, njnt + 1);
     return TRUE;
   }
+  if(DEBUG_COL_TRAJ){
+    printf("#########\tStart\t#########\n");
+    printf("######\t%f\t#####\n", lenlp);
+  }
   for (j = 0; j <= njnt; j++) {
     distances_f[j] = dist0;
+    if(DEBUG_COL_TRAJ){
+      printf("%f\n", distances_f[j]);
+    }
   }
 
   dist = lpPt->stay_within_dist(robotPt, lpPt, 0, FORWARD, distances_f);
-  //modif Mokhtar
-  //dmax is the smallest unit in the discretisation dont go under
-  dist = MAX(dist, dmax);
-  //modif Mokhtar
+  if(DEBUG_COL_TRAJ){
+    printf("######\tSWD %f\t#####\n", dist);
+    for (j = 0; j <= njnt; j++) {
+      printf("%f\n", distances_f[j]);
+    }
+    printf("##################\n\n");
+  }
+// //modif Mokhtar
+//   //dmax is the smallest unit in the discretisation dont go under
+//   dist = MAX(dist, dmax);
+//   //modif Mokhtar
   if (dist > intervals[0].len + EPS6) {
     //The final position of the robot is recovered
     intervals[0].ldeb += intervals[0].len;
@@ -1794,7 +1821,10 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
         MY_FREE(distances_b, double, njnt + 1);
         return TRUE;
       }
-
+      if(DEBUG_COL_TRAJ){
+        printf("#########\tMiddle\t#########\n");
+        printf("######\t%f\t#####\n", lenlp);
+      }
       p3d_BB_dist_robot(robotPt, distances_b);
       test = FALSE;
       for (j = 0; j <= njnt; j++) {
@@ -1804,8 +1834,14 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
         }
         distances_b[j] += dist0;
         distances_f[j] = distances_b[j];
+        if(DEBUG_COL_TRAJ){
+          printf("%f\n", distances_f[j]);
+        }
       }
-
+      if(DEBUG_COL_TRAJ){
+        printf("######\t%d\t#####\n", test);
+        printf("##################\n\n");
+      }
       if (test) {//if we are too close to the obstacles according to the Move3d AABB do a coll test to be sure
         *ntest = *ntest + 1;
         if (p3d_col_test()) {
@@ -1816,16 +1852,30 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
         /* Modif. Carl: if collision detector computed distances
            in call to p3d_col_test(), we exploit them/ Theses distances are
            more precise than the move3D AABB*/
+        if(DEBUG_COL_TRAJ){
+          printf("#########\tMiddle after Col\t#########\n");
+          printf("######\t%f\t#####\n", lenlp);
+        }
         if (p3d_col_report_distance(robotPt, distances_b)){
           for (j = 0; j <= njnt; j++) {
             distances_b[j] += dist0;
             distances_f[j] = distances_b[j];
+            if(DEBUG_COL_TRAJ){
+              printf("%f\n", distances_f[j]);
+            }
           }
         }
       }
       //if there is no collision separate the interval into two and recompute
       /* Compute the lenght of left interval */
       dist = lpPt->stay_within_dist(robotPt, lpPt, lenlp, BACKWARD, distances_b);
+      if(DEBUG_COL_TRAJ){
+        printf("######\tSWD B %f\t#####\n", dist);
+        for (j = 0; j <= njnt; j++) {
+          printf("%f\n", distances_b[j]);
+        }
+        printf("##################\n\n");
+      }
       l = intervals[i].len / 2 - dist;
 
       if (l > EPS6) { //Add a new interval (we are not yet to the start configuration)
@@ -1841,6 +1891,13 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
 
       /* Compute the lenght of right interval */
       dist = lpPt->stay_within_dist(robotPt, lpPt, lenlp, FORWARD, distances_f);
+      if(DEBUG_COL_TRAJ){
+        printf("######\tSWD F %f\t#####\n", dist);
+        for (j = 0; j <= njnt; j++) {
+          printf("%f\n", distances_f[j]);
+        }
+        printf("##################\n\n");
+      }
       l = intervals[i].len / 2 - dist;
       if (l > EPS6) {
         if (nbCurInt + nbNextInt + 1 > nbMaxInt && !p3d_col_env_realloc_interval(&intervals, &nbMaxInt, i)) {
@@ -2017,7 +2074,7 @@ static int p3d_col_test_traj_dic(p3d_rob *robotPt,  p3d_localpath *localpathPt, 
 /*--------------------------------------------------------------------------*/
 /*! \brief Varaible for the loscal path test selesction.
  *  \internal */
-static p3d_traj_test_type choose_test_traj = TEST_TRAJ_CLASSIC_ALL;//TEST_TRAJ_DICHOTOMIE_ALL; // TEST_TRAJ_OTHER_ROBOTS_DICHOTOMIE; TEST_TRAJ_CLASSIC_ALL;
+static p3d_traj_test_type choose_test_traj = TEST_TRAJ_DICHOTOMIE;// TEST_TRAJ_OTHER_ROBOTS_DICHOTOMIE_ALL;//TEST_TRAJ_CLASSIC_ALL;TEST_TRAJ_DICHOTOMIE_ALL; TEST_TRAJ_OTHER_ROBOTS_DICHOTOMIE; TEST_TRAJ_CLASSIC_ALL;
 
 
 
