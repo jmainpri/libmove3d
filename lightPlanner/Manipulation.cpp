@@ -801,7 +801,7 @@ double Manipulation::getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpH
     //Check the rest configuration of the hand
     gpSet_grasp_open_configuration(_robot, grasp, q, whichArm);
     p3d_set_and_update_this_robot_conf(_robot, q);
-    g3d_draw_allwin_active();
+//     g3d_draw_allwin_active();
     if(!p3d_col_test()){
       p3d_copy_config_into(_robot, q, approachConfig);
       p3d_destroy_config(_robot, q);
@@ -932,7 +932,7 @@ int Manipulation::getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, 
     gpCompute_grasp_open_config(_robot, doubleGrasp, (p3d_rob*)p3d_get_robot_by_name((char*)GP_OBJECT_NAME_DEFAULT), 1);
     gpSet_grasp_open_configuration (_robot, doubleGrasp.grasp1, doubleGraspOpen, 1);
     p3d_set_and_update_this_robot_conf(_robot, doubleGraspOpen);
-    g3d_draw_allwin_active();
+//     g3d_draw_allwin_active();
     if (p3d_col_test()) {
       p3d_destroy_config(_robot, q);
       p3d_destroy_config(_robot, doubleGraspOpen);
@@ -944,7 +944,7 @@ int Manipulation::getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, 
     gpCompute_grasp_open_config(_robot, doubleGrasp, (p3d_rob*)p3d_get_robot_by_name((char*)GP_OBJECT_NAME_DEFAULT), 2);
     gpSet_grasp_open_configuration (_robot, doubleGrasp.grasp2, doubleGraspOpen, 2);
     p3d_set_and_update_this_robot_conf(_robot, doubleGraspOpen);
-    g3d_draw_allwin_active();
+//     g3d_draw_allwin_active();
     if (p3d_col_test()) {
       p3d_destroy_config(_robot, q);
       p3d_destroy_config(_robot, doubleGraspOpen);
