@@ -122,11 +122,12 @@ int p3d_optim_traj(p3d_traj *trajPt, double *gain, int *ntest) {
 
   if (l2 - l1 > localpath1Pt->length_lp - loc_dist1) {
     /* q2 is not on the same local path as q1 */
+    /* get the last part of the localpath containing q1*/
     start_localpath_q1q2Pt =
       localpath1Pt->extract_sub_localpath(robotPt,
                                           localpath1Pt, loc_dist1,
                                           localpath1Pt->length_lp);
-    lcur = l1 - loc_dist1 + localpath1Pt->length_lp;
+    lcur = l1 - loc_dist1 + localpath1Pt->length_lp; // l + localpath1Pt->length_lp
   } else {
     /* q1 and q2 are on the same local path */
     start_localpath_q1q2Pt =

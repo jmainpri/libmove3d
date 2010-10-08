@@ -8,6 +8,7 @@
 extern int p3d_compute_traj_nloc ( p3d_traj *trajPt );
 extern double p3d_compute_traj_rangeparam ( p3d_traj *trajPt );
 extern double p3d_compute_traj_length ( p3d_traj *trajPt );
+extern double p3d_compute_traj_cost(p3d_traj *trajPt);
 extern configPt p3d_config_at_param_along_traj ( p3d_traj *trajPt, double parameter );
 extern configPt p3d_config_at_distance_along_traj ( p3d_traj *trajPt, double distance );
 extern void p3d_traj_stay_within_dist ( p3d_traj *trajPt, int dir, double *distances, double *localparamPt );

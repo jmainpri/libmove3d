@@ -684,11 +684,16 @@ void p3d_gradientDescentOptimize(p3d_traj *traj, double tend, double epsilon, do
 
 void p3d_clearTraj(p3d_traj *traj, double tend, int (*fct_stop)(void)) {
   int ntest = 0;
+  double beforeCost = p3d_compute_traj_cost(traj);
+  ChronoOn();
   p3d_strip *strip = CreateStrip(traj);
-
+  
   clearStrip(strip, 0, NULL, &ntest);
 
   CopyStripIntoTraj(strip, traj);
   DeleteStrip(strip);
-  PrintInfo(("\ncollision test : %d\n", ntest));
+  PrintInfo(("Gain = %f \%\n", (1 - (p3d_compute_traj_cost(traj)/beforeCost)) * 100));
+  ChronoPrint("Clear Trajectory");
+  ChronoOff();
+  PrintInfo(("Collision test : %d\n", ntest));
 }

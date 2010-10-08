@@ -74,6 +74,32 @@ double p3d_compute_traj_length(p3d_traj *trajPt)
   else  return(0);
 }
 
+/*
+ *  p3d_compute_traj_cost --
+ *
+ *  Input:  the trajectory
+ *
+ *  Output: the cost of the trajectory.
+ *
+ *  Description: compute the cost of a trajectory
+ */
+
+double p3d_compute_traj_cost(p3d_traj *trajPt)
+{
+  double cost = 0;
+  p3d_localpath *localpathPt;
+
+  if(trajPt != NULL){
+    localpathPt = trajPt->courbePt;
+    while (localpathPt != NULL){
+      cost += localpathPt->cost(trajPt->rob, localpathPt);
+      localpathPt = localpathPt->next_lp;
+    }
+    return(cost);
+  }
+  else  return(0);
+}
+
 /*  
  *  compute configuration at given parameter along a trajectory
  *
