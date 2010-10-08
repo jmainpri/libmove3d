@@ -2305,3 +2305,26 @@ void p3d_jnt_stay_within_sphere(
   }
 }
 //end path deform
+/** \brief Compute the maximal distance between the point joint is attached to and the points of the given body
+ * \param  body: the body
+ * \retval  the maximal distance
+*/
+double p3d_jnt_compute_max_distance_body_vertex(p3d_obj* body){
+  double dist = 0.0, maxDist = 0.0, x = 0.0, y = 0.0, z = 0.0;
+  if (body->np > 0) {
+    for (int ip = 0;ip < body->np;ip++) {
+      p3d_poly * p = body->pol[ip];
+      int nvert = p3d_get_nb_points(p->poly);
+      for (int iv = 1;iv <= nvert;iv++) {
+        /*tsiano p3d_get_vert_poly(p,iv,&x,&y,&z); */
+        p3d_get_point_2_d(p->poly, iv, &x, &y, &z);
+        move_point(p->pos_rel_jnt, &x, &y, &z, 1);
+        dist = sqrt(SQR(x) + SQR(y) + SQR(z));
+        if (dist > maxDist) {
+          maxDist = dist;
+        }
+      }
+    }
+  }
+  return maxDist;
+}

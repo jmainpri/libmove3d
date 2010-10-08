@@ -82,4 +82,6 @@ extern int p3d_jnt_object_after_joint ( p3d_jnt * jntPt );
 extern void p3d_jnt_stay_within_sphere ( p3d_stay_within_dist_data * prev_data, p3d_jnt * jntPt, p3d_stay_within_dist_data * data, double * distance, double * reach_param );
 extern void p3d_jnt_set_is_active_for_planner2(p3d_jnt * jnt, int flag);
 //end path deform
+extern double p3d_jnt_compute_max_distance_body_vertex(p3d_obj* body);
+
 #endif /* __CEXTRACT__ */

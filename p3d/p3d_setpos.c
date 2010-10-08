@@ -865,6 +865,22 @@ else
   }
 
   (*p3d_BB_update_BB_obj)(obst,newpos);
+// update the jnt->dist variable
+  if ((type==P3D_BODY)&&(obst->jnt!=NULL)) {
+    p3d_jnt* jnt = obst->jnt;
+    if (obst->np > 0) {
+      jnt->dist = p3d_jnt_compute_max_distance_body_vertex(jnt->o);
+//       jnt->dist = bodyMaxDist > jnt->dist ? bodyMaxDist : jnt->dist;
+      while (jnt->prev_jnt != NULL) {
+        jnt = jnt->prev_jnt;
+        if (!jnt->o || jnt->o->np == 0) {
+          jnt->dist = obst->jnt->dist;
+        } else {
+          break;
+        }
+      }
+    }
+  }
 }
 
 static void p3d_set_thing_pos(int type, char name[20], double tx, double ty,

@@ -2085,23 +2085,27 @@ int p3d_end_obj(void) {
       XYZ_OBSTACLES->concat = 1;
     }
     if (XYZ_OBSTACLES->np > 0) {
-      for (ip = 0;ip < XYZ_OBSTACLES->np;ip++) {
-        p = XYZ_OBSTACLES->pol[ip];
-//         if (p->TYPE != P3D_GRAPHIC) {
-          nvert = p3d_get_nb_points(p->poly);
-          for (iv = 1;iv <= nvert;iv++) {
-            /*tsiano p3d_get_vert_poly(p,iv,&x,&y,&z); */
-            p3d_get_point_2_d(p->poly, iv, &x, &y, &z);
-            move_point(p->pos_rel_jnt, &x, &y, &z, 1);
-
-            dist = sqrt(SQR(x) + SQR(y) + SQR(z));
-
-            if (dist > jntPt->dist) {
-              jntPt->dist = dist;
-            }
-          }
-//         }
-      }
+      double bodyMaxDist = p3d_jnt_compute_max_distance_body_vertex(XYZ_OBSTACLES);
+      jntPt->dist = bodyMaxDist > jntPt->dist ? bodyMaxDist : jntPt->dist;
+//Modif Mokhtar : Passage à une fonction separee
+//       for (ip = 0;ip < XYZ_OBSTACLES->np;ip++) {
+//         p = XYZ_OBSTACLES->pol[ip];
+// //         if (p->TYPE != P3D_GRAPHIC) {
+//           nvert = p3d_get_nb_points(p->poly);
+//           for (iv = 1;iv <= nvert;iv++) {
+//             /*tsiano p3d_get_vert_poly(p,iv,&x,&y,&z); */
+//             p3d_get_point_2_d(p->poly, iv, &x, &y, &z);
+//             move_point(p->pos_rel_jnt, &x, &y, &z, 1);
+// 
+//             dist = sqrt(SQR(x) + SQR(y) + SQR(z));
+// 
+//             if (dist > jntPt->dist) {
+//               jntPt->dist = dist;
+//             }
+//           }
+// //         }
+//       }
+//end modif
       while (jntPt->prev_jnt != NULL) {
         jntPt = jntPt->prev_jnt;
         if (jntPt->dist < EPS6) {
