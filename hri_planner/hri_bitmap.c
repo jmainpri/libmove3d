@@ -461,6 +461,7 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   bitmapset->parameters->soft_collision_distance_weight = 8;
   bitmapset->parameters->soft_collision_base_cost = 15;
   bitmapset->parameters->start_cell_tolerance = 2;
+  bitmapset->parameters->goal_cell_tolerance = 8; // high tolerance for flawed grasp planning
   /** reluctance is an experimental feature to prefer previously planned
    * paths to new ones, that does not seem to change the robot behavior much (maybe in special cases?).
    * Also might be buggy as result path start is not request start */
@@ -928,16 +929,35 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   }
 
 
+
+
   // hri_bt_create_obstacles(bitmapset); // update obstacle map
 
   // the following checks are all just relevant for navigation, not for manipulation
   if (!manip) {
-
-    if(hri_bt_isRobotOnCellInCollision(bitmapset, bitmap, new_search_goal, bitmapset->robot->ROBOT_GOTO[11], FALSE)) {
-      PrintError(("Goal Position is in an obstacle or human (%f, %f) \n", qf[0], qf[1]));
-      return HRI_PATH_SEARCH_ERROR_NAV_GOAL_IN_OBSTACLE;
-    }
+      if(hri_bt_isRobotOnCellInCollision(bitmapset, bitmap, new_search_goal, bitmapset->robot->ROBOT_GOTO[11], FALSE)) {
+          if (FALSE) {
+              bitmapset->pathexist = FALSE;
+              PrintError(("Goal Position is in an obstacle or human (%f, %f) \n", qf[0], qf[1]));
+              return HRI_PATH_SEARCH_ERROR_NAV_GOAL_IN_OBSTACLE;
+          } else {
+              new_search_goal =
+                  hri_bt_get_closest_free_cell(bitmapset, bitmap,
+                      qf[0],
+                      qf[1],
+                      qf[2],
+                      bitmapset->robot->ROBOT_GOTO[11],
+                      bitmapset->parameters->goal_cell_tolerance);
+              if(new_search_goal == NULL) {
+                  bitmapset->pathexist = FALSE;
+                  PrintError(("No free Goal Position is free around (%f, %f) in cell range %d\n", qf[0], qf[1], bitmapset->parameters->goal_cell_tolerance));
+                  return HRI_PATH_SEARCH_ERROR_NAV_GOAL_IN_OBSTACLE;
+              }
+          }
+      }
   } // endif not manip
+
+  //printf("Search goal cell  for (%f, %f), %d, %d\n", qf[0], qf[1], new_search_goal->x, new_search_goal->y);
 
   if (bitmapset->parameters->use_changepath_reluctance
       && bitmapset->pathexist) {
@@ -2216,7 +2236,38 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
     numOfNodes++;
     bitmap->current_search_node = bitmap->current_search_node->parent;
   }
-  length = numOfNodes+2; /* ADDING 2 FOR START AND GOAL CONFIGS */
+  bitmap->current_search_node = bitmap->search_goal;
+
+  int goalValid = TRUE; // goal config in obstacle (might be allowed)
+  //TODO: int firstValid = TRUE; // first cell point useful?
+  //TODO: int lastValid = TRUE; // last cellpont useful?
+
+
+  configPt qc;
+  qc = p3d_get_robot_config(btset->robot); /** ALLOC */
+  qc[6]  = btset->robot->ROBOT_GOTO[ROBOTq_X];
+  qc[7]  = btset->robot->ROBOT_GOTO[ROBOTq_Y];
+  qc[11] = btset->robot->ROBOT_GOTO[ROBOTq_RZ];
+  p3d_set_and_update_this_robot_conf(btset->robot, qc);
+  if(p3d_col_test_robot_statics(btset->robot, FALSE)){
+    goalValid = FALSE;
+    // for visuals, set robot on last valid point
+    qc = p3d_get_robot_config(btset->robot); /** ALLOC */
+      qc[6]  = (bitmap->current_search_node->x * btset->pace) + btset->realx;
+      qc[7]  = (bitmap->current_search_node->y * btset->pace) + btset->realy;
+      qc[11] = btset->robot->ROBOT_GOTO[ROBOTq_RZ];
+      p3d_set_and_update_this_robot_conf(btset->robot, qc);
+  }
+  p3d_destroy_config(btset->robot, qc); /** FREE */
+
+  if(goalValid) {
+    // goal config is valid
+    length = numOfNodes+2; /* ADDING 2 FOR START AND GOAL CONFIGS */
+    printf("... omitting goal config... ");
+  } else {
+    // goal config is not valid, approaching close position instead
+    length = numOfNodes+1;
+  }
 
   btset->path->xcoord = MY_ALLOC(double,length); /* ALLOC */
   btset->path->ycoord = MY_ALLOC(double,length); /* ALLOC */
@@ -2224,11 +2275,12 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
   btset->path->theta  = MY_ALLOC(double,length); /* ALLOC */
   btset->path->length = length;
 
-  // setting path end position to robot goto position
-  btset->path->xcoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_X];
-  btset->path->ycoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_Y];
-  btset->path->zcoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_Z];
-  btset->path->theta[length-1]  = btset->robot->ROBOT_GOTO[ROBOTq_RZ];
+
+  /**
+    * grid start and end nodes were mere approximations
+    * of the real position, we can get rid of them (though formally
+    * we should check for collisions doing so)
+    */
 
   // setting path start position to robot current position
   btset->path->xcoord[0] = btset->robot->ROBOT_POS[ROBOTq_X];
@@ -2236,12 +2288,23 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
   btset->path->zcoord[0] = btset->robot->ROBOT_POS[ROBOTq_Z];
   btset->path->theta[0]  = btset->robot->ROBOT_POS[ROBOTq_RZ];
 
+  if(goalValid) {
+    //  setting path end position to robot goto position
+    btset->path->xcoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_X];
+    btset->path->ycoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_Y];
+    btset->path->zcoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_Z];
+    btset->path->theta[length-1]  = btset->robot->ROBOT_GOTO[ROBOTq_RZ];
+  }
+
+  // TODO: check whether first and last grid cell make sense, to avoid hard edge, e.g. (0.05, 0.05), (0, 0), (0.1, 0.1)
+
   /*  We assign each array element of the path, except the first and last node, the xyz of from the btset path. */
   bitmap->current_search_node = bitmap->search_goal;
   for (j = numOfNodes; j > 0; j--) {
     btset->path->xcoord[j] = (bitmap->current_search_node->x * btset->pace) + btset->realx;
     btset->path->ycoord[j] = (bitmap->current_search_node->y * btset->pace) + btset->realy;
     btset->path->zcoord[j] = (bitmap->current_search_node->z * btset->pace) + btset->realz;
+    // printf("Added node (%f,%f)\n", btset->path->xcoord[j], btset->path->ycoord[j]);
     bitmap->current_search_node = bitmap->current_search_node->parent;
   }
 

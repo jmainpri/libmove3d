@@ -227,6 +227,8 @@ typedef struct astar_parameters{
   int use_changepath_reluctance;
   /* how many grid steps away a free start cell may be found from the robot real position */
   int start_cell_tolerance;
+  /* how many grid steps away a free goal cell may be found from the x,y,z of the search command */
+  int goal_cell_tolerance;
 
   int use_corridors;
 
