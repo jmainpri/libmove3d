@@ -277,11 +277,14 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
           break;
         }
       }
+
       if (discard_movable_object)
         continue;
 
       hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
-      if (is_human) {
+      if (strcasestr(env->robot[i]->name, "TABLE")) {
+          hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, safe_expand_rate, BT_OBST_POTENTIAL_OBJECT_COLLISION, 0);
+      } else if (is_human ) {
         // not drawing soft collisions for other objects, as they are not checked later anyways
         hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, safe_expand_rate, BT_OBST_POTENTIAL_HUMAN_COLLISION, 0);
       }
