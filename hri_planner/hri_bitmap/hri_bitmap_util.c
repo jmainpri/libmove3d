@@ -558,7 +558,7 @@ hri_bitmap_cell* hri_bt_get_closest_free_cell(hri_bitmapset* bitmapset,
     }
   }
 
-  PrintError(("Start Position is in an obstacle or human (%f, %f, %f) \n", x, y, z));
+  PrintError(("Position is in an obstacle or human (%f, %f, %f) \n", x, y, z));
   return NULL;
 
 }
