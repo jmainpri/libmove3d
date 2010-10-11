@@ -32,7 +32,6 @@ extern int hri_bt_bitmap_to_GRAPH ( hri_bitmapset * btset, p3d_graph *G, hri_bit
 extern void hri_bt_reset_path ( hri_bitmapset * btset );
 extern hri_bitmap_cell* hri_bt_get_cell ( hri_bitmap* bitmap, int x, int y, int z );
 extern double hri_bt_start_search ( double qs[3], double qf[3], hri_bitmapset* bitmapset, int manip );
-extern double hri_bt_dist_heuristic ( hri_bitmap* bitmap, int x_s, int y_s, int z_s );
 extern hri_bitmap* hri_bt_create_copy ( hri_bitmap* bitmap );
 extern hri_bitmapset* hri_bt_create_empty_bitmapset ( void );
 extern void g3d_hri_bt_draw_active_bitmaps ( hri_bitmapset* bitmapset );
