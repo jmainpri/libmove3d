@@ -229,6 +229,44 @@ static int CB_OnApplicationClose( FL_FORM *form, void *argument );
 static void g3d_create_robots_forms(int nr);
 
 /*****************************************************************/
+void g3d_create_buttonless_main_form(void)
+{
+  double x1,x2,y1,y2,z1,z2,ampl=0.;
+  unsigned int i;
+  int nr;
+  pp3d_matrix4 g3d_fct_mobcam_form(void);
+
+  w = G3D_WINSIZE_WIDTH;
+  h = G3D_WINSIZE_HEIGHT;
+
+  if(p3d_get_desc_number(P3D_ENV)) {
+    p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2);
+    ampl = MAX(MAX(x2-x1,y2-y1),z2-z1);
+    x1 = .5*(x1+x2); y1 = .5*(y1+y2); z1 = .5*(z1+z2);
+  }
+
+  p3d_get_filename(DATA_FILE);
+
+  for(i=0;i<P3D_MAX_ENV;i++){
+    saved_scene[i].saved = FALSE;
+    //    XYZ_TAB_GRAPH[i] = NULL; Modification Fabien
+  }
+  /* on ouvre une fenetre graphique => cree un objet form + un canvas opengl*/
+  G3D_WIN = g3d_new_win("Move3D",(int) w, (int) h,ampl);
+  fl_set_form_icon((FL_FORM*) G3D_WIN->form, GetApplicationIcon( ), 0);
+
+  g3d_set_win_center(G3D_WIN->vs, x1,y1,z1);
+  /* on fixe la fonction de calback pour la fenetre graphique */
+
+#ifndef QT_GL
+  g3d_set_win_drawer(G3D_WIN, g3d_draw);
+#else
+  g3d_set_win_drawer(G3D_WIN, NULL);
+#endif
+
+}
+
+/*****************************************************************/
 void g3d_create_main_form(void)
 {
   double x1,x2,y1,y2,z1,z2,ampl=0.;
