@@ -795,7 +795,6 @@ int gpGrasp_frame_from_inertia_axes ( p3d_matrix3 iaxes, p3d_vector3 cmass, int 
 	return 1;
 }
 
-
 //! From each grasp configuration of a list, computes a hand configuration the most open possible starting
 //! from the grasping configuration.
 //! The finger joint angles are incrementally modified to open the hand until there is a collision
@@ -807,165 +806,165 @@ int gpGrasp_frame_from_inertia_axes ( p3d_matrix3 iaxes, p3d_vector3 cmass, int 
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpCompute_grasp_open_configs ( std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object )
 {
-#ifdef GP_DEBUG
-	if ( robot==NULL )
-	{
-		printf("%s: %d: gpGrasp_compute_open_configs(): robot is NULL.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
-	if ( object==NULL )
-	{
-		printf("%s: %d: gpCompute_grasp_open_configs(): object is NULL.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
-#endif
+  #ifdef GP_DEBUG
+  if ( robot==NULL )
+  {
+          printf("%s: %d: gpGrasp_compute_open_configs(): robot is NULL.\n",__FILE__,__LINE__ );
+          return GP_ERROR;
+  }
+  if ( object==NULL )
+  {
+          printf("%s: %d: gpCompute_grasp_open_configs(): object is NULL.\n",__FILE__,__LINE__ );
+          return GP_ERROR;
+  }
+  #endif
 
-	unsigned int i, j, k, nbSteps;
-	double qnew[4];
-	p3d_matrix4 objectFrame;
-	configPt config0, config;
-	std::vector<bool> blocked;
-	std::vector<double> q, qstart, qstop, delta;
-	std::list<gpGrasp>::iterator igrasp;
-	gpHand_properties handProp;
+  unsigned int i, j, k, nbSteps;
+  double qnew[4];
+  p3d_matrix4 objectFrame;
+  configPt config0, config;
+  std::vector<bool> blocked;
+  std::vector<double> q, qstart, qstop, delta;
+  std::list<gpGrasp>::iterator igrasp;
+  gpHand_properties handProp;
 
-	//memorize the robot current configuration:
-	config0= p3d_get_robot_config ( robot );
-	config= p3d_alloc_config ( robot );
+  //memorize the robot current configuration:
+  config0= p3d_get_robot_config ( robot );
+  config= p3d_alloc_config ( robot );
 
-	nbSteps= 10;
+  nbSteps= 10;
 
-	for ( igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++ )
-	{
-		handProp.initialize ( igrasp->hand_type );
-//     if(igrasp->hand_type!=handProp.type)
-//     {
-//       printf("%s: %d: gpCompute_grasp_open_configs(): the gpHand_properties of a grasp mismatches the input gpHand_properties.\n",__FILE__,__LINE__);
-//       continue;
-//     }
+  for ( igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++ )
+  {
+      handProp.initialize ( igrasp->hand_type );
+        //     if(igrasp->hand_type!=handProp.type)
+        //     {
+        //       printf("%s: %d: gpCompute_grasp_open_configs(): the gpHand_properties of a grasp mismatches the input gpHand_properties.\n",__FILE__,__LINE__);
+        //       continue;
+        //     }
 
-		p3d_get_body_pose ( object, igrasp->body_index, objectFrame );
+        p3d_get_body_pose ( object, igrasp->body_index, objectFrame );
 
-		gpInverse_geometric_model_freeflying_hand ( robot, objectFrame, igrasp->frame, handProp, config );
-		p3d_set_and_update_this_robot_conf ( robot, config );
+        gpInverse_geometric_model_freeflying_hand ( robot, objectFrame, igrasp->frame, handProp, config );
+        p3d_set_and_update_this_robot_conf ( robot, config );
 
-		igrasp->openConfig= igrasp->config;
+        igrasp->openConfig= igrasp->config;
 
-		switch ( igrasp->hand_type )
-		{
-			case GP_GRIPPER:
-				igrasp->openConfig.at ( 0 ) = handProp.qmax.at ( 0 );
-				break;
-		case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-				if ( igrasp->config.size() !=13 || igrasp->openConfig.size() !=13 )
-				{
-					printf("%s: %d: gpCompute_grasp_open_configs(): config vector has a bad size.\n",__FILE__,__LINE__ );
-					continue;
-				}
-				q.resize ( 13 );
-				qstart.resize ( 13 );
-				qstop.resize ( 13 );
-				blocked.resize ( 13 );
-				delta.resize ( 13 );
+        switch ( igrasp->hand_type )
+        {
+           case GP_GRIPPER:
+              igrasp->openConfig.at ( 0 ) = handProp.qmax.at ( 0 );
+           break;
+           case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
+              if ( igrasp->config.size() !=13 || igrasp->openConfig.size() !=13 )
+              {
+                      printf("%s: %d: gpCompute_grasp_open_configs(): config vector has a bad size.\n",__FILE__,__LINE__ );
+                      continue;
+              }
+              q.resize ( 13 );
+              qstart.resize ( 13 );
+              qstop.resize ( 13 );
+              blocked.resize ( 13 );
+              delta.resize ( 13 );
 
-				qstart= igrasp->config;
-				qstop= handProp.qmin;
+              qstart= igrasp->config;
+              qstop= handProp.qmin;
 
-				for ( i=0; i<blocked.size(); ++i )
-					{   blocked[i]= false;     }
+              for ( i=0; i<blocked.size(); ++i )
+                      {   blocked[i]= false;     }
 
-				qstop[0]= qstart[0]; // for thumb
-				blocked[0]= true;
+              qstop[0]= qstart[0]; // for thumb
+              blocked[0]= true;
 
-				//abduction joint
-				for ( i=0; i<4; ++i )
-					{  blocked[3*i+1]= true;    }
+              //abduction joint
+              for ( i=0; i<4; ++i )
+              {  blocked[3*i+1]= true;    }
 
-				for ( i=0; i<delta.size(); ++i )
-					{   delta[i]= ( qstop[i] - qstart[i] ) / ( ( double ) ( nbSteps ) );      }
+              for ( i=0; i<delta.size(); ++i )
+              {   delta[i]= ( qstop[i] - qstart[i] ) / ( ( double ) ( nbSteps ) );      }
 
-				q= qstart;
+              q= qstart;
 
-				gpSet_hand_configuration ( robot, handProp, igrasp->config, false, 0 );
+              gpSet_hand_configuration ( robot, handProp, igrasp->config, false, 0 );
 
-				for ( j=1; j<=nbSteps; ++j )
-				{
-					for ( i=0; i<4; ++i )
-					{
-						qnew[0]= qstart[0]; //for thumb only
-						if ( !blocked[3*i+1] )
-							{  qnew[1]=  q[3*i+1] + delta[3*i+1]; }
-						else
-							{  qnew[1]=  q[3*i+1]; }
+              for ( j=1; j<=nbSteps; ++j )
+              {
+                      for ( i=0; i<4; ++i )
+                      {
+                              qnew[0]= qstart[0]; //for thumb only
+                              if ( !blocked[3*i+1] )
+                                      {  qnew[1]=  q[3*i+1] + delta[3*i+1]; }
+                              else
+                                      {  qnew[1]=  q[3*i+1]; }
 
-						if ( !blocked[3*i+2] )
-							{  qnew[2]=  q[3*i+2] + delta[3*i+2]; }
-						else
-							{  qnew[2]=  q[3*i+2]; }
+                              if ( !blocked[3*i+2] )
+                                      {  qnew[2]=  q[3*i+2] + delta[3*i+2]; }
+                              else
+                                      {  qnew[2]=  q[3*i+2]; }
 
-						if ( !blocked[3*i+3] )
-							{  qnew[3]=  q[3*i+3] + delta[3*i+3]; }
-						else
-							{  qnew[3]=  q[3*i+3]; }
+                              if ( !blocked[3*i+3] )
+                                      {  qnew[3]=  q[3*i+3] + delta[3*i+3]; }
+                              else
+                                      {  qnew[3]=  q[3*i+3]; }
 
-						if ( blocked[3*i+1] && blocked[3*i+2] && blocked[3*i+3] )
-							{  continue; }
+                              if ( blocked[3*i+1] && blocked[3*i+2] && blocked[3*i+3] )
+                                      {  continue; }
 
-						gpSet_SAHfinger_joint_angles ( robot, handProp, qnew, i+1 );
-						if ( p3d_col_test_robot_other ( robot, object, 0 ) || p3d_col_test_self_collision ( robot, 0 ) )
-						{
-							blocked[3*i+1]= true;
-							blocked[3*i+2]= true;
-							blocked[3*i+3]= true;
+                              gpSet_SAHfinger_joint_angles ( robot, handProp, qnew, i+1 );
+                              if ( p3d_col_test_robot_other ( robot, object, 0 ) || p3d_col_test_self_collision ( robot, 0 ) )
+                              {
+                                      blocked[3*i+1]= true;
+                                      blocked[3*i+2]= true;
+                                      blocked[3*i+3]= true;
 
-							qnew[0]= qstart[0];
-							qnew[1]= q[3*i+1];
-							qnew[2]= q[3*i+2];
-							qnew[3]= q[3*i+3];
+                                      qnew[0]= qstart[0];
+                                      qnew[1]= q[3*i+1];
+                                      qnew[2]= q[3*i+2];
+                                      qnew[3]= q[3*i+3];
 
-							qnew[1]= 0.5* ( qstart[3*i+1] + q[3*i+1] );
-							qnew[2]= 0.5* ( qstart[3*i+2] + q[3*i+2] );
-							qnew[3]= 0.5* ( qstart[3*i+3] + q[3*i+3] );
-//               q[3*i+1]= qnew[1];
-//               q[3*i+2]= qnew[2];
-//               q[3*i+3]= qnew[3];
+                                      qnew[1]= 0.5* ( qstart[3*i+1] + q[3*i+1] );
+                                      qnew[2]= 0.5* ( qstart[3*i+2] + q[3*i+2] );
+                                      qnew[3]= 0.5* ( qstart[3*i+3] + q[3*i+3] );
+        //               q[3*i+1]= qnew[1];
+        //               q[3*i+2]= qnew[2];
+        //               q[3*i+3]= qnew[3];
 
-							gpSet_SAHfinger_joint_angles ( robot, handProp, qnew, i+1 );
-						}
-						else
-						{
-							q[3*i+1]= qnew[1];
-							q[3*i+2]= qnew[2];
-							q[3*i+3]= qnew[3];
-						}
-						for ( k=0; k<blocked.size(); ++k )
-						{
-							if ( blocked[k]==false )
-								{  break; }
-						}
-						if ( k==blocked.size() ) // all fingers are blocked
-							{  break; }
-					}
-				}
-				igrasp->openConfig= q;
-//         gpSet_grasp_open_configuration(robot, handProp, *igrasp, 0);
-//
-//         if(p3d_col_test_robot_other(robot, object, 0))
-//         {
-//             printf("problem collision %d\n",igrasp->ID);
-//             pqp_print_colliding_pair();
-//         }
-				break;
-			default:
-				printf("%s: %d: gpCompute_grasp_open_configs(): this hand model is not defined.\n",__FILE__,__LINE__ );
-				return GP_ERROR;
-				break;
-		}
-	}
+                                      gpSet_SAHfinger_joint_angles ( robot, handProp, qnew, i+1 );
+                              }
+                              else
+                              {
+                                      q[3*i+1]= qnew[1];
+                                      q[3*i+2]= qnew[2];
+                                      q[3*i+3]= qnew[3];
+                              }
+                              for ( k=0; k<blocked.size(); ++k )
+                              {
+                                      if ( blocked[k]==false )
+                                              {  break; }
+                              }
+                              if ( k==blocked.size() ) // all fingers are blocked
+                                      {  break; }
+                      }
+              }
+              igrasp->openConfig= q;
+  //         gpSet_grasp_open_configuration(robot, handProp, *igrasp, 0);
+  //
+  //         if(p3d_col_test_robot_other(robot, object, 0))
+  //         {
+  //             printf("problem collision %d\n",igrasp->ID);
+  //             pqp_print_colliding_pair();
+  //         }
+          break;
+          default:
+            printf("%s: %d: gpCompute_grasp_open_configs(): this hand model is not defined.\n",__FILE__,__LINE__ );
+            return GP_ERROR;
+          break;
+        }
+}
 
-	p3d_set_and_update_this_robot_conf ( robot, config0 );
+p3d_set_and_update_this_robot_conf ( robot, config0 );
 
-	return GP_OK;
+return GP_OK;
 }
 
 //! For a current robot configuration and a double grasp, computes the configuration of one of the hand,
@@ -2925,6 +2924,7 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
   std::string pathName, handFolderName, graspListFile, graspListFileOld;
   DIR *directory= NULL;
   std::list<gpGrasp>::iterator iter;
+  std::list<gpGrasp> tmpList;
 
   if ( getenv ( "HOME_MOVE3D" ) ==NULL )
   {
@@ -2971,8 +2971,8 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
 
   if ( object==NULL )
   {
-          printf("%s: %d: gpGet_grasp_list_SAHand(): there is no robot (the object to grasp) named \"%s\".\n", __FILE__, __LINE__, object_to_grasp.c_str() );
-          return GP_ERROR;
+    printf("%s: %d: gpGet_grasp_list_SAHand(): there is no robot (the object to grasp) named \"%s\".\n", __FILE__, __LINE__, object_to_grasp.c_str() );
+    return GP_ERROR;
   }
 
   //geometric treatment on the object mesh:
@@ -3000,11 +3000,8 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
     closedir ( directory );
   }
 
-
   graspListFile= handFolderName  + std::string ( "/" ) + std::string ( object_to_grasp ) + std::string ( "Grasps.xml" );
   graspListFileOld= handFolderName  + std::string ( "/" ) + std::string ( object_to_grasp ) + std::string ( "Grasps_old.xml" );
-
-
 
   graspList.clear();
 
@@ -3022,12 +3019,21 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
     rename ( graspListFile.c_str(), graspListFileOld.c_str() ); //store the current grasp file (if it exists)
 
 
-    gpGrasp_generation ( hand_robot, object, 0, handProp, handProp.nb_positions, handProp.nb_directions, handProp.nb_rotations, graspList );
+    gpGrasp_generation(hand_robot, object, 0, handProp, handProp.nb_positions, handProp.nb_directions, handProp.nb_rotations, graspList );
+
+    if(hand_type==GP_GRIPPER)
+    {  gpGrasp_collision_filter(graspList, hand_robot, object, handProp);   }
+
     // printf("before stability %d\n",graspList.size());
-    gpGrasp_stability_filter ( graspList );
+    gpGrasp_stability_filter(graspList);
+
     // printf("after stability %d\n",graspList.size());
-    gpGrasp_quality_filter ( graspList );
+    gpGrasp_quality_filter(graspList);
     // printf("after %d\n",graspList.size());
+
+    tmpList= graspList;
+
+    gpReduce_grasp_list_size(tmpList, graspList, 75);
 
     gpCompute_grasp_open_configs ( graspList, hand_robot, object );
 

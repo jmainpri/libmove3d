@@ -1708,6 +1708,174 @@ ws= 0;
 
 
 
+int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object)
+{
+  #ifdef GP_DEBUG
+  if(robot==NULL)
+  {
+    printf("%s: %d: gpGrasp::computeOpenConfig(): input robot is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+  if(object==NULL)
+  {
+    printf("%s: %d: gpGrasp::computeOpenConfig(): input object is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+  #endif
+
+  unsigned int i, j, k, nbSteps;
+  double qnew[4];
+  p3d_matrix4 objectFrame;
+  configPt config0, config;
+  std::vector<bool> blocked;
+  std::vector<double> q, qstart, qstop, delta;
+  gpHand_properties handProp;
+
+  //memorize the robot current configuration:
+  config0= p3d_get_robot_config ( robot );
+  config= p3d_alloc_config ( robot );
+
+  nbSteps= 10;
+
+
+  handProp.initialize(this->hand_type);
+  //     if(igrasp->hand_type!=handProp.type)
+  //     {
+  //       printf("%s: %d: gpCompute_grasp_open_configs(): the gpHand_properties of a grasp mismatches the input gpHand_properties.\n",__FILE__,__LINE__);
+  //       continue;
+  //     }
+
+  p3d_get_body_pose(object, this->body_index, objectFrame);
+
+  gpInverse_geometric_model_freeflying_hand(robot, objectFrame, this->frame, handProp, config);
+  p3d_set_and_update_this_robot_conf( robot, config );
+
+  this->openConfig= this->config;
+
+  switch(this->hand_type)
+  {
+    case GP_GRIPPER:
+      this->openConfig.at ( 0 ) = handProp.qmax.at ( 0 );
+    break;
+    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
+      if(this->config.size() !=13 || this->openConfig.size() !=13 )
+      {
+        printf("%s: %d: gpCompute_grasp_open_configs(): config vector has a bad size.\n",__FILE__,__LINE__ );
+        break;
+      }
+      q.resize(13);
+      qstart.resize(13);
+      qstop.resize(13);
+      blocked.resize(13);
+      delta.resize(13);
+
+      qstart= this->config;
+      qstop= handProp.qmin;
+
+      for ( i=0; i<blocked.size(); ++i )
+      {   blocked[i]= false;     }
+
+      qstop[0]= qstart[0]; // for thumb
+      blocked[0]= true;
+
+      //abduction joint
+      for ( i=0; i<4; ++i )
+      {  blocked[3*i+1]= true;    }
+
+      for ( i=0; i<delta.size(); ++i )
+      {   delta[i]= ( qstop[i] - qstart[i] ) / ( ( double ) ( nbSteps ) );      }
+
+      q= qstart;
+
+      gpSet_hand_configuration ( robot, handProp, this->config, false, 0 );
+
+      for(j=1; j<=nbSteps; ++j)
+      {
+        for(i=0; i<4; ++i) // for each finger
+        {
+          qnew[0]= qstart[0]; //for thumb only
+
+          // increment all non-blocked joints:
+          if( !blocked[3*i+1] )
+          {  qnew[1]=  q[3*i+1] + delta[3*i+1]; }
+          else
+          {  qnew[1]=  q[3*i+1]; }
+
+          if( !blocked[3*i+2] )
+          {  qnew[2]=  q[3*i+2] + delta[3*i+2]; }
+          else
+          {  qnew[2]=  q[3*i+2]; }
+
+          if( !blocked[3*i+3] )
+          {  qnew[3]=  q[3*i+3] + delta[3*i+3]; }
+          else
+          {  qnew[3]=  q[3*i+3]; }
+
+          if ( blocked[3*i+1] && blocked[3*i+2] && blocked[3*i+3] )
+          {  continue; }
+
+          gpSet_SAHfinger_joint_angles ( robot, handProp, qnew, i+1 );
+          if( p3d_col_test_robot_other ( robot, object, 0 ) || p3d_col_test_self_collision ( robot, 0 ) )
+          {
+            if(!blocked[3*i+1])
+            {
+              blocked[3*i+1]= true;
+              qnew[1]=  q[3*i+1];
+            }
+            else 
+            {
+              blocked[3*i+2]= true;
+              blocked[3*i+3]= true;
+              qnew[2]=  q[3*i+2];
+              qnew[3]=  q[3*i+3];
+            }
+
+            qnew[0]= qstart[0];
+
+//             qnew[1]= 0.5* ( qstart[3*i+1] + q[3*i+1] );
+//             qnew[2]= 0.5* ( qstart[3*i+2] + q[3*i+2] );
+//             qnew[3]= 0.5* ( qstart[3*i+3] + q[3*i+3] );
+
+//             gpSet_SAHfinger_joint_angles ( robot, handProp, qnew, i+1 );
+          }
+//           else
+//           {
+//             q[3*i+1]= qnew[1];
+//             q[3*i+2]= qnew[2];
+//             q[3*i+3]= qnew[3];
+//           }
+          q[3*i+1]= qnew[1];
+          q[3*i+2]= qnew[2];
+          q[3*i+3]= qnew[3];
+
+          for( k=0; k<blocked.size(); ++k)
+          {
+            if ( blocked[k]==false )
+            {  break; }
+          }
+          if ( k==blocked.size() ) // all joints are blocked
+          {  break; }
+        }
+      }
+      this->openConfig= q;
+  //         gpSet_grasp_open_configuration(robot, handProp, *igrasp, 0);
+  //
+  //         if(p3d_col_test_robot_other(robot, object, 0))
+  //         {
+  //             printf("problem collision %d\n",igrasp->ID);
+  //             pqp_print_colliding_pair();
+  //         }
+    break;
+    default:
+      printf("%s: %d: gpGrasp::computeOpenConfig(): this hand model is not defined.\n",__FILE__,__LINE__ );
+      return GP_ERROR;
+    break;
+ }
+
+ p3d_set_and_update_this_robot_conf(robot, config0);
+
+ return GP_OK;
+}
 
 //! Default constructor of the class gpDoubleGrasp.
 gpDoubleGrasp::gpDoubleGrasp()

@@ -71,6 +71,7 @@ class gpGrasp
   int contactCentroid(p3d_vector3 centroid);
   int direction(p3d_vector3 direction) const;
   double similarity(const gpGrasp &grasp);
+  int computeOpenConfig(p3d_rob *robot, p3d_rob *object);
 };
 
 bool gpCompareVisibility(const gpGrasp &grasp1, const gpGrasp &grasp2); 

@@ -13,6 +13,7 @@ extern "C"
   #include "qhull/qhull_a.h"
 }
 
+#include "../include/p3d_matrix.h"
 
 class gpConvexHull;
 
@@ -194,6 +195,6 @@ class gpConvexHull6D: public gpConvexHull
    gpConvexHull6D(double (*point_array)[6], unsigned int nbpoints_);
 };
 
-int gpSample_polyhedron_convex_hull(p3d_polyhedre *polyhedron, double step, std::vector<gpVector3D> &samples);
+int gpSample_polyhedron_convex_hull(struct p3d_polyhedre *polyhedron, double step, std::vector<gpVector3D> &samples);
 
 #endif

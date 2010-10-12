@@ -1,16 +1,18 @@
 
-#include "Collision-pkg.h"
-#include "Util-pkg.h"
-#include "P3d-pkg.h"
-#include "Planner-pkg.h"
-#include "Localpath-pkg.h"
-#include "Graphic-pkg.h"
-#include "Move3d-pkg.h"
-#include "UserAppli-pkg.h"
-#include "GraspPlanning-pkg.h"
+
+
 #include <stdio.h>
 #include <vector>
 #include <algorithm>
+
+#ifdef USE_SHADERS
+  #include <GL/glew.h>
+#else
+ #include <GL/glu.h>
+#endif
+
+#include "../graspPlanning/include/graspPlanning.h"
+#include "../graspPlanning/include/gpConvexHull.h"
 
 //! Default gpRidge constructor (dimension= 2, size= 2)
 gpRidge::gpRidge()
