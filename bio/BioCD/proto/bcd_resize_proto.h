@@ -6,6 +6,8 @@
  */
 #ifndef __CEXTRACT__
 
+extern double GetPrevVdw(void);
+extern void SetPrevVdw(double prevVdwRadius);
 extern void set_SUM_VDW_to_EBI ( void );
 extern void set_SUM_VDW_to_usual ( void );
 extern void set_atom_type ( p3d_poly *atom, enum atom_type atype );

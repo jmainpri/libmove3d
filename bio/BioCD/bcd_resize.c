@@ -12,6 +12,16 @@ and resizing functions.
 
 #include "include/bcd_global.h"
 
+static double PrevVdwRadius(1.0);
+
+double GetPrevVdw(void) {
+  return PrevVdwRadius;
+}
+
+void SetPrevVdw(double prevVdwRadius) {
+  PrevVdwRadius = prevVdwRadius;
+}
+
 //number of atom types
 #define N_ATOM_TYPES 14 
 

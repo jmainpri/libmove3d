@@ -412,7 +412,7 @@ static int psf_build_jnt_data(p3d_read_jnt_data * data)
   }
 
   p3d_add_desc_jnt_deg(data->type, data->pos, dofs, data->prev_jnt,
-		       dofs_rand, data->scale, velocity_torque_max);
+		       dofs_rand, data->scale, velocity_torque_max, NULL, NULL, NULL);
   MY_FREE(dofs, double, 3 * (data->nb_dof));
   MY_FREE(dofs_rand, double, 2 * (data->nb_dof));
 
@@ -3899,7 +3899,7 @@ int psf_make_p3d_desc(psf_molecule* molecule) {
 /***************************************************************/
 
 static int psf_make_p3d_from_psf(psf_molecule* molecule) {
-
+#ifdef WITH_XFORMS
   int usrAnswer = FALSE;
   int molecules_created = FALSE;
 
@@ -3949,13 +3949,17 @@ static int psf_make_p3d_from_psf(psf_molecule* molecule) {
     AAA_protein_List = NULL;
   }
    
-  return (molecules_created);  
+  return (molecules_created);
+#else
+  printf("ERROR: the function %s requires the XFORMS module.\n", __FUNCTION__);
+  return(0);
+#endif
 } 
 
 /***************************************************************/
 
 int psf_make_p3d_from_pdb(char *file) { 
-
+#ifdef WITH_XFORMS
   FILE *PDB_file_desc;
   char shortFileName[PSF_MAX_NAME_LENGTH];
   psf_molecule* current_molecule;
@@ -3997,13 +4001,16 @@ int psf_make_p3d_from_pdb(char *file) {
   }
 
   return molecules_created;
-
+#else
+  printf("ERROR: the function %s requires the XFORMS module.\n", __FUNCTION__);
+  return(0);
+#endif
 }
 
 /***************************************************************/
 
 int psf_make_p3d_from_multiple_pdb(file_name_list* file_list, char* name) { 
-
+#ifdef WITH_XFORMS
   FILE *PDB_file_desc;
   int fileIndex;
   psf_molecule* current_molecule = NULL;
@@ -4058,5 +4065,8 @@ int psf_make_p3d_from_multiple_pdb(file_name_list* file_list, char* name) {
   }
 
   return molecules_created;
-
+#else
+  printf("ERROR: the function %s requires the XFORMS module.\n", __FUNCTION__);
+  return(0);
+#endif
 }

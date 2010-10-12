@@ -28,6 +28,7 @@ extern int update_all_sidechain_BBoxes(p3d_rob* robotPt);
 extern int dist_ligand_sidechainBBoxes(p3d_rob* robotPt, int  AAnumber, double * dist_vector);
 extern void PrintInfo_BBoxesdist(p3d_rob* robotPt, int  AAnumber);
 extern int bio_get_pdb_atom_number(p3d_poly* poly); // Added by Ron
+extern void afficher_lescollisions ( void );
 
 /*extern void test_perf ( void );*/
 /*extern void changer_rigidite ( int numero, int nature ); */

@@ -50,7 +50,9 @@ extern double bio_measure_distance_between_atom_pairs(int nump, p3d_jnt **pairs_
 
 extern void bio_search_max_weight_in_curr_rrt(void);
 
+#ifdef WITH_XFORMS
 extern int bio_set_goal_jnt_coordinates(void);
+#endif
 extern int bio_get_goal_jnt_coordinates(p3d_vector3 **goal_jntcoordsPt);
 extern void bio_free_goal_jnt_coords(int n_alloc_elems);
 //extern int bio_get_goal_jnt_coordinates(double **goal_jntvPt);

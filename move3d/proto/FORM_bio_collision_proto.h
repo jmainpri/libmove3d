@@ -8,7 +8,6 @@
 
 extern void g3d_create_bio_collision_form ( void );
 extern void g3d_delete_bio_collision_form ( void );
-extern void afficher_lescollisions ( void );
 //extern double get_VdW_pourcent ( void );
 double GetPrevVdw(void);
 void SetPrevVdw(double prevVdwRadius);

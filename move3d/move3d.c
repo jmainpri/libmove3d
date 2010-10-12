@@ -360,14 +360,19 @@ int main(int argc, char ** argv) {
 #endif
       p3d_BB_set_mode_close();
       if (!p3d_read_desc(filename)) {
+#ifdef WITH_XFORMS
         if (fl_show_question("ENV file not found! Exit?\n", 1)) {
           exit(0);
         } else {
           file_set = FALSE;
         }
+#else
+	file_set = FALSE;
+#endif
       }
     }
     if (file_set == FALSE) {
+#ifdef WITH_XFORMS
       // Modif Brice SALVA
       file_list = init_file_name_list();
       create_file_selector_Form();
@@ -392,6 +397,10 @@ int main(int argc, char ** argv) {
 
       free_file_name_list(file_list);
       file_list = NULL;
+#else
+      printf("Error : give a p3d filename as argument, or use the XFORMS module.\n");
+      exit(0);
+#endif
     }
 #else
 
