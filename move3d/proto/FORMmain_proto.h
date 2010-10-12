@@ -6,6 +6,7 @@
 #ifndef __CEXTRACT__
 
 extern void g3d_create_main_form ( void );
+extern void g3d_create_buttonless_main_form( void );
 extern void g3d_loop ( void );
 extern void read_scenario_by_name ( const char *file );
 

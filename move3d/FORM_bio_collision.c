@@ -30,7 +30,6 @@ extern FL_OBJECT* MANHATTAN_CHECK;
 /*********************/
 static int AA_courant;
 static int AA_list[NB_MAX_AA];     // on se limite donc a 2000 AA dans la proteine
-static double PrevVdwRadius;
 static p3d_poly *poly_en_col[NB_MAX_COL_AFFICH];
 static int nb_poly_en_col = 0;
 /*********************/
@@ -514,16 +513,6 @@ static void CB_pourcent_vdw_slider_obj(FL_OBJECT *ob, long arg)
 
   bio_draw_allwin(ncol);
 }
-
-
-double GetPrevVdw(void) {
-  return PrevVdwRadius;
-}
-
-void SetPrevVdw(double prevVdwRadius) {
-  PrevVdwRadius = prevVdwRadius;
-}
-
 
 static void g3d_create_resize(void)
 {
@@ -2126,41 +2115,6 @@ static void g3d_delete_path_length_obj(void)
 {
   fl_free_object(PATH_LENGTH_OBJ);
 }
-
-
-/***********************************/
-/* virer les collisions embetantes */
-/***********************************/
-
-// necessite l'appel a la fonction bio_all_molecules_col_with_report() avt emploi
-void afficher_lescollisions(void)
-{
-  int i = 0;
-  int col_number;
-  p3d_poly **p1,**p2;
-
-  biocol_report(&col_number, &p1, &p2);
-  printf("col_number %d \n",col_number);
-
-  for(i=0;i<col_number;i++)
-    {
-      printf("joints en collision : %s   %s\n",p1[i]->poly->name,p2[i]->poly->name);
-    }
-
-}
-
-static void test_affichage(void)
-{
-  int nb_col = 0;
-
-  nb_col = bio_all_molecules_col_with_report();
-
-  puts("test de collisions faits");
-
-  printf("nb_col : %d \n",nb_col);
-  afficher_lescollisions();
-}
-
 
 /***********************************/
 /* refresh displays                */

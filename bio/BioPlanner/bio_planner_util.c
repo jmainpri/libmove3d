@@ -1995,6 +1995,7 @@ void bio_free_goal_jnt_coords(int n_alloc_elems)
   //  MY_FREE(goal_jnt_v,double,robPt->njoints);  
 }
 
+#ifdef WITH_XFORMS
 // WARNING : this function only handles 1 jnt per residue (OMEGA)
 static int load_goal_jnt_coordinates_from_p3d_file(void)
 {
@@ -2397,7 +2398,7 @@ int bio_set_goal_jnt_coordinates(void)
   }
   return 1;
 }
-
+#endif
 
 int bio_get_goal_jnt_coordinates(p3d_vector3 **goal_jntcoordsPt)
 //int bio_get_goal_jnt_coordinates(double **goal_jntvPt)

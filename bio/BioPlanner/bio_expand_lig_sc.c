@@ -334,13 +334,13 @@ p3d_node* bio_expandnode_ligand(p3d_graph* G,p3d_node* Nnear,
   p3d_GetStopWeightAndSign(&stop_weight,&sign_stop_weight);  
   if(sign_stop_weight == 1) {
     if(NewNode->weight >= stop_weight) {
-      CB_stop_obj(NULL,0);
+      p3d_SetStopValue(TRUE);
       p3d_SetDiffuStoppedByWeight(1);
     }
   }
   else if(sign_stop_weight == -1) {
     if(NewNode->weight <= stop_weight) {
-      CB_stop_obj(NULL,0);
+      p3d_SetStopValue(TRUE);
       p3d_SetDiffuStoppedByWeight(1);
     }
   } 

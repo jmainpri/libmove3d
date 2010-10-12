@@ -1236,3 +1236,35 @@ void PrintInfo_BBoxesdist(p3d_rob* robotPt, int  AAnumber) {
 /*   return isRigid; */
 /* } */
 
+/***********************************/
+/* virer les collisions embetantes */
+/***********************************/
+
+// necessite l'appel a la fonction bio_all_molecules_col_with_report() avt emploi
+void afficher_lescollisions(void)
+{
+  int i = 0;
+  int col_number;
+  p3d_poly **p1,**p2;
+
+  biocol_report(&col_number, &p1, &p2);
+  printf("col_number %d \n",col_number);
+
+  for(i=0;i<col_number;i++)
+    {
+      printf("joints en collision : %s   %s\n",p1[i]->poly->name,p2[i]->poly->name);
+    }
+
+}
+
+static void test_affichage(void)
+{
+  int nb_col = 0;
+
+  nb_col = bio_all_molecules_col_with_report();
+
+  puts("test de collisions faits");
+
+  printf("nb_col : %d \n",nb_col);
+  afficher_lescollisions();
+}
