@@ -126,6 +126,8 @@ int g3d_free_viewer_state(g3d_states vs)
   if(vs.logoTexture!=0) {
     glDeleteTextures(1, &(vs.logoTexture));
   }
+
+  return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -892,7 +894,7 @@ int g3d_load_logo_texture(g3d_states &vs)
 
   unsigned char *data= new unsigned char[4*LOGO_WIDTH*LOGO_HEIGHT];
 
-  for(int i= 0; i<LOGO_WIDTH*LOGO_HEIGHT; ++i)
+  for(unsigned int i= 0; i<LOGO_WIDTH*LOGO_HEIGHT; ++i)
   {
     LOGO_PIXEL(LOGO_DATA, pixel);
     data[4*i]     = pixel[0];
@@ -943,9 +945,9 @@ int g3d_display_logo(g3d_states &vs, float offsetX, float offsetY, float scale)
   glGetIntegerv(GL_VIEWPORT, viewport);
   width  = viewport[2];
   height = viewport[3];
-#ifdef USE_SHADERS
+ #ifdef USE_SHADERS
   g3d_no_shader();
-#endif
+ #endif
   glPushAttrib(GL_ENABLE_BIT | GL_TRANSFORM_BIT);
    glMatrixMode(GL_PROJECTION);
    glPushMatrix();
@@ -973,6 +975,10 @@ int g3d_display_logo(g3d_states &vs, float offsetX, float offsetY, float scale)
     glMatrixMode(GL_PROJECTION);
    glPopMatrix();
  glPopAttrib();
+
+ #ifdef USE_SHADERS
+  g3d_use_shader();
+ #endif
 
  return 0;
 }
