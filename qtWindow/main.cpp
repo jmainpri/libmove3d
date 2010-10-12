@@ -84,19 +84,19 @@ int Main_threads::run(int argc, char** argv)
 
 #ifdef QT_UI_XML_FILES
 	MainWindow w;
-  //w.showMaximized();
+  w.showMaximized();
 	w.show();
 	w.raise();
-	QRect g = QApplication::desktop()->screenGeometry();
-	cout << " x = " << g.x() << " y = " << g.y() << endl;
-	cout << " width = " << g.width() << " height = " << g.height() << endl;
+// 	QRect g = QApplication::desktop()->screenGeometry();
+// 	cout << " x = " << g.x() << " y = " << g.y() << endl;
+// 	cout << " width = " << g.width() << " height = " << g.height() << endl;
+// 	
+// 	QRect g_window = w.geometry();
+// 	g_window.setWidth( g.width() );
+// 	g_window.setHeight( 0.707*g.height() ); // sqrt(2) / 2
+// 	g_window.moveTo( 0, 0 );
 	
-	QRect g_window = w.geometry();
-	g_window.setWidth( g.width() );
-	g_window.setHeight( 0.707*g.height() ); // sqrt(2) / 2
-	g_window.moveTo( 0, 0 );
-	
-	w.setGeometry( g_window );
+// 	w.setGeometry( g_window );
 #endif
 
     return app->exec();
