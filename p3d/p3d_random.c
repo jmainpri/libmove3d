@@ -7,7 +7,7 @@
  *
  */
 #include "P3d-pkg.h"
-
+#include <cassert>
 #include "../planner/MTRand.hpp"
 
 #ifdef USE_GSL
@@ -63,6 +63,16 @@ double p3d_random(double a, double b)
 	v = mersenne_twister_rng.rand();
 	v = (b-a)*v + a;
 	return(v);
+}
+
+/*!
+  Uniform sampling of an integer in the range [a, b].
+  Precondition: a <= b
+ */
+int p3d_random_integer(int a, int b)
+{
+  assert(a <= b);
+  return(mersenne_twister_rng.randInt(b - a) + a);
 }
 
 /***************************************************/
