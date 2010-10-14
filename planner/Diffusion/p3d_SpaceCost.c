@@ -840,7 +840,7 @@ void p3d_SetEdgeCost(p3d_rob* robotPt, p3d_edge* edgePt)
     cost2 = edgePt->Nf->cost;
     length = edgePt->longueur;
 	
-#ifdef CXX_PLANNER
+#if defined( CXX_PLANNER ) && defined( QT_LIBRARY )
 	Robot* rob = global_Project->getActiveScene()->getRobotByName(robotPt->name);
 	LocalPath path(rob,edgePt->path);
 	cost = path.cost();
