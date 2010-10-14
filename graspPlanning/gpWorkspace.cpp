@@ -396,7 +396,7 @@ void p3d_mat3SVD(p3d_matrix3 M, p3d_matrix3 U, p3d_vector3 S, p3d_matrix3 V)
   float *w;
 
   a= matrix(1, nbRows, 1, nbCols);
-  v= matrix(1, nbRows, 1, nbCols);
+  v= matrix(1, nbCols, 1, nbCols);
   w= new_vector(1, nbRows);
 
  
@@ -419,7 +419,7 @@ void p3d_mat3SVD(p3d_matrix3 M, p3d_matrix3 U, p3d_vector3 S, p3d_matrix3 V)
   S[2]= w[3];
 
   free_matrix(a, 1, nbRows, 1, nbCols);
-  free_matrix(v, 1, nbRows, 1, nbCols);
+  free_matrix(v, 1, nbCols, 1, nbCols);
   free_vector(w, 1, nbRows);
 }
 
@@ -441,7 +441,7 @@ void p3d_mat4SVD(p3d_matrix4 M, p3d_matrix4 U, p3d_vector4 S, p3d_matrix4 V)
   float *w;
 
   a= matrix(1, nbRows, 1, nbCols);
-  v= matrix(1, nbRows, 1, nbCols);
+  v= matrix(1, nbCols, 1, nbCols);
   w= new_vector(1, nbRows);
 
  
@@ -465,7 +465,7 @@ void p3d_mat4SVD(p3d_matrix4 M, p3d_matrix4 U, p3d_vector4 S, p3d_matrix4 V)
   S[3]= w[4];
 
   free_matrix(a, 1, nbRows, 1, nbCols);
-  free_matrix(v, 1, nbRows, 1, nbCols);
+  free_matrix(v, 1, nbCols, 1, nbCols);
   free_vector(w, 1, nbRows);
 }
 
