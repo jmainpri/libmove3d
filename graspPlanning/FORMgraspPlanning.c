@@ -5,6 +5,7 @@
 #include "Collision-pkg.h"
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/lightPlanner.h"
+#include "../localpath/proto/p3d_multiLocalPath_proto.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -53,6 +54,11 @@ static bool GRID= false;
 // static unsigned int CNT= 0;
 static configPt *PATH= NULL;
 static int NB_CONFIGS= 0;
+
+#ifdef MULTILOCALPATH
+static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
+#endif
+static bool INIT_IS_DONE= false;
 
 void draw_trajectory ( configPt* configs, int nb_configs );
 void draw_grasp_planner();
@@ -2166,55 +2172,6 @@ static void CB_load_grasp_list_obj ( FL_OBJECT *obj, long arg )
 	redraw();
 }
 
-
-/////////////////////FUNCTIONS USED BY THE GENOM MODULE: /////////////////////////////
-
-//! Concatenes all the current trajectories of the robot into the first one.
-//! NB: only the first trajectory will remain (and grown up); the others are destroyed.
-//! \param robotPt pointer to the robot
-//! \return 1 in case of success, 0 otherwise
-int GP_ConcateneAllTrajectories ( p3d_rob *robotPt )
-{
-	if ( robotPt==NULL )
-	{
-		PrintInfo ( ( "GP_ConcateneAllTrajectories: robot is NULL.\n" ) );
-		return 0;
-	}
-	if ( robotPt->nt==0 )
-	{
-		PrintInfo ( ( "GP_ConcateneAllTrajectories: the robot has no trajectory.\n" ) );
-		return 0;
-	}
-
-	int i;
-	pp3d_localpath localpathPt, end;
-
-	for ( i=0; i<robotPt->nt-1; i++ )
-	{
-		localpathPt = robotPt->t[i]->courbePt;
-		while ( localpathPt!=NULL )
-		{
-			end= localpathPt;
-			localpathPt = localpathPt->next_lp;
-		}
-		end->next_lp= robotPt->t[i+1]->courbePt;
-		robotPt->t[i+1]->courbePt->prev_lp= end;
-	}
-
-	for ( i=1; i<robotPt->nt; i++ )
-		{  free ( robotPt->t[i] );  }
-	robotPt->nt= 1;
-
-	robotPt->tcur= robotPt->t[0];
-	FORMrobot_update ( p3d_get_desc_curnum ( P3D_ROBOT ) );
-
-	return 1;
-}
-
-
-void CB_2_obj(FL_OBJECT * obj, long arg)
-{
-}
 
 
 /////////////////////FUNCTIONS USED BY THE GENOM MODULE: /////////////////////////////
