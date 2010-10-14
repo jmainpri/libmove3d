@@ -1,6 +1,8 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 
+#include "p3d/env.hpp"
+
 #ifdef P3D_LOCALPATH
 #include "Localpath-pkg.h"
 #endif
@@ -17,14 +19,14 @@
 
 #include "GroundHeight-pkg.h"
 
-#ifdef CXX_PLANNER
+#if defined( CXX_PLANNER )
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
-#include "planner_cxx/cost_space.hpp"
+#include "cost_space.hpp"
 #endif
 
 #if defined(HRI_COSTSPACE) && defined(HRI_PLANNER)
-#include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
+#include "HRI_costspace/HRICS_HAMP.hpp"
 #endif
 
 #if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
@@ -649,7 +651,8 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 
 		if ( strcmp ( fct,"p3d_CostEnvironment" ) == 0 )
 		{
-#ifdef CXX_PLANNER
+// TODO callback OOMOVE3D
+#if defined( CXX_PLANNER )
 			// initialize the cost function object.
 			global_costSpace = new CostSpace();
 			
@@ -669,8 +672,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			ENV.setBool ( Env::enableHri,true );
 			continue;
 		}
-#if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
-#ifdef PQP
+#if defined(LIGHT_PLANNER) 
 		if ( strcmp ( fct, "p3d_set_object_to_carry" ) == 0 )
 		{
 			if ( !read_desc_name ( fd, name ) ) return ( read_desc_error ( fct ) );
@@ -685,6 +687,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			continue;
 		}
 #endif
+#if defined( PQP ) && defined( FK_CNTRT ) && defined( LIGHT_PLANNER ) 
 		if ( strcmp ( fct, "p3d_set_fk_constraint" ) == 0 )
 		{
 			ENV.setBool(Env::startWithFKCntrt,true);
