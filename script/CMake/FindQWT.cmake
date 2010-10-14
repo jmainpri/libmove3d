@@ -11,7 +11,7 @@
 
 find_path (QWT_INCLUDE_DIR qwt_plot.h 
   PATHS ${QWT_INC} /usr/local/include /usr/include /sw/include /opt/local/include /usr/local/qwt-5.2.0/include
-  PATH_SUFFIXES qwt
+  PATH_SUFFIXES qwt qwt5
   )
 
 ## -----------------------------------------------------------------------------
