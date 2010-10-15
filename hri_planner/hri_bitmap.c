@@ -277,11 +277,14 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
           break;
         }
       }
+
       if (discard_movable_object)
         continue;
 
       hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
-      if (is_human) {
+      if (strcasestr(env->robot[i]->name, "TABLE")) {
+          hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, safe_expand_rate, BT_OBST_POTENTIAL_OBJECT_COLLISION, 0);
+      } else if (is_human ) {
         // not drawing soft collisions for other objects, as they are not checked later anyways
         hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, safe_expand_rate, BT_OBST_POTENTIAL_HUMAN_COLLISION, 0);
       }
@@ -895,6 +898,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
               bitmapset->parameters->start_cell_tolerance);
       if(new_search_start == NULL) {
         bitmapset->pathexist = FALSE;
+        PrintWarning(("No free search start cell for (%f, %f) in cell range %f\n", qs[0], qs[1], bitmapset->parameters->start_cell_tolerance));
         return HRI_PATH_SEARCH_ERROR_NAV_START_IN_OBSTACLE;
       }
     } else {
@@ -973,64 +977,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
 
 }
 
-/****************************************************************/
-/*!
- * \brief A* search: heuristic function
- * the purpose of this function is to slighly change the weights of cells depending on the distance to the target
- *
- * \param bitmap the bitmap
- * \param x_s    x coord of current cell
- * \param x_s    y coord of current cell
- *
- * \return FALSE in case of a problem
- */
-/****************************************************************/
-double hri_bt_dist_heuristic(hri_bitmap* bitmap, int x_s, int y_s, int z_s)
-{
-  int x_f = bitmap->search_goal->x,
-  y_f = bitmap->search_goal->y,
-  z_f = bitmap->search_goal->z;
 
-  // Akin workaround for non-optimal path
-  return sqrt((double) SQR(x_f-x_s)+SQR(y_f-y_s)+SQR(z_f-z_s));
-
-  /*
-   double cost = 0;
-   double h_2ddiag, h_2dmanh, h_diag;
-   double D3 = M_SQRT3, D2 = M_SQRT2, D=1.;
-
-   // if start = goal
-   if(DISTANCE3D(x_s, y_s, z_s, x_f, y_f, z_f) == 0) {
-   return 0;
-   }
-
-   // add minimal 3d manhattan distance times sqrt(3) to costs
-   h_diag = MIN( MIN(ABS(x_f-x_s), ABS(y_f-y_s)) , ABS(z_f-z_s) );
-   cost += h_diag * D3;
-
-   if( MIN(ABS(x_f-x_s), ABS(y_f-y_s)) >  ABS(z_f-z_s)) {
-   // if xy min manhattan distance < z distance
-   h_2ddiag = MIN(ABS(x_f-x_s)-h_diag, ABS(y_f-y_s)-h_diag);
-   h_2dmanh = ABS(x_f-x_s)-h_diag + ABS(y_f-y_s)-h_diag;
-   cost+= D2 * h_2ddiag + D * (h_2dmanh - 2*h_2ddiag);
-   } else {
-   if( ABS(x_f-x_s) > ABS(y_f-y_s)){
-   h_2ddiag = MIN(ABS(x_f-x_s)-h_diag, ABS(z_f-z_s)-h_diag);
-   h_2dmanh = ABS(x_f-x_s)-h_diag + ABS(z_f-z_s)-h_diag;
-   cost+= D2 * h_2ddiag + D * (h_2dmanh - 2*h_2ddiag);
-   }
-   else{
-   h_2ddiag = MIN(ABS(z_f-z_s)-h_diag, ABS(y_f-y_s)-h_diag);
-   h_2dmanh = ABS(z_f-z_s)-h_diag + ABS(y_f-y_s)-h_diag;
-   cost+= D2 * h_2ddiag + D * (h_2dmanh - 2*h_2ddiag);
-   }
-   }
-   cost+=cost;
-   //cost*=(1+0.01);
-
-   return cost;
-   */
-}
 
 
 
@@ -1947,7 +1894,7 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
         } else { // cell was neither open nor closed
           if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == FALSE)
             continue;// leave untouched
-          current_cell->h = hri_bt_dist_heuristic(bitmap,current_cell->x,current_cell->y,current_cell->z);
+          current_cell->h = hri_bt_dist_heuristic(btset, bitmap, current_cell->x, current_cell->y, current_cell->z);
           // TK:dead code never used because of if before
           //          if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == BT_OBST_POTENTIAL_COLLISION
           //              && btset->manip == BT_MANIP_NAVIGATION) {
@@ -2057,7 +2004,7 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
         } else { // cell was neither open nor closed
           if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == FALSE)
             continue;// leave untouched
-          current_cell->h = hri_bt_dist_heuristic(bitmap,current_cell->x,current_cell->y,current_cell->z);
+          current_cell->h = hri_bt_dist_heuristic(btset, bitmap,current_cell->x,current_cell->y,current_cell->z);
 
           current_cell->g = overstep_val + hri_bt_A_CalculateCellG(btset, current_cell, center_cell, M_SQRT5);
           current_cell->parent = center_cell;

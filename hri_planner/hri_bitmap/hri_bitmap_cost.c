@@ -23,6 +23,75 @@ double hri_bt_A_CalculateCellG(hri_bitmapset * btset, hri_bitmap_cell* current_c
   return result;
 }
 
+/****************************************************************/
+/*!
+ * \brief A* search: heuristic function h()
+ * the purpose of this function is to slighly change the weights of cells
+ * depending on the distance to the target
+ *
+ * \param bitmap the bitmap
+ * \param x_s    x coord of current cell
+ * \param x_s    y coord of current cell
+ *
+ * \return FALSE in case of a problem
+ */
+/****************************************************************/
+double hri_bt_dist_heuristic(hri_bitmapset * btset, hri_bitmap* bitmap, int x_s, int y_s, int z_s)
+{
+  /**
+   * Note that a heuristic must be GUARANTEED to return a value <= the real cost of the path, else A* becomes incorrect
+   * However, the closer the value is to the realcost (the higher it is) the faster A* will find a solution.
+   *
+   * The calculation therefore depends on hri_bt_A_CalculateCellG
+   */
+  int x_f = bitmap->search_goal->x,
+  y_f = bitmap->search_goal->y,
+  z_f = bitmap->search_goal->z;
+
+  // Taking the euclid distance and multiply it with distance costs
+  // A better approximation could be to use some kind of Manhattan-like distance
+  // or to use Voronoi-like paths to consider walls and obstacles
+  return btset->parameters->path_length_weight * sqrt((double) SQR(x_f-x_s)+SQR(y_f-y_s)+SQR(z_f-z_s));
+
+  /*
+   double cost = 0;
+   double h_2ddiag, h_2dmanh, h_diag;
+   double D3 = M_SQRT3, D2 = M_SQRT2, D=1.;
+
+   // if start = goal
+   if(DISTANCE3D(x_s, y_s, z_s, x_f, y_f, z_f) == 0) {
+   return 0;
+   }
+
+   // add minimal 3d manhattan distance times sqrt(3) to costs
+   h_diag = MIN( MIN(ABS(x_f-x_s), ABS(y_f-y_s)) , ABS(z_f-z_s) );
+   cost += h_diag * D3;
+
+   if( MIN(ABS(x_f-x_s), ABS(y_f-y_s)) >  ABS(z_f-z_s)) {
+   // if xy min manhattan distance < z distance
+   h_2ddiag = MIN(ABS(x_f-x_s)-h_diag, ABS(y_f-y_s)-h_diag);
+   h_2dmanh = ABS(x_f-x_s)-h_diag + ABS(y_f-y_s)-h_diag;
+   cost+= D2 * h_2ddiag + D * (h_2dmanh - 2*h_2ddiag);
+   } else {
+   if( ABS(x_f-x_s) > ABS(y_f-y_s)){
+   h_2ddiag = MIN(ABS(x_f-x_s)-h_diag, ABS(z_f-z_s)-h_diag);
+   h_2dmanh = ABS(x_f-x_s)-h_diag + ABS(z_f-z_s)-h_diag;
+   cost+= D2 * h_2ddiag + D * (h_2dmanh - 2*h_2ddiag);
+   }
+   else{
+   h_2ddiag = MIN(ABS(z_f-z_s)-h_diag, ABS(y_f-y_s)-h_diag);
+   h_2dmanh = ABS(z_f-z_s)-h_diag + ABS(y_f-y_s)-h_diag;
+   cost+= D2 * h_2ddiag + D * (h_2dmanh - 2*h_2ddiag);
+   }
+   }
+   cost+=cost;
+   //cost*=(1+0.01);
+
+   return cost;
+   */
+}
+
+
 /*********************ASTAR**************************************/
 /*!
  * \brief Calculate the cost of a cell when reached from a different cell
