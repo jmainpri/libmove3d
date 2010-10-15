@@ -75,6 +75,15 @@ Env::Env()
 	mBoolMap.insert(boolMap_t(Env::costThresholdPlanner, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::costStarRRT, new boolContainer(false)));
 	
+	// Smoothing stage
+	mBoolMap.insert(boolMap_t(Env::trajCostRecompute, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::withMaxIteration, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::withGainLimit, new boolContainer(true)));
+	mBoolMap.insert(boolMap_t(Env::withTimeLimit, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::withSmoothing, new boolContainer(true)));
+	mBoolMap.insert(boolMap_t(Env::withShortCut, new boolContainer(true)));
+	mBoolMap.insert(boolMap_t(Env::withDeformation, new boolContainer(false)));
+	
 	mBoolMap.insert(boolMap_t(Env::withCleaning, new boolContainer(true)));
 	
 	mBoolMap.insert(boolMap_t(Env::useTRRT, new boolContainer(true)));

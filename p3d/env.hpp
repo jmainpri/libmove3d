@@ -116,6 +116,15 @@ public:
 		costThresholdPlanner,
 		costStarRRT,
 		
+		// Smoothing stage
+		withMaxIteration,
+		withGainLimit,
+		withTimeLimit,
+		withSmoothing,
+		withShortCut,
+		withDeformation,
+		withCleaning,
+		
 		withCleaning,
 		
 		useTRRT,
