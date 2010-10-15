@@ -625,22 +625,22 @@ void g3d_draw_all_tcur(void) {
     }
 	
 // TODO callback OOMOVE3D
-#if defined( CXX_PLANNER )
-	if( ENV.getBool(Env::debugCostOptim) || ENV.getBool(Env::drawTrajVector) )
-	{
-		//std::cout << "Should be drawing traj" << std::endl;
-		for(unsigned i=0;i<trajToDraw.size();i++)
-		{
-			trajToDraw.at(i).draw(NB_KEY_FRAME);
-			//std::cout << "Drawing traj" << std::endl;
-		}
-		p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-		if (!robotPt->tcur)
-		{
-			trajToDraw.clear();
-		}
-	}	
-#endif
+//#if defined( CXX_PLANNER )
+//	if( ENV.getBool(Env::debugCostOptim) || ENV.getBool(Env::drawTrajVector) )
+//	{
+//		//std::cout << "Should be drawing traj" << std::endl;
+//		for(unsigned i=0;i<trajToDraw.size();i++)
+//		{
+//			trajToDraw.at(i).draw(NB_KEY_FRAME);
+//			//std::cout << "Drawing traj" << std::endl;
+//		}
+//		p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+//		if (!robotPt->tcur)
+//		{
+//			trajToDraw.clear();
+//		}
+//	}	
+//#endif
 
 }
 
