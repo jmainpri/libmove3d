@@ -16,8 +16,8 @@
 #include "locale.h"
 #include "molecule.xpm"
 
-#ifdef QT_GL
-#include "qtWindow/cppToQt.hpp"
+#if defined( QT_GL ) && ( defined( CXX_PLANNER ) || defined( WITH_OOMOVE3D ) )
+#include "cppToQt.hpp"
 #endif
 #ifdef LIGHT_PLANNER
 #include "../lightPlanner/proto/DlrPlanner.h"
@@ -27,6 +27,11 @@
 #ifdef CXX_PLANNER
 #include "planningAPI.hpp"
 #include "cost_space.hpp"
+#include <boost/bind.hpp>
+#endif
+#ifdef WITH_OOMOVE3D
+#include "API/planningAPI.hpp"
+#include "planner/cost_space.hpp"
 #include <boost/bind.hpp>
 #endif
 #ifdef BIO_BALL
@@ -42,7 +47,7 @@ static int FILTER_TO_BE_SET_ACTIVE = FALSE;
 static void use(void);
 
 
-#if defined QT_LIBRARY || BioMove3D_EXPORTS || MAKELIB
+#if ( defined ( QT_LIBRARY ) && ( defined( CXX_PLANNER ) || defined( WITH_OOMOVE3D ) ) ) || BioMove3D_EXPORTS || MAKELIB
 int mainMhp(int argc, char ** argv) {
 #else
 int main(int argc, char ** argv) {
@@ -509,7 +514,7 @@ int main(int argc, char ** argv) {
     if(global_costSpace)
     {
       global_costSpace->addCost("BALLmmff94",
-	boost::bind(&BallEnergy::computeEnergy, XYZ_ENV->energyComputer, _1));
+				boost::bind(&BallEnergy::computeEnergy, XYZ_ENV->energyComputer, _1));
       global_costSpace->setCost("BALLmmff94");
     }
 #endif
@@ -568,9 +573,9 @@ int main(int argc, char ** argv) {
 		deactivateCcCntrts(MyRobot,-1);
 	}
 #endif
-#ifdef CXX_PLANNER
-	global_Project = new Project(new Scene(XYZ_ENV));
-#endif
+//#ifdef CXX_PLANNER
+//	global_Project = new Project(new Scene(XYZ_ENV));
+//#endif
 #if defined(HRI_COSTSPACE) && defined(QT_GL)
 	if(grid_set)
 	{
@@ -578,7 +583,7 @@ int main(int argc, char ** argv) {
 		qt_load_HRICS_Grid(grid_path);
 	}
 #endif
-#ifdef QT_GL
+#if defined( QT_GL ) && ( defined( CXX_PLANNER ) || defined( WITH_OOMOVE3D ) )
 	sem->release();
 #endif
 
