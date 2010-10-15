@@ -2,6 +2,8 @@
 #include "Bio-pkg.h"
 #include "P3d-pkg.h"
 
+#include "env.hpp"
+
 /**
  * p3d_SetDistConfigChoice 
  * Set the current choice of metric used to compute 

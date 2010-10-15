@@ -18,7 +18,6 @@ p3d_sample.c
 p3d_SelectedDistConfig.c 
 p3d_set_param.c 
 p3d_trajectory.c 
-MTRand.cpp
 )
 IF(MULTIGRAPH)
 BM3D_SRC_SUBDIR_PROCESS(p3d_multiGraph.c)

@@ -6,19 +6,25 @@
 #include "Move3d-pkg.h"
 #include "Bio-pkg.h"
 #include "Graphic-pkg.h"
+
+#include "env.hpp"
+
 #ifdef ENERGY
 #include "../bio/BioEnergy/include/Energy-pkg.h"
 #endif
 #define DEBUG(x) x
 
 #ifdef CXX_PLANNER
-#include "../planner_cxx/plannerFunctions.hpp"
+#include "plannerFunctions.hpp"
 #endif
+
+#ifdef WITH_OOMOV3D
+#include "planner/plannerFunctions.hpp"
+#endif
+
 #ifdef DPG
 #include "DpgGrid.h"
 #endif
-
-pp3d_graph XYZ_GRAPH = NULL;
 
 static void save_infos_in_file(p3d_graph *G, int sol);
 static void p3d_specificPrintAverage(double * arraytimes, int nfail, int sumnnodes, int sumnsamples, int sumncallsCD, int sumncallsLP);

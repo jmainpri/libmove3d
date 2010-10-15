@@ -10,6 +10,8 @@
 #include "../bio/BioEnergy/include/Energy-pkg.h"
 #endif
 
+#include "env.hpp"
+
 extern double ZminEnv;
 extern double ZmaxEnv;
 extern double InitCostThreshold;

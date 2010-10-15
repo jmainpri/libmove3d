@@ -4,8 +4,7 @@
 #include "Localpath-pkg.h"
 //#include "Collision-pkg.h"
 
-
-
+#include "env.hpp"
 
 int p3d_compute_traj_nloc(p3d_traj *trajPt)
 {

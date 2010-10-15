@@ -3,6 +3,8 @@
 #include "Collision-pkg.h"
 #include "Bio-pkg.h"
 
+#include "env.hpp"
+
 /*
  * The lambda parameter is used in two cases: 
  * it defines the size of the  dynamic boxes inside 

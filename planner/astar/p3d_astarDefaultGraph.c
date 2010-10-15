@@ -2,6 +2,8 @@
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"
 
+#include "env.hpp"
+
 void * p3d_validSearch(void * vGraph){
   p3d_graph * graph = (p3d_graph *)vGraph;
 	if(graph == NULL)

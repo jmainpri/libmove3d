@@ -3,6 +3,8 @@
 #include "Planner-pkg.h"
 #include "Localpath-pkg.h"
 
+#include "env.hpp"
+
 /**
  * Note: the integer values of the different
  * NODE_TO_COMP_STRATEGYs are defined in the
