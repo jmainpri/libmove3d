@@ -1734,7 +1734,7 @@ p3d_jnt * p3d_jnt_create(p3d_type_joint type, p3d_matrix4 pos, double * v,
                                    vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, torque_max, param);
     case P3D_TRANSLATE:
       return p3d_jnt_translate_create(pos, v, vmin, vmax,
-                                      vmin_rand, vmax_rand, param);
+                                      vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, param);
     case P3D_FIXED:
       return p3d_jnt_fixed_create(pos, v, vmin, vmax,
                                   vmin_rand, vmax_rand, param);
@@ -1783,7 +1783,7 @@ p3d_jnt * p3d_jnt_create_deg(int type, p3d_matrix4 pos, double * v,
                                        vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, torque_max, param);
     case P3D_TRANSLATE:
       return p3d_jnt_translate_create(pos, v, vmin, vmax,
-                                      vmin_rand, vmax_rand, param);
+                                      vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, param);
     case P3D_FIXED:
       return p3d_jnt_fixed_create(pos, v, vmin, vmax,
                                   vmin_rand, vmax_rand, param);

@@ -40,7 +40,7 @@ const p3d_jnt_type_name jnt_type_name_array[NB_JNT_TYPE] =
  *
  * \retval type: the joint type.
  *
- * \return TRUE if \a name is valid.
+ * \return TRUE if \a name is valid. 
  */
 int p3d_rw_jnt_get_type_by_name(const char * name, p3d_type_joint * type)
 {
@@ -314,16 +314,16 @@ static int s_p3d_check_data(p3d_read_jnt_data * data, int num_line)
       return FALSE;
     }
     
-    if ( data->flag_velocity_max && !(data->type==P3D_ROTATE ||data->type==P3D_FREEFLYER || data->type==P3D_BASE) )  {
+    if ( data->flag_velocity_max && !(data->type==P3D_ROTATE ||data->type==P3D_FREEFLYER || data->type==P3D_BASE || data->type == P3D_TRANSLATE) )  {
       printf("!!! WARNING (line %i) p3d_set_dof_velocity_max only works with P3D_ROTATE, P3D_FREEFLYER and P3D_BASE joints !!!\n",
 		    num_line);
     }
 
-    if ( data->flag_acceleration_max && !(data->type==P3D_ROTATE ||data->type==P3D_FREEFLYER || data->type==P3D_BASE  ) )  {
+    if ( data->flag_acceleration_max && !(data->type==P3D_ROTATE ||data->type==P3D_FREEFLYER || data->type==P3D_BASE || data->type == P3D_TRANSLATE) )  {
       printf("!!! WARNING (line %i) p3d_set_dof_acceleration_max only works with P3D_ROTATE, P3D_FREEFLYER and P3D_BASE joints !!!\n",
 		    num_line);
     }
-    if ( data->flag_jerk_max && !(data->type==P3D_ROTATE ||data->type==P3D_FREEFLYER || data->type==P3D_BASE  ) )  {
+    if ( data->flag_jerk_max && !(data->type==P3D_ROTATE ||data->type==P3D_FREEFLYER || data->type==P3D_BASE || data->type == P3D_TRANSLATE) )  {
       printf("!!! WARNING (line %i) p3d_set_dof_jerk_max only works with P3D_ROTATE, P3D_FREEFLYER and P3D_BASE joints !!!\n",
 		    num_line);
     }
@@ -893,7 +893,7 @@ int p3d_parse_jnt_desc(FILE * f, char ** line, int * size,
 	  { data->flag_velocity_max = TRUE; }
         continue;
      }
-    // set the accleration max in rad/s²
+    // set the accleration max in rad/s^2
     if (strcmp(fct,"p3d_set_dof_acceleration_max")==0) {
       if(!p3d_read_string_double(&pos, data->nb_dof, data->acceleration_max))
 	  { no_error = FALSE; }
@@ -901,7 +901,7 @@ int p3d_parse_jnt_desc(FILE * f, char ** line, int * size,
 	  { data->flag_acceleration_max = TRUE; }
         continue;
      }
-     // set the accleration max in rad/s³
+     // set the accleration max in rad/s^3
      if (strcmp(fct,"p3d_set_dof_jerk_max")==0) {
       if(!p3d_read_string_double(&pos, data->nb_dof, data->jerk_max))
 	  { no_error = FALSE; }

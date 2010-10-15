@@ -223,11 +223,7 @@ void p3d_jnt_translate_calc_mat_jac(p3d_jnt * jntPt)
  *
  *  \internal
  */
-p3d_jnt * p3d_jnt_translate_create(p3d_matrix4 pos, double * v, 
-				   double * vmin, double * vmax, 
-				   double * vmin_rand, double * vmax_rand,
-				   double * param) 
-{
+p3d_jnt * p3d_jnt_translate_create ( p3d_matrix4 pos, double * v, double * vmin, double * vmax, double * vmin_rand, double * vmax_rand, double * velocity_max, double *acceleration_max, double *jerk_max, double * param ){
   p3d_jnt * jntPt;
 
   if((*v<*vmin)||(*v>*vmax)) {
@@ -252,7 +248,10 @@ p3d_jnt * p3d_jnt_translate_create(p3d_matrix4 pos, double * v,
   p3d_jnt_set_dof_v0(jntPt, 0, 0); 
   p3d_jnt_set_dof_bounds(jntPt, 0, vmin[0], vmax[0]); 
   jntPt->dof_data[0].circular = false;
-  p3d_jnt_set_dof_rand_bounds(jntPt, 0, vmin_rand[0], vmax_rand[0]); 
+  p3d_jnt_set_dof_rand_bounds(jntPt, 0, vmin_rand[0], vmax_rand[0]);
+  jntPt->dof_data[0].velocity_max= velocity_max[0];
+  jntPt->dof_data[0].acceleration_max = acceleration_max[0];
+  jntPt->dof_data[0].jerk_max= jerk_max[0];
   if (LEQ(vmax[0], vmin[0]))
     { jntPt->dof_data[0].is_user = FALSE; }
   else {
