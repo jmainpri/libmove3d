@@ -398,6 +398,21 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 16 :{
+#if defined(GRASP_PLANNING) && defined(LIGHT_PLANNER)
+  configPt q = p3d_alloc_config(XYZ_ROBOT);
+  gpGrasp grasp;
+  p3d_matrix4 id;
+  double maxCost, cost;
+  
+  for (int i = 0 ; i < 1; i++){
+    p3d_shoot(XYZ_ROBOT, q, 1);
+    p3d_set_and_update_this_robot_conf(XYZ_ROBOT,q);
+    g3d_draw_allwin_active();
+//     cost = computeRobotGraspArmCost(XYZ_ROBOT, 0, grasp, q, XYZ_ROBOT->ROBOT_POS, id);
+//     maxCost = cost > maxCost ? cost : maxCost;
+  }
+  printf("MaxCost = %f \n", maxCost);
+#endif
 //#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
 //      configPt startConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
 //      configPt endConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
@@ -434,23 +449,23 @@ static void callbacks(FL_OBJECT *ob, long arg){
       
       
 //Test Multigraph      
-#ifdef MULTI_GRAPH      
-      int maxNodes = p3d_get_NB_NODES();
-      int i =0;
-        printf("##########  TEST N %d  ############\n", i+1);
- //       deleteAllGraphs();
- //       p3d_set_NB_NODES(maxNodes);
- //       p3d_set_multiGraph(1);
- //       CB_global_search_obj(NULL,0);
- //       p3d_globalSuperGraphLearn();
-        p3d_set_NB_NODES(10000);
-        p3d_set_multiGraph(0);
-        p3d_specificSuperGraphLearn();
-        setTotalCountVar(XYZ_GRAPH);
-        mergeStat(XYZ_GRAPH->stat, XYZ_ENV->stat);
-        printStatsGraph(XYZ_GRAPH->stat, 1);
-      printStatsEnv(XYZ_ENV->stat, 1);
-#endif
+// #ifdef MULTI_GRAPH      
+//       int maxNodes = p3d_get_NB_NODES();
+//       int i =0;
+//         printf("##########  TEST N %d  ############\n", i+1);
+//  //       deleteAllGraphs();
+//  //       p3d_set_NB_NODES(maxNodes);
+//  //       p3d_set_multiGraph(1);
+//  //       CB_global_search_obj(NULL,0);
+//  //       p3d_globalSuperGraphLearn();
+//         p3d_set_NB_NODES(10000);
+//         p3d_set_multiGraph(0);
+//         p3d_specificSuperGraphLearn();
+//         setTotalCountVar(XYZ_GRAPH);
+//         mergeStat(XYZ_GRAPH->stat, XYZ_ENV->stat);
+//         printStatsGraph(XYZ_GRAPH->stat, 1);
+//       printStatsEnv(XYZ_ENV->stat, 1);
+// #endif
 //        p3d_APInode_shoot_singularity(XYZ_ROBOT, &config, &singularity, &cntrt, rootConfig, XYZ_ROBOT->ikSol);
 //        g3d_draw_allwin_active();
 //        p3d_unmark_for_singularity(XYZ_ROBOT->cntrt_manager, cntrt);
@@ -499,9 +514,9 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //      unFixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt);
 //      shootTheObjectInTheWorld(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt);
 //      removeAloneNodesInGraph(XYZ_ROBOT, XYZ_GRAPH);
-#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)      
-      manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS), p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO), "",0);
-#endif
+// #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)      
+//       manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS), p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO), "",0);
+// #endif
       break;
     }
     case 17:{
