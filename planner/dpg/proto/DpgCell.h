@@ -2,8 +2,8 @@
 #define __DPGCELL_H__
 #include <vector>
 #include "Planner-pkg.h"
-#include "ThreeDCell.hpp"
-#include "ThreeDGrid.hpp"
+#include "ThreeDCell.h"
+#include "ThreeDGrid.h"
 
 class DpgCell : public API::ThreeDCell{
   public:

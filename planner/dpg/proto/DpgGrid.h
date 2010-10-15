@@ -3,7 +3,7 @@
 #include "P3d-pkg.h"
 #include "DpgCell.h"
 #include <vector>
-#include "ThreeDGrid.hpp"
+#include "ThreeDGrid.h"
 
 class DpgGrid : public API::ThreeDGrid{
   public:  
