@@ -83,6 +83,7 @@ Env::Env()
 	mBoolMap.insert(boolMap_t(Env::withSmoothing, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::withShortCut, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::withDeformation, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::saveTrajCost, new boolContainer(false)));
 	
 	mBoolMap.insert(boolMap_t(Env::withCleaning, new boolContainer(true)));
 	
@@ -163,6 +164,11 @@ Env::Env()
 	mDoubleMap.insert(doubleMap_t(Env::coeffConfo, new doubleContainer(1.0)));
 	mDoubleMap.insert(doubleMap_t(Env::multCost, new doubleContainer(1.0)));
 	mDoubleMap.insert(doubleMap_t(Env::refiRadius, new doubleContainer(2.0)));
+	
+	// Optimization Variables
+	mDoubleMap.insert(doubleMap_t(Env::optimTimeLimit, new doubleContainer(1.0)));
+	mDoubleMap.insert(doubleMap_t(Env::MaxFactor, new doubleContainer(1.0)));
+	mDoubleMap.insert(doubleMap_t(Env::MinStep, new doubleContainer(2.0)));
 	
 	// HRI costs
 	mDoubleMap.insert(doubleMap_t(Env::Kdistance, new doubleContainer(50.0)));

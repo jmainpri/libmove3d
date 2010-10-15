@@ -123,6 +123,7 @@ public:
 		withSmoothing,
 		withShortCut,
 		withDeformation,
+		saveTrajCost,
 		
 		withCleaning,
 		
@@ -228,6 +229,11 @@ public:
 		Knatural,
 		Kreachable,
 		KlengthWeight,
+		
+		// Optimization Variables
+		optimTimeLimit,
+		MaxFactor,
+		MinStep,
 		
 		//Other variables
 		refiRadius,
