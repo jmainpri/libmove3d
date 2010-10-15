@@ -60,4 +60,6 @@ extern int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *
 
 extern int gpReduce_grasp_list_size(const std::list<gpGrasp> &originalList, std::list<gpGrasp> &reducedList, unsigned int maxSize);
 
+extern int gpRemove_edge_grasps(const std::list<gpGrasp> &originalList, std::list<gpGrasp> &reducedList, double angle, double step);
+
 #endif

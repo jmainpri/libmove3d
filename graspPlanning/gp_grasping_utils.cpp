@@ -1968,7 +1968,7 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &handProp, std::v
     break;
   }
 
-  p3d_copy_config_into(robot, qcur, &robot->ROBOT_POS);
+//  p3d_copy_config_into(robot, qcur, &robot->ROBOT_POS);
 
   p3d_set_and_update_this_robot_conf(robot, qcur);
   p3d_destroy_config(robot, qcur);

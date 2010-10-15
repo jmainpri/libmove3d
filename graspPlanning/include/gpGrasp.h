@@ -20,6 +20,7 @@ class gpContact
   double curvature; /*!<  curvature of the object surface at the contact point */
  
   gpContact();
+  ~gpContact();
   gpContact(const gpContact &contact);
   gpContact & operator=(const gpContact &contact);
   int draw(double cone_length, int cone_nb_slices= 10);

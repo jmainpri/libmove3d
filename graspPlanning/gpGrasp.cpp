@@ -44,6 +44,10 @@ gpContact::gpContact(const gpContact &contact)
   curvature= contact.curvature;
 }  
 
+gpContact::~gpContact()
+{
+}  
+
 //! Copy operator of the class gpContact.
 gpContact & gpContact::operator = (const gpContact &contact)
 {

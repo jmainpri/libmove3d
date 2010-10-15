@@ -3025,6 +3025,9 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
     {  gpGrasp_collision_filter(graspList, hand_robot, object, handProp);   }
 
     // printf("before stability %d\n",graspList.size());
+    if (hand_type == GP_GRIPPER){
+      gpGrasp_collision_filter ( graspList, hand_robot, object, handProp );
+    }
     gpGrasp_stability_filter(graspList);
 
     // printf("after stability %d\n",graspList.size());
@@ -3486,6 +3489,28 @@ int gpReduce_grasp_list_size(const std::list<gpGrasp> &originalList, std::list<g
   }
 
 
+  return GP_OK;
+}
+
+
+//! \param  angle in radians
+int gpRemove_edge_grasps(const std::list<gpGrasp> &originalList, std::list<gpGrasp> &reducedList, double angle, double step)
+{
+
+  std::list<gpGrasp>::iterator igrasp;
+
+  reducedList= originalList;
+
+  
+  igrasp= reducedList.begin();
+  while(igrasp!=reducedList.end()) {
+   if( igrasp->areContactsTooCloseToEdge(angle, step) ) {
+     igrasp= reducedList.erase(igrasp);
+     continue;
+   }
+   igrasp++;
+  }
+  
   return GP_OK;
 }
 
