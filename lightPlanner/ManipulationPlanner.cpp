@@ -64,9 +64,10 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robotPt) {
     return;
   }
   for (uint i = 0; i < _robot->armManipulationData->size(); i++) {
-  _handProp.at(0).setArmType(GP_LWR);
-  printf("%s: %d: ManipulationPlanner::ManipulationPlanner: the arm type is set to GP_LWR. Use setArmType() to change it.\n",__FILE__,__LINE__);
-      return;
+//   _handProp.at(0).setArmType(GP_LWR);
+  if ((*_robot->armManipulationData)[i].getCartesianGroup() == -1) {
+    printf("%s: %d: ManipulationPlanner::ManipulationPlanner: the arm type is set to GP_LWR. Use setArmType() to change it.\n",__FILE__,__LINE__);
+    return;
     }
   }
 #endif
@@ -471,7 +472,6 @@ void ArmManipulationData::fixHand(p3d_rob* robot, bool rest){
 void ArmManipulationData::unFixHand(p3d_rob* robot){
   gpUnFix_hand_configuration(robot, _handProp, _handProp.type);
   gpActivate_hand_selfcollisions(robot, _handProp.type);
-  result= gpFind_grasp_and_pregrasp_from_base_configuration(_robotPt, _object, untestedGrasps, GP_LWR, qcur, _grasp.at(armId), _handProp.at(armId), _liftUpDistance, qpregrasp, qgrasp);
 }
 
 void ManipulationPlanner::fixAllHands(configPt q, bool rest) const{
@@ -504,14 +504,14 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
       }
     }
     gpHand_properties armHandProp = (*_robot->armManipulationData)[armId].getHandProperties();
-    list<gpGrasp> graspList, tmp;
+    list<gpGrasp> graspList/*, tmp*/;
     //Compute the grasp list for the given hand and object
     gpGet_grasp_list(object->name, armHandProp.type, graspList);
-    tmp = graspList;
-    gpRemove_edge_grasps(tmp, graspList, 30*M_PI/180 , 0.02);
-    tmp = graspList;
-    gpReduce_grasp_list_size(tmp, graspList, 30);
-    
+//     tmp = graspList;
+//     gpRemove_edge_grasps(tmp, graspList, 30*M_PI/180 , 0.02);
+//     tmp = graspList;
+//     gpReduce_grasp_list_size(tmp, graspList, 30);
+//     
     if (graspList.size() == 0){
       status = MANIPULATION_TASK_NO_GRASP;
     }else{

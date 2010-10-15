@@ -12,7 +12,7 @@
 #include "Manipulation.h"
 
 
-static char ObjectName[]= "Horse";
+// static char ObjectName[]= "Horse";
 static char ObjectName[]= "GREY_TAPE";
 static char RobotName[]= "JIDO_ROBOT";
 static char HandRobotName[]= "SAHandRight_robot";

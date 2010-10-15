@@ -2655,6 +2655,7 @@ int p3d_set_arm_data(p3d_rob* r, int *data){
   armData.setCcCntrt(r, data[0]);
 #ifdef FK_CNTRT
   armData.setFkCntrt(p3d_create_FK_cntrts(r, armData.getCcCntrt()));
+#endif
   armData.setCartesianGroup(data[1]);
   armData.setCartesianSmGroup(data[2]);
   armData.setHandGroup(data[3]);
