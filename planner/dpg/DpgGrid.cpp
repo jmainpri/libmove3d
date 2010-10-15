@@ -1,5 +1,5 @@
 #include "DpgGrid.h"
-#include "ThreeDCell.hpp"
+#include "ThreeDCell.h"
 
 using namespace std;
 
