@@ -2266,7 +2266,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 					    std::vector <int> &lp, std::vector < std::vector <double> > &positions,
 					    MANPIPULATION_TRAJECTORY_STR &segments) {
 	double SIMPLING_TIME = 0.01;
-	int index_dof = 0;
+
 	int j=0;
 	int nb_dof = 0, nbGpJnt = 0;
 	p3d_localpath* localpathPt =  NULL;
@@ -2326,17 +2326,15 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	segments.seg.clear();
 	
 
-	index_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[0]]->index_dof;
+
 	double min_i=0.0, max_i=0.0;
 	
 	for(int v=0; v<nbGpJnt; v++) {
-
 	  nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
-// 	  std::cout << " jnt " << v << " dof " << nb_dof << std::endl;
 	  for(int k=0; k<nb_dof; k++) {
-		q_armOld.push_back(traj->courbePt->mlpLocalpath[upBodySm_mlpID]->specific.softMotion_data->q_init[index_dof + k]);
+		q_armOld.push_back(traj->courbePt->mlpLocalpath[upBodySm_mlpID]->specific.softMotion_data->q_init[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof + k]);
 		vqi.push_back(0.0);
-		p3d_jnt_get_dof_bounds(robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]], 0, &min_i, &max_i);
+		p3d_jnt_get_dof_bounds(robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]], k, &min_i, &max_i);
 		min.push_back(min_i);
 		max.push_back(max_i);
 		j++;
@@ -2423,12 +2421,18 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 // 			}
 
 
-			for(int v=0; v<nb_armDof; v++) {
- 				dq = fmod((q[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]] - q_armOld[j]), 2*M_PI);
+	
+
+
+			 for(int v=0; v<nbGpJnt; v++) {
+			    nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
+			      for(int k=0; k<nb_dof; k++) {
+ 				dq = fmod((q[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof +k] - q_armOld[j]), 2*M_PI);
  				q_arm.push_back(q_armOld[j] + dq);
 				qplot_i.push_back(q_arm[j]);
 				j++;
-			}
+			      }
+			 }
 
 			
 			// vqi[j] = (q_arm[j] - q_armi[j]) / 0.01;
@@ -2528,7 +2532,7 @@ void p3d_softMotion_write_single_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* t
 					    std::vector <int> &lp, std::vector < std::vector <double> > &positions,
 					    MANPIPULATION_TRAJECTORY_STR &segments) {
 	double SIMPLING_TIME = 0.01;
-	int index_dof = 0;
+	//int index_dof = 0;
 	int j=0;
 	int nb_dof = 0, nbGpJnt = 0;
 	p3d_localpath* localpathPt =  NULL;
@@ -2587,18 +2591,13 @@ void p3d_softMotion_write_single_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* t
 	max.clear();
 	segments.seg.clear();
 
-
-	index_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[0]]->index_dof;
 	double min_i=0.0, max_i=0.0;
-
 	for(int v=0; v<nbGpJnt; v++) {
-
 	  nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
-// 	  std::cout << " jnt " << v << " dof " << nb_dof << std::endl;
 	  for(int k=0; k<nb_dof; k++) {
-		q_armOld.push_back(traj->courbePt->specific.softMotion_data->q_init[index_dof + k]);
+		q_armOld.push_back(traj->courbePt->specific.softMotion_data->q_init[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof + k]);
 		vqi.push_back(0.0);
-		p3d_jnt_get_dof_bounds(robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]], 0, &min_i, &max_i);
+		p3d_jnt_get_dof_bounds(robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]], k, &min_i, &max_i);
 		min.push_back(min_i);
 		max.push_back(max_i);
 		j++;
@@ -2674,13 +2673,15 @@ void p3d_softMotion_write_single_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* t
 			p3d_get_robot_config_into(robotPt, &q);
 			// Check for the bounds for the arm
 			j=0;
-			for(int v=index_dof; v<( index_dof +nb_armDof); v++) {
- 				dq = fmod((q[v] - q_armOld[j]), 2*M_PI);
+			 for(int v=0; v<nbGpJnt; v++) {
+			    nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
+			      for(int k=0; k<nb_dof; k++) {
+ 				dq = fmod((q[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof +k] - q_armOld[j]), 2*M_PI);
  				q_arm.push_back(q_armOld[j] + dq);
 				qplot_i.push_back(q_arm[j]);
 				j++;
-			}
-			// vqi[j] = (q_arm[j] - q_armi[j]) / 0.01;
+			      }
+			 }
 
 			if(filepTrajtr != NULL) {
 
