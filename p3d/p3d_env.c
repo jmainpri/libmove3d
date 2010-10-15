@@ -1,6 +1,8 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 
+#include "env.hpp"
+
 #ifdef P3D_PLANNER
 #include "Planner-pkg.h"
 #endif
@@ -26,6 +28,8 @@ pp3d_rob  XYZ_ROBOT;
 pp3d_obj  XYZ_OBSTACLES;
 pp3d_traj  XYZ_TRAJS;        /*    is used but in this file, serves    *
                               *    as a sort of "current trajectory"   */
+
+pp3d_graph XYZ_GRAPH = NULL;
 
 static pp3d_traj *XYZ_TRAJ = NULL;       /* Carl 28032001 */
 static int nof_trajs = 0;                /* Carl 28032001 */

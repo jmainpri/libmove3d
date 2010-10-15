@@ -11,16 +11,18 @@
 //
 
 #include "env.hpp"
+
 using namespace std;
 
-Env::Env() {
+Env::Env() 
+{
 	mBoolMap.insert(boolMap_t(Env::use_p3d_structures, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::isPRMvsDiffusion, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::treePlannerIsEST, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawDisabled, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawFrame, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::drawGraph, new boolContainer(false)));
-	mBoolMap.insert(boolMap_t(Env::drawTraj, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::drawTraj, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::drawTrajVector, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawAll, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawGrid, new boolContainer(false)));
@@ -31,7 +33,7 @@ Env::Env() {
 	mBoolMap.insert(boolMap_t(Env::drawBox, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawOnlyOneLine, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawVectorField, new boolContainer(false)));
-	mBoolMap.insert(boolMap_t(Env::biDir, new boolContainer(true)));
+	mBoolMap.insert(boolMap_t(Env::biDir, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::minimize, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::isCostSpace, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::isPasExtWhenAct, new boolContainer(false)));
@@ -73,15 +75,7 @@ Env::Env() {
 	mBoolMap.insert(boolMap_t(Env::costThresholdPlanner, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::costStarRRT, new boolContainer(false)));
 	
-	// Smoothing stage
-	mBoolMap.insert(boolMap_t(Env::trajCostRecompute, new boolContainer(false)));
-	mBoolMap.insert(boolMap_t(Env::withMaxIteration, new boolContainer(false)));
-	mBoolMap.insert(boolMap_t(Env::withGainLimit, new boolContainer(true)));
-	mBoolMap.insert(boolMap_t(Env::withTimeLimit, new boolContainer(false)));
-	mBoolMap.insert(boolMap_t(Env::withSmoothing, new boolContainer(true)));
-	mBoolMap.insert(boolMap_t(Env::withShortCut, new boolContainer(true)));
-	mBoolMap.insert(boolMap_t(Env::withDeformation, new boolContainer(false)));
-  mBoolMap.insert(boolMap_t(Env::withCleaning, new boolContainer(true)));
+	mBoolMap.insert(boolMap_t(Env::withCleaning, new boolContainer(true)));
 	
 	mBoolMap.insert(boolMap_t(Env::useTRRT, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::isRunning, new boolContainer(false)));
@@ -99,7 +93,6 @@ Env::Env() {
 	mBoolMap.insert(boolMap_t(Env::FKDistance, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::RecomputeCellCost, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::UseDPGGrids, new boolContainer(false)));
-	mBoolMap.insert(boolMap_t(Env::saveTrajCost, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::showOneCell, new boolContainer(false)));
 #ifdef MULTILOCALPATH
 	mBoolMap.insert(boolMap_t(Env::plotSoftMotionCurve, new boolContainer(false)));
@@ -148,7 +141,7 @@ Env::Env() {
 	mDoubleMap.insert(doubleMap_t(Env::temperatureStart, new doubleContainer(0.000001)));
 	mDoubleMap.insert(doubleMap_t(Env::temperatureGoal, new doubleContainer(0.000001)));
 	mDoubleMap.insert(doubleMap_t(Env::initialTemperature, new doubleContainer(0.05)));
-	mDoubleMap.insert(doubleMap_t(Env::temperatureRate, new doubleContainer(100.)));
+	mDoubleMap.insert(doubleMap_t(Env::temperatureRate, new doubleContainer(20.)));
 	mDoubleMap.insert(doubleMap_t(Env::alpha, new doubleContainer(0.5)));
 	mDoubleMap.insert(doubleMap_t(Env::costStep, new doubleContainer(1.0)));
 	mDoubleMap.insert(doubleMap_t(Env::costThreshold, new doubleContainer(10.0)));
@@ -161,11 +154,6 @@ Env::Env() {
 	mDoubleMap.insert(doubleMap_t(Env::coeffConfo, new doubleContainer(1.0)));
 	mDoubleMap.insert(doubleMap_t(Env::multCost, new doubleContainer(1.0)));
 	mDoubleMap.insert(doubleMap_t(Env::refiRadius, new doubleContainer(2.0)));
-	
-	// Post-processing phaze
-	mDoubleMap.insert(doubleMap_t(Env::optimTimeLimit, new doubleContainer(5.0)));
-	mDoubleMap.insert(doubleMap_t(Env::MaxFactor, new doubleContainer(4.0)));
-	mDoubleMap.insert(doubleMap_t(Env::MinStep, new doubleContainer(1.0)));
 	
 	// HRI costs
 	mDoubleMap.insert(doubleMap_t(Env::Kdistance, new doubleContainer(50.0)));
@@ -196,7 +184,7 @@ Env::Env() {
 #endif
 	mVectorMap.insert(vectorMap_t(Env::costAlongTraj, new vectorContainer()));
 	
-	mExpansionMethod = Extend;
+	mExpansionMethod = Connect;
 }
 
 Env::~Env() {

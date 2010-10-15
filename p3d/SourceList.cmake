@@ -1,4 +1,5 @@
 SET(BM3D_MODULE_NAME p3d)
+BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME})
 BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME}/proto)
 BM3D_SRC_SUBDIR_PROCESS(
 p3d_BB.c 
@@ -37,6 +38,7 @@ p3d_set.c
 p3d_setpos.c 
 polyhedre.c 
 env.cpp
+MTRand.cpp
 ParametersEnv.cpp
 )
 
@@ -55,6 +57,6 @@ BM3D_SRC_SUBDIR_PROCESS(
 ENDIF(USE_GBM)
 
 BM3D_QT_GENERATE_MOC(
-env.hpp
 ParametersEnv.hpp
+env.hpp
 )

@@ -9,8 +9,31 @@
 
 #include "ParametersEnv.hpp"
 
+#include <iostream>
+
 using namespace std;
 
+//**********************************************************
+//**********************************************************
+boolContainer::boolContainer(bool v) :
+_Value(v) {
+}
+
+bool boolContainer::get() {
+	return (_Value);
+}
+
+void boolContainer::set(bool v) {
+	if (_Value != v) {
+		_Value = v;
+#ifdef QT_LIBRARY
+		emit valueChanged(v);
+#endif
+	}
+}
+
+//----------------------------------------------------------
+//----------------------------------------------------------
 intContainer::intContainer(int v) :
 _Value(v) {
 }
@@ -28,6 +51,30 @@ void intContainer::set(int v) {
 	}
 }
 
+//----------------------------------------------------------
+//----------------------------------------------------------
+doubleContainer::doubleContainer(double v) :
+_Value(v) {
+}
+
+double doubleContainer::get() {
+	return (_Value);
+}
+
+void doubleContainer::set(double v)
+{
+//	cout << "set" << endl;
+	
+	if (_Value != v) {
+		_Value = v;
+#ifdef QT_LIBRARY
+		emit valueChanged(v);
+#endif
+	}
+}
+
+//----------------------------------------------------------
+//----------------------------------------------------------
 #ifdef QT_LIBRARY
 stringContainer::stringContainer(QString v) :
 _Value(v) {
@@ -46,6 +93,8 @@ void stringContainer::set(QString v) {
 }
 #endif
 
+//----------------------------------------------------------
+//----------------------------------------------------------
 vectorContainer::vectorContainer(std::vector<double> v) :
 _Value(v) {
 }
@@ -64,38 +113,4 @@ void vectorContainer::set(std::vector<double> v) {
 }
 
 
-doubleContainer::doubleContainer(double v) :
-_Value(v) {
-}
-
-double doubleContainer::get() {
-	return (_Value);
-}
-
-void doubleContainer::set(double v)
-{
-	if (_Value != v) {
-		_Value = v;
-#ifdef QT_LIBRARY
-		emit valueChanged(v);
-#endif
-	}
-}
-
-boolContainer::boolContainer(bool v) :
-_Value(v) {
-}
-
-bool boolContainer::get() {
-	return (_Value);
-}
-
-void boolContainer::set(bool v) {
-	if (_Value != v) {
-		_Value = v;
-#ifdef QT_LIBRARY
-		emit valueChanged(v);
-#endif
-	}
-}
 

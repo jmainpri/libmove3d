@@ -116,13 +116,6 @@ public:
 		costThresholdPlanner,
 		costStarRRT,
 		
-		// Smoothing stage
-		withMaxIteration,
-		withGainLimit,
-		withTimeLimit,
-		withSmoothing,
-		withShortCut,
-		withDeformation,
 		withCleaning,
 		
 		useTRRT,
@@ -140,7 +133,6 @@ public:
 		FKDistance,
 		RecomputeCellCost,
 		UseDPGGrids,
-		saveTrajCost,
 		startWithFKCntrt,
 		showOneCell
 #ifdef MULTILOCALPATH
@@ -228,11 +220,6 @@ public:
 		Knatural,
 		Kreachable,
 		KlengthWeight,
-		
-		// Optimization Variables
-		optimTimeLimit,
-		MaxFactor,
-		MinStep,
 		
 		//Other variables
 		refiRadius,

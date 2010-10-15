@@ -7,8 +7,9 @@
  *
  */
 #include "P3d-pkg.h"
+
 #include <cassert>
-#include "../planner/MTRand.hpp"
+#include "MTRand.hpp"
 
 #ifdef USE_GSL
 #include <gsl/gsl_randist.h>

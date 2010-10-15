@@ -53,10 +53,9 @@
 
 #define CNTRT_R7_HUMAN_ARM_NAME        "p3d_R7_human_arm_ik"
 
-#if defined(USE_GBM)
-  #define CNTRT_PA10_6_ARM_IK_NAME       "p3d_pa10_6_arm_ik"
-  #define CNTRT_LWR_ARM_IK_NAME          "p3d_lwr_arm_ik"
-#endif
+#define CNTRT_PA10_6_ARM_IK_NAME       "p3d_pa10_6_arm_ik"
+#define CNTRT_LWR_ARM_IK_NAME          "p3d_lwr_arm_ik"
+
 
 #define CNTRT_HEAD_OBJECT_TRACK_NAME   "p3d_head_object_track"
 #include "../graphic/proto/g3d_draw_proto.h"
@@ -423,24 +422,30 @@ void p3d_constraint_get_nb_param(const char *namecntrt, int *nb_Dofpasiv,
 		*nb_Dofactiv = 1;//freeflyerDof
 		*nb_Dval = 0;
 		*nb_Ival = 3;//fixed joint, left or right arm, solution number 1-8
-#if defined(USE_GBM)
 	} else if (strcmp(namecntrt, CNTRT_LWR_ARM_IK_NAME) == 0) {
+#if defined(USE_GBM)
 		*nb_Dofpasiv = 6;//1-2-4-5-6-7
 		*nb_Dofactiv = 1;//freeflyerDof
 		*nb_Dval = 0;
 		*nb_Ival = 2;//fixed joint, solution number 1-8   
+#else
+		printf("!!! Constraint %s not created !!! \n",CNTRT_LWR_ARM_IK_NAME);
+		printf("!!! Compile with GBM library !!! \n");
 #endif
 	} else if (strcmp(namecntrt, CNTRT_R7_HUMAN_ARM_NAME) == 0) {
 		*nb_Dofpasiv = 1;
 		*nb_Dofactiv = 1;
 		*nb_Dval = 2;
 		*nb_Ival = 1;
-#if defined(USE_GBM)
 	} else if (strcmp(namecntrt, CNTRT_PA10_6_ARM_IK_NAME) == 0) {
+#if defined(USE_GBM)
 		*nb_Dofpasiv = 6;//1-2-4-5-6-7
 		*nb_Dofactiv = 1;//freeflyerDof
 		*nb_Dval = 0;
 		*nb_Ival = 1;//solution number 1-8
+#else
+		printf("!!! Constraint %s not created !!! \n",CNTRT_PA10_6_ARM_IK_NAME);
+		printf("!!! Compile with GBM library !!! \n");
 #endif
 	} else if (strcmp(namecntrt, CNTRT_HEAD_OBJECT_TRACK_NAME) == 0) {
 		*nb_Dofpasiv = 2;
