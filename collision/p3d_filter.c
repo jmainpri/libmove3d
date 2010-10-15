@@ -139,7 +139,12 @@ static void p3d_filter_approx_global_robot_BB(filterbox *returnbox,
   for(i=0;i<nr_shots;i++)
     {
       /* get a new configuration */
+#ifdef P3D_PLANNER
       p3d_shoot(robbie,q,1);
+#else
+			printf("P3D_PLANNER not compiled in %s in %s",__func__,__FILE__);
+#endif
+			
       /* put robot on new configuration and update its BB */
       p3d_set_and_update_robot_conf(q);
       /* get its BB, adapt the limits on the global BB */

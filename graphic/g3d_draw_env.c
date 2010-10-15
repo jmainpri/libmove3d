@@ -9,14 +9,14 @@
 #include "Planner-pkg.h"
 #endif
 
-#ifdef CXX_PLANNER
-//#include "Roadmap/graph.hpp"
-#include "planningAPI.hpp"
+#if defined( CXX_PLANNER )
+//#include "API/Roadmap/graph.hpp"
+#include "API/planningAPI.hpp"
 #endif
 
 #include "Graphic-pkg.h"
 
-#ifdef HRI_PLANNER
+#if defined( HRI_PLANNER )
 #include "Hri_planner-pkg.h"
 int HRI_DRAW_TRAJ;
 #endif
@@ -1389,9 +1389,10 @@ void g3d_draw_env()
   if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win);
   /* Fin Modification Thibaut */
 	
-#ifdef CXX_PLANNER
+// TODO callback OOMOVE3D
+#if defined( CXX_PLANNER )
 	//std::cout << "API_activeGraph : " << API_activeGraph << std::endl;
-	if (API_activeGraph && ENV.getBool(Env::drawGraph) ) 
+	if (ENV.getBool(Env::drawGraph) && (!ENV.getBool(Env::use_p3d_structures)) && API_activeGraph ) 
 	{
 		try
 		{
@@ -1407,6 +1408,7 @@ void g3d_draw_env()
 		}
 	}
 #endif
+	
 #ifdef P3D_PLANNER
 	//std::cout << "XYZ_GRAPH : " << XYZ_GRAPH << std::endl;
   if(XYZ_GRAPH && ENV.getBool(Env::drawGraph))

@@ -15,11 +15,11 @@
 #endif
 
 #ifdef HRI_COSTSPACE
-#include "hri_costspace/HRICS_costspace.h"
+#include "HRI_costspace/HRICS_costspace.hpp"
 #endif
 
-#ifdef CXX_PLANNER
-#include "Grids/gridsAPI.hpp"
+#if defined( CXX_PLANNER )
+#include "API/Grids/gridsAPI.hpp"
 #include <Eigen/Core>
 #define EIGEN_USE_NEW_STDVECTOR
 #include <Eigen/StdVector>
@@ -36,7 +36,8 @@ using namespace tr1;
 
 std::vector<double> vect_jim;
 
-#ifdef CXX_PLANNER
+// TODO callback OOMOVE3D
+#if defined( CXX_PLANNER )
 //! @ingroup graphic
 //! Function drawing a box the V7 is bellow V5
 //  
@@ -155,7 +156,9 @@ void g3d_draw_grids()
 	}
 	
 #endif
-#ifdef CXX_PLANNER	
+	
+// TODO callback OOMOVE3D
+#if defined( CXX_PLANNER )
 	if( ENV.getBool(Env::drawPoints) )
 	{
 		if(PointsToDraw != NULL)

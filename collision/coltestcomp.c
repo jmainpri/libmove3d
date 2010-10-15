@@ -53,7 +53,11 @@ void choose_confi(int nrjt, int nr_tests)
       for(i=0;i<nr_tests;i++)
 	{
 	  confi[i] = p3d_alloc_config(r);
+#ifdef P3D_PLANNER
 	  p3d_shoot(r,confi[i],1);
+#else
+		printf("P3D_PLANNER not compiled in %s in %s",__func__,__FILE__);
+#endif
 	  /* report on configuration */
 	}
     }
@@ -232,13 +236,23 @@ void plan_n_hit(int what_path)
     {
       /* random initial configuration */
       q_init = p3d_alloc_config(robotPt);
+			
+#ifdef P3D_PLANNER
       p3d_shoot(robotPt, q_init, 1);
+#else
+			printf("P3D_PLANNER not compiled in %s in %s",__func__,__FILE__);
+#endif
 
       print_config(robotPt, q_init);
 
       /* random goal configuration */
       q_goal = p3d_alloc_config(robotPt);
+			
+#ifdef P3D_PLANNER
       p3d_shoot(robotPt, q_goal, 1);
+#else
+			printf("P3D_PLANNER not compiled in %s in %s",__func__,__FILE__);
+#endif
 
       print_config(robotPt, q_goal);
 

@@ -5,6 +5,8 @@
 
 #include "Graphic-pkg.h"
 
+#include <map>
+
 
 static int MUST_DRAW_ALL_OBBS  = FALSE;
 static int MUST_DRAW_ROB_OBBS  = FALSE;

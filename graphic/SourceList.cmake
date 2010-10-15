@@ -20,6 +20,10 @@ BM3D_SRC_SUBDIR_PROCESS(
 g3d_draw_ui.c 
 g3d_window.c
 )
+ELSE(WITH_XFORMS)
+BM3D_SRC_SUBDIR_PROCESS(
+qtG3DWindow.cpp
+)
 ENDIF(WITH_XFORMS)
 
 

@@ -3,6 +3,8 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 
+#include "env.hpp"
+
 #include "Move3d-pkg.h"
 
 #ifdef P3D_PLANNER
@@ -17,8 +19,13 @@
 #include <iostream>
 #include <string>
 
-#ifdef CXX_PLANNER
-#include "../planner_cxx/API/planningAPI.hpp"
+#if defined( CXX_PLANNER )
+#include "API/project.hpp"
+#include "API/Trajectory/trajectory.hpp"
+#endif
+
+#if defined( CXX_PLANNER )
+#include "cost_space.hpp"
 #endif
 
 static void draw_trace(void);
@@ -130,8 +137,6 @@ static void draw_trace(void) {
 // 			{
 // 				g3d_draw_frame(robotPt->joints[i]->abs_pos, 15);
 // 			}
-
-
 
       p3d_destroy_config(robotPt, q);
 
@@ -359,7 +364,7 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
       /* position of the robot corresponding to parameter u */
       q = localpathPt->config_at_param(robotPt, localpathPt, u);
 			
-#ifdef P3D_CONSTRAINTS
+#if defined( P3D_CONSTRAINTS ) && defined( P3D_PLANNER )
       if (!ikSol || !p3d_compare_iksol(robotPt->cntrt_manager, localpathPt->ikSol, ikSol)) {
         p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &ikSol);
         if (p3d_get_ik_choice() != IK_NORMAL) {
@@ -370,29 +375,33 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 			
       p3d_set_and_update_this_robot_conf_multisol(robotPt, q, NULL, 0, localpathPt->ikSol);
 
+// TODO callback OOMOVE3D
 #ifdef P3D_PLANNER
+#if defined( CXX_PLANNER )
       if(ENV.getBool(Env::isCostSpace))
       {
-		  p3d_rob* costRobot = robotPt;
-		  configPt cost_q = q;
+				p3d_rob* costRobot = robotPt;
+				configPt cost_q = q;
 #ifdef HRI_COSTSPACE
-		  if ( ENV.getBool(Env::enableHri) ) 
-		  {
-			  std::string robotName(costRobot->name);
-			  
-			  if( robotName.find("ROBOT") == std::string::npos ) // Does not contain Robot
-			  {
-				  costRobot = p3d_get_robot_by_name_containing("ROBOT");
-				  cost_q = p3d_get_robot_config(costRobot);
-				  //cout << "Change the robot position = " << robotPt->name << endl;
-			  }
-		  }
+				if ( ENV.getBool(Env::enableHri) ) 
+				{
+					std::string robotName(costRobot->name);
+					
+					if( robotName.find("ROBOT") == std::string::npos ) // Does not contain Robot
+					{
+						costRobot = p3d_get_robot_by_name_containing("ROBOT");
+						cost_q = p3d_get_robot_config(costRobot);
+						//cout << "Change the robot position = " << robotPt->name << endl;
+					}
+				}
 #endif
-		  //std::cout << "XYZ_ROBOT is " << XYZ_ROBOT->name << std::endl;
-		  std::cout << "Cost for " << costRobot->name << " = " << p3d_GetConfigCost(costRobot,cost_q) << std::endl;
-		  //std::cout << "XYZ_ROBOT is " << XYZ_ROBOT->name << std::endl;
-//		  std::cout << "robotPt is " << robotPt << std::endl;
-}
+				Robot* r_Cost( global_Project->getActiveScene()->getRobotByName(costRobot->name) );
+				Configuration	q_Cost(r_Cost,cost_q);
+				
+				std::cout << "Cost for " << r_Cost->getName() << " = " 
+				<< global_costSpace->cost(q_Cost) << std::endl;
+			}
+#endif
   
 #ifndef WITH_XFORMS
 	  stopShowTraj = (*fct_stop)();
@@ -608,20 +617,27 @@ void g3d_draw_all_tcur(void) {
             robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
             if (robotPt)
             {
-                g3d_draw_tcur(robotPt, robotPt->no - 1, NB_KEY_FRAME);
+              g3d_draw_tcur(robotPt, robotPt->no - 1, NB_KEY_FRAME);
+							//g3d_draw_tcur(robotPt, p3d_get_user_drawnjnt() - 1 , NB_KEY_FRAME);
             }
         }
         p3d_sel_desc_num(P3D_ROBOT, r);
     }
-
-#ifdef CXX_PLANNER
+	
+// TODO callback OOMOVE3D
+#if defined( CXX_PLANNER )
 	if( ENV.getBool(Env::debugCostOptim) || ENV.getBool(Env::drawTrajVector) )
 	{
-		std::cout << "Should be drawing traj" << std::endl;
+		//std::cout << "Should be drawing traj" << std::endl;
 		for(unsigned i=0;i<trajToDraw.size();i++)
 		{
 			trajToDraw.at(i).draw(NB_KEY_FRAME);
-			std::cout << "Drawing traj" << std::endl;
+			//std::cout << "Drawing traj" << std::endl;
+		}
+		p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+		if (!robotPt->tcur)
+		{
+			trajToDraw.clear();
 		}
 	}	
 #endif

@@ -1,6 +1,8 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 
+#include "env.hpp"
+
 #ifdef P3D_PLANNER
 #include "Planner-pkg.h"
 #endif
@@ -121,12 +123,14 @@ void g3d_draw_graph(void) {
   while (comp) {
     list_node = comp->dist_nodes;
     /* for each node */
+		//printf("--------------------------------\n");
     while (list_node) {
       N = list_node->N;
       q = N->q;
       p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, q);
-		
-
+//			printf("Draw node %d\n",N->num);
+//			printf("next node %d\n",list_node->next);
+			
       ikSol = p3d_get_ik_draw();// draw a specific solution class
 
       for (i = 0, validIkSol = 1; N->iksol && i < robotPt->cntrt_manager->ncntrts; i++) {
