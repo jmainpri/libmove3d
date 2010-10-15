@@ -1163,7 +1163,7 @@ static void g3d_draw_ocur_special(G3D_Window *win) {
 // }
 
 void showConfig(configPt conf) {
-  p3d_set_and_update_robot_conf(conf);
+  p3d_set_and_update_this_robot_conf(XYZ_ROBOT,conf);
   g3d_refresh_allwin_active();
   sleep(1);
 }
