@@ -16,7 +16,9 @@
 #include "p3d_chanEnv_proto.h"
 #endif
 #include "plannerFunctions.hpp"
+#if defined (USE_CXX_PLANNER)
 #include "planEnvironment.hpp"
+#endif
 #include <list>
 #include <string>
 #include <iostream>
