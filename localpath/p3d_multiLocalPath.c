@@ -169,6 +169,9 @@ p3d_localpath * p3d_alloc_multiLocalPath_localpath(p3d_rob *robotPt, p3d_localpa
   localpathPt->nbActiveCntrts = 0;
   localpathPt->activeCntrts = NULL;
 
+  for(int i=0; i<MAX_MULTILOCALPATH_NB; i++) {
+   localpathPt->mlpGpIsActive[i] = groupToPlan[i];
+  }
 #if defined(LIGHT_PLANNER)
 	localpathPt->isCarryingObject = FALSE;
 	localpathPt->carriedObject = NULL;
@@ -232,31 +235,43 @@ configPt p3d_multiLocalPath_config_at_param(p3d_rob *robotPt, p3d_localpath *loc
   configPt qRes = NULL;
   double mgParam = 0.0;
 
+// Reactive les bons les bons groupes de mlp
+//   p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+//   for(int i=0; i<MAX_MULTILOCALPATH_NB; i++) {
+//     p3d_multiLocalPath_set_groupToPlan(robotPt, i, localpathPt->mlpGpIsActive[i]);
+//   }
+  
+
   int i = 0;
-	if(param == 0.0){
-		return p3d_copy_config(robotPt, localpathPt->q_init);
-	}
+  if(param == 0.0){
+	return p3d_copy_config(robotPt, localpathPt->q_init);
+  }
 
 
-	if(fabs(localpathPt->length_lp)< 1e-10) {
-		return p3d_copy_config(robotPt, localpathPt->q_init);
-	}
+  if(fabs(localpathPt->length_lp)< 1e-10) {
+	return p3d_copy_config(robotPt, localpathPt->q_init);
+  }
 
   for (i = 0; i < robotPt->mlp->nblpGp; i++) {
     q[i] = NULL;
-    if (localpathPt->mlpLocalpath[i] != NULL) {
 
-      mgParam = (param / localpathPt->length_lp) * localpathPt->mlpLocalpath[i]->range_param;
-      if (mgParam >= localpathPt->mlpLocalpath[i]->range_param) {
-        mgParam = localpathPt->mlpLocalpath[i]->range_param;
+    if(localpathPt->mlpGpIsActive[i] == 1) {
+      if (localpathPt->mlpLocalpath[i] != NULL) {
+	mgParam = (param / localpathPt->length_lp) * localpathPt->mlpLocalpath[i]->range_param;
+	if (mgParam >= localpathPt->mlpLocalpath[i]->range_param) {
+	  mgParam = localpathPt->mlpLocalpath[i]->range_param;
+	}
+	q[i] = localpathPt->mlpLocalpath[i]->config_at_param(robotPt, localpathPt->mlpLocalpath[i], mgParam);
+      } else {
+	q[i] = NULL;
       }
-      q[i] = localpathPt->mlpLocalpath[i]->config_at_param(robotPt, localpathPt->mlpLocalpath[i], mgParam);
     } else {
       q[i] = NULL;
     }
+    
   }
   /* Merge config of each multiLocalPath */
-	qRes = p3d_mergeMultiLocalPathConfig(robotPt, localpathPt->q_init, robotPt->mlp->nblpGp, q, robotPt->mlp->mlpJoints);
+  qRes = p3d_mergeMultiLocalPathConfig(robotPt, localpathPt->q_init, robotPt->mlp->nblpGp, q, robotPt->mlp->mlpJoints);
 
   for (i = 0; i < robotPt->mlp->nblpGp; i++) {
     p3d_destroy_config(robotPt, q[i]);
@@ -344,6 +359,12 @@ double p3d_multiLocalPath_stay_within_dist(p3d_rob* robotPt,
   configPt currentRobotConfig = p3d_get_robot_config(robotPt);
 
   dmax = p3d_get_env_dmax();
+
+  p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+  for(int i=0; i<MAX_MULTILOCALPATH_NB; i++) {
+    p3d_multiLocalPath_set_groupToPlan(robotPt, i, localpathPt->mlpGpIsActive[i]);
+  }
+  
 
   mlpDistance = MY_ALLOC(double, njnt + 1);
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
@@ -434,6 +455,12 @@ p3d_localpath *p3d_copy_multiLocalPath_localpath(p3d_rob* robotPt,
 	//	p3d_mat4Copy(localpathPt->Tgrasp, localpathPtMg->Tgrasp);
 #endif
 
+ 
+  for(int i=0; i<MAX_MULTILOCALPATH_NB; i++) {
+    localpathPtMg->mlpGpIsActive[i] = localpathPt->mlpGpIsActive[i];
+  }
+  
+
   return localpathPtMg;
 }
 
@@ -458,10 +485,10 @@ p3d_localpath *p3d_extract_multiLocalPath(p3d_rob *robotPt,
 // 	configPt qiMg[nblpGp];//, qfMg[nbGraphs];
   configPt qi = NULL;
 
-	qi = localpathPt->config_at_param(robotPt, localpathPt, l1);
-	if (robotPt->cntrt_manager->cntrts != NULL) {
-		p3d_set_and_update_this_robot_conf(robotPt, qi);
-	}
+   qi = localpathPt->config_at_param(robotPt, localpathPt, l1);
+   if (robotPt->cntrt_manager->cntrts != NULL) {
+	p3d_set_and_update_this_robot_conf(robotPt, qi);
+   }
 
 
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
@@ -670,7 +697,7 @@ int p3d_multiLocalPath_update_joint_sampling_activation(p3d_rob* robotPt) {
  
     		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
 		   indexJnt = robotPt->mlp->mlpJoints[i]->joints[j];
-			p3d_jnt_set_is_active_for_planner2(robotPt->joints[indexJnt], TRUE);
+			p3d_jnt_set_is_active_for_planner2(robotPt->joints[indexJnt], FALSE);
 		}
     
   }
