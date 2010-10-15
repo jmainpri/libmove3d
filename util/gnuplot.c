@@ -34,7 +34,8 @@
  ---------------------------------------------------------------------------*/
 
 /** Maximal size of a gnuplot command */
-#define GP_CMD_SIZE       2048
+#define GP_CMD_SIZE       12288
+
 /** Maximal size of a plot title */
 #define GP_TITLE_SIZE     80
 /** Maximal size for an equation */
@@ -231,8 +232,8 @@ void gnuplot_close(gnuplot_ctrl * handle) {
 
 void gnuplot_cmd(gnuplot_ctrl *  handle, char *  cmd, ...) {
   va_list ap ;
+  //char    local_cmd[GP_CMD_SIZE];
   char    local_cmd[GP_CMD_SIZE];
-
   va_start(ap, cmd);
   vsprintf(local_cmd, cmd, ap);
   va_end(ap);
