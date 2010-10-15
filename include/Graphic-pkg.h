@@ -24,12 +24,14 @@
 #include "device.h"
 
 #include "g3d_states.h"
+#include "g3d_window.h"
 
 #ifdef WITH_XFORMS
-#include "g3d_window.h"
 #include "forms.h"
-#else
-#include "qtWindow/qtOpenGL/qtG3DWindow.hpp"
+#endif
+
+#if !defined (WITH_XFORMS) && ( defined( QT_LIBRARY ) )
+#include "../graphic/proto/qtG3DWindow.hpp"
 #include <iostream>
 #endif
 
@@ -46,15 +48,12 @@ extern int boxlist;	/* liste opengl pour la boite materialisant
 			   l'environnment */
 extern int p3d_numcoll;	/* Variables externes pour le CC */
 
-#ifdef CXX_PLANNER
-#include <vector>
-namespace API { class Trajectory; }
-extern std::vector<API::Trajectory> trajToDraw;
+#if defined( QT_GL ) && defined( CXX_PLANNER )
+#include "qtOpenGL/Widget.hpp"
 #endif
-
-#ifdef QT_GL
-#include "qtWindow/qtOpenGL/Widget.hpp"
-#endif
+//#if defined( QT_LIBRARY ) && defined( WITH_OOMOVE3D )
+//#include "qtUI/qtOpenGL/Widget.hpp"
+//#endif
 
 /* proto */
 #include "../graphic/proto/graphic_proto.h"

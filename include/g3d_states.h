@@ -9,7 +9,7 @@
         #include <stdlib.h>
         #include <math.h>
 #if defined(MACOSX) 
-#if defined(QT_LIBRARY)
+#if defined(QT_LIBRARY) && defined (CXX_PLANNER)
         #include "gl.h"
         #include "glu.h"
 #else

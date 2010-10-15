@@ -18,6 +18,7 @@ extern Pixmap GetApplicationIcon( );
 #include "../move3d/proto/move3d_proto.h"
 
 #else
+#include "P3d-pkg.h"
 // Functions Without XFORMS
 extern int fct_stop(void);
 extern void fct_draw(void);

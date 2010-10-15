@@ -39,13 +39,14 @@ extern int       XYZ_NUM_ENV;
 extern int       XYZ_MAX_NUM_ENV;
 extern pp3d_rob  XYZ_ROBOT;
 extern pp3d_obj  XYZ_OBSTACLES;
+extern pp3d_graph XYZ_GRAPH;
 
 /* Random Numbers */
 #ifdef USE_GSL
 #include <gsl/gsl_randist.h>
 extern gsl_rng * _gsl_seed;
 #endif
-#include "../planner/MTRand.hpp"
+#include "../p3d/MTRand.hpp"
 extern MTRand mersenne_twister_rng;
   
   /* pointer to function to choose the type of bounding box computation */
@@ -57,7 +58,8 @@ typedef void (*p3d_BB_get_BB_poly_fct_type)(p3d_poly *p,double *x1,double *x2,
 			    double *y1,double *y2,double *z1,double *z2);
 extern p3d_BB_get_BB_poly_fct_type p3d_BB_get_BB_poly;
 
-#include "../p3d/env.hpp"
+#include "env.hpp"
+//#include "ParametersEnv.hpp"
 
 /* proto */
 #include "../p3d/proto/p3d_proto.h"

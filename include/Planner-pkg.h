@@ -27,7 +27,6 @@
 //end path deform
 #include "roadmap.h"
 /* globals */
-extern pp3d_graph XYZ_GRAPH;
 extern pp3d_graph  XYZ_TAB_GRAPH[];
 
 
