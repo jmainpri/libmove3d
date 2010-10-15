@@ -10,7 +10,8 @@ typedef enum MANIPULATION_TASK_TYPE_STR {
   ARM_PICK_GOTO = 2,  /*!< move the arm from a free configuration to a grasping configuration of the object placed on a support */
   ARM_PICK_TAKE_TO_FREE = 3,  /*!< move the arm from a grasping configuration (of the object placed on a support) to a free configuration */
   ARM_PICK_TAKE_TO_PLACE = 4,  /*!< move the arm from a grasping configuration to a configuration with the same grasp but a different object placement */
-  ARM_PLACE_FROM_FREE = 5  /*!< move the arm from a free configuration to a placement configuration */
+  ARM_PLACE_FROM_FREE = 5,  /*!< move the arm from a free configuration to a placement configuration */
+  ARM_PICK_AND_PLACE = 6 /*!< move the arm from a free configuration to a grasping configuration of the object placed on a support then to a placement configuration */
 } MANIPULATION_TASK_TYPE_STR;
 
 
@@ -47,5 +48,10 @@ typedef struct MANIPULATION_SEGMENT_STR {
 typedef struct MANPIPULATION_TRAJECTORY_STR {
   std::vector<MANIPULATION_SEGMENT_STR> seg;
 }MANPIPULATION_TRAJECTORY_STR;
+
+typedef std::pair < std::vector<int>, std::vector < std::vector <double> > > MANPIPULATION_TRAJECTORY_CONF_STR;
+//   std::vector<int> &lp;
+//   std::vector < std::vector <double> > &positions;
+// }MANPIPULATION_TRAJECTORY_CONF_STR;
 
 #endif

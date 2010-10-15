@@ -5,6 +5,13 @@
 #include "GraspPlanning-pkg.h"
 #include "P3d-pkg.h"
 
+/** @defgroup manipulation
+* The manipulation classes are dedicated to
+* the planning of manipulation tasks.
+* They encapsulates variables and functions that allow to easily (!) plan the motion
+* required for basic manipulation tasks (pick-and-place, object transfer from one hand to the other).
+ */
+
 //! @ingroup manipulation
 /** Different general utils for manipulation*/
 class  ManipulationUtils {
@@ -24,7 +31,8 @@ class  ManipulationUtils {
     static void undefinedCameraMessage();
     static void printManipulationMessage(MANIPULATION_TASK_MESSAGE message);
     static void printManipulationError(MANIPULATION_TASK_MESSAGE message);
-
+    static int printConstraintInfo(p3d_rob* robot);
+    
     /* UI gestion */
     //! Forbids all the interaction (keyboard and mouse) with the current window.
     //! \return 0 in case of success, 1 otherwise
@@ -33,6 +41,10 @@ class  ManipulationUtils {
     //! Allows the interaction (keyboard and mouse) with the current window.
     //! \return 0 in case of success, 1 otherwise
     static int allowWindowEvents();
+
+    //! Copy the given configuration to the robot XForm window
+    //! \return 0 in case of success, 1 otherwise
+    static int copyConfigToFORM(p3d_rob* robot, configPt q);
 };
 
 //! @ingroup manipulation
@@ -46,7 +58,7 @@ class ArmManipulationData {
     p3d_cntrt * _ccCntrt;
     /** Arm corresopnding Forward kinematic Constraint*/
     p3d_cntrt * _fkCntrt;
-    /** Arm corresopnding Forward kinematic Constraint*/
+    /** Freeflyer */
     p3d_jnt * _manipulationJnt;
     /** < choose to plan the arm motion in cartesian space (for the end effector) or joint space  */
     bool _cartesian;
@@ -57,7 +69,11 @@ class ArmManipulationData {
     int _cartesianGroup;
     /** MultiLocal Path cartesian SoftMotion Group id*/
     int _cartesianSmGroup;
-
+    /** MultiLocal Path hand Linear Group id*/
+    int _handGroup;
+    /** MultiLocal Path hand SoftMotion Group id*/
+    int _handSmGroup;
+    
     /************************/
     /* Manipulation Objects */
     /************************/
@@ -75,12 +91,14 @@ class ArmManipulationData {
     gpHand_properties _handProp;
 
   public:
-    ArmManipulationData(p3d_cntrt* ccCntrt = NULL, p3d_cntrt* fkCntrt = NULL, p3d_jnt *manipulationJnt = NULL, int cartesianGroup = -1, int cartesianSmGroup = -1){
+    ArmManipulationData(p3d_cntrt* ccCntrt = NULL, p3d_cntrt* fkCntrt = NULL, p3d_jnt *manipulationJnt = NULL, int cartesianGroup = -1, int cartesianSmGroup = -1, int handGroup = -1, int handSmGroup = -1){
       _ccCntrt = ccCntrt;
       _fkCntrt = fkCntrt;
       _manipulationJnt = manipulationJnt;
       _cartesianGroup = cartesianGroup;
       _cartesianSmGroup = cartesianSmGroup;
+      _handGroup = handGroup;
+      _handSmGroup = handSmGroup;
       _carriedObject = NULL;
       _placement = NULL;
       _human = NULL;
@@ -93,7 +111,7 @@ class ArmManipulationData {
     /* Functions */
     /*************/
     /** Fix hand dof, Disable autocollisions, and set the arm to rest configuration*/
-    void fixHand(p3d_rob* robot);
+    void fixHand(p3d_rob* robot, bool rest);
     /** Unfix hand dof, Enable autocollisions*/
     void unFixHand(p3d_rob* robot);
 
@@ -125,6 +143,12 @@ class ArmManipulationData {
     inline void setCartesianSmGroup(int cartesianSmGroup){
       _cartesianSmGroup = cartesianSmGroup;
     };
+    inline void setHandGroup(int handGroup){
+      _handGroup = handGroup;
+    };
+    inline void setHandSmGroup(int handSmGroup){
+      _handSmGroup = handSmGroup;
+    };
     inline void setCarriedObject(p3d_rob* carriedObject){
       _carriedObject = carriedObject;
     };
@@ -145,36 +169,162 @@ class ArmManipulationData {
     /* Getters */
     /***********/
 
-    inline p3d_cntrt* getCcCntrt(void){
+    inline p3d_cntrt* getCcCntrt(void) const{
       return _ccCntrt;
     };
-    inline p3d_cntrt* getFkCntrt(void){
+    inline p3d_cntrt* getFkCntrt(void) const{
       return _fkCntrt;
     };
-    inline p3d_jnt* getManipulationJnt(void){
+    inline p3d_jnt* getManipulationJnt(void) const{
       return _manipulationJnt;
     };
-    inline int getCartesianGroup(void){
+    inline int getCartesianGroup(void) const{
       return _cartesianGroup;
     };
-    inline int getCartesianSmGroup(void){
+    inline int getCartesianSmGroup(void) const{
       return _cartesianSmGroup;
     };
-    inline p3d_rob* getCarriedObject(void){
+    inline int getHandGroup(void) const{
+      return _handGroup;
+    };
+    inline int getHandSmGroup(void) const{
+      return _handSmGroup;
+    };
+    inline p3d_rob* getCarriedObject(void) const{
       return _carriedObject;
     };
-    inline p3d_rob* getPlacement(void){
+    inline p3d_rob* getPlacement(void) const{
       return _placement;
     };
-    inline p3d_rob* getHuman(void){
+    inline p3d_rob* getHuman(void) const{
       return _human;
     };
-    inline gpHand_properties getHandProperties(){
+    inline gpHand_properties getHandProperties() const{
       return _handProp;
     };
-    inline bool getCartesian(void){
+    inline bool getCartesian(void) const{
       return _cartesian;
     };
+};
+
+//! @ingroup manipulation
+class ManipulationData{
+  public:
+    ManipulationData(p3d_rob* robot){
+      _robot = robot;
+      _grasp = NULL;
+      _graspConfig = p3d_alloc_config(robot);
+      _graspConfigCost = P3D_HUGE;
+      _openConfig = p3d_alloc_config(robot);
+      _approachFreeConfig = p3d_alloc_config(robot);
+      _approachGraspConfig = p3d_alloc_config(robot);
+      p3d_mat4Copy(p3d_mat4IDENTITY ,_graspAttachFrame);
+    };
+    ManipulationData(p3d_rob* robot, gpGrasp* grasp, configPt graspConfig, configPt openConfig, configPt approachFreeConfig, configPt approachGraspConfig, p3d_matrix4 graspAttachFrame){
+      _robot = robot;
+      _grasp = grasp;
+      _graspConfig = graspConfig;
+      _graspConfigCost = P3D_HUGE;
+      _openConfig = openConfig;
+      _approachFreeConfig = approachFreeConfig;
+      _approachGraspConfig = approachGraspConfig;
+      p3d_mat4Copy(graspAttachFrame ,_graspAttachFrame);
+    };
+    virtual ~ManipulationData(){
+      if(_graspConfig){
+        p3d_destroy_config(_robot, _graspConfig);
+        _graspConfig = NULL;
+      }
+      if(_openConfig){
+        p3d_destroy_config(_robot, _openConfig);
+        _openConfig = NULL;
+      }
+      if(_approachFreeConfig){
+        p3d_destroy_config(_robot, _approachFreeConfig);
+        _approachFreeConfig = NULL;
+      }
+      if(_approachGraspConfig){
+        p3d_destroy_config(_robot, _approachGraspConfig);
+        _approachGraspConfig = NULL;
+      }
+      if(_grasp){
+        delete(_grasp);
+        _grasp = NULL;
+      }
+    }
+    //Getters
+    inline p3d_rob* getRobot() const{
+      return _robot;
+    }
+    inline gpGrasp* getGrasp() const{
+      return _grasp;
+    }
+    inline configPt getGraspConfig() const{
+      return _graspConfig;
+    }
+    inline configPt getOpenConfig() const{
+      return _openConfig;
+    }
+    inline configPt getApproachFreeConfig() const{
+      return _approachFreeConfig;
+    }
+    inline configPt getApproachGraspConfig() const{
+      return _approachGraspConfig;
+    }
+    inline void getAttachFrame(p3d_matrix4 graspAttachFrame) const{
+      p3d_mat4Copy((p3d_matrix_type(*)[4])_graspAttachFrame, graspAttachFrame);
+    }
+    inline double getGraspConfigCost() const{
+      return _graspConfigCost;
+    }
+    //Setters
+    inline void setGrasp(gpGrasp* grasp){
+      if(_grasp){
+        delete(_grasp);
+        _grasp = NULL;
+      }
+      _grasp = new gpGrasp(*grasp);
+    }
+    inline void setGraspConfig(configPt graspConfig){
+      p3d_copy_config_into(_robot, graspConfig, &_graspConfig);
+    }
+    inline void setOpenConfig(configPt openConfig){
+      p3d_copy_config_into(_robot, openConfig, &_openConfig);
+    }
+    inline void setApproachFreeConfig(configPt approachFreeConfig){
+      p3d_copy_config_into(_robot, approachFreeConfig, &_approachFreeConfig);
+    }
+    inline void setApproachGraspConfig(configPt approachGraspConfig){
+      p3d_copy_config_into(_robot, approachGraspConfig, &_approachGraspConfig);
+    }
+    inline void setAttachFrame(p3d_matrix4 graspAttachFrame){
+      p3d_mat4Copy(graspAttachFrame, _graspAttachFrame);
+    }
+    inline void setGraspConfigCost(double graspConfigCost){
+      _graspConfigCost = graspConfigCost;
+    }
+    ManipulationData& operator = (const ManipulationData& data){
+      _robot = data.getRobot();
+      setGrasp(data.getGrasp());
+      setGraspConfig(data.getGraspConfig());
+      setOpenConfig(data.getOpenConfig());
+      setApproachFreeConfig(data.getApproachFreeConfig());
+      setApproachGraspConfig(data.getApproachGraspConfig());
+      p3d_matrix4 att;
+      data.getAttachFrame(att);
+      setAttachFrame(att);
+      setGraspConfigCost(data.getGraspConfigCost());
+      return *this;
+    }
+  private:
+    p3d_rob* _robot;
+    gpGrasp* _grasp;
+    configPt _graspConfig;
+    configPt _openConfig;
+    configPt _approachFreeConfig;
+    configPt _approachGraspConfig;
+    double _graspConfigCost;
+    p3d_matrix4 _graspAttachFrame;
 };
 
 #endif

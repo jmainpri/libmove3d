@@ -1,5 +1,6 @@
 #include "ManipulationUtils.hpp"
 
+#include "Move3d-pkg.h"
 
 /* Message gestion */
 
@@ -96,6 +97,23 @@ void ManipulationUtils::printManipulationMessage(MANIPULATION_TASK_MESSAGE messa
   }
 }
 
+//! Prints some info about a robot's contraints
+int ManipulationUtils::printConstraintInfo(p3d_rob* robot) {
+  int i = 0;
+  if (robot == NULL) {
+    printf("%s: %d: ManipulationPlanner::printConstraintInfo().\n", __FILE__, __LINE__);
+    ManipulationUtils::undefinedRobotMessage();
+    return 1;
+  }
+
+  printf("constraint info: \n");
+  printf("robot \"%s\" has %d constraints: \n", robot->name, robot->cntrt_manager->ncntrts);
+  for (i = 0; i < robot->cntrt_manager->ncntrts; i++) {
+    printf("%s, active= %d\n", robot->cntrt_manager->cntrts[i]->namecntrt, robot->cntrt_manager->cntrts[i]->active);
+  }
+  return 0;
+}
+
 /* UI gestion */
 int ManipulationUtils::forbidWindowEvents() {
   g3d_win *win = NULL;
@@ -114,5 +132,21 @@ int ManipulationUtils::allowWindowEvents() {
     return 1;
   }
   win->vs.eventsEnabled = 1;
+  return 0;
+}
+
+int ManipulationUtils::copyConfigToFORM(p3d_rob* robot, configPt q) {
+  if (robot == NULL)  {
+    printf("%s: %d: ManipulationPlanner::copyConfigTrajToFORM().\n", __FILE__, __LINE__);
+    ManipulationUtils::undefinedRobotMessage();
+    return 1;
+  }
+  char name[128];
+  
+  sprintf(name, "configTraj_%d", robot->nconf);
+  p3d_set_new_robot_config(name, q, robot->ikSol, robot->confcur);
+  robot->confcur = robot->conf[0];
+  FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+  p3d_set_and_update_this_robot_conf_multisol(robot, robot->confcur->q, NULL, 0, robot->ikSol);
   return 0;
 }

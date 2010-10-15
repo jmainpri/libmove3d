@@ -6,6 +6,7 @@
 #include "robotPos.h"
 #include "lightPlannerApi.h"
 #include "lightPlanner.h"
+#include "ManipulationUtils.hpp"
 
 #include "env.hpp"
 
@@ -46,7 +47,7 @@ configPt setBodyConfigForBaseMovement(p3d_rob * robot, configPt baseConfig, conf
  * @param base The configuration of the base and the object
  * @param refConf The configuration of the rest of the robot
  */
-void adaptClosedChainConfigToBasePos(p3d_rob *robot, p3d_matrix4 base, configPt refConf) {
+void adaptClosedChainConfigToBasePos(p3d_rob* robot, p3d_matrix4 base, configPt refConf) {
   p3d_matrix4 relMatrix, newObjectPos, basePos;
   double x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0;
   p3d_mat4Copy(base, basePos);
@@ -110,10 +111,10 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
       if(!robot->isCarryingObject && objectJnt->o){
         maxRadius = MAX(baseJnt->o->BB0.xmax - baseJnt->o->BB0.xmin, baseJnt->o->BB0.ymax - baseJnt->o->BB0.ymin) + MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
       }else{
-        if(!robot->carriedObject){
+        if(!(*robot->armManipulationData)[cntrtToActivate].getCarriedObject()){
           printf("p3d_getRobotBaseConfigAroundTheObject : Error, No object loaded");
         }else{
-          maxRadius = MAX(baseJnt->o->BB0.xmax - baseJnt->o->BB0.xmin, baseJnt->o->BB0.ymax - baseJnt->o->BB0.ymin) + MAX(robot->carriedObject->joints[1]->o->BB0.xmax - robot->carriedObject->joints[1]->o->BB0.xmin, robot->carriedObject->joints[1]->o->BB0.ymax - robot->carriedObject->joints[1]->o->BB0.ymin) / 2;
+          maxRadius = MAX(baseJnt->o->BB0.xmax - baseJnt->o->BB0.xmin, baseJnt->o->BB0.ymax - baseJnt->o->BB0.ymin) + MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
         }
       }
     }
@@ -121,18 +122,18 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
       if(!robot->isCarryingObject && objectJnt->o){
       minRadius = MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
       }else{
-        if(!robot->carriedObject){
+        if(!(*robot->armManipulationData)[cntrtToActivate].getCarriedObject()){
           printf("p3d_getRobotBaseConfigAroundTheObject : Error, No object loaded");
         }else{
-          minRadius = MAX(robot->carriedObject->joints[1]->o->BB0.xmax - robot->carriedObject->joints[1]->o->BB0.xmin, robot->carriedObject->joints[1]->o->BB0.ymax - robot->carriedObject->joints[1]->o->BB0.ymin) / 2;
+          minRadius = MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
         }
       }
     }
     activateCcCntrts(robot, cntrtToActivate, nonUsedCntrtDesactivation);
-    double bakJntBoundMin[robot->nbCcCntrts], bakJntBoundMax[robot->nbCcCntrts];
-    for(int i = 0; i < robot->nbCcCntrts; i++){
-      p3d_cntrt* ct = robot->ccCntrts[i];
-      if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){//if it is a kuka arm
+    double bakJntBoundMin[robot->armManipulationData->size()], bakJntBoundMax[robot->armManipulationData->size()];
+    for(int i = 0; i < (int)robot->armManipulationData->size(); i++){
+      p3d_cntrt* ct = (*robot->armManipulationData)[i].getCcCntrt();
+      if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")){
         //restrict the third joint
         p3d_jnt_get_dof_bounds(robot->joints[ct->argu_i[0]], 0, &(bakJntBoundMin[i]), &(bakJntBoundMax[i]));
         p3d_jnt_set_dof_rand_bounds_deg(robot->joints[ct->argu_i[0]], 0, -120, 0);
@@ -145,9 +146,9 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
         nbTry += MaxNumberOfTry*5/100;
       }
       do {
-//        if(shootObject){
-//          g3d_draw_allwin_active();
-//        }
+//         if(shootObject){
+//           g3d_draw_allwin_active();
+//         }
         p3d_shoot(robot, q, 0);
         if(shootBase == TRUE){
           double randX = p3d_random(minRadius , maxRadius);
@@ -168,53 +169,55 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
           }
           double randRZ = p3d_random(rz + robot->relativeZRotationBaseObject - nominalRadius, rz + robot->relativeZRotationBaseObject + nominalRadius);
           q[baseJnt->index_dof + 2] = randRZ;
-        }else{
+        }else if (baseJnt->type != P3D_ROTATE){
           for(int i = 0; i < baseJnt->dof_equiv_nbr; i++){
             q[baseJnt->index_dof + i] = qInit[baseJnt->index_dof + i];
           }
         }
         if(!shootObject){
-          q[objectJnt->index_dof] = x;
-          q[objectJnt->index_dof + 1] = y;
-          q[objectJnt->index_dof + 2] = z;
-          q[objectJnt->index_dof + 3] = rx;
-          q[objectJnt->index_dof + 4] = ry;
-          q[objectJnt->index_dof + 5] = rz;
+          int ffjntIndex = (*robot->armManipulationData)[cntrtToActivate].getManipulationJnt()->index_dof;
+          q[ffjntIndex] = x;
+          q[ffjntIndex + 1] = y;
+          q[ffjntIndex + 2] = z;
+          q[ffjntIndex + 3] = rx;
+          q[ffjntIndex + 4] = ry;
+          q[ffjntIndex + 5] = rz;
         }else {
           if(robot->isCarryingObject){
-            configPt carriedObjectRefConf = p3d_alloc_config(robot->carriedObject);
-            configPt carriedObjectConf = p3d_alloc_config(robot->carriedObject);
+            p3d_rob* carriedObject = (*robot->armManipulationData)[cntrtToActivate].getCarriedObject();
+            configPt carriedObjectRefConf = p3d_alloc_config(carriedObject);
+            configPt carriedObjectConf = p3d_alloc_config(carriedObject);
             carriedObjectRefConf[6] = x;
             carriedObjectRefConf[7] = y;
             carriedObjectRefConf[8] = z;
             carriedObjectRefConf[9] = rx;
             carriedObjectRefConf[10] = ry;
             carriedObjectRefConf[11] = rz;
-            p3d_sel_desc_num(P3D_ROBOT,robot->carriedObject->num);
+            p3d_sel_desc_num(P3D_ROBOT,carriedObject->num);
             double robotSize = 0, translationFactor = 0, rotationFactor = 0;
-            p3d_get_BB_rob_max_size(robot->carriedObject, &robotSize);
+            p3d_get_BB_rob_max_size(carriedObject, &robotSize);
             translationFactor = robotSize/5;
             rotationFactor = robotSize/2;
             do{
-              p3d_gaussian_config2_specific(robot->carriedObject, carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, true);
-            }while(!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot->carriedObject, carriedObjectConf) && p3d_col_test());
+              p3d_gaussian_config2_specific(carriedObject, carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, true);
+            }while(!p3d_set_and_update_this_robot_conf_with_partial_reshoot(carriedObject, carriedObjectConf) && p3d_col_test());
             p3d_sel_desc_num(P3D_ROBOT,robot->num);
-            q[objectJnt->index_dof] = carriedObjectConf[6];
-            q[objectJnt->index_dof + 1] = carriedObjectConf[7];
-            q[objectJnt->index_dof + 2] = carriedObjectConf[8];
-            q[objectJnt->index_dof + 3] = carriedObjectConf[9];
-            q[objectJnt->index_dof + 4] = carriedObjectConf[10];
-            q[objectJnt->index_dof + 5] = carriedObjectConf[11];
-            p3d_destroy_config(robot->carriedObject, carriedObjectRefConf);
-            p3d_destroy_config(robot->carriedObject, carriedObjectConf);
+            int ffjntIndex = (*robot->armManipulationData)[cntrtToActivate].getManipulationJnt()->index_dof;
+            q[ffjntIndex] = carriedObjectConf[6];
+            q[ffjntIndex + 1] = carriedObjectConf[7];
+            q[ffjntIndex + 2] = carriedObjectConf[8];
+            q[ffjntIndex + 3] = carriedObjectConf[9];
+            q[ffjntIndex + 4] = carriedObjectConf[10];
+            q[ffjntIndex + 5] = carriedObjectConf[11];
+            p3d_destroy_config(carriedObject, carriedObjectRefConf);
+            p3d_destroy_config(carriedObject, carriedObjectConf);
           }
         }
-
         nbTry++;
         if(!isKukaBoundOff && nbTry > MaxNumberOfTry / 2){
-          for(int i = 0; i < robot->nbCcCntrts; i++){
-            p3d_cntrt* ct = robot->ccCntrts[i];
-            if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){//if it is a kuka arm
+          for(int i = 0; i < (int)robot->armManipulationData->size(); i++){
+            p3d_cntrt* ct = (*robot->armManipulationData)[i].getCcCntrt();
+            if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")){
               //unrestrict the third joint
               p3d_jnt_set_dof_rand_bounds(robot->joints[ct->argu_i[0]], 0, bakJntBoundMin[i], bakJntBoundMax[i]);
             }
@@ -222,14 +225,14 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
           isKukaBoundOff = true;
         }
       } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && nbTry < MaxNumberOfTry);
-//      g3d_draw_allwin_active();
-    }while (p3d_col_test()  && nbTry < MaxNumberOfTry);
+//       g3d_draw_allwin_active();
+    }while (p3d_col_test() && nbTry < MaxNumberOfTry);
     if(nbTry >= MaxNumberOfTry){
       return NULL;
     }
-    for(int i = 0; i < robot->nbCcCntrts; i++){
-      p3d_cntrt* ct = robot->ccCntrts[i];
-      if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){//if it is a kuka arm
+    for(int i = 0; i < (int)robot->armManipulationData->size(); i++){
+      p3d_cntrt* ct = (*robot->armManipulationData)[i].getCcCntrt();
+      if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")){
         //unrestrict the third joint
         p3d_jnt_set_dof_rand_bounds(robot->joints[ct->argu_i[0]], 0, bakJntBoundMin[i], bakJntBoundMax[i]);
       }
@@ -423,6 +426,77 @@ configPt setTwoArmsRobotGraspApproachPosWithoutBase(p3d_rob* robot, p3d_matrix4 
 }
 
 /**
+ * @brief Get the robot grasp without reshooting the base configuration given an attach matrix for each arm and the object position
+ * @param robot the robot
+ * @param objectPos the object position matrix
+ * @param att1 array of attach matrix for the arm
+ * @return the robot config
+ */
+configPt setRobotGraspPosWithoutBase(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 tAtt, int shootObject, int armId, bool nonUsedCntrtDesactivation) {
+#ifndef GRASP_PLANNING
+  deactivateHandsVsObjectCol(robot);
+#endif
+  p3d_matrix4* att = MY_ALLOC(p3d_matrix4, robot->armManipulationData->size());
+  for(int i = 0; i < (int)robot->armManipulationData->size(); i++){
+    if(i == armId){
+      p3d_mat4Copy(tAtt, att[i]);
+    }else{
+      att[i][0][0] = att[i][0][1] = att[i][0][2] = 0;
+    }
+  }
+  configPt q = getRobotGraspConf(robot, objectPos, att, FALSE, shootObject, armId, nonUsedCntrtDesactivation);
+#ifndef GRASP_PLANNING
+  activateHandsVsObjectCol(robot);
+#endif
+  MY_FREE(att, p3d_matrix4, robot->armManipulationData->size());
+  return q;
+}
+
+
+/**
+ * @brief Get the robot grasp without reshooting the base configuration given an attach matrix for each arm and the object position
+ * @param robot the robot
+ * @param objectPos the object position matrix
+ * @param att1 array of attach matrix for the arm
+ * @return the robot config
+ */
+configPt setRobotCloseToConfGraspApproachOrExtract(p3d_rob* robot, configPt refConf, p3d_matrix4 objectPos, p3d_matrix4 tAtt, int shootObject, int armId, bool nonUsedCntrtDesactivation) {
+#ifndef GRASP_PLANNING
+  deactivateHandsVsObjectCol(robot);
+#endif
+  p3d_set_and_update_this_robot_conf(robot, refConf);
+  fixAllJointsExceptBaseAndObject(robot, refConf);
+  fixJoint(robot, robot->baseJnt, robot->baseJnt->abs_pos);
+  p3d_matrix4* att = MY_ALLOC(p3d_matrix4, robot->armManipulationData->size());
+  for(int i = 0; i < (int)robot->armManipulationData->size(); i++){
+    if(i == armId){
+      p3d_mat4Copy(tAtt, att[i]);
+      for(int j = 0; j < (*robot->armManipulationData)[i].getCcCntrt()->npasjnts; j++){
+       unFixJoint(robot, (*robot->armManipulationData)[i].getCcCntrt()->pasjnts[i]);
+      }
+      if(!strcmp((*robot->armManipulationData)[i].getCcCntrt()->namecntrt, "p3d_kuka_arm_ik")){ //TODO
+       unFixJoint(robot, robot->joints[(*robot->armManipulationData)[i].getCcCntrt()->argu_i[0]]);
+      }
+    }else{
+      att[i][0][0] = att[i][0][1] = att[i][0][2] = 0;
+    }
+    fixJoint(robot, (*robot->armManipulationData)[i].getManipulationJnt(), (*robot->armManipulationData)[i].getManipulationJnt()->abs_pos);
+  }
+  configPt q = getRobotGraspConf(robot, objectPos, att, false, shootObject, armId, nonUsedCntrtDesactivation);
+#ifndef GRASP_PLANNING
+  activateHandsVsObjectCol(robot);
+#endif
+  unFixAllJointsExceptBaseAndObject(robot);
+  unFixJoint(robot, robot->baseJnt);
+  for(int i = 0; i < (int)robot->armManipulationData->size(); i++){
+    unFixJoint(robot, (*robot->armManipulationData)[i].getManipulationJnt());
+  }
+  MY_FREE(att, p3d_matrix4, robot->armManipulationData->size());
+  return q;
+}
+
+
+/**
  * @brief Get the robot grasp configuration given the attach matrix
  * @param robot the robot
  * @param objectPos the object position matrix
@@ -434,30 +508,38 @@ static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_mat
   configPt q = NULL;
   p3d_mat4ExtractPosReverseOrder(objectPos, &x, &y, &z, &rx, &ry, &rz);
   //Backup and set the attach matrix
-  p3d_matrix4 bakTatt[robot->nbCcCntrts];
-  for (int i = 0; i < robot->nbCcCntrts; i++) {
-    p3d_mat4Copy(robot->ccCntrts[i]->Tatt, bakTatt[i]);
-    p3d_mat4Copy(att[i], robot->ccCntrts[i]->Tatt);
+  p3d_matrix4 bakTatt[(int)robot->armManipulationData->size()];
+  for (int i = 0; i < (int)robot->armManipulationData->size(); i++) {
+    p3d_mat4Copy((*robot->armManipulationData)[i].getCcCntrt()->Tatt, bakTatt[i]);
+    p3d_mat4Copy(att[i], (*robot->armManipulationData)[i].getCcCntrt()->Tatt);
   }
   q = p3d_getRobotBaseConfigAroundTheObject(robot, robot->baseJnt, robot->curObjectJnt, x, y, z, rx, ry, rz, -1, ROBOT_MAX_LENGTH, shootBase, shootObjectRotation, cntrtToActivate, nonUsedCntrtDesactivation);
   //Restore the attach matrix
-  for (int i = 0; i < robot->nbCcCntrts; i++) {
-    p3d_mat4Copy(bakTatt[i], robot->ccCntrts[i]->Tatt);
+  for (int i = 0; i < (int)robot->armManipulationData->size(); i++) {
+    p3d_mat4Copy(bakTatt[i], (*robot->armManipulationData)[i].getCcCntrt()->Tatt);
   }
   return q;
 }
 
+/**
+ * @brief Compute The free Arms configuration given a reference one
+ * @param robot the robot
+ * @param objectPos the object position matrix
+ * @param att the attach matrix. The number of matrix is robot->nbCcCntrts
+ * @return the robot config
+ */
 double setRobotArmsRest(p3d_rob* robot, p3d_matrix4 objectPos, int armToActivate, p3d_matrix4 att, configPt restConf, configPt conf){
   configPt q = p3d_copy_config(robot, conf);
-  double minconfCost = computeRobotConfCostSpecificArm(robot, restConf, conf, 1 - armToActivate);
+  double minconfCost = computeFreeArmsConfigCost(robot, armToActivate, restConf, conf);
   configPt bestConf = p3d_copy_config(robot, conf);
   p3d_matrix4 bakTatt;
-  p3d_mat4Copy(robot->ccCntrts[armToActivate]->Tatt, bakTatt);
-  p3d_mat4Copy(att, robot->ccCntrts[armToActivate]->Tatt);
+  p3d_mat4Copy((*robot->armManipulationData)[armToActivate].getCcCntrt()->Tatt, bakTatt);
+  
+  p3d_mat4Copy(att, (*robot->armManipulationData)[armToActivate].getCcCntrt()->Tatt);
   activateCcCntrts(robot, armToActivate, true);
-  for(int i = 0; i < robot->nbCcCntrts; i++){
+  for(int i = 0; i < (int)robot->armManipulationData->size(); i++){
     if (i != armToActivate) {
-      p3d_cntrt* ct = robot->ccCntrts[i];
+      p3d_cntrt* ct = (*robot->armManipulationData)[i].getCcCntrt();
       for(int j = 0; j < ct->npasjnts; j++){
         p3d_jnt* jnt = ct->pasjnts[j];
         for(int k = 0; k < jnt->dof_equiv_nbr; k++){
@@ -465,6 +547,7 @@ double setRobotArmsRest(p3d_rob* robot, p3d_matrix4 objectPos, int armToActivate
         }
       }
       //contraintes spéciales
+      //TODO Check for LWR4
       if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")) {
         p3d_jnt* jnt = robot->joints[ct->argu_i[0]]; 
         q[jnt->index_dof] = restConf[jnt->index_dof];
@@ -478,7 +561,7 @@ double setRobotArmsRest(p3d_rob* robot, p3d_matrix4 objectPos, int armToActivate
     p3d_get_BB_rob_max_size(robot, &robotSize);
     translationFactor = robotSize/10;
     rotationFactor = robotSize/5;
-    fixJoint(robot, robot->curObjectJnt, objectPos);
+    fixJoint(robot, (*robot->armManipulationData)[armToActivate].getManipulationJnt(), objectPos);
     int nTry = 0;
     int shootTry = 0;
     int nbColTests = 0;
@@ -486,7 +569,7 @@ double setRobotArmsRest(p3d_rob* robot, p3d_matrix4 objectPos, int armToActivate
       p3d_gaussian_config2_specific(robot, q, newConf, translationFactor, rotationFactor, true);
       if (p3d_set_and_update_this_robot_conf(robot, newConf)) {
         if(!p3d_col_test()){//collision free
-          double confCost = computeRobotConfCostSpecificArm(robot, restConf, newConf, 1 - armToActivate);
+          double confCost = computeFreeArmsConfigCost(robot, armToActivate, restConf, newConf);
           if (minconfCost > confCost) {//better config
             minconfCost = confCost;
             p3d_copy_config_into(robot, newConf, &bestConf);
@@ -506,14 +589,24 @@ double setRobotArmsRest(p3d_rob* robot, p3d_matrix4 objectPos, int armToActivate
     p3d_copy_config_into(robot, q, &bestConf);
     minconfCost = 0;
   }
-  unFixJoint(robot, robot->curObjectJnt);
+  unFixJoint(robot, (*robot->armManipulationData)[armToActivate].getManipulationJnt());
   p3d_set_and_update_this_robot_conf(robot, bestConf);
   p3d_get_robot_config_into(robot, &conf);
   deactivateCcCntrts(robot, armToActivate);
   //Restore the attach matrix
-  p3d_mat4Copy(bakTatt, robot->ccCntrts[armToActivate]->Tatt);
+  p3d_mat4Copy(bakTatt, (*robot->armManipulationData)[armToActivate].getCcCntrt()->Tatt);
   p3d_destroy_config(robot,q);
   p3d_destroy_config(robot,bestConf);
+  return minconfCost;
+}
+
+double computeFreeArmsConfigCost(p3d_rob* robot, int armToActivate, configPt restConf, configPt conf){
+  double minconfCost = 0;
+  for(int i = 0; i < (int)robot->armManipulationData->size(); i++){
+    if(i != armToActivate){
+      minconfCost += computeRobotConfCostSpecificArm(robot, restConf, conf, i);
+    }
+  }
   return minconfCost;
 }
 
@@ -550,20 +643,9 @@ double computeRobotConfCostSpecificArm(p3d_rob* robot, configPt refConfig, confi
     armPotentialCost /= 1.94;
     if (robot->nbCcCntrts == 2) {
       //ForwardCost
-      p3d_vector3 rightShoulder, leftShoulder, base, wrist;
-      p3d_mat4ExtractTrans(robot->ccCntrts[0]->pasjnts[0]->abs_pos, rightShoulder);
-      p3d_mat4ExtractTrans(robot->ccCntrts[1]->pasjnts[0]->abs_pos, leftShoulder);
-      p3d_jnt* baseJnt = robot->baseJnt;
-      if (baseJnt || (baseJnt && baseJnt->num == 0)) {
-        baseJnt = robot->joints[1];
-      }
-      p3d_mat4ExtractTrans(baseJnt->abs_pos, base);
-      p3d_plane plane = p3d_plane_from_points(leftShoulder, rightShoulder, base);
-      //wrist Position
-      p3d_mat4ExtractTrans(robot->ccCntrts[0]->pasjnts[robot->ccCntrts[0]->npasjnts - 1]->abs_pos, wrist);
-      double forwardCost =  p3d_vectDotProd(plane.normale, wrist) + plane.d;
+      double forwardCost = computeForwardCostSpecificArm(robot, whichArm);
       if (forwardCost < 0) {
-        forwardCost = -forwardCost/0.79;
+        forwardCost = -forwardCost;
         forwardCost = forwardCost < 0.5 ? 1 - forwardCost : forwardCost;
         return (armMediumJointCost + armPotentialCost + forwardCost) / 3;
       }else {
@@ -572,11 +654,86 @@ double computeRobotConfCostSpecificArm(p3d_rob* robot, configPt refConfig, confi
     }else {
       return (armMediumJointCost + armPotentialCost) / 2;
     }
-
-    
   }else{
     return armMediumJointCost;
   }
+}
+
+
+double computeRobotGraspArmCost(p3d_rob* robot, int whichArm, gpGrasp grasp, configPt q, configPt refConfig, p3d_matrix4 objectPos){
+  double armMediumJointCost = 0;
+  p3d_cntrt* ct = (*robot->armManipulationData)[whichArm].getCcCntrt();
+  p3d_jnt* baseJnt = robot->baseJnt;
+  int weight = 1;
+  p3d_set_and_update_this_robot_conf(robot, q);
+  //MediumJointCost
+  for(int j = 0; j < ct->npasjnts; j++){
+    if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") && j >= 2){
+      weight = (ct->npasjnts - j);
+    }else{
+      weight = (ct->npasjnts - j + 1);
+    }
+    armMediumJointCost += weight * SQR(q[ct->pasjnts[j]->index_dof] - refConfig[ct->pasjnts[j]->index_dof]);
+  }
+  if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){
+    armMediumJointCost += 5 * SQR(q[robot->joints[ct->argu_i[0]]->index_dof] - refConfig[robot->joints[ct->argu_i[0]]->index_dof]);
+  }
+  p3d_set_and_update_this_robot_conf(robot, refConfig);
+  p3d_vector3 obj, current, ref, objCurrent, refCurrent;
+  p3d_mat4ExtractColumnX(robot->baseJnt->abs_pos, ref);
+
+  obj[0] = objectPos[0][3] - robot->baseJnt->abs_pos[0][3];
+  obj[1] = objectPos[1][3] - robot->baseJnt->abs_pos[1][3];
+  obj[2] = objectPos[2][3] - robot->baseJnt->abs_pos[2][3];
+
+  p3d_set_and_update_this_robot_conf(robot, q);
+  p3d_mat4ExtractColumnX(robot->baseJnt->abs_pos, current);
+
+  p3d_vectXprod(obj, current, objCurrent);
+  p3d_vectXprod(ref, current, refCurrent);
+
+  if(p3d_vectDotProd(objCurrent,refCurrent) <= 0){
+    weight = 5;
+  }else{
+    weight = 10;
+  }
+  armMediumJointCost += weight* SQR(q[baseJnt->index_dof] - refConfig[baseJnt->index_dof]);
+//   p3d_vector3 robotObjectDir, base, object;
+// 
+//   if (baseJnt || (baseJnt && baseJnt->num == 0)) {
+//     baseJnt = robot->joints[1];
+//   }
+//   p3d_mat4ExtractTrans(baseJnt->abs_pos, base);
+//   p3d_mat4ExtractTrans(objectPos, object);
+//   robotObjectDir[0] = object[0] - base[0];
+//   robotObjectDir[1] = object[1] - base[1];
+//   robotObjectDir[2] = object[2] - base[2];
+//   p3d_vectNormalize(robotObjectDir, robotObjectDir);
+  
+  return armMediumJointCost;
+//   return 1 - ((1 + p3d_vectDotProd(graspDir, robotObjectDir)) / 2);
+}
+
+/**
+ * @brief Compute the forward cost of the specified arm. This function works only with two arms. This cost give negative cost for arm configurations when the wrist is behind the torso. LIMITATION : Its works only with two arms
+ * @param robot the robot
+ * @param whichArm the arm to compute the cost
+ * @return the arm forward cost
+ */
+
+double computeForwardCostSpecificArm(p3d_rob* robot, int whichArm){
+  p3d_vector3 rightShoulder, leftShoulder, base, wrist;
+  p3d_mat4ExtractTrans((*robot->armManipulationData)[0].getCcCntrt()->pasjnts[0]->abs_pos, rightShoulder);
+  p3d_mat4ExtractTrans((*robot->armManipulationData)[1].getCcCntrt()->pasjnts[0]->abs_pos, leftShoulder);
+  p3d_jnt* baseJnt = robot->baseJnt;
+  if (baseJnt || (baseJnt && baseJnt->num == 0)) {
+    baseJnt = robot->joints[1];
+  }
+  p3d_mat4ExtractTrans(baseJnt->abs_pos, base);
+  p3d_plane plane = p3d_plane_from_points(leftShoulder, rightShoulder, base);
+  //wrist Position
+  p3d_mat4ExtractTrans(robot->ccCntrts[whichArm]->pasjnts[robot->ccCntrts[whichArm]->npasjnts - 1]->abs_pos, wrist);
+  return (p3d_vectDotProd(plane.normale, wrist) + plane.d)/0.79;
 }
 
 /**
@@ -766,113 +923,161 @@ void removeAloneNodesInGraph(p3d_rob* robot, p3d_graph* graph){
 
 #ifdef GRASP_PLANNING
 // HandStatus 0 = grasp, 1 = open, 2 = rest
-void correctGraphForHandsAndObject(p3d_rob* robot, p3d_graph* graph, int rightHandStatus, gpGrasp rightGrasp, int leftHandStatus, gpGrasp leftGrasp, bool carryobject, int whichArm){
-  if(!graph){
-    return;
-  }
-  //remove all edge from graph
-  for(p3d_list_edge* lEdge = graph->edges, *tmp = NULL; lEdge; lEdge = tmp){
-    tmp = lEdge->next;
-    MY_FREE(lEdge->E, p3d_edge, 1);
-    lEdge->E = NULL;
-    MY_FREE(lEdge, p3d_list_edge, 1);
-    if(tmp){
-      tmp->prev = NULL;
+void correctGraphForHandsAndObject (p3d_rob * robot, p3d_graph * graph,
+             int rightHandStatus, gpGrasp rightGrasp,
+             int leftHandStatus, gpGrasp leftGrasp,
+             bool carryobject, int whichArm)
+{
+  if (!graph)
+    {
+      return;
     }
+  //remove all edge from graph
+  for (p3d_list_edge * lEdge = graph->edges, *tmp = NULL; lEdge; lEdge = tmp)
+    {
+      tmp = lEdge->next;
+      MY_FREE (lEdge->E, p3d_edge, 1);
+      lEdge->E = NULL;
+      MY_FREE (lEdge, p3d_list_edge, 1);
+      if (tmp)
+  {
+    tmp->prev = NULL;
   }
+    }
   graph->nedge = 0;
   graph->edges = NULL;
   graph->last_edge = NULL;
   gpHand_properties leftHand, rightHand;
-  leftHand.initialize(GP_SAHAND_LEFT);
-  rightHand.initialize(GP_SAHAND_RIGHT);
+  leftHand.initialize (GP_SAHAND_LEFT);
+  rightHand.initialize (GP_SAHAND_RIGHT);
   bool updatedObject = true;
-  if(carryobject){
-    setAndActivateTwoJointsFixCntrt(robot, robot->curObjectJnt, robot->ccCntrts[whichArm - 1]->pasjnts[robot->ccCntrts[whichArm - 1]->npasjnts - 1]);
-  }
+  if (carryobject)
+    {
+      setAndActivateTwoJointsFixCntrt (robot, robot->curObjectJnt,
+               robot->ccCntrts[whichArm -
+                   1]->pasjnts[robot->
+                   ccCntrts
+                   [whichArm -
+                    1]->
+                   npasjnts -
+                   1]);
+    }
   //correct all nodes
-  for(p3d_list_node* lNode = graph->nodes; lNode; lNode = lNode->next){
-    switch(rightHandStatus){
-      case 0:{
-        gpSet_grasp_configuration(robot, rightGrasp, lNode->N->q, 1);
-        break;
-      }
-      case 1:{
-        gpSet_grasp_open_configuration(robot, rightGrasp, lNode->N->q, 1);
-        break;
-      }
-      case 2:{
-        gpSet_hand_rest_configuration(robot, rightHand, lNode->N->q, 1);
-        break;
-      }
+  for (p3d_list_node * lNode = graph->nodes; lNode; lNode = lNode->next)
+    {
+      switch (rightHandStatus)
+  {
+  case 0:
+    {
+      gpSet_grasp_configuration (robot, rightGrasp, lNode->N->q, 1);
+      break;
     }
-    switch(leftHandStatus){
-      case 0:{
-        gpSet_grasp_configuration(robot, leftGrasp, lNode->N->q, 2);
-        break;
-      }
-      case 1:{
-        gpSet_grasp_open_configuration(robot, leftGrasp, lNode->N->q, 2);
-        break;
-      }
-      case 2:{
-        gpSet_hand_rest_configuration(robot, leftHand, lNode->N->q, 2);
-        break;
-      }
+  case 1:
+    {
+      gpSet_grasp_open_configuration (robot, rightGrasp, lNode->N->q,
+              1);
+      break;
     }
-    if(carryobject){
-      updatedObject = true;
-      if(p3d_set_and_update_this_robot_conf(robot, lNode->N->q)){
-        p3d_get_robot_config_into(robot, &lNode->N->q);
-      }else {
-        printf("Can not update this configuration : The carried object is out of bounds\n");
+  case 2:
+    {
+      gpSet_hand_rest_configuration (robot, rightHand, lNode->N->q, 1);
+      break;
+    }
+  }
+      switch (leftHandStatus)
+  {
+  case 0:
+    {
+      gpSet_grasp_configuration (robot, leftGrasp, lNode->N->q, 2);
+      break;
+    }
+  case 1:
+    {
+      gpSet_grasp_open_configuration (robot, leftGrasp, lNode->N->q, 2);
+      break;
+    }
+  case 2:
+    {
+      gpSet_hand_rest_configuration (robot, leftHand, lNode->N->q, 2);
+      break;
+    }
+  }
+      if (carryobject)
+  {
+    updatedObject = true;
+    if (p3d_set_and_update_this_robot_conf (robot, lNode->N->q))
+      {
+        p3d_get_robot_config_into (robot, &lNode->N->q);
+      }
+    else
+      {
+        printf
+    ("Can not update this configuration : The carried object is out of bounds\n");
         updatedObject = false;
         break;
       }
-    }
-    //Delete this node's edges list
-    for(p3d_list_edge* lEdge = lNode->N->edges, *tmp = NULL; lEdge; lEdge = tmp){
-      tmp = lEdge->next;
-      lEdge->E = NULL;
-      MY_FREE(lEdge, p3d_list_edge, 1);
-      if(tmp){
+  }
+      //Delete this node's edges list
+      for (p3d_list_edge * lEdge = lNode->N->edges, *tmp = NULL; lEdge;
+     lEdge = tmp)
+  {
+    tmp = lEdge->next;
+    lEdge->E = NULL;
+    MY_FREE (lEdge, p3d_list_edge, 1);
+    if (tmp)
+      {
         tmp->prev = NULL;
       }
-    }
-    lNode->N->nedge = 0;
-    lNode->N->edges = NULL;
-    lNode->N->IsDiscarded = false;
-    if(!updatedObject){
-      //remove the node from the graph
-      lNode->N->IsDiscarded = true;
-      break;
-    }
   }
-  for(p3d_list_node* lNode = graph->nodes; lNode; lNode = lNode->next){
-    if(lNode->N->IsDiscarded){
-      break;
+      lNode->N->nedge = 0;
+      lNode->N->edges = NULL;
+      lNode->N->IsDiscarded = false;
+      if (!updatedObject)
+  {
+    //remove the node from the graph
+    lNode->N->IsDiscarded = true;
+    break;
+  }
     }
-    //reconstruct the edges using the nodes neigbours
-    p3d_list_node* lNeig = lNode->N->neighb, *save = lNode->N->neighb;
-    lNode->N->neighb = NULL;
-    lNode->N->nneighb = 0;
-    for(; lNeig; lNeig = lNeig->next){
-      if(!lNeig->N->IsDiscarded){
-        p3d_create_one_edge(graph, lNode->N, lNeig->N, -1);
+  for (p3d_list_node * lNode = graph->nodes; lNode; lNode = lNode->next)
+    {
+      if (lNode->N->IsDiscarded)
+  {
+    break;
+  }
+      //reconstruct the edges using the nodes neigbours
+      p3d_list_node *lNeig = lNode->N->neighb, *save = lNode->N->neighb;
+      lNode->N->neighb = NULL;
+      lNode->N->nneighb = 0;
+      for (; lNeig; lNeig = lNeig->next)
+  {
+    if (!lNeig->N->IsDiscarded)
+      {
+        p3d_create_one_edge (graph, lNode->N, lNeig->N, -1);
       }
-    }
-    //destroy the neighbor list
-    lNeig = save;
-    for(p3d_list_node* tmp = NULL; lNeig; lNeig = tmp){
-      tmp = lNeig->next;
-      MY_FREE(lNeig, p3d_list_node, 1);
-      if(tmp){
+  }
+      //destroy the neighbor list
+      lNeig = save;
+      for (p3d_list_node * tmp = NULL; lNeig; lNeig = tmp)
+  {
+    tmp = lNeig->next;
+    MY_FREE (lNeig, p3d_list_node, 1);
+    if (tmp)
+      {
         tmp->prev = NULL;
       }
+  }
     }
-  }
-  if(carryobject){
-    desactivateTwoJointsFixCntrt(robot, robot->curObjectJnt, robot->ccCntrts[whichArm - 1]->pasjnts[robot->ccCntrts[whichArm - 1]->npasjnts - 1]);
-  }
+  if (carryobject)
+    {
+      desactivateTwoJointsFixCntrt (robot, robot->curObjectJnt,
+            robot->ccCntrts[whichArm -
+                1]->pasjnts[robot->
+                ccCntrts
+                [whichArm -
+                 1]->
+                npasjnts -
+                1]);
+    }
 }
 #endif

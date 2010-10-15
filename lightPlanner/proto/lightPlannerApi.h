@@ -24,6 +24,8 @@ extern void shootTheObjectArroundTheBase(p3d_rob* robot, p3d_jnt* baseJnt, p3d_j
 extern p3d_cntrt * findTwoJointsFixCntrt(p3d_rob* robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt);
 extern int getGraspingArm(p3d_rob* robot, bool cartesian);
 extern int getClosestWristToTheObject(p3d_rob* robot);
+extern int getClosestWristToTheObject(p3d_rob* robot, p3d_rob* object);
+extern int getClosestWristToTheObject(p3d_rob* robot, p3d_matrix4 objectPos);
 #ifdef GRASP_PLANNING
 #include "GraspPlanning-pkg.h"
 extern int getBetterCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objectPos, gpHand_type handType, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig, gpGrasp * grasp);
