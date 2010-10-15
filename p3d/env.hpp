@@ -123,7 +123,6 @@ public:
 		withSmoothing,
 		withShortCut,
 		withDeformation,
-		withCleaning,
 		
 		withCleaning,
 		
