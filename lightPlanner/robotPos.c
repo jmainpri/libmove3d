@@ -7,6 +7,8 @@
 #include "lightPlannerApi.h"
 #include "lightPlanner.h"
 
+#include "env.hpp"
+
 static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 *att, int shootBase, int shootObjectRotation, int cntrtToActivate, bool nonUsedCntrtDesactivation);
 
 extern double SAFETY_DIST;

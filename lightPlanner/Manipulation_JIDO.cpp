@@ -15,7 +15,8 @@
 #ifdef DPG
 #include "p3d_chanEnv_proto.h"
 #endif
-#include "planner_cxx/plannerFunctions.hpp"
+#include "plannerFunctions.hpp"
+#include "planEnvironment.hpp"
 #include <list>
 #include <string>
 #include <iostream>
@@ -172,7 +173,9 @@ int Manipulation_JIDO::copyConfigTrajToFORM() {
      sprintf(name, "configTraj_%i", i);
      p3d_set_new_robot_config(name, _configTraj[i], _robotPt->ikSol, _robotPt->confcur);
      _robotPt->confcur = _robotPt->conf[0];
+#ifdef WITH_XFORMS
      FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+#endif
   }
 
   return 0;
@@ -191,8 +194,9 @@ int Manipulation_JIDO::destroyTrajectories() {
   while(_robotPt->nt!=0)
   {   p3d_destroy_traj(_robotPt, _robotPt->t[0]);  }
 
+#ifdef WITH_XFORMS
   FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
-
+#endif
   return 0;
 }
 
@@ -1129,7 +1133,9 @@ int Manipulation_JIDO::cleanRoadmap(){
   if(_robotPt!=NULL) {
     XYZ_ENV->cur_robot= _robotPt;
     deleteAllGraphs();
+#ifdef WITH_XFORMS
     FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+#endif
   } else {
     return 1;
   }
@@ -1143,7 +1149,9 @@ int Manipulation_JIDO::cleanTraj(){
       {
 	p3d_destroy_traj(_robotPt, _robotPt->t[0]);
       }
+#ifdef WITH_XFORMS
     FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+#endif
   } else {
     return 1;
   }
@@ -1173,9 +1181,9 @@ int Manipulation_JIDO::computeRRT(){
 
 
 #if defined (USE_CXX_PLANNER)
-  ENV.setBool(Env::withSmoothing, true);
-  ENV.setBool(Env::withShortCut, true);
-  ENV.setBool(Env::withDeformation, false);
+  PlanEnv->setBool(PlanParam::withSmoothing, true);
+  PlanEnv->setBool(PlanParam::withShortCut, true);
+  PlanEnv->setBool(PlanParam::withDeformation, false);
   ENV.setInt(Env::nbCostOptimize, 30);
 
   ChronoOn();
@@ -1260,7 +1268,9 @@ int Manipulation_JIDO::grabObject(char* objectName){
     return 1;
   }
   p3d_grab_object2(_robotPt, 0);
+#ifdef WITH_XFORMS
   FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+#endif
   g3d_draw_allwin_active();
 
   return 0;
@@ -1299,7 +1309,9 @@ int Manipulation_JIDO::armComputePRM() {
   if(_robotPt!=NULL) {
     while(_robotPt->nt!=0)
       {   p3d_destroy_traj(_robotPt, _robotPt->t[0]);  }
+#ifdef WITH_XFORMS
     FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+#endif
   }
 
   if(_cartesian == 0) {

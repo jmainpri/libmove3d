@@ -15,7 +15,8 @@
 #ifdef DPG
 #include "p3d_chanEnv_proto.h"
 #endif
-#include "planner_cxx/plannerFunctions.hpp"
+#include "plannerFunctions.hpp"
+#include "planEnvironment.hpp"
 #include <list>
 #include <string>
 #include <iostream>
@@ -293,7 +294,9 @@ int ManipulationPlanner::copyConfigTrajToFORM() {
      sprintf(name, "configTraj_%i", i);
      p3d_set_new_robot_config(name, _configTraj[i], _robotPt->ikSol, _robotPt->confcur);
      _robotPt->confcur = _robotPt->conf[0];
+#ifdef XFORMS
      FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+#endif
   }
 
   return 0;
@@ -311,9 +314,9 @@ int ManipulationPlanner::destroyTrajectories() {
 
   while(_robotPt->nt!=0)
   {   p3d_destroy_traj(_robotPt, _robotPt->t[0]);  }
-
+#ifdef XFORMS
   FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
-
+#endif
   return 0;
 }
 
@@ -1258,11 +1261,11 @@ printf("************************************************************************
     XYZ_ENV->cur_robot= cur_robot;
     return MANIPULATION_TASK_ERROR_UNKNOWN;
   }
-  if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions, segments) == 1){
+  /*if(p3d_optim_traj_softMotion(traj, true, &gain, &ntest, lp, positions, segments) == 1){
     printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
     XYZ_ENV->cur_robot= cur_robot;
     return MANIPULATION_TASK_ERROR_UNKNOWN;
-  }
+  }*/
   
   p3d_copy_config_into(_robotPt, qStart, &_robotPt->ROBOT_POS);
   p3d_set_and_update_this_robot_conf(_robotPt, _robotPt->ROBOT_POS);
@@ -1281,7 +1284,9 @@ int ManipulationPlanner::cleanRoadmap(){
   if(_robotPt!=NULL) {
     XYZ_ENV->cur_robot= _robotPt;
     deleteAllGraphs();
+#ifdef XFORMS
     FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+#endif
   } else {
     return 1;
   }
@@ -1295,7 +1300,9 @@ int ManipulationPlanner::cleanTraj(){
       {
 	p3d_destroy_traj(_robotPt, _robotPt->t[0]);
       }
+#ifdef XFORMS
     FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+#endif
   } else {
     return 1;
   }
@@ -1325,9 +1332,9 @@ int ManipulationPlanner::computeRRT(){
 
 
 #if defined (USE_CXX_PLANNER)
-  ENV.setBool(Env::withSmoothing, true);
-  ENV.setBool(Env::withShortCut, true);
-  ENV.setBool(Env::withDeformation, false);
+  PlanEnv->setBool(PlanParam::withSmoothing, true);
+  PlanEnv->setBool(PlanParam::withShortCut, true);
+	PlanEnv->setBool(PlanParam::withDeformation, false);
   ENV.setInt(Env::nbCostOptimize, 30);
 
   ChronoOn();
@@ -1416,7 +1423,9 @@ int ManipulationPlanner::grabObject(int armId, char* objectName){
     return 1;
   }
   p3d_grab_object2(_robotPt, 0);
+#ifdef XFORMS
   FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+#endif
   g3d_draw_allwin_active();
 
   return 0;

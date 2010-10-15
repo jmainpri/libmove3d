@@ -2,6 +2,8 @@
 #define ROBOTPOS_H
 #include "Planner-pkg.h"
 
+#include <map>
+
 extern configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt, double x, double y, double z, double rx, double ry, double rz, double minRadius, double maxRadius, int shootBase, int shootObject, int cntrtToActivate, bool nonUsedCntrtDesactivation);
 extern configPt setBodyConfigForBaseMovement(p3d_rob * robot, configPt baseConfig, configPt bodyConfig);
 extern void adaptClosedChainConfigToBasePos(p3d_rob *robot, p3d_matrix4 base, configPt refConf);

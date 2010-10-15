@@ -1,9 +1,18 @@
 IF(LIGHT_PLANNER)
 SET(BM3D_MODULE_NAME lightPlanner)
 BM3D_SRC_SUBDIR_PROCESS(
-lightPlannerApi.c lightPlanner.c robotPos.c DlrObject.cpp DlrParser.cpp DlrPlan.cpp DlrPlanner.cpp)
+lightPlannerApi.c 
+lightPlanner.c 
+robotPos.c 
+DlrObject.cpp 
+DlrParser.cpp 
+DlrPlan.cpp 
+DlrPlanner.cpp)
+
 IF(GRASP_PLANNING)
-  BM3D_SRC_SUBDIR_PROCESS(Manipulation.cpp)
+BM3D_SRC_SUBDIR_PROCESS(
+	Manipulation.cpp
+)
 IF(CXX_PLANNER) 
 IF(MULTILOCALPATH AND NOT(QT_LIBRARY))
   BM3D_SRC_SUBDIR_PROCESS(Manipulation_JIDO.cpp)
