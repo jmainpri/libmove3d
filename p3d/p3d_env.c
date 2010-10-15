@@ -2653,11 +2653,14 @@ int p3d_set_removable_bb_for_grasp(p3d_rob* r, int nbJoints, int *joints){
 int p3d_set_arm_data(p3d_rob* r, int *data){
   ArmManipulationData armData;
   armData.setCcCntrt(r, data[0]);
+#ifdef FK_CNTRT
   armData.setFkCntrt(p3d_create_FK_cntrts(r, armData.getCcCntrt()));
   armData.setCartesianGroup(data[1]);
   armData.setCartesianSmGroup(data[2]);
-  armData.setHandProperties(data[3]);
-  armData.setManipulationJnt(r, data[4]);
+  armData.setHandGroup(data[3]);
+  armData.setHandSmGroup(data[4]);
+  armData.setHandProperties(data[5]);
+  armData.setManipulationJnt(r, data[6]);
   r->armManipulationData->push_back(armData);
   return TRUE;
 }

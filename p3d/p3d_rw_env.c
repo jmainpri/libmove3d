@@ -2834,7 +2834,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			robotPt = ( pp3d_rob ) p3d_get_desc_curid ( P3D_ROBOT );
 			if ( !robotPt ) return ( read_desc_error ( fct ) );
 			// the data ccntrtId, mlpGroupId, handType, virtualObjJntId
-			if ( !read_desc_int ( fd, 5, itab ) ) return ( read_desc_error ( fct ) );
+			if ( !read_desc_int ( fd, 7, itab ) ) return ( read_desc_error ( fct ) );
 			if ( !p3d_set_arm_data ( robotPt, itab ) ) return ( read_desc_error ( fct ) );//joint already declared
 			continue;
 		}
