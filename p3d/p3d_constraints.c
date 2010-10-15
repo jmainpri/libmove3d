@@ -835,7 +835,7 @@ int p3d_constraint_dof_r(p3d_rob *robotPt, const char *namecntrt, int nb_pas,
 /*--------------------------------------------------------------------------*/
 /*! \brief Function to introduce a kinematic constraints into the
  *         current robot constraints manager.
- *
+ * 
  * \note Use the first degree of freedom of each joint
  *
  * \param namecntrt:     The name of the constraints.
@@ -1565,6 +1565,12 @@ void p3d_col_activate_enchained_cntrts_pairs(p3d_cntrt *ct, p3d_cntrt *ect,
  */
 /* ------------------------------------------------------------------ */
 static void p3d_add_to_cntrts_chain(p3d_cntrt *ct, p3d_cntrt *ect, int rob_dof) {
+  for(int i = 0; i < ct->nenchained; i++){
+    if(ct->enchained[i] == ect){
+      return; //the constraint is already in the enchained list
+    }
+  }
+
 	ct->enchained = MY_REALLOC(ct->enchained, pp3d_cntrt, ct->nenchained,
                              ct->nenchained + 1);
 	ct->enchained[ct->nenchained] = ect;
@@ -1743,6 +1749,7 @@ static p3d_cntrt * s_p3d_create_cntrts(p3d_cntrt_management * cntrt_manager) {
 	ct->parallel_sys_data = NULL;
 	ct->bio_ik_data = NULL;
 	p3d_mat4Copy(p3d_mat4IDENTITY, ct->Tatt);
+  p3d_mat4Copy(p3d_mat4IDENTITY, ct->Tatt2);
 	ct->cntrt_manager = cntrt_manager;
 	for (i = 0; i < MAX_ARGU_CNTRT; i++) {
 		ct->actjnts[i] = NULL;
@@ -5331,8 +5338,6 @@ static int p3d_fct_lwr_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
 		ikLWRArmSolver(fixed->dof_data[0].v, armGrip, qm, valid);
 		if (DEBUG_CNTRTS) {
 			for (i = 1; i <= 8; i++) {
-				//printf("solution: %d, %d\n", i, ikKUKAArmSolverUnique(fixed->dof_data[0].v, aArray, alphaArray, dArray, thetaArray, armGrip,
-				//       q, ct->argu_i[1], i));
 				printf("solution: %d, %d\n", i, ikLWRArmSolverUnique(
                                                              fixed->dof_data[0].v, armGrip, q, i));
 			}
@@ -5341,7 +5346,6 @@ static int p3d_fct_lwr_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
 			p3d_jnt_get_dof_bounds(ct->pasjnts[i], ct->pas_jnt_dof[i],
                              &minmax[i][0], &minmax[i][1]);
 		}
-		//     p3d_jnt_get_dof_bounds(fixed,0, &minmax[2][0], &minmax[2][1]);
 		if ((nbSolutions = p3d_valid_solutions(ct, qm, valid, minmax, ct->num))
 				== 0)
 			return FALSE; //no solution found
