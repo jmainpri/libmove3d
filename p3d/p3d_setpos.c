@@ -14,6 +14,9 @@
 #ifdef DPG
 #include "../planner/dpg/proto/DpgGrid.h"
 #endif
+#ifdef LIGHT_PLANNER
+#include "ManipulationUtils.hpp"
+#endif
 
 #define DEBUG_SETPOS 0
 
@@ -863,7 +866,6 @@ else
     p3d_jnt_update_rel_pos_object(obst->jnt, obst);//before p3d_jnt_set_object
     p3d_mat4Copy(newpos,obst->opos);
   }
-
   (*p3d_BB_update_BB_obj)(obst,newpos);
 // update the jnt->dist variable
   if ((type==P3D_BODY)&&(obst->jnt!=NULL)) {
@@ -1134,25 +1136,42 @@ int p3d_update_carried_object_pos(p3d_rob *robotPt)
 
 //   p3d_matrix4 Tpose;
   configPt q= NULL;
-  
-  if(robotPt->carriedObject!=NULL && robotPt->isCarryingObject==TRUE)
-  { 
-    if(robotPt->curObjectJnt == NULL)
-    {
-      printf("%s: %d: p3d_update_carried_object_pos(): the robot must have a fictive object.\n",__FILE__,__LINE__);
-      return 1;
+  p3d_rob* object = NULL;
+  if(robotPt->isCarryingObject){
+    for(int i = 0; i < (int) robotPt->armManipulationData->size(); i++){
+      object = (*robotPt->armManipulationData)[i].getCarriedObject();
+      if(object){
+        if(!(*robotPt->armManipulationData)[i].getManipulationJnt()){
+          printf("%s: %d: p3d_update_carried_object_pos(): the robot must have a fictive object.\n",__FILE__,__LINE__);
+          return 1;
+        }
+        q = p3d_alloc_config(object);
+        p3d_get_robot_config_into(object, &q);
+    //     p3d_mat4ExtractPosReverseOrder2(Tpose, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
+        p3d_mat4ExtractPosReverseOrder2((*robotPt->armManipulationData)[i].getManipulationJnt()->abs_pos, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
+        p3d_set_and_update_this_robot_conf(object, q);
+        p3d_destroy_config(object, q);
+      }
     }
-
-//     p3d_mat4Mult(robotPt->ccCntrts[0]->actjnts[0]->abs_pos, robotPt->Tgrasp, Tpose);
-
-    q= p3d_alloc_config(robotPt->carriedObject);
-    p3d_get_robot_config_into(robotPt->carriedObject, &q);
-//     p3d_mat4ExtractPosReverseOrder2(Tpose, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
-    p3d_mat4ExtractPosReverseOrder2(robotPt->curObjectJnt->abs_pos, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
-    p3d_set_and_update_this_robot_conf(robotPt->carriedObject, q);
-    p3d_destroy_config(robotPt->carriedObject, q);
-
   }
+//   if(robotPt->carriedObject!=NULL && robotPt->isCarryingObject==TRUE)
+//   { 
+//     if(robotPt->curObjectJnt == NULL)
+//     {
+//       printf("%s: %d: p3d_update_carried_object_pos(): the robot must have a fictive object.\n",__FILE__,__LINE__);
+//       return 1;
+//     }
+// 
+// //     p3d_mat4Mult(robotPt->ccCntrts[0]->actjnts[0]->abs_pos, robotPt->Tgrasp, Tpose);
+// 
+//     q= p3d_alloc_config(robotPt->carriedObject);
+//     p3d_get_robot_config_into(robotPt->carriedObject, &q);
+// //     p3d_mat4ExtractPosReverseOrder2(Tpose, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
+//     p3d_mat4ExtractPosReverseOrder2(robotPt->curObjectJnt->abs_pos, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
+//     p3d_set_and_update_this_robot_conf(robotPt->carriedObject, q);
+//     p3d_destroy_config(robotPt->carriedObject, q);
+// 
+//   }
 
   return 0;
 }
