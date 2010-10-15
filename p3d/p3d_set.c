@@ -503,7 +503,6 @@ int p3d_set_new_robot_config(const char * name, const configPt q, int* ikSol, co
     MY_FREE(new_conf, config_namePt, r->nconf+1);
     return FALSE;
   }
-#ifdef LIGHT_PLANNER
   if(p3d_get_ik_choice() != IK_NORMAL){
 #ifdef P3D_CONSTRAINTS
     p3d_copy_iksol(r->cntrt_manager, ikSol, &(new_conf[num]->ikSol));
@@ -518,17 +517,15 @@ int p3d_set_new_robot_config(const char * name, const configPt q, int* ikSol, co
   }else{
     new_conf[num]->ikSol = NULL;
   }
-#endif
+
   new_conf[num]->name = strdup(name);
   if (new_conf[num]->name == NULL) {
 	  fprintf(stderr, "Erreur d'allocation memoire dans p3d_set_new_robot_config !\n");
-#ifdef LIGHT_PLANNER
     if(p3d_get_ik_choice() != IK_NORMAL){
 #ifdef P3D_CONSTRAINTS
       p3d_destroy_specific_iksol(r->cntrt_manager, new_conf[num]->ikSol);
 #endif
     }
-#endif
     p3d_destroy_config(r, new_conf[num]->q);
     MY_FREE(new_conf[num], config_name, 1);
     MY_FREE(new_conf, config_namePt, r->nconf+1);
