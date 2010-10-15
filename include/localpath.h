@@ -268,6 +268,7 @@ typedef struct localpath{
 	struct localpath* mlpLocalpath[MAX_MULTILOCALPATH_NB];
 	int mlpID; /* ID of graph to which the localpath is associated */
 	configPt q_init;
+	int mlpGpIsActive[MAX_MULTILOCALPATH_NB];
 #endif
 
   struct localpath* prev_lp; /* the local paths can be put in a list */
