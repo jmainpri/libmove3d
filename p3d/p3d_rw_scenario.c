@@ -8,6 +8,9 @@
 #ifdef P3D_PLANNER
 #include "Planner-pkg.h"
 #endif
+#ifdef LIGHT_PLANNER
+  #include "ManipulationUtils.hpp"
+#endif
 
 static void save_scenario_name(const char * file);
 static int read_scenario(FILE * f);
@@ -126,8 +129,7 @@ int p3d_save_scenario(const char *file)
 /* Local functions */
 
 /* Save the name and the path of the scenario file "file" */
-static void save_scenario_name(const char * file)
-{
+static void save_scenario_name(const char * file){
   int c_sz, i;
   char * tmp_str;
 
@@ -226,7 +228,10 @@ static void init_variables_scenario()
     while(robotPt->nt>0)
       { p3d_del_traj(robotPt->t[0]); }
 #ifdef P3D_CONSTRAINTS
-    //p3d_clear_cntrt_manager(robotPt->cntrt_manager);
+    p3d_clear_cntrt_manager(robotPt->cntrt_manager);
+#endif
+#ifdef LIGHT_PLANNER
+    robotPt->armManipulationData->clear();
 #endif
   }
   envPt = (p3d_env*)p3d_get_desc_curid(P3D_ENV);
@@ -573,13 +578,23 @@ static int read_scenario(FILE *f)
 #endif
       continue;
     }
-  if (strcmp(fct, "p3d_set_cntrt_Tatt") == 0) {
+    if (strcmp(fct, "p3d_set_cntrt_Tatt") == 0) {
       p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
       if (!p3d_read_string_int(&pos, 1, argnum)) return(read_desc_error(fct));
       if (!p3d_read_string_n_double(&pos, 12, &dtab, &size_max_dtab)) return(read_desc_error(fct));
       if (robot->cntrt_manager->ncntrts < argnum[0] ) return(read_desc_error(fct));
 #ifdef P3D_CONSTRAINTS
       p3d_set_cntrt_Tatt(argnum[0], dtab);
+#endif
+      continue;
+    }
+    if ( strcmp ( fct,"p3d_set_cntrt_Tatt2" ) == 0){
+      p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+      if (!p3d_read_string_int(&pos, 1, argnum)) return(read_desc_error(fct));
+      if (!p3d_read_string_n_double(&pos, 12, &dtab, &size_max_dtab)) return(read_desc_error(fct));
+      if (robot->cntrt_manager->ncntrts < argnum[0] ) return(read_desc_error(fct));
+#ifdef P3D_CONSTRAINTS
+      p3d_set_cntrt_Tatt2(argnum[0], dtab);
 #endif
       continue;
     }
@@ -591,7 +606,6 @@ static int read_scenario(FILE *f)
 #ifdef LIGHT_PLANNER
     if (strcmp(fct, "p3d_set_object_base_and_arm_constraints") == 0) {
       p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-      robot = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
       if (!robot) return(read_desc_error(fct));
       if (!p3d_read_string_int(&pos, 4, argnum)) return(read_desc_error(fct)); //joints for the object, the base and the closedChain constraints
       robot->curObjectJnt = robot->joints[argnum[0]];
@@ -610,6 +624,13 @@ static int read_scenario(FILE *f)
           read_desc_error(fct);
         }
       }
+      continue;
+    }
+    if (strcmp(fct, "p3d_set_arm_data") == 0) {
+      p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+      if (!robot) return(read_desc_error(fct));
+      if ( !p3d_read_string_int(&pos, 7, itab1) ) return ( read_desc_error ( fct ) );
+      if ( !p3d_set_arm_data (robot, itab1) ) return ( read_desc_error ( fct ) );//joint already declared
       continue;
     }
 #endif
@@ -725,7 +746,16 @@ static void save_robot_data(FILE * fdest, pp3d_rob robotPt){
           }
         }
       }
-      fprintf(fdest,"\n");
+//       fprintf(fdest,"\n");
+      if(!p3d_mat4IsEqual(cntrtPt->Tatt2, p3d_mat4IDENTITY)){
+        fprintf(fdest, "\np3d_set_cntrt_Tatt2 %d", cntrtPt->num);
+        for(j=0; j < 3; j++){
+          for(int k = 0; k < 4; k++){
+            fprintf(fdest, " %f", cntrtPt->Tatt2[j][k]);
+          }
+        }
+      }
+      fprintf(fdest,"\n\n");
     }
   }
 #ifdef LIGHT_PLANNER
@@ -735,6 +765,24 @@ static void save_robot_data(FILE * fdest, pp3d_rob robotPt){
       fprintf(fdest, " %d", robotPt->ccCntrts[j]->num);
     }
     fprintf(fdest,"\n");
+  }
+  if(!robotPt->armManipulationData->empty()) {
+    for(int i = 0; i < (int) robotPt->armManipulationData->size(); i++){
+      ArmManipulationData mData = (*robotPt->armManipulationData)[i];
+      fprintf(fdest, "p3d_set_arm_data %d ", mData.getCcCntrt()->num);
+#ifdef MULTILOCALPATH
+      fprintf(fdest, "%d %d %d %d ", mData.getCartesianGroup(), mData.getCartesianSmGroup(), mData.getHandGroup() , mData.getHandSmGroup());
+#else
+      fprintf(fdest, "-1 -1 -1 -1 ");
+#endif
+#ifdef GRASP_PLANNING
+      fprintf(fdest, "%d ", (int)mData.getHandProperties().type);
+#else
+      fprintf(fdest, "-1 ");
+#endif
+      fprintf(fdest, "%d", mData.getManipulationJnt()->num);
+      fprintf(fdest,"\n");
+    }
   }
 #endif
 }
