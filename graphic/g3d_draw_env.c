@@ -25,7 +25,6 @@ int HRI_DRAW_TRAJ;
 #include "../planner/dpg/proto/DpgGrid.h"
 #endif
 
-
 int G3D_DRAW_TRACE = FALSE;
 int G3D_DRAW_OCUR_SPECIAL;
 int G3D_SELECTED_JOINT = -999;
@@ -1314,9 +1313,9 @@ void g3d_draw_env_custom()
   win = g3d_get_cur_win();
 	
   p3d_drawRobotMoveMeshs();
-  
-	ext_g3d_draw_cost_features();
-  
+#ifdef WITH_OOMOVE3D  
+  ext_g3d_draw_cost_features();
+#endif
 #ifdef DPG
   if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
     XYZ_GRAPH->dpgGrid->draw();
