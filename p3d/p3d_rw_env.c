@@ -656,7 +656,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			// initialize the cost function object.
 			global_costSpace = new CostSpace();
 			
-			std::cout << "Initializing the 2d costmap cost function" << std::endl;
+			std::cout << "Initializing the dist to obst costmap cost function" << std::endl;
 			global_costSpace->addCost("costDistToObst",boost::bind(computeDistanceToObstacles, _1));
 			global_costSpace->setCost("costDistToObst");
 #endif

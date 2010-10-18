@@ -217,7 +217,7 @@ typedef struct graph {
 #ifdef DPG
   class DpgGrid * dpgGrid;
 #endif
-#if defined( CXX_PLANNER ) || defined( WITH_OOMOVE3D )
+#if defined( CXX_PLANNER ) || defined( OOMOVE3D_CORE )
 	// Planning on graph stat
 	double totTime;
 	double optTime;
