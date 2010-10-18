@@ -5,21 +5,37 @@
 
 typedef struct g3d_win G3D_Window;
 
-//void qt_calc_cam_param();
-void calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw);
+typedef struct g3d_cam_param 
+{
+	p3d_vector3 Xc;
+	p3d_vector3 Xw;
+	p3d_vector3 up;
+};
 
-extern void (*ext_g3d_draw_allwin_active)();
-extern void (*ext_calc_cam_param)();
-extern void (*ext_get_win_mouse)(int* x, int* y);
-
+// G3D window class that holds the 
+// 3d window structs
 class qtG3DWindow
 {
 public:
-    qtG3DWindow();
-
+	qtG3DWindow();
+	
 private:
-    void newG3dWindow();
-		double size;
+	void newG3dWindow();
+	double size;
 };
+
+// Funtions to be used 
+// in the higher level modules
+void calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw);
+void qt_canvas_viewing(int mouse_press, int button);
+G3D_Window * qt_get_cur_g3d_win();
+
+// Function pointer 
+// to external functionalities
+extern void (*ext_g3d_export_cpp_graph)();
+extern void (*ext_g3d_draw_allwin_active)();
+extern void (*ext_calc_cam_param)(g3d_cam_param& p);
+extern void (*ext_get_win_mouse)(int* x, int* y);
+extern void (*ext_g3d_draw_cost_features)();
 
 #endif // QTG3DWINDOW_HPP

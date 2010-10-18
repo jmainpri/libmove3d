@@ -175,4 +175,8 @@ namespace API {
 	};
 }
 
+namespace API { class Trajectory; }
+extern std::vector<API::Trajectory> trajToDraw;
+
+
 #endif /* TRAJECTORY_HPP_ */

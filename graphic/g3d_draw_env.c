@@ -1315,11 +1315,7 @@ void g3d_draw_env_custom()
 	
   p3d_drawRobotMoveMeshs();
   
-#ifdef HRI_COSTSPACE
-  g3d_draw_costspace();
-  g3d_draw_hrics();
-#endif
-  g3d_draw_grids();
+	ext_g3d_draw_cost_features();
   
 #ifdef DPG
   if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
@@ -1388,25 +1384,9 @@ void g3d_draw_env()
   /* Debut Modification Thibaut */
   if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win);
   /* Fin Modification Thibaut */
-	
-// TODO callback OOMOVE3D
-#if defined( CXX_PLANNER )
-	//std::cout << "API_activeGraph : " << API_activeGraph << std::endl;
-	if (ENV.getBool(Env::drawGraph) && (!ENV.getBool(Env::use_p3d_structures)) && API_activeGraph ) 
-	{
-		try
-		{
-			if (API_activeGraph->isGraphChanged()) 
-			{
-				XYZ_GRAPH = API_activeGraph->exportCppToGraphStruct();
-			}
-		}
-		catch(std::string str)
-		{
-			std::cout << "Exception in exporting the cpp graph" << std::endl;
-			std::cout << str << std::endl;
-		}
-	}
+
+#if defined( WITH_OOMOVE3D )
+	ext_g3d_export_cpp_graph();
 #endif
 	
 #ifdef P3D_PLANNER

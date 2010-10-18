@@ -41,7 +41,7 @@
 #include "API/project.hpp"
 
 #include "API/Trajectory/smoothing.hpp"
-#include "API/Trajectory/CostOptimization.hpp"
+#include "API/Trajectory/costOptimization.hpp"
 //#include "planner_cxx/Greedy/GreedyCost.hpp"
 #include "API/Search/Dijkstra/dijkstra.hpp"
 #include "util/CppApi/MultiRun.hpp"

@@ -465,7 +465,6 @@ shared_ptr<Configuration> CostOptimization::cheat()
 void CostOptimization::debugShowTraj(double lPrev, double lNext, shared_ptr<
                                      Configuration> qNew, int color)
 {
-	
 	vector< shared_ptr<Configuration> > vectConf(3);
 	vectConf.at(0) = configAtParam(lPrev);
 	vectConf.at(1) = qNew;

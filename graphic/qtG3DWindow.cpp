@@ -7,6 +7,10 @@
 #include <iostream>
 #include <string>
 
+#if defined( CXX_PLANNER )
+#include "API/Roadmap/graph.hpp"
+#endif
+
 using namespace std;
 
 extern void* GroundCostObj;
@@ -28,8 +32,10 @@ XformError("Error: Xform is not compiled, check your flags or make changes to th
 
 // --------------------------------------------------------------------
 // Function pointers to external graphics
+void (*ext_g3d_draw_cost_features)();
+void (*ext_g3d_export_cpp_graph)();
 void (*ext_g3d_draw_allwin_active)();
-void (*ext_calc_cam_param)();
+void (*ext_calc_cam_param)(g3d_cam_param& p);
 void (*ext_get_win_mouse)(int* x, int* y);
 
 // --------------------------------------------------------------------
@@ -45,22 +51,22 @@ void qt_draw_allwin_active(void)
 #endif
 }
 
-void qt_ui_calc_param()
+void qt_ui_calc_param(g3d_cam_param& p)
 {
 	// TODO callback OOMOVE3D
 #if defined( QT_GL )  && defined (CXX_PLANNER)
 	p3d_vector4 Xc, Xw;
 	p3d_vector4 up;
 	
-	calc_cam_param(G3D_WIN, Xc, Xw);
+	calc_cam_param(G3D_WIN, p.Xc, p.Xw);
 	
-	JimXc[0] = Xc[0];
-	JimXc[1] = Xc[1];
-	JimXc[2] = Xc[2];
-	
-	JimXw[0] = Xw[0];
-	JimXw[1] = Xw[1];
-	JimXw[2] = Xw[2];
+//	JimXc[0] = Xc[0];
+//	JimXc[1] = Xc[1];
+//	JimXc[2] = Xc[2];
+//	
+//	JimXw[0] = Xw[0];
+//	JimXw[1] = Xw[1];
+//	JimXw[2] = Xw[2];
 	
 	if (G3D_WIN)
 	{
@@ -73,10 +79,45 @@ void qt_ui_calc_param()
 		up[2] = 1;
 	}
 	
-	Jimup[0] = up[0];
-	Jimup[1] = up[1];
-	Jimup[2] = up[2];
+	p.up[0] = up[0];
+	p.up[1] = up[1];
+	p.up[2] = up[2];
 #endif
+}
+
+// --------------------------------------------------------------------
+// --------------------------------------------------------------------
+
+// TODO callback OOMOVE3D
+#if defined( CXX_PLANNER )
+void g3d_export_cpp_graph()
+{
+	//std::cout << "API_activeGraph : " << API_activeGraph << std::endl;
+	if (ENV.getBool(Env::drawGraph) && (!ENV.getBool(Env::use_p3d_structures)) && API_activeGraph ) 
+	{
+		try
+		{
+			if (API_activeGraph->isGraphChanged()) 
+			{
+				XYZ_GRAPH = API_activeGraph->exportCppToGraphStruct();
+			}
+		}
+		catch(std::string str)
+		{
+			std::cout << "Exception in exporting the cpp graph" << std::endl;
+			std::cout << str << std::endl;
+		}
+	}
+}
+#endif
+
+void g3d_draw_cost_features()
+{
+	#ifdef HRI_COSTSPACE
+	g3d_draw_costspace();
+	g3d_draw_hrics();
+	#endif
+	g3d_draw_grids();
 }
 
 // --------------------------------------------------------------------
@@ -84,8 +125,10 @@ void qt_ui_calc_param()
 qtG3DWindow::qtG3DWindow()
 {
 #ifdef CXX_PLANNER
+	ext_g3d_draw_cost_features = (void (*)())(g3d_draw_cost_features);
+	ext_g3d_export_cpp_graph = (void (*)())(g3d_export_cpp_graph);
 	ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
-	ext_calc_cam_param = (void (*) () )(qt_ui_calc_param);
+	ext_calc_cam_param = /*(void (*) () )*/ qt_ui_calc_param ;
 	ext_get_win_mouse = /*(void (*) (int*,int*))*/qt_get_win_mouse;
 #endif
 	
@@ -94,7 +137,7 @@ qtG3DWindow::qtG3DWindow()
 
 // Function that computes the 
 // parameters of the
-void qt_calc_cam_param()
+void qt_calc_cam_param(g3d_cam_param& p)
 {
 // TODO callback OOMOVE3D
 //#if defined( QT_GL )  && defined (CXX_PLANNER)
@@ -126,7 +169,7 @@ void qt_calc_cam_param()
 //	Jimup[1] = up[1];
 //	Jimup[2] = up[2];
 //#endif
-ext_calc_cam_param();
+ext_calc_cam_param(p);
 }
 
 void g3d_draw_allwin_active(void)

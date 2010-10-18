@@ -3,7 +3,7 @@
  *  BioMove3D
  *
  *  Created by Jim Mainprice on 01/04/10.
- *  Copyright 2010 __MyCompanyName__. All rights reserved.
+ *  Copyright 2010 LAAS/CNRS. All rights reserved.
  *
  */
 
@@ -23,7 +23,7 @@
 
 #include "planner_cxx/cost_space.hpp"
 #if defined(HRI_COSTSPACE)
-#include "hri_costspace/HRICS_costspace.h"
+#include "HRI_costspace/HRICS_costspace.hpp"
 #endif
 
 #ifdef QWT

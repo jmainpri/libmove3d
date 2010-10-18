@@ -16,7 +16,8 @@
 #include "locale.h"
 #include "molecule.xpm"
 
-#if defined( QT_GL ) && ( defined( CXX_PLANNER ) || defined( WITH_OOMOVE3D ) )
+#if defined( QT_GL ) && defined( CXX_PLANNER )
+#include "project.hpp"
 #include "cppToQt.hpp"
 #endif
 #ifdef LIGHT_PLANNER
@@ -29,11 +30,11 @@
 #include "cost_space.hpp"
 #include <boost/bind.hpp>
 #endif
-#ifdef WITH_OOMOVE3D
-#include "API/planningAPI.hpp"
-#include "planner/cost_space.hpp"
-#include <boost/bind.hpp>
-#endif
+//#ifdef WITH_OOMOVE3D
+//#include "API/planningAPI.hpp"
+//#include "planner/cost_space.hpp"
+//#include <boost/bind.hpp>
+//#endif
 #ifdef BIO_BALL
 #include "ball_energy.hpp"
 #endif
@@ -47,7 +48,7 @@ static int FILTER_TO_BE_SET_ACTIVE = FALSE;
 static void use(void);
 
 
-#if ( defined ( QT_LIBRARY ) && ( defined( CXX_PLANNER ) || defined( WITH_OOMOVE3D ) ) ) || BioMove3D_EXPORTS || MAKELIB
+#if ( defined ( QT_LIBRARY ) && defined( CXX_PLANNER ) ) || BioMove3D_EXPORTS || MAKELIB
 int mainMhp(int argc, char ** argv) {
 #else
 int main(int argc, char ** argv) {
@@ -573,9 +574,9 @@ int main(int argc, char ** argv) {
 		deactivateCcCntrts(MyRobot,-1);
 	}
 #endif
-//#ifdef CXX_PLANNER
-//	global_Project = new Project(new Scene(XYZ_ENV));
-//#endif
+#ifdef CXX_PLANNER
+	global_Project = new Project(new Scene(XYZ_ENV));
+#endif
 #if defined(HRI_COSTSPACE) && defined(QT_GL)
 	if(grid_set)
 	{
@@ -583,7 +584,7 @@ int main(int argc, char ** argv) {
 		qt_load_HRICS_Grid(grid_path);
 	}
 #endif
-#if defined( QT_GL ) && ( defined( CXX_PLANNER ) || defined( WITH_OOMOVE3D ) )
+#if defined( QT_GL ) && defined( CXX_PLANNER )
 	sem->release();
 #endif
 

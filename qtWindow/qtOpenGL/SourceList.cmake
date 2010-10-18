@@ -4,7 +4,6 @@ SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME}/qtOpenGL)
 BM3D_SRC_SUBDIR_PROCESS(
 g3dQtConnection.cpp 
 glwidget.cpp 
-qtGLWindow.cpp 
 qtopenglviewer.cpp
 qtMobileCamera.cpp
 )
@@ -15,14 +14,9 @@ qtopenglviewer.ui
 BM3D_QT_GENERATE_MOC(
 g3dQtConnection.hpp 
 glwidget.hpp 
-qtGLWindow.hpp 
 qtopenglviewer.hpp
 qtMobileCamera.h
 )
-IF(NOT WITH_XFORMS)
-BM3D_SRC_SUBDIR_PROCESS(
-qtG3DWindow.cpp
-)
-ENDIF(NOT WITH_XFORMS)
+
 SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME_TMP})
 ENDIF(QT_GL)

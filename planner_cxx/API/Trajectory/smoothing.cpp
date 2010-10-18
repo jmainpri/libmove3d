@@ -558,6 +558,7 @@ double Smoothing::getBiasedParamOnTraj()
 	return randDist;
 }
 
+
 /*!
  * This function computes the gain that
  * have made the last iteration of the smoothing process

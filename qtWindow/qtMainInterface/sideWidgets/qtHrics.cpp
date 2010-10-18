@@ -17,7 +17,7 @@
 
 #include "qtBase/SpinBoxSliderConnector_p.hpp"
 
-#include "hri_costspace/HRICS_costspace.h"
+#include "HRI_costspace/HRICS_costspace.hpp"
 
 #include "qtLibrary.h"
 

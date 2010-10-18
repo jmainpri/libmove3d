@@ -23,7 +23,7 @@
 #include "API/Trajectory/smoothing.hpp"
 //Warning contains boos function that conlicts with Qt
 //#include "API/Trajectory/RoboptimTrajectory.h"
-#include "API/Trajectory/CostOptimization.hpp"
+#include "API/Trajectory/costOptimization.hpp"
 #include "API/Grids/GridToGraph/gridtograph.h"
 #include "API/Search/GraphState.h"
 #include "API/Grids/ThreeDPoints.h"
@@ -35,7 +35,7 @@
 
 #ifdef HRI_COSTSPACE
 #include "ui_qtHrics.h"
-#include "hri_costspace/HRICS_costspace.h"
+#include "HRI_costspace/HRICS_costspace.hpp"
 #endif
 
 MainWindowTestFunctions::MainWindowTestFunctions(MainWindow* MainWinPt) : m_mainWindow(MainWinPt)

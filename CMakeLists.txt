@@ -159,6 +159,7 @@ BM3D_flag(USE_GBM "Compilation with the gbM package" OFF)
 
 BM3D_flag(USE_SHADERS "Enables use of OpenGL shaders" OFF)
 
+BM3D_flag(WITH_OOMOVE3D "Enables compilation of ooMove3D-motionPlanner" OFF)
 BM3D_flag(OOMOVE3D_CORE "Enables compilation of ooMove3D-core" OFF)
 
 BM3D_CheckCompilationFlags()
