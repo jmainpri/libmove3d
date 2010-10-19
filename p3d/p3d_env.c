@@ -13,7 +13,7 @@
 
 #define sqr(x) ((x) * (x))
 
-#if defined (LIGHT_PLANNER) &&  defined (MULTILOCALPATH) && defined (GRASP_PLANNING)
+#ifdef LIGHT_PLANNER
 #include "ManipulationUtils.hpp"
 #endif
 
@@ -2365,7 +2365,7 @@ static int p3d_end_rob(void) {
   XYZ_ROBOT->configCostThreshold = 0.0;
 #endif
 
-#if defined(LIGHT_PLANNER) && defined(MULTILOCALPATH)
+#ifdef LIGHT_PLANNER
  XYZ_ROBOT->armManipulationData = new std::vector<ArmManipulationData>;
 #endif
 
@@ -2657,11 +2657,15 @@ int p3d_set_arm_data(p3d_rob* r, int *data){
 #ifdef FK_CNTRT
   armData.setFkCntrt(p3d_create_FK_cntrts(r, armData.getCcCntrt()));
 #endif
+#ifdef MULTILOCALPATH
   armData.setCartesianGroup(data[1]);
   armData.setCartesianSmGroup(data[2]);
   armData.setHandGroup(data[3]);
   armData.setHandSmGroup(data[4]);
+#endif
+#ifdef GRASP_PLANNING
   armData.setHandProperties(data[5]);
+#endif
   armData.setManipulationJnt(r, data[6]);
   r->armManipulationData->push_back(armData);
   return TRUE;

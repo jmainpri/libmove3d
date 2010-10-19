@@ -26,7 +26,7 @@
 /*! \brief Number max of check point positions */
 #define MAX_TRANSITION 10
 
-#if defined (LIGHT_PLANNER) &&  defined (MULTILOCALPATH) && defined (GRASP_PLANNING)
+#ifdef LIGHT_PLANNER
 #include <vector>
 #endif
 
@@ -750,8 +750,6 @@ typedef struct rob
 #if  defined(LIGHT_PLANNER)
   int isCarryingObject;
   struct rob *carriedObject; /*!< pointer to the carried object (a freeflyer robot) */
-#endif
-#if  defined(LIGHT_PLANNER) && defined(MULTILOCALPATH) && defined (GRASP_PLANNING)
   std::vector<class ArmManipulationData> *armManipulationData;
 #endif
 #ifdef DPG

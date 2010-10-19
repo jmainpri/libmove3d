@@ -2,7 +2,9 @@
 #define __MANIPULATIONUTILS_HPP__
 
 #include "ManipulationStruct.h"
-#include "GraspPlanning-pkg.h"
+#ifdef GRASP_PLANNING
+  #include "GraspPlanning-pkg.h"
+#endif
 #include "P3d-pkg.h"
 
 /** @defgroup manipulation
@@ -62,6 +64,7 @@ class ArmManipulationData {
     p3d_jnt * _manipulationJnt;
     /** < choose to plan the arm motion in cartesian space (for the end effector) or joint space  */
     bool _cartesian;
+#ifdef MULTILOCALPATH
      /******************/
      /* Multilocalpath */
      /******************/
@@ -73,7 +76,7 @@ class ArmManipulationData {
     int _handGroup;
     /** MultiLocal Path hand SoftMotion Group id*/
     int _handSmGroup;
-    
+#endif
     /************************/
     /* Manipulation Objects */
     /************************/
@@ -83,22 +86,24 @@ class ArmManipulationData {
     p3d_rob* _placement;
     /** The human to interract with with this arm*/
     p3d_rob* _human;
-
+#ifdef GRASP_PLANNING
     /************/
     /* Grasping */
     /************/
     /** Arm end effector property */
     gpHand_properties _handProp;
-
+#endif
   public:
     ArmManipulationData(p3d_cntrt* ccCntrt = NULL, p3d_cntrt* fkCntrt = NULL, p3d_jnt *manipulationJnt = NULL, int cartesianGroup = -1, int cartesianSmGroup = -1, int handGroup = -1, int handSmGroup = -1){
       _ccCntrt = ccCntrt;
       _fkCntrt = fkCntrt;
       _manipulationJnt = manipulationJnt;
+#ifdef MULTILOCALPATH
       _cartesianGroup = cartesianGroup;
       _cartesianSmGroup = cartesianSmGroup;
       _handGroup = handGroup;
       _handSmGroup = handSmGroup;
+#endif
       _carriedObject = NULL;
       _placement = NULL;
       _human = NULL;
@@ -137,6 +142,7 @@ class ArmManipulationData {
     inline void setManipulationJnt(p3d_rob* robot, int manipulationJnt){
       _manipulationJnt = robot->joints[manipulationJnt];
     };
+#ifdef MULTILOCALPATH
     inline void setCartesianGroup(int cartesianGroup){
       _cartesianGroup = cartesianGroup;
     };
@@ -152,15 +158,18 @@ class ArmManipulationData {
     inline void setCarriedObject(p3d_rob* carriedObject){
       _carriedObject = carriedObject;
     };
+#endif
     inline void setPlacement(p3d_rob* placement){
       _placement = placement;
     };
     inline void setHuman(p3d_rob* human){
       _human = human;
     };
+#ifdef GRASP_PLANNING
     inline void setHandProperties(int handId){
       _handProp.initialize((gpHand_type)handId);
     };
+#endif
     inline void setCartesian(bool cartesian){
       cartesian = _cartesian;
     };
@@ -178,6 +187,7 @@ class ArmManipulationData {
     inline p3d_jnt* getManipulationJnt(void) const{
       return _manipulationJnt;
     };
+#ifdef MULTILOCALPATH
     inline int getCartesianGroup(void) const{
       return _cartesianGroup;
     };
@@ -190,6 +200,7 @@ class ArmManipulationData {
     inline int getHandSmGroup(void) const{
       return _handSmGroup;
     };
+#endif
     inline p3d_rob* getCarriedObject(void) const{
       return _carriedObject;
     };
@@ -199,14 +210,16 @@ class ArmManipulationData {
     inline p3d_rob* getHuman(void) const{
       return _human;
     };
+#ifdef GRASP_PLANNING
     inline gpHand_properties getHandProperties() const{
       return _handProp;
     };
+#endif
     inline bool getCartesian(void) const{
       return _cartesian;
     };
 };
-
+#ifdef GRASP_PLANNING
 //! @ingroup manipulation
 class ManipulationData{
   public:
@@ -326,5 +339,5 @@ class ManipulationData{
     double _graspConfigCost;
     p3d_matrix4 _graspAttachFrame;
 };
-
+#endif
 #endif

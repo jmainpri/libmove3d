@@ -659,7 +659,7 @@ double computeRobotConfCostSpecificArm(p3d_rob* robot, configPt refConfig, confi
   }
 }
 
-
+#ifdef GRASP_PLANNING
 double computeRobotGraspArmCost(p3d_rob* robot, int whichArm, gpGrasp grasp, configPt q, configPt refConfig, p3d_matrix4 objectPos){
   double armMediumJointCost = 0;
   p3d_cntrt* ct = (*robot->armManipulationData)[whichArm].getCcCntrt();
@@ -713,6 +713,7 @@ double computeRobotGraspArmCost(p3d_rob* robot, int whichArm, gpGrasp grasp, con
   return armMediumJointCost;
 //   return 1 - ((1 + p3d_vectDotProd(graspDir, robotObjectDir)) / 2);
 }
+#endif
 
 /**
  * @brief Compute the forward cost of the specified arm. This function works only with two arms. This cost give negative cost for arm configurations when the wrist is behind the torso. LIMITATION : Its works only with two arms
