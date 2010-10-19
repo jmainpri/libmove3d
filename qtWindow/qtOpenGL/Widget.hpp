@@ -12,7 +12,6 @@
 extern void qt_canvas_viewing(int mouse_press,int button);
 extern void qt_get_win_mouse(int* i, int *j);
 extern void qt_get_fl_win();
-extern void qt_calc_cam_param();
 extern void qt_change_mob_frame(G3D_Window* win,pp3d_matrix4 frame);
 extern void qt_reset_mob_frame(G3D_Window* win);
 extern G3D_Window * qt_get_cur_g3d_win();

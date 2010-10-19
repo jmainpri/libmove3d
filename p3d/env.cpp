@@ -16,7 +16,7 @@ using namespace std;
 
 Env::Env() 
 {
-	mBoolMap.insert(boolMap_t(Env::use_p3d_structures, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::use_p3d_structures, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::isPRMvsDiffusion, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::treePlannerIsEST, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawDisabled, new boolContainer(false)));

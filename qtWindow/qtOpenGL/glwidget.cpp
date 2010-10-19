@@ -221,19 +221,20 @@ void GLWidget::paintGL()
 	p3d_vector4 up;
 	
 	//	computeNewVectors(Xc,Xw,up);
-	qt_calc_cam_param();
+	g3d_cam_param p;
+	ext_calc_cam_param(p);
 	
-	Xc[0] = JimXc[0];
-	Xc[1] = JimXc[1];
-	Xc[2] = JimXc[2];
+	Xc[0] = p.Xc[0];
+	Xc[1] = p.Xc[1];
+	Xc[2] = p.Xc[2];
 	
-	Xw[0] = JimXw[0];
-	Xw[1] = JimXw[1];
-	Xw[2] = JimXw[2];
+	Xw[0] = p.Xw[0];
+	Xw[1] = p.Xw[1];
+	Xw[2] = p.Xw[2];
 	
-	up[0] = Jimup[0];
-	up[1] = Jimup[1];
-	up[2] = Jimup[2];
+	up[0] = p.up[0];
+	up[1] = p.up[1];
+	up[2] = p.up[2];
 	
 	gluLookAt(Xc[0], Xc[1], Xc[2], Xw[0], Xw[1], Xw[2], up[0], up[1], up[2]);
 	

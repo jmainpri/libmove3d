@@ -10,7 +10,7 @@ typedef struct g3d_cam_param
 	p3d_vector3 Xc;
 	p3d_vector3 Xw;
 	p3d_vector3 up;
-};
+} g3d_cam_param;
 
 // G3D window class that holds the 
 // 3d window structs
