@@ -58,7 +58,7 @@ typedef void (*p3d_BB_get_BB_poly_fct_type)(p3d_poly *p,double *x1,double *x2,
 			    double *y1,double *y2,double *z1,double *z2);
 extern p3d_BB_get_BB_poly_fct_type p3d_BB_get_BB_poly;
 
-#include "env.hpp"
+#include "../p3d/env.hpp"
 //#include "ParametersEnv.hpp"
 
 /* proto */
