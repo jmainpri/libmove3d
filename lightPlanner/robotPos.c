@@ -668,14 +668,14 @@ double computeRobotGraspArmCost(p3d_rob* robot, int whichArm, gpGrasp grasp, con
   p3d_set_and_update_this_robot_conf(robot, q);
   //MediumJointCost
   for(int j = 0; j < ct->npasjnts; j++){
-    if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") && j >= 2){
+    if((!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")) && j >= 2){
       weight = (ct->npasjnts - j);
     }else{
       weight = (ct->npasjnts - j + 1);
     }
     armMediumJointCost += weight * SQR(q[ct->pasjnts[j]->index_dof] - refConfig[ct->pasjnts[j]->index_dof]);
   }
-  if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){
+  if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")){
     armMediumJointCost += 5 * SQR(q[robot->joints[ct->argu_i[0]]->index_dof] - refConfig[robot->joints[ct->argu_i[0]]->index_dof]);
   }
   p3d_set_and_update_this_robot_conf(robot, refConfig);

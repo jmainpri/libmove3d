@@ -261,7 +261,6 @@ p3d_traj* ManipulationPlanner::computeTrajBetweenTwoConfigs(configPt qi, configP
 
   /* RRT */
 
-  
   if (this->computeRRT(_optimizeSteps, _optimizeTime, 1) != 0) {
     ManipulationUtils::allowWindowEvents();
     return NULL;
@@ -322,8 +321,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickAndPlace(int armId, config
 
 #ifdef MULTILOCALPATH
 int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECTORY_CONF_STR &confs, MANPIPULATION_TRAJECTORY_STR &segments) {
- int ntest = 0;
-  double gain = 0;
 
   if (!traj) {
     printf("SoftMotion : ERREUR : no generated traj\n");
@@ -366,8 +363,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     ENV.setBool(Env::drawTraj, false);
     checkConfigForCartesianMode(qi);
     checkConfigForCartesianMode(qf);
-    fixAllHands(qi, true);
-    fixAllHands(qf, true);
+    fixAllHands(qi, false);
+    fixAllHands(qf, false);
     p3d_set_and_update_this_robot_conf(_robot, qi);
     switch (task) {
       case ARM_FREE:{
@@ -507,11 +504,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
     list<gpGrasp> graspList/*, tmp*/;
     //Compute the grasp list for the given hand and object
     gpGet_grasp_list(object->name, armHandProp.type, graspList);
-//     tmp = graspList;
-//     gpRemove_edge_grasps(tmp, graspList, 30*M_PI/180 , 0.02);
-//     tmp = graspList;
-//     gpReduce_grasp_list_size(tmp, graspList, 30);
-//     
     if (graspList.size() == 0){
       status = MANIPULATION_TASK_NO_GRASP;
     }else{
@@ -527,10 +519,13 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
           if(data.getGraspConfigCost() < configs.getGraspConfigCost()){
             configs = data;
             validConf = true;
-            break;
-            if(data.getGraspConfigCost() < 0.10){
+//             break;
+            if(data.getGraspConfigCost() < _robot->configCostThreshold){
                 break;
             }
+          }
+          if(MPDEBUG){
+            ManipulationUtils::copyConfigToFORM(_robot, data.getGraspConfig());
           }
         }
          counter++;
@@ -570,8 +565,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(
   gpSet_grasp_configuration(_robot, grasp, handProp.type);
   gpFix_hand_configuration(_robot, handProp, handProp.type);
   //Compute Grasp configuration
-//   gpSet_robot_hand_grasp_configuration(XYZ_ENV->robot[17], object, grasp);
-//   g3d_draw_allwin_active();
   q = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, FALSE, armId, true);
   if(q){
     //If it exist, try to find better Rest Arm config and 
@@ -633,5 +626,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(
     }
   }
   p3d_destroy_config(_robot, q);
+  deactivateCcCntrts(_robot, armId);
   return MANIPULATION_TASK_NO_GRASP;
 }

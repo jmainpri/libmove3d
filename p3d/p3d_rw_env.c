@@ -2838,6 +2838,16 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			if ( !p3d_set_arm_data ( robotPt, itab ) ) return ( read_desc_error ( fct ) );//joint already declared
 			continue;
 		}
+
+    if ( strcmp ( fct, "p3d_set_config_cost_threshold" ) == 0 )
+    {
+      robotPt = ( pp3d_rob ) p3d_get_desc_curid ( P3D_ROBOT );
+      if ( !robotPt ) return ( read_desc_error ( fct ) );
+      // the data ccntrtId, mlpGroupId, handType, virtualObjJntId
+      if ( !read_desc_double ( fd, 1, dtab ) ) return ( read_desc_error ( fct ) );
+      robotPt->configCostThreshold = dtab[0];
+      continue;
+    }
 		
 #endif
 

@@ -2362,6 +2362,7 @@ static int p3d_end_rob(void) {
 #if defined(LIGHT_PLANNER)
   XYZ_ROBOT->isCarryingObject= FALSE;
   XYZ_ROBOT->carriedObject= NULL;
+  XYZ_ROBOT->configCostThreshold = 0.0;
 #endif
 
 #if defined(LIGHT_PLANNER) && defined(MULTILOCALPATH)

@@ -740,6 +740,7 @@ typedef struct rob
   struct cntrt ** ccCntrts;
   configPt openChainConf;
   configPt closedChainConf;
+  double configCostThreshold;
   struct graph* preComputedGraphs[4]; //Save the precomputed Graphs: 0 = Platform Graph without the object, 1 = Upper Body Graph without the object, 2 = Platform Graph with the object, 3 = Upper Body with the object
 #endif
 #if defined(FK_CNTRT) && defined(LIGHT_PLANNER)

@@ -457,10 +457,11 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	
 	std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
   std::vector <MANPIPULATION_TRAJECTORY_STR> segments;
-	manipulation->armPlanTask(ARM_FREE,1,manipulation->robotStart(),manipulation->robotGoto(),(char*)"", (char*)"", confs, segments);
+	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(),(char*)"", (char*)"", confs, segments);
 
 	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
-   std::cout << "Positions (nb conf = "<< confs[0].second.size() << "): " << std::endl;
+
+  std::cout << "Positions (nb conf = "<< confs[0].second.size() << "): " << std::endl;
  
 //   for(unsigned int i = 0; i < manipulation->positions.size(); i++){
 //     for(unsigned int j = 0; j < manipulation->positions[i].size(); j++){
