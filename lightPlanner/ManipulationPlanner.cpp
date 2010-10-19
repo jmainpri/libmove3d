@@ -13,7 +13,7 @@
 #include "Collision-pkg.h"
 
 #include <list>
-#define MPDEBUG 1
+#define MPDEBUG 0
 using namespace std;
 
 /* ******************************* */
