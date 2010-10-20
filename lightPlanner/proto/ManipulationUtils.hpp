@@ -155,10 +155,13 @@ class ArmManipulationData {
     inline void setHandSmGroup(int handSmGroup){
       _handSmGroup = handSmGroup;
     };
-    inline void setCarriedObject(p3d_rob* carriedObject){
-      _carriedObject = carriedObject;
-    };
 #endif
+		inline void setCarriedObject(p3d_rob* carriedObject){
+			_carriedObject = carriedObject;
+		};
+		inline void setCarriedObject(const char* robotName){
+			_carriedObject = p3d_get_robot_by_name(robotName);
+		};
     inline void setPlacement(p3d_rob* placement){
       _placement = placement;
     };

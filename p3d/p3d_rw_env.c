@@ -29,8 +29,9 @@
 #include "HRI_costspace/HRICS_HAMP.hpp"
 #endif
 
-#if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
-#include "../../lightPlanner/proto/lightPlannerApi.h"
+#if defined(LIGHT_PLANNER)
+#include "lightPlanner/proto/lightPlannerApi.h"
+#include "lightPlanner/proto/ManipulationUtils.hpp"
 #endif
 
 extern void* GroundCostObj;
@@ -675,14 +676,25 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 #if defined(LIGHT_PLANNER) 
 		if ( strcmp ( fct, "p3d_set_object_to_carry" ) == 0 )
 		{
+			if ( !read_desc_int ( fd, 1, itab ) ) {
+				printf("Error : The arm id is not specified");
+				return ( read_desc_error ( fct ) );
+			}
+			
 			if ( !read_desc_name ( fd, name ) ) return ( read_desc_error ( fct ) );
+			
 			p3d_rob* MyRobot = p3d_get_robot_by_name_containing((const char *) "ROBOT" );
+			
 			if ( MyRobot == NULL) {
 				printf("Error MyRobot = NULL\n");
 			}
-			p3d_set_object_to_carry( MyRobot,name );
+			
+			p3d_set_object_to_carry_to_arm( MyRobot, itab[0] , name );
+			//ArmManipulationData* armData = &(MyRobot->armManipulationData[itab[0]]);
 			// Set the dist of the object to the radius of the carried object
-			MyRobot->curObjectJnt->dist = MyRobot->carriedObject->joints[1]->dist;
+			//MyRobot->curObjectJnt->dist = MyRobot->carriedObject->joints[1]->dist;
+//			robotPt->isCarryingObject = TRUE;
+			
 			printf ( "Object To Carry = %s\n", name );
 			continue;
 		}
@@ -2834,8 +2846,16 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			robotPt = ( pp3d_rob ) p3d_get_desc_curid ( P3D_ROBOT );
 			if ( !robotPt ) return ( read_desc_error ( fct ) );
 			// the data ccntrtId, mlpGroupId, handType, virtualObjJntId
-			if ( !read_desc_int ( fd, 7, itab ) ) return ( read_desc_error ( fct ) );
-			if ( !p3d_set_arm_data ( robotPt, itab ) ) return ( read_desc_error ( fct ) );//joint already declared
+			if ( !read_desc_int ( fd, 7, itab ) ) 
+			{
+				printf("Error in p3d_set_arm_data argument size\n");
+				return ( read_desc_error ( fct ) );
+			}
+			if ( !p3d_set_arm_data ( robotPt, itab ) ) 
+			{
+				printf("Error in p3d_set_arm_data()\n");
+				return ( read_desc_error ( fct ) );//joint already declared
+			}	
 			continue;
 		}
 

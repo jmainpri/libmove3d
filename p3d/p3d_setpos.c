@@ -1128,6 +1128,7 @@ void rot_trans4(p3d_matrix4 M, double tx, double ty, double tz,
 //! \return 0 in case of success, 0 otherwise
 int p3d_update_carried_object_pos(p3d_rob *robotPt)
 {
+	printf("p3d_update_carried_object_pos : %s\n");
   if(robotPt==NULL)
   {
     printf("%s: %d: p3d_update_carried_object_pos(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
@@ -1141,6 +1142,7 @@ int p3d_update_carried_object_pos(p3d_rob *robotPt)
     for(int i = 0; i < (int) robotPt->armManipulationData->size(); i++){
       object = (*robotPt->armManipulationData)[i].getCarriedObject();
       if(object){
+				printf("object is : %s\n",object->name);
         if(!(*robotPt->armManipulationData)[i].getManipulationJnt()){
           printf("%s: %d: p3d_update_carried_object_pos(): the robot must have a fictive object.\n",__FILE__,__LINE__);
           return 1;
@@ -1152,6 +1154,10 @@ int p3d_update_carried_object_pos(p3d_rob *robotPt)
         p3d_set_and_update_this_robot_conf(object, q);
         p3d_destroy_config(object, q);
       }
+			else {
+				printf("Warning : Is carring object NULL\n");
+			}
+
     }
   }
 //   if(robotPt->carriedObject!=NULL && robotPt->isCarryingObject==TRUE)

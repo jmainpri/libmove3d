@@ -10,7 +10,8 @@
 #endif
 
 #ifdef LIGHT_PLANNER
-#include "../lightPlanner/proto/lightPlannerApi.h"
+#include "lightPlanner/proto/lightPlannerApi.h"
+#include "lightPlanner/proto/ManipulationUtils.hpp"
 #endif
 
 /*******************************************************************/
@@ -749,6 +750,37 @@ int p3d_set_object_to_carry(p3d_rob *robotPt, const char *object_name)
     return 1;
   }
   robotPt->isCarryingObject = TRUE;
+  return 0;
+}
+
+//! Sets the object that will possibly carried by the robot.
+//! This object is a freeflyer robot.
+int p3d_set_object_to_carry_to_arm(p3d_rob *MyRobot, int arm_id,const char *object_name )
+{
+  if(MyRobot==NULL)
+  {
+    printf("%s: %d: p3d_set_object_to_carry(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+	
+  int i;
+  p3d_rob *carriedObject= NULL;
+	
+	// Set carried object
+	(*MyRobot->armManipulationData)[arm_id].setCarriedObject( object_name );
+	carriedObject = (*MyRobot->armManipulationData)[arm_id].getCarriedObject();
+	
+  if(carriedObject == NULL) {
+    printf("%s: %d: p3d_set_object_to_carry(): There is no robot with name \"%s\".\n", __FILE__, __LINE__, object_name);
+    return 1;
+  }
+  
+	// Set manipulation joint to be 
+	// the size of the manipulated object (See if this should not take the biggest or a compound)
+	(*MyRobot->armManipulationData)[arm_id].getManipulationJnt()->dist = carriedObject->joints[1]->dist;
+	
+  MyRobot->carriedObject= carriedObject;
+  MyRobot->isCarryingObject = TRUE;
   return 0;
 }
 

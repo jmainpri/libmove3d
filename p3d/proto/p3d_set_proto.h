@@ -37,6 +37,7 @@ extern int p3d_grab_object2(p3d_rob *robotPt, int armCntrt);
 #endif
 #ifdef LIGHT_PLANNER
 extern int p3d_set_object_to_carry(p3d_rob *robotPt, const char *object_name);
+extern int p3d_set_object_to_carry_to_arm(p3d_rob *robotPt, int arm_id,const char *object_name);
 #endif
 extern int p3d_mark_body(p3d_rob *robotPt, char *name, p3d_robot_part part);
 extern int p3d_set_distance_weight(p3d_rob *robotPt, char *name, double weight);
