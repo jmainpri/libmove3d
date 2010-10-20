@@ -633,6 +633,21 @@ static int read_scenario(FILE *f)
       if ( !p3d_set_arm_data (robot, itab1) ) return ( read_desc_error ( fct ) );//joint already declared
       continue;
     }
+		if ( strcmp ( fct, "p3d_set_object_to_carry" ) == 0 )
+		{
+			if ( !p3d_read_string_int(&pos, 1, itab1) /*!read_desc_int ( fd, 1, itab )*/ ) {
+				printf("Error : The arm id is not specified");
+				return ( read_desc_error ( fct ) );
+			}
+			
+			if(!p3d_read_string_name(&pos,&name))  return(READ_ERROR()); 
+			/* if(!read_desc_name ( fd, name ) ) return ( read_desc_error ( fct ) );*/
+			p3d_rob* MyRobot = p3d_get_robot_by_name_containing((const char *) "ROBOT" );
+			if ( MyRobot == NULL) printf("Error MyRobot = NULL\n");
+			p3d_set_object_to_carry_to_arm( MyRobot, itab1[0] , name );
+			printf ( "Object To Carry = %s\n", name );
+			continue;
+		}
 #endif
   }
 
