@@ -484,7 +484,7 @@ MANIPULATION_TASK_MESSAGE  ManipulationPlanner::replanCollidingTraj(int currentL
 #endif
 
 #ifdef MULTILOCALPATH
-int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECTORY_CONF_STR &confs, MANPIPULATION_TRAJECTORY_STR &segments) {
+int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECTORY_CONF_STR &confs, SM_TRAJ &smTraj) {
 
   if (!traj) {
     printf("SoftMotion : ERREUR : no generated traj\n");
@@ -498,7 +498,7 @@ int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECT
     printf("Optimization with softMotion not possible: current trajectory is not multi-localpath one\n");
     return MANIPULATION_TASK_ERROR_UNKNOWN;
   }
-  if (p3d_convert_traj_to_softMotion(traj, true, confs.first, confs.second, segments) == 1) {
+  if (p3d_convert_traj_to_softMotion(traj, true, confs.first, confs.second, smTraj) == 1) {
     printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
     return MANIPULATION_TASK_ERROR_UNKNOWN;
   }
@@ -591,7 +591,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
 }
 
 #ifdef MULTILOCALPATH
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, char* objectName, char* supportName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <MANPIPULATION_TRAJECTORY_STR> &segments){
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, char* objectName, char* supportName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs){
   std::vector <p3d_traj*> trajs;
   p3d_traj* traj = NULL;
   MANIPULATION_TASK_MESSAGE returnMessage;
@@ -607,10 +607,10 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     if(concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK){
     /* COMPUTE THE SOFTMOTION TRAJECTORY */
       MANPIPULATION_TRAJECTORY_CONF_STR conf;
-      MANPIPULATION_TRAJECTORY_STR segment;
-      computeSoftMotion(traj, conf, segment);
+      SM_TRAJ smTraj;
+      computeSoftMotion(traj, conf, smTraj);
       confs.push_back(conf);
-      segments.push_back(segment);
+      smTrajs.push_back(smTraj);
     }else{
       returnMessage = MANIPULATION_TASK_NO_TRAJ_FOUND;
     }

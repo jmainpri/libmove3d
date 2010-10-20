@@ -67,7 +67,7 @@ class  ManipulationPlanner {
     p3d_traj* computeTrajBetweenTwoConfigs(configPt qi, configPt qf);
 #ifdef MULTILOCALPATH
     /** Given a trajectory, compute the corrsponding softMotion path */
-    int computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECTORY_CONF_STR &confs, MANPIPULATION_TRAJECTORY_STR &segments);
+    int computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECTORY_CONF_STR &confs, SM_TRAJ &smTraj);
 #endif
     /** Move the arm from a free configuration to a grasping configuration of the object placed on a support */
     MANIPULATION_TASK_MESSAGE armPickGoto(int armId, configPt qStart, p3d_rob* object, std::vector <p3d_traj*> &trajs);
@@ -106,7 +106,7 @@ class  ManipulationPlanner {
     MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, char* objectName,  char* supportName, std::vector <p3d_traj*> &trajs);
 #ifdef MULTILOCALPATH
     /** Computes a path for a given manipulation elementary task. Generate a set of SoftMotion Paths */
-    MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, char* objectName,  char* supportName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <MANPIPULATION_TRAJECTORY_STR> &segments);
+    MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, char* objectName,  char* supportName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs);
 #endif
 
   /* ******************************* */
