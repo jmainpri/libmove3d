@@ -113,11 +113,11 @@ void g3d_export_cpp_graph()
 
 void g3d_draw_cost_features()
 {
-	#ifdef HRI_COSTSPACE
-	g3d_draw_costspace();
-	g3d_draw_hrics();
-	#endif
-	g3d_draw_grids();
+#ifdef HRI_COSTSPACE
+    g3d_draw_costspace();
+    g3d_draw_hrics();
+    g3d_draw_grids();
+#endif
 }
 
 // --------------------------------------------------------------------
