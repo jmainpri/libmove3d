@@ -550,7 +550,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
     ManipulationUtils::copyConfigToFORM(_robot, configs.getApproachGraspConfig());
     ManipulationUtils::copyConfigToFORM(_robot, configs.getApproachFreeConfig());
   }
-  (*_robot->armManipulationData)[armId].setCarriedObject(NULL);
+  (*_robot->armManipulationData)[armId].setCarriedObject((p3d_rob*)NULL);
   return status;
 }
 
