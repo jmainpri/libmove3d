@@ -48,6 +48,8 @@
 #if defined( HRI_GENERALIZED_IK ) && !defined( HRI_PLANNER )
 #include "../hri_planner/include/hri_agent.h"
 #include "../hri_planner/include/hri_manip.h"
+#include "../hri_planner/include/hri_graphic.h"
+#include "../hri_planner/proto/hri_visibility_proto.h"
 #include "../util/proto/gnuplot_proto.h"
 #include "../hri_planner/proto/hri_bitmap_proto.h"
 #include "../hri_planner/proto/hri_agent_proto.h"
@@ -56,7 +58,6 @@
 #ifdef HRI_PLANNER
 #include "../hri_planner/include/hri_agent.h"
 #include "../hri_planner/include/hri_manip.h"
-#include "../hri_planner/include/hri_graphic.h"
 #include "../hri_planner/include/perspective.h"
 #include "../hri_planner/include/hri_bitmap.h"
 #endif

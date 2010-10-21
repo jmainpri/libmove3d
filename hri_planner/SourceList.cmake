@@ -5,6 +5,8 @@ BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME}/include)
 BM3D_SRC_SUBDIR_PROCESS(
 hri_agent.c 
 hri_gik.c 
+hri_visibility.c
+hri_graphic.c
 )
 ENDIF(HRI_GENERALIZED_IK)
 
@@ -14,11 +16,9 @@ FORMgikjointselection.c
 FORMhri_planner.c 
 FORMpsp_parameters.c 
 hri_bitmap.c 
-hri_visibility.c 
 hri_wave_exp.c 
 p3d_perspective.c
 hri_manip.c 
-hri_graphic.c
 )
 IF(USE_MIGHTABILITY_MAPS)
 BM3D_SRC_SUBDIR_PROCESS(Mightability_Maps.c FORM_HRI_affordance.c)

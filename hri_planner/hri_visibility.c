@@ -512,7 +512,10 @@ int g3d_object_visibility_placement(p3d_matrix4 camera_frame, p3d_rob *object, d
   p3d_matrix4 invM;
   double rho,phi,theta;
   
-  p3d_get_robot_center(object, objectCenter);
+  objectCenter[0] = (((object->BB.xmax - object->BB.xmin)/2) + object->BB.xmin);
+  objectCenter[1] = (((object->BB.ymax - object->BB.ymin)/2) + object->BB.ymin);
+  objectCenter[2] = (((object->BB.zmax - object->BB.zmin)/2) + object->BB.zmin);
+  objectCenter[3] = 1.0;
   
   p3d_matInvertXform(camera_frame,invM);
   p3d_matvec4Mult(invM, objectCenter, objectCenterCamFr);
