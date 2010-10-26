@@ -28,7 +28,7 @@
 
 //#define OBJECT_NAME "DUPLO_OBJECT"
 //#define OBJECT_NAME "WOODEN_OBJECT"
-#define OBJECT_NAME "ORANGE_BOTTLE"//GREY_TAPE"/*"MUG"*/
+#define OBJECT_NAME "GREY_TAPE"/*"MUG"ORANGE_BOTTLE"*/
 // #define OBJECT_NAME "GREY_TAPE"
 //#define OBJECT_NAME "YELLOW_BOTTLE"
 #define SUPPORT_NAME "HRP2TABLE"
@@ -206,12 +206,6 @@ static void g3d_create_genom_group(void) {
 //   fl_set_call_back(BT_COMP_TRAJ_CONFIGS_OBJ, CB_genomComputeTrajFromConfigs_obj, 1);
 
 
-//   y+= dy;
-//   COMPUTE_PRM =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Compute PRM");
-//   fl_set_call_back(COMPUTE_PRM, CB_genomArmComputePRM_obj, 1);
-//   y+= dy;
-//   CHECK_COL_ON_TRAJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Check traj col");
-//   fl_set_call_back(CHECK_COL_ON_TRAJ, CB_genomCheckCollisionOnTraj_obj, 1);
   BT_CONSTRUCTPRM =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Build PRM");
   fl_set_call_back(BT_CONSTRUCTPRM, CB_genomArmComputePRM_obj, 0);
 #ifdef DPG
@@ -530,7 +524,7 @@ static void CB_genomArmComputePRM_obj(FL_OBJECT *obj, long arg){
   if (manipulation== NULL) {
 	  initManipulationGenom();
   }
-//   manipulation->armComputePRM(300);
+  manipulation->armComputePRM(300);
 }
 
 #ifdef DPG
@@ -538,15 +532,17 @@ void CB_checkColOnTraj(FL_OBJECT *obj, long arg){
   if (manipulation== NULL) {
 	  initManipulationGenom();
 	}
-//   manipulation->checkCollisionOnTraj();
+  manipulation->checkCollisionOnTraj();
 }
 void CB_replanColTraj(FL_OBJECT *obj, long arg){
   if (manipulation== NULL) {
 	  initManipulationGenom();
 	}
 
-  
-//   manipulation->replanCollidingTraj(0, manipulation->lp, manipulation->positions, manipulation->segments);
+  std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
+  std::vector <MANPIPULATION_TRAJECTORY_STR> segments;
+  manipulation->replanCollidingTraj(0, confs, segments
+  );
 }
 #endif
 

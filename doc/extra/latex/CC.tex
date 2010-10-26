@@ -1,0 +1,933 @@
+\chapter{Collision detection}
+
+Move3D has four collision checkers : I-collide  (\cite{LINMANOCH95}),
+V-collide (\cite{LINMANOCH97}), SOLID (\cite{SOLID}) and KCD
+(\cite{KCD}). I-collide and V-collide work the same way. Being
+given some polyhedrons, the user defines which pairs of polyhedron can
+be in collision. Those pairs are said ``activ{e}''. Every time one or
+several polyhedrons move, the collision checkers make a list of all
+the pairs of polyhedrons whose bounding boxes overlap. Then an
+expensive but exact algorithm checks if the pairs of this list
+collide. Both SOLID and KCD exploit the presence of solids in the 
+environment by treating them as such rather than to approximate them
+by polyhedrons. Only KCD uses a pre-selection stage as I-collide and
+V-collide. For SOLID the user must specify all collision pairs as
+well, KCD pre-processes the static obstacles seperately so that the
+user must specify collision pairs only for tests between two devices
+or for self-collision of a device.
+
+Move3D allows the use of the these collision checkers, the choice of the
+bounding boxes and proposes some function to simplify the activation
+of the pairs of polyhedron that can collide in a whole scene.
+
+\section{Initialization}
+
+It is clear that a collision checker can not be started if a scene has
+not been described.
+
+The function {\tt void p3d\_col\_init\_coll(void)}
+\index{p3d\_col\_init\_coll} sets all the
+bolean indicating that the collision checkers have initialized to
+null. It must be called when the user wants to reinitialize all the
+collision checkers.
+
+To start a collision checker, the user can choose among the three
+following functions :
+
+\begin{itemize}
+\item {\tt void p3d\_col\_start\_current(void)}
+\index{p3d\_col\_start\_current} will initialize
+the collision checker whose type has been stored as an integer in the global
+variable {\tt p3d\_col\_mode} : {\tt p3d\_col \_mode\_i\_collide} for
+I-collide, \newline {\tt p3d\_col\_mode\_v\_collide} for V-collide, 
+{\tt p3d\_col \_mode\_solid} for SOLID, {\tt p3d\_col \_mode\_kcd} for KCD.
+\item {\tt void p3d\_col\_start\_last(void)}
+\index{p3d\_col\_start\_last} will initialize
+the collision checker whose type has been stored as an integer in the global
+variable \newline {\tt p3d\_col\_last\_mode}.
+\item {\tt void p3d\_col\_start(int c)} \index{p3d\_col\_start} will initialize
+the collision checker whose type correspond to the integer {\tt c}.
+\end{itemize}
+
+Those three function will allocate and initialize all the variables
+needed for the chosen algorithm of collision detection.
+
+If the user has chosen I-collide, he can then choose the kind of
+bounding box will be used for the polyhedrons. The function {\tt int
+p3d\_switch\_all\_to\_cube(void)} \index{p3d\_switch\_all\_to\_cube}
+sets the bounding boxes to cuboid bounding box, lined up on the axis,
+containing the polyhedrons for any orientation, whereas {\tt int
+p3d\_switch\_all\_to\_DBB(void)} \index{p3d\_switch\_all\_to\_DBB} sets the bounding box to Dynamic
+Bounding Boxes, also lined up on the axis, changing of size
+everytime the polyhedrons change of orientation. The collision checker
+V-collide only uses cuboid bounding boxes. Those bounding boxes are
+used in Move3D to compute the bounding boxes of the obstacles and robots.
+
+Once the collision checkers have been initialized, the user must
+indicate the pairs of polyhedron, among all the possible pairs, that
+may collide. Three functions are vailable :
+
+\begin{itemize}
+\item {\tt void p3d\_col\_activate\_pair(p3d\_poly *obj1,p3d\_poly
+*obj2)} \index{p3d\_col\_activate\_pair} will activate the pair of polyhedron {\tt (obj1,obj2)}
+\item {\tt void p3d\_col\_activate\_full(p3d\_poly *obj)}
+\index{p3d\_col\_activate\_full} will activate
+the pairs formed by the polyhedron {\tt obj} and all the other
+polyhedrons in the scene.
+\item {\tt void p3d\_col\_activate\_all(void)}
+\index{p3d\_col\_activate\_all} will activate all the
+pairs of polyhedrons in the scene.
+\end{itemize}
+
+Of course, an active pair can also be deactivated. The three previous
+activation functions have their equivalent for deactivation : \newline
+{\tt void p3d\_col\_deactivate\_pair(p3d\_poly *obj1,p3d\_poly *obj2)}
+\index{p3d\_col\_deactivate\_pair}, 
+{\tt void p3d\_col\_deactivate\_full(p3d\_poly *obj)}
+\index{p3d\_col\_deactivate\_full} and 
+{\tt void p3d\_col\_deactivate\_all(void)}
+\index{p3d\_col\_deactivate\_all}.
+
+It is clear that for a complex scene, the user could spend days
+listing those pairs. Some functions are available in Move3D in order to
+simplify the activation of a whole scene. The idea is simple : in a
+scene, only the robots move. So the only pairs to activate are the
+pairs of one polyhedron of a robot with one polyhedron of an
+obstacle, the pairs of one polyhedron of a robot with one polyhedron
+of another robot, and the pairs of polyhedrons of the robot that do
+not belong to two adjacent bodies (so we can detect the auto-collisions).
+Those tree functionality are gathered in the function {\tt int
+p3d\_col\_activate\_env(void)} \index{p3d\_col\_activate\_env} that
+activates all the useful pairs of the current environment. 
+These functions can be called even for KCD in case of which only the
+necessary pairs will be defined.
+
+%{\tt
+%p3d\_col\_activate\_rob\_obj\\
+%p3d\_col\_activate\_rob\_rob\\
+%p3d\_col\_activate\_rob\\
+%p3d\_col\_activate\_robots\\
+%p3d\_col\_activate\_env\\
+
+
+%p3d\_col\_deactivate\_rob\_obj\\
+%p3d\_col\_deactivate\_rob\_rob\\
+%p3d\_col\_deactivate\_rob\\
+
+If the user wants to change collision checker during a session, he
+first has to stop the current one. The function {\tt void
+p3d\_col\_stop(void)} \index{p3d\_col\_stop} stops the collision 
+checker whose type has been
+stored as an integer in the global variable {\tt p3d\_col\_mode}, and
+deletes all its data. The function {\tt void
+p3d\_col\_stop\_all(void)} \index{p3d\_col\_stop\_all} does the same,
+but for all collision checkers.
+
+Once a collision checker and the active pairs of the environment have
+been initiallized, collisions can be detected at any time.
+
+\section{Detection of a collision}
+
+The most useful function to detect a collision is {\tt int
+p3d\_col\_test(void)} \index{p3d\_col\_test}. This function checks 
+the whole scene and
+returns the number of collisions. But the user may also want to check
+a specific pair. In this case, the function {\tt int
+p3d\_col\_test\_pair(p3d \_poly *obj1, p3d\_poly *obj2)}
+\index{p3d\_col\_test\_pair} must be called :
+it checks whether or not the pair {\tt (obj1,obj2)} collides and returns True
+or False.
+
+Once the collisions have been checked, some information on the
+collisions that may have occured is available. 
+
+The function {\tt int p3d\_col\_number(void)} \index{p3d\_col\_number}
+returns the number of collision that were detected by the collision
+checker. The function {\tt void p3d\_col\_get\_report(int ind,
+p3d\_poly *p1, p3d\_poly *p2)} \index{p3d\_col\_get\_report} reports
+the collision number {\tt ind} and the pair of polyhedrons that collided.
+
+
+%p3d_col_get
+
+\section{Computing a distance}
+
+%p3d\_affich\_dist\\
+
+The collision checker KCD computes a conservative distance estimate
+between the bodies of robot and the nearest obstacle (static object
+or other movable object).
+The collision checker V-collide does not compute the distance between
+polyhedrons of the scene. The collision checker I-collide computes it
+for the polyhedrons whose bounding boxes overlap. Anyway, one can
+always compute an approached distance between two objects of a scene
+using their bounding boxes.
+
+The function {\tt double p3d\_BB\_obj\_obj\_extern\_dist(p3d\_obj
+*obj1, p3d\_obj *obj2)} \index{p3d\_BB\_obj\_obj\_extern\_dist}
+returns the distance between the bounding boxes of {\tt obj1} and {\tt
+obj2}. The function {\tt double
+p3d\_calc\_robot\_BB\_extern\_dist(p3d\_rob *rob, int *obstnum)}
+\index{p3d\_calc\_robot\_BB\_extern\_dist} returns the shortest
+distance between the bounding boxes of the bodies of the robot and the
+bounding boxe of the obstacle. The variable {\tt obstnum} contains the
+number of teh closest obstacle to the robot. The function {\tt double
+p3d\_calc\_body\_BB\_extern\_dist(p3d\_obj *body, int *obstnum)}
+\index{p3d\_calc\_body\_BB\_extern\_dist} returns the closest distance
+from the bounding box of the body {\tt body} in its current position
+to the bounding boxes of the obstacles. The integer obstnum is the
+closest obstacle to {\tt body}.
+
+
+Knowing when the bounding boxes of a robot, a body of a robot or an
+obstacle overlap can also be useful. For this purpose, the user may
+call the three following functions. The function {\tt int
+p3d\_BB\_overlap\_obj\_obj(p3d\_obj *obj1, p3d\_obj *obj2)}
+\index{p3d\_BB\_overlap\_obj\_obj} checks if
+the bounding boxes of the objects {\tt obj1} and {\tt obj2}
+overlap. The functions {\tt int p3d\_BB\_overlap\_rob\_obj(p3d\_rob
+*rob, p3d\_obj *obj)} \index{p3d\_BB\_overlap\_rob\_obj} and {\tt int
+p3d\_BB\_overlap\_rob \_rob(p3d\_rob *rob1, p3d\_rob *rob2)}
+\index{p3d\_BB\_overlap\_rob\_rob} for the robot {rob} and the object
+{obj} and for the robots {\tt rob1} and {\tt rob2}.
+
+Those functions are mostly used for the validation of trajectories
+described in the following chapters.
+
+
+\section{The module KCD}
+The collision detector KCD is a module on its own. It can be used
+separately from Move3D as a stand-alone package. It therefore provides
+the user with its own API functions for initialization of the internal
+KCD data structures and for setting parameters and calling the
+collision detection algorithm. It also needs access to outside 
+geometrical data. This is organized through a set of functions that
+have to be filled by the user. In the case of Move3D being the default
+user of KCD, the API functions in file kcd\_api.c are called through 
+the functions described above and the access functions to the 
+`external' geometrical data stored elsewhere by Move3D are defined 
+in the file kcd\_api\_fcts.c. Here follows a more detailed listing
+of the functionalities of KCD.
+
+\subsection{Architecture}
+Since most objects of the model are fixed, we pre-process this
+part of the model. We avoid the general notion of collision pairs and 
+introduce the notion of object type: static obstacle and moving 
+object (for each link of a device as well as for a freight).
+KCD tests each moving object for collision with the obstacles,
+as well as pairs of moving objects. KCD only allows to define the
+pairs of moving objects to be tested, a necessary feature for
+articulated devices with adjacent always intersecting links in
+their geometrical model.
+
+We first structurize the static objects. We construct a hierarchy of 
+AABBs and group the objects automatically 
+according to their placement in workspace. We put an AABB around
+each of the primitives. Pairwize overlapping AABBs belonging 
+to the same CAD-object are grouped in an AABB on the next level 
+in the hierarchy and define a KCD object. In most CAD models 
+objects contain primitives belonging
+to several geometrical objects scattered about the scene and 
+grouped by their semantics. The KCD-obstacles 
+however contain less primitives and subdivide user-defined 
+objects in geometrically meaningful chunks. For the higher levels
+of the hierarchy we repeat the grouping of pairwize overlapping AABBs
+of any of the AABBs in the previous level.
+The AABB hierarchy is a tree with nodes
+having multiple child nodes. An AABB 
+is placed around each movable object as well. The AABBs are used in
+the pre-selection stage.
+
+For entity focussing, we use binary OBB-trees around the KCD-obstacles
+and around each of the moving objects. The construction of these trees is
+done in two steps. Firstly an OBB-tree is constructed on 
+each polyhedron and an OBB is places around each solid.
+Secondly an OBB-tree is constructed on top of these for
+each KCD-obstacle. The OBB-trees are binary trees constructed 
+in a top-down fashion, starting of with one large OBB around 
+the whole collection of geometrical data and creating two 
+smaller OBBs around half of the geometrical data used for the
+construction of their parent box. The first kind of OBB-tree
+takes as input the convex facets of the polyhedron and the
+triangles computed by a triangulation algorithm applied to 
+its non-convex facets. The second kind of OBB-tree takes as
+input the OBBs around the solids in the KCD-obstacle and the
+OBB in the root of the OBB-tree of the polyhedrons in 
+the KCD-obstacle. The resulting OBB-tree on the KCD-obstacle
+is connected to the OBBs and OBB-trees at its leafs.
+Each movable object is treated in the same way as a 
+KCD-obstacle for the OBB-tree construction. 
+
+We can filter out uninteresting details of objects from the workspace:
+we stop treating bounding boxes of facets and primitives as soon as
+the volume of the bounding boxes (or the surface of degenerate 
+bounding boxes around facets) is smaller than $v^3$ (or $v^2$) 
+for a given value $v$.
+\begin{center}
+\begin{figure}[!hpt]
+	\mbox{
+              \hspace{.2cm}  \psfig{figure=FIG/bike_obb.ps,height=3.3cm}
+              \hspace{.2cm}  \psfig{figure=FIG/bike_aabb.ps,height=3.3cm}
+	}
+        \caption{object OBB-tree, AABBs of its primitives.}
+        \label{bbs}
+\end{figure}
+\end{center}
+\vspace{-0.5cm}
+As in SOLID, we use the enhanced GJK method (\cite{GilJohKee88}, \cite{Cam97})
+on the lowest level: simple solids can be treated as such (see \cite{GilFoo90}).
+Since we treat convex facets at the lowest level, we can put an OBB-leaf
+around a convex facet rather than only a triangle (as required by \cite{GotLinMan96}).
+
+Most objects do not move, so their bounding volumes must never be
+re-computed. The placement of OBBs around movable objects can be
+expressed with the same transformation matrix as for the movable object.
+
+It is up to the user to decide whether KCD reports on collision 
+by true or false without further information, or it returns a 
+distance estimate in case of non-collision.
+At each of the three stages faster procedures return only boolean
+values. The distance estimate is the smallest value computed at
+one of the levels to decide for non-collision, and therefore is 
+only a conservative estimate. 
+
+The overlap test for AABBs is applied to the AABB hierarchy 
+starting at the root of the tree. When all child boxes intersect
+an AABB of a movable object, testing is stopped at that level
+of the tree and the parent AABB is stored. This mechanism results
+in a collection of AABBs for each of the movable objects. Each
+AABB contains obstacles that potentially collide. If already 
+at this stage no collision occurs, and if the user asked for a
+distance estimate, the smallest distance between the AABBs of the
+movable objects and the visited AABBs of the static environment
+is returned.
+
+The overlap test for two OBBs limits computations more than
+the corresponding function in RAPID. The version returning
+a boolean answer tests at most 15 cases in its quest for a 
+separating axis. A minor modification to this algorithm allows 
+to compute the distance between the boxes. 
+
+The overlap test for two OBBs is called recursively on the OBB-trees
+of objects in the AABBs selected at the first stage. Again, if already 
+at this stage no collision occurs, and if the user asked for a
+distance estimate, the smallest distance between the OBBs of the
+movable objects and the OBBs of the static environment is returned.
+
+At the lowest level the GJK algorithm is called on the geometrical
+elements englobed by the leafs of the OBB-trees. As in SOLID, two 
+different algorithms deliver two different types of answers: a
+boolean reply or a distance. This test is called when in both of
+the OBB-trees a leaf is reached.
+
+The distance-mode allows the user
+to set a safety distance. The path planner of Move3D uses the 
+distance information to reduce the potentially high number of
+calls to KCD along paths and to guarantee collision-free-ness 
+of computed paths.
+
+\subsection{API}
+Note the following types defined internally by KCD:
+\begin{tabbing}
+\vspace{-5mm}
+>>>>\=>>>>>>>\=>>>>>>\= \kill
+\>typedef \>double \>kcd\_vector3[3];\\
+\>typedef \>double \>kcd\_matrix4[4][4];\\
+\>typedef \>double \>kcd\_matrix3[3][3];
+\vspace{-4mm}
+\end{tabbing}
+
+\subsubsection{Initialization}
+
+
+void kcd\_beg\_scene(int nof\_prims,int nof\_st\_obj,int nof\_mo\_grps,int nof\_mov\_obj)
+\begin{itemize}
+\item[$-$] initializes some internal KCD data structures, and uses for this purpose
+  the following input parameters:
+  nof\_prims: the number of primitives in the scene (polyhedrons and solids)
+  nof\_st\_obj: the number of static objects in data structure of the user
+  nof\_mo\_grps: the number of groups of movable objects the user will define
+  nof\_mov\_obj: the number of movable objects in data structure of the user
+\item[$-$] will be followed by a non-zero number of sequences kcd\_beg\_obj(),
+  kcd\_add\_prim(), kcd\_end\_obj()
+\end{itemize}
+int kcd\_end\_scene()
+\begin{itemize}
+\item[$-$] initializes the AABB hierarchy
+\item[$-$] constructs the OBB-trees on each obstacle and on each movable object
+\item[$-$] returns kcd\_env\_id identifier of the scene
+\end{itemize}
+void kcd\_beg\_obj(int can\_move)
+\begin{itemize}
+\item[$-$] will be followed by a number of calls to kcd\_add\_prim()
+\item[$-$] if can\_move is FALSE, the object will be considered
+   as a static obstacle.
+\end{itemize}
+int kcd\_end\_obj()
+\begin{itemize}
+\item[$-$] creates OBB-tree on all single OBBs and on all roots 
+   of OBB-trees of the primitives and polyhedrons in the object, 
+\item[$-$] returns object identifier: unique number for each object (static or movable)
+\end{itemize}
+int kcd\_add\_prim(void *ext\_polyPt)    
+\begin{itemize}
+\item[$-$] creates OBB on sphere, cylinder, box, cube, cone, \newline
+   convex\_facet, convex\_polyhedron;
+\item[$-$] creates OBB-tree on all OBBs of the convex facets defined
+   in a polyhedron;
+\item[$-$] places the OBB at pos0
+\item[$-$] stores which solids and/or polyhedrons belong to currently defined object
+\item[$-$] returns primitive\_id
+\end{itemize}
+void kcd\_remember\_scene(int kcd\_env\_id)
+\begin{itemize}
+\item[$-$] when the user defined several scenes, this function selects the
+  data created by KCD for the scene for which kcd\_end\_scene() has returned
+  the kcd\_env\_id identifier
+\item[$-$] hence, this function does not recompute the data structures but re-uses
+  the earlier initialization
+\end{itemize}
+void kcd\_clean\_up()
+\begin{itemize}
+\item[$-$] free-s all memory for the internal data structures used by KCD
+\end{itemize}
+
+\subsubsection{Placement update for a movable object}
+
+  KCD recomputes the AABB around the moved movable objects by its 
+  own function or by a call to a user-defined function (as the one 
+  existing in Move3D).
+  The user should update the placement matrix in his/her own data structure.
+  For the computation of the AABB around the movable object whenever
+  it changed place, the user can provide a function of his/her own
+  or a function of KCD. This is hsndled by the API function
+  kcd\_get\_aabb\_on\_mo(), specified below.
+
+\subsubsection{Notion of a group of movable objects (for instance, a robot)}
+
+int kcd\_def\_mo\_grp(int *mo\_ids, int nof\_mo\_ids)
+\begin{itemize}
+\item[$-$] creates a KCD internal array that stores the array of movable objects
+  belonging to a same group (for instance, the collection of all links 
+  of a robot)
+\item[$-$] returns grp\_id (for instance, robot\_id: identifier of a robot)
+\item[$-$] allows call for intersection between movable objects belonging
+  to the same group (for instance, self-intersection for an 
+  articulated robot)
+\item[$-$] precondition: movable objects were previously defined and do not 
+  belong to any other group
+\end{itemize}
+
+\subsubsection{Activation pairs}
+
+void kcd\_act\_mo(int mo\_id)
+\begin{itemize}
+\item[$-$] the given movable object is considered by the collision test
+\end{itemize}
+void kcd\_deact\_mo(int mo\_id)
+\begin{itemize}
+\item[$-$] the given movable object is ignored by the collision test
+\end{itemize}
+void kcd\_act\_grp(int grp\_id)
+\begin{itemize}
+\item[$-$] the group of links of the given robot is considered 
+  by the collision test
+\item[$-$] note: 0 $<=$ grp\_id $<$ number of groups in the scene
+\end{itemize}
+void kcd\_deact\_grp(int grp\_id)
+\begin{itemize}
+\item[$-$] the group of links of the given robot is ignored by the collision test
+\item[$-$] note: 0 $<=$ grp\_id $<$ number of groups in the scene
+\end{itemize}
+void kcd\_act\_mo\_pair(int mo\_id1, int mo\_id2)
+\begin{itemize}
+\item[$-$] checks if mo\_id1 and mo\_id2 belong to the same group.\newline
+  if they don't:
+  \begin{itemize}
+  \item[$-$] defines a KCD internal pair of movable objects to be tested against
+    each other for collision; by default all these internal pairs are activated
+  \end{itemize}
+  if they do:
+  \begin{itemize}
+  \item[$-$] defines a KCD internal pair of movable objects for self-intersection
+    or activates it if it already exists
+  \item[$-$] Note that in this case one must define a group of movable
+objects first!
+  \end{itemize}
+\end{itemize}
+void kcd\_deact\_mo\_pair(int mo\_id, int mo\_id)
+\begin{itemize}
+\item[$-$] deactivates the given pair of movable objects if the pair exists
+\end{itemize}
+void kcd\_act\_grp\_pair(int grp\_id1, int grp\_id2)
+\begin{itemize}
+\item[$-$] defines a KCD internal pair of groups of movable objects, each mo of
+  the first group to be tested against each mo of the second group
+\item[$-$] note: grp\_id1 $\neq$ grp\_id2, grp\_id1 $\neq$ -1, grp\_id2 $\neq$ -1
+\end{itemize}
+void kcd\_deact\_grp\_pair(int grp\_id1, int grp\_id2)
+\begin{itemize}
+\item[$-$] deactivates the given pair of groups of movable objects
+\item[$-$] note: grp\_id1 $\neq$ grp\_id2, grp\_id1 $\neq$ -1, grp\_id2 $\neq$ -1
+\end{itemize}
+int kcd\_mo\_is\_act(int mo\_id)
+\begin{itemize}
+\item[$-$] returns TRUE if given movable object is activated, 
+  returns FALSE otherwise
+\end{itemize}
+int kcd\_grp\_is\_act(int grp\_id)
+\begin{itemize}
+\item[$-$] returns TRUE if given group of movable objects is activated, 
+  returns FALSE otherwise
+\item[$-$] note: 0 $<=$ grp\_id $<$ total number of groups
+\end{itemize}
+int kcd\_mo\_pair\_is\_act(int mo\_id1,int mo\_id2)
+\begin{itemize}
+\item[$-$] returns TRUE if given pair of movable objects exists and is activated, 
+  returns FALSE otherwise
+\end{itemize}
+int kcd\_grp\_pair\_is\_act(int grp\_id1,int grp\_id2)
+\begin{itemize}
+\item[$-$] returns TRUE if given pair of two different groups of movable objects exists 
+  and is activated, returns FALSE otherwise
+\end{itemize}
+
+\subsubsection{Access to external data}
+
+The user fills in the following functions:\newline
+void kcd\_get\_pt(void *polyPt,int i,double *x,double *y,double *z)
+\begin{itemize}
+\item[$-$] stores coordinates of the i-th vertex of the polyhedron in x,y,z
+\end{itemize}
+void kcd\_get\_pt\_arr(void *polyPt,void *the\_points)
+\begin{itemize}
+\item[$-$] gives pointer to the array of vertices of the given polyhedron
+\end{itemize}
+unsigned int kcd\_get\_nb\_pts(void *polyPt)
+\begin{itemize}
+\item[$-$] returns the number of vertices of the given polyhedron
+\end{itemize}
+unsigned int kcd\_get\_nb\_fs(void *polyPt)
+\begin{itemize}
+\item[$-$] returns the number of facets of the polyhedron
+\end{itemize}
+unsigned int kcd\_get\_nb\_pts\_in\_f(void *polyPt, int fid)
+\begin{itemize}
+\item[$-$] returns the number of vertices of the fid-th facet of the polyhedron
+\end{itemize}
+int kcd\_get\_i\_pt\_in\_f(void *polyPt, int fid, int pid)
+\begin{itemize}
+\item[$-$] returns the index in the array of vertices 
+      of the pid-th point of the fid-th facet of the given polyhedron
+\end{itemize}
+void kcd\_get\_pt\_in\_f\_arr(void *polyPt, int fid, void *the\_points)
+\begin{itemize}
+\item[$-$] stores the array of indices in *the\_points, the i-th element in  
+      *the\_points is indicating the place of the i-th vertex of the
+      fid-th facet of the polyhedron in the array of points of the 
+      polyhedron
+\end{itemize}
+Note: cylinder and cone axes along the Z-axis, top radius of cone is strictly
+smaller than the bottom radius, size of a cube is communicated through its
+size along the X-direction.\newline
+void kcd\_get\_solid\_r1 (void *solidPt,double *the\_r1)
+\begin{itemize}
+\item[$-$] stores the radius of sphere or cylinder in the\_r1
+\item[$-$] stores the top radius of a cone in the\_r1 
+\end{itemize}
+void kcd\_get\_solid\_r2 (void *solidPt,double *the\_r2)
+\begin{itemize}
+\item[$-$] stores the bottom radius of a cone in the\_r2
+\end{itemize}
+void kcd\_get\_solid\_s  (void *solidPt,double *the\_s)
+\begin{itemize}
+\item[$-$] stores in the\_s for a cone: (r2-r1)/(sqrt((r1-r2)*(r1-r2) + h*h) )
+\end{itemize}
+void kcd\_get\_solid\_h  (void *solidPt,double *the\_h)
+\begin{itemize}
+\item[$-$] stores the height of cylinder and cone in the\_h
+\end{itemize}
+void kcd\_get\_solid\_x  (void *solidPt,double *the\_x)
+\begin{itemize}
+\item[$-$] stores the size in X-direction of a cube and a box in the\_x
+\end{itemize}
+void kcd\_get\_solid\_y  (void *solidPt,double *the\_y)
+\begin{itemize}
+\item[$-$] stores the size in Y-direction of a box in the\_y
+\end{itemize}
+void kcd\_get\_solid\_z  (void *solidPt,double *the\_z)
+\begin{itemize}
+\item[$-$] stores the size in Z-direction of a box in the\_z
+\end{itemize}
+void kcd\_get\_solid\_xyz(void *solidPt,double *the\_x,double *the\_y,double *the\_z)
+\begin{itemize}
+\item[$-$] stores the sizes in X-, Y- and Z-direction of a box in the\_x, the\_y
+  and the\_z respectively.
+\end{itemize}
+void kcd\_get\_prim\_abs\_pos(void *primPt, int can\_move, void *placement)
+\begin{itemize}
+    \item[$-$] stores the absolute placement matrix in *placement (4x4, double)
+      for the primitive primPt
+\end{itemize}
+void kcd\_get\_prim\_rel\_pos(void *primPt, void *placement)
+\begin{itemize}
+    \item[$-$] stores the relative placement matrix in *placement (4x4, double)
+      for the primitive primPt w.r.t. the movable object to which it belongs
+    \item[$-$] precondition: the primitive primPt belongs to a movable object
+\end{itemize}
+void kcd\_get\_obj\_abs\_pos(int kcd\_ext\_o, void *placement)
+\begin{itemize}
+    \item[$-$] stores the absolute placement in *placement for the 
+      movable object that was defined as the kcd\_ext\_o-th 
+      object by the user when using kcd\_beg\_obj()
+    \item[$-$] precondition: the object is a movable object
+\end{itemize}
+int kcd\_get\_poly\_entity\_type(void *primPt)
+\begin{itemize}
+  \item[$-$] returns the entity type of the primitive; values are
+    for solids: sphere 3, cube 4, box 5, cylinder 6, cone 7
+    for polyhedrons: convex polyhedron 1, concave polyhedron 2,
+    for polyhedrons for which it is a priori unspecified whether 
+    they are convex or concave, the entity type is 0.
+\end{itemize}
+int kcd\_poly\_is\_convex(void *polyPt)
+\begin{itemize}
+  \item[$-$] returns TRUE if polyhedron polyPt is convex
+\end{itemize}
+int kcd\_facet\_is\_convex(void *polyPt, int fid)
+\begin{itemize}
+  \item[$-$] returns TRUE if the fid-th facet of polyhedron polyPt is convex
+\end{itemize}
+kcd\_get\_scene\_size(double *x,double *y,double *z)
+\begin{itemize}
+    \item[$-$] returns an upper bound of the size of 
+      the scene in X, Y, and Z direction
+\end{itemize}
+The user optionally fills this function:
+int kcd\_get\_aabb\_on\_mo(int kcd\_ext\_o, 
+                           double *x1,double *x2,double *y1,
+                           double *y2,double *z1,double *z2)
+\begin{itemize}
+ \item[$-$] If this function returns FALSE, KCD will compute the AABB around
+   the movable object specified by kcd\_ext\_o by itself, each time
+   when the movable object moved.
+ \item[$-$] If this function returns TRUE, KCD will store values (x1,x2,...,z2)
+   as the AABB around the movable object defined as the kcd\_ext\_o-th 
+   object by the user. This allows the user to define a function by
+   him/her-self computing the AABB around a movable object.
+\end{itemize}
+\subsubsection{Call collision test}
+
+Constants: 
+\begin{itemize}
+ \item[]NO\_REPORT = 0, 
+ \item[]JUST\_BOOL = 1, 
+ \item[]DISTANCE\_ESTIMATE = 2.
+\end{itemize}
+These are the possible values for the parameter "with\_report" in the
+functions specified below.
+\begin{itemize}
+ \item[]DISTANCE\_ESTIMATE: collision test takes into account the safety distance
+ and creates look-up tables with both boolean results and distance estimates
+ for each movable object and for each group of movable objects
+ \item[]JUST\_BOOL: collision test does not take into account safety distance
+ and does not create a look-up table with distances, but it does create 
+ a look-up table with boolean results for each group of movable objects
+ \item[]NO\_REPORT: collision test does not take into account safety distance
+ and does not create look-up tables, returns only TRUE or FALSE at the
+ instant of request for collision test
+\end{itemize}
+int kcd\_robot\_collides\_itself(int robot\_id, int with\_report)
+\begin{itemize}
+\item[$-$] returns TRUE if given robot is self-colliding, FALSE otherwise
+\item[$-$] if with\_report is JUST\_BOOL or DISTANCE\_ESTIMATE, a look-up 
+  table is made; the look-up table can be access by the report 
+  functions specified below
+\item[$-$] verifies only those pairs of group elements for which a 
+  collision pair was defined
+\end{itemize}
+int kcd\_robot\_collides\_robot(int robot\_id1, int robot\_id2)
+\begin{itemize}
+\item[$-$] returns TRUE if given robots collide, FALSE otherwise,
+\item[$-$] does not test self-collision
+\item[$-$] verifies only those pairs of group elements for which a 
+  collision pair was defined
+\end{itemize}
+int kcd\_robot\_collides(int robot\_id, int with\_report)
+\begin{itemize}
+\item[$-$] looks only for collision between given robot and static objects
+  and returns TRUE if collision is found, FALSE otherwise
+\item[$-$] does not look for self-collision, for collision with other robots
+  and movable objects
+\item[$-$] if with\_report is JUST\_BOOL, a look-up table is made
+\item[$-$] if with\_report is DISTANCE\_ESTIMATE, a table with distance estimates
+  is made and safety-tolerance is taken into account
+\end{itemize}
+int kcd\_collision\_exists(int with\_report)
+\begin{itemize}
+\item[$-$] looks for the existance of collision for any robot or movable object
+  and returns TRUE if collision is found, FALSE otherwise
+\item[$-$] if with\_report is JUST\_BOOL, a table look-up is made; the 
+  look-up table can be access by the report functions 
+  specified below
+\item[$-$] if with\_report is DISTANCE\_ESTIMATE, a look-up table with distance 
+  estimates is made and safety-tolerance is taken into account
+\item[$-$] for collision tests between movable objects (self-collision,
+  collision between two groups or between a group and a mo or
+  between two mo's) only those pairs of group elements are 
+  verified for which a collision pair was defined
+\end{itemize}
+int kcd\_mo\_collides(int mo\_id, int with\_report)
+\begin{itemize}
+\item[$-$] looks only for collision between given mo and static objects
+  and returns TRUE if collision is found, FALSE otherwise
+\item[$-$] does not look for collision with other robots and mo-s
+\item[$-$] if with\_report is JUST\_BOOL, a look-up table is made; the 
+  look-up table can be access by the report functions 
+  specified below
+\item[$-$] if with\_report is DISTANCE\_ESTIMATE, a look-up table with distance 
+  estimates is made and safety-tolerance is taken into account
+\end{itemize}
+int kcd\_robot\_collides\_mo(int robot\_id, int mo\_id)
+\begin{itemize}
+\item[$-$] returns TRUE if given robot collides with given movable object
+\item[$-$] does not test self-collision of robot
+\item[$-$] does not verify for definition of collision pair between given
+  movable object and an element of the given group
+\end{itemize}
+int kcd\_mo\_collides\_mo(int mov\_obj\_id1, int mov\_obj\_id2)
+\begin{itemize}
+\item[$-$] returns TRUE if two movable objects collide, FALSE otherwise
+\item[$-$] does not verify for definition of collision pair between given
+  movable objects
+\end{itemize}
+\subsubsection{look-up of results}
+
+kcd\_check\_report(int grp\_id) 
+\begin{itemize}
+\item[$-$] returns TRUE if group (robot) with grp\_id is in collision 
+\end{itemize}
+void kcd\_get\_dist\_mo\_so(int mo\_id,double *d)
+\begin{itemize}
+\item[$-$] stores the distance estimate between the movable object with
+  identifier mo\_id and nearest static AABB, OBB or primitive 
+  in variable d
+\end{itemize}
+void kcd\_get\_dist\_grp\_mo\_so(int grp\_id,int mo\_rk,double *d)
+\begin{itemize}
+\item[$-$] stores the distance estimate between the mo\_rk-th movable object
+  of group of movable objects with identifier grp\_id and the nearest
+  static AABB, OBB or primitive in variable d
+\end{itemize}
+
+\subsubsection{safety distance, object details}
+
+One must set a few parameters, should become something like this: \newline
+void kcd\_set\_tolerance(double epsilon)
+\begin{itemize}
+\item[$-$] sets tolerance value to epsilon
+\end{itemize}
+void kcd\_ignore\_tolerance()
+\begin{itemize}
+\item[$-$] resets tolerance value to zero 
+  (does the same as kcd\_set\_tolerance(0.0) )
+\end{itemize}
+void kcd\_init\_min\_vol\_of\_obj\_detail(1dim\_vol)
+\begin{itemize}
+\item[$-$] sets smallest undividable volume for a bounding box
+  before initialization of OBB(-tree)s and AABB hierarchy
+  (to be called before definition of an environment)
+\end{itemize}
+void kcd\_set\_min\_vol\_of\_obj\_detail(1dim\_vol)
+\begin{itemize}
+\item[$-$] sets smallest undividable volume for a bounding box (must be
+  larger than the initial value), stores original value used 
+  at initalization, uses the smallest undividable volume in 
+  collision test functions
+\end{itemize}
+This is not needed by Move3D, garanteed by graphical interface.\newline
+void kcd\_ignore\_min\_vol\_of\_obj\_detail()
+\begin{itemize}
+\item[$-$] resets smallest undividable volume for a bounding box to
+  original value used at initialization
+\end{itemize}
+Recent additions to the API are the following functions.
+\begin{tabbing}
+\vspace{-5mm}
+>\=>>>>>>\= \kill
+kcd\_mo\_vs\_mo()\\
+\>  As kcd\_mo\_collides\_mo(), but also returns distance estimate.\\
+\>\\
+kcd\_robot\_vs\_mo()\\
+\>  As kcd\_robot\_collides\_mo(), but also returns distance estimate.\\
+\>\\
+kcd\_robot\_vs\_robot()\\
+\>  As kcd\_robot\_collides\_robot(), but also returns distance estimate.
+\vspace{-4mm}
+\end{tabbing}
+\subsection{Calling KCD through move3d}
+When launching Move3D from the shell with the executable `move3d', the
+user can specify several options to KCD. Here follows the listing of
+these options.
+
+\begin{tabbing}
+\vspace{-5mm}
+>>>>\=>>>>>>>\=>>>>>>\= \kill
+\>-c \>kcd  \>initialize with collision detector KCD\\
+
+\>-c \>kng  \>initialize with collision detector KCD, except\\
+\>\>\>        for lowest level tests (don't call GJK algorithm,\\
+\>\>\>        stop at collision tests with bounding boxes)\\
+
+\>-nkcdd \> \>use functions returning boolean results only\\
+\>\>\>        (instead of the default functions returning \\
+\>\>\>        distances)\\
+
+\>-tol \>d  \>set the tolerance distance to  d\\
+\>\>\>        (default value is "dmax", equal to the\\
+\>\>\>        diagonal of the size of the environment\\
+\>\>\>        divided by 200.0\\
+
+\>-v \>v1   \>consider v1*v1 as a small surface and v1*v1*v1\\
+\>\>\>        as a small volume at initialization of KCD\\
+\>\>\>        (ignore every solid smaller than v1*v1*v1\\
+\>\>\>        and every convex facet or triangle in the \\
+\>\>\>        triangulation of a concave facet smaller than\\
+\>\>\>        v1*v1, test up to its bounding box)\\
+
+\>-vol \>v  \>same as -v v1  where v=v1*v1*v1\\
+
+\>-x  \>    \>use filterbox of robot at initialization: if solid\\
+\>\>\>        or polyhedron has a bounding box completely outside\\
+\>\>\>        the filterbox of the robot (== box around workspace)\\
+\>\>\>        then this primitive is not passed on to KCD (as if it\\
+\>\>\>        were a graphic object)
+\vspace{-4mm}
+\end{tabbing}
+Internally, these options have effects in several files throughout
+Move3D. Here are the ones of major importance.
+\paragraph{move3d.c}
+\begin{tabbing}
+\vspace{-5mm}
+>>>>\=>>>>>>>\=>>>>>>\= \kill
+\>-nkcdd \> \>sets flag RETURN\_KCD\_DISTANCE\_ESTIMATE to FALSE,\\
+\>\>\>        whereas its default value is TRUE\\
+\>-tol \>d  \>sets XYZ\_ENV$\rightarrow$dmax (the tolerance) to  d  \\
+\>\>\>        note that first the environment was loaded,\\
+\>\>\>        an initial value for dmax was computed, and\\
+\>\>\>        this value dmax is only changed if $d < 200.0*dmax$
+\vspace{-4mm}
+\end{tabbing}
+\paragraph{p3d\_col.c}
+\begin{tabbing}
+\vspace{-5mm}
+>\=>>>>>>\= \kill
+p3d\_col\_set\_tolerance(val)\\
+\>        if RETURN\_KCD\_DISTANCE\_ESTIMATE is TRUE, the internal\\
+\>        global variable kcd\_tolerance is set to val\\
+\>        else, the internal global variable kcd\_tolerance is set\\
+\>        to 0.0 and dmax is set to val (dmax is then used for \\
+\>        non-uniform sampling along trajectories, and for minimal\\
+\>        safe step in the dichotomy sampling of trajectories)
+\vspace{-4mm}
+\end{tabbing}
+\paragraph{FORMenv.c}
+ Slider tolerance is set to dmax of environment, using
+ function p3d\_col\_set\_tolerance(dmax)
+ call-back function of slider calls p3d\_col\_set\_tolerance(val)
+ with user-set value val of slider.
+\paragraph{p3d\_set.c}
+ When environment is read, dmax is set to 1/200.0 times the
+ length of the diagonal of the environment box (cf. p3d\_set\_env\_box()).
+\paragraph{kcd\_api.c}
+ Interface function kcd\_set\_tolerance() calls internal KCD function
+ kcd\_assign\_tolerance() setting KCD internal parameters.
+\paragraph{kcd\_obb\_bb.c}
+\begin{tabbing}
+\vspace{-10mm}
+>\=>>>>>>\= \kill
+kcd\_assign\_tolerance(val)\\
+\>       sets global KCD variable kcd-tolerance to value val
+\vspace{-4mm}
+\end{tabbing}
+\subsection{Organization of the code}
+One finds the following include files in the subdirectory"include/":
+\begin{tabbing}
+\vspace{-5mm}
+>\=>>>>>>>>>>>>>>>>>>>\= \kill
+\>kcd\_api.h               \>      defines constants NO\_REPORT (0), JUST\_BOOL (1),\\
+\>\>                               and DISTANCE\_ESTIMATE (2): these are the three\\
+\>\>                               possible values when the user calls the \\
+\>\>                               API-functions asking to compute collisions\\
+\>kcd\_aabb\_tree.h           \>     typedefs for AABB-tree \\
+\>kcd.h                       \>   typedefs of all other global data structures\\
+\>kcd\_sys.h                  \>    our own allocation functions, typical \\
+\>\>                               system constants (TRUE, FALSE,...) and \\
+\>\>                               macros (MAX, ABS, EQ,...), and the entity\\
+\>\>                               types of solids that can be treated by GJK\\
+\>kcd\_type.h                    \> defines all other KCD-internal constants\\
+\>kcd\_aabb\_tree\_global.h      \>   defines global variables for the AABB-tree\\
+\>kcd\_global.h                  \> defines all other KCD-internal global variables
+\vspace{-4mm}
+\end{tabbing}
+One finds the following source code files in the main directory:
+\begin{tabbing}
+\vspace{-5mm}
+>\=>>>>>>>>>>>>>>>>>>>\= \kill
+\>kcd\_tables.c           \>    initialization, access and free-ing of global \\
+\>\>                          variables storing the general outlook of the \\
+\>\>                          scenes (e.g. which primitives belong to which \\
+ \>\>                         object, which movable objects for a group, the \\
+ \>\>                         collision pairs)\\
+\> kcd\_bb.c, kcd\_bb\_init.c   \> initialization, access and free-ing of the global \\
+\>\>                          data storing the bounding volumes for primitives \\
+\>\>                          and objects in the scene (both AABBs and OBBs)\\
+        \> \> \\
+\> kcd\_aabb.c      \>           construction of the AABBs around solids\\
+\> kcd\_aabb\_polyh.c    \>       construction of the AABBs on polyhedrons\\
+\> kcd\_aabb\_tree.c    \>        construction of the AABB-tree on top of the\\
+\>\>                          AABBs (the leafs of the AABB-tree) of primitives \\
+\>\>                          belonging to static objects; this leads to the \\
+\>\>                          concept of "KCD-object" (a box 1 level above the \\
+\>\>                          leafs);\\
+\>\>                          functions computing the collisions between AA/OBBs\\
+\>\>                          around movable objects and the AABB-tree\\
+\> \> \\
+\> kcd\_obb.c    \>              construction of the OBBs around solids\\
+\> kcd\_obb\_polyh.c    \>        construction of the OBB-tree on polyhedrons\\
+\> kcd\_obb\_bb.c    \>           construction of the OBB-tree on top of OBBs\\
+\>\>                          of solids and roots of OBB-trees of polyhedrons\\
+\>\>                          belonging to the same KCD-object\\
+\> kcd\_obb\_overlap.c   \>       functions computing the collisions between OBB-trees\\
+\> \> \\
+\> kcd\_obb\_api\_gjk.c     \>     functions preparing the data for the GJK algorithm\\
+\>\>                          when two overlapping OBB-leafs were found\\
+\> \> \\
+\> kcd\_gjk.c             \>     main functions of the GJK algorithm\\
+\> kcd\_gjk\_support.c    \>      support functions for the GJK algorithm\\
+\> kcd\_gjk\_debug.c      \>      test functions to call GJK directly from Move3D,\\
+\>\>                          for debug purposes only, not independent from\\
+\>\>                          Move3D, only compiled when flag GJK\_DEBUG is set\\
+\> \> \\
+\> kcd\_api.c          \>        functions of the api of KCD, that can be used\\
+\>\>                          to define scenes, collision pairs and to set some\\
+\>\>                          parameters;\\
+\>\>                          functions of the api of KCD, that can be used\\
+\>\>                         to call the collision detector;\\
+\>\>                          functions initializing, manipulating and free-ing\\
+\>\>                          KCD data structures allowing to store several \\
+\>\>                          scenes in one run of KCD\\
+\> kcd\_api\_report.c    \>       functions of the api of KCD, that can be used\\
+\>\>                          to get further report details about the latest\\
+\>\>                          collision test\\
+\> kcd\_api\_fcts.c      \>       the set of functions users must specify allowing\\
+\>\>                          KCD to access the user's external data needed for\\
+\>\>                          computations by the collision detector\\
+\> \> \\
+\> kcd\_matrix.c          \>     functions treating matrices and vectors, used for\\
+\>\>                          the specification of placements of objects\\
+\> kcd\_triangles.c    \>        functions triangularizing simple, not necessarily\\
+\>\>                          convex facets in three dimensional space
+\vspace{-4mm}
+\end{tabbing}
+

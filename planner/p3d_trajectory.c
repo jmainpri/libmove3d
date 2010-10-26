@@ -404,6 +404,10 @@ int p3d_concat_traj(p3d_traj *traj1Pt, p3d_traj *traj2Pt)
   q2_start = p3d_config_at_param_along_traj(traj2Pt, 0);
   if (! p3d_equal_config(robotPt, q1_end, q2_start)) {
     PrintError(("concat: end of first trajectory different from beginning of second one\n"));
+    printf("q1_end : \n");
+    print_config(robotPt, q1_end);
+    printf("q2_start : \n");
+    print_config(robotPt, q2_start);
     return TRUE;
   }
 

@@ -1,0 +1,186 @@
+\indexentry{p3d\_beg\_desc}{5}
+\indexentry{p3d\_end\_desc}{5}
+\indexentry{P3D\_ENV}{5}
+\indexentry{p3d\_beg\_env}{5}
+\indexentry{p3d\_end\_env}{5}
+\indexentry{P3D\_OBSTACLE}{6}
+\indexentry{p3d\_beg\_obj}{6}
+\indexentry{p3d\_add\_desc\_poly}{6}
+\indexentry{p3d\_poly\_beg\_poly}{6}
+\indexentry{p3d\_add\_desc\_vert}{6}
+\indexentry{p3d\_poly\_add\_vert}{6}
+\indexentry{p3d\_add\_desc\_face}{7}
+\indexentry{p3d\_poly\_add\_face}{7}
+\indexentry{p3d\_end\_desc\_poly}{7}
+\indexentry{p3d\_poly\_end\_poly}{7}
+\indexentry{p3d\_add\_desc\_type@p3d\_add\_desc\_{\it type}}{7}
+\indexentry{p3d\_create\_type@p3d\_create\_{\it type}}{7}
+\indexentry{p3d\_set\_prim\_pos}{8}
+\indexentry{p3d\_end\_obj}{8}
+\indexentry{p3d\_set\_obst\_pos}{9}
+\indexentry{P3D\_ROBOT}{9}
+\indexentry{p3d\_beg\_rob}{9}
+\indexentry{P3D\_BODY}{9}
+\indexentry{p3d\_add\_desc\_jnt}{10}
+\indexentry{P3D\_ROTATE}{10}
+\indexentry{P3D\_TRANLSATE}{10}
+\indexentry{p3d\_end\_rob}{10}
+\indexentry{p3d\_beg\_traj}{11}
+\indexentry{p3d\_add\_desc\_courbe}{11}
+\indexentry{p3d\_end\_traj}{11}
+\indexentry{p3d\_del\_desc}{11}
+\indexentry{p3d\_del\_traj}{11}
+\indexentry{p3d\_del\_obst}{11}
+\indexentry{p3d\_del\_rob}{11}
+\indexentry{p3d\_del\_env}{12}
+\indexentry{p3d\_poly\_del\_poly}{12}
+\indexentry{p3d\_col\_init\_coll}{14}
+\indexentry{p3d\_col\_start\_current}{14}
+\indexentry{p3d\_col\_start\_last}{14}
+\indexentry{p3d\_col\_start}{14}
+\indexentry{p3d\_switch\_all\_to\_cube}{14}
+\indexentry{p3d\_switch\_all\_to\_DBB}{14}
+\indexentry{p3d\_col\_activate\_pair}{14}
+\indexentry{p3d\_col\_activate\_full}{14}
+\indexentry{p3d\_col\_activate\_all}{14}
+\indexentry{p3d\_col\_deactivate\_pair}{15}
+\indexentry{p3d\_col\_deactivate\_full}{15}
+\indexentry{p3d\_col\_deactivate\_all}{15}
+\indexentry{p3d\_col\_activate\_env}{15}
+\indexentry{p3d\_col\_stop}{15}
+\indexentry{p3d\_col\_stop\_all}{15}
+\indexentry{p3d\_col\_test}{15}
+\indexentry{p3d\_col\_test\_pair}{15}
+\indexentry{p3d\_col\_number}{15}
+\indexentry{p3d\_col\_get\_report}{15}
+\indexentry{p3d\_BB\_obj\_obj\_extern\_dist}{16}
+\indexentry{p3d\_calc\_robot\_BB\_extern\_dist}{16}
+\indexentry{p3d\_calc\_body\_BB\_extern\_dist}{16}
+\indexentry{p3d\_BB\_overlap\_obj\_obj}{16}
+\indexentry{p3d\_BB\_overlap\_rob\_obj}{16}
+\indexentry{p3d\_BB\_overlap\_rob\_rob}{16}
+\indexentry{p3d\_get\_desc\_number}{33}
+\indexentry{p3d\_get\_desc\_curname}{33}
+\indexentry{p3d\_get\_desc\_curid}{33}
+\indexentry{p3d\_get\_desc\_curnum}{33}
+\indexentry{p3d\_sel\_desc\_name}{33}
+\indexentry{p3d\_sel\_desc\_num}{33}
+\indexentry{p3d\_sel\_desc\_id}{33}
+\indexentry{p3d\_get\_env\_box}{34}
+\indexentry{p3d\_set\_env\_box}{34}
+\indexentry{p3d\_env\_info}{34}
+\indexentry{p3d\_poly\_get\_nb}{34}
+\indexentry{p3d\_poly\_get\_poly}{34}
+\indexentry{p3d\_poly\_get\_poly\_by\_name}{34}
+\indexentry{p3d\_poly\_get\_first}{34}
+\indexentry{p3d\_poly\_get\_next}{34}
+\indexentry{p3d\_get\_info\_pos\_poly}{34}
+\indexentry{p3d\_BB\_get\_BB\_poly1}{34}
+\indexentry{p3d\_get\_obst\_by\_name}{34}
+\indexentry{p3d\_get\_obstacle\_npoly}{34}
+\indexentry{p3d\_get\_obstacle\_npt}{34}
+\indexentry{p3d\_get\_obstacle\_pt}{35}
+\indexentry{p3d\_get\_BB\_obj}{35}
+\indexentry{p3d\_obstacle\_info}{35}
+\indexentry{p3d\_set\_robot\_box}{35}
+\indexentry{p3d\_set\_robot\_radius}{35}
+\indexentry{p3d\_set\_ROBOT\_GOTO}{35}
+\indexentry{p3d\_get\_robot\_radius}{35}
+\indexentry{p3d\_get\_robot\_box}{35}
+\indexentry{p3d\_get\_BB\_rob}{35}
+\indexentry{p3d\_robot\_info}{35}
+\indexentry{p3d\_get\_body\_by\_name}{35}
+\indexentry{p3d\_get\_body\_npoly}{36}
+\indexentry{p3d\_get\_body\_npt}{36}
+\indexentry{p3d\_get\_body\_pt}{36}
+\indexentry{p3d\_get\_BB\_obj}{36}
+\indexentry{p3d\_obstacle\_info}{36}
+\indexentry{p3d\_get\_robot\_njnt}{36}
+\indexentry{p3d\_get\_robot\_jnt\_type}{36}
+\indexentry{p3d\_get\_robot\_jnt\_bounds}{36}
+\indexentry{p3d\_set\_robot\_pos}{36}
+\indexentry{p3d\_set\_robot\_jnt}{36}
+\indexentry{p3d\_update\_robot\_pos}{36}
+\indexentry{p3d\_get\_robot\_pos}{37}
+\indexentry{p3d\_get\_robot\_jnt}{37}
+\indexentry{p3d\_dist}{37}
+\indexentry{p3d\_dist\_q1\_q2}{37}
+\indexentry{p3d\_set\_obst\_color}{38}
+\indexentry{p3d\_set\_obst\_poly\_color}{38}
+\indexentry{p3d\_set\_body\_color}{38}
+\indexentry{p3d\_set\_body\_poly\_color}{38}
+\indexentry{p3d\_print\_info\_graph}{38}
+\indexentry{p3d\_print\_graph}{38}
+\indexentry{p3d\_get\_traj\_ncourbes}{38}
+\indexentry{p3d\_get\_traj\_pos}{38}
+\indexentry{p3d\_constraint}{50}
+\indexentry{Data structures!p3d\_localpath}{60}
+\indexentry{Data structures!struct lin\_data}{63}
+\indexentry{Data structures!p3d\_lin\_data}{63}
+\indexentry{Data structures!struct rs\_data}{64}
+\indexentry{Data structures!p3d\_rs\_data}{64}
+\indexentry{Data structures!struct manh\_data}{65}
+\indexentry{Data structures!p3d\_manh\_data}{65}
+\indexentry{Data structures!struct trailer\_data}{67}
+\indexentry{Data structures!p3d\_trailer\_data}{67}
+\indexentry{p3d\_set\_local\_method\_params}{68}
+\indexentry{Data structures!union lm\_specific}{69}
+\indexentry{Data structures!p3d\_lm\_specific}{69}
+\indexentry{p3d\_localpath\_type}{70}
+\indexentry{p3d\_localplanner\_type}{70}
+\indexentry{ptr\_to\_localplanner}{70}
+\indexentry{array\_localplanner}{70}
+\indexentry{array\_localplanner\_name}{71}
+\indexentry{P3D\_NB\_LOCAL\_PLANNER}{71}
+\indexentry{p3d\_init\_random\_seed}{73}
+\indexentry{p3d\_init\_random}{73}
+\indexentry{p3d\_random}{73}
+\indexentry{p3d\_shoot}{73}
+\indexentry{p3d\_shoot\_graph}{73}
+\indexentry{p3d\_shoot\_walk}{73}
+\indexentry{p3d\_shoot\_in\_box}{74}
+\indexentry{p3d\_shoot\_box}{74}
+\indexentry{p3d\_create\_graph}{74}
+\indexentry{p3d\_add\_node}{74}
+\indexentry{p3d\_create\_compco}{74}
+\indexentry{p3d\_create\_edges}{74}
+\indexentry{p3d\_add\_neighbour}{74}
+\indexentry{p3d\_linked}{74}
+\indexentry{p3d\_link\_node\_comp}{74}
+\indexentry{p3d\_merge}{74}
+\indexentry{p3d\_learn}{75}
+\indexentry{p3d\_specific\_learn}{75}
+\indexentry{p3d\_add\_basic\_node}{75}
+\indexentry{p3d\_add\_isolate\_or\_linking\_node}{75}
+\indexentry{p3d\_expand\_graph}{76}
+\indexentry{p3d\_expand\_box}{76}
+\indexentry{p3d\_expand\_random\_walk}{76}
+\indexentry{p3d\_graph\_search}{76}
+\indexentry{p3d\_optim}{77}
+\indexentry{p3d\_del\_graph}{77}
+\indexentry{p3d\_del\_node}{77}
+\indexentry{p3d\_read\_desc}{79}
+\indexentry{p3d\_write\_graph}{81}
+\indexentry{p3d\_read\_graph}{81}
+\indexentry{Data structures!p3d\_env}{83}
+\indexentry{Data structures!p3d\_obj}{83}
+\indexentry{Data structures!p3d\_rob}{84}
+\indexentry{Data structures!p3d\_jnt}{84}
+\indexentry{Data structures!p3d\_poly}{85}
+\indexentry{Data structures!p3d\_traj}{85}
+\indexentry{Data structures!p3d\_localpath}{86}
+\indexentry{Data structures!p3d\_lm\_specific}{87}
+\indexentry{Data structures!p3d\_lin\_data}{87}
+\indexentry{Data structures!p3d\_manh\_data}{87}
+\indexentry{Data structures!p3d\_rs\_data}{88}
+\indexentry{Data structures!p3d\_trailer\_data}{88}
+\indexentry{Data structures!p3d\_sub\_trailer\_data}{88}
+\indexentry{Data structures!p3d\_graph}{89}
+\indexentry{Data structures!p3d\_node}{89}
+\indexentry{Data structures!p3d\_list\_node}{90}
+\indexentry{Data structures!p3d\_edge}{90}
+\indexentry{Data structures!p3d\_list\_edge}{91}
+\indexentry{Data structures!p3d\_compco}{91}
+\indexentry{Data structures!p3d\_box}{91}
+\indexentry{Data structures!p3d\_point}{91}
+\indexentry{Data structures!p3d\_BB}{91}

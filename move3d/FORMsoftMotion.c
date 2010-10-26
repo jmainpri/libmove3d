@@ -574,7 +574,7 @@ int ntest;
 	trajSmPt = p3d_create_empty_trajectory(robotPt);
 
 p3d_convert_ptpTraj_to_smoothedTraj(&gain, &ntest, trajSmPTPPt, trajSmPt);
-
+  robotPt->tcur = trajSmPt;
 
         /* Write curve into a file for BLTPLOT */ //ENV.getBool(Env::plotSoftMotionCurve)
 	if(param_write_file == true) {

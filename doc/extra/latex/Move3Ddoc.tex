@@ -1,0 +1,177 @@
+%%%  -*- mode: latex -*-
+%------------------------------------------------------------
+%     
+%                         -- C N R S -- 
+%         Laboratoire d'Automatique et d'Analyse des Systemes 
+%                 7 Avenue du colonel Roche   
+%                     31 077 Toulouse Cedex  
+%
+%  Auteur               : Carole Nissoux
+%  Groupe               : Robotique et Intelligence Artificielle  
+%
+%
+%    Documentation Move3D
+%     
+%  Copyright (C) 1999  LAAS-CNRS. 
+%----------------------------------------------------------------------
+
+\documentclass[11pt,a4paper,twoside,dvips]{report}
+
+%\usepackage{french}           % devine !!
+%\usepackage[french]{varioref} % Références avec numero de la page
+\usepackage{tabularx}         % Tableaux élastiques
+\usepackage{hhline}           % Pour faire des belles lignes dans les tableaux
+\usepackage{xspace}           % Space apres commande
+\usepackage{algo}
+\usepackage{noitemsep}        % Listes sans espaces entre \item
+\usepackage{afterpage}        % Commandes apres la fin de la page
+%\usepackage{graphicx}         % l'inclusion des fichier postscript
+\usepackage{epsfig}
+\usepackage{calc}             % Pages paires impaires correctes
+\usepackage{amssymb}          % de jolis symboles math
+\usepackage{rotating}         % pour faire tourner des tableaux
+\usepackage{cn2egb}             % Mes customisations
+\usepackage{color}
+\usepackage{fancybox}
+\usepackage{makeidx}
+\ifx\pdfoutput\false
+\else
+\usepackage[latin1]{inputenc}
+\usepackage[colorlinks]{hyperref}
+\fi
+\language = 1
+
+\usepackage[scanall]{psfrag} % pour la section contraintes
+
+
+
+%------------------------------------------------------------
+% Pour eviter de laisser des mots mal coupés ...
+\hyphenation{con-som-ma-tion com-me ima-ges}
+
+%------------------------------------------------------------
+% Regle le niveau de détail de la Table des Matières
+\setcounter{tocdepth}{2}
+
+%----------------------------------------------------------------------
+% Pour sauter une page blanche avant les chapitres
+\newcommand{\clearemptydoublepage}{\newpage{\pagestyle{empty}\cleardoublepage}}
+
+
+%----------------------------------------------------------------------
+% Pour presenter les pages paires et impaires comme il faut
+\usepackage{calc}
+
+%------------------------------------------------------------
+% Pour séparer les figures
+\setlength{\floatsep}{20 pt plus 2 pt minus 2 pt}
+\setlength{\textfloatsep}{30 pt plus 2 pt minus 4 pt}
+%------------------------------------------------------------
+% Définition du titre et de l'auteur...
+\title{\textbf{\huge{Move3D Programming Manual}}}
+\author{{\bf C. Nissoux , T. Sim\'eon}\\
+{\bf F. Lamiraux, J. Cortes, C. van Geem}\\[1.5cm]
+%LAAS-CNRS\\
+%Groupe Robotique et Intelligence Artificielle\\
+}
+\date{March 2001}
+
+%----------------------------------------------------------------------
+\newcommand{\entrylabel}[1]{\mbox{\textbf{#1 :}}\hfill}
+\newcommand{\subsubsubsection}[1]{$\diamond~$\textbf{#1}}
+\newenvironment{entry}
+{\begin{list}{}%
+  {\renewcommand{\makelabel}{\entrylabel}%
+   \setlength{\labelwidth}{35pt}%
+   \setlength{\leftmargin}{\labelwidth+\labelsep}%
+  }%
+}%
+{\end{list}}
+
+\renewcommand{\rmdefault}{phv}
+
+%\newcommand{\myindex}[1]{\index{#1 @ {\tt #1}}}
+\makeindex 
+
+\begin{document}
+
+\maketitle
+
+%\thispagestyle{empty}
+%\begin{figure}
+%\vspace*{-4cm}
+%\hspace*{-3.5cm}
+%\psfig{figure=cov_doc.ps}
+%\end{figure}
+%\clearemptydoublepage
+.
+
+
+
+\newpage
+
+
+%------------------------------------------------------------
+% Pour créer la Table des Matières
+\pagenumbering{arabic}
+\def\contentsname{Table of contents}
+
+\tableofcontents 
+\clearemptydoublepage
+
+\clearemptydoublepage
+\include{Model}
+
+
+\clearemptydoublepage
+\include{CC}
+
+
+%\clearemptydoublepage
+%\include{position}
+
+
+
+\clearemptydoublepage
+\include{Info}
+
+\clearemptydoublepage
+\include{constraints}
+
+\clearemptydoublepage
+\include{local-new}
+
+
+\clearemptydoublepage
+\include{global}
+
+
+
+%\clearemptydoublepage
+%\include{draw}
+
+
+\clearemptydoublepage
+\include{read_write}
+
+\appendix
+\clearemptydoublepage
+\include{datastruct}
+%\include{globvar}
+\clearemptydoublepage
+
+\input{Move3Ddoc.bbl}
+\clearemptydoublepage
+
+\addcontentsline{toc}{chapter}{Index}
+\printindex 
+\clearemptydoublepage
+
+\end{document}
+
+%----------------------------------------------------------------------
+% Variables locales (merci emacs)
+ Local Variables:
+ ispell-dictionary: "american"
+ End:
+

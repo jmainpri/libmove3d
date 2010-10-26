@@ -1,0 +1,109 @@
+\chapter{Reading/writing an environment}
+
+A scene in Move3D is described by a Move3D Input File (MIF). A MIF
+contains the geometrical description of obstacles and of at least one
+mechanical system (robot)with its cinematics. A Move3D session always
+begins by the reading of a MIF, done by the function {\tt int
+p3d\_read\_desc(char *file)} \index{p3d\_read\_desc} whose argument is a pointer on a MIF
+file. This function skims through the description file and executes
+the commands as soon as it reads them. 
+
+\section{Reading a description}
+
+When a MIF file is read, all the commands are executed as the reading
+goes along. It is the reason why the commands written in a MIF really
+look like the functions of description of a scene (cf Chapter
+\ref{model}).
+
+A MIF file always starts with the command  {\tt p3d\_beg\_desc P3D\_ENV
+env}. When read, this command calls the function {\tt
+p3d\_beg\_desc(P3D\_ENV,env)}. Then the description of the obstacles
+and robots of the environment can be done.
+
+A {\tt p3d\_beg\_desc TYPE name} command must always be closed by the
+command  {\tt p3d\_end\_desc}, that calls the function {\tt
+p3d\_end\_desc()}.
+
+The description of an obstacle always start by the command {\tt
+p3d\_beg\_desc P3D\_OBSTACLE obst}, that calls the function {\tt
+p3d\_beg\_desc(P3D\_OBSTACLE,obst)}. Before closing this description
+by a  {\tt p3d\_end\_desc} command, the user must add at least one
+polyhedron. 
+
+A general polyhedron can be described by the commands {\tt
+p3d\_add\_desc\_poly poly}, that calls the function {\tt void
+p3d\_add\_desc\_poly(char name[20])} with the name {\tt poly} as
+input, {\tt p3d\_add\_desc\_vert x y z} that calls the
+function {\tt void p3d\_add\_desc \_vert(double x, double y, double
+z)}, {\tt p3d\_add\_desc\_face a b c d}, that calls the function {\tt
+void p3d\_poly\_add\_face (p3d\_poly *poly, int *listeV, int
+nb\_Vert)} and {\tt p3d\_end\_desc\_poly},
+that calls the function {\tt void p3d\_end\_desc\_poly(void)}.
+
+Geometric primitives are described with commands that are the same
+than their functions of descriptions : the user must call the command
+{\tt p3d\_add\_desc\_}{\it type}{\tt prim} {\it parameters}, {\it
+parameters} being the right parameters for the type of primitive we
+choose (size of the side fo a cube, ray for a sphere,...).
+
+The polyhedrons are placed in their position with the command {\tt
+p3d\_set\_prim\_pos prim tx ty tz rz ry rz}.The parameter prim is the
+name of the primitive we want to move, ({\tt tx, ty, tz}) the
+translations along the 3 axes, and ({\tt rx, ry, rz}) the
+rotations along the 3 axes.
+
+Once its description has been closed with a {\tt p3d\_end\_desc}
+command, the whole obstacle can be moved by a command {\tt
+p3d\_set\_obst\_pos obst tx ty tz rz ry rz} wich use is
+exactly the same than {\tt p3d\_set\_prim\_pos}.
+
+The description of a robot always starts by the command {\tt
+p3d\_beg\_desc P3D\_ROBOT robot} and is also closed by a {\tt
+p3d\_end\_desc} command. Between thos two commands the user must
+alternate the description of bodies and joints. 
+
+The description of a body starts by the command {\tt p3d\_beg\_desc
+P3D\_BODY body} and can be the described exactly like an obstacle. Its
+description is of course closed by a {\tt p3d\_end\_desc} command. A
+joint is added with the command : {\tt p3d\_add\_desc\_jnt P3D\_}{\it
+TYPE} {\tt x0 y0 z0 axe1 axe2 axe3 v vmin vmax prev\_jnt}.
+
+Once the description of the environment has been closed, the scene can
+be completed by the commands {\tt p3d\_set\_env\_box xmin xmax ymin
+ymax zmin zmax} that modifies the limits of the scene. After a {\tt
+p3d\_sel\_desc\_name P3D\_ROBOT robot\_name} command, the user can
+specify the robot box by a {\tt p3d\_set\_robot\_box xmin xmax ymin
+ymax zmin zmax tmin tmax} and the initial values of the first four
+degrees of freedom by a {\tt p3d\_set\_robot\_pos x y z t} command.
+
+\section{Creating and reading a macro}
+
+A macro is a specific MIF file containig the description of an
+obstacle or a robot. Once a macro file has been written, a scene can
+contain as many copies of the element described in the macro file as
+wanted. For example, if the user wants to describe a class room,
+instead of describing every single chair and table, the user can
+create two macro files chair.macro and table.macro, and create his
+classroom using only the command {\tt p3d\_read\_macro object.macro
+name}.
+
+This command will call the function {\tt int p3d\_read\_macro(char
+*namemac, char *nameobj)} that is quite similar to the function {\tt
+p3d\_read\_desc} and will create the robot or obstacle contained in
+the macro file. Then the user has just to place the obstacle or robot
+in its right position in the scene.
+
+A macro file is very similar to a general MIF file except that there
+is no environment description and the obstacle or robot described in
+the macro file has no name.
+
+\section{Reading/writing a graph}
+
+A graph built by Move3D can be stored on a .graph file, by using the
+function {\tt int p3d\_write\_graph(p3d\_graph *G, char *file)}
+\index{p3d\_write\_graph} . It
+can the be read as a pre-computed graph for the current environment
+(if this one is the environment corresponding to the graph of course)
+using the function {\tt int p3d\_read\_graph(char *file, p3d\_graph
+**pG)} \index{p3d\_read\_graph}.
+

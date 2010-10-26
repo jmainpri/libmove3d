@@ -170,6 +170,9 @@ BM3D_CheckCompilationFlags()
 #################################################################
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/script/CMake")
 
+# Add a "doc" target that runs Doxygen and install the doc.
+INCLUDE("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
+
 #-------------- Qt Library --------------------------------
 #----------------------------------------------------------
 IF(QT_LIBRARY)

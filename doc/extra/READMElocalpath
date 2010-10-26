@@ -1,0 +1,245 @@
+TO COMPILE MOVE3D
+
+from this directory run:
+
+gnumake proto; gnumake sparc
+
+
+LOCAL PATHS IN MOVE3D
+
+Move3D supports several types of local paths for holonomic and nonholomic 
+systems. The three main types are today linear, Reeds and Shepp curves and
+Manhattan paths. Moreover, Move3D is designed to accept easily new types 
+of local paths designed by a user.
+
+1. Principle.
+
+Move3D builds a non-oriented graph of random free configurations. The
+edges of the graph are collision-free local paths constructed by a
+local planner. The local planner has to be symmetric (ie lpl(q1,q2) =
+lpl(q2,q1)). As a result, only symmetric systems can be dealt with by
+this software. This constraint is to be removed later in order to be
+able to plan for non-symmetric robots like airplane or Dubins' car.
+
+2. How to Implement a New Local Method.
+
+To implement a new local planner, the user has first to define his own
+structure local path and then to implement functions specific to this
+type local path.
+
+  2.1. The structure p3d_localpath.
+
+  A local path is encoded by a variable of type p3d_localpath. This
+  structure contains 3 types of fields:
+    - data generic to any local path,
+    - a pointer to data specific to the type of local path
+    - pointers to functions specific to the type of local path.
+
+  The structure p3d_localpath is like an abstract class in an object
+  oriented langage. The specific functions are methods associated to
+  each derived class (each type of local path).
+
+  2.2 Definition of a new local path type.
+
+    2.2.1  In the file include/localpath.h 
+
+   Define a new structure  with the data relative to the new type of 
+   local path.
+
+	typedef struct newlp_data{
+	   ...
+	} p3d_newlp_data, *pp3d_newlp_data;
+
+   Add this structure to the set of possible specific data of a local path
+
+	typedef union lm_specific {
+	  pp3d_rs_data rs_data;
+	  pp3d_lin_data lin_data;
+	  pp3d_manh_data manh_data;
+	  pp3d_newlp_data newlp_data;
+	} p3d_lm_specific, *pp3d_lm_specific;
+
+    Add the new type of local paths in the set of types of local paths
+
+	typedef enum {
+	  REEDS_SHEPP,
+	  LINEAR,
+	  MANHATTAN,
+	  NEWLP,
+	} p3d_localpath_type;
+
+    Add a local planner in the list
+
+	typedef enum {
+	  P3D_RSARM_PLANNER,
+	  P3D_LINEAR_PLANNER,
+	  P3D_RS_PLANNER,
+	  P3D_ARM_PLANNER,
+	  P3D_MANH_PLANNER,
+	  P3D_NEWLP_PLANNER,
+	} p3d_localplanner_type;
+
+     2.2.2 In the file localpath/p3d_local.c
+
+	Add function calling the local planner in array_localplanner[]:
+
+  ptr_to_localplanner array_localplanner[]=
+{
+  (pp3d_localpath (*)(p3d_rob*, configPt, configPt))(p3d_rsarm_localplanner),
+  (pp3d_localpath (*)(p3d_rob*, configPt, configPt))(p3d_linear_localplanner),
+  (pp3d_localpath (*)(p3d_rob*, configPt, configPt))(p3d_rs_localplanner),
+  (pp3d_localpath (*)(p3d_rob*, configPt, configPt))(p3d_arm_localplanner),
+  (pp3d_localpath (*)(p3d_rob*, configPt, configPt))(p3d_manh_localplanner)
+  (pp3d_localpath (*)(p3d_rob*, configPt, configPt))(p3d_newlp_localplanner)
+};
+
+	Add its name in array_localplanner_name[]
+
+	char * array_localplanner_name[] =
+	{
+	  "R&S+linear",
+	  "Linear",
+	  "R&S",
+	  "Arm",
+	  "Manhattan",
+	  "NewLPname"
+	};
+
+	Update the number of localplanners
+
+	int P3D_NB_LOCAL_PLANNER = 5;
+
+     2.2.3 In a new file localpath/p3d_newlp.c, write all the 
+           functions specific to your new local method.
+
+
+     2.2.4 Add the name of this file in Init.make.move3d:
+
+	SRC_LOCALPATH = \
+		rs_dist.c \
+		rs_curve.c \
+		p3d_local.c \
+		p3d_linear.c \
+		p3d_reeds_shepp.c \
+		p3d_manhattan.c \
+		p3d_newlp.c
+
+  2.3 Specific methods associated to the new type of local path
+
+  Once a new type of local path has been defined, the user has to
+  implement the specific function associated to this new type of local
+  path. For instance, the function that computes the length of the
+  local path is not the same if the local path is of type Reeds and
+  Shepp or linear. Before describing each of these function we give 
+  some precision about local paths.
+
+  We call local path a mapping from an interval [0, U] into the 
+  configuration space of the system. A configuration is encoded by an
+  array of double. For u in [0, U], we call q(u) the configuration at 
+  parameter u. The curve can also be parameterized by length (or
+  by pseudo-length), this parameterization has to be defined by the user.
+  The length parameterization is mainly used for optimizing trajectories.
+  The optimizing function picks random configurations over a list of 
+  successive local paths. The length parameterization ensures us that
+  longer local paths are more likely to be chosen than smaller ones. For 
+  simplification, the length parameterization can be the same as the 
+  standard parameterization u.
+
+  We describe now each specific function to implement and explain what
+  they should do.
+
+
+  p3d_newlp_data * p3d_alloc_spec_newlp_localpath(...)
+
+  allocation of a structure of data specific to new_lp. The inputs
+  correspond to the fields of structure p3d_newlp_data.
+
+
+  p3d_localpath * p3d_alloc_newlp_localpath(...)
+
+  allocation of a local path of type newlp. This function has to
+  initialize the fields
+    length_lp
+    range_param
+  of the localpath with the values of U and L defined above.
+
+  
+  double p3d_newlp_dist(p3d_rob *robotPt, p3d_localpath *localpathPt)
+
+  computes the length of the localpath.
+
+
+  p3d_localpath *p3d_copy_newlp_localpath(p3d_rob* robotPt, 
+				      p3d_localpath* localpathPt)
+
+  copy a local path
+
+
+  p3d_localpath *p3d_extract_newlp(p3d_rob *robotPt, 
+				p3d_localpath *localpathPt,
+				double l1, double l2)
+
+  extract the part of the local path included between length l1 and l2.
+
+
+  void p3d_newlp_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt)
+
+  destroy the local path
+
+
+  configPt p3d_newlp_config_at_distance(p3d_rob *robotPt, 
+				    p3d_localpath *localpathPt,
+				    double distance)
+
+  computes the configuration at a given distance along the local path
+  a configuration is an array of double.
+
+
+  configPt p3d_newlp_config_at_param(p3d_rob *robotPt, 
+				    p3d_localpath *localpathPt,
+				    double param)
+
+  computes the configuration at parameter u along the local path.
+
+
+  double* p3d_newlp_velocity_at_distance(p3d_rob *robotPt,
+				     p3d_localpath *localpathPt,
+				     double dist)
+
+  this function is not used anymore.
+
+
+  double p3d_newlp_stay_within_dist(p3d_rob* robotPt,
+				p3d_localpath* localpathPt,
+				double parameter, whichway dir,
+				double *distances)
+
+  Given the distance of each body of the robot to the closest obstacle,
+  stored in the array distances, this function computes an interval du
+  of the parameter u over which each point of each body of the robot
+  move by nomore than the distance of the body to the obstacles. dir
+  encodes the direction of the motion. In other words, 
+
+  if (dir == FORWARD)
+    for any u in [parameter, parameter+du], for any point p of the i-th body
+    of the robot, the distance between the positions of p in configurations
+    q(parameter) and q(u) is less or equal to distances[i].
+
+  if (dir == BACKWARD)
+    for any u in [parameter-du, parameter], for any point p of the i-th body
+    of the robot, the distance between the positions of p in configurations
+    q(parameter) and q(u) is less or equal to distances[i].
+
+  This function is used mainly for collision checking of local paths.
+
+
+  double p3d_newlp_cost(p3d_rob *robotPt, p3d_localpath *localpathPt)
+
+  Compute the cost of a local path. This function is called for optimizing
+  trajectories. The cost of a trajectory is the sum of the costs of each 
+  local path in the trajectory.
+
+
+  p3d_localpath *p3d_simplify_newlp(p3d_rob *robotPt, p3d_localpath *localpathPt)
+
+  This function is used only for Reeds and Shepp local paths.

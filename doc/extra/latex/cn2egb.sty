@@ -1,0 +1,734 @@
+%%----------------------------------------------------------------------
+%%%
+%%% Le documentstyle de Carole Nissoux POUR LES REFERENCES EN ANGLAIS....
+%%% pompe sur le documentstyle de Jérôme Gout
+%%% (derive du style de Paul Gaborit - lui-meme
+%%%  derive du style de Matthieu Herrb )
+%%%  + apports de flavien Huynh et Adelardo de Medeiros
+%%%
+%%%  Merci a eux
+%%%  
+%%% Regroupe dans un seul fichier diverses macros et redefinition de
+%%% style pour faire un style "these" acceptable
+%%%
+%%% Version pour LaTeX 2e - Oct 1998
+%%%
+%%%----------------------------------------------------------------------
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{cn2e}[1999/16/10 %
+ Style Carole Nissoux pour LaTeX2e (derivé de jg2e, pg2e et mh2e)]
+\message{Style Thèse de Carole Nissoux}
+%%%
+%%% Nécessite fancyheadings...
+\RequirePackage{fancyheadings}
+\RequirePackage{calc}
+\RequirePackage{ifthen}
+
+\newif\if@draft
+\@draftfalse
+
+\DeclareOption{oneside}{\@twosidefalse \@mparswitchfalse}
+\DeclareOption{twoside}{\@twosidetrue  \@mparswitchtrue}
+\DeclareOption{draft}{\setlength\overfullrule{5pt} \@drafttrue}
+\DeclareOption{final}{\setlength\overfullrule{0pt} \@draftfalse}
+\ExecuteOptions{twoside,final}
+\ProcessOptions
+
+%%%
+%%% Diverses choses piquees a ``colas.sty''
+%%%
+
+%% un alias pour la taille ``footnote''
+\def\exemplefont{\footnotesize}
+
+%% une rede'finition de l'environnement ``description''
+%\def\itemtt#1{\item[{\tt #1}]}
+%\def\itemem#1{\item[{\em #1}]}
+
+\def\descriptionlabel#1{\textbf{#1} \hfil\relax}
+\def\description
+	{\list{}{\leftmargin 6em \labelsep 0.2em \labelwidth 5.8em
+	\topsep 0pt \let\makelabel\descriptionlabel}}
+
+%%%----------------------------------------------------------------------
+%%%
+%%% Le caract\`ere _ est actif
+
+% Basically, I make the underscore character active all the time.  If it's used
+% in math mode, I substitute the lesser used ^^A character to perform normal
+% subscripting.  When not in mathmode, it just expands to an underscore
+% character.
+% Aid. (adrian@gonzo.mti.com)
+% \catcode`\_=13  % Make the underscore active (all the time)
+% \catcode`\^^A=8 % Redundant if using plain TeX, ^^A becomes subscript char
+% \def _{\ifmmode ^^A\else\char`\_\discretionary{}{}{}\fi}
+
+%%%----------------------------------------------------------------------
+%%%
+%%% Le formattage de la bibliographie: labels en gras avec une
+%%% indentation fixe de 4cm calé à gauche. 
+%%% le chapitre "References bibliographiques" est ajoute dans la table
+%%% des matieres
+%%%
+
+%%
+%% De'finition de l'environnement thebibliography pour
+%% formatter la biblio.
+%%
+\def\@lbibitem[#1]#2{\item[{\bf\@biblabel{#1}}\hfill]\if@filesw
+      { \def\protect##1{\string ##1\space}\immediate
+        \write\@auxout{\string\bibcite{#2}{#1}}}\fi\ignorespaces}
+
+\def\thebibliography#1{\chapter*{\flushright References%
+  \markboth{References}{References}}
+  \addcontentsline{toc}{chapter}{References}
+  \list{[\arabic{enumi}]}{\leftmargin 4cm \labelwidth 3.9cm \labelsep 0.1cm
+    \advance\leftmargin\labelsep
+    \usecounter{enumi}}
+    \def\newblock{\hskip .11em plus .33em minus -.07em}
+    \sloppy
+    \sfcode`\.=1000\relax}
+
+\let\endthebibliography=\endlist
+
+%%%----------------------------------------------------------------------
+%%%
+%%% Headers de chapitres et section en police sans-serif bold
+%%%
+
+\def\@spart#1{%
+    {\thispagestyle{plain}%
+	\centering
+     \interlinepenalty \@M
+     \normalfont
+     \Huge \bfseries #1 
+     \par}%
+    \@endpart}
+
+\def\@makechapterhead#1{%
+ \vspace*{40\p@}%
+ {\parindent \z@ \flushright
+ \rule{\textwidth}{1pt} \vskip 20pt 
+ \ifnum \c@secnumdepth >\m@ne 
+	\huge\sffamily\bfseries \@chapapp{} \thechapter 
+        \par\nobreak
+        \vskip 20\p@ 
+ \fi 
+ \interlinepenalty\@M
+ \huge\sffamily\bfseries #1\par\nobreak 
+ \vskip 20\p@ \rule{\textwidth}{1pt} \vspace{40pt} 
+ \thispagestyle{plain}
+}}
+
+\def\@makeschapterhead#1{%
+ \vspace*{50pt}%
+ {\parindent \z@ \raggedright
+ \Huge \sffamily\bfseries #1\par\nobreak
+ \vskip 40pt }
+ \thispagestyle{plain} }
+
+
+\def\section{\@startsection{section}{1}{\z@}%
+%			{-3.5ex plus -1ex minus -.2ex}%
+			{-4ex plus -1ex minus -.2ex}%
+%			{2.3ex plus .2ex}%
+			{3ex plus 2ex}%
+			{\sffamily\Large\bfseries}}
+
+\def\subsection{\@startsection{subsection}{2}{\z@}%
+%			{-3.25ex plus -1ex minus -.2ex}%
+			{-4ex plus -2ex minus -.2ex}%
+%			{1.5ex plus .2ex}%
+			{2ex plus 3ex}%
+			{\sffamily\large\bfseries}}
+
+\def\subsubsection{\@startsection{subsubsection}{3}{\z@}%
+			{-3.25ex plus -1ex minus -.2ex}%
+			{1.0ex plus .2ex}%
+			{\sffamily\normalsize\bfseries}}
+
+\def\paragraph{\@startsection{paragraph}{4}{\z@}%
+			{3.25ex plus 1ex minus .2ex}%
+			{-1em}%
+			{\sffamily\normalsize\bfseries}}
+
+\def\subparagraph{\@startsection{subparagraph}{4}{\parindent}%
+			{3.25ex plus 1ex minus .2ex}%
+			{-1em}%
+			{\sffamily\normalsize\bfseries}}
+
+
+%%%----------------------------------------------------------------------
+%%%
+%%% Les numeros de chapitre en chiffres romains
+%%%
+%\renewcommand{\thechapter}{\rmfamily\Roman{chapter}}
+\renewcommand{\thechapter}{\rmfamily\arabic{chapter}}
+\renewcommand{\thesection}{\rmfamily\arabic{section}}
+
+%%  Un petit truc pour la liste des figures: Par defaut il n'y a pas
+%%  assez de place pour le label si les chapitres sont en chiffres
+%%  romains 
+%%
+\def\l@figure{\@dottedtocline{1}{1.5em}{3em}}
+
+%% idem pour les chapitres
+%%
+\def\l@chapter#1#2{\addpenalty{-\@highpenalty}%
+   \vskip 1.0em plus\p@
+   \@tempdima 2.5em
+   \begingroup
+     \parindent \z@ \rightskip \@pnumwidth
+     \parfillskip -\@pnumwidth
+     \bf
+     \leavevmode
+      \advance\leftskip\@tempdima
+      \hskip -\leftskip
+     #1\nobreak\hfil \nobreak\hbox to\@pnumwidth{\hss #2}\par
+     \penalty\@highpenalty
+   \endgroup}
+
+\renewcommand{\l@section}{\@dottedtocline{1}{1em}{2.5em}}
+\renewcommand{\l@subsection}{\@dottedtocline{2}{2em}{3.5em}}
+\renewcommand{\l@subsubsection}{\@dottedtocline{3}{7em}{8em}}
+
+%%%----------------------------------------------------------------------
+%%% 
+%%% Layout sur la page
+%%%
+%% Vertical
+%\setlength{\voffset}{-1\baselineskip}	% Reduit la marge
+\setlength{\topmargin}{\z@}
+\setlength{\headheight}{1\baselineskip}	% Height of box containing running head.
+%%% Horizontal
+\setlength{\hoffset}{-0.5cm}
+
+%% DIMENSION OF TEXT:
+\setlength{\textheight}{20cm}	% Height of text (including footnotes and  
+\addtolength{\headsep}{1cm}	% figures, excluding running head and foot).
+\setlength{\textwidth}{14.5cm}    % Width of text line.
+\setlength{\evensidemargin}{30pt}
+\setlength{\marginparwidth}{1.5cm}
+\setlength{\oddsidemargin}{\paperwidth-1in-\hoffset-\textwidth-\evensidemargin-1in-\hoffset}
+% A \raggedbottom command causes 'ragged bottom' pages: pages set to
+% natural height instead of being stretched to exactly \textheight.
+
+\raggedbottom
+
+%%%----------------------------------------------------------------------
+%%%
+%%% Les headers "speciaux" (necessite fancyheadings.sty)
+%%%
+\pagestyle{fancyplain}
+\addtolength{\headwidth}{\marginparwidth+\marginparsep}
+
+\if@twoside
+  \renewcommand{\chaptermark}[1]{%
+    \markboth {%
+        \ifnum \c@secnumdepth >\m@ne
+        \@chapapp\ \thechapter. \ %
+        \fi
+        #1}{#1}}%
+  \renewcommand{\sectionmark}[1]{%
+    \markright {%
+        \ifnum \c@secnumdepth >\z@
+        \thesection. \ %
+        \fi
+	#1}}
+\else
+  \renewcommand{\chaptermark}[1]{%
+    \markright {%
+        \ifnum \c@secnumdepth >\m@ne
+        \@chapapp\ \thechapter. \ %
+        \fi
+        #1}}
+  \renewcommand{\sectionmark}[1]{}
+\fi
+
+\lhead[\fancyplain{}{\sffamily\small\bfseries\thepage}]%
+      {\fancyplain{}{\sffamily\small\bfseries\rightmark}}
+\rhead[\fancyplain{}{\sffamily\small\bfseries\leftmark}]%
+      {\fancyplain{}{\sffamily\small\bfseries\thepage}}
+
+
+%% Une marque sur chaque page en draft
+\if@draft
+  \newcommand{\vp}{\tiny Version Pr\'eliminaire\\imprim\'ee le \today}
+  \if@twoside
+    \rfoot[\fancyplain{\vp}{\vp}]{}
+    \lfoot[]{\fancyplain{\vp}{\vp}}
+    \cfoot[]{}
+  \else    
+%    \cfoot[\fancyplain{\vp}{\vp}]{\fancyplain{\vp}{\vp}}
+    \cfoot{\vp}
+  \fi
+\else
+  \cfoot{\fancyplain{\thepage}{}}
+\fi
+
+
+
+
+%------------------------------------------------------------
+% Pour ecarter un peu plus les paragraphes
+\setlength{\parskip}{5pt}
+
+%------------------------------------------------------------
+% Pour regler l'alinea
+\setlength{\parindent}{1.5em}
+
+%------------------------------------------------------------
+% redefini l'interligne (un peu plus grand) avec LaTeX2e
+%\linespread{1.2}
+
+%------------------------------------------------------------
+% Definition de nouvel environnement de listes...
+
+% Itemize
+\newcommand{\labelItemi}{\m@th$\bullet$\hfil}
+\newcommand{\labelItemii}{\bfseries --\hfil}
+\newcommand{\labelItemiii}{$\m@th\ast$\hfil}
+\newcommand{\labelItemiv}{$\m@th\cdot$\hfil}
+\newcommand{\Label@Itemize}{%
+	\ifthenelse{\@listdepth < 3}%
+	{\ifthenelse{\@listdepth = 1}{\labelItemi}{\labelItemii}}
+	{\ifthenelse{\@listdepth = 3}{\labelItemiii}{\labelItemiv}}
+}
+\newenvironment{Itemize} %
+% Avant
+{\begin{list}{\Label@Itemize}{%
+\setlength{\itemsep}{1ex}%
+\setlength{\leftmargin}{3.5em}%
+\setlength{\itemindent}{0em}%
+\setlength{\labelsep}{0.5em}%
+\setlength{\labelwidth}{1.5em}%
+\setlength{\topsep}{1ex}%
+\setlength{\parskip}{0ex}%
+\setlength{\parsep}{1ex}%
+\setlength{\itemsep}{0ex}%
+}}
+% Apres
+{\end{list}}
+% Fin de l'environnement Itemize
+
+% Enumerate
+\newcounter{Enumi}
+\newenvironment{Enumerate} %
+% Avant
+{\begin{list}{(\textbf{\roman{Enumi}})\hfil}{%
+\usecounter{Enumi}%
+\setlength{\itemsep}{1ex}%
+\setlength{\leftmargin}{3.5em}%
+\setlength{\itemindent}{0em}%
+\setlength{\labelsep}{0.5em}%
+\setlength{\labelwidth}{1.5em}%
+\setlength{\topsep}{1ex}%
+\setlength{\parskip}{0ex}%
+\setlength{\parsep}{1ex}%
+\setlength{\itemsep}{0ex}%
+}}
+% Apres
+{\end{list}}
+% Fin de l'environnement Enumerate
+
+% Description
+\newcommand{\Descriptionlabel}[1]{\mbox{\textbf{#1}\hfil}}
+\newenvironment{Description} %
+% Avant
+{\begin{list}{}{%
+\renewcommand{\makelabel}{\Descriptionlabel}%
+\setlength{\itemsep}{1ex}%
+\setlength{\leftmargin}{6em}%
+\setlength{\itemindent}{0em}%
+\setlength{\labelsep}{0.5em}%
+\setlength{\labelwidth}{4em}%
+\setlength{\topsep}{1ex}%
+\setlength{\parskip}{0ex}%
+\setlength{\parsep}{1ex}%
+\setlength{\itemsep}{0ex}%
+}}
+% Apres
+{\end{list}}
+% Fin de l'environnement Description
+
+%------------------------------------------------------------
+%% Pour que le header de la table des matieres ne soit pas en majuscule
+\renewcommand\tableofcontents{%
+    \if@twocolumn
+      \@restonecoltrue\onecolumn
+    \else
+      \@restonecolfalse
+    \fi
+    \chapter*{\contentsname
+        \@mkboth{%
+           \contentsname}{\contentsname}}%
+    \@starttoc{toc}%
+    \if@restonecol\twocolumn\fi%
+}
+ 
+%% Pour que le header de la table des figures ne soit pas en majuscule
+\renewcommand\listoffigures{%
+    \if@twocolumn
+      \@restonecoltrue\onecolumn
+    \else
+      \@restonecolfalse
+    \fi
+    \chapter*{\listfigurename
+      \@mkboth{\listfigurename}%
+              {\listfigurename}}%
+    \@starttoc{lof}%
+    \if@restonecol\twocolumn\fi%
+}
+
+%%------------------------------------------------------------
+%% Une petite commande pour mettre des remarques (pour l'auteur)
+
+\newcommand{\NDLA}[1]{{{(...\emph{Note de l'auteur} : #1 ...)}}}
+
+%%------------------------------------------------------------
+%% Cette partie a ete ecrite par Falvien Huynh
+%%------------------------------------------------------------
+%% racourci de reference a un section a le caractere ``section''
+\newcommand{\VrefSection}[1]{\S\vref{#1}}
+
+% \nouveau: Faire apparaitre les nouveautes en encadrant
+%
+% Ex   :  \nouveau{Cette equation est importante: \\ E=mc^2}
+% donne:    bla bla bla
+%           bla bla bla
+%           ___________ Debut Nouveaute ______________
+%           Cette equation est importante:
+%           E=mc^2
+%           ___________ Fin Nouveaute ______________
+\newcommand{\nouveau}[1]{\
+\hrulefill {\Large \sffamily \bfseries Début Nouveauté} \hrulefill\ 
+
+#1
+
+\ \hrulefill {\Large \sffamily \bfseries Fin Nouveauté} \hrulefill\ 
+}
+
+%------------------------------------------------------------------------------
+% Saisie d'un nom propre ou d'un nom de famille correctement.
+% Usage :
+%   \NomPropre{Dorian}{Garcia}  et  \NomDeFamille{Garcia}
+% ou
+%   \NomPropre{Dorian}{GARCIA}  et  \NomDeFamille{GARCIA}
+% produira dans les deux cas la bonne casse.
+%------------------------------------------------------------------------------
+\newcommand{\NomDeFamille}[1]{\fsc{#1}}
+\newcommand{\NomPropre}[2]{#1 \NomDeFamille{#2}}
+
+% Ecrire une lettre en gothique ...
+% Il faut dans le repertoire des INPUTS de LaTeX les fichiers:
+% Uygoth.fd ygoth.tfm oldgerm.sty
+\newcommand{\LETTRE}[1]{{\Huge{\textgoth #1}}}
+
+%
+% \question: Imprime une question en retrait
+%
+% Ex   :  \question{Comment ?}{q9}
+% donne:    bla bla bla
+%           bla bla bla
+%        Q9: Comment ?
+\newcounter{question}
+\newcommand{\question}[2]{%
+\addtocounter{question}{1}%
+{\\ \hspace{-1cm} \textbf {Q~\thequestion~}:} {\textit {#1}}\\%
+\label{#2}}
+
+%
+% \remarque
+%
+% Ex   :  \remarque{Ca marche}
+% donne:    bla bla bla
+%           bla bla bla
+%        Remarque: Ca marche
+%        --------
+\newcommand{\remarque}[1]{%
+\underline{Remarque}: #1\\}
+
+%
+% \attention: Mettre en large, gras et encadre
+%
+% Ex   :  \attention{Important}
+% donne:    bla bla bla
+%           bla bla bla
+%           .---------.        
+%           |Attention|
+%           `---------'
+\newcommand{\attention}[1]{\fbox{\large \textbf{#1}}}
+
+%
+% \afaire: Mettre en retrait et en gras ce qúil reste a faire
+%
+% Ex   :  \afaire{figure robot}
+% donne:    bla bla bla
+%           bla bla bla
+%        A faire: figure robot
+\newcommand{\afaire}[1]{\mbox{} \\{%
+{$\bigotimes$ \textbf{\large \underline{A faire}:}} {\textit {#1}}}\\}
+
+%
+% \OK: Mettre le message ``OK jusqu'ici`` avec une ligne ... 
+%
+% Ex   :  \OK
+% donne:    bla bla bla
+%           bla bla bla
+%        ------- OK jusqu'ici ------
+\newcommand{\OK}{\hspace{0cm}\medskip \textbf{\large{\ \hrulefill \ OK jusqu'ici \ldots \ \hrulefill}}\medskip \hspace{0cm}}
+
+
+%
+% \presenter: Imprime en gras et italique
+\newcommand{\presenter}[1]%
+{{\textit {\textbf {#1}}}}
+
+%
+% \BI : \begin{itemize}
+% \EI : \end{itemize}
+% \BE : \begin{enumerate}
+% \EE : \end{enumerate}
+% \BD : \begin{description}
+% \ED : \end{description}
+% \BT : \begin{tabbing}
+% \ET : \end{tabbing}
+% \BC : \begin{center}
+% \EC : \end{center}
+% \BEQ: \begin{equation}
+% \EEQ: \end{equation}
+% \BPT: \begin{Propriete}
+% \EPT: \end{Propriete}
+% \BS : \begin{slide}{}
+% \ES : \end{slide}
+\newcommand{\BI}{\begin{itemize}}
+\newcommand{\EI}{\end{itemize}}
+\newcommand{\BE}{\begin{enumerate}}
+\newcommand{\EE}{\end{enumerate}}
+\newcommand{\BD}{\begin{description}}
+\newcommand{\ED}{\end{description}}
+\newcommand{\BT}{\begin{tabbing}}
+\newcommand{\ET}{\end{tabbing}}
+\newcommand{\BC}{\begin{center}}
+\newcommand{\EC}{\end{center}}
+\newcommand{\BEQ}{\begin{equation}}
+\newcommand{\EEQ}{\end{equation}}
+\newcommand{\BPT}{\begin{Propriete}}
+\newcommand{\EPT}{\end{Propriete}}
+\newcommand{\BS}{\begin{slide}{}}
+\newcommand{\ES}{\end{slide}}
+
+%
+% \prog : affiche l'argument en fonte tt, pour les variables
+%         de programmation et noms de fonctions.
+\newcommand{\prog}[1]%
+{{\tt #1}}
+
+%
+% \Vec : Evite de se taper la longue commande \overrightarrow
+%        (mettre une fleche sur tout l'argument)
+\newcommand{\Vec}{\overrightarrow}
+
+%
+% Creation d'un nouvel environnement mathematique: la propriete
+%
+\newtheorem{Propriete}{Propri\'et\'e}
+\newtheorem{proposition}{Proposition}
+\newtheorem{definition}{Définition}
+%
+% Ecriture du titre en haut de page, centre et avec des lignes
+% de part et d'autre
+%
+\newcommand{\titre}[1]%
+{\tiny \hspace{0cm} \hrulefill #1 \hrulefill \hspace{0cm}}
+
+%%% trucs.sty
+%%%----------------------------------------------------------------------
+%%%                      er  i\`eme
+%%% Macro pour imprimer 1   2       etc.  (origine : Raymond Seroul)
+%%%
+\def\up#1{\raise 1ex\hbox{\small#1}}
+
+%%%----------------------------------------------------------------------
+%% Guillements francais avec la fonte de N. Brouard
+%\font\guil=guill
+%$\def\<<{{\guil A}\,}
+%\def\>>{\,{\guil B}}
+
+%%%----------------------------------------------------------------------
+%%%
+%               o
+%Definition de       (``numero'')      (origine : Nicolas Brouard)
+%
+\def\degre{{\char'27}}
+\def\No{\kern-.25em\lower.2ex\hbox{\degre}}
+
+%%%----------------------------------------------------------------------
+%%%
+%%% Modifications pour que 
+%%%
+%%%     \appendix
+%%%     "Liste des Figures"
+%%%     "Liste des Tableaux"
+%%%
+%%% marchent bien avec un chapter* (saut de ligne + plus nume'rotation)
+%%%
+%%%
+
+\def\chapter{\clearpage \thispagestyle{plain} \global\@topnum\z@
+\@afterindentfalse \secdef\@chapter\@schapter} 
+
+\def\@chapter[#1]#2{\ifnum \c@secnumdepth >\m@ne
+ \refstepcounter{chapter}
+ \typeout{\@chapapp\space\thechapter.}
+ \addcontentsline{toc}{chapter}{\protect
+ \numberline{\thechapter}#1}\else
+ \addcontentsline{toc}{chapter}{#1}\fi
+ \chaptermark{#1}
+ \addtocontents{lof}{\protect\addvspace{10pt}}
+\addtocontents{lot}{\protect\addvspace{10pt}} \if@twocolumn
+\@topnewpage[\@makechapterhead{#2}] 
+ \else \@makechapterhead{#2}
+ \@afterheading \fi} 
+
+\def\@schapter#1{
+ \if@twocolumn \@topnewpage[\@makeschapterhead{#1}]
+ \else \@makeschapterhead{#1} 
+ \@afterheading\fi
+ \addtocontents{lof}{\protect\addvspace{10pt}}
+ \addtocontents{lot}{\protect\addvspace{10pt}}}
+
+
+% Les sections sans numero
+\newcommand{\mysection}[1]{\section*{#1}%
+\addcontentsline{toc}{section}{#1}%
+}
+
+
+%%% Commandes utiles ecrites par Adelardo de Medeiros
+
+% Pour produire deux colonne cote a cote
+\newlength{\defparindent}
+\setlength{\defparindent}{\parindent}
+
+\newenvironment{myleft}{\noindent%
+\begin{minipage}[t]{0.475\linewidth}%
+  \setlength{\parindent}{\defparindent}}{%
+\end{minipage}\hfill}
+
+\newenvironment{myright}{\renewcommand{\baselinestretch}{0.8}%
+\footnotesize\hfill\minipage[t]{0.5\linewidth}\verbatim}{%
+\endverbatim\endminipage}
+
+% Pour la premiere lettre gothique et le texte suivant colle a la
+% lettre. ATTENTION le repertoire de compilation doit avec un
+% sous-repertoire fonts/ contenant les trois fichiers suivants :
+% yinit.300gf   yinit.300pk   yinit.tfm
+\newfont{\yinit}{fonts/yinit}
+\newlength{\sizeletter}
+\newlength{\sizetext}
+\newcommand{\initial}[2]{%
+\settowidth{\sizeletter}{\yinit #1}%
+\setlength{\sizetext}{\linewidth}%
+\addtolength{\sizetext}{-\sizeletter}%
+\addtolength{\sizetext}{-1.5mm}%
+\noindent\raisebox{-1mm}{\yinit #1}\hfill%
+\parbox[b]{\sizetext}{#2\linebreak\vspace{-\baselineskip}}%
+}
+
+% Les chapitres sans numero
+\newcommand{\mychapter}[1]{\chapter*{#1}%
+\addcontentsline{toc}{chapter}{#1}%
+\markboth{\uppercase{#1}}{}%
+\afterpage{\markboth{\uppercase{#1}}{\uppercase{#1}}}%
+}
+
+% Les commandes pour les caracteres speciaux: si on met \$ dans le
+% text, EMACS se trompe avec les couleurs et ispell ne marche pas
+\newcommand{\DOL}{\$}  %\$
+\newcommand{\TIL}{\~{}}
+\newcommand{\CIR}{\^{}}
+\newcommand{\SUS}{\#}
+\newcommand{\CEN}{\%}
+\newcommand{\AND}{\&}
+
+%Un compteur provisoire
+\newcounter{provcounter}
+
+%---------------------------------------------------------
+%%
+%%  Les ensembles de nombres (merci Paulo)
+%%
+%
+\def\nbR{\ensuremath{\mathrm{I\!R}}} % IR - R\'eels
+\def\nbN{\ensuremath{\mathrm{I\!N}}} % IN - Entiers Naturels
+\def\nbF{\ensuremath{\mathrm{I\!F}}} % IF
+\def\nbH{\ensuremath{\mathrm{I\!H}}} % IH
+\def\nbK{\ensuremath{\mathrm{I\!K}}} % IK
+\def\nbL{\ensuremath{\mathrm{I\!L}}} % IL
+\def\nbM{\ensuremath{\mathrm{I\!M}}} % IM
+\def\nbP{\ensuremath{\mathrm{I\!P}}} % IP
+%
+% \nbOne : 1I : symbol one
+\def\nbOne{{\mathchoice {\rm 1\mskip-4mu l} {\rm 1\mskip-4mu l}
+{\rm 1\mskip-4.5mu l} {\rm 1\mskip-5mu l}}}
+%
+% \nbC   :  Nombres Complexes
+\def\nbC{{\mathchoice {\setbox0=\hbox{$\displaystyle\rm C$}\hbox{\hbox
+to0pt{\kern0.4\wd0\vrule height0.9\ht0\hss}\box0}}
+{\setbox0=\hbox{$\textstyle\rm C$}\hbox{\hbox
+to0pt{\kern0.4\wd0\vrule height0.9\ht0\hss}\box0}}
+{\setbox0=\hbox{$\scriptstyle\rm C$}\hbox{\hbox
+to0pt{\kern0.4\wd0\vrule height0.9\ht0\hss}\box0}}
+{\setbox0=\hbox{$\scriptscriptstyle\rm C$}\hbox{\hbox
+to0pt{\kern0.4\wd0\vrule height0.9\ht0\hss}\box0}}}}
+%
+% \nbQ   : Nombres Rationnels Q
+\def\nbQ{{\mathchoice {\setbox0=\hbox{$\displaystyle\rm
+Q$}\hbox{\raise
+0.15\ht0\hbox to0pt{\kern0.4\wd0\vrule height0.8\ht0\hss}\box0}}
+{\setbox0=\hbox{$\textstyle\rm Q$}\hbox{\raise
+0.15\ht0\hbox to0pt{\kern0.4\wd0\vrule height0.8\ht0\hss}\box0}}
+{\setbox0=\hbox{$\scriptstyle\rm Q$}\hbox{\raise
+0.15\ht0\hbox to0pt{\kern0.4\wd0\vrule height0.7\ht0\hss}\box0}}
+{\setbox0=\hbox{$\scriptscriptstyle\rm Q$}\hbox{\raise
+0.15\ht0\hbox to0pt{\kern0.4\wd0\vrule height0.7\ht0\hss}\box0}}}}
+%
+% \nbT   : T
+\def\nbT{{\mathchoice {\setbox0=\hbox{$\displaystyle\rm
+T$}\hbox{\hbox to0pt{\kern0.3\wd0\vrule height0.9\ht0\hss}\box0}}
+{\setbox0=\hbox{$\textstyle\rm T$}\hbox{\hbox
+to0pt{\kern0.3\wd0\vrule height0.9\ht0\hss}\box0}}
+{\setbox0=\hbox{$\scriptstyle\rm T$}\hbox{\hbox
+to0pt{\kern0.3\wd0\vrule height0.9\ht0\hss}\box0}}
+{\setbox0=\hbox{$\scriptscriptstyle\rm T$}\hbox{\hbox
+to0pt{\kern0.3\wd0\vrule height0.9\ht0\hss}\box0}}}}
+%
+% \nbS   : S
+\def\nbS{{\mathchoice
+{\setbox0=\hbox{$\displaystyle     \rm S$}\hbox{\raise0.5\ht0\hbox
+to0pt{\kern0.35\wd0\vrule height0.45\ht0\hss}\hbox
+to0pt{\kern0.55\wd0\vrule height0.5\ht0\hss}\box0}}
+{\setbox0=\hbox{$\textstyle        \rm S$}\hbox{\raise0.5\ht0\hbox
+to0pt{\kern0.35\wd0\vrule height0.45\ht0\hss}\hbox
+to0pt{\kern0.55\wd0\vrule height0.5\ht0\hss}\box0}}
+{\setbox0=\hbox{$\scriptstyle      \rm S$}\hbox{\raise0.5\ht0\hbox
+to0pt{\kern0.35\wd0\vrule height0.45\ht0\hss}\raise0.05\ht0\hbox
+to0pt{\kern0.5\wd0\vrule height0.45\ht0\hss}\box0}}
+{\setbox0=\hbox{$\scriptscriptstyle\rm S$}\hbox{\raise0.5\ht0\hbox
+to0pt{\kern0.4\wd0\vrule height0.45\ht0\hss}\raise0.05\ht0\hbox
+to0pt{\kern0.55\wd0\vrule height0.45\ht0\hss}\box0}}}}
+%
+% \nbZ   : Entiers Relatifs Z
+\def\nbZ{{\mathchoice {\hbox{$\sf\textstyle Z\kern-0.4em Z$}}
+{\hbox{$\sf\textstyle Z\kern-0.4em Z$}}
+{\hbox{$\sf\scriptstyle Z\kern-0.3em Z$}}
+{\hbox{$\sf\scriptscriptstyle Z\kern-0.2em Z$}}}}
+%------------------------------------------------------------------------
+
+%- quelques abbreviations toujours utiles
+\newcommand{\eg}{\textit{e.g. }}
+\newcommand{\ie}{\textit{i.e. }}
+\newcommand{\apriori}{\textit{a priori }}
+\newcommand{\cf}{\textit{cf. }}
+\newcommand{\adhoc}{\textit{ad hoc }}

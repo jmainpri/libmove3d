@@ -1,0 +1,620 @@
+\def\hsp{\hspace*{1cm}}
+
+\chapter{Steering methods and local paths}
+\label{methode-local}
+\def\CS{{\cal C}}
+
+Local path is the element that encodes elementary motion in Move3D:
+trajectories are concatenations of local paths, edges of roadmaps
+contain local paths. A local path for a given robot is produced by a
+local method. In this chapter, we first give a definition of what we
+mean by local path. Then we show how different types of local paths
+can be handled by Move3D. Finally, we describe the different steering
+methods implemented within the software.
+
+\section{Definition of local path and steering method}
+
+\paragraph{Definition and parameterizations of local path.}
+A {\em local path} for a robot $r$ is a continuous curve in the
+configuration space of the robot and defined over an interval $[0,U]$:
+$$
+\begin{array}{lcll}
+lp: & [0,U] & \rightarrow & \CS \\
+    & u &\rightarrow & lp(u)
+\end{array}
+$$
+In the rest of this chapter, $u$ is called the default parameter (or
+parameter) of the local path $lp$ and $U$ the parameter range of $lp$.
+
+ The curve can also be parameterized by length (or
+  by pseudo-length), 
+
+In addition to the default parameterization, a length parameterization
+can be defined. This parameterization has to be defined by the
+developper.  The length parameterization is mainly used for optimizing
+trajectories.  The optimizing function picks random configurations
+over a list of successive local paths. The length parameterization
+ensures us that longer local paths are more likely to be chosen than
+smaller ones. The length parameterization can be the same as the
+default parameterization u.
+
+The length parameter is defined from the default parameter $u$ by an
+increasing function $d$ from $[0,U]$ to an interval $[0,L]$. $L=d(U)$
+is called the length of the local path. It does not necessarily represent 
+a real length. 
+
+\paragraph{Steering method.}
+A steering method is a function that maps, to a pair of configurations, a
+local path between these configurations. The simplest steering method is the 
+linear one. It connects the two configurations by a  straight line in the
+space of configuration parameters.
+Some robots are subjected to kinematic constraints such as rolling
+without slipping for wheeled mobile robots or moving only one degree
+of freedom at a time for a rolling bridge. These kinematic constraints
+are not specified in the description of the mechanical system. They
+are taken into account by the local method. For instance Reeds and Shepp 
+steering method builds curves composed of straight lines and arc of circles
+for a carlike robot.
+
+\section{Representation of a local path}
+\label{sec:representation}
+
+Local paths are encoded by the data-structure {\tt
+  p3d\_localpath}\index{Data structures!p3d\_localpath}
+
+A local path is encoded by a variable of type {\tt p3d\_localpath}. This
+structure contains 3 types of fields:
+\begin{itemize}
+\item data generic to any local path,
+\item a pointer to data specific to the type of local path
+\item pointers to functions specific to the type of local path.
+\end{itemize}
+
+The structure {\tt p3d\_localpath} is like an abstract class in an
+object-oriented langage. The specific functions are methods associated
+to each derived class (each type of local path).
+
+We enumerate now the main fields of the structure {p3d\_localpath}.
+
+\subsubsection*{data generic to any local path.}
+\begin{itemize}
+\item {\tt type\_lp}: type of local path (linear, reeds and shepp,...).
+\item {\tt range\_param}: parameter range of the local path.
+\item {\tt length\_lp}: range of the length parameterization.
+\end{itemize}
+
+\subsubsection*{specific methods associated to a local path}
+\begin{itemize}
+\item {\tt length}: computes the length of the local path.
+\item {\tt copy}: copies the local path.
+\item {\tt extract}: extracts from a given local path the part included between two values of the length parameter of the local path.
+\item {\tt destroy}: destroyes the local path.
+\item {\tt config\_at\_distance}: computes the configuration at a given
+  distance along the local path.
+\item {\tt config\_at\_param}: computes the configuration at a given
+  parameter along the local path.
+\item {\tt stay\_within\_dist}: given the distance of each body of the
+  robot to the obstacles, and a position on a local path, this
+  function computes an interval of default parameter that ensures the
+  user that each body does not move by more than its specified
+  distance when the parameter stays in this interval.
+\item {\tt cost}: computes the cost of a local path. This cost is used
+  in $A^{*}$ procedure to find the best path in the roadmap and during
+  optimization to replace a part of a path by a new local path if this
+  latter has lower cost.
+\item {\tt simplify}: This function does nothing for most local
+  paths. given two successive local paths. When two Reeds and Shepp
+  local paths are connected, the end of the first one may overlap the
+  beginning of the second one. This function detects this kind of
+  situation and removes common parts.
+\end{itemize}
+
+Data specific to each type of local path are detailled in the
+following section.
+
+\section{Local methods implemented within Move3D}
+
+In this section, we describe the various local methods currently supported 
+by Move3D. For each of them, we specify the default and length parameterization
+used and the data-structures involved.
+
+\subsection{Linear local method}
+\label{subsec:linear}
+
+This local method is the simplest one. It connects two configurations
+by a straight line in the joint parameter space. If a configuration
+parameter represents the rotation angle of a joint without bounds,
+along a linear path, this parameter follows the shortest arc between
+its initial and final values.
+
+\begin{figure}[ht]
+\centerline{\psfig{figure=FIG/localseg.ps, width=6cm}}
+\caption{Example of linear local path}
+\label{fig:linear-local}
+\end{figure}
+
+\subsubsection*{parameterization}
+
+For this type of local path the default and length parameterizations
+are the same. Given two configurations, $q_0=(x_0,y_0,z_0,\theta_0,
+\phi^{1}_{0},...,\phi^{n}_{0})$ and $q_1=(x_1,y_1,z_1,\theta_1,
+\phi^{1}_{1},...,\phi^{n}_{1})$ where the $\phi^i$'s represent the values 
+of each joint, we define a distance as follows:
+$$
+d_{lin}(q_0,q_1) = \sqrt{(x_1-x_0)^2 + (y_1-y_0)^2 + (z_1-z_0)^2 + d_{S^1}(\theta_1-\theta_0)^2 + \sum_{i=1}^{n} d_i(\phi^i_0,\phi^i_1)^2}
+$$
+where $d_{S^1}$ is the arc length distance over the unit circle, 
+\begin{itemize}
+\item $d_i(\phi^i_0,\phi^i_1) = |\phi^i_1-\phi^i_0|$ if joint $i$ is a
+  translation joint,
+  
+\item $d_i(\phi^i_0,\phi^i_1) = dist\,|\phi^i_1-\phi^i_0|$ where
+  $dist$ is the maximal distance between the points of body $i$ and
+  the axis of joint $i$, if this latter is a rotation joint with
+  bounds.
+
+\item $d_i(\phi^i_0,\phi^i_1) = dist\, d_{S^1}(\phi^i_0,\phi^i_1)$ if
+  joint $i$ is a rotation joint without bounds (i.e. that can rotate
+  freely about its axis).
+\end{itemize}
+The factor $dist$ in front of angular distances makes the linear
+distance over the configuration space homogeneous to a length.
+
+\subsubsection*{Data-structure}
+
+Data relative to a linear local path are stored in the following
+structure:
+\index{Data structures!struct lin\_data}
+\index{Data structures!p3d\_lin\_data}
+\begin{tabular}{l}{\tt 
+struct lin\_data} $\{$ \\
+\hsp {\tt configPt q\_init;} \\
+\hsp {\tt configPt q\_end;} \\
+$\}$ {\tt p3d\_lin\_data, *pp3d\_lin\_data;}\\
+\end{tabular}
+
+\noindent
+where {\tt q\_init} and {\tt q\_end} are the initial and final
+configurations of the local path.
+
+\subsection{Reeds and Shepp + Linear local method}
+
+This local method connects two configurations by Reeds and Shepp
+curves in the plane $(x,y)$ for the platform of the robot and linear
+curves for the other joints: given two configurations, 
+$q_0=(x_0,y_0,z_0,\theta_0, \phi^{1}_{0},...,\phi^{n}_{0})$ and 
+$q_1=(x_1,y_1,z_1,\theta_1,\phi^{1}_{1},...,\phi^{n}_{1})$,
+$(x_0,y_0,\theta_0)$ and $(x_1,y_1,\theta_1)$ are connected by a
+Reeds and Shepp curve of length
+$l_{RS}(q_0,q_1)$. $(z_0,\phi^{1}_{0},...,\phi^{n}_{0})$ and
+$(z_1,\phi^{1}_{1},...,\phi^{n}_{1})$ are connected
+using the linear strategy described in the previous section.
+
+\begin{figure}[ht]
+\centerline{\psfig{figure=FIG/RS.ps, width=6cm}}
+\caption{Example of Reeds and Shepp + linear local path}
+\label{fig:RS-local}
+\end{figure}
+
+\subsubsection*{Parameterization}
+
+\paragraph{Default parameterization:} the default parameterization is
+the arc-length distance along Reeds and Shepp curve. Thus, the
+parameter range is $l_{RS}(q_0,q_1)$.
+
+\paragraph{Length parameterization:} the distance between
+configurations $q_0$ and $q_1$ is defined as follows:
+$$
+d_{RS-lin}(q_0,q_1) = l_{RS}(q_0,q_1) + \sqrt{\sum_{i=1}^{n} d_i(\phi^i_0,\phi^i_1)^2}
+$$
+where distances $d_i$ are defined as in the previous section. Notice
+that the coordinate $z$ does not appear in this distance.
+
+\subsubsection*{Data-structure}
+
+Data relative to a Reeds and Shepp + linear local path are stored in
+a list of the following structure:
+
+\index{Data structures!struct rs\_data}
+\index{Data structures!p3d\_rs\_data}
+
+\begin{tabular}{l}
+{\tt struct rs\_data} $\{$ \\
+\hsp {\tt  configPt q\_init;} \\
+\hsp {\tt  configPt q\_end;} \\
+\hsp {\tt  double centre\_x;} \\
+\hsp {\tt  double centre\_y;} \\
+\hsp {\tt  double radius;} \\
+\hsp {\tt  whichway dir\_rs;} \\
+\hsp {\tt  double val\_rs;} \\
+\hsp {\tt  rs\_type type\_rs;} \\
+\hsp {\tt  struct rs\_data *next\_rs;} \\
+\hsp {\tt  struct rs\_data *prev\_rs;} \\
+$\}$ {\tt p3d\_rs\_data, *pp3d\_rs\_data;} \\
+\end{tabular}
+
+\noindent
+each of these structure represent a Reeds and Shepp segment, that is
+either a straight line or a left or right turn. 
+\begin{itemize}
+\item {\tt q\_init} and {\tt q\_end} are the initial and final
+  configurations of the RS segment. 
+\item {\tt centre\_x}, {\tt centre\_y} is the center of rotation in
+case of a right of left turn, $(0,0)$ in case of a straight line. 
+\item {\tt radius} is the radius of curvature 
+\item {\tt dir\_rs} is the direction (forward or backward) of motion 
+\item {\tt val\_rs} is the arc length of the RS segment. 
+\item {\tt type\_rs} is the type of segment (right, left turn or
+  straight line)
+\item {\tt next\_rs} and {\tt prev\_rs} are pointers to the next and
+  previous RS segment in the local path.
+\end{itemize}
+
+\subsection{Manhattan local method}
+
+A manhattan local path is a path along which only one coordinate moves
+at a time. 
+Given two configurations, $q_0=(x_0,y_0,z_0,\theta_0,
+\phi^{1}_{0},...,\phi^{n}_{0})$ and
+$q_1=(x_1,y_1,z_1,\theta_1,\phi^{1}_{1},...,\phi^{n}_{1})$, the
+Manhattan local path between them is the concatenation of the
+following sub-paths.
+\[
+\begin{array}{cc}
+((1-\alpha)x_0+\alpha x_1,y_0,z_0,\theta_0,\phi^{1}_{0},...,\phi^{n}_{0}) &
+0 \leq \alpha \leq 1 \\
+(x_1,(1-\alpha)y_0+\alpha y_1,z_0,\theta_0,\phi^{1}_{0},...,\phi^{n}_{0}) &
+0 \leq \alpha \leq 1 \\
+\vdots & \vdots \\
+(x_1,y_1,z_1,\theta_1,\phi^{1}_{1},..., (1-\alpha)\phi^{n}_{0}+\alpha\phi^{n}_{1})& 0 \leq \alpha \leq 1
+\end{array}
+\]
+where the interpolation $(1-\alpha)\phi^{n}_{0}+\alpha\phi^{n}_{1}$
+between two angles follows again the shortest arc when possible.
+To make the method symmetric, that is, to make it follow the same path
+between $q_0$ and $q_1$ as between $q_1$ and $q_0$, we either move the
+coordinates in order $x$ to $\phi^{n}$ or in order $\phi^{n}$ to $x$
+according to the following criterion:
+\begin{itemize}
+\item if $x_0<x_1$, move coordinates from $x$ to $\phi^{n}$,
+\item if $x_1<x_0$, move coordinates from $\phi^{n}$ to $x$,
+\item if $x_1=x_0$, apply criterion to $y_0$ and $y_1$ or to the
+  first coordinate different in $q_0$ and $q_1$.
+\end{itemize}
+
+\subsubsection*{parameterization}
+
+As for linear local paths, the default and length parameterizations
+are the same. Given two configurations, $q_0=(x_0,y_0,z_0,\theta_0,
+\phi^{1}_{0},...,\phi^{n}_{0})$ and $q_1=(x_1,y_1,z_1,\theta_1,
+\phi^{1}_{1},...,\phi^{n}_{1})$ where the $\phi^i$'s represent the values 
+of each joint, we define the Manhattan distance as follows:
+$$
+d_{manh}(q_0,q_1) = |x_1-x_0| + |y_1-y_0| + |z_1-z_0| + d_{S^1}(\theta_1-\theta_0) + \sum_{i=1}^{n} d_i(\phi^i_0,\phi^i_1)
+$$
+where $d_{S^1}$ and the $d_i$ are defined in Section~\ref{subsec:linear}.
+
+\subsubsection*{Data-structure}
+
+Data relative to a Manhattan local path are stored in the following
+structure:
+
+\index{Data structures!struct manh\_data}
+\index{Data structures!p3d\_manh\_data}
+\begin{tabular}{l}{\tt 
+struct manh\_data} $\{$ \\
+\hsp {\tt configPt q\_init;} \\
+\hsp {\tt configPt q\_end;} \\
+$\}$ {\tt p3d\_manh\_data, *pp3d\_manh\_data;}\\
+\end{tabular}
+
+\noindent
+where {\tt q\_init} and {\tt q\_end} are the initial and final
+configurations of the local path.
+
+
+
+\subsection{Trailer local method}
+
+This local method takes into account the nonholonomic constraints of a
+robot towing a trailer. Such a system is represented on
+figure~\ref{fig:trailer-robot}. 
+\begin{figure}[ht]
+\centerline{\epsfig{figure=FIG/trailer-robot.eps,width=5cm}}
+\caption{A robot with a trailer}
+\label{fig:trailer-robot}
+\end{figure}
+$a$ and $b$ denote the distances between the connection point and
+respectively the robot wheel axis and the trailer wheel axis.
+
+The trailer local method uses the property of differential flatness of
+the tractor trailer system to build feasible paths between any pair
+of configurations of the system. Details about this local method can
+be found in~\cite{these-sepanta,these-florent}.
+
+A local path built by this local method is composed of either one
+smooth motion or two smooth motions of opposite direction
+(backward-forward or forward-backward).
+
+\begin{figure}[ht]
+\centerline{\psfig{figure=FIG/trailer.ps, width=6cm}}
+\caption{Example of local path computed by the trailer steering method}
+\label{fig:trailer-local}
+\end{figure}
+
+\subsubsection*{parameterization}
+
+The default parameterization goes from 0 to 1 if the local path is
+composed of one part and from 0 to 2 if the local path is composed of
+two parts. The length parameterization is proportional to the default
+parameterization. The length of a local path is defined
+in~\cite{rapport-elodie}. 
+
+\subsubsection*{Data-structure}
+
+Data relative to a trailer local path are stored in the following
+structure:
+
+\index{Data structures!struct trailer\_data}
+\index{Data structures!p3d\_trailer\_data}
+\begin{tabular}{l}
+{\tt struct trailer\_data} $\{$ \\
+\hsp{\tt   p3d\_sub\_trailer\_data *init\_cusp;} \\
+\hsp{\tt   p3d\_sub\_trailer\_data *cusp\_end;} \\
+$\}$ {\tt  p3d\_trailer\_data, *pp3d\_trailer\_data;} \\
+\end{tabular}
+
+\noindent
+where {\tt init\_cusp} and {\tt cusp\_end} are pointers to sub-local
+paths of the type convex combination of canonical
+curves~\cite{these-florent}. We do not give more details here about how
+these sub-local paths are encoded. It would require further
+developments that are out of the scope of this document.
+
+\subsubsection*{Motion execution aspects}
+
+The trailer local method is used at LAAS to plan paths for Hilare
+towing a trailer. To follow a series of local paths returned by the
+local method without stopping between two local paths, the curvature
+of the curve followed by the center of the robot has to be continuous.
+To make this curvature continuous along a path, we have to store it in
+a configuration variable. For that, we define in the configuration
+file of the robot a virtual joint attached to the robot and that
+encodes this curvature\footnote{In fact, the value of the
+  configuration variable of the virtual joint is the derivative of the
+  curvature of the flat output w.r.t. an arc-length
+  parameterization.}. Figure~\ref{fig:virtual-joint} shows an example
+of configuration file for Hilare and its trailer.
+
+\begin{figure}[ht]
+\begin{tabular}{l}
+{\tt p3d\_beg\_desc P3D\_ROBOT } \\
+{\tt p3d\_beg\_desc P3D\_BODY body } \\
+\hsp\hsp\hsp $\vdots$ \\
+{\tt p3d\_end\_desc} \\
+{\tt } \\
+{\tt \# derivative of the curvature (-3000 < dK/ds < 3000)} \\
+{\tt p3d\_add\_desc\_jnt P3D\_TRANSLATE 0 0 0  0 0 1 0.0 -3000.0 3000.0 0
+  0 0} \\
+{\tt } \\
+{\tt \# angle between the robot and the trailer (-70 deg < phi < 70 deg)} \\
+{\tt p3d\_add\_desc\_jnt P3D\_ROTATE -0.65 0 0.92 0 0 1 0.0 -70.0 70.0 0} \\
+{\tt } \\
+{\tt p3d\_beg\_desc P3D\_BODY trailer} \\
+\hsp\hsp\hsp $\vdots$ \\
+{\tt p3d\_end\_desc} \\
+{\tt p3d\_end\_desc} \\
+\end{tabular}
+\caption{Example of configuration file for Hilare and its trailer
+  ({\tt hilare-trailer.macro}). The first joint is the virtual joint.
+  The bounds $[-3000,3000]$ can be set to any value, they are
+  recomputed by Move3D. The second joint corresponds to the connection
+  between the trailer and the robot.}
+\label{fig:virtual-joint}
+\end{figure}
+
+\subsubsection*{local method parameters}
+
+Applying the trailer local method to a given robot requires to
+initialize some geometric parameters. These parameters are defined in
+the configuration file describing the environment and are stored in the
+data-structure that describes the robot. These geometric parameters
+are the following~:
+\begin{itemize}
+\item the connection length $a$ and $b$
+\item the joint Id corresponding to the trailer connection on the
+  robot
+\item the virtual joint Id.
+\end{itemize}
+
+These geometric parameters are set for each robot in the configuration
+file of the scene by the following command~:
+
+\begin{tabular}{l}
+{\tt p3d\_sel\_desc\_name P3D\_ROBOT robot\_name} \\
+{\tt p3d\_set\_local\_method\_params a b j1 j2}\index{p3d\_set\_local\_method\_params}
+ \\
+\end{tabular}
+
+where {\tt robot\_name} is the name of the robot to initialize, $a$
+and $b$ are the trailer connection lengths defined on
+Figure~\ref{fig:trailer-robot}, $j1$ and $j2$ are the joint Id's
+corresponding to respectively the trailer connection and the virtual
+joint. Let us recall that joints are numbered increasingly from 1 in
+the order they are defined. Joint 0 corresponds to the main body of
+the robot. Figure~\ref{fig:local-method-params} shows an example of a
+scene containing the type of robot described in
+Figure~\ref{fig:virtual-joint}. 
+
+\begin{figure}[ht]
+{\tt p3d\_beg\_desc P3D\_ENV robotics-room} \\
+{\tt p3d\_read\_macro hilare-trailer.macro trailer-robot} \\
+\hsp\hsp\hsp $\vdots$ \\
+{\tt p3d\_sel\_desc\_name P3D\_ROBOT trailer-robot} \\
+{\tt p3d\_set\_local\_method\_params 0.65 0.90 2 1} \\
+
+\caption{Initialization of the geometric parameters of trailer local
+  method.}
+\label{fig:local-method-params}
+\end{figure}
+
+\subsubsection*{The car modeled as a robot-trailer system}
+
+The trailer local method can also plan paths for a car by modelling
+the car as a robot-trailer system as shown on
+Figure~\ref{fig:car-model}. The angle of the wheel axis depends on the
+angle between the virtual robot and the car body. This dependence is
+modeled by a kinematic constraint as described in Chapter~\ref{Constraints}
+\begin{figure}[ht]
+\centerline{\epsfig{figure=FIG/car-model.eps,width=5cm}}
+\caption{The car modeled as a robot with trailer: the robot is a virtual
+  body and the body of the car is the trailer. The front wheels are
+  connected to the body of the car by vertical axis rotation
+  joints. $a=0$ and $b$ is the distance between the rear axis and the
+  front wheels.}
+\label{fig:car-model}
+\end{figure}
+
+\section{How to implement a new local method within Move3D}
+
+To implement a new local planner, the user has first to define his own
+structure specific local path and then to implement functions specific
+to this type of local path. In the following sections, we describe the
+different actions to perform to define a new type of local path and
+steering method.
+
+\subsection{Definition of a new local path type}
+
+In the file {\tt include/localpath.h}, define a new structure with the
+data relative to the new type of local path.
+
+\begin{tabular}{l}
+{\tt typedef struct newlp\_data} $\{$ \\
+\hsp\hsp\hsp$\vdots$ \\
+$\}$ {\tt p3d\_newlp\_data, *pp3d\_newlp\_data;} \\
+\end{tabular}
+
+\noindent
+Add this structure to the set of possible specific data of a local path
+
+\index{Data structures!union lm\_specific}
+\index{Data structures!p3d\_lm\_specific}
+\begin{tabular}{l}
+{\tt typedef union lm\_specific} $\{$\\
+\hsp{\tt   pp3d\_rs\_data rs\_data;}\\
+\hsp{\tt   pp3d\_lin\_data lin\_data;}\\
+\hsp{\tt   pp3d\_manh\_data manh\_data;}\\
+\hsp{\tt   pp3d\_trailer\_data manh\_data;}\\
+\hsp{\tt   pp3d\_newlp\_data newlp\_data;}\\
+$\}$ {\tt p3d\_lm\_specific, *pp3d\_lm\_specific;}\\
+\end{tabular}
+
+\noindent
+Add the new type of local paths in the set of types of local paths
+
+\index{p3d\_localpath\_type}
+\begin{tabular}{l}
+{\tt typedef enum } $\{$\\
+\hsp{\tt   REEDS\_SHEPP,}\\
+\hsp{\tt   LINEAR,}\\
+\hsp{\tt   MANHATTAN,}\\
+\hsp{\tt   TRAILER,}\\
+\hsp{\tt   NEWLP,}\\
+$\}${\tt p3d\_localpath\_type;}\\
+\end{tabular}
+
+\noindent
+Add a local planner in the list, to produce the new type of local paths
+
+\index{p3d\_localplanner\_type}
+\begin{tabular}{l}
+{\tt typedef enum }  $\{$\\
+\hsp{\tt   P3D\_RSARM\_PLANNER,}\\
+\hsp{\tt   P3D\_LINEAR\_PLANNER,}\\
+\hsp{\tt   P3D\_MANH\_PLANNER,}\\
+\hsp{\tt   P3D\_TRAILER\_PLANNER,}\\
+\hsp{\tt   P3D\_NEWLP\_PLANNER,}\\
+$\}${\tt  p3d\_localplanner\_type;}\\
+\end{tabular}
+
+\subsection{Definition of a new local planner}
+
+In the file {\tt localpath/p3d\_local.c}
+
+\noindent
+Add a function calling the local planner in {\tt array\_localplanner}
+
+\begin{tabular}{l}
+\index{ptr\_to\_localplanner}
+\index{array\_localplanner}
+{\tt ptr\_to\_localplanner array\_localplanner[]= }\\
+$\{$ \\
+\hsp{\tt   (pp3d\_localpath (*)(p3d\_rob*, configPt,
+  configPt))(p3d\_rsarm\_localplanner), }\\
+\hsp{\tt   (pp3d\_localpath (*)(p3d\_rob*, configPt,
+  configPt))(p3d\_linear\_localplanner), }\\
+\hsp{\tt   (pp3d\_localpath (*)(p3d\_rob*, configPt,
+  configPt))(p3d\_rs\_localplanner), }\\
+\hsp{\tt   (pp3d\_localpath (*)(p3d\_rob*, configPt,
+  configPt))(p3d\_arm\_localplanner), }\\
+\hsp{\tt   (pp3d\_localpath (*)(p3d\_rob*, configPt,
+  configPt))(p3d\_manh\_localplanner) }\\
+\hsp{\tt   (pp3d\_localpath (*)(p3d\_rob*, configPt,
+  configPt))(p3d\_trailer\_localplanner) }\\
+\hsp{\tt   (pp3d\_localpath (*)(p3d\_rob*, configPt,
+  configPt))(p3d\_newlp\_localplanner) }\\
+$\}${\tt ;}\\
+\end{tabular}
+
+\noindent
+Add the name of the new local planner in {\tt
+  array\_localplanner\_name[]}\index{array\_localplanner\_name}
+
+
+\begin{tabular}{l}
+{\tt         char * array\_localplanner\_name[] = }\\
+$\{$ \\
+\hsp{\tt           "RS+linear", }\\
+\hsp{\tt           "Linear", }\\
+\hsp{\tt           "Manhattan", }\\
+\hsp{\tt           "trailer" }\\
+\hsp{\tt           "NewLPname" }\\
+$\}${\tt ; }\\
+\end{tabular}
+
+\noindent
+Update the number of local planners
+
+\begin{tabular}{l}
+{\tt int P3D\_NB\_LOCAL\_PLANNER = 5; }
+\index{P3D\_NB\_LOCAL\_PLANNER}\\
+\end{tabular}
+
+\noindent
+In a new file {\tt localpath/p3d\_newlp.c}, write all the 
+functions specific to the new local method and enumerated in
+Section~\ref{sec:representation}. Write a function that allocates a
+local path of this new type.
+
+\begin{tabular}{l}
+{\tt p3d\_localpath * p3d\_alloc\_newlp\_localpath(...) }\\
+\end{tabular}
+
+\noindent
+This function has to initialize the fields {\tt length\_lp} and {\tt range\_param}.
+
+
+\noindent
+Add the name of this file in Init.make.move3d:
+
+\begin{tabular}{l}
+{\tt SRC\_LOCALPATH = $\backslash$ }\\
+{\tt rs\_dist.c $\backslash$ }\\
+{\tt rs\_curve.c $\backslash$ }\\
+{\tt p3d\_local.c $\backslash$ }\\
+{\tt p3d\_linear.c $\backslash$ }\\
+{\tt p3d\_reeds\_shepp.c $\backslash$ }\\
+{\tt p3d\_manhattan.c $\backslash$ }\\
+{\tt p3d\_trailer.c $\backslash$ }\\
+{\tt p3d\_newlp.c }\\
+\end{tabular}

@@ -1,0 +1,305 @@
+\chapter{Getting/setting informations}
+
+Several functions have been implemented in Move3D in order to get some
+informations on the environment or to set some values and parameters.
+
+\section{Selecting the current element}
+
+These functions are used to select the current element of a scene
+(environment, obstacle, robot, trajectory) or to get information on
+this current element.
+
+The function {\tt int p3d\_get\_desc\_number(int type)}
+\index{p3d\_get\_desc\_number} returns the
+number of elements of type {\tt type} ({\tt P3D\_ENV,
+P3D\_OBSTACLE, P3D\_ROBOT, P3D\_BODY, P3D\_TRAJ}).
+
+The functions {\tt char *p3d\_get\_desc\_curname(int type)}
+\index{p3d\_get\_desc\_curname}, {\tt void *p3d\_get\_desc\_curid (int
+type)} \index{p3d\_get\_desc\_curid} and {\tt int p3d\_get\_desc\_curnum(int
+type)} \index{p3d\_get\_desc\_curnum} return the name, pointer and
+number of the current element of type {\tt type}.
+
+The current element can been changed by selecting another element of
+the description.  The functions {\tt void *p3d\_sel\_desc\_name(int
+type, char* name)} \index{p3d\_sel\_desc\_name}, {\tt void
+*p3d\_sel\_desc\_num(int type, int num)} \index{p3d\_sel\_desc\_num}
+and {\tt void *p3d\_sel\_desc\_id(int type, void *id)}
+\index{p3d\_sel\_desc\_id} select the
+element of type {\tt type}, of name {\tt name}, of number {\tt num} or
+of pointer {\tt id}, and returns this element.
+
+\section{Environments, polyhedrons and obstacles}
+
+\subsection{Environments}
+
+The user can get informations about the bounding box of the
+current environment by calling the function {\tt void
+p3d\_get\_env\_box(double *x1, double *x2, double *y1, double *y2,
+double *z1, double *z2)} \index{p3d\_get\_env\_box}, or modify it by
+calling the function {\tt int  p3d\_set\_env\_box(double x1, double
+x2, double y1, double y2, double z1, double z2)}
+\index{p3d\_set\_env\_box}.  This last function is usually used to
+complete the description of a scene. 
+
+The function {\tt void p3d\_env\_info(void)} \index{p3d\_env\_info} prints some informations
+about the current environment : name, id, number of the environment in
+the Move3D session, number of obstacles, of robots, and informations
+about all the obstacles and robots.
+
+\subsection{Polyhedrons}
+
+The function {\tt int p3d\_poly\_get\_nb(void)}
+\index{p3d\_poly\_get\_nb} returns the number of polyhedrons of a
+scene. 
+
+The function {\tt p3d\_poly *p3d\_poly\_get\_poly(int i)}
+\index{p3d\_poly\_get\_poly} returns the i-th polyhedron of the
+scene. The function {\tt p3d\_poly
+*p3d\_poly\_get\_poly\_by\_name(char *name)}
+\index{p3d\_poly\_get\_poly\_by\_name} returns the polyhedron of
+the scene of name {\tt name}. The function {\tt p3d\_poly
+*p3d\_poly\_get\_first (void)} \index{p3d\_poly\_get\_first}
+initializes a pointer on the begining of the polyhedrons list and
+returns the first polyhedron of this list. The function {\tt p3d\_poly
+*p3d\_poly\_get\_next(void)} \index{p3d\_poly\_get\_next} returns
+the next polyhedron of this list.
+
+The function {\tt void p3d\_get\_info\_pos\_poly(p3d\_poly *p)}
+\index{p3d\_get\_info\_pos\_poly} prints
+the position matrix of the polyhedron {\tt p}.
+
+The function {\tt void p3d\_BB\_get\_BB\_poly1(p3d\_poly *p, double
+*x1, double *x2, double *y1, double *y2, double *z1, double *z2)}
+\index{p3d\_BB\_get\_BB\_poly1} returns
+the bounding box of the polyhedron {\tt p}.
+
+\subsection{Obstacles}
+
+%move\_point\\
+The function {\tt p3d\_obj *p3d\_get\_obst\_by\_name(char *name)}
+\index{p3d\_get\_obst\_by\_name} returns the object of the scene of
+name {\tt name}.
+
+The function {\tt int p3d\_get\_obstacle\_npoly(void)}
+\index{p3d\_get\_obstacle\_npoly} returns the
+number of polyhedrons of the current obstacle. The function {\tt int
+p3d\_get\_obstacle\_npt(int i)} \index{p3d\_get\_obstacle\_npt}
+returns the number of vertices of the i-th polyhedron of the current
+obstacle. The function {\tt void p3d\_get\_obstacle\_pt(int num,int i,
+double *x, double *y, double *z)} \index{p3d\_get\_obstacle\_pt}
+returns the coordinates {\tt (x,y,z)} of the i-th vertex of the
+polyhedron of number {\tt num} of the current obstacle. 
+
+The function {\tt void p3d\_get\_BB\_obj(p3d\_obj *o,double *x1,double
+*x2,double *y1,double *y2,double *z1,double *z2)}
+\index{p3d\_get\_BB\_obj} returns the bounding box of the object {\tt o}.
+
+The function {\tt void p3d\_obstacle\_info(void)}
+\index{p3d\_obstacle\_info} prints informations
+about the current obstacle : name, number, id, bounding box,
+polyhedrons,...
+
+\section{Robots}
+
+\subsection{Robot}
+
+The value of some parameters of the current robot can be modified
+after its description. 
+
+The function {\tt int p3d\_set\_robot\_box(double x1, double x2,
+double y1, double y2, double z1, double z2, double t1, double t2)}
+\index{p3d\_set\_robot\_box} set
+the values of the box of the current robot, i.e. the bounds of the
+degrees of freedom of the first joint j0, $x,y,z,\theta$. This
+function is usually used to complete the description of a scene. 
+The function {\tt void p3d\_set\_robot\_radius(double radius)}
+\index{p3d\_set\_robot\_radius} sets
+the value of the radius of the turning circle of the current robot. 
+The function {void p3d\_set\_ROBOT\_GOTO(double *q)}
+\index{p3d\_set\_ROBOT\_GOTO} set the value of
+the goal configuration of the current robot.
+
+Some general informations about the robot can also be get.
+
+The function {\tt double p3d\_get\_robot\_radius(void)}
+\index{p3d\_get\_robot\_radius} gets the
+radius of the turning circle of the current robot. The function {\tt
+void p3d\_get\_robot\_box(double *x1, double *x2, double *y1, double
+*y2,double *z1,double *z2,double *t1,double *t2)}
+\index{p3d\_get\_robot\_box} returns the values of
+the box of the current robot.
+
+The function {\tt void p3d\_get\_BB\_rob(p3d\_rob *r,double *x1,double
+*x2,double *y1,double *y2,double *z1,double *z2)}
+\index{p3d\_get\_BB\_rob} returns the bounding
+box of the robot {\tt r}.
+
+The function {\tt void p3d\_robot\_info(void)}
+\index{p3d\_robot\_info} prints informations
+about the current obstacle : name, number, id, number of bodies,
+number of joints, bounding box, position, bodies, polyhedrons,...
+
+\subsection{Body}
+
+The function {\tt p3d\_obj *p3d\_get\_body\_by\_name(char *name)}
+\index{p3d\_get\_body\_by\_name} 
+returns the body of the current robot of name {\tt name}.
+
+The function {\tt int p3d\_get\_body\_npoly(void)}
+\index{p3d\_get\_body\_npoly} returns the
+number of polyhedrons of the current body of the current robot. The function {\tt int
+p3d\_get\_body\_npt(int i)} \index{p3d\_get\_body\_npt} returns the number of vertices of the
+i-th polyhedron of the current body of the current robot. The function {\tt void
+p3d\_get\_body\_pt(int num, int i, double *x, double *y, double *z)} \index{p3d\_get\_body\_pt}
+returns the coordinates {\tt (x,y,z)} of the i-th vertex of the
+polyhedron of number {\tt num} of the current body of the current robote. 
+
+The function {\tt void p3d\_get\_BB\_obj(p3d\_obj *o,double *x1,double
+*x2,double *y1,double *y2,double *z1,double *z2)}
+\index{p3d\_get\_BB\_obj} can also be used to
+get the bounding box of the body {\tt o}.
+
+The function {\tt void p3d\_obstacle\_info(void)}
+\index{p3d\_obstacle\_info} prints informations
+about the current obstacle : name, number, id, bounding box,
+polyhedrons, joint corresponding to this body...
+
+\subsection{Joints}
+
+The function {\tt int p3d\_get\_robot\_njnt(void)}
+\index{p3d\_get\_robot\_njnt} returns the number
+of joints of the current robot.
+
+The function {\tt int p3d\_get\_robot\_jnt\_type(int i)}
+\index{p3d\_get\_robot\_jnt\_type} returns the type ({\tt P3D\_ROTATE}
+or {\tt P3D\_TRANSLATE}) of the i-th joint of the current robot. The
+function {\tt void p3d\_get\_robot \_jnt\_bounds(int i, double *vmin,
+double *vmax)} \index{p3d\_get\_robot\_jnt\_bounds} returns the
+minimum and maximum bounds of the i-th joint of the current robot.
+
+\subsection{position of a robot}
+
+The kinematic structure of a Move3D robot is a tree who root is the
+specific joint j0 (cf Chapter \ref{model}). This joint allows the
+robot to translate along the $x$, $y$ and $z$ axis and to rotate
+around the $z$ axis. It correspond, for example, to the four degrees
+of freedom of a plane. Every other joint adds a degree of freedom in
+rotation or translation. The different steps for setting a new
+position for the current robot come from this structure.
+
+
+The function {\tt void p3d\_set\_robot\_pos(double x, double y, double
+z, double t)} \index{p3d\_set\_robot\_pos} changes the values of the
+degrees of freedom of the joint j0 of the current robot. The function
+{\tt void p3d\_set\_robot\_jnt(int i, double v)}
+\index{p3d\_set\_robot\_jnt} changes the current value of the ith
+joint of the current robot.
+
+\begin{figure}[hbt]
+\centerline{
+\psfig{figure=FIG/setpos2.ps,width=14cm}
+}
+\caption{\small 
+Setting the position of the current robot.
+}
+\label{FIG_SETPOS1}
+\end{figure}
+
+Once the user has changed the values of all or some of the joints, the
+position of the robot has been changed but not updated. The function
+{\tt int p3d\_update\_robot\_pos(void)}
+\index{p3d\_update\_robot\_pos} must be called. This function
+computes the new position matrix of all the joints that have been
+affected by the changes (the joints whose value has been changed and
+the joints placed after those joints in the cinematic chain). It also
+updates the position of the robot's bodies, and the boundings boxes of
+the robot, objects and polyhedrons.
+%{\tt
+%p3d\_BB\_update\_BB\_obj1\\
+%p3d\_BB\_update\_BB\_obj2\\
+%p3d\_BB\_update\_BB\_rob\\
+%p3d\_col\_set\_pos\\
+%}
+
+The position of a robot can be get using the following functions. The
+function {\tt void p3d\_get\_robot\_pos(double *x, double *y, double
+*z, double *t)} \index{p3d\_get\_robot\_pos} returns the values of the
+degrees of freedom of the first joint j0 of the current robot,
+$x,y,z,\theta$. The function {\tt void p3d\_get\_robot\_jnt(int i,
+double *val)} \index{p3d\_get\_robot\_jnt} returns the value of
+the i-th joint of the current robot.
+
+Two functions allow the user to evaluate the distance between two
+configurations of the current robot.
+
+The function {\tt double p3d\_dist(p3d\_rob *r, p3d\_courbe *c, int
+nrs)} \index{p3d\_dist} returns the distance covered by the robot {\tt r} along the path
+{\tt c}. The function {\tt double p3d\_dist\_q1\_q2 (p3d\_rob *r,
+double *q1, double *q2)} \index{p3d\_dist\_q1\_q2} returns the distance covered by the robot
+{\tt r} between the configuration {\tt q1} and {\tt q2} with the
+current local method. The distance are computed the same way : to the
+lenght of the curve covered by the four degrees of freedom of j0 is
+added the square root of the sum of the difference of all the degrees
+of freedom that are not $x,y,z$. This way the distance between two
+configurations can be evaluated whatever local method and
+configurations have been chosen.
+
+\section{Changing a color}
+
+Others commands exist that allow the user to describe more complex
+scenes.
+
+When they are created, the default color of the obstacles is blue,
+and the default color of the robots is yellow. But we can use other
+colors to make the scene more realistic.
+
+The function {\tt void p3d\_set\_obst\_color(char *name, int color)}
+\index{p3d\_set\_obst\_color} with the name {\tt obst} and the code
+number of the color {\tt color} as input sets the color of all the
+polyhedrons of the obstacle {\tt obst} to {\tt color}. The function
+{\tt void p3d\_set\_obst\_poly\_color(char *name,int num, int color)}
+\index{p3d\_set\_obst\_poly\_color} does exactly the same for the ith
+polyhedron of the obstacle {\tt obst}.
+
+The functions {\tt void p3d\_set\_body\_color(char *name, int color)}
+\index{p3d\_set\_body\_color} and {\tt void
+p3d \_set\_body\_poly\_color(char *name, int num, int color)}
+\index{p3d\_set\_body\_poly\_color} do exactly the same.
+
+Changing a color can only be done when the description of the obstacle 
+or the description of the robot (for the bodies) have been completed.
+
+The colors available in Move3D are White, Black, Blue, Red, Yellow,
+Green, Grey and Brown.
+
+\section{Graphs and trajectories}
+
+The user can also get some information on the roadmaps built by Move3D (cf Chapter
+\ref{global}). 
+
+The function {\tt void p3d\_print\_info\_graph(p3d\_graph *G)}
+\index{p3d\_print\_info\_graph} prints
+some info about the graph {\tt G} : number of nodes, number of
+configuration generated, number of free configurations obtained, time
+needed to build this graph, calls to the collision checker, to the
+bounding box test, to the local method.
+
+The function {\tt void p3d\_print\_graph(p3d\_graph *G)}
+\index{p3d\_print\_graph} printf the
+number of node of the graphe {\tt G}, the number of connex composants
+of this graphe and, for each connex composant, the number of the
+composant, the number of nodes of this composant, the number of each node of this
+composant and the number of neighbours of this node.
+
+The user can also get some informations about the current  trajectory
+of the current robot.
+
+The function {\tt int p3d\_get\_traj\_ncourbes(void)}
+\index{p3d\_get\_traj\_ncourbes} returns the
+number of elementary curves contained in the current trajectory.
+The function {\tt voit p3d\_get\_traj\_pos(int i, double *q)}
+\index{p3d\_get\_traj\_pos} returns the i-th configuration on the
+curve regarding the current discretization step.
+
+

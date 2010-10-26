@@ -1,0 +1,189 @@
+\begin{theindex}
+
+  \item array\_localplanner, 54
+  \item array\_localplanner\_name, 55
+
+  \indexspace
+
+  \item Data structures
+    \subitem p3d\_BB, 75
+    \subitem p3d\_box, 75
+    \subitem p3d\_compco, 75
+    \subitem p3d\_edge, 74
+    \subitem p3d\_env, 67
+    \subitem p3d\_graph, 73
+    \subitem p3d\_jnt, 68
+    \subitem p3d\_lin\_data, 47, 71
+    \subitem p3d\_list\_edge, 75
+    \subitem p3d\_list\_node, 74
+    \subitem p3d\_lm\_specific, 53, 71
+    \subitem p3d\_localpath, 44, 70
+    \subitem p3d\_manh\_data, 49, 71
+    \subitem p3d\_node, 73
+    \subitem p3d\_obj, 67
+    \subitem p3d\_point, 75
+    \subitem p3d\_poly, 69
+    \subitem p3d\_rob, 68
+    \subitem p3d\_rs\_data, 48, 72
+    \subitem p3d\_sub\_trailer\_data, 72
+    \subitem p3d\_trailer\_data, 51, 72
+    \subitem p3d\_traj, 69
+    \subitem struct lin\_data, 47
+    \subitem struct manh\_data, 49
+    \subitem struct rs\_data, 48
+    \subitem struct trailer\_data, 51
+    \subitem union lm\_specific, 53
+
+  \indexspace
+
+  \item p3d\_add\_basic\_node, 59
+  \item p3d\_add\_desc\_courbe, 11
+  \item p3d\_add\_desc\_face, 7
+  \item p3d\_add\_desc\_jnt, 10
+  \item p3d\_add\_desc\_poly, 6
+  \item p3d\_add\_desc\_{\it type}, 7
+  \item p3d\_add\_desc\_vert, 6
+  \item p3d\_add\_isolate\_or\_linking\_node, 59
+  \item p3d\_add\_neighbour, 58
+  \item p3d\_add\_node, 58
+  \item p3d\_BB\_get\_BB\_poly1, 18
+  \item p3d\_BB\_obj\_obj\_extern\_dist, 15
+  \item p3d\_BB\_overlap\_obj\_obj, 16
+  \item p3d\_BB\_overlap\_rob\_obj, 16
+  \item p3d\_BB\_overlap\_rob\_rob, 16
+  \item p3d\_beg\_desc, 5
+  \item p3d\_beg\_env, 5
+  \item p3d\_beg\_obj, 6
+  \item p3d\_beg\_rob, 9
+  \item p3d\_beg\_traj, 11
+  \item P3D\_BODY, 9
+  \item p3d\_calc\_body\_BB\_extern\_dist, 16
+  \item p3d\_calc\_robot\_BB\_extern\_dist, 15
+  \item p3d\_col\_activate\_all, 14
+  \item p3d\_col\_activate\_env, 15
+  \item p3d\_col\_activate\_full, 14
+  \item p3d\_col\_activate\_pair, 14
+  \item p3d\_col\_deactivate\_all, 14
+  \item p3d\_col\_deactivate\_full, 14
+  \item p3d\_col\_deactivate\_pair, 14
+  \item p3d\_col\_get\_report, 15
+  \item p3d\_col\_init\_coll, 13
+  \item p3d\_col\_number, 15
+  \item p3d\_col\_start, 14
+  \item p3d\_col\_start\_current, 14
+  \item p3d\_col\_start\_last, 14
+  \item p3d\_col\_stop, 15
+  \item p3d\_col\_stop\_all, 15
+  \item p3d\_col\_test, 15
+  \item p3d\_col\_test\_pair, 15
+  \item p3d\_constraint, 34
+  \item p3d\_create\_compco, 58
+  \item p3d\_create\_edges, 58
+  \item p3d\_create\_graph, 58
+  \item p3d\_create\_{\it type}, 7
+  \item p3d\_del\_desc, 11
+  \item p3d\_del\_env, 12
+  \item p3d\_del\_graph, 61
+  \item p3d\_del\_node, 61
+  \item p3d\_del\_obst, 11
+  \item p3d\_del\_rob, 11
+  \item p3d\_del\_traj, 11
+  \item p3d\_dist, 21
+  \item p3d\_dist\_q1\_q2, 21
+  \item p3d\_end\_desc, 5
+  \item p3d\_end\_desc\_poly, 7
+  \item p3d\_end\_env, 5
+  \item p3d\_end\_obj, 8
+  \item p3d\_end\_rob, 10
+  \item p3d\_end\_traj, 11
+  \item P3D\_ENV, 5
+  \item p3d\_env\_info, 18
+  \item p3d\_expand\_box, 60
+  \item p3d\_expand\_graph, 60
+  \item p3d\_expand\_random\_walk, 60
+  \item p3d\_get\_BB\_obj, 19, 20
+  \item p3d\_get\_BB\_rob, 19
+  \item p3d\_get\_body\_by\_name, 19
+  \item p3d\_get\_body\_npoly, 20
+  \item p3d\_get\_body\_npt, 20
+  \item p3d\_get\_body\_pt, 20
+  \item p3d\_get\_desc\_curid, 17
+  \item p3d\_get\_desc\_curname, 17
+  \item p3d\_get\_desc\_curnum, 17
+  \item p3d\_get\_desc\_number, 17
+  \item p3d\_get\_env\_box, 18
+  \item p3d\_get\_info\_pos\_poly, 18
+  \item p3d\_get\_obst\_by\_name, 18
+  \item p3d\_get\_obstacle\_npoly, 18
+  \item p3d\_get\_obstacle\_npt, 18
+  \item p3d\_get\_obstacle\_pt, 19
+  \item p3d\_get\_robot\_box, 19
+  \item p3d\_get\_robot\_jnt, 21
+  \item p3d\_get\_robot\_jnt\_bounds, 20
+  \item p3d\_get\_robot\_jnt\_type, 20
+  \item p3d\_get\_robot\_njnt, 20
+  \item p3d\_get\_robot\_pos, 21
+  \item p3d\_get\_robot\_radius, 19
+  \item p3d\_get\_traj\_ncourbes, 22
+  \item p3d\_get\_traj\_pos, 22
+  \item p3d\_graph\_search, 60
+  \item p3d\_init\_random, 57
+  \item p3d\_init\_random\_seed, 57
+  \item p3d\_learn, 59
+  \item p3d\_link\_node\_comp, 58
+  \item p3d\_linked, 58
+  \item p3d\_localpath\_type, 54
+  \item p3d\_localplanner\_type, 54
+  \item p3d\_merge, 58
+  \item P3D\_NB\_LOCAL\_PLANNER, 55
+  \item P3D\_OBSTACLE, 6
+  \item p3d\_obstacle\_info, 19, 20
+  \item p3d\_optim, 61
+  \item p3d\_poly\_add\_face, 7
+  \item p3d\_poly\_add\_vert, 6
+  \item p3d\_poly\_beg\_poly, 6
+  \item p3d\_poly\_del\_poly, 12
+  \item p3d\_poly\_end\_poly, 7
+  \item p3d\_poly\_get\_first, 18
+  \item p3d\_poly\_get\_nb, 18
+  \item p3d\_poly\_get\_next, 18
+  \item p3d\_poly\_get\_poly, 18
+  \item p3d\_poly\_get\_poly\_by\_name, 18
+  \item p3d\_print\_graph, 22
+  \item p3d\_print\_info\_graph, 22
+  \item p3d\_random, 57
+  \item p3d\_read\_desc, 63
+  \item p3d\_read\_graph, 65
+  \item P3D\_ROBOT, 9
+  \item p3d\_robot\_info, 19
+  \item P3D\_ROTATE, 10
+  \item p3d\_sel\_desc\_id, 17
+  \item p3d\_sel\_desc\_name, 17
+  \item p3d\_sel\_desc\_num, 17
+  \item p3d\_set\_body\_color, 22
+  \item p3d\_set\_body\_poly\_color, 22
+  \item p3d\_set\_env\_box, 18
+  \item p3d\_set\_local\_method\_params, 52
+  \item p3d\_set\_obst\_color, 22
+  \item p3d\_set\_obst\_poly\_color, 22
+  \item p3d\_set\_obst\_pos, 9
+  \item p3d\_set\_prim\_pos, 8
+  \item p3d\_set\_robot\_box, 19
+  \item p3d\_set\_ROBOT\_GOTO, 19
+  \item p3d\_set\_robot\_jnt, 20
+  \item p3d\_set\_robot\_pos, 20
+  \item p3d\_set\_robot\_radius, 19
+  \item p3d\_shoot, 57
+  \item p3d\_shoot\_box, 58
+  \item p3d\_shoot\_graph, 57
+  \item p3d\_shoot\_in\_box, 58
+  \item p3d\_shoot\_walk, 57
+  \item p3d\_specific\_learn, 59
+  \item p3d\_switch\_all\_to\_cube, 14
+  \item p3d\_switch\_all\_to\_DBB, 14
+  \item P3D\_TRANLSATE, 10
+  \item p3d\_update\_robot\_pos, 20
+  \item p3d\_write\_graph, 65
+  \item ptr\_to\_localplanner, 54
+
+\end{theindex}

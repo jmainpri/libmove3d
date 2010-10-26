@@ -1,0 +1,207 @@
+\chapter{Motion planning}
+\label{global}
+
+\section{Shooting a random configuration}
+
+Move3D is dedicated to PRM-like probabilistic motion planning
+(\cite{KAVRA95,KSLO96,SVET97}). The basic function of a probabilistic
+motion planner is shooting a free random configuration in the configuration
+space of the robot. Move3D proposes several function to generate
+free random configurations.
+
+The function {\tt void p3d\_init\_random\_seed(int seed)}
+\index{p3d\_init\_random\_seed} initializes
+the C random function with the integer {\tt seed}. This function
+allows the user to shoot the same sequence of random numbers several
+times. The function {\tt void p3d\_init\_random(void)}
+\index{p3d\_init\_random} initializes
+the C random function with a value depending of the clock of the
+computer. This function allows the user to get random sequences ``really
+shot at random''.
+
+The function {\tt double p3d\_random(double a, double b)}
+\index{p3d\_random} returns a
+random value between {\tt a} and {\tt b}. 
+The function {\tt void p3d\_shoot(p3d\_rob *r, double *q)}
+\index{p3d\_shoot} shoots a
+configuration in the configuration space of the robot {\tt r}. The
+function {\tt double *p3d\_shoot \_graph(p3d\_rob *r, p3d\_graph *G)}
+\index{p3d\_shoot\_graph} does
+exactly the same but returns a free configuration for the robot {\tt
+r} (and updates the configurations counter of the graph {\tt G}).
+
+The function {\tt double *p3d\_shoot\_walk(p3d\_rob *r, double *q,
+double *delta)} \index{p3d\_shoot\_walk} shoots, for the robot {\tt r} with n degrees of
+freedom, a configuration distant from a step {\tt dq} of the
+configuration {\tt q} : n values v equal to 1, 0 or -1 are shot and the
+new configuration is obtained by adding {\tt q}[i]+ v*{\tt delta}[i], for
+i from 1 to n.
+
+The function {\tt void p3d\_shoot\_in\_box(p3d\_rob *r, double *q,
+double *qn, double *dq)} \index{p3d\_shoot\_in\_box} shoots a configuration in the box of the
+configuration space centered in {\tt qn} and of amplitude {\tt dq}. Th
+function {\tt double *p3d\_shoot\_box(p3d\_rob *r, p3d\_graph *G,
+double *qn, double *dq)} \index{p3d\_shoot\_box} does exactly the same but returns a free
+configuration for the robot {\tt r} (and updates the configurations
+counter of the graph {\tt G}).
+
+\section{Building a graph}
+
+The function {\tt p3d\_graph *p3d\_create\_graph(void)}
+\index{p3d\_create\_graph} allocates and
+initializes a graph structure {\tt p3d\_graph} (cf Annex \ref{datastruct}), stores it
+as the current graph, and returns it as an output.
+
+The function {\tt p3d\_add\_node(p3d\_graph *G, double *q)}
+\index{p3d\_add\_node} allocates
+a node structure {\tt p3d\_node} (cf Annex \ref{datastruct})
+corresponding to the configuration {\tt q}. This function initializes
+the new node, adds it to the graph {\tt G} and updates the number of
+nodes of this graph. It also stores this node as the current node and
+returns it as an output.
+
+The function {\tt void p3d\_create\_compco(p3d\_graph *G, p3d\_node
+*N)} \index{p3d\_create\_compco} creates a new connected component of the graph {\tt G} containing
+the node {\tt N}. It allocates a connected componant structure {\tt
+p3d\_compco} (cf Annex \ref{datastruct}), initializes it, adds it to
+the graph {\tt G} and updates the number of connected componant of this
+graph. 
+
+The function {\tt void p3d\_create\_edges(p3d\_rob *rob, p3d\_graph
+*G, p3d\_node *N1, p3d\_node *N2, double dist)}
+\index{p3d\_create\_edges} adds the edges
+[{\tt N1,N2}] and [{\tt N2,N1}] of lenght {\tt dist} to the graph {\tt G} of the robot {\tt rob}
+(Move3D only deals with symmetrical local methods so when the edge
+[{\tt N1,N2}] exists, the edge [{\tt N2,N1}] exists too). This function
+allocates two edges structures {\tt p3d\_edges} (cf Annex
+\ref{datastruct}), initializes them (with N1 et N2 as end nodes),
+adds them to the graph, as egdes coming from and going to {\tt N1} and
+{\tt N2} and updates the number of edges of the graph {\tt G}.
+
+The function {\tt void p3d\_add\_neighbour(p3d\_graph *G, p3d\_node
+*N1, p3d\_node *N2)} \index{p3d\_add\_neighbour} adds the node {\tt
+N2} to the list of neighbours of the node {\tt N1}.
+
+The function {\tt int p3d\_linked(p3d\_rob *rob, p3d\_graph *G, p3d\_node
+*N1, p3d \_node *N2, double *dist)} \index{p3d\_linked} indicates if the nodes {\tt N1} and
+{\tt N2} are linked by a collision free path built by the current
+local method of the robot {\tt rob}. The function {\tt int
+p3d\_link\_node\_comp(p3d\_rob *rob,p3d\_graph *G, p3d\_node
+*N,p3d\_compco *comp)} \index{p3d\_link\_node\_comp} does exactly the
+same for the node {\tt N} and the connected componant {\tt comp}.
+
+The function {\tt void p3d\_merge(p3d\_graph *G,p3d\_compco *c1,
+p3d\_compco *c2)} \index{p3d\_merge} merges the connected componant {\tt c2} of the graph
+{\tt G} in the connected componant {\tt c1} of {\tt G}. 
+
+
+\section{Existing motion planners}
+
+Two types of motion planners have been implemented in Move3D, using
+two different strategies. 
+
+The function {\tt void p3d\_learn(in NMAX)} \index{p3d\_learn} builts a roadmap for the
+current robot in the current environnement, using the current planning
+strategy, but without trying to connect the current and goal
+configurations of the robot. The function {\tt int
+p3d\_specific \_learn(double *qs, double *qg)}
+\index{p3d\_specific\_learn} builts the same type of
+graph until the configurations {\tt qs} and {\tt qg} are in the same
+connected component. 
+
+Of course, those two motion planners need a termination criterion, to
+decide if a roadmap is sufficient or if the two configurations can not
+be connected. This criterion depends on the planning strategy chosen.
+
+Th first strategy, that will be called basic strategy, is the one
+described in \cite{SVET97}. Each free configuration generated is added
+to the graph and linked to one or several connected componants. 
+The function {\tt int p3d\_add\_basic\_node(p3d\_graph *G, p3d\_rob
+*rob, int inode, int SHOOT, double *qn, double *dq)} \index{p3d\_add\_basic\_node} adds a node to
+the graph {\tt G} of the robot {\tt rob} (shot in the whol
+configuration space or in the box centered in {\tt qn} and of
+amplitude {\tt dq}, depending on the value of {\tt SHOOT}) according to
+this motion strategy. In this case, the termination criterion is the
+maximum number of nodes allowed for the graph {\tt NMAX}. 
+
+The second strategy, that will be called visibility based strategy, is
+the one described in \cite{NISS99}. A free configuration is added to
+the graph only if it does not ``se{e}'' any connected component of the
+graph (if it is not linked to any node of any connected component), it
+will then become a warden node, or if it sees at least two connected
+component, it will then become a connection node. The function {\tt int
+p3d\_add\_isolate\_or\_linking\_node(p3d\_graph *G, p3d\_rob *rob, int
+inode, int  *fail, int SHOOT, double *qn, double *dq)}
+\index{p3d\_add\_isolate\_or\_linking\_node} adds a node to
+the graph {\tt G} of the robot {\tt rob} according to this motion
+strategy. In this case, the termination criterion is the maximum
+number of configuration generated that did not become a warden node
+allowed. This number of failure to find a new warden node reflects the
+covering of the graph (cf \cite{NISS99}).
+
+\section{Expanding a graph}
+
+Once a graph has been built, the user can decide to expand it in order
+to improve its covering or its connectivity. 
+
+The function {\tt void p3d\_expand\_graph(p3d\_graph *G, double frac)}
+\index{p3d\_expand\_graph}
+searches {\tt G} for all the connected componant whose nodes represents less
+than {\tt frac} \% of the number of nodes of {\tt G} and expands all
+the nodes of thoses connected componants, according to the expansion
+strategy chosen, box expansion or random walk expansion. 
+
+Th function {\tt int p3d\_expand\_box(p3d\_node *N, double *dq, int
+NB\_NODE, p3d \_graph *G)} \index{p3d\_expand\_box} creates {\tt NB\_NODE} extra nodes in the box
+centered in the configuration of the node {\tt N} of amplitude {\tt
+dq} and adds them to the graph {\tt G} according to the planning strategy
+chosen. 
+
+The function {\tt p3d\_expand\_random\_walk(p3d\_node *N, double
+*delta, int nbstep, int NB\_WALK, p3d\_graph *G)}
+\index{p3d\_expand\_random\_walk} performs {\tt NB\_WALK}
+random walks of {\tt nbstep} steps of amplitude {\tt delta} from the
+node {\tt N} and adds them to the graph if the path created is valid.
+
+\section{Searching a graph}
+
+Once a graph has been created, we need a function that can search it
+to see if two nodes are connected : the function {\tt int
+p3d\_graph\_search(p3d\_graph *graph,double (*fct\_heurist)(),int
+(*fct\_valid)(),int (*fct\_end)())} \index{p3d\_graph\_search} that runs a A* algorithm. This
+function checks if the nodes {\tt graph->search\_start} and {\tt
+graph->search\_goal} are connected in the graph (cf Annex
+\ref{datastruct}), with the function {\tt fct\_heurist} being the
+heuristic for the search (usually the function {\tt double
+p3d\_heurist(p3d\_node *n1, p3d\_node *n2, p3d\_graph *G)}), the
+function {\tt fct\_valid} being a checking function (usually the
+function {\tt int p3d\_valid(p3d\_edge *E, p3d\_graph *G)}) and the
+function {\tt fct\_end} being the termination criterion function
+(usually the function {\tt int p3d\_end(p3d\_node *n1, p3d\_node
+*n2)}).
+
+The list of edges connecting {\tt graph->search\_start} and {\tt
+graph->search\_goal} allows the user to build the trajectory
+connecting the two configuration with the sequence of valid local
+paths corresponding to those edges, using the functions {\tt
+p3d\_beg\_traj, p3d\_add\_desc\_courbe, p3d\_end\_traj} and the
+current local method.
+
+\section{Optimizing a trajectory}
+
+Once a trajectory has been built, the user can decide to optimize it,
+to reduce its lenght. The function {\tt int p3d\_optim(p3d\_trj *t,
+double *gain)} \index{p3d\_optim} optimize the trajectory {\tt t} by dividing it randomly
+in three parts and replacing any of those parts that can be
+replaced by a valid local path. The gain of lenght obtained is
+returned.   
+
+\section{Deleting a graph}
+
+A graph can be entierly deleted with the function {\tt int
+p3d\_del\_graph(p3d\_graph *G)} \index{p3d\_del\_graph}, that liberates all the nodes,
+connected components and edges, and the graph, but the user can
+also decide to delete only one node at the time withe the function 
+{\tt void p3d\_del\_node(p3d\_node *N, p3d\_graph *G)}
+\index{p3d\_del\_node}. This function deletes the node {\tt N} and
+updates the structure of the graph {\tt G}.

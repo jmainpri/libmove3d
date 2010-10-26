@@ -111,11 +111,11 @@ void switchBBActivationForGrasp(void) {
 }
 
 void setSafetyDistance(p3d_rob* robot, double dist){
-  if(dist != 0){
-    disableAutoCol(robot);
-  }else{
-    enableAutoCol(robot);
-  }
+//   if(dist != 0){
+//     disableAutoCol(robot);
+//   }else{
+//     enableAutoCol(robot);
+//   }
   p3d_set_env_object_tolerance(dist);
   p3d_col_set_tolerance(dist);
 }
@@ -240,6 +240,7 @@ void fixJoint(p3d_rob * robot, p3d_jnt * joint, p3d_matrix4 initPos) {
       joint->dof_data[i].is_user = FALSE;
     }
   }
+  p3d_jnt_set_is_active_for_planner(joint, FALSE);
   MY_FREE(dVal, double, joint->dof_equiv_nbr);
 }
 
@@ -254,6 +255,7 @@ void unFixJoint(p3d_rob * robot, p3d_jnt * joint) {
       joint->dof_data[i].is_user = TRUE;
     }
   }
+  p3d_jnt_set_is_active_for_planner(joint, TRUE);
 }
 
 /**

@@ -1,0 +1,468 @@
+\chapter{Data structures}
+\label{datastruct}
+
+This annex presents the different data structures used in Move3D.
+
+\begin{itemize}
+
+\item[$\bullet$]{\bf Environment structure : p3d\_env} \index{Data structures!p3d\_env}\\
+
+typedef struct env \{ \\ 
+\begin{tabular}{l l l}
+  char      & *name; & name of the environnement\\
+  int       & num; & number of this environnement in the Move3D
+session \\
+            &      & (the user can load several scenes)\\
+  int       & no; & number of obstacles in this environement\\
+  int       & nr; & number of robots in this environement \\
+  p3d\_obj  & **o; & array of the obstacles of this environement\\
+  p3d\_obj  & *ocur; & current obstacle of this environement\\
+  p3d\_rob  & **r; & array of the robots of this environement\\
+  p3d\_rob  & *rcur;& current robot of this environement\\
+  p3d\_box  & box; & bounding box of this environment\\
+  struct graph & *graph; & current roadmap for the current robot\\ 
+\end{tabular}\\
+\} p3d\_env,*pp3d\_env; \\
+
+\item[$\bullet$]{\bf Obstacle/Body structure : p3d\_obj} \index{Data structures!p3d\_obj}\\
+
+typedef struct obj \{\\
+\begin{tabular}{l l l}
+  char       & *name; & name of the objet\\
+  int        &  num; &  number of the obstacle in the scene \\
+             &       &  or of the body in the robot\\
+  int        &  type; &  P3D\_BODY or P3D\_OBSTACLE\\
+  struct env & *env; &  environnement in which the object is\\
+  int np;    &        &  number of polyhedrons of the objetc\\   
+  p3d\_poly   & **pol &  array of polyhedrons of the object\\
+  p3d\_poly   & *polcur; &  current polyhedron of the object\\    
+%  p3d_box    & box; &  \\
+  struct jnt & *jnt; & joint that commands the body\\ 
+             &       & (NULL is the object is an obstacle)\\
+  p3d\_BB     &  BB0; & bounding box of the object \\
+\end{tabular}\\
+\} p3d\_obj, *pp3d\_obj;\\
+
+
+\item[$\bullet$]{\bf Robot structure : p3d\_rob} \index{Data structures!p3d\_rob}\\
+
+typedef struct rob \{\\
+\begin{tabular}{l l l}
+  char       & *name; & name of the robot \\
+  int        & num;   &  number of the robot in the environement\\
+  struct env & *env; & environment to which the robot belongs\\
+  double     & radius;  &  radius of the turning circle of the robot \\
+  int        & no;     &  number of bodies of the robot \\
+  p3d\_obj    & **o; & array of the bodies of the robot\\
+  p3d\_obj    & *ocur; &  current body of the robot\\
+  int\        & njoints; &  number of joints of the robot \\
+  p3d\_jnt    & **joints; & array of the joints of the robot \\
+  p3d\_jnt    & *j\_modif; & first joint in the cinamtic chain that\\
+              &            & has been lately modified \\
+  int        & nt;    &  number of trajectories of the robot \\
+             &        &  stored during the session \\
+  p3d\_trj    & **t; & array of the trajectories of the robot \\
+  p3d\_obj    & *tcur; &  current trajectory of the robot\\
+  p3d\_box    & box; & bounds of j0\\
+  int        & coll;   & boolean indicating if the robot is in\\
+             &         & collision in is current position \\
+  p3d\_BB     & BB; & bounding box of the robot\\
+  double & *ROBOT\_POS;  &   current position \\
+  double & *ROBOT\_GOTO; &   goal position \\
+\end{tabular}\\
+\} p3d\_rob,*pp3d\_rob;\\
+
+
+
+\item[$\bullet$]{\bf Joint structure : p3d\_jnt} \index{Data structures!p3d\_jnt}\\
+
+typedef struct jnt \{\\
+\begin{tabular}{l l l}
+  int          &  type; &  P3D\_ROTATE (rotoid joint) or\\
+               &        &  P3D\_TRANSLATE (prismatic joint)\\
+  int          &  num; &  number of the joint in the cinematic chain\\
+  struct rob   &  *rob; &  robots to which belongs the joint\\
+  struct obj   &  *o; & body attached to this joint \\
+  double    &  v;   &    current value of the joint \\
+  double    &  vmin; &  minimum bound of the joint \\
+  double    &  vmax; & maximum bound of the joint\\
+  p3d\_vector3    &  axe;  & axis of rotation or translation of the joint \\
+  p3d\_point    &  p0;  & point where the joint is attached on the
+previous body \\
+  p3d\_matrix4  &  pos;  & matrix of position of the joint \\
+                &        & (influenced by the previous joints in the chain)\\
+  struct jnt   &  *prev\_jnt; & previous joint in the chain\\
+               &              & (father joint)\\
+  struct jnt   &  **next\_jnt; & next joints in the chain\\
+               &        \     & (children joints)\\
+  int          &  n\_next\_jnt; & number of joints steming from this
+joint \\
+  double       &  dist; & distance from p0 to the furthest point of
+the body \\
+\end{tabular}\\
+\}p3d\_jnt, *pp3d\_jnt;\\
+
+\item[$\bullet$]{\bf Polyhedron structure : p3d\_poly} \index{Data structures!p3d\_poly}\\
+
+typedef struct p3d\_poly \{\\
+\begin{tabular}{l l l}
+  p3d\_polyhedre & *poly; &  geometrical structure of the polyhedron \\
+  int & id;       &  number of the polyhedron in the scene \\
+  p3d\_box & box; & bounding box\\
+  p3d\_matrix4 & pos0; & matrix of the position \\
+  int & color; & color of the polyhedron \\
+  int & MODIF; & boolean indicating if the polyhedron is being
+created\\
+\end{tabular}\\
+\} p3d\_poly;\\
+
+\item[$\bullet$]{\bf Trajectory structure : p3d\_traj} \index{Data structures!p3d\_traj}\\
+
+typedef struct traj \{\\
+\begin{tabular}{l l l}
+  char       & *name; & name of the trajectory \\
+  char       & *file; & filename the trajectory is saved in \\
+  int        & num; & index of the trajectory in the scene\\
+  int        & nloc; & number of local paths of this trajectory\\
+  struct rob & *rob; & robot that follow this trajectory\\ 
+  double     & range\_param; & range of parameter along the trajectory \\
+  p3d\_localpath & *courbePt; & first element of the list of local paths \\
+\end{tabular}\\
+\} p3d\_traj,*pp3d\_traj;\\
+
+\item[$\bullet$]{\bf Local path structure : p3d\_localpath} \index{Data structures!p3d\_localpath}\\
+
+typedef struct localpath\{\\
+\begin{tabular}{l}\\
+  generic and specific data \\
+\end{tabular}\\
+\begin{tabular}{l l l}
+  p3d\_localpath\_type &    type\_lp; &  type of local path \\
+  p3d\_lm\_specific &specific; & pointer to data specific to each type
+  of local path \\
+  struct localpath &*prev\_lp; &  the local paths can be put in a list\\
+  struct localpath &*next\_lp; &\\
+  int  & valid; &            FALSE if collision or if local planner
+  failed to return a valid path \\
+  int  & lp\_id;&             index of loc path in a trajectory \\ 
+  double &  length\_lp;&       length of local path \\
+  double & range\_param;&      parameter range: [0,range\_param] \\
+\end{tabular}\\
+\begin{tabular}{l}\\
+   methods associated to the local path \\
+\\
+  compute length of local path 
+\end{tabular}\\
+\begin{tabular}{l l l}
+  double & (*length)(& struct rob *, struct localpath*); \\
+\end{tabular}\\
+\begin{tabular}{l}\\
+  copy the local path 
+\end{tabular}\\
+\begin{tabular}{l l l}
+  struct localpath* &(*copy)(&struct rob*, struct localpath*); \\
+\end{tabular}\\
+\begin{tabular}{l}\\
+  extract from a local path a sub local path starting from length
+  l1 and ending at length l2 
+\end{tabular}\\
+\begin{tabular}{l l l}
+  struct localpath* &(*extract\_sub\_localpath)(&struct rob *, \\
+                                             &&struct localpath *localpathPt, \\
+                                             &&double l1, double l2);\\
+\end{tabular}\\
+\begin{tabular}{l}\\
+   destroy the localpath 
+\end{tabular}\\
+\begin{tabular}{l l l}
+  void &(*destroy)(&struct rob*, struct localpath*); \\
+\end{tabular}\\
+\begin{tabular}{l}\\
+  compute the configuration at given distance along the path 
+\end{tabular}\\
+\begin{tabular}{l l l}
+  configPt &(*config\_at\_distance)(&struct rob*, \\
+                                 &&struct localpath*, \\
+                                 &&double); \\
+\end{tabular}\\
+\begin{tabular}{l}\\
+   compute the configuration for a given parameter along the path
+\end{tabular}\\
+\begin{tabular}{l l l}
+  configPt &(*config\_at\_param)(&struct rob*,\\
+                              &&struct localpath*,\\
+                              &&double); \\
+\end{tabular}\\
+\begin{tabular}{l}\\
+from a configuration on a local path, this function computes an \\
+interval of parameter on the local path on which all the points \\
+of the robot move by less than the distance given as input.\\
+The interval is centered on the configuration given as input. The \\
+function returns the half length of the interval 
+\end{tabular}\\
+\begin{tabular}{l l l}
+  double &(*stay\_within\_dist)(&struct rob*,\\
+                             &&struct localpath*,\\
+                             &&double, whichway, double*);\\
+\end{tabular}\\
+\begin{tabular}{l}\\
+  compute the cost of a local path 
+\end{tabular}\\
+\begin{tabular}{l l l}
+  double &(*cost)(&struct rob*, struct localpath*); \\
+\end{tabular}\\
+\begin{tabular}{l}\\
+  function that simplifies the sequence of two local paths: valid\\
+  only for RS curves 
+\end{tabular}\\
+\begin{tabular}{l l l}
+  struct localpath*& (*simplify)(&struct rob*,\\
+                                &&struct localpath*,\\
+                                &&int*); \\
+\end{tabular}\\
+\begin{tabular}{l}\\
+\} p3d\_local\_path , *pp3d\_local\_path;\\
+\end{tabular}\\
+
+\item[$\bullet$]{\bf Pointer to data specific to a type of local path : p3d\_lm\_specific} 
+\index{Data structures!p3d\_lm\_specific}\\
+
+typedef union lm\_specific \{\\
+\begin{tabular}{lll}
+  pp3d\_rs\_data & rs\_data; & pointer to Reeds and Shepp local path data \\
+  pp3d\_lin\_data &lin\_data; & pointer to linear local path data \\
+  pp3d\_manh\_data &manh\_data;& pointer to Manhattan local path data \\
+  pp3d\_trailer\_data &trailer\_data; & pointer to trailer local path
+  data \\
+\end{tabular}\\
+\} p3d\_lm\_specific, *pp3d\_lm\_specific;
+
+\item[$\bullet$]{\bf Linear local path structure : p3d\_lin\_data} 
+\index{Data structures!p3d\_lin\_data}\\
+
+Specific data relative to a linear local path\\
+typedef struct lin\_data \{\\
+\begin{tabular}{lll}
+  configPt &q\_init;     &config init sur la courbe   \\
+  configPt &q\_end;       &config fin  sur la courbe  \\
+\end{tabular}\\
+\} p3d\_lin\_data, *pp3d\_lin\_data;\\
+
+
+\item[$\bullet$]{\bf Manhattan local path structure : p3d\_manh\_data} 
+\index{Data structures!p3d\_manh\_data}\\
+
+Specific data relative to a Manhattan local path\\
+typedef struct manh\_data\{\\
+\begin{tabular}{lll}
+  configPt &q\_init;     &initial configuration   \\
+  configPt &q\_end;       &final configuration  \\
+\end{tabular}\\
+\} p3d\_manh\_data, *pp3d\_manh\_data;\\
+
+
+\item[$\bullet$]{\bf Reeds and Shepp local path structure : p3d\_rs\_data} 
+\index{Data structures!p3d\_rs\_data}\\
+
+Specific data relative to a Reeds and Shepp local path\\
+typedef struct rs\_data\{\\
+\begin{tabular}{lll}
+  configPt &q\_init;    &initial configuration \\
+  configPt &q\_end;       &final configuration  \\
+  double &centre\_x;      &abscissa of the center of rotation if any \\
+  double &centre\_y;       &ordinate of the center of rotation if any \\
+  double &radius;          &radius of curvature \\
+  whichway &dir\_rs;        &direction in \{BACKWARD, FORWARD\} \\
+  double &val\_rs;          &length of RS segment \\
+  rs\_type &type\_rs;        &type = 1/2/3 for right/left/straight \\
+  struct rs\_data &*next\_rs;  &next RS segment in localpath \\ 
+  struct rs\_data &*prev\_rs;  &previous RS segment in localpath \\ 
+\end{tabular}\\
+\} p3d\_rs\_data, *pp3d\_rs\_data;
+
+
+\item[$\bullet$]{\bf trailer local path structure : p3d\_trailer\_data
+    and  p3d\_sub\_trailer\_data}\\
+\index{Data structures!p3d\_trailer\_data}
+\index{Data structures!p3d\_sub\_trailer\_data}
+
+Specific data relative to a trailer local path\\
+typedef struct trailer\_data\{\\
+\begin{tabular}{lll}
+  p3d\_sub\_trailer\_data &*init\_cusp; & first part of localpath from
+  q\_init to a cusp configuration \\
+  p3d\_sub\_trailer\_data &*cusp\_end; &second part of localpath from
+  q\_cusp to q\_end\\
+\end{tabular}\\
+\} p3d\_trailer\_data, *pp3d\_trailer\_data;\\
+
+
+typedef struct sub\_trailer\_data\{\\
+\begin{tabular}{lll}
+  configPt &q\_init; & init config on sub local path   \\
+  configPt &q\_end; & end config on sub local path   \\
+  double  &v; & projection of q\_end on Gamma\_init \\
+  double &length;    &length of the sub local path between q\_init and q\_end\\
+  double &alpha\_0;    & third derivative of alpha at beginning \\
+  double &alpha\_1;    & third derivative of alpha at end \\
+  double & u\_start;   & parameter beginning of localpath on combination \\
+  double & u\_end;     & parameter end of localpath on combination \\
+  double &gamma\_1\_min; &the min of the first derivation of the curve\\
+  double &V\_1\_rob\_max;&acceleration of all point of the tractor on all the sub path\\
+  double &V\_1\_rem\_max;&acceleration of all point of the trail on all the sub path\\
+  double &phi\_max;&the max of phi on all the way\\
+  double &phi\_min;&the min of phi on all the way\\
+  double &phi\_1\_tot;&this is the kind of integral of phi\_2 on the
+  path\\
+\end{tabular}\\
+\}p3d\_sub\_trailer\_data, *pp3d\_sub\_trailer\_data; 
+
+
+\item[$\bullet$]{\bf Graph structure : p3d\_graph} 
+\index{Data structures!p3d\_graph}\\
+
+typedef struct graph \{\\
+\begin{tabular}{l l l}
+  p3d\_env & *env; & environment corresponding to the graph \\
+  p3d\_rob & *rob; & robot corresponding to the graph \\
+  int & nnode; & number of nodes of the graph \\
+  p3d\_list\_node & *nodes; & list of the nodes of the graph \\
+  p3d\_list\_node & *last\_node; & last node of the graph created \\
+  int & nedge; & number of edges of the graph \\
+  p3d\_list\_edge & *edges; & list of the edges of the graph \\
+  p3d\_list\_edge & *last\_edge; &  last edge of the graph created\\
+  int & ncomp; & number of connected components of the graph \\
+  p3d\_compco & *comp; & list of the connected components of the graph \\
+  p3d\_compco & *last\_comp; & last connected component of the graph created \\
+              &              &     \\
+  p3d\_node   & *search\_start; & start node for the graph search\\
+  p3d\_node   & *search\_goal;  & goal node for the graph search\\
+  p3d\_node   & *search\_goal\_sol; & goal node found after search\\
+  int        & search\_done; & search done ? T/F\\
+  int        & search\_path; & is there a path ? T/F\\
+  int        & search\_numdev; & number of nodes searched\\
+  double     & search\_cost; & cost of the path found\\
+  int        & search\_path\_length; & number of edges of the path found\\
+\end{tabular}\\
+\begin{tabular}{l l l}
+  double & time; & time needed to build the graph\\
+  int & nb\_test\_BB; & number of bounding box tests performed\\
+  int & nb\_test\_coll; & number of collision checking tests performed\\
+  int & nb\_local\_call; & number of calls to the local method\\
+  int & nb\_q; & total number of random configurations generated\\
+  int & nb\_q\_free; &  total number of free random configurations generated\\
+\end{tabular}\\
+\} p3d\_graph, *pp3d\_graph;\\
+
+\item[$\bullet$]{\bf Node structure : p3d\_node} \index{Data structures!p3d\_node}\\
+
+typedef struct node \{\\
+\begin{tabular}{l l l}
+  int         & type; & type of the node (isolated, linking)\\
+  int         & num ;& number of the node in the graph\\
+  int         & numcomp; & number of the connected component \\
+              &          & to which the node belongs\\
+  struct compco & *comp; & connected component to which the node belongs\\
+  double      & *q; & configuration of the robot for this node\\
+  int & nneighb; &    number of neighbours of the node\\
+  struct list\_node & *neighb; & list of nighbours of the node\\
+  struct list\_node & *last\_neighb; & last neighbour of the node\\
+  int & nedge;  & number of edges attached to the node\\
+  struct list\_edge & *edges;  & list of the edges attached to the node\\
+  struct list\_edge & *last\_edge; & last edge attached to the node\\
+  double & dist\_Nnew; & distance to the node being created\\
+         &            &    \\
+  double & f; &   value of the heuristic function for this node + \\
+         &    &   lenght of the current path\\                               
+  double & g; &   lenght of the current arc coming to this node\\
+  double & h; &   value of the heuristic function for this node\\
+  short & opened; & has the node already been seen ? T/F\\
+  short & closed; & has the node already been seen ? T/F\\
+  struct node & *search\_from; & node having lead to this node\\
+  struct node & *search\_to;  & neighbour node kept in the search\\
+ \end{tabular}\\
+\} p3d\_node, *pp3d\_node;\\
+
+\item[$\bullet$]{\bf List of nodes structure : p3d\_list\_node}
+\index{Data structures!p3d\_list\_node}\\
+
+typedef struct list\_node\{\\
+\begin{tabular}{l l l}
+  p3d\_node & *N; & node contained in this part of list\\
+  struct list\_node & *next; & next node in the list\\
+  struct list\_node & *prev; & previous node in the list\\
+\end{tabular}\\
+\} p3d\_list\_node;\\
+
+\item[$\bullet$]{\bf Edge structure : p3d\_edge}
+\index{Data structures!p3d\_edge}\\
+
+typedef struct edge \{\\
+\begin{tabular}{l l l}
+  p3d\_node  & *Ni; & initial node of the edge\\
+  p3d\_node  & *Nf; & final node of the edge\\
+  int        & planner; & local method used for this edge\\
+  double     & longueur; & lenght of this edge\\
+  int & sens; & direction of the edge\\
+\end{tabular}\\
+\} p3d\_edge;\\
+
+
+\item[$\bullet$]{\bf List of edges structure : p3d\_list\_edge}
+\index{Data structures!p3d\_list\_edge}\\
+
+typedef struct list\_edge\{\\
+\begin{tabular}{l l l}
+  p3d\_node & *E; & edge contained in this part of list\\
+  struct list\_node & *next; & next edge in the list\\
+  struct list\_node & *prev; & previous edge in the list\\
+\end{tabular}\\
+\} p3d\_list\_edge;\\
+
+\item[$\bullet$]{\bf Connected component structure : p3d\_compco}
+\index{Data structures!p3d\_compco}\\
+
+typedef struct compco \{\\
+\begin{tabular}{l l l}
+  int & num; & number of the conected component\\
+  int & nnode; & number of nodes of the conected component\\
+  char & *nodes; & list of the nodes of the connected component for the \\
+       &         & sorting regarding the number of edges of
+each node\\
+  p3d\_list\_node & *dist\_nodes; &list of the nodes of the connected
+component for the\\
+       &         & sorting regarding the distance to th node
+being created\\
+  p3d\_list\_node & *last\_node; & last node of the connected component\\
+  struct compco & *suiv; & next conected componant\\
+  struct compco & *prec; & previous connected component\\
+\end{tabular}\\
+\} p3d\_compco;\\
+
+
+\item[$\bullet$]{\bf Box structure : p3d\_box} \index{Data structures!p3d\_box}\\
+
+typedef struct box \{\\
+\begin{tabular}{l l l}
+  double & x1,x2,y1,y2,z1,z2; & bounds of the box \\
+\end{tabular}\\
+\} p3d\_box, *pp3d\_box;\\
+
+\item[$\bullet$]{\bf Point structure : p3d\_point} \index{Data structures!p3d\_point}\\
+
+typedef struct p3d\_point \{\\
+\begin{tabular}{l l l}
+  double & x, y, z; & 3D coordinates of the point\\
+\end{tabular}\\
+\} p3d\_point;\\
+
+\item[$\bullet$]{\bf Bounding box structure : p3d\_BB} \index{Data structures!p3d\_BB}\\
+
+typedef struct BB \{ \\ 
+\begin{tabular}{l l l}
+    double & xmin,ymin,zmin; & bounds of the box\\
+    double & xmax,ymax,zmax; & \\
+\end{tabular}\\
+\} p3d\_BB, *pp3d\_BB;
+
+\end{itemize}
