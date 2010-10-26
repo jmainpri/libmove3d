@@ -1,0 +1,78 @@
+TOUJOURS:
+
+$>  setenv CVSROOT /opt/motion/Move3D/CVSROOT
+
+
+ACTIONS:
+
+recuperation d'une version perso de Move3D dans repertoire
+ou la commande est donnee :
+
+$> cvs checkout Move3D
+
+
+mis a jour de sa version perso, pour un fichier existant:
+
+$> cvs update filename
+
+mis a jour de sa version perso, pour un fichier nouveau:
+
+$> cvs add newfilename
+$> cvs update newfilename
+
+
+mis a jour de sa version perso, pour un repertoire nouveau:
+
+$> mkdir newdirname
+$> cvs add newdirname
+$> cvs update newdirname
+
+
+mettre son code dans fichier existant sous cvs:
+
+$> cvs commit filename
+[popup: tell us about your inventions]
+
+
+mettre son code dans nouveau fichier sous cvs:
+
+$> cvs add filename
+$> cvs commit filename
+[popup: tell us about your inventions]
+
+
+mettre son code dans nouveau repertoire sous cvs:
+
+$> cvs add newdirname
+$> cvs commit newdirname
+[popup: tell us about your inventions]
+$> cd newdirname
+$> cvs add *
+$> cvs commit *
+[popup: tell us about your inventions]
+
+
+UTILITAIRES:
+
+alias cvstat "cvs status !* | awk '/^File/&&$4!~/Up/'"
+#   -> voir le status de cvs
+
+$> cvstat
+# etat actuel de sa version perso par rapport a la version sous cvs 
+# d'un repertoire et ses sous-repertoires
+
+$> cvstat filename
+# etat actuel de sa version perso par rapport a la version sous cvs 
+# d'un fichier
+
+alias cvsd "cvs diff -rHEAD"
+#   -> Diff avec la derniere version du repository  
+#      (et non pas avec la version au moment ou on a extrait le fichier)
+
+$> cvsd
+# diff recursif sur le repertoire entre derniere version sous cvs 
+# et version perso
+
+$> cvsd filename
+# diff sur un fichier entre derniere version sous cvs et version perso
+

@@ -1,0 +1,136 @@
+*********************************************************
+CVS UPDATE 12 JUNE 2001
+
+Concerning Tolerance, Dmax and microcollisions
+
+Modifications made by Etienne Ferre et Pepijn Raeymaekers
+*********************************************************
+
+Before the modifications were made there was a mix-up of 
+the notions of dmax and tolerance. So now there exist 
+two separate paramaters. This clarification has also led
+to the resolution of the problem with the microcollions.
+
+Tolerance
+*********
+The parameter "tolerance" can be seen as a CAO tolerance,
+and can be used to enlarge the objects
+For the moment this tolerance is only used by KCD.
+
+Dmax
+****
+case 	V_collide, 
+	nkcdd, 
+	Kcd without micro-collision avoidance mode
+	-> dmax can be seen as a maximum penetration 
+	   distance
+	
+case KCD in micro-collision avoidance mode
+	dmax can be seen as an artificial enlargement of
+	the obtacles in order to allow a penetration into 
+	enlarged obstacles
+
+
+Options at the command line
+***************************
+-tol    -> to specify the tolerance (to enlarge objects)
+	   for the moment only used by KCD (and GJK_DEBUG)
+	   
+-dmax	-> to set the value of dmax 
+
+
+Default Values
+**************
+tol	-> set to 0.0
+
+dmax 	-> if micro-collision avoidance is OFF, it is set to the 
+	calculated value in function of the size of the 
+	scene
+	-> if micro-collision avoidance is ON (only with KCD), it is set to
+	the previous value divided by 100.
+
+
+Check Button
+************
+
+Micro-collision Avoidance : if it set to ON (TRUE), the collision test of
+trajectories is exact but it is slower. (microcollisions will not appear)
+
+Sliders
+********
+tol    	[0.0 ... positif_value]
+dmax	[EPS4 ... positif_value]
+
+Which means that dmax is never smaller then EPS4
+
+
+Modified files
+**************
+1. collision/p3d_col
+	rewritten the functions
+  	  p3d_col_get_tolerance(value)
+	  p3d_col_set_tolerance(value)
+	These are now used in p3d_col_traj.c
+	
+	added
+	  p3d_col_set_dmax(value)	
+	  p3d_col_get_dmax(value)
+	Actually this the function p3d_col_get_tolerance
+	is renamed to p3d_col_get_dmax(value). This implies
+	that in the files where this function was used
+	the functions are renamed ( p3d_optim.c / 
+	p3d_global.c / FORMplanner.c / coltestcomp.c )
+	
+2. collision/Kcd/include/kcd_type.h	
+	Redefinition of KCD_SMALL_VOLUME_BOX(8) as an 
+	entity_type attribute
+
+3. include/p3d.h  ---> environment.h
+	atrribute object_tolerance added in the environment
+	structure
+	
+4. move3d/FORMenv.c
+	The functionality of the tolerance slider is
+	modified and a dmax slider is added	
+
+5. move3d/FORMmain.c
+ 	g3d_reinit_dmax_slider() added
+ 	
+6. move3d/move3d.c
+	modifications concerning options -tol and -dmax
+	
+7. p3d/p3d_env
+	in p3d_end_env() the object_tolerance is set to 
+	default value 0.0
+
+8. p3d/p3d_get.c
+	function p3d_get_env_object_tolerance() which 
+	retrieves the value of the object_tolerance.
+
+9. p3d/p3d_set.c
+	function p3d_set_env_object_tolerance() which 
+	sets the value of the object_tolerance.	
+
+10. planner/p3d_optim.c
+	removing of p3d_col_get_tolerance and dmax parameter
+
+11. planner/p3d_global.c
+	removing of p3d_col_get_tolerance and dmax parameter
+
+12. move3d/FORMplanner.c
+	removing of p3d_col_get_tolerance and dmax parameter
+
+13. collision/coltestcomp.c
+	renaming of p3d_col_get_tolerance into
+	p3d_col_get_dmax().
+
+14.collision/Kcd/kcd_api.c
+	Debugging error in distance report
+
+15. collision/p3d_col_traj.c
+	Debugging serveral errors and simplifying the code.
+	dmax is removed from the parameter list but p3d_col_get_dmax() is
+	called inside.
+
+16.17 removing dmax parameter in 2 rrt files (rrt_extend.c / rrt_global.c).
+

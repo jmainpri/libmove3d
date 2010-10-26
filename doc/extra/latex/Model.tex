@@ -1,0 +1,376 @@
+\chapter{Description of a scene}
+\label{model}
+
+A scene in Move3D is an environement structure containing obstacles
+and at least one robot. 
+
+\section{Environment, robots and obstacles}
+
+Two generic functions of the description of a Move3D scene are  {\tt
+void *p3d\_beg\_desc(int type, char *name)} \index{p3d\_beg\_desc}
+that starts the description of the element {\tt name} of type {\tt
+type} (environement, robot, obstacle, body of a robot), and {\tt int
+p3d\_end\_desc(void)} \index{p3d\_end\_desc} that ends the current
+description.
+
+\subsection{Description of an environment}
+
+\index{P3D\_ENV}
+
+The desciption of a scene always starts by function {\tt
+p3d\_beg\_desc(P3D\_ENV,env\_name)}, that calls the function {\tt void
+*p3d\_beg\_env(char* name)} \index{p3d\_beg\_env} with the name {\tt env\_name} as input. The
+function {\tt p3d\_beg\_env} allocates an environment structure {\tt
+p3d\_env} (cf Annex \ref{datastruct}) of name {\tt env},
+intializes it and returns it as an output.
+
+When all the robots and obstacles have been described, the function
+{\tt p3d\_end\_desc()} is called, that calls the function {\tt int
+p3d\_end\_env(void)} \index{p3d\_end\_env}. This function checks if some obstacles and at
+least one robot have been described in the environment, and finishes
+the initialization of the environnement.
+
+Between the command {\tt p3d\_beg\_desc P3D\_ENV
+env} and the corresponding command {\tt p3d\_end\_desc}, somes
+obstacles and at least one robot must be described.
+
+\subsection{Description of an obstacle}
+
+\index{P3D\_OBSTACLE}
+
+The description of an obstacle always start by the function {\tt
+p3d\_beg\_desc(P3D\_OBSTACLE, obst\_name)}. This time, {\tt p3d\_beg\_desc}
+checks if the description of an environment has been started, if we
+are not describing a robot or another obtsacle at the same time and
+calls the function {\tt void *p3d\_beg\_obj(char *name, int type)} \index{p3d\_beg\_obj}
+with the name {\tt obst\_name} and the type {\tt P3D\_OBSTACLE} as inputs. 
+The function {\tt p3d\_beg\_obj} allocates an object structure {\tt
+p3d\_obj} (cf Annex \ref{datastruct}) of name {\tt obst\_name}, and
+of type {\tt P3D\_OBSTACLE}, intializes it, stores it as the current
+object of the environment and returns it as an output.
+
+Once the obstacle has been initialized, the user can add one or several
+polyhedrons to describe its geometry (cf Fig. \ref{FIG_ROBOT}). Those
+polyhedrons can be created using regular geometric primitives or can
+be described vertex by vertex.
+
+\subsubsection{General polyhedron}
+
+A general polyhedron description always starts by the function {\tt void
+p3d\_add\_desc\_poly (char name[20])} \index{p3d\_add\_desc\_poly}
+with the name of the polyhedron {\tt poly\_name} as an input. {\tt
+p3d\_add\_desc \_poly} calls the function
+{\tt p3d\_poly *p3d\_poly\_beg\_poly(char name[20])}
+\index{p3d\_poly\_beg\_poly} with the name {\tt poly \_name}  as an
+input and stores this new polyhedron as the current polyhedron of the
+current object. The function {\tt p3d\_poly\_beg\_poly} allocates a
+polyhedron  structure {\tt p3d\_poly} (cf Annex \ref{datastruct}) of
+name {\tt poly\_name} , initializes it, and returns it as an output.
+
+The vertices of the polyhedron {\tt poly\_name} are the described one by one,
+using the function {\tt void p3d\_add\_desc\_vert(double x, double y, double
+z)} \index{p3d\_add\_desc\_vert}. The function {\tt p3d\_add\_desc\_vert} calls the function {\tt
+void p3d\_poly\_add\_vert(p3d\_poly *poly, float x, float y, float z)}
+\index{p3d\_poly\_add\_vert}
+with {\tt x, y, z} and the current polyhedron of the current object as
+inputs. The function {\tt void p3d\_poly\_add\_vert} numbers the
+vertex ({\tt x,y,z}), adds it to the current polyhedron and updates
+its bounding box.
+
+Once all the vertices have been described, we must describe the faces,
+using the numbers of the vertices. A face description is a list of
+integer {\tt a b c d ...} where the integers {\tt a,
+b, c, d, ... } must be the numbers of the vertices of the face,
+{\bf in the counter clockwise order if you face the exterior normal}
+(cf Fig. \ref{FIG_FACE}).
+
+
+\begin{figure}[hbt]
+\centerline{
+\psfig{figure=FIG/face.ps,width=7cm}
+}
+\caption{\small 
+Description of a face of a general polyhedron
+}
+\label{FIG_FACE}
+\end{figure}
+
+Those numbers must be stored in an array of integer so the function {\tt void
+p3d\_add \_desc\_face(int *listeV, int nb\_Vert)}
+\index{p3d\_add\_desc\_face}can be called. The function {\tt
+p3d\_add\_desc \_face} calls the function {\tt void p3d\_poly\_add\_face (p3d\_poly *poly, int *listeV, int nb\_Vert)} \index{p3d\_poly\_add\_face}
+with the list of vertices of the face, the number of vertices in the
+list and the current polyhedron of the current object as inputs. The
+function {\tt p3d\_poly\_add\_face} builds the face of the current polyhedron.
+
+Once all the faces have been described, the user must close the description
+of the current polyhedron by the function {\tt void
+p3d\_end\_desc\_poly(void)}\index{p3d\_end\_desc\_poly}. This
+function calls the function {\tt void p3d\_poly\_end\_poly(p3d\_poly
+*poly)} \index{p3d\_poly\_end\_poly}
+with the current polyhedron as an input, udates the number of
+polyhedron of the current object and its bounding box and places the
+current polyhedron in the array of polyhedrons of the current
+object. The function {\tt void p3d\_poly\_end\_poly} creates the edges of
+the polyhedron and finishes its initialization.
+
+This decription of a polyhedron can be very useful for a polyhedron of
+specific or unusual shape, but most of the time we use regular
+polyhedron. Move3d proposes a library of regular polyhedron called
+primitives that simplify the description of polyhedrons.
+
+\subsubsection{Geometric primitives}
+
+The geometric primitives are all described in the same way : the
+function {\tt void p3d \_add\_desc\_}{\it type}{\tt (char name[20],
+}{\it parameters}{\tt )}
+\index{p3d\_add\_desc\_type@p3d\_add\_desc\_{\it type}} is called,
+{\it parameters} being the right parameters for the type of primitive
+we choose (size of the side fo a cube, ray for a sphere,...).
+The function {\tt p3d\_add\_desc\_}{\it type} calls the {\tt void
+p3d\_create\_}{\it type}{\tt (char name[20], }{\it parameters}{\tt )}
+\index{p3d\_create\_type@p3d\_create\_{\it type}}function with the
+name {\tt prim} and the parameters as imputs, stores this new
+polyhedron as the current polyhedron of the object, places it in the
+array of polyhedrons of the current object and updates the number of
+polyhedron of the current object and its bounding box. 
+
+The different types of geometric primitives available in Move3D are
+shown in Fig. \ref{FIG_PRIM}.\\
+
+
+\begin{figure}[hbt]
+\centerline{
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\psfig{figure=FIG/cube.ps,height=2cm} &
+\psfig{figure=FIG/box.ps, height=2cm} &
+\psfig{figure=FIG/srect.ps,height=2cm} &
+\psfig{figure=FIG/pyr.ps,height=2cm} &
+\psfig{figure=FIG/cyl.ps,height=2cm} \\
+\hline
+cube & box & swept     & pyramid & cylinder\\ 
+     &     & rectangle &         &         \\\hline
+{\it cube} & {\it box} & {\it srect} & {\it pyramid} & {\it cylindre} \\\hline\hline
+\psfig{figure=FIG/hoval.ps,height=2cm} &
+\psfig{figure=FIG/pris.ps, height=2cm} &
+\psfig{figure=FIG/snout.ps,height=2cm} &
+\psfig{figure=FIG/ssnout.ps,height=2cm} &
+\psfig{figure=FIG/cylov.ps,height=2cm} \\
+\hline
+half oval & prisma & snout & skew  & oval \\ 
+  &        &       & snout & cylinder \\\hline
+{\it half\_oval} & {\it prisme} & {\it snout} & {\it skew\_snout} & {\it cylindre\_oval} \\\hline\hline
+\psfig{figure=FIG/rtorus.ps,height=2cm} &
+\psfig{figure=FIG/cone.ps, height=2cm} &
+\psfig{figure=FIG/sphere.ps,height=2cm} &
+\psfig{figure=FIG/hsphere.ps,height=2cm} &
+\psfig{figure=FIG/ctorus.ps,height=2cm} \\
+\hline
+rectangular  & cone & sphere & half   & circular \\ 
+torus slice  &      &        & sphere & torus slice \\\hline
+{\it rtorusslice} & {\it cone} & {\it sphere} & {\it half\_sphere} & {\it ctorusslice} \\\hline
+\end{tabular}
+}
+\caption{\small 
+The geometric primitives proposed in Move3D
+}
+\label{FIG_PRIM}
+\end{figure}
+
+A geometric primitive is always described with its center placed to
+the point (0,0,0) in the frame of the environnement. So we often have
+to put them in their right position, using the function {\tt void
+p3d\_set\_prim\_pos(char name[20], double tx, double ty, double tz,
+double rx, double ry, double rz)} \index{p3d\_set\_prim\_pos} that modify the position matrix of
+the primitive. The parameter prim is the name of the primitive we want
+to move, ({\tt tx, ty, tz}) the translations along the 3 axes, and
+({\tt rx, ry, rz}) the rotations along the 3 axes (first {\tt rx} then
+{\tt ry}  then {\tt rz}). This function can also be used for a general
+polyhedon.
+
+%p3d\_set\_prim\_pos\_by\_mat\\
+
+Once all the polyhedron of the object have been described, the
+function {\tt p3d\_end\_desc()} is called, that
+calls this time the function {\tt int p3d\_end\_obj(void)} \index{p3d\_end\_obj}. This
+function stores the current object in the array of obstacles of the
+current environment if its type was {\tt P3D\_OBSTACLE}. 
+
+After its description, a whole obstacle can be moved using the
+function {\tt void p3d\_set \_obst\_pos(char name[20], double tx,
+double ty, double tz, double rx, double ry, double rz)}
+\index{p3d\_set\_obst\_pos} is called,
+wich use is exactly the same than {\tt p3d\_set\_prim\_pos}.
+
+
+%p3d\_set\_obst\_pos\_by\_mat\\
+
+
+\subsection{Description of a robot}
+
+\index{P3D\_ROBOT}
+
+A robot is made of one or several bodies linked by some joints. In
+Move3D, a body is the same kind of object than an obstacle. The
+description of a robot always starts by the function {\tt
+p3d\_beg\_desc(P3D\_ROBOT, robot\_name)}. The function {\tt p3d\_beg\_desc}
+checks again if the description of an environment has been started, if we
+are not describing an obstacle or another robot at the same time and
+calls the function {\tt void *p3d\_beg\_rob(char *name)}
+\index{p3d\_beg\_rob} with the name
+{\tt robot\_name}. The function {\tt p3d\_beg\_rob} allocates an robot structure {\tt
+p3d\_rob} (cf Annex \ref{datastruct}) of name {\tt robot}, initializes
+it stores it as the current robot, and returns it as an output. 
+
+Once the robot has been initialized, we can start its geometrical and
+cinematical description.
+
+A robot can be seen as a kinematic chain (a tree) on which some polyhedral bodies are
+placed (cf Fig. \ref{FIG_ROBOT}) but it can also be seen as a ``game
+of construction'' : we create a body, we attach a joint on this body
+and then place another body on this joint, and so on.
+
+\index{P3D\_BODY}
+The description of a body starts by the function {\tt
+p3d\_beg\_desc(P3D\_BODY,body\_name)}. The function {\tt p3d\_beg\_desc}
+checks if the description of an environment and of a robot have been
+started, if we are not describing another robot or obtsacle at the
+same time, and, as a body is the same type of object as an obstacle,
+it calls the function {\tt void *p3d\_beg\_obj(char *name, int type)}
+with the name {\tt body\_name} and the type {\tt P3D\_BODY} as inputs. The
+description of a body of a robot is the same as the description of an
+obstacle, but with some slight differences.
+
+Inside {\tt p3d\_beg\_obj}, there is no difference : the object is
+allocated, initialized and stored as the current object. But inside
+{\tt p3d\_end\_obj}, the current object is not stored in the array of
+obstacles of teh environment, but in the array of bodies of the robot.
+If the body described is the first body of the robot, {\tt
+p3d\_end\_obj} also creates automatically the joint 0 of the robot,
+j0. The joint j0 is a special joint : it allows the robot to translate
+along the $x$, $y$ and $z$ axis and to rotate around the $z$ axis. It
+is always defined at the point $(0,0,0)$. And this induces the main
+difference between the description of an obstacle and the description
+of a robot : an obstacle can be described in his place in the
+environnement but {\bf a robot must be described regarding the point
+$(0,0,0)$}. 
+The description of a body ends with a {\tt p3d\_end\_desc}. 
+
+A joint is added with the function :
+
+\noindent{{\tt int p3d\_add\_desc\_jnt(int type, double x0, double y0, double
+z0, double axe1, double axe2, double axe3, double v, double vmin,
+double vmax, int prev)}}
+
+\index{p3d\_add\_desc\_jnt}
+
+The type {\it TYPE} can be {\tt P3D\_ROTATE} \index{P3D\_ROTATE} (for a rotoid joint) or
+{\tt P3D\_TRANLSATE} \index{P3D\_TRANLSATE} (for a prismatic joint). The triplet $(x0,y0,z0)$ is
+the point where the two bodies will be linked and the vectore
+$(axe1,axe2,axe3)$ is the axis of rotation or translation of the
+joint. The interval $[vmin,vmax]$ is the bounds of the joint and $v$ its
+current value. Finally, $prev\_jnt$ is the number of the previous
+joint of the described joint on the cinematic chain.
+
+It checks if a description of a robot has been started, if we are not
+describing an obstacle at the same time, allocate the joint,
+initializes it and updates the informations of the cinematic chain
+(the set of next joints of the rpevious joint for example), stores
+it in the array of joints of the robot, and returns the new number of
+joints of the robot.
+
+The description of a robot ends by a {\tt p3d\_end\_desc} that calls
+the function {\tt int p3d\_end\_rob(void)} \index{p3d\_end\_rob}. The function {\tt
+p3d\_end\_rob} updates the bounding box of the robot, and finishes the
+initialization.
+
+%p3d\_set\_body\_pos\_by\_mat\\
+
+
+
+\begin{figure}[hbt]
+\centerline{
+\psfig{figure=/home/nissoux/LATEX/THESE/CHAPIII/FIG/modele_hil.ps,width=10cm}
+}
+\caption{\small 
+Description of a scene in Move3D.
+}
+\label{FIG_ROBOT}
+\end{figure}
+
+Once all the obstacles and robots have been described, the description
+of a scen ends by a last {\tt p3d\_end\_desc}. But to be complete, a
+scene must also use the functions {\tt p3d\_set\_env\_box} (defines the
+limits of the scene), {\tt p3d\_set\_robot\_box} (defines the bounds
+of j0), {\tt p3d\_set\_robot\_radius} (define the radius of the
+turning circle of the robot) and {\tt p3d\_set\_robot\_pos} (defines
+the current values of the degrees of freedom of j0) that will be
+described in the following chapters.
+
+\section{Trajectories}
+
+In Move3D, the trajectory is described by a sequence of elementary
+curves (typically straight line segments in the configuration space,
+arcs of circle for trajectories of car-like robots,...).
+
+The description of a trajectory always starts by the command {\tt
+p3d\_beg\_desc P3D\_TRAJ traj}, that checks checks again if the
+description of an environment has been started, if we are not
+describing another trajectory at the same time and calls the
+function {\tt void *p3d\_beg\_traj(char *name)} \index{p3d\_beg\_traj}
+with the name {\tt
+traj}. The function {\tt p3d\_beg\_traj} allocates an object structure
+{\tt p3d\_trj} (cf Annex \ref{datastruct}) of name {\tt traj},
+intializes it, stores it as the current trajectory of the environnemnt
+and returns it as an output.
+
+The function {\tt int p3d\_add\_desc\_courbe(p3d\_courbe *cadd,int
+nmaill)} \index{p3d\_add\_desc\_courbe} adds to the current trajectory the sequence of {\tt nmaill}
+elementary curves of type {\tt p3d\_courbe} (cf Annex
+\ref{datastruct}) contained in the list {\tt cadd} (typically a local
+path) . and returns the current number of elementary curves of the
+current trajectory.
+
+The function {\tt int p3d\_end\_traj(void)} \index{p3d\_end\_traj} stores the current
+trajectory in the array of trajectories of the current robot.
+
+
+\section{Deleting a scene}
+
+The function {\tt int p3d\_del\_desc(int type)} \index{p3d\_del\_desc}
+deletes the current element of type {\tt type}. The function {\tt
+p3d\_del\_desc} calls the functions {\tt int p3d\_del\_obst(pp3d\_obj
+o)}, {\tt int p3d\_del\_rob(pp3d\_rob r)}, {\tt int
+p3d\_del\_traj(pp3d\_trj t)}, or {\tt int p3d\_del\_env(pp3d \_env e)}
+regarding the type of the element the user wants to delete. 
+
+The function {\tt int p3d\_del\_traj(pp3d\_trj t)}
+\index{p3d\_del\_traj} liberates the
+trajectory {\tt t}, the elementary curves of {\tt t} and actualizes
+the array of trajectories of the robot corresponding to {\tt t}.
+
+The function {\tt int p3d\_del\_obst(pp3d\_obj o)}
+\index{p3d\_del\_obst} liberates the
+object {\tt o}, the polyhedrons of {\tt o} (with the function
+p3d\_poly\_del\_poly) and modifies the current obstacle if this one
+was {\tt o}).
+
+The function {\tt int p3d\_del\_rob(pp3d\_rob r)}
+\index{p3d\_del\_rob} liberates the robot
+{\tt r}, its joints, its bodies, its trajectories, its initial and
+final configuration, actualizes the array of robots of the environment
+and modifies the current robot if this one was {\tt r}. 
+
+The function {\tt int p3d\_del\_env(pp3d\_env e)}
+\index{p3d\_del\_env} liberates the
+environment {\tt e}, liberates all its obstacles and robots and
+actualizes the array of environments of the Move3D sessions.
+
+The function {\tt int p3d\_poly\_del\_poly(p3d\_poly *p)}
+\index{p3d\_poly\_del\_poly} liberates
+the polyhedron {\tt p} and actualizes the set of poyhedrons of the
+scene.
+
+
+

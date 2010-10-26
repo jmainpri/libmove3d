@@ -1,0 +1,43 @@
+MODIFICATIONS APPORTEES POUR LE PORTAGE SOUS WINDOWS DE MOVE3D
+
+A- Modifications principales
+
+* Changement de la structure des headers.
+* Suppression officielle des collisions checker I-Collide et Solid.
+
+
+B- Changement de la structure des headers
+
+Les headers sont maintenant regroupées par module dans un fichier "package", qui sont les suivants:
+Collision-pkg.h
+Graphic-pkg.h
+Localpath-pkg.h
+Move3d-pkg.h
+P3d-pkg.h
+Planner-pkg.h
+Rrt-pkg.h
+Util-pkg.h
+
+
+Chaque fichier header pkg contient une zone déclaration des structures, puis déclaration des variables globales puis enfin les prototypes du module représenté.
+
+Chaque fichier header pkg est self-contain, toutes les définitions de structures sont présentes pour satisfaire les proto.
+
+Ceci implique quelques règles de développement:
+* Il ne doit plus avoir de proto directement dans le source (donc plus de "extern ..." dans un .c). 
+* Le fichier p3d.sys et p3d.type sont systématiquement présents dans chaque fichier package.
+* Plus d'include de .h dans un autre à l'exception des fichiers header pkg (sauf quelque rare exception comme struct_flat.h dans localpath.h ou partie non portée sous Windows comme le module move3d).
+
+
+C- Suppression de I-Collide et Solid
+<sans commentaire>
+
+
+D- Autres modifications notables:
+
+Modification des Makefiles pour générer des proto compatibles avec Windows.
+Du fichier p3d.h à été extrait device.h, traj.h et environment.h.
+Réécriture de code pour les fichiers util/time.c et graphic/g3d_window.c pour gérer un code par plate-forme.
+Les macros INSERT, DELETE, BEST_NODE possède maintenant un préfixe EBT_ .
+
+

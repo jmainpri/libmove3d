@@ -1,0 +1,116 @@
+----------------------------------------------------------------
+Nouvelle methode d'initialisation de l'auto-collision des robots
+----------------------------------------------------------------
+
+1- Intro 
+
+ Une nouvelle methode d'initialisation vient en remplacement de la
+ fonction p3d_activate_rob du fichier /collision/p3d_col_env.c
+
+ Le role de cette fonction est d'activer un detecteur de collision
+ entre differentes paires de corps d'un meme robot. 
+
+ Autrefois, un algorithme de parcours de l'arborescence des corps 
+ du robot permettait d'activer ces paires. L'activation des paires 
+ etait automatique.
+
+ Aujourd'hui, on construit une structure stockant les eventuelles 
+ activations a realiser, on peut ensuite modifier via de nouvelles
+ fonctions p3d ces informations, avant de reellement initialiser
+ l'auto-collision.
+
+2- Commandes d'activation via un fichier .p3d
+
+ La non-declaration de ces fonctions dans un fichier p3d entraine 
+ une activation automatique, imitant le comportement de l'ancienne 
+ methode, des paires de corps du robots. 
+
+ 2.1- selection du robot
+
+  La selection du robot que l'on va ensuite decrire (cf ci-apres) se
+  fait a travers l'appel de la fonction : 
+
+     p3d_add_desc_rob_col_init # NOM DU ROBOT #
+
+  cette commande a pour effet de creer la structure de donnees 
+  stockant l'information relative a l'autocollision, ET d'activer
+  toutes les paires de corps dur robot (toujours auto-collision).
+
+  Le double appel de cette commande pour un meme robot est INTERDIT
+
+ 2.2- activation automatique des paires de corps
+
+  L'activation automatique de l'auto-collision de la meme facon que
+  l'ancienne methode se fait a travers l'appel de la fonction : 
+	   
+     p3d_desactivate_col_check automatic 
+
+  cette commande a aussi pour effet de reinitialiser completement 
+  l'activation des paires. Par consequent d'eventuelles desactivation
+  anterieures (cf ci apres) sont PERDUES.
+
+ 2.3- desactivation specifique d'une paire de corps
+
+  La desactivation d'une paire de corps afin d'eviter une detection
+  en auto-collision par contact de ces deux corps se fait a travers 
+  l'appel de la fonction 
+	
+     p3d_desactivate_col_check #NOM DU BODY 1#  #NOM DU BODY 2#
+
+ 2.4- appel dans une macro
+
+  La seule commande affectee par sa declaration dans une macro est :
+  p3d_add_desc_rob_col_init qui ne doit plus etre suivie du nom du 
+  robot.
+
+3- Structure de donnees 
+
+ typedef struct col_act {
+  int    *** body_links;
+  int      * described_robots;
+  int        cur_rob_id;
+} p3d_rob_col_activ, *pp3d_rob_col_activ;
+
+ la structure de donnees contient :
+   - l'index du robot courant dans la declaration des paires 
+     inactives(l'index dans le tableau XYZ_ENV->robot).
+   - un tableau 1D des index des robots decrits : la valeur
+     d'initialisation est -1, puis on remplit le tableau
+     au fur et a mesure des descriptions. 
+   - un tableau 3D des liens a activer :
+	* premiere entree : l'index du robot
+	* deuxieme entree : l'index du corps n*1
+	* troisieme entree : l'index du corps n*2 (doit etre 
+	  inferieur pour eviter les redondances) 
+     la valeur stockee est 1 si on active la detection, -1 sinon.
+   
+4- Nouvelles fonctions :
+   
+ Stockees pour l'essentiel dans p3d_autocol.c :
+   
+  - void p3d_init_rob_col_activ (char *name) : alloue la memoire
+    necessaire a la structure de donnees, initialiste les listes
+    d'activation (tout est active), marque le robot comme decrit.
+
+  - void p3d_desactivate_col_check(char *name_body1, char *name_body2)
+    intervient dans la structure de donnees afin de marquer une paire
+    de corps comme "desactivee" (pas d'autocollision entre ces deux 
+    corps). p3d_init_rob_col_activ doit etre appele auparavant.
+
+  - void p3d_desactivate_col_check_automatic(void) : 
+    methode de desactivation par defaut. p3d_init_rob_col_activ doit 
+    etre appele auparavant.
+
+  - void p3d_autocol_activate_rob(p3d_rob *rob) :
+    fonction interpretant la structure de donnees afin d'activer 
+    reellement la detection de collision. Desalloue la memoire
+    necessaire aux informations relative au robot concerne
+
+  - void p3d_autocol_destroy_datas(void) :
+    destruction complete de la structure de donnees et liberation 
+    de la memoire relative. 
+  
+  - void p3d_autocol_destroy_datas_for_robot(int index_rob) : 
+    destruction des informations relatives a un robot, liberation
+    de la memoire relative. 
+

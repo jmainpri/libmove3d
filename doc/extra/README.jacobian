@@ -1,0 +1,110 @@
+Calcul de la Jacobienne
+
+I introduction
+
+Soit P = (x, y, z) un point d'un corps du robot (les coordonnées exprimées
+dans le repère de la scène). La jacobienne permet d'exprimer dP en fonction de
+dq, ou q sont les coordonnées de tous les joints.
+
+	dP = J dq
+ou dP = (dx, dy, dz)
+et dq = (dq1, dq2, ..., dqn)
+
+II calcul de J
+
+On sait que P = A(q,n)*P0 où A(q,n) est la matrice de position du joint n.
+donc dP/dqi = dA(q,n)/dqi*P0.
+
+or A(q,n) = M1(q1)M2(q2)...Mn(qn)
+donc dA(q,n)/dqi = M1(q1)...dMi(qi)/dqi...Mn(qn)
+
+or dP/dqi est la ieme colonne de la jacobienne.
+
+notons N(i,n) = dA(q,n)/dqi
+il suffit donc de calculer toutes les matrices Ni pour pouvoir calculer tous
+les jacobiennes des points reliés à ce joint. N(i,n) sera appelée matrice
+pré-jacobienne du joint n.
+
+On peut établir une relation de récurrence entre les pré-jacobiennes.
+En effet,
+
+A(q,n)=A(q,n-1)*Mn(qn)
+
+donc
+
+N(n,n) = A(q,n-1)*dMn(qn)/qn
+N(i,n) = N(i,n-1)*Mn(qn)	si i!=n
+
+Les N(i,n) peuvent être calculer à partir des N(i,n-1).
+
+III implémentation
+
+1) structure
+chaque joint possède une liste de structures "prejac" qui correspond aux N(i,n)
+typedef struct prejac {
+  int numder;
+  p3d_matrix4 J;
+  struct prejac *prev_prejac;
+} p3d_prejac;
+
+où numder est le numero de la variable par rapport à laquelle on derive
+(numder=i) J est la prejacobienne, et prev_prejac pointe vers la prejacobienne
+precedante (N(i-1,n))
+
+2) fonctions :
+
+p3d_jacInitialization(p3d_rob *rob) :
+
+initialise la liste de prejacobiennes des joints du robot.
+	
+p3d_jacDelete(p3d_rob *rob) :
+
+detruit la liste de prejacobiennes des joints du robot.
+	
+p3d_jacSetAndUpdatePosition(p3d_rob *rob, configPt q)
+
+positionne le robot à la configuration q et met à jour les matrices de position
+et les matrices prejacobiennes
+
+p3d_jacUpdatePosition(p3d_rob *rob)
+
+met à jour les matrice de position et les matrices prejacobiennes
+	
+p3d_jacMult(p3d_vector3 P, p3d_jnt *jnt, configPt G, p3d_vector3 F)
+
+multiplie G par J : F = J * G
+P est le point où la jacobienne est calculée (dans le repère du robot)
+jnt est le joint auquel appartient P. 	
+
+p3d_jacTransposeMult(p3d_vector3 P, p3d_jnt *jnt, double *R, p3d_vector3 F, configPt G)
+
+multiplie F par la transposée de J : G = Jt * F
+P est le point où la jacobienne est calculée (dans le repère du robot)
+jnt est le joint auquel appartient P.
+R est un tableau de n double où n est le nombre de joints du robot. R sert à
+normaliser les paramètres angulaires.
+Si R = NULL, les parametres sont égaux à rob->length_array.
+
+int p3d_jacPseudoInvMult(p3d_vector3 P, p3d_jnt *jnt, double *R, p3d_vector3 F,
+configPt G) 	
+
+multiplie F par la pseudo-inverse de J : G = j+ * F
+P est le point où la jacobienne est calculée (dans le repère du robot)
+jnt est le joint auquel appartient P.
+R est un tableau de n double où n est le nombre de joints du robot. R sert à 	
+normaliser les paramètres angulaires.
+Si R = NULL, les parametres sont égaux à rob->length_array.
+la fonction renvoie -1 si la matrice n'est pas "inversible", 0 sinon.
+
+IV Notes
+
+Ce calcul de jacobienne de prend pas en compte les bornes des joints.
+Il ne prend pas non plus ne compte la notion de joints passifs et de
+contraintes cinématiques. 	
+	
+	
+	
+
+
+
+

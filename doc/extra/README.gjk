@@ -1,0 +1,131 @@
+***********************************************************************
+Update of "-c gjk" option
+
+Date: MAY 2001
+Author: Pepijn Raeymaekers (KINEO)
+***********************************************************************
+
+INTRODUCTION
+************
+The Goal of this update is to have an EXACT DISTANCE COMPUTATION, this
+means that finding a solution takes much more time than with another
+collision checker.
+This update is intended for users who want to use "-c gjk option"
+
+ACTIVATION OF THE GJK OPTION
+****************************
+To enable the "-c gjk" option the GJK Flag in the file init_make_move3D
+must be set to 1, and move3d has to be recompiled. It is possible that 
+the file kcd_gjk_debug.c doesn't compile, to resolve this problem the 
+file libkcd.a has to be deleted before recompiling.
+
+IMPORTANT: if move3D is compiled with GJK set to 1, it is possible that
+KCD will not work properly with small volume boxes. This problem will 
+be resolved in the next update of Move3D
+
+
+USEFUL INFORMATION
+******************
+
+For each body GJK calculates the distance between the body and all the
+obstacles. The report mechanism keeps track of the two closest points.
+For the moment the different bodies are only tested against static 
+objects.
+
+The following information will be written in the report:
+--------------------------------------------------------
+For each body (mo) of each robot (group of mos) the position of the 
+closest point will be given relative to the center of the body.
+
+The corresponding coordinates of the closest point will be given 
+relative to the origin of the environment (absolute position).
+
+
+FUNCTION in p3d_col.c
+-----------------------------
+The following function calls the newly defined functions in 
+kcd_api_report.c:
+
+1. int p3d_col_report_closest_points
+                (p3d_rob *robotPt, p3d_vector3 *points_mos, 
+                 p3d_vector3 *points_sos, double *distances)
+
+This function should be used in general to retrieve the necessary 
+information concerning the closest points.
+More information of this function can be found in p3d_col.c and an example
+that uses this function can be found in kcd_gjk_debug.c
+
+
+FUNCTIONS in kcd_api_report.c
+-----------------------------
+The report mechanism keeps track of the shortest distance between each 
+body (mo) of each robot (group of mo) and the static objects. 
+The report mechanism keeps also track of the corresponding closest pair 
+of points.
+
+To access this information the following functions can be used:
+
+2. void kcd_get_points_closest_pair(int robot_id, int body_id, 
+                                    kcd_vector3 point_mo, 
+                                    kcd_vector3 point_so)
+   This functions returns the coordinates of the closest points 
+   (relative to the origin of the object)
+                
+3. void kcd_get_dist_grp_mo_so(int robot_id,int body_id,double *dist)
+   This functions returns the minimum distance form a given mo to the
+   closest so.
+
+Both functions need as input parameters a robot_id and a body_id,
+See also the example in the file kcd_gjk_debug.c.
+
+
+LIMITATIONS OF GJK
+******************
+The following message will appear when using GJK:
+Note: robot self intersection is not tested
+Note: robot1 vs. robot2 not tested
+Note: concave facets are not tested
+
+So a collision test is done for the following cases:
+Solid body versus Solid object 
+Solid Body versus Polyhedron object 
+Polyhedron Body versus Solid Object
+Polyhedron body versus Polyhedron object
+
+GJK as a stand-alone collision checker is slow so it is not useful
+to use it on more complicated scenes.
+
+
+LATEST MODIFIED FILES (4 in total)
+**********************************
+collision/p3d_col.c:
+        in some switches the case p3d_col_mode_gjk is added
+        New function:
+        int p3d_col_report_closest_points
+                (p3d_rob *robotPt, p3d_vector3 *points_mos, 
+                 p3d_vector3 *points_sos, double *distances)
+
+collision/Kcd/kcd_gjk_support.c:
+        added #ifdef GJK_DEBUG
+
+collision/Kcd/kcd_api_report.c:
+        some report functions are added.
+
+collision/Kcd/kcd_gjk_debug.c
+        some parts are rewritten and some bugs are removed.
+
+***********************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+

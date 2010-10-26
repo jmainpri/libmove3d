@@ -1,0 +1,134 @@
+\chapter{Steering methods}
+
+\section{Building a local path}
+
+A steering method builds a path between two configurations of a robot,
+respecting its kinematic constraints, but without considering any
+obstacle. In Move3D, a steering method is a function that takes a
+robot {\tt r} and two configurations {\tt qi} and {\tt qf} as inputs
+and returns a list of {\tt nmaill} elementary curves {\tt c}. Move3D
+has five different steering methods. 
+
+The function {\tt p3d\_courbe *p3d\_linear\_search(p3d\_rob *r, double
+*qi, double *qf, int *nmaill)} \index{p3d\_linear\_search} checks
+wether {\tt qi} and {\tt qf} are equal, if they are free, and builds
+an elementary curve containing the straight line segment in the
+configuration space between {\tt qi} and {\tt qf} (cf
+Fig. \ref{FIG_LOCAL_SEG}). In this function, nmaill is always equal to
+1.
+
+\begin{figure}[hbt]
+\centerline{
+\psfig{figure=FIG/localseg.ps,width=5cm}
+}
+\caption{\small 
+Example of local path built by {\tt p3d\_linear\_search}.
+}
+\label{FIG_LOCAL_SEG}
+\end{figure}  
+
+The function {\tt p3d\_courbe *p3d\_local\_search(p3d\_rob *r, double
+*qi, double *qf, int *nmaill)} \index{p3d\_local\_search} checks wether {\tt qi} and {\tt qf} are
+equal, if they are free, and builds the elementary curves containing
+the Reeds and Shepp path for the $x,y,\theta$ degrees of freedom of
+{\tt qi} and {\tt qf} (the first, second and fourth ones) and the
+straight line segment in the configuration space for the others (cf
+Fig. \ref{FIG_LOCAL_RS_SEG}). In this function, nmaill can range from 3 to 5.
+
+\begin{figure}[hbt]
+\centerline{
+\psfig{figure=FIG/localRSseg.ps,width=5cm}
+}
+\caption{\small 
+Example of local path built by {\tt p3d\_local\_search}.
+}
+\label{FIG_LOCAL_RS_SEG}
+\end{figure}
+
+The function {\tt p3d\_courbe *p3d\_plateform\_search(p3d\_rob *r,
+double *qi, double *qf, int *nmaill)} \index{p3d\_plateform\_search}
+checks wether {\tt qi} and {\tt qf} are equal, if they are free, and
+builds the elementary curves containing the Reeds and Shepp path for
+the $x,y,\theta$ degrees of freedom of {\tt qi} and {\tt qf}, and
+blocks the others in {\tt qi} (cf Fig. \ref{FIG_LOCAL_RS}). In this
+function, nmaill can also range from 3 to 5.
+
+\begin{figure}[hbt]
+\centerline{
+\psfig{figure=FIG/localRS.ps,width=5cm}
+}
+\caption{\small 
+Example of local path built by {\tt p3d\_platform\_search}.
+}
+\label{FIG_LOCAL_RS}
+\end{figure}  
+
+The function {\tt p3d\_courbe *p3d\_arm\_search(p3d\_rob *r, double
+*qi, double *qf, int *nmaill)} \index{p3d\_arm\_search} checks wether
+{\tt qi} and {\tt qf} are equal, if they are free, and builds an
+elementary curve containing the straight line segment in the
+configuration space between {\tt qi} and {\tt qf} except for the
+degrees of freedom $x,y,\theta$ that are blocked in their {\tt qi}
+values. In this function, nmaill is always equal to 1.
+
+The function {\tt p3d\_courbe *p3d\_manhattan\_search(p3d\_rob *r,
+double *qi, double *qf, int *nmaill)} \index{p3d\_manhattan\_search}
+checks wether {\tt qi} and {\tt
+qf} are equal, if they are free, and builds the elementary curves
+containing a symmetric Manhattan local path. This paths is made of
+straight line segments representing the move of a single degree of
+freedom at the same time. If the first degree of freedom $x$ of {\tt
+qi} is smaller than the first degree of freedom of {\tt qf} we move
+the first degrees of freedom first, and if the first degree of freedom
+of {\tt qi} is greater than the first degree of freedom of {\tt qf},
+we move the last degrees of freedom first, so that the local path is
+symmetrical(cf Fig. \ref{FIG_LOCAL_MAN}).In this function, nmaill is always
+equal to the number of degrees of freedom.
+
+\begin{figure}[hbt]
+\centerline{
+\psfig{figure=FIG/localman.ps,width=5cm}
+}
+\caption{\small 
+Example of local path built by {\tt p3d\_manhattan\_search}.
+}
+\label{FIG_LOCAL_MAN}
+\end{figure}
+
+\section{Validating a local path}
+
+Validating a local paths is knowing if, for a given robot
+corresponding to this local path, the robot will collide moving along
+this path. The Move3d validation of local path is simple : Being given
+the local path of a robot, we place this robot at the begining of the
+path and compute dmin, the closest distance of the bounding boxes of
+the bodies of the robot to the bounding boxes of the obstacles. This
+gives us the increment of configuration dq along which the robot can
+move without that any of its point moves further than dmin. So we can
+be sure that there will not be any collision along dq. If the bounding
+boxe of a body overlaps the bounding box of an obstacle, dq becomes
+regular and very small so we can be sure to detect a collision between
+the body and the obstacle if there is one (cf Fig \ref{FIG_VALID}).
+
+
+\begin{figure}[hbt]
+\centerline{
+\psfig{figure=FIG/valid.ps,width=10cm}
+}
+\caption{\small 
+Validation of a local path in Move3D.
+}
+\label{FIG_VALID}
+\end{figure}  
+
+The function {\tt int p3d\_col\_test\_traj\_dist(p3d\_rob *rob,
+p3d\_courbe *c, int nmaill, int *ntest, int *nbb)}
+\index{p3d\_col\_test\_traj\_dist} test if the robot
+{\tt rob} collides while moving along the local path made of the {\tt
+nmaill} elementary curves contained in the list {\tt c}. The integer
+{\tt ntest} is the number of calls to the collision checker, and {\tt
+nbb} the number of times we have to check the distance between the
+bounding boxes.
+
+
+

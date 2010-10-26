@@ -1,0 +1,180 @@
+\chapter{Collision detection}
+
+Move3D has two collision checkers : I-collide  (\cite{LINMANOCH95})
+and V-collide (\cite{LINMANOCH97}). Both work the same way. Being
+given some polyhedrons, the user defines which pairs of polyhedron can
+be in collision. Those pairs are said ``activ{e}''. Every time one or
+several polyhedron move, the collision checkers makes a list of all
+the pairs of polyhedron whose bounding boxes overlap. Then an
+expensive but exact algorithm checks if the pairs of this list
+collide. 
+
+Move3D allows the use of the two collision checkers, the choice of the
+bounding boxes and proposes some function to simplify the activation
+of the pairs of polyhedron that can collide in a whole scene.
+
+\section{Initialization}
+
+It is clear that a collision checker can not be started if a scene has
+not been described.
+
+The function {\tt void p3d\_col\_init\_coll(void)}
+\index{p3d\_col\_init\_coll} sets all the
+bolean indicating that the collision checkers have initialized to
+null. It must be called when the user wants to reinitialize all the
+collision checkers.
+
+To start a collision checker, the user can choose among the three
+following functions :
+
+\begin{itemize}
+\item {\tt void p3d\_col\_start\_current(void)}
+\index{p3d\_col\_start\_current} will initialize
+the collision checker whose type has been stored as an integer in the global
+variable {\tt p3d\_col\_mode} : {\tt p3d\_col \_mode\_i\_collide} for
+I-collide and {\tt p3d\_col\_mode\_v\_collide} for V-collide.
+\item {\tt void p3d\_col\_start\_last(void)}
+\index{p3d\_col\_start\_last} will initialize
+the collision checker whose type has been stored as an integer in the global
+variable {\tt p3d\_col\_last\_mode}.
+\item {\tt void p3d\_col\_start(int c)} \index{p3d\_col\_start} will initialize
+the collision checker whose type correspond to the integer {\tt c}.
+\end{itemize}
+
+Those three function will allocate and initialize all the variables
+needed for the chosen algorithm of collision detection.
+
+If the user has chosen I-collide, he can then choose the kind of
+bounding box will be used for the polyhedrons. The function {\tt int
+p3d\_switch\_all\_to\_cube(void)} \index{p3d\_switch\_all\_to\_cube}
+sets the bounding boxes to cuboid bounding box, lined up on the axis,
+containing the polyhedrons for any orientation, whereas {\tt int
+p3d\_switch\_all\_to\_DBB(void)} \index{p3d\_switch\_all\_to\_DBB} sets the bounding box to Dynamic
+Bounding Boxes, also lined up on the axis, changing of size
+everytime the polyhedrons change of orientation. The collision checker
+V-collide only use cuboid bounding boxes. Those bounding boxes are
+used in Move3D to cumpute the bounding boxes of the obstacles and robots.
+
+Once the collision checkers have been initialized, the user must
+indicate the pairs of polyhedron, among all the possible pairs, that
+may collide. Three functions are vailable :
+
+\begin{itemize}
+\item {\tt void p3d\_col\_activate\_pair(p3d\_poly *obj1,p3d\_poly
+*obj2)} \index{p3d\_col\_activate\_pair} will activate the pair of polyhedron {\tt (obj1,obj2)}
+\item {\tt void p3d\_col\_activate\_full(p3d\_poly *obj)}
+\index{p3d\_col\_activate\_full} will activate
+the pairs formed by the polyhedron {\tt obj} and all the other
+polyhedrons in the scene.
+\item {\tt void p3d\_col\_activate\_all(void)}
+\index{p3d\_col\_activate\_all} will activate all the
+pairs of polyhedrons in the scene.
+\end{itemize}
+
+Of course, an active pair can also be deactivate. The three previous
+activation functions have their equivalent for deactivation : 
+{\tt void p3d\_col\_deactivate\_pair(p3d\_poly *obj1,p3d\_poly *obj2)}
+\index{p3d\_col\_deactivate\_pair}, 
+{\tt void p3d\_col\_deactivate\_full(p3d\_poly *obj)}
+\index{p3d\_col\_deactivate\_full} and 
+{\tt void p3d\_col\_deactivate\_all(void)}
+\index{p3d\_col\_deactivate\_all}.
+
+It is clear that for a complex scene, the user could spend days
+listing those pairs. Some function are available in Move3D in order to
+simplify the activation of a whole scene. The idea is simple : in a
+scene, only the robots move. So the only pairs to activate are the
+pairs of one polyhedron of a robot with one polyhedron of an
+obstacle, the pairs of one polyhedron of a robot with one polyhedron
+of another robot, and the pairs of polyhedrons of the robot that do
+not belong to two adjacent bodies (so we can detect the auto-collisions).
+Those tree functionality are gathered in the function {\tt int
+p3d\_col\_activate\_env(void)} \index{p3d\_col\_activate\_env} that
+activates all the useful pairs of the current environment. 
+
+%{\tt
+%p3d\_col\_activate\_rob\_obj\\
+%p3d\_col\_activate\_rob\_rob\\
+%p3d\_col\_activate\_rob\\
+%p3d\_col\_activate\_robots\\
+%p3d\_col\_activate\_env\\
+
+
+%p3d\_col\_deactivate\_rob\_obj\\
+%p3d\_col\_deactivate\_rob\_rob\\
+%p3d\_col\_deactivate\_rob\\
+
+If the user wants to change collision checker during a session, he
+firts has to stop the current one. The function {\tt void
+p3d\_col\_stop(void)} \index{p3d\_col\_stop} stops the collision checker whose type has been
+stored as an integer in the global variable {\tt p3d\_col\_mode}, and
+deletes all its datas. The function {\tt void
+p3d\_col\_stop\_all(void)} \index{p3d\_col\_stop\_all} does the same,
+but for all collision checkers.
+
+Once a collision checker and the active pairs of the environment have
+been initiallized, collisions can be detected at any time.
+
+\section{Detection of a collision}
+
+The most useful function to detect a collision is {\tt int
+p3d\_col\_test(void)} \index{p3d\_col\_test}. This function checks the whole scene and
+returns the number of collisions. But the user may also want to check
+a specific pair. In this case, the function {\tt int
+p3d\_col\_test\_pair(p3d \_poly *obj1, p3d\_poly *obj2)}
+\index{p3d\_col\_test\_pair} must be called :
+it checks wether the pair {\tt (obj1,obj2)} collides and returns True
+or False.
+
+Once the collisions have been checked, some informations on the
+collisions that may have occured are available. 
+
+The function {\tt int p3d\_col\_number(void)} \index{p3d\_col\_number}
+returns the number of collision that were detected by the collision
+checker. The function {\tt void p3d\_col\_get\_report(int ind,
+p3d\_poly *p1, p3d\_poly *p2)} \index{p3d\_col\_get\_report} reports
+the collision number {\tt ind} and the pair of polyhedrons that collided.
+
+
+%p3d_col_get
+
+\section{Computing a distance}
+
+%p3d\_affich\_dist\\
+
+The collision checker V-collide does not compute the distance between
+polyhedrons of the scene. The collision checker I-collide computes it
+for the polyhedrons whose bounding boxes overlap. Anyway, one can
+always compute an approached distance between two objects of a scene
+using their bounding boxes.
+
+The function {\tt double p3d\_BB\_obj\_obj\_extern\_dist(p3d\_obj
+*obj1, p3d\_obj *obj2)} \index{p3d\_BB\_obj\_obj\_extern\_dist}
+returns the distance between the bounding boxes of {\tt obj1} and {\tt
+obj2}. The function {\tt double
+p3d\_calc\_robot\_BB\_extern\_dist(p3d\_rob *rob, int *obstnum)}
+\index{p3d\_calc\_robot\_BB\_extern\_dist} returns the shortest
+distance between the bounding boxes of the bodies of the robot and the
+bounding boxe of the obstacle. The variable {\tt obstnum} contains the
+number of teh closest obstacle to the robot. The function {\tt double
+p3d\_calc\_body\_BB\_extern\_dist(p3d\_obj *body, int *obstnum)}
+\index{p3d\_calc\_body\_BB\_extern\_dist} returns the closest distance
+from the bounding box of the body {\tt body} in its current position
+to the bounding boxes of the obstacles. The integer obstnum is the
+closest obstacle to {\tt body}.
+
+
+Knowing when the bounding boxes of a robot, a body of a robot or an
+obstacle overlap can also be useful. For this purpose, the user may
+call the three following functions. The function {\tt int
+p3d\_BB\_overlap\_obj\_obj(p3d\_obj *obj1, p3d\_obj *obj2)}
+\index{p3d\_BB\_overlap\_obj\_obj} checks if
+the bounding boxes of the objects {\tt obj1} and {\tt obj2}
+overlap. The functions {\tt int p3d\_BB\_overlap\_rob\_obj(p3d\_rob
+*rob, p3d\_obj *obj)} \index{p3d\_BB\_overlap\_rob\_obj} and {\tt int
+p3d\_BB\_overlap\_rob \_rob(p3d\_rob *rob1, p3d\_rob *rob2)}
+\index{p3d\_BB\_overlap\_rob\_rob} for the robot {rob} and the object
+{obj} and for the robots {\tt rob1} and {\tt rob2}.
+
+Those functions are mostly used for the validation of trajectories
+described in the following chapters.
