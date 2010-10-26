@@ -598,11 +598,13 @@ static int read_scenario(FILE *f)
 #endif
       continue;
     }
+#ifdef WITH_XFORMS
     if (strcmp(fct, "p3d_set_camera_pos") == 0) {
       if (!p3d_read_string_n_double(&pos, 10, &dtab, &size_max_dtab)) return(read_desc_error(fct));
       g3d_load_saved_camera_params(dtab);      
       continue;
-    }    
+    }
+#endif
 #ifdef LIGHT_PLANNER
     if (strcmp(fct, "p3d_set_object_base_and_arm_constraints") == 0) {
       p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
