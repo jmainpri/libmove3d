@@ -28,7 +28,9 @@
 
 //#define OBJECT_NAME "DUPLO_OBJECT"
 //#define OBJECT_NAME "WOODEN_OBJECT"
+
 #define OBJECT_NAME "GREY_TAPE"/*"MUG"ORANGE_BOTTLE"*/
+
 // #define OBJECT_NAME "GREY_TAPE"
 //#define OBJECT_NAME "YELLOW_BOTTLE"
 #define SUPPORT_NAME "HRP2TABLE"
@@ -542,9 +544,8 @@ void CB_replanColTraj(FL_OBJECT *obj, long arg){
 	}
 
   std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
-  std::vector <MANPIPULATION_TRAJECTORY_STR> segments;
-  manipulation->replanCollidingTraj(0, confs, segments
-  );
+  std::vector <SM_TRAJ> smTrajs;
+  manipulation->replanCollidingTraj(0, confs, smTrajs );
 }
 #endif
 

@@ -2,6 +2,7 @@
 #define __MANIPULATIONPLANNER_HPP__
 
 #include "P3d-pkg.h"
+#include "Localpath-pkg.h"
 
 #include "ManipulationStruct.h"
 #include "ManipulationUtils.hpp"
@@ -97,7 +98,7 @@ class  ManipulationPlanner {
     MANIPULATION_TASK_MESSAGE replanCollidingTraj(int currentLpId, std::vector <p3d_traj*> &trajs);
     /** Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
     \return MANIPULATION_TASK_OK for success */
-    MANIPULATION_TASK_MESSAGE replanCollidingTraj(int currentLpId, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <MANPIPULATION_TRAJECTORY_STR> &segments);
+    MANIPULATION_TASK_MESSAGE replanCollidingTraj(int currentLpId, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs);
 #endif
   /* ******************************* */
   /* ******** Task Planning ******** */

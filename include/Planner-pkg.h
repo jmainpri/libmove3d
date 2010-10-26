@@ -35,5 +35,6 @@ extern pp3d_graph  XYZ_TAB_GRAPH[];
 #include "../planner/Diffusion/proto/Diffusion_proto.h"
 #include "../planner/astar/proto/astar_proto.h"
 #include "../planner/dfs/proto/dfs_proto.h"
+#include "../planner/proto/p3d_softMotion_traj_proto.h"
 
 #endif	/* #ifndef PLANNER_PKG_H */

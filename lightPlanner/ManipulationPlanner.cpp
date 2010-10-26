@@ -456,7 +456,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::replanCollidingTraj(int currentLp
 #ifdef MULTILOCALPATH
 /** Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
 \return MANIPULATION_TASK_OK for success */
-MANIPULATION_TASK_MESSAGE  ManipulationPlanner::replanCollidingTraj(int currentLpId, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <MANPIPULATION_TRAJECTORY_STR> &segments) {
+MANIPULATION_TASK_MESSAGE  ManipulationPlanner::replanCollidingTraj(int currentLpId, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs) {
   p3d_traj *traj = NULL;
   MANIPULATION_TASK_MESSAGE returnMessage = MANIPULATION_TASK_OK;
   std::vector <p3d_traj*> trajs;
@@ -468,11 +468,12 @@ MANIPULATION_TASK_MESSAGE  ManipulationPlanner::replanCollidingTraj(int currentL
   if (returnMessage == MANIPULATION_TASK_OK ) {//There is a new traj
     /* COMPUTE THE SOFTMOTION TRAJECTORY */
     if(concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK){
+    /* COMPUTE THE SOFTMOTION TRAJECTORY */
       MANPIPULATION_TRAJECTORY_CONF_STR conf;
-      MANPIPULATION_TRAJECTORY_STR segment;
-      computeSoftMotion(traj, conf, segment);
+      SM_TRAJ smTraj;
+      computeSoftMotion(traj, conf, smTraj);
       confs.push_back(conf);
-      segments.push_back(segment);
+      smTrajs.push_back(smTraj);
     }else{
       returnMessage = MANIPULATION_TASK_NO_TRAJ_FOUND;
     }

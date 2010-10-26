@@ -5,6 +5,7 @@
 #include "Graphic-pkg.h"
 #include "../lightPlanner/proto/ManipulationStruct.h"
 #include <stdio.h>
+#include <iostream>
 
 char * array_group_name[] = {
   (char*)"base",
@@ -438,7 +439,7 @@ int lm_compute_softMotion(p3d_rob* robotPt, int mlpID, p3d_softMotion_data* soft
   /* Adjust Motion Times */
   adjustTimeError = 0;
   for (i=0; i < softMotion_data->nbDofs; i++) {
-    if (i != axisMotionMax) {
+    //if (i != axisMotionMax) {
       auxLimits.maxJerk = softMotion_data->specific->J_max[i];
       auxLimits.maxAcc  = softMotion_data->specific->A_max[i];
       auxLimits.maxVel  = softMotion_data->specific->V_max[i];
@@ -455,55 +456,55 @@ int lm_compute_softMotion(p3d_rob* robotPt, int mlpID, p3d_softMotion_data* soft
 	printf("sm_AdjustTime ERROR 3seg at axis %d\n",i);
 	adjustTimeError ++;
       }
-    }
+    // }
   }
 
 
   /* Replace old motion by adjusted motion */
-  sm_SM_TIMES_copy_into(&(softMotion_data->specific->motion[axisMotionMax].Times), &motion3seg[axisMotionMax].Times);
-  sm_SM_TIMES_copy_into(&(softMotion_data->specific->motion[axisMotionMax].TimesM), &motion3seg[axisMotionMax].TimesM);
-  motion3seg[axisMotionMax].jerk.sel = 1;
-  motion3seg[axisMotionMax].jerk.J1 = softMotion_data->specific->motion[axisMotionMax].jerk.J1;
-  motion3seg[axisMotionMax].jerk.J2 = softMotion_data->specific->motion[axisMotionMax].jerk.J1;
-  motion3seg[axisMotionMax].jerk.J3 =softMotion_data->specific->motion[axisMotionMax].jerk.J1;
-  motion3seg[axisMotionMax].jerk.J4 = softMotion_data->specific->motion[axisMotionMax].jerk.J1;
-  motion3seg[axisMotionMax].Dir = softMotion_data->specific->motion[axisMotionMax].Dir;
-  motion3seg[axisMotionMax].Dir_a = softMotion_data->specific->motion[axisMotionMax].Dir;
-  motion3seg[axisMotionMax].Dir_b = -softMotion_data->specific->motion[axisMotionMax].Dir;
-  motion3seg[axisMotionMax].IC.a = softMotion_data->specific->motion[axisMotionMax].IC.a;
-  motion3seg[axisMotionMax].IC.v = softMotion_data->specific->motion[axisMotionMax].IC.v;
-  motion3seg[axisMotionMax].IC.x = softMotion_data->specific->motion[axisMotionMax].IC.x;
-  motion3seg[axisMotionMax].FC.a = softMotion_data->specific->motion[axisMotionMax].FC.a;
-  motion3seg[axisMotionMax].FC.v = softMotion_data->specific->motion[axisMotionMax].FC.v;
-  motion3seg[axisMotionMax].FC.x = softMotion_data->specific->motion[axisMotionMax].FC.x;
-  motion3seg[axisMotionMax].motionIsAdjusted = 0;
-  motion3seg[axisMotionMax].MotionDuration = softMotion_data->specific->motion[axisMotionMax].MotionDuration ;
-  motion3seg[axisMotionMax].MotionDurationM = softMotion_data->specific->motion[axisMotionMax].MotionDurationM ;
-  motion3seg[axisMotionMax].TimeCumulM[0] = 0;
-  motion3seg[axisMotionMax].TimeCumulM[1] = (int)motion3seg[axisMotionMax].TimesM.Tjpa;
-  motion3seg[axisMotionMax].TimeCumulM[2] = (int)motion3seg[axisMotionMax].TimeCumulM[1] \
-    + (int)motion3seg[axisMotionMax].TimesM.Taca;
-  motion3seg[axisMotionMax].TimeCumulM[3] = (int)motion3seg[axisMotionMax].TimeCumulM[2] \
-    + (int)motion3seg[axisMotionMax].TimesM.Tjna;
-  motion3seg[axisMotionMax].TimeCumulM[4] = (int)motion3seg[axisMotionMax].TimeCumulM[3] \
-    + (int)motion3seg[axisMotionMax].TimesM.Tvc;
-  motion3seg[axisMotionMax].TimeCumulM[5] = (int)motion3seg[axisMotionMax].TimeCumulM[4] \
-    + (int)motion3seg[axisMotionMax].TimesM.Tjnb;
-  motion3seg[axisMotionMax].TimeCumulM[6] = (int)motion3seg[axisMotionMax].TimeCumulM[5] \
-    + (int)motion3seg[axisMotionMax].TimesM.Tacb;
-
-  motion3seg[axisMotionMax].TimeCumul[0] = 0.0;
-  motion3seg[axisMotionMax].TimeCumul[1] = motion3seg[axisMotionMax].Times.Tjpa;
-  motion3seg[axisMotionMax].TimeCumul[2] = motion3seg[axisMotionMax].TimeCumul[1] \
-    + motion3seg[axisMotionMax].Times.Taca;
-  motion3seg[axisMotionMax].TimeCumul[3] = motion3seg[axisMotionMax].TimeCumul[2] \
-    + motion3seg[axisMotionMax].Times.Tjna;
-  motion3seg[axisMotionMax].TimeCumul[4] = motion3seg[axisMotionMax].TimeCumul[3] \
-    + motion3seg[axisMotionMax].Times.Tvc;
-  motion3seg[axisMotionMax].TimeCumul[5] = motion3seg[axisMotionMax].TimeCumul[4] \
-    + motion3seg[axisMotionMax].Times.Tjnb;
-  motion3seg[axisMotionMax].TimeCumul[6] = motion3seg[axisMotionMax].TimeCumul[5] \
-    + motion3seg[axisMotionMax].Times.Tacb;
+//  sm_SM_TIMES_copy_into(&(softMotion_data->specific->motion[axisMotionMax].Times), &motion3seg[axisMotionMax].Times);
+//  sm_SM_TIMES_copy_into(&(softMotion_data->specific->motion[axisMotionMax].TimesM), &motion3seg[axisMotionMax].TimesM);
+//  motion3seg[axisMotionMax].jerk.sel = 1;
+//  motion3seg[axisMotionMax].jerk.J1 = softMotion_data->specific->motion[axisMotionMax].jerk.J1;
+//  motion3seg[axisMotionMax].jerk.J2 = softMotion_data->specific->motion[axisMotionMax].jerk.J1;
+//  motion3seg[axisMotionMax].jerk.J3 =softMotion_data->specific->motion[axisMotionMax].jerk.J1;
+//  motion3seg[axisMotionMax].jerk.J4 = softMotion_data->specific->motion[axisMotionMax].jerk.J1;
+//  motion3seg[axisMotionMax].Dir = softMotion_data->specific->motion[axisMotionMax].Dir;
+//  motion3seg[axisMotionMax].Dir_a = softMotion_data->specific->motion[axisMotionMax].Dir;
+//  motion3seg[axisMotionMax].Dir_b = -softMotion_data->specific->motion[axisMotionMax].Dir;
+//  motion3seg[axisMotionMax].IC.a = softMotion_data->specific->motion[axisMotionMax].IC.a;
+//  motion3seg[axisMotionMax].IC.v = softMotion_data->specific->motion[axisMotionMax].IC.v;
+//  motion3seg[axisMotionMax].IC.x = softMotion_data->specific->motion[axisMotionMax].IC.x;
+//  motion3seg[axisMotionMax].FC.a = softMotion_data->specific->motion[axisMotionMax].FC.a;
+//  motion3seg[axisMotionMax].FC.v = softMotion_data->specific->motion[axisMotionMax].FC.v;
+//  motion3seg[axisMotionMax].FC.x = softMotion_data->specific->motion[axisMotionMax].FC.x;
+//  motion3seg[axisMotionMax].motionIsAdjusted = 0;
+//  motion3seg[axisMotionMax].MotionDuration = softMotion_data->specific->motion[axisMotionMax].MotionDuration ;
+//  motion3seg[axisMotionMax].MotionDurationM = softMotion_data->specific->motion[axisMotionMax].MotionDurationM ;
+//  motion3seg[axisMotionMax].TimeCumulM[0] = 0;
+//  motion3seg[axisMotionMax].TimeCumulM[1] = (int)motion3seg[axisMotionMax].TimesM.Tjpa;
+//  motion3seg[axisMotionMax].TimeCumulM[2] = (int)motion3seg[axisMotionMax].TimeCumulM[1] \
+//    + (int)motion3seg[axisMotionMax].TimesM.Taca;
+//  motion3seg[axisMotionMax].TimeCumulM[3] = (int)motion3seg[axisMotionMax].TimeCumulM[2] \
+//    + (int)motion3seg[axisMotionMax].TimesM.Tjna;
+//  motion3seg[axisMotionMax].TimeCumulM[4] = (int)motion3seg[axisMotionMax].TimeCumulM[3] \
+//    + (int)motion3seg[axisMotionMax].TimesM.Tvc;
+//  motion3seg[axisMotionMax].TimeCumulM[5] = (int)motion3seg[axisMotionMax].TimeCumulM[4] \
+//    + (int)motion3seg[axisMotionMax].TimesM.Tjnb;
+//  motion3seg[axisMotionMax].TimeCumulM[6] = (int)motion3seg[axisMotionMax].TimeCumulM[5] \
+//    + (int)motion3seg[axisMotionMax].TimesM.Tacb;
+//
+//  motion3seg[axisMotionMax].TimeCumul[0] = 0.0;
+//  motion3seg[axisMotionMax].TimeCumul[1] = motion3seg[axisMotionMax].Times.Tjpa;
+//  motion3seg[axisMotionMax].TimeCumul[2] = motion3seg[axisMotionMax].TimeCumul[1] \
+//    + motion3seg[axisMotionMax].Times.Taca;
+//  motion3seg[axisMotionMax].TimeCumul[3] = motion3seg[axisMotionMax].TimeCumul[2] \
+//    + motion3seg[axisMotionMax].Times.Tjna;
+//  motion3seg[axisMotionMax].TimeCumul[4] = motion3seg[axisMotionMax].TimeCumul[3] \
+//    + motion3seg[axisMotionMax].Times.Tvc;
+//  motion3seg[axisMotionMax].TimeCumul[5] = motion3seg[axisMotionMax].TimeCumul[4] \
+//    + motion3seg[axisMotionMax].Times.Tjnb;
+//  motion3seg[axisMotionMax].TimeCumul[6] = motion3seg[axisMotionMax].TimeCumul[5] \
+//    + motion3seg[axisMotionMax].Times.Tacb;
 
   for(int v=0; v<softMotion_data->nbDofs; v++) {
     sm_copy_SM_MOTION_MONO_into(&motion3seg[v], &softMotion_data->specific->motion[v]);
@@ -1207,7 +1208,7 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 
   softMotion_data_copy_into(robotPt, softMotion_data_l1, softMotion_data);
 
-  for(i=0;i<SM_NB_DIM;i++) {
+  for(i=0;i<softMotion_data_In->nbDofs;i++) {
 
     if(segIdl2==6) {
       if(segIdl1!=6) {
@@ -2262,7 +2263,7 @@ void lm_set_and_get_motionTimes(p3d_softMotion_data* softMotion_data, double* ti
   return;
 }
 
-void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType,  char *fileName, bool flagPlot,
+void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType,  char *fileName, char *fileNameSeg, bool flagPlot,
 					    std::vector <int> &lp, std::vector < std::vector <double> > &positions,
 					    SM_TRAJ &smTraj) {
   double SIMPLING_TIME = 0.01;
@@ -2338,25 +2339,29 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
     }
   }
   positions.clear();
-  smTraj.resize(nb_armDof);
+	  int niseg = 0;
   localpathPt = traj->courbePt;
   lpId = 0;
-
+  
+  smTraj.clear();
+  smTraj.resize(nb_armDof);
   while (localpathPt !=NULL) {
     if(trajType == 0) {
       localpathSMPt = localpathPt->mlpLocalpath[upBodySm_mlpID];
     } else {
       localpathSMPt = localpathPt;
     }
+    
     if(localpathSMPt != NULL) {
-
       specificPt = localpathSMPt->specific.softMotion_data;	    
-      for(int s=1; s<=7;s++) {
-	for (int i=0;i<nb_armDof;i++) {
-		
+
+      for (int i=0;i<specificPt->nbDofs;i++) {
+	//niseg = 0;
+	 for(int s=1; s<=7;s++) {
 	  seg.lpId = lpId;
 	  seg.timeOnTraj = 0.0;
 
+         if(specificPt->specific->motion[i].motionIsAdjusted == 0) {
 	  if(s==1) { 
 	    seg.IC.a = specificPt->specific->motion[i].IC.a;
 	    seg.IC.v = specificPt->specific->motion[i].IC.v;
@@ -2364,7 +2369,6 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
 	    seg.time = specificPt->specific->motion[i].Times.Tjpa;
 	    seg.jerk = specificPt->specific->motion[i].jerk.J1*specificPt->specific->motion[i].Dir;
 	  }
-
 	  if(s==2) {
 	    seg.IC.a = specificPt->specific->motion[i].Acc.Tjpa;
 	    seg.IC.v = specificPt->specific->motion[i].Vel.Tjpa;
@@ -2407,15 +2411,85 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
 	    seg.time = specificPt->specific->motion[i].Times.Tjpb;
 	    seg.jerk = specificPt->specific->motion[i].jerk.J4*specificPt->specific->motion[i].Dir;
 	  }
-	  smTraj.traj[i].push_back(seg);
+
+	 } else {
+
+	 if(s==1) {
+	    seg.IC.a = specificPt->specific->motion[i].IC.a;
+	    seg.IC.v = specificPt->specific->motion[i].IC.v;
+	    seg.IC.x = specificPt->specific->motion[i].IC.x;
+	    seg.time = specificPt->specific->motion[i].Times.Tjpa;
+	    seg.jerk = specificPt->specific->motion[i].jerk.J1*specificPt->specific->motion[i].Dir_a;
+	  }
+	  if(s==2) {
+	    seg.IC.a = specificPt->specific->motion[i].Acc.Tjpa;
+	    seg.IC.v = specificPt->specific->motion[i].Vel.Tjpa;
+	    seg.IC.x = specificPt->specific->motion[i].Pos.Tjpa;
+	    seg.time = specificPt->specific->motion[i].Times.Taca;
+	    seg.jerk = 0.0;
+	  }
+	  if(s==3) {
+	    seg.IC.a = specificPt->specific->motion[i].Acc.Taca;
+	    seg.IC.v = specificPt->specific->motion[i].Vel.Taca;
+	    seg.IC.x = specificPt->specific->motion[i].Pos.Taca;
+	    seg.time = specificPt->specific->motion[i].Times.Tjna;
+	    seg.jerk = -specificPt->specific->motion[i].jerk.J2*specificPt->specific->motion[i].Dir_a;
+	  }
+	  if(s==4) {
+	    seg.IC.a = specificPt->specific->motion[i].Acc.Tjna;
+	    seg.IC.v = specificPt->specific->motion[i].Vel.Tjna;
+	    seg.IC.x = specificPt->specific->motion[i].Pos.Tjna;
+	    seg.time = specificPt->specific->motion[i].Times.Tvc;
+	    seg.jerk = 0.0;
+	  }
+	  if(s==5) {
+	    seg.IC.a = specificPt->specific->motion[i].Acc.Tvc;
+	    seg.IC.v = specificPt->specific->motion[i].Vel.Tvc;
+	    seg.IC.x = specificPt->specific->motion[i].Pos.Tvc;
+	    seg.time = specificPt->specific->motion[i].Times.Tjnb;
+	    seg.jerk = -specificPt->specific->motion[i].jerk.J3*specificPt->specific->motion[i].Dir_b;
+	  }
+	  if(s==6) {
+	    seg.IC.a = specificPt->specific->motion[i].Acc.Tjnb;
+	    seg.IC.v = specificPt->specific->motion[i].Vel.Tjnb;
+	    seg.IC.x = specificPt->specific->motion[i].Pos.Tjnb;
+	    seg.time = specificPt->specific->motion[i].Times.Tacb;
+	    seg.jerk = 0.0;
+	  }
+	  if(s==7) {
+	    seg.IC.a = specificPt->specific->motion[i].Acc.Tacb;
+	    seg.IC.v = specificPt->specific->motion[i].Vel.Tacb;
+	    seg.IC.x = specificPt->specific->motion[i].Pos.Tacb;
+	    seg.time = specificPt->specific->motion[i].Times.Tjpb;
+	    seg.jerk = specificPt->specific->motion[i].jerk.J4*specificPt->specific->motion[i].Dir_b;
+	  }
+
+	 }
+
+	  if(seg.time > EPS6) {
+	    smTraj.traj[i].push_back(seg);
+	    // niseg ++;
+	  }
 	}
+	 // printf("niseg %d\n",niseg);
+	 //niseg = 0;
       } 
+
     }
+niseg = 0;
     lpId ++;
     localpathPt = localpathPt->next_lp;
   }
 
+// std::cout << "smTraj.traj.size() " << smTraj.traj.size() << std::endl;
+ for(unsigned int l=0; l<smTraj.traj.size(); l++) {
+   std::cout << "smTraj.traj[i].size() " << smTraj.traj[l].size() << std::endl;
+ }
   smTraj.computeTimeOnTraj();
+  smTraj.trajId = 36;
+  smTraj.save(fileNameSeg);
+  //smTraj.print();
+
   //smTraj.print();
   localpathPt = traj->courbePt;
   u = 0.0;
@@ -2487,7 +2561,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
 
   if(filepTrajtr != NULL) {
     fclose(filepTrajtr);
-    printf("File arm.traj created\n");
+    printf("File %s created\n", fileName);
   }
 	
   if(flagPlot == true) {
