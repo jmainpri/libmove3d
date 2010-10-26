@@ -2,6 +2,7 @@
 
 #include "lightPlanner.h"
 #include "lightPlannerApi.h"
+#include "p3d_chanEnv_proto.h"
 #include "planner_cxx/plannerFunctions.hpp"
 #if defined (USE_CXX_PLANNER)
 #include "planEnvironment.hpp"
@@ -88,7 +89,7 @@ int ManipulationPlanner::cleanRoadmap() {
   if (_robot != NULL) {
     XYZ_ENV->cur_robot = _robot;
     deleteAllGraphs();
-    FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+//     FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
   } else {
     return 1;
   }
@@ -154,16 +155,26 @@ double ManipulationPlanner::getApproachGraspOffset(void) const{
 /* ******* Planning Modes ******** */
 /* ******************************* */
 void ManipulationPlanner::checkConfigForCartesianMode(configPt q) {
-  if(q != NULL){
-    for (uint i = 0; i < (*_robot->armManipulationData).size(); i++) {
-      ArmManipulationData armData  = (*_robot->armManipulationData)[i];
-      if (armData.getCartesian()) {
-        /* Uptdate the Virual object for inverse kinematics */
-        p3d_update_virtual_object_config_for_arm_ik_constraint(_robot, i, q);
-      }
+  bool deleteConfig = false;
+  if(q == NULL){
+    q = p3d_get_robot_config(_robot);
+    deleteConfig = true;
+  }
+  for (uint i = 0; i < (*_robot->armManipulationData).size(); i++) {
+    ArmManipulationData armData  = (*_robot->armManipulationData)[i];
+    if (armData.getCartesian()) {
+      /* Uptdate the Virual object for inverse kinematics */
+      p3d_update_virtual_object_config_for_arm_ik_constraint(_robot, i, q);
+      activateCcCntrts(_robot, i, false);
+    }else{
+      deactivateCcCntrts(_robot, i);
     }
-    p3d_set_and_update_this_robot_conf(_robot, q);
-    p3d_get_robot_config_into(_robot, &q);
+  }
+  p3d_set_and_update_this_robot_conf(_robot, q);
+  p3d_get_robot_config_into(_robot, &q);
+  if(deleteConfig){
+    p3d_destroy_config(_robot, q);
+    q = NULL;
   }
 }
 
@@ -211,6 +222,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::concatTrajectories (std::vector<p
   for(int i = 1; i < (int)trajs.size(); i++){
     p3d_concat_traj(*concatTraj, trajs[i]);
   }
+  g3d_add_traj("Task", (*concatTraj)->num);
   return MANIPULATION_TASK_OK;
 }
 
@@ -244,7 +256,7 @@ int ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, boo
   ChronoOff();
 #else
   result = p3d_specific_search((char *)"");
-   optimiseTrajectory(smoothingSteps, smootingTime);
+  optimiseTrajectory(smoothingSteps, smootingTime);
 #endif
   if (!result) {
     printf("ArmGotoQ: could not find a path.\n");
@@ -252,6 +264,37 @@ int ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, boo
     return 1;
   }
   return 0;
+}
+
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armComputePRM(double ComputeTime) {
+  this->cleanRoadmap();
+  
+  checkConfigForCartesianMode(NULL);
+#ifdef MULTILOCALPATH
+  p3d_multiLocalPath_disable_all_groupToPlan(_robot);
+  p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1);
+#endif
+  fixJoint(_robot, _robot->baseJnt,_robot->baseJnt->abs_pos);
+  fixAllHands(NULL, true);
+  /*TODO Fix all free flyers to hands and disable object trasportation*/
+  
+  p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
+  p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
+  p3d_set_MOTION_PLANNER(P3D_BASIC);
+  ENV.setInt(Env::NbTry, 100000);
+  double bakComputeTime = p3d_get_tmax();
+  p3d_set_tmax(ComputeTime);
+#ifdef MULTIGRAPH
+  p3d_set_multiGraph(FALSE);
+#endif
+  p3d_set_ik_choice(IK_NORMAL);
+  p3d_set_is_visibility_discreet(0);
+  p3d_set_test_reductib(0);
+  p3d_set_cycles(0);
+
+  p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
+  p3d_set_tmax(bakComputeTime);
+  return MANIPULATION_TASK_OK;
 }
 
 p3d_traj* ManipulationPlanner::computeTrajBetweenTwoConfigs(configPt qi, configPt qf) {
@@ -319,6 +362,127 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickAndPlace(int armId, config
   return status;
 }
 
+#ifdef DPG
+//! \brief Check if the current path is in collision or not
+//! \return 1 in case of collision, 0 otherwise
+int ManipulationPlanner::checkCollisionOnTraj() {
+  //   configPt currentPos = p3d_get_robot_config(robotPt);
+  //   double armPos[6] = {currentPos[5], currentPos[6], currentPos[7], currentPos[8], currentPos[9], currentPos[10]};
+  if (checkCollisionOnTraj(0)) {
+    printf("There is collision\n");
+    return 1;
+  } else {
+    printf("There is no collision\n");
+    return 0;
+  }
+}
+
+
+//! \brief Check if the current path is in collision or not
+//! \return 1 in case of collision, 0 otherwise
+int  ManipulationPlanner::checkCollisionOnTraj(int currentLpId) {
+  p3d_traj *traj = NULL;
+
+  XYZ_ENV->cur_robot = _robot;
+  //initialize and get the current linear traj
+  if (!traj) {
+    if (_robot->nt < _robot->tcur->num - 2) {
+      printf("BioMove3D: checkCollisionOnTraj unvalid traj number : nbTraj = %d, robot tcur = %d\n", _robot->nt, _robot->tcur->num);
+      return 1;
+    } else {
+      traj = _robot->t[_robot->tcur->num - 2];
+    }
+  }
+  checkConfigForCartesianMode(NULL);
+  if (currentLpId > _robot->tcur->nlp) {
+    printf("BioMove3D: checkCollisionOnTraj given lpId  = %d > tcur nlp = %d\n", currentLpId, _robot->tcur->nlp);
+    currentLpId = 0;
+  }
+  p3d_localpath* currentLp = traj->courbePt;
+  for (int i = 0; i < currentLpId / 2; i++) {
+    currentLp = currentLp->next_lp;
+  }
+  return checkForCollidingPath(_robot, traj, currentLp);
+}
+
+/** Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
+\return MANIPULATION_TASK_OK for success */
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::replanCollidingTraj(int currentLpId, std::vector <p3d_traj*> &trajs){
+  p3d_traj* traj = NULL;
+  XYZ_ENV->cur_robot = _robot;
+  //initialize and get the current linear traj
+  if (!traj) {
+    if (_robot->nt < _robot->tcur->num - 2) {
+      return MANIPULATION_TASK_INVALID_TRAJ_ID;
+    } else {
+      traj = _robot->t[_robot->tcur->num - 2];
+    }
+  }
+  checkConfigForCartesianMode(NULL);
+  if (currentLpId > _robot->tcur->nlp) {
+    printf("BioMove3D: checkCollisionOnTraj given lpId  = %d > tcur nlp = %d\n", currentLpId, _robot->tcur->nlp);
+    currentLpId = 0;
+  }
+  p3d_localpath* currentLp = traj->courbePt;
+  for (int i = 0; i < currentLpId / 2; i++) {
+    currentLp = currentLp->next_lp;
+  }
+  configPt currentConfig = p3d_get_robot_config(_robot);
+  int j = 0, returnValue = 0, optimized = traj->isOptimized;
+  if (optimized) {
+    p3dAddTrajToGraph(_robot, _robot->GRAPH, traj);
+  }
+//   printf("nbTraj before : %d\n", _robot->nt);
+  do {
+    printf("Test %d\n", j);
+    j++;
+    returnValue = replanForCollidingPath(_robot, traj, _robot->GRAPH, currentConfig, currentLp, optimized);
+    traj = _robot->tcur;
+    currentLp = traj->courbePt;
+  } while (returnValue != 1 && returnValue != 0 && returnValue != -2 && j < 10);
+
+    printf("nbTraj after : %d, returnValue = %d\n", _robot->nt, returnValue);
+
+  if (returnValue == 1 && j == 0) { //no collision on traj
+    return armPlanTask(ARM_FREE, 0, currentConfig, _robot->ROBOT_GOTO,(char *) "",(char *) "", trajs);
+  }
+  if (optimized || j > 1) {
+    optimiseTrajectory(_optimizeSteps, _optimizeTime);
+  }
+  trajs.push_back((p3d_traj*) p3d_get_desc_curid(P3D_TRAJ));
+  return MANIPULATION_TASK_OK;
+}
+
+#ifdef MULTILOCALPATH
+/** Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
+\return MANIPULATION_TASK_OK for success */
+MANIPULATION_TASK_MESSAGE  ManipulationPlanner::replanCollidingTraj(int currentLpId, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <MANPIPULATION_TRAJECTORY_STR> &segments) {
+  p3d_traj *traj = NULL;
+  MANIPULATION_TASK_MESSAGE returnMessage = MANIPULATION_TASK_OK;
+  std::vector <p3d_traj*> trajs;
+
+  p3d_multiLocalPath_disable_all_groupToPlan(_robot);
+  p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1);
+  
+  returnMessage = replanCollidingTraj(currentLpId, trajs);
+  if (returnMessage == MANIPULATION_TASK_OK ) {//There is a new traj
+    /* COMPUTE THE SOFTMOTION TRAJECTORY */
+    if(concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK){
+      MANPIPULATION_TRAJECTORY_CONF_STR conf;
+      MANPIPULATION_TRAJECTORY_STR segment;
+      computeSoftMotion(traj, conf, segment);
+      confs.push_back(conf);
+      segments.push_back(segment);
+    }else{
+      returnMessage = MANIPULATION_TASK_NO_TRAJ_FOUND;
+    }
+    //peut etre ajouter un return specific pour savoir qu'il y'a une nouvelle traj
+  }
+  return returnMessage;
+}
+#endif
+#endif
+
 #ifdef MULTILOCALPATH
 int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECTORY_CONF_STR &confs, MANPIPULATION_TRAJECTORY_STR &segments) {
 
@@ -363,6 +527,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     ENV.setBool(Env::drawTraj, false);
     checkConfigForCartesianMode(qi);
     checkConfigForCartesianMode(qf);
+    fixManipulationJoints(armId, qi, object);
+    fixManipulationJoints(armId, qf, object);
     fixAllHands(qi, false);
     fixAllHands(qf, false);
     p3d_set_and_update_this_robot_conf(_robot, qi);
@@ -413,10 +579,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       }
     }
   }
-//   p3d_copy_config_into(_robot, qi, &_robot->ROBOT_POS);
-//   p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
-//   p3d_copy_config_into(_robot, qf, &_robot->ROBOT_GOTO);
-//  ENV.setBool(Env::drawTraj, true);
   p3d_sel_desc_id(P3D_ROBOT,cur_robot);
   g3d_draw_allwin_active();
   if(status == MANIPULATION_TASK_OK){
@@ -485,6 +647,18 @@ void ManipulationPlanner::fixAllHands(configPt q, bool rest) const{
 void ManipulationPlanner::unFixAllHands(void){
   for(uint i = 0; i < (*_robot->armManipulationData).size(); i++){
     (*_robot->armManipulationData)[i].unFixHand(_robot);
+  }
+}
+
+void ManipulationPlanner::fixManipulationJoints(int armId, configPt q, p3d_rob* object){
+  p3d_matrix4 pos;
+  if(object){
+    p3d_mat4Copy(object->joints[1]->abs_pos, pos);
+  }else{
+    p3d_mat4Copy(p3d_mat4IDENTITY, pos);
+  }
+  for(uint i = 0; i < (*_robot->armManipulationData).size(); i++){
+    fixJoint(_robot, (*_robot->armManipulationData)[i].getManipulationJnt(), pos);
   }
 }
 

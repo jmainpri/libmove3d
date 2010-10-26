@@ -60,6 +60,9 @@ class  ManipulationPlanner {
     MANIPULATION_TASK_MESSAGE concatTrajectories (std::vector<p3d_traj*>& trajs, p3d_traj** concatTraj);
     /** Set the parameters to compute an RRT */
     int computeRRT(int smoothingSteps, double smootingTime, bool biDir);
+    /** Set the parameters to compute a PRM the input is the maximal computation time*/
+    /* TODO Add CXX PLanner computation*/
+    MANIPULATION_TASK_MESSAGE armComputePRM(double ComputeTime);
     /** Compute a trajectory between the two given configurations. The constraints, the planning modes and the dof to plan have to be setted before */
     p3d_traj* computeTrajBetweenTwoConfigs(configPt qi, configPt qf);
 #ifdef MULTILOCALPATH
@@ -82,6 +85,20 @@ class  ManipulationPlanner {
     /** Move the arm from a free configuration to a grasping configuration of the object placed on a support then to a placement configuration */
     MANIPULATION_TASK_MESSAGE armPickAndPlace(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* placement, std::vector <p3d_traj*> &trajs);
 
+#ifdef DPG
+    /** \brief Check if the current path is in collision or not. Start from the begining of the trajectory
+    \return 1 in case of collision, 0 otherwise*/
+    int checkCollisionOnTraj();
+    /** \brief Check if the current path is in collision or not. Start from the given local path id
+    \return 1 in case of collision, 0 otherwise*/
+    int checkCollisionOnTraj(int currentLpId);
+    /** Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
+    \return MANIPULATION_TASK_OK for success */
+    MANIPULATION_TASK_MESSAGE replanCollidingTraj(int currentLpId, std::vector <p3d_traj*> &trajs);
+    /** Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
+    \return MANIPULATION_TASK_OK for success */
+    MANIPULATION_TASK_MESSAGE replanCollidingTraj(int currentLpId, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <MANPIPULATION_TRAJECTORY_STR> &segments);
+#endif
   /* ******************************* */
   /* ******** Task Planning ******** */
   /* ******************************* */
@@ -99,6 +116,8 @@ class  ManipulationPlanner {
     void fixAllHands(configPt q, bool rest) const;
     /** UnFix the sampling of all the robots hands, activate hands self collision */
     void unFixAllHands();
+    /**Fix the free flyer on the object pos. TODO: This function have to be changed to deal with cartesian mode (fix on the arm not on the object)*/
+    void fixManipulationJoints(int armId, configPt q, p3d_rob* object);
     /** Generate needed configurations from the given grasp and object position */
     MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, ManipulationData& configs);
     MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpHand_properties& armHandProp, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;

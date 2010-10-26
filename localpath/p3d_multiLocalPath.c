@@ -360,10 +360,10 @@ double p3d_multiLocalPath_stay_within_dist(p3d_rob* robotPt,
 
   dmax = p3d_get_env_dmax();
 
-  p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-  for(int i=0; i<MAX_MULTILOCALPATH_NB; i++) {
-    p3d_multiLocalPath_set_groupToPlan(robotPt, i, localpathPt->mlpGpIsActive[i]);
-  }
+//   p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+//   for(int i=0; i<MAX_MULTILOCALPATH_NB; i++) {
+//     p3d_multiLocalPath_set_groupToPlan(robotPt, i, localpathPt->mlpGpIsActive[i]);
+//   }
   
 
   mlpDistance = MY_ALLOC(double, njnt + 1);
