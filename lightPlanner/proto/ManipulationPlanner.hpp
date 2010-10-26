@@ -118,6 +118,8 @@ class  ManipulationPlanner {
     void unFixAllHands();
     /**Fix the free flyer on the object pos. TODO: This function have to be changed to deal with cartesian mode (fix on the arm not on the object)*/
     void fixManipulationJoints(int armId, configPt q, p3d_rob* object);
+    /**UnFix the free flyers*/
+    void unfixManipulationJoints(int armId);
     /** Generate needed configurations from the given grasp and object position */
     MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, ManipulationData& configs);
     MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpHand_properties& armHandProp, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;

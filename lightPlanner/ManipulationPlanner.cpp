@@ -579,6 +579,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       }
     }
   }
+  unfixManipulationJoints(armId);
   p3d_sel_desc_id(P3D_ROBOT,cur_robot);
   g3d_draw_allwin_active();
   if(status == MANIPULATION_TASK_OK){
@@ -647,6 +648,12 @@ void ManipulationPlanner::fixAllHands(configPt q, bool rest) const{
 void ManipulationPlanner::unFixAllHands(void){
   for(uint i = 0; i < (*_robot->armManipulationData).size(); i++){
     (*_robot->armManipulationData)[i].unFixHand(_robot);
+  }
+}
+
+void ManipulationPlanner::unfixManipulationJoints(int armId){
+  for(uint i = 0; i < (*_robot->armManipulationData).size(); i++){
+    unFixJoint(_robot, (*_robot->armManipulationData)[i].getManipulationJnt());
   }
 }
 
