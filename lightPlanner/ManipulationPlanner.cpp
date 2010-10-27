@@ -2,11 +2,14 @@
 
 #include "lightPlanner.h"
 #include "lightPlannerApi.h"
-#include "p3d_chanEnv_proto.h"
+//#include "p3d_chanEnv_proto.h"
+#ifdef CXX_PLANNER
 #include "planner_cxx/plannerFunctions.hpp"
 #if defined (USE_CXX_PLANNER)
 #include "planEnvironment.hpp"
 #endif
+#endif
+
 #include "robotPos.h"
 
 #include "Move3d-pkg.h"
@@ -102,7 +105,9 @@ int ManipulationPlanner::cleanTraj() {
     while (_robot->nt != 0) {
       p3d_destroy_traj(_robot, _robot->t[0]);
     }
+#ifdef WITH_XFORMS
     FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+#endif
   } else {
     return 1;
   }
@@ -456,7 +461,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::replanCollidingTraj(int currentLp
 #ifdef MULTILOCALPATH
 /** Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
 \return MANIPULATION_TASK_OK for success */
-MANIPULATION_TASK_MESSAGE  ManipulationPlanner::replanCollidingTraj(int currentLpId, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <MANPIPULATION_TRAJECTORY_STR> &segments) {
+MANIPULATION_TASK_MESSAGE  ManipulationPlanner::replanCollidingTraj(int currentLpId, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs) {
   p3d_traj *traj = NULL;
   MANIPULATION_TASK_MESSAGE returnMessage = MANIPULATION_TASK_OK;
   std::vector <p3d_traj*> trajs;
@@ -468,11 +473,12 @@ MANIPULATION_TASK_MESSAGE  ManipulationPlanner::replanCollidingTraj(int currentL
   if (returnMessage == MANIPULATION_TASK_OK ) {//There is a new traj
     /* COMPUTE THE SOFTMOTION TRAJECTORY */
     if(concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK){
+    /* COMPUTE THE SOFTMOTION TRAJECTORY */
       MANPIPULATION_TRAJECTORY_CONF_STR conf;
-      MANPIPULATION_TRAJECTORY_STR segment;
-      computeSoftMotion(traj, conf, segment);
+      SM_TRAJ smTraj;
+      computeSoftMotion(traj, conf, smTraj);
       confs.push_back(conf);
-      segments.push_back(segment);
+      smTrajs.push_back(smTraj);
     }else{
       returnMessage = MANIPULATION_TASK_NO_TRAJ_FOUND;
     }
@@ -484,7 +490,7 @@ MANIPULATION_TASK_MESSAGE  ManipulationPlanner::replanCollidingTraj(int currentL
 #endif
 
 #ifdef MULTILOCALPATH
-int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECTORY_CONF_STR &confs, MANPIPULATION_TRAJECTORY_STR &segments) {
+int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECTORY_CONF_STR &confs, SM_TRAJ &smTraj) {
 
   if (!traj) {
     printf("SoftMotion : ERREUR : no generated traj\n");
@@ -498,7 +504,7 @@ int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECT
     printf("Optimization with softMotion not possible: current trajectory is not multi-localpath one\n");
     return MANIPULATION_TASK_ERROR_UNKNOWN;
   }
-  if (p3d_convert_traj_to_softMotion(traj, true, confs.first, confs.second, segments) == 1) {
+  if (p3d_convert_traj_to_softMotion(traj, true, confs.first, confs.second, smTraj) == 1) {
     printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
     return MANIPULATION_TASK_ERROR_UNKNOWN;
   }
@@ -508,7 +514,7 @@ int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECT
 /* ******************************* */
 /* ******** Task Planning ******** */
 /* ******************************* */
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, char* objectName, char* supportName, std::vector <p3d_traj*> &trajs) {
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, const char* objectName, const char* supportName, std::vector <p3d_traj*> &trajs) {
   if(!_robot){
     printf("%s: %d: ManipulationPlanner::armPlanTask(): No robot initialized.\n", __FILE__, __LINE__);
     return MANIPULATION_TASK_NOT_INITIALIZED;
@@ -591,7 +597,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
 }
 
 #ifdef MULTILOCALPATH
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, char* objectName, char* supportName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <MANPIPULATION_TRAJECTORY_STR> &segments){
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, const char* objectName, const char* supportName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs){
   std::vector <p3d_traj*> trajs;
   p3d_traj* traj = NULL;
   MANIPULATION_TASK_MESSAGE returnMessage;
@@ -607,10 +613,10 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     if(concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK){
     /* COMPUTE THE SOFTMOTION TRAJECTORY */
       MANPIPULATION_TRAJECTORY_CONF_STR conf;
-      MANPIPULATION_TRAJECTORY_STR segment;
-      computeSoftMotion(traj, conf, segment);
+      SM_TRAJ smTraj;
+      computeSoftMotion(traj, conf, smTraj);
       confs.push_back(conf);
-      segments.push_back(segment);
+      smTrajs.push_back(smTraj);
     }else{
       returnMessage = MANIPULATION_TASK_NO_TRAJ_FOUND;
     }
