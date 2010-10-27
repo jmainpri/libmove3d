@@ -4,7 +4,9 @@
 #include "lightPlannerApi.h"
 
 // WARNING : moky file not found
-//#include "p3d_chanEnv_proto.h"
+#ifdef DPG
+#include "p3d_chanEnv_proto.h"
+#endif
 
 #ifdef CXX_PLANNER
 #include "planner_cxx/plannerFunctions.hpp"

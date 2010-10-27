@@ -37,6 +37,9 @@ extern int (*ext_p3d_run_rrt)(p3d_graph* GraphPt,int (*fct_stop)(void), void (*f
 #include "../planner/Diffusion/proto/Diffusion_proto.h"
 #include "../planner/astar/proto/astar_proto.h"
 #include "../planner/dfs/proto/dfs_proto.h"
-#include "../planner/proto/p3d_softMotion_traj_proto.h"
+
+#ifdef MULTILOCALPATH
+ #include "../planner/proto/p3d_softMotion_traj_proto.h"
+#endif
 
 #endif	/* #ifndef PLANNER_PKG_H */

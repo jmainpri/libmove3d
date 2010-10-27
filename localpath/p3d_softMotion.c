@@ -2381,7 +2381,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
 	    seg.IC.v = specificPt->specific->motion[i].Vel.Taca;
 	    seg.IC.x = specificPt->specific->motion[i].Pos.Taca;		
 	    seg.time = specificPt->specific->motion[i].Times.Tjna;
-	    seg.jerk = -specificPt->specific->motion[i].jerk.J2*specificPt->specific->motion[i].Dir;
+	    seg.jerk = -specificPt->specific->motion[i].jerk.J1*specificPt->specific->motion[i].Dir;
 	  }
 	  if(s==4) { 
 	    seg.IC.a = specificPt->specific->motion[i].Acc.Tjna;
@@ -2395,7 +2395,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
 	    seg.IC.v = specificPt->specific->motion[i].Vel.Tvc;
 	    seg.IC.x = specificPt->specific->motion[i].Pos.Tvc;			
 	    seg.time = specificPt->specific->motion[i].Times.Tjnb;
-	    seg.jerk = -specificPt->specific->motion[i].jerk.J3*specificPt->specific->motion[i].Dir;
+	    seg.jerk = -specificPt->specific->motion[i].jerk.J1*specificPt->specific->motion[i].Dir;
 	  }
 	  if(s==6) { 
 	    seg.IC.a = specificPt->specific->motion[i].Acc.Tjnb;
@@ -2409,7 +2409,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
 	    seg.IC.v = specificPt->specific->motion[i].Vel.Tacb;
 	    seg.IC.x = specificPt->specific->motion[i].Pos.Tacb;
 	    seg.time = specificPt->specific->motion[i].Times.Tjpb;
-	    seg.jerk = specificPt->specific->motion[i].jerk.J4*specificPt->specific->motion[i].Dir;
+	    seg.jerk = specificPt->specific->motion[i].jerk.J1*specificPt->specific->motion[i].Dir;
 	  }
 
 	 } else {
@@ -2465,7 +2465,6 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
 	  }
 
 	 }
-
 	  if(seg.time > EPS6) {
 	    smTraj.traj[i].push_back(seg);
 	    // niseg ++;
@@ -2476,15 +2475,15 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
       } 
 
     }
-niseg = 0;
+    //niseg = 0;
     lpId ++;
     localpathPt = localpathPt->next_lp;
   }
 
 // std::cout << "smTraj.traj.size() " << smTraj.traj.size() << std::endl;
- for(unsigned int l=0; l<smTraj.traj.size(); l++) {
-   std::cout << "smTraj.traj[i].size() " << smTraj.traj[l].size() << std::endl;
- }
+// for(unsigned int l=0; l<smTraj.traj.size(); l++) {
+//   std::cout << "smTraj.traj[i].size() " << smTraj.traj[l].size() << std::endl;
+// }
   smTraj.computeTimeOnTraj();
   smTraj.trajId = 36;
   smTraj.save(fileNameSeg);

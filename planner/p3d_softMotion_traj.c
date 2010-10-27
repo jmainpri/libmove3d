@@ -397,7 +397,7 @@ int p3d_convert_traj_to_softMotion(p3d_traj *trajPt, bool param_write_file, std:
 	  p3d_softMotion_export_traj(robotPt, trajSmPTPPt, 0, (char*)"softMotion_PTP_Q.traj",  (char*)"softMotion_PTP_Seg.traj",ENV.getBool(Env::plotSoftMotionCurve),  lp, positions, smTraj) ;
 	  smTraj.clear();
 	  p3d_softMotion_export_traj(robotPt, trajSmPt, 1, (char*)"softMotion_Smoothed_Q.traj",  (char*)"softMotion_Smoothed_Seg.traj",ENV.getBool(Env::plotSoftMotionCurve),  lp, positions, smTraj) ;
-	  smTraj.print();
+	  //smTraj.print();
 	}
 	if (fct_draw){(*fct_draw)();}
 
