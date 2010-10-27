@@ -32,6 +32,16 @@ typedef enum MANIPULATION_TASK_MESSAGE {
   MANIPULATION_TASK_ERROR_UNKNOWN /*!< something undefined was wrong */
 } MANIPULATION_TASK_MESSAGE;
 
+//! @ingroup manipulation 
+//! Defines the arm mainpulation-state
+typedef enum MANIPULATION_ARM_STATE
+{
+	handFree,
+	holdingObjectInStablePose,
+	holdingObjectInFlyingPose
+	
+} MANIPULATION_ARM_STATE;
+
 
 typedef std::pair < std::vector<int>, std::vector < std::vector <double> > > MANPIPULATION_TRAJECTORY_CONF_STR;
 //   std::vector<int> &lp;

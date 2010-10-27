@@ -11,6 +11,7 @@
 using namespace std;
 
 Manipulation::Manipulation(p3d_rob * robot){
+	
   if(robot->nbCcCntrts != 2){
     cout << "Error: the number of arm  != 2" << endl;
     return;

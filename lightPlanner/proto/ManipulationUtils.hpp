@@ -52,49 +52,10 @@ class  ManipulationUtils {
 //! @ingroup manipulation
 /** This Class contains all necessessary data to specify a arm to manipulate with it*/
 class ArmManipulationData {
-  private :
-     /***************/
-     /* Constraints */
-     /***************/
-    /** Arm associated Closed Chain Constraint*/
-    p3d_cntrt * _ccCntrt;
-    /** Arm corresopnding Forward kinematic Constraint*/
-    p3d_cntrt * _fkCntrt;
-    /** Freeflyer */
-    p3d_jnt * _manipulationJnt;
-    /** < choose to plan the arm motion in cartesian space (for the end effector) or joint space  */
-    bool _cartesian;
-#ifdef MULTILOCALPATH
-     /******************/
-     /* Multilocalpath */
-     /******************/
-    /** MultiLocal Path cartesian Linear Group id*/
-    int _cartesianGroup;
-    /** MultiLocal Path cartesian SoftMotion Group id*/
-    int _cartesianSmGroup;
-    /** MultiLocal Path hand Linear Group id*/
-    int _handGroup;
-    /** MultiLocal Path hand SoftMotion Group id*/
-    int _handSmGroup;
-#endif
-    /************************/
-    /* Manipulation Objects */
-    /************************/
-    /** The object carried by this arm*/
-    p3d_rob* _carriedObject;
-    /** The object where to place the object carried by this arm*/
-    p3d_rob* _placement;
-    /** The human to interract with with this arm*/
-    p3d_rob* _human;
-#ifdef GRASP_PLANNING
-    /************/
-    /* Grasping */
-    /************/
-    /** Arm end effector property */
-    gpHand_properties _handProp;
-#endif
+		
   public:
     ArmManipulationData(p3d_cntrt* ccCntrt = NULL, p3d_cntrt* fkCntrt = NULL, p3d_jnt *manipulationJnt = NULL, int cartesianGroup = -1, int cartesianSmGroup = -1, int handGroup = -1, int handSmGroup = -1){
+			_manipState = handFree;
       _ccCntrt = ccCntrt;
       _fkCntrt = fkCntrt;
       _manipulationJnt = manipulationJnt;
@@ -221,9 +182,67 @@ class ArmManipulationData {
     inline bool getCartesian(void) const{
       return _cartesian;
     };
+	
+	MANIPULATION_ARM_STATE& getManipState() {
+		return _manipState;
+	}
+	
+	private :
+	//! Arm object-manipulation state
+	//! The state should be provided by an external module
+	MANIPULATION_ARM_STATE _manipState;
+	
+	/***************/
+	/* Constraints */
+	/***************/
+	/** Arm associated Closed Chain Constraint*/
+	p3d_cntrt * _ccCntrt;
+	/** Arm corresopnding Forward kinematic Constraint*/
+	p3d_cntrt * _fkCntrt;
+	/** Freeflyer */
+	p3d_jnt * _manipulationJnt;
+	/** < choose to plan the arm motion in cartesian space (for the end effector) or joint space  */
+	bool _cartesian;
+	
+#ifdef MULTILOCALPATH
+	/******************/
+	/* Multilocalpath */
+	/******************/
+	/** MultiLocal Path cartesian Linear Group id*/
+	int _cartesianGroup;
+	/** MultiLocal Path cartesian SoftMotion Group id*/
+	int _cartesianSmGroup;
+	/** MultiLocal Path hand Linear Group id*/
+	int _handGroup;
+	/** MultiLocal Path hand SoftMotion Group id*/
+	int _handSmGroup;
+#endif
+	
+	/************************/
+	/* Manipulation Objects */
+	/************************/
+	/** The object carried by this arm*/
+	p3d_rob* _carriedObject;
+	/** The object where to place the object carried by this arm*/
+	p3d_rob* _placement;
+	/** The human to interract with with this arm*/
+	p3d_rob* _human;
+	
+#ifdef GRASP_PLANNING
+	/************/
+	/* Grasping */
+	/************/
+	/** Arm end effector property */
+	gpHand_properties _handProp;
+#endif
+	
 };
+
 #ifdef GRASP_PLANNING
 //! @ingroup manipulation
+//! this class holds the manipulation data
+//! hence every intermediary configuration that is used 
+//! to plan a manipulation problem
 class ManipulationData{
   public:
     ManipulationData(p3d_rob* robot){
@@ -295,6 +314,10 @@ class ManipulationData{
     }
     //Setters
     inline void setGrasp(gpGrasp* grasp){
+			if (!grasp) {
+				_grasp = NULL;
+				return;
+			}
       if(_grasp){
         delete(_grasp);
         _grasp = NULL;

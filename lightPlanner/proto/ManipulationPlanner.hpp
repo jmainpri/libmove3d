@@ -44,7 +44,23 @@ class  ManipulationPlanner {
 
     inline configPt robotStart() const{if (_robot != NULL) {return _robot->ROBOT_POS;} else {return NULL;}}
     inline configPt robotGoto() const{if (_robot != NULL) {return _robot->ROBOT_GOTO;} else {return NULL;}}
+	
+	/* ******************************* */
+  /* ******* Hands / Grasping ****** */
   /* ******************************* */
+	/** Fix the sampling of all the robots hands, desactivate hands self collisions and set the to rest configuration */
+	void fixAllHands(configPt q, bool rest) const;
+	/** UnFix the sampling of all the robots hands, activate hands self collision */
+	void unFixAllHands();
+	/**Fix the free flyer on the object pos. TODO: This function have to be changed to deal with cartesian mode (fix on the arm not on the object)*/
+	void fixManipulationJoints(int armId, configPt q, p3d_rob* object);
+	/**UnFix the free flyers*/
+	void unfixManipulationJoints(int armId);
+	/** Generate needed configurations from the given grasp and object position */
+	MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, ManipulationData& configs);
+	MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpHand_properties& armHandProp, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;
+  
+	/* ******************************* */
   /* ******* Planning Modes ******** */
   /* ******************************* */
     /** Update the config given as parameter to deal with cartesian mode */
@@ -53,6 +69,7 @@ class  ManipulationPlanner {
     void setArmCartesian(int armId, bool cartesian);
     /** Get if the Arm will be planned in cartesian or not */
     bool getArmCartesian(int armId) const;
+
 
   /* ******************************* */
   /* ******* Motion Planning ******* */
@@ -76,6 +93,7 @@ class  ManipulationPlanner {
 
     /** Move the arm from a grasping configuration (of the object placed on a support) to a free configuration */
     MANIPULATION_TASK_MESSAGE armPickTakeToFree(int armId, configPt qGoal, p3d_rob* object, std::vector <p3d_traj*> &trajs);
+		MANIPULATION_TASK_MESSAGE armPickTakeToFree(int armId, configPt qGoal, p3d_rob* object, configPt qStart, configPt approachGraspConfig, std::vector <p3d_traj*> &trajs);
 
     /** Move the arm from a grasping configuration to a configuration with the same grasp but a different object placement */
     MANIPULATION_TASK_MESSAGE armPickTakeToPlace(int armId, p3d_rob* object, p3d_rob* placement, std::vector <p3d_traj*> &trajs);
@@ -109,28 +127,11 @@ class  ManipulationPlanner {
     /** Computes a path for a given manipulation elementary task. Generate a set of SoftMotion Paths */
     MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, const char* objectName,  const char* supportName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs);
 #endif
-
-  /* ******************************* */
-  /* ******* Hands / Grasping ****** */
-  /* ******************************* */
-    /** Fix the sampling of all the robots hands, desactivate hands self collisions and set the to rest configuration */
-    void fixAllHands(configPt q, bool rest) const;
-    /** UnFix the sampling of all the robots hands, activate hands self collision */
-    void unFixAllHands();
-    /**Fix the free flyer on the object pos. TODO: This function have to be changed to deal with cartesian mode (fix on the arm not on the object)*/
-    void fixManipulationJoints(int armId, configPt q, p3d_rob* object);
-    /**UnFix the free flyers*/
-    void unfixManipulationJoints(int armId);
-    /** Generate needed configurations from the given grasp and object position */
-    MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, ManipulationData& configs);
-    MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpHand_properties& armHandProp, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;
-
+	
   private:
-  /* ******************************* */
-  /* ******* Global Variables ****** */
-  /* ******************************* */
-    /*!< pointer to the robot */
-    p3d_rob * _robot;
+	
+  /*!< pointer to the robot */
+  p3d_rob * _robot;
     
   /* ******************************* */
   /* ******* Motion Planning ******* */
@@ -153,9 +154,11 @@ class  ManipulationPlanner {
     double _approachFreeOffset;
     /** Offset to generate the approach configuration of a grasp (carrying an object)*/
     double _approachGraspOffset;
+	
   /* ******************************* */
-  /* *******  ****** */
+  /* *******  Manipulation Data **** */
   /* ******************************* */
+	ManipulationData _configs;
 };
 
 
