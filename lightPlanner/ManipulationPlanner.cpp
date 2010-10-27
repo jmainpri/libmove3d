@@ -222,7 +222,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::concatTrajectories (std::vector<p
   for(int i = 1; i < (int)trajs.size(); i++){
     p3d_concat_traj(*concatTraj, trajs[i]);
   }
-  g3d_add_traj("Task", (*concatTraj)->num);
+  g3d_add_traj((char*)"Task", (*concatTraj)->num);
   return MANIPULATION_TASK_OK;
 }
 
@@ -664,8 +664,14 @@ void ManipulationPlanner::fixManipulationJoints(int armId, configPt q, p3d_rob* 
   }else{
     p3d_mat4Copy(p3d_mat4IDENTITY, pos);
   }
+  if(q){
+    p3d_set_and_update_this_robot_conf(_robot, q);
+  }
   for(uint i = 0; i < (*_robot->armManipulationData).size(); i++){
     fixJoint(_robot, (*_robot->armManipulationData)[i].getManipulationJnt(), pos);
+  }
+  if(q){
+    p3d_get_robot_config_into(_robot, &q);
   }
 }
 
