@@ -26,6 +26,8 @@
 #include "DpgGrid.h"
 #endif
 
+int (*ext_p3d_run_rrt)(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void));
+
 static void save_infos_in_file(p3d_graph *G, int sol);
 static void p3d_specificPrintAverage(double * arraytimes, int nfail, int sumnnodes, int sumnsamples, int sumncallsCD, int sumncallsLP);
 

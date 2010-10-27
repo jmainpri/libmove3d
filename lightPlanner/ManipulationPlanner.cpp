@@ -2,7 +2,10 @@
 
 #include "lightPlanner.h"
 #include "lightPlannerApi.h"
+
+// WARNING : moky file not found
 //#include "p3d_chanEnv_proto.h"
+
 #ifdef CXX_PLANNER
 #include "planner_cxx/plannerFunctions.hpp"
 #if defined (USE_CXX_PLANNER)
@@ -15,6 +18,7 @@
 #include "Move3d-pkg.h"
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
+#include "Util-pkg.h"
 
 #include <list>
 #define MPDEBUG 0
@@ -246,16 +250,21 @@ int ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, boo
   ENV.setDouble(Env::extensionStep, 2.0);
 
 
-#if defined (USE_CXX_PLANNER)
+#if defined (USE_CXX_PLANNER) || defined(OOMOVE3D_CORE)
   ENV.setBool(Env::withSmoothing, true);
   ENV.setBool(Env::withShortCut, true);
   ENV.setBool(Env::withDeformation, false);
   ENV.setInt(Env::nbCostOptimize, smoothingSteps);
-  ENV.setInt(Env::timeOptimize, smootingTime);
+  ENV.setDouble(Env::timeOptimize, smootingTime);
 
   ChronoOn();
-
-  result = p3d_run_rrt(_robot->GRAPH, fct_stop, fct_draw);
+	
+	if(_robot->GRAPH)
+	{
+		p3d_del_graph(_robot->GRAPH);
+	}
+	
+  result = ext_p3d_run_rrt(_robot->GRAPH, fct_stop, fct_draw);
 
   ChronoPrint("");
   ChronoOff();

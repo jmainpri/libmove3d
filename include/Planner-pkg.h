@@ -29,6 +29,8 @@
 /* globals */
 extern pp3d_graph  XYZ_TAB_GRAPH[];
 
+extern int (*ext_p3d_run_rrt)(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void));
+
 
 /* proto */
 #include "../planner/proto/planner_proto.h"
