@@ -51,10 +51,10 @@ void qt_draw_allwin_active(void)
 #endif
 }
 
-void qt_ui_calc_param(g3d_cam_param& p)
+void qt_calc_cam_param(g3d_cam_param& p)
 {
 	// TODO callback OOMOVE3D
-#if defined( QT_GL )  && defined (CXX_PLANNER)
+#if defined( QT_GL ) && defined (CXX_PLANNER)
 	p3d_vector4 Xc, Xw;
 	p3d_vector4 up;
 	
@@ -128,48 +128,11 @@ qtG3DWindow::qtG3DWindow()
 	ext_g3d_draw_cost_features = (void (*)())(g3d_draw_cost_features);
 	ext_g3d_export_cpp_graph = (void (*)())(g3d_export_cpp_graph);
 	ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
-	ext_calc_cam_param = /*(void (*) () )*/ qt_ui_calc_param ;
+	ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
 	ext_get_win_mouse = /*(void (*) (int*,int*))*/qt_get_win_mouse;
 #endif
 	
 	newG3dWindow();
-}
-
-// Function that computes the 
-// parameters of the
-void qt_calc_cam_param(g3d_cam_param& p)
-{
-// TODO callback OOMOVE3D
-//#if defined( QT_GL )  && defined (CXX_PLANNER)
-//	p3d_vector4 Xc, Xw;
-//	p3d_vector4 up;
-//	
-//	calc_cam_param(G3D_WIN, Xc, Xw);
-//	
-//	JimXc[0] = Xc[0];
-//	JimXc[1] = Xc[1];
-//	JimXc[2] = Xc[2];
-//	
-//	JimXw[0] = Xw[0];
-//	JimXw[1] = Xw[1];
-//	JimXw[2] = Xw[2];
-//	
-//	if (G3D_WIN)
-//	{
-//		p3d_matvec4Mult(*G3D_WIN->cam_frame, G3D_WIN->vs.up, up);
-//	}
-//	else
-//	{
-//		up[0] = 0;
-//		up[1] = 0;
-//		up[2] = 1;
-//	}
-//	
-//	Jimup[0] = up[0];
-//	Jimup[1] = up[1];
-//	Jimup[2] = up[2];
-//#endif
-ext_calc_cam_param(p);
 }
 
 void g3d_draw_allwin_active(void)
