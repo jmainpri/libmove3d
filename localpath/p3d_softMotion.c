@@ -2313,7 +2313,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
     return;
   }
   nbGpJnt = robotPt->mlp->mlpJoints[upBodySm_mlpID]->nbJoints;
-  std::cout << "there are " << nbGpJnt << std::endl;
+  //std::cout << "there are " << nbGpJnt << std::endl;
   int nb_armDof =0;
   q_armOld.clear();
   vqi.clear();
@@ -2487,6 +2487,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
   smTraj.computeTimeOnTraj();
   smTraj.trajId = 36;
   smTraj.save(fileNameSeg);
+  printf("File %s created\n", fileNameSeg);
 //   smTraj.print();
 
   //smTraj.print();
@@ -2556,7 +2557,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
     end_localpath = 0;
   }
 
-  printf("lpId %d traj->nlp %d\n ",lpId, traj->nlp);
+  //printf("lpId %d traj->nlp %d\n ",lpId, traj->nlp);
 
   if(filepTrajtr != NULL) {
     fclose(filepTrajtr);
