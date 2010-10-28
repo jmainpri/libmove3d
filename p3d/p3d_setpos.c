@@ -417,7 +417,7 @@ void p3d_update_this_robot_pos_without_cntrt(p3d_rob *robotPt) {
     p3d_jnt_clean_update(j);
   }
 
-  #if defined(PQP) && defined(LIGHT_PLANNER)
+  #if defined(LIGHT_PLANNER)
    p3d_update_carried_object_pos(robotPt);
   #endif
   #ifdef DPG

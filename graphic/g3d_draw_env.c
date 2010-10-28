@@ -1168,6 +1168,12 @@ void showConfig(configPt conf) {
   sleep(1);
 }
 
+void showConfig_2(configPt conf) {
+  p3d_set_and_update_this_robot_conf(XYZ_ROBOT,conf);
+  g3d_draw_allwin_active();
+  sleep(2.5);
+}
+
 //! This function is used to know how much a robot (visually) hides an object from a specific viewpoint.
 //! \param camera_frame the frame of the viewpoint (the looking direction is X, Y points downward and Z to the left)
 //! \param camera_fov the field of view angle of the robot's camera (in degrees)

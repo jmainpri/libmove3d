@@ -6,6 +6,7 @@
   #include "GraspPlanning-pkg.h"
 #endif
 #include "P3d-pkg.h"
+#include <vector>
 
 /** @defgroup manipulation
 * The manipulation classes are dedicated to
@@ -306,6 +307,14 @@ class ManipulationData{
     inline configPt getApproachGraspConfig() const{
       return _approachGraspConfig;
     }
+		std::vector<configPt> getAllConfigs() const{
+			std::vector<configPt> vect(4);
+			vect[0] =  _graspConfig;
+			vect[1] =  _openConfig;
+			vect[2] =  _approachFreeConfig;
+			vect[3] =  _approachGraspConfig;
+			return vect;
+		}
     inline void getAttachFrame(p3d_matrix4 graspAttachFrame) const{
       p3d_mat4Copy((p3d_matrix_type(*)[4])_graspAttachFrame, graspAttachFrame);
     }

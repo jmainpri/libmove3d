@@ -728,9 +728,7 @@ int p3d_set_object_to_carry(p3d_rob *robotPt, const char *object_name)
   }
 
   int i;
-  p3d_rob *carriedObject= NULL;
-
-
+  p3d_rob *carriedObject = NULL;
 
   for(i=0; i<XYZ_ENV->nr; i++) {
     if(strcmp(XYZ_ENV->robot[i]->name, object_name)==0) {
@@ -743,8 +741,9 @@ int p3d_set_object_to_carry(p3d_rob *robotPt, const char *object_name)
     return 1;
   }
   
-  robotPt->carriedObject= carriedObject;
-    if(robotPt->curObjectJnt==NULL)
+  robotPt->carriedObject = carriedObject;
+    
+	if(robotPt->curObjectJnt==NULL)
   {
     printf("%s: %d: p3d_set_object_to_carry(): the robot has no virtual object.\n",__FILE__,__LINE__);
     return 1;

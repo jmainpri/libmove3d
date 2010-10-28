@@ -474,6 +474,29 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
     end_localpath = 0;
 //fin modif xav
   }
+	
+	localpathPt = robotPt->tcur->courbePt;
+	
+	// Go to last lp
+	for (int i=0; i<(robotPt->tcur->nlp-1); i++) {
+		localpathPt = localpathPt->next_lp;
+	}
+	
+	// Show last configuration
+	q = localpathPt->config_at_param(robotPt, localpathPt, localpathPt->range_param );
+	
+#if defined( P3D_CONSTRAINTS ) && defined( P3D_PLANNER )
+	if (!ikSol || !p3d_compare_iksol(robotPt->cntrt_manager, localpathPt->ikSol, ikSol)) {
+		p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &ikSol);
+		if (p3d_get_ik_choice() != IK_NORMAL) {
+			p3d_print_iksol(robotPt->cntrt_manager, localpathPt->ikSol);
+		}
+	}
+#endif
+	
+	p3d_set_and_update_this_robot_conf_multisol(robotPt, q, NULL, 0, localpathPt->ikSol);
+	
+	if (fct) if (((*fct)(robotPt, localpathPt)) == FALSE) return(count);
 
 //#if defined(PQP) && defined(LIGHT_PLANNER)
 //	p3d_release_object(robotPt);

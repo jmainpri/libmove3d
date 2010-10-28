@@ -748,6 +748,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
 	
   p3d_traj* traj = NULL;
   fixAllHands(qStart, false);
+	fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
 	
 	// Compute to Approach config
   if((traj = computeTrajBetweenTwoConfigs(qStart, approachFreeConfig)))
@@ -799,7 +800,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     //Compute the path between theses configurations
     status = armPickTakeToFree(armId, qGoal, object,
 															 _configs.getGraspConfig(),
-															 _configs.getApproachFreeConfig(),
+															 _configs.getApproachGraspConfig(),
+															 *_configs.getGrasp(),
 															 trajs);
   }
 	
@@ -814,10 +816,44 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
 //! @param qGoal : the configuration to bring the object to
 //! @param object : pointer to the p3d_rob that represent the moving object
 //! @param trajs : the vector of trajector optained
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, configPt qGoal,  p3d_rob* object, configPt qStart, configPt approachGraspConfig , std::vector <p3d_traj*> &trajs){
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, configPt qGoal,  p3d_rob* object, configPt qStart, configPt approachGraspConfig , gpGrasp &grasp , std::vector <p3d_traj*> &trajs){
   
 	p3d_traj* traj = NULL;
-  fixAllHands(qStart, false);
+  fixAllHands( qStart, false );
+	fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
+	
+	ArmManipulationData& armData = (*_robot->armManipulationData)[armId];
+	
+#ifdef MULTILOCALPATH
+	if (_robot->lpl_type == P3D_MULTILOCALPATH_PLANNER ) 
+	{
+		p3d_multiLocalPath_set_groupToPlan(_robot, armData.getCartesianGroup(), 1);
+	}
+#endif
+	
+	deactivateCcCntrts(_robot,armId);
+	
+	p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
+	setAndActivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(),
+															 armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
+	//unfixManipulationJoints(armId);
+	
+	cout << "qStart : " << endl;
+	showConfig_2(qStart);
+	
+	// set the robot in the right configuration
+	p3d_set_and_update_this_robot_conf(_robot,approachGraspConfig);
+	p3d_get_robot_config_into(_robot, &approachGraspConfig);
+	cout << "approachGraspConfig : " << endl;
+	showConfig_2(approachGraspConfig);
+	
+	gpHand_properties handProp = armData.getHandProperties();
+  gpSet_grasp_configuration(_robot, grasp, qGoal, handProp.type);
+	cout << "qGoal : " << endl;
+	showConfig_2(qGoal);
+	
+	//_configs.getAttachFrame(ct->Tatt);
+	
 	
 	// Compute to Approach config
   if((traj = computeTrajBetweenTwoConfigs(qStart, approachGraspConfig)))
@@ -828,6 +864,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     if((traj = computeTrajBetweenTwoConfigs(approachGraspConfig, qGoal)))
 		{
       trajs.push_back(traj);
+			cout << "Manipulation : traj found" << endl;
 			return MANIPULATION_TASK_OK;
 		}
 	}
@@ -943,6 +980,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
   return status;
 }
 
+//! Computes a path for a specific task
+//! This function is an interface for the softmotion 
+//! trajectory generation
 #ifdef MULTILOCALPATH
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, const char* objectName, const char* supportName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs){
   std::vector <p3d_traj*> trajs;

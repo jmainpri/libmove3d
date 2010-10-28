@@ -52,9 +52,9 @@ class  ManipulationPlanner {
 	void fixAllHands(configPt q, bool rest) const;
 	/** UnFix the sampling of all the robots hands, activate hands self collision */
 	void unFixAllHands();
-	/**Fix the free flyer on the object pos. TODO: This function have to be changed to deal with cartesian mode (fix on the arm not on the object)*/
+	/** Fix the free flyer on the object pos. TODO: This function have to be changed to deal with cartesian mode (fix on the arm not on the object)*/
 	void fixManipulationJoints(int armId, configPt q, p3d_rob* object);
-	/**UnFix the free flyers*/
+	/** UnFix the free flyers*/
 	void unfixManipulationJoints(int armId);
 	/** Generate needed configurations from the given grasp and object position */
 	MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, ManipulationData& configs);
@@ -93,7 +93,7 @@ class  ManipulationPlanner {
 
     /** Move the arm from a grasping configuration (of the object placed on a support) to a free configuration */
     MANIPULATION_TASK_MESSAGE armPickTakeToFree(int armId, configPt qGoal, p3d_rob* object, std::vector <p3d_traj*> &trajs);
-		MANIPULATION_TASK_MESSAGE armPickTakeToFree(int armId, configPt qGoal, p3d_rob* object, configPt qStart, configPt approachGraspConfig, std::vector <p3d_traj*> &trajs);
+		MANIPULATION_TASK_MESSAGE armPickTakeToFree(int armId, configPt qGoal, p3d_rob* object, configPt qStart, configPt approachGraspConfig, gpGrasp &grasp, std::vector <p3d_traj*> &trajs);
 
     /** Move the arm from a grasping configuration to a configuration with the same grasp but a different object placement */
     MANIPULATION_TASK_MESSAGE armPickTakeToPlace(int armId, p3d_rob* object, p3d_rob* placement, std::vector <p3d_traj*> &trajs);
