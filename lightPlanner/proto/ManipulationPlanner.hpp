@@ -103,6 +103,10 @@ class  ManipulationPlanner {
 
     /** Move the arm from a free configuration to a grasping configuration of the object placed on a support then to a placement configuration */
     MANIPULATION_TASK_MESSAGE armPickAndPlace(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* placement, std::vector <p3d_traj*> &trajs);
+	
+		/** Move the arm to a stable object position then move the object to a free configuration with the object freeflying **/
+		MANIPULATION_TASK_MESSAGE armPickGotoAndTakeToFree(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* placement, std::vector <p3d_traj*> &trajs);
+		 
 
 #ifdef DPG
     /** \brief Check if the current path is in collision or not. Start from the begining of the trajectory

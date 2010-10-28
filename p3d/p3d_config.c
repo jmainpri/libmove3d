@@ -515,7 +515,7 @@ int p3d_equal_config_n_offset(int nb_dof, int offset, configPt q_i, configPt q_f
 {
   int i;
   for (i = offset;i < offset + nb_dof;i++) {
-    if (q_i[i] != q_f[i]) {
+    if (fabs(q_i[i] - q_f[i]) > EPS6) {
       return(FALSE);
     }
   }
