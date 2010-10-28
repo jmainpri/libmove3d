@@ -2447,7 +2447,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
 	    seg.IC.v = specificPt->specific->motion[i].Vel.Tvc;
 	    seg.IC.x = specificPt->specific->motion[i].Pos.Tvc;
 	    seg.time = specificPt->specific->motion[i].Times.Tjnb;
-	    seg.jerk = -specificPt->specific->motion[i].jerk.J3*specificPt->specific->motion[i].Dir_b;
+	    seg.jerk = specificPt->specific->motion[i].jerk.J3*specificPt->specific->motion[i].Dir_b;
 	  }
 	  if(s==6) {
 	    seg.IC.a = specificPt->specific->motion[i].Acc.Tjnb;
@@ -2461,7 +2461,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
 	    seg.IC.v = specificPt->specific->motion[i].Vel.Tacb;
 	    seg.IC.x = specificPt->specific->motion[i].Pos.Tacb;
 	    seg.time = specificPt->specific->motion[i].Times.Tjpb;
-	    seg.jerk = specificPt->specific->motion[i].jerk.J4*specificPt->specific->motion[i].Dir_b;
+	    seg.jerk = -specificPt->specific->motion[i].jerk.J4*specificPt->specific->motion[i].Dir_b;
 	  }
 
 	 }
@@ -2487,7 +2487,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
   smTraj.computeTimeOnTraj();
   smTraj.trajId = 36;
   smTraj.save(fileNameSeg);
-  //smTraj.print();
+//   smTraj.print();
 
   //smTraj.print();
   localpathPt = traj->courbePt;
