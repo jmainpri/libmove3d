@@ -73,6 +73,7 @@
 #endif
 
 extern hri_gik * HRI_GIK;
+extern int GIK_VIS;
 extern hri_bitmapset* BTSET;
 extern hri_bitmapset* BTSET_HUMAN;
 extern hri_bitmapset * INTERPOINT;
