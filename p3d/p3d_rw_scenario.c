@@ -631,8 +631,10 @@ static int read_scenario(FILE *f)
     if (strcmp(fct, "p3d_set_arm_data") == 0) {
       p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
       if (!robot) return(read_desc_error(fct));
-      if ( !p3d_read_string_int(&pos, 7, itab1) ) return ( read_desc_error ( fct ) );
-      if ( !p3d_set_arm_data (robot, itab1) ) return ( read_desc_error ( fct ) );//joint already declared
+			//free( itab1 );
+			int itabTmp[7]; 
+      if ( !p3d_read_string_int(&pos, 7, itabTmp) ) return ( read_desc_error ( fct ) );
+      if ( !p3d_set_arm_data (robot, itabTmp) ) return ( read_desc_error ( fct ) );//joint already declared
       continue;
     }
 		if ( strcmp ( fct, "p3d_set_object_to_carry" ) == 0 )

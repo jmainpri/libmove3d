@@ -225,8 +225,11 @@ void ManipulationPlanner::fixManipulationJoints(int armId, configPt q, p3d_rob* 
 }
 
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p3d_rob* object, ManipulationData& configs){
-  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+  
+	MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+	
   (*_robot->armManipulationData)[armId].setCarriedObject(object);
+	
   if(armId == -1){
     //TODO Multi arm Grasping
   }else{
@@ -240,6 +243,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
     list<gpGrasp> graspList/*, tmp*/;
     //Compute the grasp list for the given hand and object
     gpGet_grasp_list(object->name, armHandProp.type, graspList);
+		
     if (graspList.size() == 0){
       status = MANIPULATION_TASK_NO_GRASP;
     }else{
@@ -822,6 +826,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
 //! @param trajs : the vector of trajector optained
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, configPt qGoal,  p3d_rob* object, configPt qStart, configPt approachGraspConfig , gpGrasp &grasp , std::vector <p3d_traj*> &trajs){
   
+	MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_NO_TRAJ_FOUND;
+	
 	p3d_traj* traj = NULL;
 	
 	ArmManipulationData& armData = (*_robot->armManipulationData)[armId];
@@ -840,7 +846,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
 	
 	p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
 	setAndActivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(),
-															 armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
+																	armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
 	//unfixManipulationJoints(armId);
 	
 	//cout << "qStart : " << endl;
@@ -870,11 +876,15 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
 		{
       trajs.push_back(traj);
 			cout << "Manipulation : traj found" << endl;
-			return MANIPULATION_TASK_OK;
+			status =  MANIPULATION_TASK_OK;
 		}
 	}
 	
-  return MANIPULATION_TASK_NO_TRAJ_FOUND;
+	_robot->isCarryingObject = false;
+	desactivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(),
+															 armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
+	
+  return status;
 }
 
 //! The Arm Pick Take To Place method takes an object in a goal configuration
