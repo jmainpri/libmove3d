@@ -269,7 +269,7 @@ int p3d_convert_ptpTraj_to_smoothedTraj(double *gain, int* ntest, p3d_traj *traj
 				collision = FALSE;
 			} else {
 				localpathTransPt->nbActiveCntrts = localpath1Pt->nbActiveCntrts;
-				for(int v=0; v<localpathMlp1Pt->nbActiveCntrts; v++) {
+				for(int v=0; v<localpath1Pt->nbActiveCntrts; v++) {
 					localpathTransPt->activeCntrts[v] = localpath1Pt->activeCntrts[v];
 					localpathTransPt->activeCntrts[v] = localpath1Pt->activeCntrts[v];
 				}

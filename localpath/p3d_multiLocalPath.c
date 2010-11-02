@@ -218,7 +218,10 @@ void p3d_multiLocalPath_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt) {
 			localpathPt->q_init = NULL;
 		}
 
-    MY_FREE(localpathPt->activeCntrts, int, localpathPt->nbActiveCntrts);
+
+    if(localpathPt->activeCntrts != NULL) {
+      MY_FREE(localpathPt->activeCntrts, int, localpathPt->nbActiveCntrts);
+    }
     MY_FREE(localpathPt, p3d_localpath, 1);
   }
 }
@@ -444,9 +447,13 @@ p3d_localpath *p3d_copy_multiLocalPath_localpath(p3d_rob* robotPt,
 	localpathPtMg->q_init = p3d_copy_config(robotPt, localpathPt->q_init);
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(localpathPtMg->ikSol));
   localpathPtMg->nbActiveCntrts = localpathPt->nbActiveCntrts;
-  localpathPtMg->activeCntrts = MY_ALLOC(int, localpathPtMg->nbActiveCntrts);
-  for(int i = 0; i < localpathPtMg->nbActiveCntrts; i++){
-    localpathPtMg->activeCntrts[i] = localpathPt->activeCntrts[i];
+  if(localpathPt->nbActiveCntrts >0) {
+   localpathPtMg->activeCntrts = MY_ALLOC(int, localpathPtMg->nbActiveCntrts);
+   for(int i = 0; i < localpathPtMg->nbActiveCntrts; i++){
+     localpathPtMg->activeCntrts[i] = localpathPt->activeCntrts[i];
+   }
+  } else {
+   localpathPtMg->activeCntrts = NULL;
   }
 
 #if defined(LIGHT_PLANNER)
@@ -539,9 +546,15 @@ p3d_localpath *p3d_extract_multiLocalPath(p3d_rob *robotPt,
 	p3d_destroy_config(robotPt, qi);
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(sub_localpathPt->ikSol));
   sub_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
-  sub_localpathPt->activeCntrts = MY_ALLOC(int, sub_localpathPt->nbActiveCntrts);
-  for(int i = 0; i < sub_localpathPt->nbActiveCntrts; i++){
-    sub_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
+  if(localpathPt->nbActiveCntrts> 0) {
+     sub_localpathPt->activeCntrts = MY_ALLOC(int, sub_localpathPt->nbActiveCntrts);
+
+    for(int i = 0; i < sub_localpathPt->nbActiveCntrts; i++){
+      sub_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
+    }
+
+  } else {
+   sub_localpathPt->activeCntrts = NULL;
   }
 
 #if defined(LIGHT_PLANNER)
