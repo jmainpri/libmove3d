@@ -268,7 +268,11 @@ int p3d_convert_ptpTraj_to_smoothedTraj(double *gain, int* ntest, p3d_traj *traj
 
 				collision = FALSE;
 			} else {
+				if(localpathTransPt->activeCntrts != NULL) {
+				  MY_FREE(localpathTransPt->activeCntrts, int, localpathTransPt->nbActiveCntrts);
+				}
 				localpathTransPt->nbActiveCntrts = localpath1Pt->nbActiveCntrts;
+				localpathTransPt->activeCntrts = MY_ALLOC(int, localpathTransPt->nbActiveCntrts);
 				for(int v=0; v<localpath1Pt->nbActiveCntrts; v++) {
 					localpathTransPt->activeCntrts[v] = localpath1Pt->activeCntrts[v];
 					localpathTransPt->activeCntrts[v] = localpath1Pt->activeCntrts[v];
@@ -286,21 +290,13 @@ int p3d_convert_ptpTraj_to_smoothedTraj(double *gain, int* ntest, p3d_traj *traj
 		localpathTmp2Pt = NULL;
 		localpathTmp1Pt = NULL;
 		softMotion_data_lpTrans = NULL;
-
 	}
-
-
-
 	/* update the number of local paths */
 	trajSmPt->nlp = p3d_compute_traj_nloc(trajSmPt);
 	trajSmPt->range_param = p3d_compute_traj_rangeparam(trajSmPt);
 	g3d_add_traj((char*)"traj_SoftMotion", trajSmPt->num);
 
-
-
-
-  
- return FALSE;
+	return FALSE;
 }
 
 int p3d_convert_traj_to_softMotion(p3d_traj *trajPt, bool param_write_file, std::vector <int> &lp, std::vector < std::vector <double> > &positions, SM_TRAJ &smTraj) {
@@ -343,7 +339,12 @@ int p3d_convert_traj_to_softMotion(p3d_traj *trajPt, bool param_write_file, std:
 	p3d_multilocalpath_switch_to_softMotion_groups(robotPt);
 	trajSmPTPPt->courbePt = p3d_local_planner_multisol(robotPt, q_init, q_end,  localpathMlp1Pt->ikSol);
 
+
+        if(trajSmPTPPt->courbePt->activeCntrts != NULL) {
+	 MY_FREE(trajSmPTPPt->courbePt->activeCntrts, int, trajSmPTPPt->courbePt->nbActiveCntrts);
+	}
 	trajSmPTPPt->courbePt->nbActiveCntrts = localpathMlp1Pt->nbActiveCntrts;
+	trajSmPTPPt->courbePt->activeCntrts = MY_ALLOC(int, trajSmPTPPt->courbePt->nbActiveCntrts);
 	for(int v=0; v<localpathMlp1Pt->nbActiveCntrts; v++) {
 		trajSmPTPPt->courbePt->activeCntrts[v] = localpathMlp1Pt->activeCntrts[v];
 	}
@@ -365,7 +366,12 @@ int p3d_convert_traj_to_softMotion(p3d_traj *trajPt, bool param_write_file, std:
 			p3d_multilocalpath_switch_to_softMotion_groups(robotPt);
 			localpathTmp1Pt = p3d_local_planner_multisol(robotPt, q_init, q_end,  localpathMlp1Pt->ikSol);
 
+
+			if(localpathTmp1Pt->activeCntrts != NULL) {
+			   MY_FREE(localpathTmp1Pt->activeCntrts, int, localpathTmp1Pt->nbActiveCntrts);
+			}
 			localpathTmp1Pt->nbActiveCntrts = localpathMlp1Pt->nbActiveCntrts;
+			localpathTmp1Pt->activeCntrts = MY_ALLOC(int, localpathTmp1Pt->nbActiveCntrts);
 			for(int v=0; v<localpathMlp1Pt->nbActiveCntrts; v++) {
 				localpathTmp1Pt->activeCntrts[v] = localpathMlp1Pt->activeCntrts[v];
 			}
