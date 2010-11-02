@@ -2339,7 +2339,6 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
     }
   }
   positions.clear();
-	  int niseg = 0;
   localpathPt = traj->courbePt;
   lpId = 0;
   
@@ -2480,15 +2479,44 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
     localpathPt = localpathPt->next_lp;
   }
 
-// std::cout << "smTraj.traj.size() " << smTraj.traj.size() << std::endl;
-// for(unsigned int l=0; l<smTraj.traj.size(); l++) {
-//   std::cout << "smTraj.traj[i].size() " << smTraj.traj[l].size() << std::endl;
-// }
+  /* Set the initial condition (qStart) of the trajectory */ 
+  j=0;
+  smTraj.qStart.clear();
+  smTraj.qStart.resize(nb_armDof);
+  q = traj->courbePt->config_at_param(robotPt, traj->courbePt, 0.0);
+  for(int v=0; v<nbGpJnt; v++) {
+   nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
+    for(int k=0; k<nb_dof; k++) {
+     smTraj.traj[j][0].IC.x = q[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof + k];
+     smTraj.qStart[j] = smTraj.traj[j][0].IC.x;
+     j++;
+    }
+  }
+  /* Set the final condition (qGoal) of the trajectory */
+  localpathPt = traj->courbePt;
+  while (localpathPt !=NULL) {
+   localpathPt = localpathPt->next_lp;
+   if(localpathPt != NULL) {
+     localpathSMPt = localpathPt;
+   }
+  }
+
+  j=0;
+  smTraj.qGoal.clear();
+  smTraj.qGoal.resize(nb_armDof);
+  q = localpathSMPt->config_at_param(robotPt, localpathSMPt, localpathSMPt->length_lp);
+  for(int v=0; v<nbGpJnt; v++) {
+   nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
+    for(int k=0; k<nb_dof; k++) {
+     smTraj.qGoal[j] = q[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof + k];
+     j++;
+    }
+  }
+
   smTraj.computeTimeOnTraj();
   smTraj.trajId = 36;
   smTraj.save(fileNameSeg);
   printf("File %s created\n", fileNameSeg);
-//   smTraj.print();
 
   //smTraj.print();
   localpathPt = traj->courbePt;
