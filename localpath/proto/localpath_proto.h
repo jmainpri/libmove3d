@@ -11,4 +11,7 @@
 #include"../localpath/proto/p3d_manhattan_proto.h"
 #include"../localpath/proto/p3d_trailer_proto.h"
 #include"../localpath/proto/p3d_hilare_flat_proto.h"
+
+#ifdef MULTILOCALPATH
 #include"../localpath/proto/p3d_softMotion_proto.h"
+#endif
