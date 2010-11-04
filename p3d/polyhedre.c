@@ -2173,9 +2173,9 @@ int p3d_create_surface_GTS(p3d_polyhedre *poly)
   printf("n_boundary_edges= %d\n", stats.n_boundary_edges);
   printf("n_non_manifold_edges= %d\n", stats.n_non_manifold_edges);
 */
-  FILE *file= fopen("./horse.oogl", "w");
-  gts_surface_write_oogl(poly->surface_GTS, file);
-  fclose(file);
+//   FILE *file= fopen("./horse.oogl", "w");
+//   gts_surface_write_oogl(poly->surface_GTS, file);
+//   fclose(file);
 
   return 0;
 }
