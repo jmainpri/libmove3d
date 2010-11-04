@@ -6,17 +6,29 @@
 #define GLWIDGET_H
 
 #include "p3d_matrix.h"
-#include "../../qtLibrary.h"
+
+#undef Status
+#undef Black
+#undef Bool
+#undef CursorShape
+#undef None
+#undef KeyPress
+#undef KeyRelease
+#undef FocusIn
+#undef FocusOut
+#undef FontChange
+#undef Unsorted
+
+#include <QtOpenGL/QGLWidget>
+#include <QtCore/QObject>
+
+#include "../../graphic/proto/qtG3DWindow.hpp"
 
 #ifndef MAINWINDOW_HPP
 class MainWindow;
 #endif
 
 class Move3D2OpenGl;
-
-#ifndef WITH_XFORMS
-#include "Graphic-pkg.h"
-#endif
 
 void qt_get_win_mouse(int* i, int* j);
 void qt_ui_calc_param(g3d_cam_param& p);

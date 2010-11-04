@@ -26,7 +26,8 @@ extern p3d_vector4 Jimup;
 extern QWaitCondition* waitDrawAllWin;
 extern QMutex* lockDrawAllWin;
 
-#include "qtWindow/qtOpenGL/g3dQtConnection.hpp"
+//#include "glwidget.hpp"
+#include "g3dQtConnection.hpp"
 
 extern Move3D2OpenGl* pipe2openGl;
 
