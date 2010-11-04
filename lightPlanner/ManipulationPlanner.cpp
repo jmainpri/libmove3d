@@ -11,7 +11,7 @@
 #ifdef CXX_PLANNER
 #include "planner_cxx/plannerFunctions.hpp"
 #if defined (USE_CXX_PLANNER)
-#include "planEnvironment.hpp"
+// #include "planEnvironment.hpp"
 #endif
 #endif
 
