@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string>
 #include <sstream>
+#include <iostream>
 
 
 // 10% ouverture pince pour test collision
@@ -2900,6 +2901,11 @@ int gpGet_grasp_list_SAHand ( std::string object_to_grasp, int hand_to_use, std:
   return GP_OK;
 }
 
+void foo(int i)
+{
+	std::cout << "foo : " << i << std::endl;
+}
+
 
 
 //! @ingroup graspPlanning
@@ -3024,10 +3030,6 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
     if(hand_type==GP_GRIPPER)
     {  gpGrasp_collision_filter(graspList, hand_robot, object, handProp);   }
 
-    // printf("before stability %d\n",graspList.size());
-    if (hand_type == GP_GRIPPER){
-      gpGrasp_collision_filter ( graspList, hand_robot, object, handProp );
-    }
     gpGrasp_stability_filter(graspList);
 
     // printf("after stability %d\n",graspList.size());
@@ -3060,9 +3062,22 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
       printf("It contains %d grasps.\n",graspList.size() );
     }
   }
-
-  gpCompute_mass_properties(graspList.front().object->o[graspList.front().body_index]->pol[0]->poly);
-//   gpCompute_mass_properties(poly);
+	
+	std::cout << graspList.front().body_index << std::endl;
+	std::cout << graspList.front().object->name << std::endl;
+	std::cout << graspList.front().object->o[graspList.front().body_index]->pol[0]->poly->name << std::endl;
+	
+	int bodyIndex = graspList.front().body_index;
+	poly_polyhedre* pol = graspList.front().object->o[bodyIndex]->pol[0]->poly;
+	
+	std::cout << "bodyIndex = " << bodyIndex << std::endl;
+	std::cout << "pol = " << pol << std::endl;
+	
+	std::cout << sizeof(p3d_polyhedre) << std::endl;
+	
+	foo(42);
+	
+  gpCompute_mass_properties(pol);
 
   return GP_OK;
 }

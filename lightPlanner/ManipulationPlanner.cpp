@@ -241,8 +241,15 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
     }
     gpHand_properties armHandProp = (*_robot->armManipulationData)[armId].getHandProperties();
     list<gpGrasp> graspList/*, tmp*/;
-    //Compute the grasp list for the given hand and object
-    gpGet_grasp_list(object->name, armHandProp.type, graspList);
+		
+		for (unsigned int i=0; i<100; i++) 
+		{
+			graspList.clear();
+			//Compute the grasp list for the given hand and object
+			std::cout << "gpGet_grasp_list : " << i << std::endl;
+			gpGet_grasp_list(object->name, armHandProp.type, graspList);
+			
+		}
 		
     if (graspList.size() == 0){
       status = MANIPULATION_TASK_NO_GRASP;
@@ -880,9 +887,10 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
 		}
 	}
 	
-	_robot->isCarryingObject = false;
-	desactivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(),
-															 armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
+// Wraning comment to see traj in Linear mode
+//	_robot->isCarryingObject = false;
+//	desactivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(),
+//															 armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
 	
   return status;
 }
@@ -929,7 +937,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGotoAndTakeToFree(int armI
 	// Generate new manip configs
 	ManipulationData manipConfigs(_robot);
 	_configs = manipConfigs;
-  status = findArmGraspsConfigs(armId, object, _configs);
+  
+	/*
+	status = findArmGraspsConfigs(armId, object, _configs);
 	
   if (status == MANIPULATION_TASK_OK)
 	{
@@ -958,6 +968,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGotoAndTakeToFree(int armI
 														 _configs.getApproachGraspConfig(),
 														 *_configs.getGrasp(),
 														 trajs);
+	 */
 	
   return status;
 }

@@ -188,17 +188,30 @@ void qt_canvas_viewing(int mouse_press, int button)
 //#endif
 		ext_get_win_mouse(&i,&j);
 		
-		if (button == 0)
+		switch (button) 
 		{
-			key = 256;
-		}
-		else if (button == 1)
-		{
-			key = 512;
-		}
-		else if (button == 2)
-		{
-			key = 1024;
+			case 0:
+				key = 256;
+				break;
+			case 1:
+				key = 512;
+				break;
+			case 2:
+				key = 1024;
+				break;
+				
+			case 3: // X
+				key = 768;
+				break;
+			case 4: // Y
+				key = 1536;
+				break;
+			case 5: // Z
+				key = 1280;
+				break;
+				
+			default:
+				break;
 		}
 		
 		/*printf("i = %d\n", i);

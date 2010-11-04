@@ -276,9 +276,9 @@ int p3d_convert_ptpTraj_to_smoothedTraj(double *gain, int* ntest, p3d_traj *traj
 				for(int v=0; v<localpath1Pt->nbActiveCntrts; v++) {
 					localpathTransPt->activeCntrts[v] = localpath1Pt->activeCntrts[v];
 					localpathTransPt->activeCntrts[v] = localpath1Pt->activeCntrts[v];
-					if (localpathMlp1Pt->nbActiveCntrts > localpath1Pt->nbActiveCntrts) {
-						printf("Error");
-					}
+//					if (localpathMlp1Pt->nbActiveCntrts > localpath1Pt->nbActiveCntrts) {
+//						printf("Error");
+//					}
 				}
 				/* Transition motion is OK */
 				end_trajSmPt = append_to_localpath(end_trajSmPt, localpathTmp1Pt);

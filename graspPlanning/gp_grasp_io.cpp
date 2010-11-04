@@ -123,9 +123,10 @@ std::string getNodeString(xmlDocPtr doc, xmlNodePtr node)
 {
   size_t pos;
   xmlChar *key;
-  std::string text, message, word;
+  std::string  message, word;
   key= xmlNodeListGetString(doc, node->xmlChildrenNode, 1);
-  text= (char *) key;
+  
+	std::string text((char *) key);
   xmlFree(key);
 
   //Remove all the newline characters for UNIX file (\n) at the end of the line:
@@ -178,6 +179,10 @@ void elementMissingMessage(int line_number, const xmlChar *URL, const xmlChar *e
    return;
 }
 
+static std::string text;
+message, word;
+std::istringstream iss;
+
 //! @ingroup graspIO 
 //! Reads the content of the given node and fills the appropriate field in the gpElementParserData structure.
 //! This function is used for simple element (with no chidren nodes).
@@ -191,8 +196,8 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
   bool result;
   double x;
   xmlNodePtr cur= entry_node->xmlChildrenNode;
-  std::string text, message, word;
-  std::istringstream iss;
+	
+	iss.clear();
 
   for(cur= entry_node->xmlChildrenNode; cur!=NULL; cur= cur->next)
   {
@@ -424,7 +429,6 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
           }
           return true;
        }
-
     }   
   }
 
