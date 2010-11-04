@@ -3027,9 +3027,10 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
 
     gpGrasp_generation(hand_robot, object, 0, handProp, handProp.nb_positions, handProp.nb_directions, handProp.nb_rotations, graspList );
 
-    if(hand_type==GP_GRIPPER)
-    {  gpGrasp_collision_filter(graspList, hand_robot, object, handProp);   }
-
+    // printf("before stability %d\n",graspList.size());
+    if (hand_type == GP_GRIPPER){
+      gpGrasp_collision_filter ( graspList, hand_robot, object, handProp );
+    }
     gpGrasp_stability_filter(graspList);
 
     // printf("after stability %d\n",graspList.size());
@@ -3038,7 +3039,7 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
 
     tmpList= graspList;
 
-    gpReduce_grasp_list_size(tmpList, graspList, 75);
+    gpReduce_grasp_list_size(tmpList, graspList, 40);
 
     gpCompute_grasp_open_configs ( graspList, hand_robot, object );
 
