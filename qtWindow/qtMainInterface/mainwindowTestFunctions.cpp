@@ -35,7 +35,7 @@
 
 #ifdef HRI_COSTSPACE
 #include "ui_qtHrics.h"
-#include "HRI_costspace/HRICS_costspace.hpp"
+#include "hri_costspace/HRICS_costspace.h"
 #endif
 
 MainWindowTestFunctions::MainWindowTestFunctions(MainWindow* MainWinPt) : m_mainWindow(MainWinPt)

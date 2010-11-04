@@ -24,11 +24,11 @@
 #endif
 
 #ifdef HRI_COSTSPACE
-#include "HRI_CostSpace/HRICS_Workspace.h"
+#include "hri_costspace/HRICS_Workspace.h"
 #endif
 
 #if defined( HRI_PLANNER ) && defined( HRI_COSTSPACE )
-#include "HRI_CostSpace/HRICS_HAMP.h"
+#include "hri_costspace/HRICS_HAMP.h"
 #endif
 
 #include "Graphic-pkg.h"

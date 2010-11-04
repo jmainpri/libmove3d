@@ -6,7 +6,7 @@
 #define GLWIDGET_H
 
 #include "p3d_matrix.h"
-#include "qtLibrary.hpp"
+#include "../../qtLibrary.h"
 
 #ifndef MAINWINDOW_HPP
 class MainWindow;
