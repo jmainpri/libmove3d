@@ -4,12 +4,12 @@
 
 gpSAHandInfo::gpSAHandInfo()
 {
-  q1min= -20*DEGTORAD;
-  q1max=  20*DEGTORAD;
-  q2min= -19*DEGTORAD;
-  q2max=  90*DEGTORAD;
-  q3min=   0*DEGTORAD;
-  q3max=  90*DEGTORAD;
+  q1min= -15*DEGTORAD;
+  q1max=  15*DEGTORAD;
+  q2min= -4*DEGTORAD;
+  q2max=  75*DEGTORAD;
+  q3min=   4*DEGTORAD;
+  q3max=  75*DEGTORAD;
     // these bounds are reduced because a finger has no chance to ensure a good contact
     // close to the initial bounds:
 //      q1min= -20*DEGTORAD;
@@ -787,7 +787,6 @@ int gpSAHfinger_workspace_approximation(gpSAHandInfo data, double dq, double dr,
     spheres.at(i)= *iterSphere;
     printf("       workspace.at(%d).setCenter(%f, %f, %f); \n", i, spheres.at(i).center[0], spheres.at(i).center[1], spheres.at(i).center[2]);
     printf("       workspace.at(%d).radius= %f; \n", i, spheres.at(i).radius);
-
     i++;
   }
 

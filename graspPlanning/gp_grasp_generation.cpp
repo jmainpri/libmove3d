@@ -3062,6 +3062,7 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
   }
 
   gpCompute_mass_properties(graspList.front().object->o[graspList.front().body_index]->pol[0]->poly);
+//   gpCompute_mass_properties(poly);
 
   return GP_OK;
 }

@@ -13,7 +13,7 @@
 
 
 // static char ObjectName[]= "Horse";
-static char ObjectName[]= "GREY_TAPE";
+static char ObjectName[]= "GreyVideoTape";
 static char RobotName[]= "JIDO_ROBOT";
 static char HandRobotName[]= "SAHandRight_robot";
 static bool display_grasps= false;
@@ -969,7 +969,7 @@ static void CB_SAHandLeft_obj ( FL_OBJECT *obj, long arg )
 
 static void CB_SAHandRight_obj ( FL_OBJECT *obj, long arg )
 { 
-printf("CB_SAHandRight\n");
+  printf("CB_SAHandRight\n");
   unsigned int i;
   static unsigned int count= 0, firstTime= TRUE;
   
@@ -1468,7 +1468,17 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+// std::vector<gpSphere> spheres;
+// gpSAHandInfo data;
+// gpSAHfinger_workspace_approximation(data, DEGTORAD*2, 0.0, 50,  spheres);
+//   redraw(); return;
 
+std::list<gpGrasp> graspList;
+// for(int i=0; i<1000; ++i)
+// {
+   gpGet_grasp_list(ObjectName, GP_SAHAND_RIGHT, graspList);
+graspList.clear();
+// }
 
 // p3d_vector3 points[20];
 // for(int i=0; i<20; ++i)

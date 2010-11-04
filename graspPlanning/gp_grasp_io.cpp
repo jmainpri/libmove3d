@@ -428,6 +428,8 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
     }   
   }
 
+  printf("%s: %d: There is no element called \"%s\.\n",__FILE__,__LINE__,element.c_str());
+
   return false;
 }
 
