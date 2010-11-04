@@ -1572,26 +1572,26 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
     /*                                                                */
     /*    Cas d'un POLYHEDRE QUELCONQUE                               */
     /******************************************************************/
-//    glDisable(GL_NORMALIZE);
-//    if(fill == 1) {
-//
-//      /* Cas d'un polyhedre quelconque */
-//
-//      glCallList(p->list);
-//
-//    } else if(fill == 2 && p->listgour != -1) {
-//
-//      /* cas d'un polyhedre quelconque */
-//
-//      glCallList(p->listgour);
-//
-//    }
-//    else {
-//      glCallList(p->listfil);
-//      glEnable(GL_LIGHTING);
-//      glEnable(GL_LIGHT0);
-//    }
-//		
+    glDisable(GL_NORMALIZE);
+    if(fill == 1) {
+
+      /* Cas d'un polyhedre quelconque */
+
+      glCallList(p->list);
+
+    } else if(fill == 2 && p->listgour != -1) {
+
+      /* cas d'un polyhedre quelconque */
+
+      glCallList(p->listgour);
+
+    }
+    else {
+      glCallList(p->listfil);
+      glEnable(GL_LIGHTING);
+      glEnable(GL_LIGHT0);
+    }
+		
   }
 
 

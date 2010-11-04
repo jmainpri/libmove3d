@@ -3,8 +3,11 @@
  */
 
 #include "glwidget.hpp"
+
 #include "qtMainInterface/mainwindow.hpp"
 #include "qtMainInterface/mainwindowGenerated.hpp"
+
+#include "API/Graphic/drawModule.hpp"
 
 #include "P3d-pkg.h"
 #include "Move3d-pkg.h"
@@ -18,6 +21,8 @@
 #include <fstream>
 
 using namespace std;
+
+void (*draw_opengl)();
 
 extern void* GroundCostObj;
 
@@ -33,6 +38,8 @@ QGLWidget(parent)
 	up[2] = 0;
 	up[3] = 0;
 	
+	size = 600;
+	
 	az = INIT_AZ;
 	el = INIT_EL;
 	double x1, x2, y1, y2, z1, z2;
@@ -45,20 +52,23 @@ QGLWidget(parent)
 	trolltechWhite =  QColor::fromCmykF(0.0, 0.0, 0.0, 0.0);
 	trolltechGrey = trolltechWhite;
 	
+	m_mainWindow = false;
+	
 	_isThreadWorking = false;
 	_light = false;
 	
-#ifndef WITH_XFORMS
+	initG3DFunctions();
+	
 	mG3DOld = new qtG3DWindow;
 	
+	g3d_set_win_floor_color(g3d_get_cur_states(), 1, 0.87, 0.49);
+	//g3d_set_win_bgcolor(g3d_get_cur_win(), 0.5, 0.6, 1.0);
 	g3d_set_win_wall_color(g3d_get_cur_states(), 0.4, 0.45, 0.5);
 	
 	g3d_set_win_bgcolor(g3d_get_cur_states(), 
 											XYZ_ENV->background_color[0], 
 											XYZ_ENV->background_color[1], 
 											XYZ_ENV->background_color[2]);
-#endif
-	
 	//	setFocusPolicy(Qt::StrongFocus);
 }
 
@@ -119,6 +129,60 @@ void GLWidget::saveView()
 	QImage image = grabFrameBuffer();
 	//	QPixmap image = renderPixmap(0,0,false);
 	image.save("OpenGLView.jpg", "JPG", 100);
+}
+
+// -------------------------------------------------------
+// Initialize G3D functions
+// -------------------------------------------------------
+
+// Mode for rotation translation 
+// control of the camera frame
+int mouse_mode = 0;
+
+// place on the screen
+int _i; int _j;
+
+void qt_get_win_mouse(int* i, int* j)
+{
+	//cout << "qt_get_win_mouse" <<  endl;
+	*i = _i;
+	*j = _j;
+}
+
+void qt_ui_calc_param(g3d_cam_param& p)
+{
+	//cout << "qt_ui_calc_param" <<  endl;
+	p3d_vector4 up;
+	
+	calc_cam_param(G3D_WIN, p.Xc, p.Xw);
+	
+	if (G3D_WIN)
+	{
+		p3d_matvec4Mult(*G3D_WIN->cam_frame, G3D_WIN->vs.up, up);
+	}
+	else
+	{
+		up[0] = 0;
+		up[1] = 0;
+		up[2] = 1;
+	}
+	
+	p.up[0] = up[0];
+	p.up[1] = up[1];
+	p.up[2] = up[2];
+}
+
+void GLWidget::initG3DFunctions()
+{
+	cout << "Init G3D Functions" << endl;
+	
+	draw_opengl = g3d_draw_allwin_active;
+	
+	ext_get_win_mouse = (void (*) (int*,int*))(qt_get_win_mouse);
+	ext_g3d_draw_allwin_active = draw_opengl;
+	ext_calc_cam_param = (void (*) (g3d_cam_param&) )(qt_ui_calc_param);
+	
+	Graphic::initDrawFunctions();
 }
 
 // -------------------------------------------------------
@@ -190,30 +254,12 @@ void GLWidget::setThreadWorking(bool isWorking)
 }
 
 // Camera vectors
-p3d_vector4 JimXc;
-p3d_vector4 JimXw;
-p3d_vector4 Jimup;
+//p3d_vector4 JimXc;
+//p3d_vector4 JimXw;
+//p3d_vector4 Jimup;
 
 void GLWidget::paintGL()
 {
-	if( ENV.getBool(Env::drawDisabled) )
-	{
-		//#ifdef WITH_XFORMS
-		if ((lockDrawAllWin != 0) && (waitDrawAllWin != 0))
-		{
-			lockDrawAllWin->lock();
-			lockDrawAllWin->unlock();
-		}
-		if (waitDrawAllWin != 0)
-		{
-			//                cout << "All awake" << endl;
-			waitDrawAllWin->wakeAll();
-		}
-		//#endif
-		return;
-	}
-	//        cout << "paintGL()" << endl;
-	
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();
 	
@@ -222,7 +268,7 @@ void GLWidget::paintGL()
 	
 	//	computeNewVectors(Xc,Xw,up);
 	g3d_cam_param p;
-	ext_calc_cam_param(p);
+	qt_ui_calc_param(p);
 	
 	Xc[0] = p.Xc[0];
 	Xc[1] = p.Xc[1];
@@ -240,35 +286,18 @@ void GLWidget::paintGL()
 	
 	G3D_WIN->vs.cameraPosition[0]= Xc[0];
 	G3D_WIN->vs.cameraPosition[1]= Xc[1];
-	G3D_WIN->vs.cameraPosition[2]= Xc[2];  
+	G3D_WIN->vs.cameraPosition[2]= Xc[2];
 	
-	//#ifdef WITH_XFORMS
-	if ((lockDrawAllWin != 0) && (waitDrawAllWin != 0))
-	{
-		lockDrawAllWin->lock();
-		lockDrawAllWin->unlock();
-	}
-	//#endif
-	if( !(ENV.getBool(Env::isRunning) && _isThreadWorking ))
-	{
-		//            cout << "Drawing and wait is " << waitDrawAllWin << endl;
-		//            cout << "Drawing : g3d_draw " << paintNum++ << endl;
-		g3d_draw();
-	}
-	//#ifdef WITH_XFORMS
-	if (waitDrawAllWin != 0)
-	{
-		//                cout << "All awake" << endl;
-		waitDrawAllWin->wakeAll();
-	}
-	//#endif
+	cout << "g3d_draw()" << endl;
+	g3d_draw();
+	
 	glPopMatrix();
 	
-	/*cout << "paintGL() : " << paintNum++ << endl;
-	 cout << "------------------------------------------------" << endl;
-	 cout << Xc[0] << " " << Xc[1] << " " << Xc[2] << endl;
-	 cout << Xw[0] << " " << Xw[1] << " " << Xw[2] << endl;
-	 cout << up[0] << " " << up[1] << " " << up[2] << endl;*/
+	//cout << "paintGL() : " << paintNum++ << endl;
+	//cout << "------------------------------------------------" << endl;
+	//cout << Xc[0] << " " << Xc[1] << " " << Xc[2] << endl;
+	//cout << Xw[0] << " " << Xw[1] << " " << Xw[2] << endl;
+	//cout << up[0] << " " << up[1] << " " << up[2] << endl;
 }
 
 void GLWidget::reinitGraphics()
@@ -296,16 +325,6 @@ void GLWidget::reinitGraphics()
   if (env)
   {
     env->INIT = 1;
-  }
-	
-  if ((lockDrawAllWin != 0) && (waitDrawAllWin != 0))
-  {
-    lockDrawAllWin->lock();
-    lockDrawAllWin->unlock();
-  }
-  if (waitDrawAllWin != 0)
-  {
-    waitDrawAllWin->wakeAll();
   }
 }
 
@@ -361,19 +380,6 @@ void GLWidget::computeNewVectors(p3d_vector4& Xc, p3d_vector4& Xw,
 // Mouse board events
 // -------------------------------------------------------
 
-// Mode for rotation translation 
-// control of the camera frame
-int mouse_mode = 0;
-
-// place on the screen
-int _i; int _j;
-
-void qt_get_win_mouse(int* i, int* j)
-{
-	*i = _i;
-	*j = _j;
-}
-
 void GLWidget::mousePressEvent(QMouseEvent *event)
 {
 	if (!_light)
@@ -389,20 +395,40 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
+	cout << "GLWidget::mouseMoveEvent" << endl;
+	
 	if (!_light)
 	{
+		// Viewing mode
 		_i = event->x();
 		_j = event->y();
 		
-		if ((event->buttons() & Qt::LeftButton)&&(mouse_mode==0))
+		//cout << "Mouse Button : " << event->buttons() << endl;
+		
+		if ((event->buttons() ==			( Qt::LeftButton | Qt::MidButton )) &&(mouse_mode==0) )
+		{
+			//cout << "Qt::LeftButton	& Qt::MidButton" << endl;
+			qt_canvas_viewing(0, 3);
+		}
+		else if ((event->buttons() == ( Qt::MidButton | Qt::RightButton )) &&(mouse_mode==0) )
+		{
+			//cout << "Qt::MidButton		& Qt::RightButton" << endl;
+			qt_canvas_viewing(0, 4);
+		}
+		else if ((event->buttons() == ( Qt::RightButton | Qt::LeftButton)) &&(mouse_mode==0) )
+		{
+			//cout << "Qt::RightButton & Qt::LeftButton" << endl;
+			qt_canvas_viewing(0, 5);
+		}
+		else if ((event->buttons() == Qt::LeftButton)&&(mouse_mode==0))
 		{
 			qt_canvas_viewing(0, 0);
 		}
-		else if ((event->buttons() & Qt::MidButton) || ((event->buttons() & Qt::LeftButton)&&(mouse_mode==1)) )
+		else if ((event->buttons() == Qt::MidButton) || ((event->buttons() & Qt::LeftButton)&&(mouse_mode==1)) )
 		{
 			qt_canvas_viewing(0, 1);
 		}
-		else if ((event->buttons() & Qt::RightButton) || ((event->buttons() & Qt::LeftButton)&&(mouse_mode==2)) )
+		else if ((event->buttons() == Qt::RightButton) || ((event->buttons() & Qt::LeftButton)&&(mouse_mode==2)) )
 		{
 			qt_canvas_viewing(0, 2);
 		}
@@ -410,6 +436,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 	}
 	else
 	{
+		// Light managment
 		int dx = event->x() - lastPos.x();
 		int dy = event->y() - lastPos.y();
 		
@@ -442,20 +469,21 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 		}
 	}
 	//	updateGL();
-#ifdef WITH_XFORMS
-	pipe2openGl->updatePipe();
-#else
 	if(!ENV.getBool(Env::isRunning))
 	{
 		updateGL();
 	}
-#endif
 }
 
 void GLWidget::mouseDoubleClickEvent (QMouseEvent *event)
 {
+	if( !m_mainWindow )
+	{
+		return;
+	}
+	
 	if(   ( event->buttons()			&& ( Qt::LeftButton )) &&
-				( event->modifiers()	&& ( Qt::ControlModifier )) )
+		 ( event->modifiers()	&& ( Qt::ControlModifier )) )
 	{
 		QRect geom;
 		
@@ -466,7 +494,7 @@ void GLWidget::mouseDoubleClickEvent (QMouseEvent *event)
 		list.clear();
 		list.push_back( 0 );
 		list.push_back( geom.width() );
-	
+		
 		m_mainWindow->Ui()->vSplitter->setSizes ( list );
 		
 		list.clear();
@@ -500,7 +528,6 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 			// 		{
 			// 			qt_get_cur_g3d_win()->shadowContrast += 0.05;
 			// 		}
-			pipe2openGl->updatePipe();
 			cout << "+ pressed" << endl;
 			break;
 			
@@ -509,7 +536,6 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 			// 		{
 			// 			qt_get_cur_g3d_win()->shadowContrast -= 0.05;
 			// 		}
-			pipe2openGl->updatePipe();
 			cout << "- pressed" << endl;
 			break;
 			
