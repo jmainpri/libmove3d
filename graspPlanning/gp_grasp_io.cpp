@@ -180,7 +180,7 @@ void elementMissingMessage(int line_number, const xmlChar *URL, const xmlChar *e
 }
 
 static std::string text;
-message, word;
+static std::string message, word;
 std::istringstream iss;
 
 //! @ingroup graspIO 
@@ -432,7 +432,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
     }   
   }
 
-  printf("%s: %d: There is no element called \"%s\.\n",__FILE__,__LINE__,element.c_str());
+  printf("%s: %d: There is no element called %s\n",__FILE__,__LINE__,element.c_str());
 
   return false;
 }
