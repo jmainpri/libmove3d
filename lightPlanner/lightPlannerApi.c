@@ -578,7 +578,8 @@ int getBetterCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objectPos
   }
 
   std::list<gpGrasp> graspList;
-  gpGet_grasp_list_SAHand(GP_OBJECT_NAME_DEFAULT, whichArm, graspList);
+//   gpGet_grasp_list_SAHand(GP_OBJECT_NAME_DEFAULT, whichArm, graspList);
+  gpGet_grasp_list(GP_OBJECT_NAME_DEFAULT, handType, graspList);
   gpHand_properties handProp;
   handProp.initialize(handType);
   //Activate the corresponding constraint

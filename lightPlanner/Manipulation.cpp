@@ -740,7 +740,10 @@ int Manipulation::findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectP
   gpDeactivate_hand_selfcollisions(_robot, 1);
   gpDeactivate_hand_selfcollisions(_robot, 2);
   list<gpGrasp> graspList;
-  gpGet_grasp_list_SAHand(GP_OBJECT_NAME_DEFAULT, armId + 1, graspList);
+//   gpGet_grasp_list_SAHand(GP_OBJECT_NAME_DEFAULT, armId + 1, graspList);
+  if(armId==0) gpGet_grasp_list(GP_OBJECT_NAME_DEFAULT, GP_SAHAND_RIGHT, graspList);
+  else  gpGet_grasp_list(GP_OBJECT_NAME_DEFAULT, GP_SAHAND_LEFT, graspList);
+
   std::map<int, ManipulationData*, std::less<int> > configMap; // vecteur de configuration du robot le map classe automatique en fonction du cout de JP <int>
   
   //For each grasp, get the tAtt and check the collision

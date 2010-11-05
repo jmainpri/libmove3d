@@ -735,7 +735,7 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   gpHand_properties handProp;
   std::list<gpGrasp>::iterator igrasp;
 
-  result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
+  result= gpGet_grasp_list(ObjectName, GP_SAHAND_RIGHT, GRASPLIST);
 //   result= gpGet_grasp_list_gripper(ObjectName, GRASPLIST);
   igrasp= GRASPLIST.begin();
    while(igrasp!=GRASPLIST.end()) {
@@ -912,7 +912,7 @@ static void CB_gripper_obj ( FL_OBJECT *obj, long arg )
   if(firstTime)
   {
     firstTime= 0;
-    gpGet_grasp_list_gripper(ObjectName, GRASPLIST);
+    gpGet_grasp_list(ObjectName, GP_GRIPPER, GRASPLIST);
     gpReduce_grasp_list_size(GRASPLIST, GRASPLIST, 35);
   }
 
@@ -945,7 +945,7 @@ static void CB_SAHandLeft_obj ( FL_OBJECT *obj, long arg )
   if(firstTime)
   {
     firstTime= 0;
-    gpGet_grasp_list_SAHand(ObjectName, 2, GRASPLIST);
+    gpGet_grasp_list(ObjectName, GP_SAHAND_LEFT, GRASPLIST);
   }
 
   i= 0;
@@ -1930,7 +1930,7 @@ void dynamic_grasping()
   {
     firstTime= false;  
     
-    result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
+    result= gpGet_grasp_list(ObjectName, GP_SAHAND_RIGHT, GRASPLIST);
     
     if(result==GP_ERROR)
     {  return;  }
