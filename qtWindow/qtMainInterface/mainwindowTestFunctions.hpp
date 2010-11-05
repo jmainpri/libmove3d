@@ -32,4 +32,20 @@ private:
 	
 };
 
+/**
+ * @ingroup qtWindow
+ * @brief Planner thread class 
+ */
+class Testthread: public QThread
+{
+	Q_OBJECT
+	
+public:
+	Testthread(QObject* parent = 0);
+	
+protected:
+	void run();
+	
+};
+
 #endif
