@@ -45,8 +45,11 @@ void g3d_draw_cost_features()
 	g3d_draw_grids();
 }
 
+
 void Graphic::initDrawFunctions()
 {
+#ifndef WITH_XFORMS
 	ext_g3d_draw_cost_features = (void (*)())(g3d_draw_cost_features);
 	ext_g3d_export_cpp_graph = (void (*)())(g3d_export_cpp_graph);
+#endif
 }
