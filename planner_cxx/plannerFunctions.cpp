@@ -13,9 +13,9 @@
 #include "Diffusion/RRT-Variants/Star-RRT.hpp"
 
 #ifdef HRI_COSTSPACE
-#include "HRI_CostSpace/HRICS_costspace.h"
-#include "HRI_CostSpace/RRT/HRICS_rrt.h"
-#include "HRI_CostSpace/RRT/HRICS_rrtPlan.h"
+#include "hri_costspace/HRICS_costspace.h"
+#include "hri_costspace/RRT/HRICS_rrt.h"
+#include "hri_costspace/RRT/HRICS_rrtPlan.h"
 #endif
 
 #include "Util-pkg.h"

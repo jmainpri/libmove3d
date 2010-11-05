@@ -276,6 +276,9 @@ int p3d_convert_ptpTraj_to_smoothedTraj(double *gain, int* ntest, p3d_traj *traj
 				for(int v=0; v<localpath1Pt->nbActiveCntrts; v++) {
 					localpathTransPt->activeCntrts[v] = localpath1Pt->activeCntrts[v];
 					localpathTransPt->activeCntrts[v] = localpath1Pt->activeCntrts[v];
+//					if (localpathMlp1Pt->nbActiveCntrts > localpath1Pt->nbActiveCntrts) {
+//						printf("Error");
+//					}
 				}
 				/* Transition motion is OK */
 				end_trajSmPt = append_to_localpath(end_trajSmPt, localpathTmp1Pt);
@@ -301,18 +304,18 @@ int p3d_convert_ptpTraj_to_smoothedTraj(double *gain, int* ntest, p3d_traj *traj
 
 int p3d_convert_traj_to_softMotion(p3d_traj *trajPt, bool param_write_file, std::vector <int> &lp, std::vector < std::vector <double> > &positions, SM_TRAJ &smTraj) {
 
-        double gain = 0.0;
-        int ntest = 0;
-        p3d_rob *robotPt = trajPt->rob;
+  double gain = 0.0;
+  int ntest = 0;
+  p3d_rob *robotPt = trajPt->rob;
 	p3d_traj *trajSmPTPPt = NULL; // the point to point trajectory
-        p3d_traj *trajSmPt = NULL; // the smoothed trajectory
+  p3d_traj *trajSmPt = NULL; // the smoothed trajectory
 	p3d_localpath *end_trajSmPt = NULL;
 
-        configPt qinit = NULL, qgoal = NULL;
+	configPt qinit = NULL, qgoal = NULL;
 	configPt q_init = NULL, q_end = NULL;
 
 	p3d_localpath *localpath1Pt = NULL;
-        p3d_localpath *localpathTmp1Pt = NULL;
+	p3d_localpath *localpathTmp1Pt = NULL;
 
 	double ltot = 0.0;
 
@@ -327,7 +330,7 @@ int p3d_convert_traj_to_softMotion(p3d_traj *trajPt, bool param_write_file, std:
 		return FALSE;
 	}
 	
-        ///////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
 	////  CONVERT LINEAR TRAJECTORY TO SOFTMOTION POINT TO POINT TRAJECTORY ///
 	///////////////////////////////////////////////////////////////////////////
 
@@ -393,8 +396,8 @@ int p3d_convert_traj_to_softMotion(p3d_traj *trajPt, bool param_write_file, std:
 	/* Create the softMotion trajectory */
 	trajSmPt = p3d_create_empty_trajectory(robotPt);
 
-
-        p3d_convert_ptpTraj_to_smoothedTraj(&gain, &ntest, trajSmPTPPt, trajSmPt);
+	p3d_convert_ptpTraj_to_smoothedTraj(&gain, &ntest, trajSmPTPPt, trajSmPt);
+	
 	robotPt->tcur = trajSmPt;
 
 

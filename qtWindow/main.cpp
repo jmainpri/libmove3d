@@ -15,7 +15,7 @@ GLWidget* openGlWidget;
 #endif
 
 
-extern int mainMhp(int argc, char** argv);
+//extern int mainMhp(int argc, char** argv);
 
 using namespace std;
 
@@ -38,7 +38,7 @@ Fl_thread::Fl_thread(int argc, char** argv, QObject* parent) :
 
 void Fl_thread::run()
 {
-    mainMhp(_argc, _argv);
+//    mainMhp(_argc, _argv);
     cout << "Ends main_old" << endl;
 //    terminate();
 //    wait();
@@ -76,15 +76,15 @@ int Main_threads::run(int argc, char** argv)
 
 #ifdef QT_GL
 		cout << "Waiting end of parser to draw OpenGL and create Qt Forms ..."<< endl;
-    sem->acquire();
-    waitDrawAllWin = new QWaitCondition();
-    lockDrawAllWin = new QMutex();
+        sem->acquire();
+        waitDrawAllWin = new QWaitCondition();
+        lockDrawAllWin = new QMutex();
 #endif
 
 
 #ifdef QT_UI_XML_FILES
 	MainWindow w;
-  w.showMaximized();
+        w.showMaximized();
 	w.show();
 	w.raise();
 // 	QRect g = QApplication::desktop()->screenGeometry();
@@ -156,6 +156,6 @@ int main(int argc, char *argv[])
     }
     else
     {
-        return mainMhp(argc, argv);
+        //return mainMhp(argc, argv);
     }
 }

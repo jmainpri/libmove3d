@@ -35,8 +35,39 @@
 
 #ifdef HRI_COSTSPACE
 #include "ui_qtHrics.h"
-#include "HRI_costspace/HRICS_costspace.hpp"
+#include "hri_costspace/HRICS_costspace.h"
 #endif
+
+/**
+ * @ingroup qtWindow
+ * @brief Planner thread class
+ */
+//-----------------------------------------------
+Testthread::Testthread(QObject* parent) :
+QThread(parent)
+{
+	
+}
+
+void Testthread::run()
+{	
+//	if(!ENV.getBool(Env::isPRMvsDiffusion))
+//	{
+//		qt_runDiffusion();
+//	}
+//	else
+//	{
+//		qt_runPRM();
+//	}
+	
+	//	exec();
+	cout << "Ends Planner Thread" << endl;
+}
+
+//-----------------------------------------------
+//	Testthread* ptrPlan = new Plannerthread;
+//	cout << "Start Planning Thread" << endl;
+//	ptrPlan->start();
 
 MainWindowTestFunctions::MainWindowTestFunctions(MainWindow* MainWinPt) : m_mainWindow(MainWinPt)
 {

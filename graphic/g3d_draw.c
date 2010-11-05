@@ -1591,7 +1591,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
       glEnable(GL_LIGHTING);
       glEnable(GL_LIGHT0);
     }
-
+		
   }
 
 

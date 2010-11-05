@@ -11,7 +11,7 @@
 #include "cost_space.hpp"
 
 #ifdef HRI_COSTSPACE
-#include "HRI_CostSpace/HRICS_Workspace.h"
+#include "hri_costspace/HRICS_Workspace.h"
 #endif
 
 #include "Planner-pkg.h"

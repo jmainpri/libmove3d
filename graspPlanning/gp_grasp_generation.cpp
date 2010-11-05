@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string>
 #include <sstream>
+#include <iostream>
 
 
 // 10% ouverture pince pour test collision
@@ -2898,6 +2899,11 @@ int gpGet_grasp_list_SAHand ( std::string object_to_grasp, int hand_to_use, std:
   gpCompute_mass_properties(graspList.front().object->o[graspList.front().body_index]->pol[0]->poly);
 
   return GP_OK;
+}
+
+void foo(int i)
+{
+	std::cout << "foo : " << i << std::endl;
 }
 
 

@@ -6,7 +6,7 @@
 #include "Collision-pkg.h"
 
 #ifdef HRI_COSTSPACE
-#include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
+#include "hri_costspace/HRICS_old.h"
 #endif
 
 extern FL_OBJECT* Diffusion_obj;

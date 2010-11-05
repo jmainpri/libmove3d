@@ -23,7 +23,7 @@
 
 #include "planner_cxx/cost_space.hpp"
 #if defined(HRI_COSTSPACE)
-#include "HRI_costspace/HRICS_costspace.hpp"
+#include "hri_costspace/HRICS_costspace.h"
 #endif
 
 #ifdef QWT
