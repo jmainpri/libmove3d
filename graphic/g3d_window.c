@@ -2179,6 +2179,24 @@ g3d_draw_allwin_active(void) {
 #endif
 }
 
+void
+g3d_draw_allwin_active_back_buffer(void) {
+#ifndef QT_GL
+  G3D_Window *w = G3D_WINDOW_LST;
+  while (w) {
+    if (w->vs.ACTIVE == 1) {
+      g3d_draw_win_back_buffer(w);
+    }
+    w = w->next;
+  }
+#else
+  if(pipe2openGl)
+    {
+      pipe2openGl->update();
+    }
+#endif
+}
+
 
 void
 g3d_print_allwin(void) {

@@ -61,7 +61,7 @@ void Testthread::run()
 //	}
 	
 	//	exec();
-	cout << "Ends Planner Thread" << endl;
+	//cout << "Ends Planner Thread" << endl;
 }
 
 //-----------------------------------------------

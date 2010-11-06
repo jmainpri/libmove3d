@@ -180,6 +180,8 @@ void g3d_create_hri_planner_form(void)
 
   g3d_create_gik_jointsel_form();
   g3d_create_psp_parameters_form();
+
+  hri_initialize_visibility();
   
 }
 

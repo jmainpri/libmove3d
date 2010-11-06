@@ -57,9 +57,9 @@ QGLWidget(parent)
 	_isThreadWorking = false;
 	_light = false;
 	
-	initG3DFunctions();
-	
 	mG3DOld = new qtG3DWindow;
+
+	initG3DFunctions();
 	
 	g3d_set_win_floor_color(g3d_get_cur_states(), 1, 0.87, 0.49);
 	//g3d_set_win_bgcolor(g3d_get_cur_win(), 0.5, 0.6, 1.0);
@@ -250,7 +250,12 @@ void GLWidget::initializeGL()
 
 void GLWidget::setThreadWorking(bool isWorking)
 {
-	_isThreadWorking = isWorking;
+  _isThreadWorking = isWorking;
+}
+
+void GLWidget::setAutoBufferSwapping(bool swapping)
+{
+  this->setAutoBufferSwap(swapping);  
 }
 
 // Camera vectors
@@ -288,7 +293,7 @@ void GLWidget::paintGL()
 	G3D_WIN->vs.cameraPosition[1]= Xc[1];
 	G3D_WIN->vs.cameraPosition[2]= Xc[2];
 	
-	cout << "g3d_draw()" << endl;
+	//cout << "g3d_draw()" << endl;
 	g3d_draw();
 	
 	glPopMatrix();
@@ -395,7 +400,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-	cout << "GLWidget::mouseMoveEvent" << endl;
+  //cout << "GLWidget::mouseMoveEvent" << endl;
 	
 	if (!_light)
 	{
