@@ -49,6 +49,7 @@
 #include "../hri_planner/include/hri_agent.h"
 #include "../hri_planner/include/hri_manip.h"
 #include "../hri_planner/include/hri_graphic.h"
+#include "../hri_planner/include/hri_distance.h"
 #include "../hri_planner/proto/hri_visibility_proto.h"
 #include "../util/proto/gnuplot_proto.h"
 #include "../hri_planner/proto/hri_bitmap_proto.h"

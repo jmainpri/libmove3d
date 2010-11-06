@@ -7,6 +7,7 @@ hri_agent.c
 hri_gik.c 
 hri_visibility.c
 hri_graphic.c
+hri_distance.c
 )
 ENDIF(HRI_GENERALIZED_IK)
 
