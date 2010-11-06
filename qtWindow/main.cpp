@@ -64,15 +64,15 @@ Main_threads::~Main_threads()
 // Temporary mechanism to redraw the opengl scene.
 // Not elegant, but it works.
 MainWindow* global_w(NULL);
-void draw_opengl()
-{
-  if(global_w != NULL)
-  {
-    QMetaObject::invokeMethod(global_w->getOpenGL(),
-															"updateGL",
-															Qt::BlockingQueuedConnection);
-  }
-}
+// void draw_opengl()
+// {
+//   if(global_w != NULL)
+//   {
+//     QMetaObject::invokeMethod(global_w->getOpenGL(),
+// 															"updateGL",
+// 															Qt::BlockingQueuedConnection);
+//   }
+// }
 
 
 int Main_threads::run(int argc, char** argv)
