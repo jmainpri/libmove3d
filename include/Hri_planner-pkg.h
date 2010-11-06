@@ -86,6 +86,8 @@ extern int ordereddrawno;
 extern int HRI_GIK_CONTINUOUS;
 extern p3d_rob * PSP_ROBOT;
 
+extern void (*ext_g3d_draw_allwin_active_backbuffer)();
+
 extern int HRI_DRAW_TRAJ;
 extern HRI_AGENTS * GLOBAL_AGENTS;
 

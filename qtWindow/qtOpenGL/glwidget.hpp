@@ -51,6 +51,7 @@ public:
 	void setThreadWorking(bool isWorking);
 	void newG3dWindow();
 	void initG3DFunctions();
+  void setAutoBufferSwapping(bool swapping);
 	
 	public slots:
 	void saveView();

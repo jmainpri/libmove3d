@@ -1,3 +1,4 @@
+extern void hri_initialize_visibility();
 extern int hri_is_object_visible(HRI_AGENT * agent,p3d_rob *object, int threshold, int save, int draw_at_end);
 extern int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera_fov, p3d_rob *object, double *result);
 extern int g3d_are_given_objects_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera_fov, p3d_rob **objects, int objects_nb, double *results);

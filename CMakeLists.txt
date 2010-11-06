@@ -102,13 +102,12 @@ MACRO(BM3D_CheckCompilationFlags)
 ENDMACRO(BM3D_CheckCompilationFlags)
 
 
-BM3D_flag(COMPILE_ON_JIDO "Check this flag to activate all dependencies for Jido" OFF DPG USE_GBM CXX_PLANNER DPG PQP MULTIGRAPH LIGHT_PLANNER HRI_PLANNER HRI_GENERALIZED_IK MULTILOCALPATH GRASP_PLANNING USE_GSL)# USE_MIGHTABILITY_MAPS )
 
 BM3D_flag(ENABLE_ANTIALIASING "Enables antialiasing to draw smooth lines" OFF)
 
 BM3D_flag(ANIMATION "Compilation with the module character" OFF)
 
-BM3D_flag(WITH_XFORMS "Compile the Xform interface" ON)
+BM3D_flag(WITH_XFORMS "Compile the Xform interface" OFF)
 BM3D_flag(P3D_CONSTRAINTS "Compilation with module Constraints" ON)
 BM3D_flag(P3D_COLLISION_CHECKING "Compilation with module Collision Checking" ON)
 BM3D_flag(P3D_LOCALPATH "Compilation with module Localpath" ON)
@@ -160,6 +159,10 @@ BM3D_flag(USE_GBM "Compilation with the gbM package" OFF)
 BM3D_flag(USE_SHADERS "Enables use of OpenGL shaders" OFF)
 
 BM3D_flag(OOMOVE3D_CORE "Enables compilation of ooMove3D-core" OFF)
+
+BM3D_flag(COMPILE_ON_JIDO "Check this flag to activate all dependencies for Jido" OFF WITH_XFORMS DPG USE_GBM CXX_PLANNER DPG PQP MULTIGRAPH LIGHT_PLANNER HRI_GENERALIZED_IK HRI_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GSL )# USE_MIGHTABILITY_MAPS )
+
+BM3D_flag(COMPILE_FOR_GENOM "Check this flag to activate all dependencies for spark&mhp modules" OFF DPG USE_GBM CXX_PLANNER DPG PQP MULTIGRAPH LIGHT_PLANNER HRI_COSTSPACE HRI_GENERALIZED_IK MULTILOCALPATH GRASP_PLANNING USE_GSL QT_LIBRARY QT_GL QT_UI_XML_FILES )# USE_MIGHTABILITY_MAPS )
 
 BM3D_CheckCompilationFlags()
 
@@ -370,9 +373,9 @@ ENDIF(USE_HATP_LIBS)
 #----------------------------------------------------------
 STRING(REPLACE ";" " -D" MOVE3D_COMPILATION_FLAGS "-D${MOVE3D_COMPILATION_FLAGS}")
 STRING(REPLACE ";" " -I" MOVE3D_COMPILATION_INCLUDES "${INCLUDE_DIRS}")
-STRING(REPLACE ";" " " MOVE3D_COMPILATION_LIBS "${LIBS}")
-#FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "\nMOVE3D_COMPILATION_INCLUDES = -I${MOVE3D_COMPILATION_INCLUDES}")
 
+STRING(REGEX REPLACE "(debug;[^;]*;)|optimized" "" MOVE3D_COMPILATION_LIBS "${LIBS}")
+STRING(REPLACE ";" " " MOVE3D_COMPILATION_LIBS "${MOVE3D_COMPILATION_LIBS}")
 add_subdirectory(pkgconfig)
 
 

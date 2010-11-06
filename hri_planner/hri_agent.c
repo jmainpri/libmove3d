@@ -144,51 +144,52 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
               hri_agent->type = HRI_JIDO1;
               hri_agent->is_human = FALSE;
             }
-          else {
-            if(strcasestr(robot->name,"HRP2")) {
-              hri_agent->type = HRI_HRP214;
-              hri_agent->is_human = FALSE;
-            }
-            else {
-              if(strcasestr(robot->name,"B21")) {
-                hri_agent->type = HRI_B21;
-                hri_agent->is_human = FALSE;
-              }
-              else {
-                if(strcasestr(robot->name,"JUSTIN")) {
-                  hri_agent->type = HRI_MOBILE_JUSTIN;
-                  hri_agent->is_human = FALSE;
-                }
-                else {
-                  if(strcasestr(robot->name,"BH")) {
-                    hri_agent->type = HRI_BH;
-                    hri_agent->is_human = FALSE;
-                  }
-                  else {
-                    if(strcasestr(robot->name,"ICUB")) {
-                      hri_agent->type = HRI_ICUB;
-                      hri_agent->is_human = FALSE;
-                    }
-                    else {
-                      if(strcasestr(robot->name,"BERT")) {
-                        hri_agent->type = HRI_BERT;
-                        hri_agent->is_human = FALSE;
-                      }
-                      else {
-                        PrintWarning(("Robot is unknown! Cannot initialize agents.\n"));
-                        return NULL;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-          }
-        }
+	    else {
+	      if(strcasestr(robot->name,"HRP2")) {
+		hri_agent->type = HRI_HRP214;
+		hri_agent->is_human = FALSE;
+	      }
+	      else {
+		if(strcasestr(robot->name,"B21")) {
+		  hri_agent->type = HRI_B21;
+		  hri_agent->is_human = FALSE;
+		}
+		else {
+		  if(strcasestr(robot->name,"JUSTIN")) {
+		    hri_agent->type = HRI_MOBILE_JUSTIN;
+		    hri_agent->is_human = FALSE;
+		  }
+		  else {
+		    if(strcasestr(robot->name,"BH")) {
+		      hri_agent->type = HRI_BH;
+		      hri_agent->is_human = FALSE;
+		    }
+		    else {
+		      if(strcasestr(robot->name,"ICUB")) {
+			hri_agent->type = HRI_ICUB;
+			hri_agent->is_human = FALSE;
+		      }
+		      else {
+			if(strcasestr(robot->name,"BERT")) {
+			  hri_agent->type = HRI_BERT;
+			  hri_agent->is_human = FALSE;
+			}
+			else {
+			  PrintWarning(("Robot is unknown! Cannot initialize agents.\n"));
+			  return NULL;
+			}
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
       }
     }
   }
+
   hri_agent->robotPt = robot;
   
   hri_agent->navig  = hri_create_agent_navig(hri_agent);
