@@ -28,7 +28,6 @@ extern int PSP_SRCH_MTD;
 extern double PSP_PS_TRSHLD;
 
 /* external gik variables */
-extern int GIK_VIS;
 extern double GIK_PRECISION;
 extern int GIK_STEP;
 extern double GIK_FORCE;
