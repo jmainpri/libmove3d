@@ -11,6 +11,7 @@ hri_distance.c
 hri_bitmap.c
 hri_manip.c 
 )
+include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/hri_bitmap/SourceList.cmake)
 ENDIF(HRI_PLANNER)
 
 IF(HRI_PLANNER_GUI)
@@ -33,5 +34,4 @@ HRP2_gik.cpp
 )
 ENDIF(USE_HRP2_GIK)
 include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/graphic/SourceList.cmake)
-include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/hri_bitmap/SourceList.cmake)
 ENDIF(HRI_PLANNER_GUI)
