@@ -13,9 +13,9 @@
 
 
 // static char ObjectName[]= "Horse";
-static char ObjectName[]= "GREY_TAPE";
+static char ObjectName[]= "Mug";
 static char RobotName[]= "JIDO_ROBOT";
-static char HandRobotName[]= "SAHandRight_robot";
+static char HandRobotName[]= "";
 static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot
 static p3d_rob *HAND_ROBOT= NULL; // the hand robot
@@ -355,20 +355,20 @@ void draw_grasp_planner()
     { ( *iter ).draw ( 0.005 );    }
   }
 
-  glPushAttrib(GL_ENABLE_BIT);
-  glEnable(GL_LIGHTING);
-  for(std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); ++iter)
-  { 
-    gpSet_robot_hand_grasp_configuration(hand_robot, object_robot, *iter);
+//   glPushAttrib(GL_ENABLE_BIT);
+//   glEnable(GL_LIGHTING);
+//   for(std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); ++iter)
+//   { 
+//     gpSet_robot_hand_grasp_configuration(hand_robot, object_robot, *iter);
+// 
+//     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+//     g3d_draw_robot(hand_robot->num, win);
+//   }
+//   glPopAttrib();
 
-    win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
-    g3d_draw_robot(hand_robot->num, win);
-  }
-  glPopAttrib();
 
 
-
-//   GRASP.draw(0.05);
+  GRASP.draw(0.05);
 //   DOUBLEGRASP.draw(0.5);
 
   return;
@@ -972,6 +972,8 @@ static void CB_SAHandRight_obj ( FL_OBJECT *obj, long arg )
   printf("CB_SAHandRight\n");
   unsigned int i;
   static unsigned int count= 0, firstTime= TRUE;
+  p3d_rob *robot= (p3d_rob*)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
+  p3d_rob *object= (p3d_rob*)p3d_get_robot_by_name(ObjectName);
   
   if(firstTime)
   {
@@ -992,7 +994,11 @@ static void CB_SAHandRight_obj ( FL_OBJECT *obj, long arg )
   if ( count>GRASPLIST.size() )
   {  count= 0;  }
 
-  gpSet_robot_hand_grasp_configuration((p3d_rob*)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME), (p3d_rob*)p3d_get_robot_by_name(ObjectName), GRASP);
+//   gpSet_robot_hand_grasp_configuration(robot, object, GRASP);
+
+   gpSet_robot_hand_grasp_open_configuration(robot, object, GRASP);
+
+   p3d_copy_config_into(robot, p3d_get_robot_config(robot), &robot->ROBOT_POS);
 
   redraw();
   return;

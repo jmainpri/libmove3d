@@ -1954,7 +1954,7 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &handProp, std::v
         {
           if(verbose)
           {
-            printf("%s: %d: gpSet_hand_configuration(): q[%d] value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,i,config[i],qmin,qmax);
+            printf("%s: %d: gpSet_hand_configuration(): q[%d] value (%f°) is out of range (%f° %f°).\n",__FILE__,__LINE__,i,config[i]*RADTODEG,qmin*RADTODEG,qmax*RADTODEG);
           }
           p3d_destroy_config(robot, qcur);
           return GP_ERROR;

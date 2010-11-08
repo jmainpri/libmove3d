@@ -206,6 +206,8 @@ class gpHand_properties
   std::vector<double> qmin, qmax;
   //! vector of a "rest" configuration of the hand
   std::vector<double> qrest;
+  //! vector to reach from a given grasp configuration in order to find an pregrasp configuration
+  std::vector<double> qopen;
 
   /////////////////////////////////3-fingered gripper (JIDO)//////////////////////////////////
   double fingertip_distance;   /*!< distance between the two first fingers (the ones on the same U-shaped body) */

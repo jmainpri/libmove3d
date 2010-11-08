@@ -53,6 +53,7 @@ class gpGrasp
   std::vector<double> openConfig; /*!< configuration vector of the hand slightly open from its grasp configuration (is used for the hand approach phase) */
   bool tested; /*!< used to mark the grasps that have been tested in some path planning function  */
   
+  p3d_vector3 closestPointHand, closestPointObject;
 
   gpGrasp();
   gpGrasp(const gpGrasp &grasp);

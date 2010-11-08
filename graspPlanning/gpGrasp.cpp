@@ -214,6 +214,11 @@ gpGrasp::gpGrasp()
   object_name     = "none";
   hand_type       = GP_HAND_NONE;
   tested          = false;
+  for(int i=0; i<3; ++i)
+  {
+    closestPointHand[i]  = 0.0;
+    closestPointObject[i]= 0.0;
+  }
 }
 
 gpGrasp::gpGrasp(const gpGrasp &grasp)
@@ -250,6 +255,12 @@ gpGrasp::gpGrasp(const gpGrasp &grasp)
   openConfig.resize(grasp.openConfig.size());  
   for(i=0; i<openConfig.size(); i++)
   {  openConfig[i]= grasp.openConfig[i];  }
+
+  for(int i=0; i<3; ++i)
+  {
+    closestPointHand[i]  = grasp.closestPointHand[i];
+    closestPointObject[i]= grasp.closestPointObject[i];
+  }
 }
 
 gpGrasp::~gpGrasp()
@@ -294,6 +305,12 @@ gpGrasp & gpGrasp::operator = (const gpGrasp &grasp)
     openConfig.resize(grasp.openConfig.size());  
     for(i=0; i<openConfig.size(); i++)
     {  openConfig[i]= grasp.openConfig[i];   }
+
+    for(int i=0; i<3; ++i)
+    {
+      closestPointHand[i]  = grasp.closestPointHand[i];
+      closestPointObject[i]= grasp.closestPointObject[i];
+    }
   }
 
   return *this;
@@ -343,6 +360,10 @@ int gpGrasp::draw(double length, int nb_slices)
       contacts[i].draw(length, nb_slices);
     }
 
+//     glColor3f(1,0,0);
+//     g3d_drawColorSphere(closestPointHand[0], closestPointHand[1], closestPointHand[2], 0.008, Red, NULL);
+//     glColor3f(0,1,0);
+//     g3d_drawColorSphere(closestPointObject[0], closestPointObject[1], closestPointObject[2], 0.008, Green, NULL);
 //     g3d_draw_frame(frame, 4*length);
 
 //     if(hand_type==GP_SAHAND_RIGHT)
@@ -986,9 +1007,11 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        qmin.resize(1);
        qmax.resize(1);
        qrest.resize(1);
+       qopen.resize(1);
        qmin[0]= 0.0;
        qmax[0]= 0.0325;
        qrest[0]= qmax[0];
+       qopen[0]= qmax[0];
 
        p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp_frame_hand);
       Tgrasp_frame_hand[2][3]= 0.007;
@@ -1172,7 +1195,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        //thumb:
        qmin[0]=   0.0*DEGTORAD;   qmax[0]= 90.0*DEGTORAD;
        qmin[1]= -15.0*DEGTORAD;   qmax[1]= 15.0*DEGTORAD;
-       qmin[2]=   4.0*DEGTORAD;   qmax[2]= 75.0*DEGTORAD;
+       qmin[2]=  -4.0*DEGTORAD;   qmax[2]= 75.0*DEGTORAD;
        qmin[3]=   4.0*DEGTORAD;   qmax[3]= 75.0*DEGTORAD;
        //forefinger:
        qmin[4]= qmin[1];   qmax[4]= qmax[1];
@@ -1205,6 +1228,25 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        qrest[10] = -3.14*DEGTORAD;
        qrest[11] = 38.17*DEGTORAD;
        qrest[12] = 49.86*DEGTORAD;
+
+       // "open" configuration
+       qopen.resize(13);
+       qopen[0] = 90.0*DEGTORAD;
+       qopen[1] = 0.0*DEGTORAD;
+       qopen[2] = 0.0*DEGTORAD;
+       qopen[3] = 10.0*DEGTORAD;
+
+       qopen[4] = 0.0*DEGTORAD;
+       qopen[5] = 0.0*DEGTORAD;
+       qopen[6] = 10.0*DEGTORAD;
+
+       qopen[7] = 0.0*DEGTORAD;
+       qopen[8] = 0.0*DEGTORAD;
+       qopen[9] = 10.0*DEGTORAD;
+
+       qopen[10] = 0.0*DEGTORAD;
+       qopen[11] = 0.0*DEGTORAD;
+       qopen[12] = 10.0*DEGTORAD;
 
 //        if(type==GP_SAHAND_RIGHT)
 //        {
@@ -1617,6 +1659,11 @@ ws= 0;
 int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object)
 {
   #ifdef GP_DEBUG
+  if(this==NULL)
+  {
+    printf("%s: %d: gpGrasp::computeOpenConfig(): the calling instance is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
   if(robot==NULL)
   {
     printf("%s: %d: gpGrasp::computeOpenConfig(): input robot is NULL.\n",__FILE__,__LINE__ );
@@ -1630,43 +1677,38 @@ int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object)
   #endif
 
   unsigned int i, j, k, nbSteps;
-  double qnew[4];
-  p3d_matrix4 objectFrame;
+  int result, nbChanges;
+  double qnew[4]; // SAHand finger joint parameters to set (the first one is only needed by the thumb)
+  p3d_matrix4 objectFrame, objectFrameInv;
   configPt config0, config;
-  std::vector<bool> blocked;
+  std::vector<bool> blocked, fingerBlocked;
   std::vector<double> q, qstart, qstop, delta;
   gpHand_properties handProp;
 
   //memorize the robot current configuration:
-  config0= p3d_get_robot_config ( robot );
-  config= p3d_alloc_config ( robot );
+  config0= p3d_get_robot_config(robot);
+  config= p3d_alloc_config(robot);
 
   nbSteps= 10;
 
-
   handProp.initialize(this->hand_type);
-  //     if(igrasp->hand_type!=handProp.type)
-  //     {
-  //       printf("%s: %d: gpCompute_grasp_open_configs(): the gpHand_properties of a grasp mismatches the input gpHand_properties.\n",__FILE__,__LINE__);
-  //       continue;
-  //     }
 
   p3d_get_body_pose(object, this->body_index, objectFrame);
 
   gpInverse_geometric_model_freeflying_hand(robot, objectFrame, this->frame, handProp, config);
-  p3d_set_and_update_this_robot_conf( robot, config );
+  p3d_set_and_update_this_robot_conf(robot, config);
 
   this->openConfig= this->config;
 
   switch(this->hand_type)
   {
     case GP_GRIPPER:
-      this->openConfig.at ( 0 ) = handProp.qmax.at ( 0 );
+      this->openConfig.at(0)= handProp.qopen.at(0);
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-      if(this->config.size() !=13 || this->openConfig.size() !=13 )
+      if(this->config.size() !=13 || this->openConfig.size() !=13)
       {
-        printf("%s: %d: gpCompute_grasp_open_configs(): config vector has a bad size.\n",__FILE__,__LINE__ );
+        printf("%s: %d: gpGrasp::computeOpenConfig(): config vector has a bad size.\n",__FILE__,__LINE__ );
         break;
       }
       q.resize(13);
@@ -1674,109 +1716,83 @@ int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object)
       qstop.resize(13);
       blocked.resize(13);
       delta.resize(13);
+      fingerBlocked.resize(4);
 
       qstart= this->config;
-      qstop= handProp.qmin;
+      qstop= handProp.qopen;
 
-      for ( i=0; i<blocked.size(); ++i )
+      for(i=0; i<fingerBlocked.size(); ++i)
+      {   fingerBlocked[i]= false;     }
+
+      for(i=0; i<blocked.size(); ++i)
       {   blocked[i]= false;     }
 
       qstop[0]= qstart[0]; // for thumb
       blocked[0]= true;
 
-      //abduction joint
-      for ( i=0; i<4; ++i )
-      {  blocked[3*i+1]= true;    }
+      //block abduction joints:
+//       for(i=0; i<4; ++i)
+//       {  blocked[3*i+1]= true;   }
 
-      for ( i=0; i<delta.size(); ++i )
+      for(i=0; i<delta.size(); ++i)
       {   delta[i]= ( qstop[i] - qstart[i] ) / ( ( double ) ( nbSteps ) );      }
 
       q= qstart;
 
-      gpSet_hand_configuration ( robot, handProp, this->config, false, 0 );
+      result= gpSet_hand_configuration(robot, handProp, q, true, 0);
+
+      if(result==GP_ERROR)
+      { printf("initial cfg is invalid\n"); break;  }
 
       for(j=1; j<=nbSteps; ++j)
       {
+        nbChanges= 0;
         for(i=0; i<4; ++i) // for each finger
         {
           qnew[0]= qstart[0]; //for thumb only
 
-          // increment all non-blocked joints:
-          if( !blocked[3*i+1] )
-          {  qnew[1]=  q[3*i+1] + delta[3*i+1]; }
-          else
-          {  qnew[1]=  q[3*i+1]; }
+          qnew[1]=  q[3*i+1];
+          qnew[2]=  q[3*i+2];
+          qnew[3]=  q[3*i+3];
 
-          if( !blocked[3*i+2] )
-          {  qnew[2]=  q[3*i+2] + delta[3*i+2]; }
-          else
-          {  qnew[2]=  q[3*i+2]; }
-
-          if( !blocked[3*i+3] )
-          {  qnew[3]=  q[3*i+3] + delta[3*i+3]; }
-          else
-          {  qnew[3]=  q[3*i+3]; }
-
-          if ( blocked[3*i+1] && blocked[3*i+2] && blocked[3*i+3] )
-          {  continue; }
-
-          gpSet_SAHfinger_joint_angles ( robot, handProp, qnew, i+1 );
-          if( p3d_col_test_robot_other ( robot, object, 0 ) || p3d_col_test_self_collision ( robot, 0 ) )
+          // for each DOF:
+          for(k=1; k<4; ++k)
           {
-            if(!blocked[3*i+1])
+            qnew[k]=  q[3*i+k] + delta[3*i+k];
+            result= gpSet_SAHfinger_joint_angles(robot, handProp, qnew, i+1);
+            if( result==GP_ERROR || p3d_col_test_robot_other(robot, object, 0) || p3d_col_test_self_collision(robot, 0) )
             {
-              blocked[3*i+1]= true;
-              qnew[1]=  q[3*i+1];
+              qnew[k]= q[3*i+k];
+              if(result==GP_OK) 
+              {
+                qnew[k]= 0.5* ( qstart[3*i+k] + q[3*i+k] );
+              }
+              gpSet_SAHfinger_joint_angles(robot, handProp, qnew, i+1);
             }
-            else 
+            else
             {
-              blocked[3*i+2]= true;
-              blocked[3*i+3]= true;
-              qnew[2]=  q[3*i+2];
-              qnew[3]=  q[3*i+3];
+              nbChanges++;
+             // keep the new value:
+             q[3*i+k]= qnew[k];
             }
-
-            qnew[0]= qstart[0];
-
-//             qnew[1]= 0.5* ( qstart[3*i+1] + q[3*i+1] );
-//             qnew[2]= 0.5* ( qstart[3*i+2] + q[3*i+2] );
-//             qnew[3]= 0.5* ( qstart[3*i+3] + q[3*i+3] );
-
-//             gpSet_SAHfinger_joint_angles ( robot, handProp, qnew, i+1 );
           }
-//           else
-//           {
-//             q[3*i+1]= qnew[1];
-//             q[3*i+2]= qnew[2];
-//             q[3*i+3]= qnew[3];
-//           }
-          q[3*i+1]= qnew[1];
-          q[3*i+2]= qnew[2];
-          q[3*i+3]= qnew[3];
-
-          for( k=0; k<blocked.size(); ++k)
-          {
-            if ( blocked[k]==false )
-            {  break; }
-          }
-          if ( k==blocked.size() ) // all joints are blocked
-          {  break; }
         }
+        if(nbChanges==0)
+        {  break;  }
       }
+
       this->openConfig= q;
-  //         gpSet_grasp_open_configuration(robot, handProp, *igrasp, 0);
-  //
-  //         if(p3d_col_test_robot_other(robot, object, 0))
-  //         {
-  //             printf("problem collision %d\n",igrasp->ID);
-  //             pqp_print_colliding_pair();
-  //         }
     break;
     default:
       printf("%s: %d: gpGrasp::computeOpenConfig(): this hand model is not defined.\n",__FILE__,__LINE__ );
       return GP_ERROR;
     break;
  }
+
+//  p3d_col_robot_robot_distance(robot, object, closestPointHand, closestPointObject);
+//  p3d_matInvertXform(objectFrame, objectFrameInv);
+//  p3d_xformPoint(objectFrameInv, closestPointHand, this->closestPointHand);
+//  p3d_xformPoint(objectFrameInv, closestPointObject, this->closestPointObject); 
 
  p3d_set_and_update_this_robot_conf(robot, config0);
 

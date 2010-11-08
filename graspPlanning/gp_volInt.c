@@ -402,9 +402,6 @@ void compMassProperties(VOLINT_POLYHEDRON *p, Mass_properties *mass_prop)
 //! Computes the mass properties of the p3d_polyhedre and fills the appropriate fields inside its structure.
 void gpCompute_mass_properties(p3d_polyhedre *poly)
 { 
-	std::cout << sizeof(p3d_polyhedre) << std::endl;
-	std::cout << "poly : " << poly << std::endl;
-	
    if(poly==NULL)
    {
      printf("%s: %d: gpCompute_mass_properties(): input p3d_polyhedre* is NULL.\n",__FILE__,__LINE__);
