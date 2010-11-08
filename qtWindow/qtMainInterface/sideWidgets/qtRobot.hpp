@@ -47,7 +47,7 @@ public:
 	void setAttMatrix();
 	
 	// Hri Planner ------------------------
-#if defined (HRI_GENERALIZED_IK)
+#if defined (HRI_PLANNER)
 	void computeHriGikLARM() { this->computeHriGik(true); }
 	void computeHriGikRARM() { this->computeHriGik(false); }
 #endif
@@ -81,7 +81,7 @@ private:
 	
 	void initModel();
 	
-#if defined (HRI_GENERALIZED_IK)
+#if defined (HRI_PLANNER)
 	void computeHriGik(bool leftArm);
 #endif
 	

@@ -20,7 +20,11 @@
 
 
 hri_bitmapset* BTSET = NULL;
+hri_bitmapset * ACBTSET = NULL;
 pp3d_graph BTGRAPH = NULL;
+
+int PLACEMENT;
+int PLCMT_TYPE;
 
 static int insert2table(double value, int cx, int cy, int cz, double * Table,	int * x, int * y, int * z, int l);
 
@@ -595,7 +599,7 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   human->state = MY_ALLOC(hri_human_state, BT_STATE_NO);
   human->states_no = BT_STATE_NO;
   human->exists = FALSE; /* HUMAN EXIST */
-  human->transparent = FALSE; /* HRI_PLANNER may move through human */
+  human->transparent = FALSE; /* HRI_PLANNER_GUI may move through human */
   human->id = -1;
 
   // human aware navigation costs

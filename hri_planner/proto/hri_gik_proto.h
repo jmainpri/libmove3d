@@ -5,7 +5,7 @@
  *   Created: Tue May 27 14:48:29 2008
  */
 #ifndef __CEXTRACT__
-
+extern void hri_gik_set_visstep(int step);
 extern hri_gik * hri_gik_create_gik ( void );
 extern hri_gik_task * hri_gik_create_task ( void );
 extern int hri_gik_destroy_gik_data ( hri_gik * gik );

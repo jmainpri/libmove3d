@@ -35,32 +35,35 @@
 #include "roadmap.h"
 #include "arm_models/pa10Const.h"
 
-#ifdef WITH_XFORMS
-#include "forms.h"
-#endif
+#include "Graphic-pkg.h"
 
-// Problem when using the minimal HRI module
-// Without XFORMS (only hri_agent.c and hri_gik.c)
-// The dependencies in files are not clear we should prevent
-// using pkg.h usage and specify more precisly the interfaces 
-// in source files
-
-#if defined( HRI_GENERALIZED_IK ) && !defined( HRI_PLANNER )
+#if defined(HRI_PLANNER)
 #include "../hri_planner/include/hri_agent.h"
 #include "../hri_planner/include/hri_manip.h"
 #include "../hri_planner/include/hri_graphic.h"
 #include "../hri_planner/include/hri_distance.h"
-#include "../hri_planner/proto/hri_visibility_proto.h"
+#include "../hri_planner/include/hri_agent.h"
+#include "../hri_planner/include/hri_bitmap.h"
+
 #include "../util/proto/gnuplot_proto.h"
 #include "../hri_planner/proto/hri_bitmap_proto.h"
 #include "../hri_planner/proto/hri_agent_proto.h"
-#endif
+#include "../hri_planner/proto/hri_visibility_proto.h"
+#include "../hri_planner/proto/hri_manip_proto.h"
+#include "../hri_planner/proto/hri_gik_proto.h"
 
-#ifdef HRI_PLANNER
-#include "../hri_planner/include/hri_agent.h"
-#include "../hri_planner/include/hri_manip.h"
+#ifdef HRI_PLANNER_GUI
 #include "../hri_planner/include/perspective.h"
-#include "../hri_planner/include/hri_bitmap.h"
+
+#include"../hri_planner/proto/FORMhri_planner_proto.h"
+#include"../hri_planner/proto/FORMpsp_parameters_proto.h"
+#include"../hri_planner/proto/FORMgikjointselection_proto.h"
+#include"../hri_planner/proto/hri_wave_exp_proto.h"
+#include "../hri_planner/graphic/proto/hri_graphic_proto.h"
+#include "../hri_planner/proto/hri_graphic_proto.h"
+#include "../hri_planner/proto/p3d_perspective_proto.h"
+
+#endif
 #endif
 
 #ifdef USE_MIGHTABILITY_MAPS
@@ -75,6 +78,7 @@
 extern hri_gik * HRI_GIK;
 extern int GIK_VIS;
 extern hri_bitmapset* BTSET;
+extern hri_bitmapset* ACBTSET;
 extern hri_bitmapset* BTSET_HUMAN;
 extern hri_bitmapset * INTERPOINT;
 extern hri_bitmapset * OBJSET;
@@ -106,10 +110,7 @@ extern struct SOLUTION_CONFIGS_FOR_HRP2 cur_gik_sol_configs;//It will store the 
 #endif
 
 /* proto */
-#ifdef HRI_PLANNER
-#include "../hri_planner/proto/hri_planner_proto.h"
-#include "../hri_planner/graphic/proto/hri_graphic_proto.h"
-#endif
+
 #ifdef USE_MIGHTABILITY_MAPS
 #include "../hri_planner/proto/hri_affordance_include_proto.h"
 #endif

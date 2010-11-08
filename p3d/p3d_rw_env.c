@@ -25,7 +25,7 @@
 #include "cost_space.hpp"
 #endif
 
-#if defined(HRI_COSTSPACE) && defined(HRI_PLANNER)
+#if defined(HRI_COSTSPACE) && defined(HRI_PLANNER_GUI)
 #include "HRI_costspace/HRICS_HAMP.hpp"
 #endif
 

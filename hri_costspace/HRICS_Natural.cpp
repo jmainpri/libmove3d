@@ -63,7 +63,7 @@ void Natural::initGeneral()
 	
 	m_KinType = kinos[m_Robot->getName()];
 	
-#ifdef HRI_GENERALIZED_IK
+#ifdef HRI_PLANNER
 	m_Agents = hri_create_agents();
 #endif
 	
@@ -732,7 +732,7 @@ double Natural::getCost(const Vector3d& WSPoint, bool useLeftvsRightArm , bool w
 			
 			
 		case Achile:
-#ifdef HRI_GENERALIZED_IK
+#ifdef HRI_PLANNER
 			if( computeIsReachable(WSPoint,useLeftvsRightArm) )
 			{
 				m_leftArmCost = useLeftvsRightArm;
@@ -804,7 +804,7 @@ double Natural::getNumberOfIKCost(const Vector3d& WSPoint)
 	return Cost;
 }
 
-#ifdef HRI_GENERALIZED_IK
+#ifdef HRI_PLANNER
 /*! 
  * Compute Wether a point is reachable
  */

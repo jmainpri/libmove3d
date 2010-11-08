@@ -10,12 +10,6 @@
 
 /* ------- FUNCTION VARIABLES ------- */
 
-hri_bitmapset * ACBTSET = NULL;
-HRI_AGENTS * GLOBAL_AGENTS;
-
-int PLACEMENT;
-int PLCMT_TYPE;
-
 static int HUMAN_FORM_CREATED = FALSE;
 static int SELECTED_BTSET = 1;
 static gnuplot_ctrl* gnuplots[] = {NULL,NULL,NULL,NULL,NULL};

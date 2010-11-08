@@ -21,7 +21,7 @@
 //#include "planner_cxx/Greedy/GridCollisionChecker.h"
 #endif
 
-#ifdef HRI_GENERALIZED_IK
+#ifdef HRI_PLANNER
 #include "Hri_planner-pkg.h"
 #endif
 
@@ -178,7 +178,7 @@ void RobotWidget::setAttMatrix()
 #endif
 }
 
-#if defined (HRI_GENERALIZED_IK)
+#if defined (HRI_PLANNER)
 void RobotWidget::computeHriGik(bool leftArm)
 {	
 	int i=0;

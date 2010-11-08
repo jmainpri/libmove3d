@@ -16,7 +16,7 @@
 
 #include "Graphic-pkg.h"
 
-#if defined( HRI_PLANNER )
+#if defined( HRI_PLANNER_GUI )
 #include "Hri_planner-pkg.h"
 int HRI_DRAW_TRAJ;
 #endif
@@ -1328,7 +1328,7 @@ void g3d_draw_env_custom()
   }
 #endif
   
-#ifdef HRI_PLANNER
+#ifdef HRI_PLANNER_GUI
   //hri_hri_inter_point_test();
   g3d_hri_bt_draw_active_bitmaps(BTSET);
   g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);

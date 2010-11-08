@@ -15,6 +15,8 @@ extern double hri_exp_rreach_val ( hri_bitmapset * btset, int x, int y, int z );
 extern double hri_exp_hcomfort_val ( hri_bitmapset * btset, int x, int y, int z );
 extern double hri_exp_hlreach_val ( hri_bitmapset * btset, int x, int y, int z );
 extern double hri_exp_hrreach_val ( hri_bitmapset * btset, int x, int y, int z );
+extern double hri_exp_hlreach_val2 ( hri_bitmapset * btset, int x, int y, int z );
+extern double hri_exp_hrreach_val2 ( hri_bitmapset * btset, int x, int y, int z );
 extern double hri_exp_obstacle_val ( hri_bitmapset * btset, int x, int y, int z );
 extern int hri_exp_fill_obstacles ( hri_bitmapset * btset );
 extern int hri_exp_find_manip_path ( hri_bitmapset * btset );

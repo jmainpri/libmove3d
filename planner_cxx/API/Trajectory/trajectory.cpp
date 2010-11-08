@@ -15,7 +15,7 @@
 #include "cost_space.hpp"
 
 #if defined( HRI_COSTSPACE ) && defined ( HRI_PLANNER )
-#include "planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
+#include "../hri_costspace/HRICS_HAMP.h"
 #endif
 
 using namespace std;

@@ -256,7 +256,7 @@ typedef struct obj {
 
   p3d_obj_display_mode display_mode;  /*!< used to modify how the object will be displayed (default display, red display,etc.)*/
 
-#ifdef HRI_PLANNER
+#ifdef HRI_PLANNER_GUI
   int caption_selected; 
   int show_pos_area;     /* boolean show/hide disc of position area */
   double max_pos_range;  /* Max Range distance for the position area */

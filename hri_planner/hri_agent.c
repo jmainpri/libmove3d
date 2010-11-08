@@ -9,11 +9,8 @@
 #include "proto/hri_agent_proto.h"
 #include "proto/hri_gik_proto.h"
 
-// The global agents are not included 
-// when compiling minimal (only hri_agent.c and hri_gik.c)
-#if defined( HRI_GENERALIZED_IK ) && !defined( HRI_PLANNER )
 HRI_AGENTS * GLOBAL_AGENTS = NULL;
-#endif
+
 
 int hri_assign_global_agents(HRI_AGENTS *agents)
 {
@@ -353,18 +350,13 @@ HRI_NAVIG * hri_create_agent_navig(HRI_AGENT * agent)
 
   navig->btset_initialized = FALSE;
 	
-#if defined( HRI_GENERALIZED_IK ) && defined( HRI_PLANNER )
   navig->btset = hri_bt_create_bitmaps();
-#else
-	navig->btset = NULL;
-#endif
 	
   return navig;
 }
 
 int hri_destroy_agent_navig(HRI_NAVIG *navig)
 {
-#if defined( HRI_GENERALIZED_IK ) && defined( HRI_PLANNER )
   if(hri_bt_destroy_bitmapset(navig->btset)) {  
     MY_FREE(navig,HRI_NAVIG,1);
     return TRUE;
@@ -372,9 +364,6 @@ int hri_destroy_agent_navig(HRI_NAVIG *navig)
   else {
     return FALSE;
   }
-#else
-	return TRUE;
-#endif
 }
 
 

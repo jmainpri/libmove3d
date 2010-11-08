@@ -14,7 +14,7 @@
 #include "hri_costspace/Grid/HRICS_NaturalGrid.h"
 #include "hri_costspace/Grid/HRICS_NaturalCell.h"
 
-#ifdef HRI_GENERALIZED_IK
+#ifdef HRI_PLANNER
 #include "Hri_planner-pkg.h"
 #endif
 
@@ -76,7 +76,7 @@ namespace HRICS
 		 */
 		double getNumberOfIKCost(const Eigen::Vector3d& WSPoint);
 		
-#ifdef HRI_GENERALIZED_IK
+#ifdef HRI_PLANNER
 		/**
 		 * Compute if the Workspace Point is Reachable
 		 * Leaves the Robot in the Configuration
@@ -133,7 +133,7 @@ namespace HRICS
 		
 		bool			m_IsHuman;
 		
-#ifdef HRI_GENERALIZED_IK
+#ifdef HRI_PLANNER
 		HRI_AGENTS*		m_Agents;
 #endif
 		
