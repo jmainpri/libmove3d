@@ -453,9 +453,9 @@ void g3d_init_OpenGL()
   #endif
 }
 
-#ifdef USE_SHADERS
 int g3d_load_next_shader()
 {
+#ifdef USE_SHADERS
   G3D_CURRENT_PROGRAM++;
 
   if(G3D_CURRENT_PROGRAM > G3D_NB_PROGRAMS-1) {
@@ -463,27 +463,28 @@ int g3d_load_next_shader()
   }
 
   glUseProgram( G3D_PROGRAMS[G3D_CURRENT_PROGRAM] );
-
+#endif
   return 0;
 }
 
 //! Deactivates the use of shaders.
 int g3d_no_shader()
 {
+#ifdef USE_SHADERS
   glUseProgram(0);
-
+#endif
   return 0;
 }
 
 //! Activates the use of shaders.
 int g3d_use_shader()
 {
+#ifdef USE_SHADERS
   glUseProgram(G3D_PROGRAMS[G3D_CURRENT_PROGRAM]);
-
+#endif
   return 0;
 }
 
-#endif
 
 
 //! @ingroup graphic

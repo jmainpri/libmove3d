@@ -22,7 +22,6 @@ p3d_rob * GIK_target_robot = NULL;
 
 static int GIK_NOT_SUPPORTED_ROBOT = FALSE;
 
-int GIK_VIS = 100;
 double GIK_PRECISION = 0.05;
 int GIK_STEP = 100;
 double GIK_FORCE;

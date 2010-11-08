@@ -49,6 +49,7 @@
 #include "../hri_planner/include/hri_agent.h"
 #include "../hri_planner/include/hri_manip.h"
 #include "../hri_planner/include/hri_graphic.h"
+#include "../hri_planner/include/hri_distance.h"
 #include "../hri_planner/proto/hri_visibility_proto.h"
 #include "../util/proto/gnuplot_proto.h"
 #include "../hri_planner/proto/hri_bitmap_proto.h"
@@ -72,6 +73,7 @@
 #endif
 
 extern hri_gik * HRI_GIK;
+extern int GIK_VIS;
 extern hri_bitmapset* BTSET;
 extern hri_bitmapset* BTSET_HUMAN;
 extern hri_bitmapset * INTERPOINT;
@@ -85,6 +87,8 @@ extern int orderedlength;
 extern int ordereddrawno;
 extern int HRI_GIK_CONTINUOUS;
 extern p3d_rob * PSP_ROBOT;
+
+extern void (*ext_g3d_draw_allwin_active_backbuffer)();
 
 extern int HRI_DRAW_TRAJ;
 extern HRI_AGENTS * GLOBAL_AGENTS;

@@ -3,11 +3,16 @@
 #include "Hri_planner-pkg.h"
 #include "GL/glx.h"
 
+// Function pointer to link with a draw function working on the openGL backbuffer 
+void (*ext_g3d_draw_allwin_active_backbuffer)();
+
+void hri_initialize_visibility()
+{
+  ext_g3d_draw_allwin_active_backbuffer = (void (*)())(g3d_draw_allwin_active_back_buffer);
+}
 
 int hri_is_object_visible(HRI_AGENT * agent, p3d_rob *object, int threshold, int save, int draw_at_end)
 {
-  GLint viewport[4];
-  g3d_states st;
   g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
   double result;
   int point,fov,visobj;
@@ -16,63 +21,23 @@ int hri_is_object_visible(HRI_AGENT * agent, p3d_rob *object, int threshold, int
     printf("%s: %d: g3d_is_object_visible_from_viewpoint(): input object is NULL.\n",__FILE__,__LINE__);
     return FALSE;
   }  
-  //Change the size of the viewport if you want speed
-  if(!save){
-    glGetIntegerv(GL_VIEWPORT, viewport);
-    glViewport(0,0,(GLint)(viewport[2]/3),(GLint)(viewport[3]/3));
-  }
-  
-  g3d_save_win_camera(win->vs);
-  g3d_save_state(win, &st);
   
   point = agent->perspective->enable_pointing_draw;
   fov = agent->perspective->enable_vision_draw;
   visobj = agent->perspective->enable_visible_objects_draw;  
-  
-  // only keep what is necessary:
-  win->vs.fov            = agent->perspective->fov;
-  win->vs.displayFrame   = FALSE;
-  win->vs.displayJoints  = FALSE;
-  win->vs.displayShadows = FALSE;
-  win->vs.displayWalls   = FALSE;
-  win->vs.displayFloor   = FALSE;
-  win->vs.displayTiles   = FALSE;
-  win->vs.cullingEnabled = 1;
+
   agent->perspective->enable_pointing_draw = FALSE;
   agent->perspective->enable_vision_draw = FALSE;
   agent->perspective->enable_visible_objects_draw = FALSE;
   
-#ifdef USE_SHADERS
-  g3d_no_shader();
-#endif
+
+  g3d_is_object_visible_from_viewpoint(agent->perspective->camjoint->abs_pos,
+				       agent->perspective->fov,
+				       object, &result);
   
-  //do not forget to set the backgroung to black:
-  g3d_set_win_bgcolor(win->vs, 0, 0, 0);
-  
-  // move the camera to the desired pose and apply the new projection matrix:
-  g3d_set_camera_parameters_from_frame(agent->perspective->camjoint->abs_pos, win->vs);
-  g3d_set_projection_matrix(win->vs.projection_mode);
-  
-  //everything is ready now.
-  g3d_is_object_visible_from_current_viewpoint(win, object, &result, save, (char*)"/Users/easisbot/Work/BioMove3D/screenshots/");
-  
-  //restore viewport
-  if(!save){
-    glViewport(0,0,(GLint)viewport[2],(GLint)viewport[3]);
-  }
-  g3d_load_state(win, &st);
   agent->perspective->enable_pointing_draw = point;
   agent->perspective->enable_vision_draw = fov;
   agent->perspective->enable_visible_objects_draw = visobj;
-  
-#ifdef USE_SHADERS
-  if (win->vs.enableShaders) {
-    g3d_use_shader();
-  }
-#endif
-  
-  g3d_restore_win_camera(win->vs);
-  g3d_set_projection_matrix(win->vs.projection_mode); // do this after restoring the camera fov
   
   if(draw_at_end)
     g3d_draw_win(win);
@@ -80,8 +45,7 @@ int hri_is_object_visible(HRI_AGENT * agent, p3d_rob *object, int threshold, int
   if(100*result>=threshold)
     return TRUE;
   else
-    return FALSE;
-  
+    return FALSE;  
 }
 
 
@@ -123,9 +87,7 @@ int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera
   win->vs.cullingEnabled=  1;
   win->vs.enableLogo = 0;
   
-#ifdef USE_SHADERS
   g3d_no_shader();
-#endif
   
   //do not forget to set the backgroung to black:
   g3d_set_win_bgcolor(win->vs, 0, 0, 0);
@@ -135,7 +97,7 @@ int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera
   g3d_set_projection_matrix(win->vs.projection_mode);
   
   //everything is ready now.
-  g3d_is_object_visible_from_current_viewpoint(win, object,result,TRUE,(char*)"/Users/easisbot/Work/BioMove3D/screenshots/");
+  g3d_is_object_visible_from_current_viewpoint(win, object, result, FALSE, (char*)"/home/easisbot/");
   
   //restore viewport
   if(!save){
@@ -143,16 +105,12 @@ int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera
   }
   g3d_load_state(win, &st);
   
-#ifdef USE_SHADERS
   if (win->vs.enableShaders) {
     g3d_use_shader();
   }
-#endif
   
   g3d_restore_win_camera(win->vs);
   g3d_set_projection_matrix(win->vs.projection_mode); // do this after restoring the camera fov
-  
-  g3d_draw_win(win);
   
   return TRUE;
 }
@@ -217,7 +175,6 @@ int g3d_are_given_objects_visible_from_viewpoint(p3d_matrix4 camera_frame, doubl
   return TRUE;
 }
 
-
 int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, double *result, int save, char *path)
 {
   int idealpixels;
@@ -243,8 +200,8 @@ int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, 
   // display the object in red
   p3d_set_robot_display_mode(object, P3D_ROB_UNLIT_RED_DISPLAY);
   
-  g3d_draw_win_back_buffer(win); //only the object should be drawn in red, everthing else is black
-  
+  ext_g3d_draw_allwin_active_backbuffer(); //only the object should be drawn in red, everthing else is black
+
   if(save) {
     sprintf(name, "%sidealview%i.ppm",path, crntcnt++);
     g3d_export_OpenGL_display(name);
@@ -288,7 +245,7 @@ int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, 
     // display the object in red
     p3d_set_robot_display_mode(object, P3D_ROB_UNLIT_RED_DISPLAY);
     
-    g3d_draw_win_back_buffer(win);
+    ext_g3d_draw_allwin_active_backbuffer();
     
     if(save){
       //save the image. All is blue, the object is red.
@@ -903,6 +860,10 @@ int hri_compute_agent_sees(HRI_AGENT * agent, int threshold, int save, int draw_
   g3d_save_win_camera(win->vs);
   g3d_save_state(win, &st);
   
+  point = agent->perspective->enable_pointing_draw;
+  fov = agent->perspective->enable_vision_draw;
+  visobj = agent->perspective->enable_visible_objects_draw; 
+  
   // only keep what is necessary:
   win->vs.fov            = agent->perspective->fov;
   win->vs.displayFrame   = FALSE;
@@ -917,9 +878,7 @@ int hri_compute_agent_sees(HRI_AGENT * agent, int threshold, int save, int draw_
   agent->perspective->enable_vision_draw = FALSE;
   agent->perspective->enable_visible_objects_draw = FALSE;
   
-#ifdef USE_SHADERS
   g3d_no_shader();
-#endif
   
   //do not forget to set the backgroung to black:
   g3d_set_win_bgcolor(win->vs, 0, 0, 0);
@@ -969,11 +928,9 @@ int hri_compute_agent_sees(HRI_AGENT * agent, int threshold, int save, int draw_
   agent->perspective->enable_vision_draw = fov;
   agent->perspective->enable_visible_objects_draw = visobj;
   
-#ifdef USE_SHADERS
   if (win->vs.enableShaders) {
     g3d_use_shader();
   }
-#endif  
   
   g3d_restore_win_camera(win->vs);
   g3d_set_projection_matrix(win->vs.projection_mode); // do this after restoring the camera fov

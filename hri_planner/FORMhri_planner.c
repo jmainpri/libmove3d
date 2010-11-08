@@ -28,7 +28,6 @@ extern int PSP_SRCH_MTD;
 extern double PSP_PS_TRSHLD;
 
 /* external gik variables */
-extern int GIK_VIS;
 extern double GIK_PRECISION;
 extern int GIK_STEP;
 extern double GIK_FORCE;
@@ -180,6 +179,8 @@ void g3d_create_hri_planner_form(void)
 
   g3d_create_gik_jointsel_form();
   g3d_create_psp_parameters_form();
+
+  hri_initialize_visibility();
   
 }
 

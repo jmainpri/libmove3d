@@ -18,6 +18,7 @@ extern void g3d_draw_win(G3D_Window *win);
 extern void g3d_draw_win_back_buffer(G3D_Window *win);
 extern void g3d_draw_allwin ( void );
 extern void g3d_draw_allwin_active ( void );
+extern void g3d_draw_allwin_active_back_buffer ( void );
 extern void g3d_print_allwin ( void );
 extern void g3d_resize_win ( G3D_Window *win, float w, float h, float size );
 extern void g3d_resize_allwin_active ( float w, float h, float size );

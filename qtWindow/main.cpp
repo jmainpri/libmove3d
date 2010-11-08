@@ -61,6 +61,19 @@ Main_threads::~Main_threads()
 
 }
 
+// Temporary mechanism to redraw the opengl scene.
+// Not elegant, but it works.
+MainWindow* global_w(NULL);
+// void draw_opengl()
+// {
+//   if(global_w != NULL)
+//   {
+//     QMetaObject::invokeMethod(global_w->getOpenGL(),
+// 															"updateGL",
+// 															Qt::BlockingQueuedConnection);
+//   }
+// }
+
 
 int Main_threads::run(int argc, char** argv)
 {
@@ -76,15 +89,16 @@ int Main_threads::run(int argc, char** argv)
 
 #ifdef QT_GL
 		cout << "Waiting end of parser to draw OpenGL and create Qt Forms ..."<< endl;
-        sem->acquire();
-        waitDrawAllWin = new QWaitCondition();
-        lockDrawAllWin = new QMutex();
+		sem->acquire();
+    waitDrawAllWin = new QWaitCondition();
+    lockDrawAllWin = new QMutex();
 #endif
 
 
 #ifdef QT_UI_XML_FILES
 	MainWindow w;
-        w.showMaximized();
+	global_w = &w;
+	w.showMaximized();
 	w.show();
 	w.raise();
 // 	QRect g = QApplication::desktop()->screenGeometry();
@@ -99,7 +113,7 @@ int Main_threads::run(int argc, char** argv)
 // 	w.setGeometry( g_window );
 #endif
 
-    return app->exec();
+		return app->exec();
 }
 
 

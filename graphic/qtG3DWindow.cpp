@@ -105,26 +105,38 @@ extern void g3d_export_cpp_graph();
 qtG3DWindow::qtG3DWindow()
 {
 #ifdef CXX_PLANNER
-	ext_g3d_draw_cost_features = (void (*)())(g3d_draw_cost_features);
-	ext_g3d_export_cpp_graph = (void (*)())(g3d_export_cpp_graph);
-	ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
-	ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
-	ext_get_win_mouse = /*(void (*) (int*,int*))*/qt_get_win_mouse;
+  ext_g3d_draw_cost_features = (void (*)())(g3d_draw_cost_features);
+  ext_g3d_export_cpp_graph = (void (*)())(g3d_export_cpp_graph);
+  ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
+  ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
+  ext_get_win_mouse = /*(void (*) (int*,int*))*/qt_get_win_mouse;
 #endif
-	
-	newG3dWindow();
+  
+  newG3dWindow();
 }
 
 void g3d_draw_allwin_active(void)
 {
-	// TODO callback OOMOVE3D
-//#if defined( QT_GL ) && defined (CXX_PLANNER)
-//	if(pipe2openGl)
-//	{
-//		pipe2openGl->update();
-//	}
-//#endif
-ext_g3d_draw_allwin_active();
+  // TODO callback OOMOVE3D
+  //#if defined( QT_GL ) && defined (CXX_PLANNER)
+  //	if(pipe2openGl)
+  //	{
+  //		pipe2openGl->update();
+  //	}
+  //#endif
+  ext_g3d_draw_allwin_active();
+}
+
+void g3d_draw_allwin_active_back_buffer(void)
+{
+  // TODO callback OOMOVE3D
+  //#if defined( QT_GL ) && defined (CXX_PLANNER)
+  //	if(pipe2openGl)
+  //	{
+  //		pipe2openGl->update();
+  //	}
+  //#endif
+  ext_g3d_draw_allwin_active();
 }
 
 void qt_canvas_viewing(int mouse_press, int button)
