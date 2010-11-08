@@ -10,6 +10,9 @@
 #ifndef HRI_DISTANCE_H
 #define HRI_DISTANCE_H
 
-double hri_robot_min_distance();
+#include "hri_agent.h"
+
+double hri_robot_min_distance(HRI_AGENTS* agents);
+double hri_distance_cost( HRI_AGENTS* agents, double& distance );
 
 #endif

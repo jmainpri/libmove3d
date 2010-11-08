@@ -19,13 +19,13 @@ static const double safeRadius = 1.0; // in meters
 
 //! Enables colision detection
 //! between the robot and the human
-void hri_set_human_robot_dist(p3d_rob* rob)
+void hri_set_human_robot_dist( p3d_rob* rob, HRI_AGENTS* agents )
 {
-	for(int i=0; i<GLOBAL_AGENTS->humans_no; i++)
+	for(int i=0; i<agents->humans_no; i++)
 	{
 //		std::cout << "Human is : " << GLOBAL_AGENTS->humans[i]->robotPt->name << std::endl;
 		p3d_col_activate_rob_rob(rob,
-														 GLOBAL_AGENTS->humans[i]->robotPt);
+														 agents->humans[i]->robotPt);
 	}
 }
 
@@ -38,12 +38,12 @@ void hri_set_normal_dist(p3d_rob* rob)
 
 //! Comptue the distance between the 
 //! robot and the closest human agent
-double hri_robot_min_distance()
+double hri_robot_min_distance( HRI_AGENTS* agents )
 {
-	p3d_rob* rob = GLOBAL_AGENTS->robots[GLOBAL_AGENTS->source_agent_idx]->robotPt;
+	p3d_rob* rob = agents->robots[agents->source_agent_idx]->robotPt;
 	
 //	printf("hri_robot_min_distance\n");
-	hri_set_human_robot_dist(rob);
+	hri_set_human_robot_dist(rob,agents);
 	
 	int nof_bodies = rob->no;
 	double* distances = new double[nof_bodies];
@@ -113,7 +113,7 @@ double hri_robot_min_distance()
 //					    << " vect_jim[5] = " << hri_disp_dist[5] << std::endl;
 	}
 	
-	hri_set_normal_dist(rob);
+//	hri_set_normal_dist(rob);
 	
 	delete[] distances;
 	delete[] other;
@@ -125,9 +125,9 @@ double hri_robot_min_distance()
 //! Cost between 0 and 1 for the distance to the robot
 //! the minimal distance is computed and a squaling is done to have 
 //! a cost in [0 1] 
-double hri_distance_cost()
+double hri_distance_cost(HRI_AGENTS* agents, double& distance)
 {	
-	double distance = hri_robot_min_distance();
+	distance = hri_robot_min_distance(agents);
 	
 	double penetrationDist = (safeRadius - distance)/safeRadius;
 	
