@@ -242,14 +242,17 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
     gpHand_properties armHandProp = (*_robot->armManipulationData)[armId].getHandProperties();
     list<gpGrasp> graspList/*, tmp*/;
 		
-		for (unsigned int i=0; i<100; i++) 
-		{
-			graspList.clear();
-			//Compute the grasp list for the given hand and object
-			std::cout << "gpGet_grasp_list : " << i << std::endl;
-			gpGet_grasp_list(object->name, armHandProp.type, graspList);
-			
-		}
+//     for (unsigned int i=0; i<100; i++) 
+//     {
+//       graspList.clear();
+//       //Compute the grasp list for the given hand and object
+//       std::cout << "gpGet_grasp_list : " << i << std::endl;
+//       gpGet_grasp_list(object->name, armHandProp.type, graspList);
+//     }
+    graspList.clear();
+    //Compute the grasp list for the given hand and object
+    std::cout << "gpGet_grasp_list : "  << std::endl;
+    gpGet_grasp_list(object->name, armHandProp.type, graspList);
 		
     if (graspList.size() == 0){
       status = MANIPULATION_TASK_NO_GRASP;
