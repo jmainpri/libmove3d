@@ -86,6 +86,12 @@ void qt_calc_cam_param(g3d_cam_param& p)
 #endif
 }
 
+//! dummy get x and y mouse position
+void get_win_mouse(int*x,int*y)
+{
+	
+}
+
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
 
@@ -103,13 +109,19 @@ extern void g3d_export_cpp_graph();
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
 qtG3DWindow::qtG3DWindow()
-{
-#ifdef CXX_PLANNER
+{	
+#if defined( QT_GL ) && defined (CXX_PLANNER)
   ext_g3d_draw_cost_features = (void (*)())(g3d_draw_cost_features);
   ext_g3d_export_cpp_graph = (void (*)())(g3d_export_cpp_graph);
-  ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
-  ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
-  ext_get_win_mouse = /*(void (*) (int*,int*))*/qt_get_win_mouse;
+	ext_get_win_mouse = /*(void (*) (int*,int*))*/qt_get_win_mouse;
+	ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
+	ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
+#else
+#ifndef QT_GL
+	ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
+	ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
+	ext_get_win_mouse = /*(void (*) (int*,int*))*/get_win_mouse;
+#endif
 #endif
   
   newG3dWindow();

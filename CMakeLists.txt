@@ -164,6 +164,8 @@ BM3D_flag(COMPILE_ON_JIDO "Check this flag to activate all dependencies for Jido
 
 BM3D_flag(COMPILE_FOR_GENOM "Check this flag to activate all dependencies for spark&mhp modules" OFF DPG USE_GBM CXX_PLANNER DPG PQP MULTIGRAPH LIGHT_PLANNER HRI_COSTSPACE HRI_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GSL QT_LIBRARY QT_GL QT_UI_XML_FILES )# USE_MIGHTABILITY_MAPS )
 
+BM3D_flag(COMPILE_MANIPULATION_PLANNER_TESTING "Check this flag to activate the module without interface to test the manipulation planner" OFF PQP LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GBM)
+
 BM3D_CheckCompilationFlags()
 
 #################################################################
@@ -557,6 +559,7 @@ ENDIF(OOMOVE3D_CORE)
 
 #INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags DESTINATION include/BioMove3D)
 
+
 # -------------------------------------------------------------
 # --- Uninstall -----------------------------------------------
 # -------------------------------------------------------------
@@ -566,3 +569,17 @@ CONFIGURE_FILE(
   IMMEDIATE @ONLY)
 ADD_CUSTOM_TARGET(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
+  
+  
+# -------------------------------------------------------------
+# --- Testing -------------------------------------------------
+# -------------------------------------------------------------
+ENABLE_TESTING()
+
+MESSAGE("CMAKE_BINARY_DIR = " ${CMAKE_BINARY_DIR})
+
+ADD_TEST(NAME ArmFreeTest
+        COMMAND move3d 	-f ../../BioMove3DDemos-JidoSAHand/GS/gsJidoKukaSAHandSM.p3d -sc ../../BioMove3DDemos-JidoSAHand/GS/SCENARIO/ManipulationTestSAHand.sce -test 1)
+	
+ADD_TEST(NAME ArmGotoTest
+        COMMAND move3d 	-f ../../BioMove3DDemos-JidoSAHand/GS/gsJidoKukaSAHandSM.p3d -sc ../../BioMove3DDemos-JidoSAHand/GS/SCENARIO/ManipulationTestSAHand.sce -test 2)

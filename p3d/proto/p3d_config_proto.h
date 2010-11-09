@@ -55,4 +55,5 @@ extern int p3d_isNullConfig(p3d_rob* robot, configPt q);
 //start path deform
 double p3d_stay_within_sphere(p3d_rob* robotPt, double *distances);
 //end path deform
+int p3d_is_collision_free(p3d_rob* robotPt, configPt q);
 #endif /* __CEXTRACT__ */

@@ -919,4 +919,39 @@ double p3d_stay_within_sphere(p3d_rob* robotPt, double *distances)
   MY_FREE(stay_within_dist_data, p3d_stay_within_dist_data, njnt + 2);
   return min_param;
 }
+
+/*  p3d_is_collision_free
+ *
+ *  Input:  the robot,
+ *          the configuration
+ *
+ *  Output: TRUE if the configuration is collision free
+ *
+ *
+ *  Description:
+ *          This function returns true if the confuration
+ *					is collision free with the side effect of leaving the robot
+ *					in the configuration passed as argument
+ */
+int p3d_is_collision_free(p3d_rob* robotPt, configPt q)
+{
+#ifdef P3D_COLLISION_CHECKING
+	int nCol = TRUE;
+	
+	p3d_set_and_update_this_robot_conf(robotPt, q);
+	
+	if(!p3d_col_test())
+	{
+		// No collision
+		return TRUE;
+	}
+	else 
+	{
+		// collisions exist
+		return FALSE;
+	}
+#else
+	return TRUE;
+#endif
+}
 //end path deform

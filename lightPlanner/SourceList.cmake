@@ -17,6 +17,7 @@ BM3D_SRC_SUBDIR_PROCESS(
 IF(MULTILOCALPATH)
 
   BM3D_SRC_SUBDIR_PROCESS( 
+	ManipulationTestFunctions.cpp
 	ManipulationPlanner.cpp 
 	ManipulationUtils.cpp
 	)
