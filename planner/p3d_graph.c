@@ -600,9 +600,9 @@ int p3d_specific_search(char* filePrefix){
     printf("\n#### START OF TEST NUM.%d ####\n\n", i + 1);
     p3d_SetDiffuStoppedByWeight(0);
     p3d_SetStopValue(FALSE);
-#ifdef WITH_XFORMS
+
     p3d_loopSpecificLearn(robotPt, qs, qg, filePrefix, i, arraytimes, &nfail);
-#endif
+
     p3d_copy_config_into(robotPt, qs, &(robotPt->ROBOT_POS));
     if (ENV.getBool(Env::expandToGoal) == true) {
       p3d_copy_config_into(robotPt, qg, &(robotPt->ROBOT_GOTO));

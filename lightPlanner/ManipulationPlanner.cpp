@@ -52,6 +52,21 @@ _configs(robotPt)
   _optimizeTime = 4.0; // 4 secondes
   _approachFreeOffset = 0.1; //0.1 meters
   _approachGraspOffset = 0.1; //0.1 meters
+	
+	
+	// Warning : Not very efficient
+	// Should only allocate this once
+	_ErrorMap[MANIPULATION_TASK_OK] = "everything was fine";
+	_ErrorMap[MANIPULATION_TASK_NOT_INITIALIZED] = "a variable was not properly initialized";
+	_ErrorMap[MANIPULATION_TASK_NO_TRAJ_FOUND] = "failed to compute a trajectory for the desired task";
+	_ErrorMap[MANIPULATION_TASK_INVALID_QSTART] = "";
+	_ErrorMap[MANIPULATION_TASK_INVALID_QGOAL] = "";
+	_ErrorMap[MANIPULATION_TASK_INVALID_TRAJ_ID] = "";
+	_ErrorMap[MANIPULATION_TASK_INVALID_TASK] = "the desired task is undefined";
+	_ErrorMap[MANIPULATION_TASK_UNKNOWN_OBJECT] = "there is no object with the specified name";
+	_ErrorMap[MANIPULATION_TASK_NO_GRASP] = "no grasp or arm grasping configuration can be found for the current context (mobile base and obstacles configurations)";
+	_ErrorMap[MANIPULATION_TASK_NO_PLACE] = "no placement or arm placement configuration can be found for the current context (mobile base and obstacles configurations, current grasp)";
+	_ErrorMap[MANIPULATION_TASK_ERROR_UNKNOWN] = "something undefined was wrong";
 
 #ifdef MULTILOCALPATH
   _BaseMLP = -1;
@@ -242,22 +257,17 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
     gpHand_properties armHandProp = (*_robot->armManipulationData)[armId].getHandProperties();
     list<gpGrasp> graspList/*, tmp*/;
 		
-//     for (unsigned int i=0; i<100; i++) 
-//     {
-//       graspList.clear();
-//       //Compute the grasp list for the given hand and object
-//       std::cout << "gpGet_grasp_list : " << i << std::endl;
-//       gpGet_grasp_list(object->name, armHandProp.type, graspList);
-//     }
     graspList.clear();
     //Compute the grasp list for the given hand and object
-    std::cout << "gpGet_grasp_list : "  << std::endl;
     gpGet_grasp_list(object->name, armHandProp.type, graspList);
+
 		
     if (graspList.size() == 0){
       status = MANIPULATION_TASK_NO_GRASP;
+			cout << "ManipulationPlanner::graspList.size() == 0" << endl;
     }else{
       status = MANIPULATION_TASK_NO_GRASP;
+			cout << "ManipulationPlanner::computingConfig()" << endl;
       int counter = 0;
       bool validConf = false;
       for(list<gpGrasp>::iterator iter = graspList.begin(); iter != graspList.end(); iter++){
@@ -265,6 +275,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
         p3d_matrix4 tAtt;
         fixAllHands(NULL, true);
         status = getGraspOpenApproachExtractConfs(object, armId, armHandProp, (*iter), tAtt, data);
+				cout << "status = " << _ErrorMap[status] << endl;
         if(status == MANIPULATION_TASK_OK){
           if(data.getGraspConfigCost() < configs.getGraspConfigCost()){
             configs = data;
@@ -290,11 +301,12 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
   }
 	
   if(MPDEBUG){
-    showConfig(configs.getOpenConfig());
-    showConfig(configs.getGraspConfig());
-    showConfig(configs.getApproachGraspConfig());
-    showConfig(configs.getApproachFreeConfig());
+    showConfig_2(configs.getOpenConfig());
+    showConfig_2(configs.getGraspConfig());
+    showConfig_2(configs.getApproachGraspConfig());
+    showConfig_2(configs.getApproachFreeConfig());
     printf("MinConfig Cost = %f\n", configs.getGraspConfigCost());
+	
     ManipulationUtils::copyConfigToFORM(_robot, configs.getGraspConfig());
     ManipulationUtils::copyConfigToFORM(_robot, configs.getOpenConfig());
     ManipulationUtils::copyConfigToFORM(_robot, configs.getApproachGraspConfig());
@@ -305,17 +317,26 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
 }
 
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpHand_properties& armHandProp, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const{
-  p3d_matrix4 handFrame;
+  
+	p3d_matrix4 handFrame;
   ArmManipulationData mData = (*_robot->armManipulationData)[armId];
   p3d_mat4Mult(grasp.frame, armHandProp.Tgrasp_frame_hand, handFrame);
   p3d_mat4Mult(handFrame, mData.getCcCntrt()->Tatt2, tAtt);
+	
   //Check if there is a valid configuration of the robot using this graspFrame
   configPt q = NULL;
   gpHand_properties handProp = mData.getHandProperties();
   gpSet_grasp_configuration(_robot, grasp, handProp.type);
   gpFix_hand_configuration(_robot, handProp, handProp.type);
+	
   //Compute Grasp configuration
   q = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, FALSE, armId, true);
+	
+	if (q == NULL) 
+	{
+		cout << "ManipulationPlanner::getGraspOpenApproachExtractConfs::No configuration found" << endl;
+	}
+	
   if(q){
     //If it exist, try to find better Rest Arm config and 
     double restArmCost = setRobotArmsRest(_robot, object->joints[1]->abs_pos, armId, tAtt, _robot->openChainConf, q);
@@ -327,11 +348,14 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(
     configs.setGraspConfig(q);
     configs.setGraspConfigCost(confCost);
     printf("configuration Cost = %f\n", confCost);
+		
     configs.setGrasp(new gpGrasp(grasp));
+		
     //Check the open configuration of the hand
     gpSet_grasp_open_configuration(_robot, grasp, q, mData.getHandProperties().type);
-    p3d_set_and_update_this_robot_conf(_robot, q);
-    if(!p3d_col_test()){
+		bool isCollisionFree = p3d_is_collision_free(_robot,q);
+		g3d_draw_allwin_active();
+    if(isCollisionFree){
       configs.setOpenConfig(q);
       //Extract configuration
 			_robot->isCarryingObject = TRUE;
@@ -739,7 +763,19 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
 	
 	_configs = manipConfigs;
 	
-  status = findArmGraspsConfigs(armId, object, _configs);
+  for(unsigned int i=0; i<20; i++)
+	{
+		status = findArmGraspsConfigs(armId, object, _configs);
+		
+		if (status == MANIPULATION_TASK_OK) 
+		{
+			break;
+		}
+		else {
+			cout << "ManipulationPlanner::status => " << _ErrorMap[status] << endl;
+		}
+
+	}
 	
   if (status == MANIPULATION_TASK_OK)
 	{
@@ -749,7 +785,10 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
 												 _configs.getOpenConfig(), 
 												 _configs.getApproachFreeConfig(), trajs);
   }
-	
+	else {
+			cout << "Fail to findArmGraspsConfigs(armId,object,_configs)" << endl;
+	}
+
   return status;
 }
 
@@ -767,6 +806,26 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
 	fixAllHands(qStart, false);
 	fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
 	fixJoint(_robot, armData.getManipulationJnt() , armData.getManipulationJnt()->abs_pos);
+	
+	if(!p3d_is_collision_free(_robot,qStart))
+	{
+		cout << "ManipulationPlanner::armPickGoto => qStart is not collision free" << endl;
+	}
+	
+//	cout << "g3d_draw_allwin_active" << endl;
+//	print_config(_robot, qStart);
+//	g3d_draw_allwin_active();
+//	sleep(4);
+	
+	if(!p3d_is_collision_free(_robot,approachFreeConfig))
+	{
+		cout << "ManipulationPlanner::armPickGoto => approachFreeConfig is not collision free" << endl;
+	}
+	
+//	cout << "g3d_draw_allwin_active" << endl;
+//	print_config(_robot, approachFreeConfig);
+//	g3d_draw_allwin_active();
+//	sleep(4);
 	
 	// Compute to Approach config
   if((traj = computeTrajBetweenTwoConfigs(qStart, approachFreeConfig)))

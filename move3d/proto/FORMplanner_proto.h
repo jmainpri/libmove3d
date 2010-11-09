@@ -15,7 +15,6 @@ extern void p3d_set_user_drawnjnt(int jnt);
 extern void CB_stop_obj ( FL_OBJECT *ob, long arg );
 extern void CB_del_param_obj ( FL_OBJECT *ob, long arg );
 extern void g3d_delete_planner_form ( void );
-extern void p3d_loopSpecificLearn(p3d_rob *robotPt, configPt qs, configPt qg, char* filePrefix, int loopNb, double * arraytimes, int *nfail);
 // TEMPORARY (Juan)
 extern int fct_stop(void);
 extern void fct_draw(void);

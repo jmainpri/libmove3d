@@ -6,6 +6,9 @@
 
 #include "ManipulationStruct.h"
 #include "ManipulationUtils.hpp"
+
+#include <map>
+
 //! @ingroup manipulation
 class  ManipulationPlanner {
   public:
@@ -163,6 +166,8 @@ class  ManipulationPlanner {
   /* *******  Manipulation Data **** */
   /* ******************************* */
 	ManipulationData _configs;
+	
+	std::map<MANIPULATION_TASK_MESSAGE,std::string> _ErrorMap;
 };
 
 

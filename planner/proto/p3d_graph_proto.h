@@ -17,6 +17,7 @@ extern int p3d_link_node_comp_multisol ( p3d_graph *G, p3d_node *N, p3d_compco *
 extern int p3d_link_node_graph_multisol ( p3d_node* Node, p3d_graph* Graph );
 extern void p3d_randconfs ( int NMAX, int (*fct_stop)(void), void (*fct_draw)(void) );
 extern void p3d_learn ( int NMAX, int (*fct_stop)(void), void (*fct_draw)(void) );
+extern void p3d_loopSpecificLearn(p3d_rob *robotPt, configPt qs, configPt qg, char* filePrefix, int loopNb, double * arraytimes, int *nfail);
 extern int p3d_specific_search (char* filePrefix);
 extern void p3d_expand_graph ( p3d_graph *G, double frac, int (*fct_stop)(void), void (*fct_draw)(void) );
 extern p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols, int *iksolg, p3d_graph *G, p3d_rob *robotPt);

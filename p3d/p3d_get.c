@@ -1072,7 +1072,7 @@ p3d_rob* p3d_get_robot_by_name_containing(const char *name)
 	for(int i=0; i<XYZ_ENV->nr; i++)
 	{
 		printf("Robot[%d] is %s\n",i,XYZ_ENV->robot[i]->name);
-		if( strcasestr(XYZ_ENV->robot[i]->name,name) != NULL )
+		if( strstr(XYZ_ENV->robot[i]->name,name) != NULL )
 		{  return(XYZ_ENV->robot[i]);  }
 	}
 	

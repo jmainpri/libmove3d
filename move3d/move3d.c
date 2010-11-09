@@ -24,6 +24,9 @@
 #include "../lightPlanner/proto/DlrPlanner.h"
 #include "../lightPlanner/proto/DlrParser.h"
 #include "../lightPlanner/proto/lightPlannerApi.h"
+#if defined( MULTILOCALPATH ) && defined( GRASP_PLANNING )
+#include "../lightPlanner/proto/ManipulationTestFunctions.hpp"
+#endif
 #endif
 #ifdef CXX_PLANNER
 #include "planningAPI.hpp"
@@ -79,6 +82,10 @@ int main(int argc, char ** argv) {
   int col_det_set = FALSE;
   int col_mode_to_be_set = p3d_col_mode_kcd; /* Nic p3d_col_mode_v_collide;*/
   int ccntrt_active = TRUE;
+	
+	// Tests
+	int manip_test_run = FALSE;
+	int manip_test_id = 0;
   
   // init English C
   if (! setlocale(LC_ALL, "C"))
@@ -229,13 +236,24 @@ int main(int argc, char ** argv) {
 #ifdef LIGHT_PLANNER
 	else if (strcmp(argv[i], "-no-ccntrt") == 0) {
     	printf("Deactivate ccntrt at startup\n");
-	ccntrt_active = FALSE;
+			ccntrt_active = FALSE;
 	++i;
       }
+#if defined( MULTILOCALPATH ) && defined( GRASP_PLANNING )
+	else if (strcmp(argv[i], "-test") == 0) {
+		++i;
+		manip_test_run = TRUE;
+		if (i < argc) {
+			manip_test_id = atoi(argv[i]) ;
+			++i;
+		} else {
+			manip_test_run = FALSE;
+			use();
+			return 0;
+		}
+	}
 #endif
-
-
-
+#endif
 	else if (strcmp(argv[i], "-udp") == 0) {
       std::string serverIp(argv[i+1]);
       int port = 0;
@@ -269,7 +287,6 @@ int main(int argc, char ** argv) {
       }
 #endif
 #endif
-
  else if (strcmp(argv[i], "bio") == 0) {
         col_mode_to_be_set = p3d_col_mode_bio;
         col_det_set = TRUE;
@@ -540,6 +557,9 @@ int main(int argc, char ** argv) {
   if (scenario_set == TRUE) {
 #ifdef WITH_XFORMS
     read_scenario_by_name(scenario);
+#else
+		p3d_rw_scenario_init_name();
+		p3d_read_scenario(scenario);
 #endif
   }
 
@@ -562,13 +582,6 @@ int main(int argc, char ** argv) {
 //	}while(1);
   /* go into loop */
 	
-#if defined(LIGHT_PLANNER) && defined(PQP)
-	if(ENV.getBool(Env::startWithFKCntrt))
-	{
-		p3d_rob* MyRobot = p3d_get_robot_by_name_containing ( ( char* ) "ROBOT" );
-		deactivateCcCntrts(MyRobot,-1);
-	}
-#endif
 #ifdef CXX_PLANNER
 	global_Project = new Project(new Scene(XYZ_ENV));
 #endif
@@ -598,6 +611,17 @@ int main(int argc, char ** argv) {
 
   g3d_loop();
 #endif
+#if defined( LIGHT_PLANNER )&& defined( MULTILOCALPATH ) && defined( GRASP_PLANNING )
+	printf("Test functions : ManipulationTestFunctions\n");
+	if (manip_test_run) 
+	{
+		new qtG3DWindow();
+		ManipulationTestFunctions tests;
+		tests.runTest(manip_test_id);
+	}
+#endif
+	
+	printf("End Move3d\n");
   return 0;
 }
 
