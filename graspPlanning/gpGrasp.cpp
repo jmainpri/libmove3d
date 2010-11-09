@@ -1655,7 +1655,11 @@ ws= 0;
 }
 
 
-
+//! Computes the "open" configuration of a grasp.
+//! From the grasp configuration q, the hand is opened (in direction of the "qopen" configuration defined in gpHand_properties).
+//! If there is a contact the opening is stopped and the DOF is set to 0.5*(qstart+qopen).
+//! \param robot pointer to the robot hand (a freeflyer)
+//! \param object pointer to the object (a freeflyer robot)
 int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object)
 {
   #ifdef GP_DEBUG
