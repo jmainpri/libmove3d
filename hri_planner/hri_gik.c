@@ -15,7 +15,7 @@ int GIK_VIS = 100;
 /*******************************************************************/
 /****************** GIK FUCTIONS ***********************************/
 /*******************************************************************/
-#ifndef HRI_PLANNER
+#ifndef HRI_PLANNER_GUI
 double p3d_psp_pointtolinedist(p3d_vector3 p, p3d_vector3 l1, p3d_vector3 l2)
 {
 	p3d_vector3 l1mp;
@@ -29,6 +29,12 @@ double p3d_psp_pointtolinedist(p3d_vector3 p, p3d_vector3 l1, p3d_vector3 l2)
 	return (p3d_vectNorm(crossprod)/p3d_vectNorm(l2ml1));
 }
 #endif
+
+void hri_gik_set_visstep(int step)
+{
+  GIK_VIS = step;
+}
+
 /****************************************************************/
 /*!
  * \brief Creates a Generelized Inverse Kinematics Structure
@@ -972,7 +978,7 @@ int hri_gik_compute(p3d_rob * robot, hri_gik * gik, int step, double reach,
 
     hri_gik_updaterobot(gik, DT);
     
-#ifdef HRI_PLANNER
+#ifdef HRI_PLANNER_GUI
     /* printf("\n update vector is :\n"); hri_gik_ShowTheVector(DT); */
     if(viscount == GIK_VIS){
       //g3d_draw_allwin_active();
@@ -1127,7 +1133,7 @@ int hri_gik_sdls(p3d_rob * robot, hri_gik * gik, int step, double reach,
   hri_gik_ShowTheVector(DT);
   hri_gik_updaterobot(gik, DT);
   
-#ifdef HRI_PLANNER
+#ifdef HRI_PLANNER_GUI
   /* printf("\n update vector is :\n"); hri_gik_ShowTheVector(DT); */
   if(viscount == GIK_VIS){
     //g3d_draw_allwin_active();

@@ -513,7 +513,7 @@ void DofSlider::dofValueChanged(double value)
 #endif
 	
 	
-#ifdef HRI_GENERALIZED_IK
+#ifdef HRI_PLANNER
 	/*
 	if ( mRobot->getName().find("HUMAN") != string::npos ) 
 	{

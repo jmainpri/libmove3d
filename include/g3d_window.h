@@ -24,7 +24,7 @@ struct g3d_win {
   //! pointer to another function that is called by pressing a key (see g3d_window.c)
   void (*fct_key2) ();
 
-#ifdef HRI_PLANNER
+#ifdef HRI_PLANNER_GUI
   int point_of_view;                    /* Boolean for  another perspective */ 
   int win_perspective;                  /* Boolean to know if it is a perspective window */    
   g3d_window_draw_mode draw_mode;       /* Boolean to know if we'll draw only the objective or in a different color from obstacles */

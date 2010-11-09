@@ -2005,7 +2005,7 @@ void *p3d_beg_obj(char *name, int type) {
   o->BB.zmax = -P3D_HUGE;
   o->concat = 0;
   o->display_mode= P3D_OBJ_DEFAULT_DISPLAY;
-#ifdef HRI_PLANNER
+#ifdef HRI_PLANNER_GUI
   o->show_pos_area = 0;
   o->trans = 0;
   o->caption_selected = 0;
@@ -2212,7 +2212,7 @@ static void *p3d_beg_rob(char* name) {
   robotPt->user_appli = NULL;/* Modification Fabien */
   robotPt->display_mode= P3D_ROB_DEFAULT_DISPLAY;
 
-#ifdef HRI_PLANNER
+#ifdef HRI_PLANNER_GUI
   /* Modification Luis */
   robotPt->cam_pos[0]= 0.0;
   robotPt->cam_pos[1]= 0.0;

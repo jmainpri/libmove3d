@@ -38,7 +38,7 @@ Fl_thread::Fl_thread(int argc, char** argv, QObject* parent) :
 
 void Fl_thread::run()
 {
-//    mainMhp(_argc, _argv);
+  //  mainMhp(_argc, _argv);
     cout << "Ends main_old" << endl;
 //    terminate();
 //    wait();
@@ -89,7 +89,7 @@ int Main_threads::run(int argc, char** argv)
 
 #ifdef QT_GL
 		cout << "Waiting end of parser to draw OpenGL and create Qt Forms ..."<< endl;
-		sem->acquire();
+		//sem->acquire();
     waitDrawAllWin = new QWaitCondition();
     lockDrawAllWin = new QMutex();
 #endif

@@ -355,7 +355,7 @@ void HricsWidget::cellToShowChanged()
 		
 		global_DrawnSphere = ReachableCells[ith]->getWorkspacePoint();
 		
-#ifdef HRI_GENERALIZED_IK
+#ifdef HRI_PLANNER
 		HRICS_activeNatu->computeIsReachable(ReachableCells[ith]->getWorkspacePoint(),
 																				 ReachableCells[ith]->isReachableWithLA());
 		
@@ -549,7 +549,7 @@ void HricsWidget::computeReachability()
 	HRICS_activeNatu->getGrid()->resetCellCost();
 	HRICS_activeNatu->getGrid()->resetReachability();
 	
-#ifdef HRI_GENERALIZED_IK
+#ifdef HRI_PLANNER
 	HRICS_activeNatu->getGrid()->computeReachability(ENV.getBool(Env::HRIleftArmVsRightArm));
 #else
 	cout << "HRI planner not defined" << endl;

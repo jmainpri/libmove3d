@@ -447,7 +447,7 @@ void calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw)
 	p3d_matrix4 m_aux;
 	p3d_vector4 Xx;
 	
-#ifdef HRI_PLANNER
+#ifdef HRI_PLANNER_GUI
 	if (win->point_of_view==0){
 #endif
 		get_lookat_vector(win->vs, Xx);
@@ -456,7 +456,7 @@ void calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw)
 		p3d_mat4Mult(*win->cam_frame,Txc,m_aux);
 		p3d_matvec4Mult(m_aux,Xx,Xc);
 		p3d_matvec4Mult(*win->cam_frame,Xx,Xw);
-#ifdef HRI_PLANNER
+#ifdef HRI_PLANNER_GUI
 		//    }
 		//    else {
 		//        //Modified Luis
@@ -612,7 +612,7 @@ void qtG3DWindow::newG3dWindow()
 	G3D_WIN->fct_draw2= NULL;
 	G3D_WIN->fct_key1= NULL;
 	G3D_WIN->fct_key2= NULL;
-#ifdef HRI_PLANNER
+#ifdef HRI_PLANNER_GUI
 	G3D_WIN->win_perspective = 0;
 	G3D_WIN->point_of_view = 0;
 	G3D_WIN->draw_mode = NORMAL;

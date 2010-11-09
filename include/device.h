@@ -692,7 +692,7 @@ typedef struct rob
 
   p3d_rob_display_mode display_mode;  /*!< used to modify how the robot will be displayed (default display, red display,etc.)*/
 
-#ifdef HRI_PLANNER
+#ifdef HRI_PLANNER_GUI
 /* Modif Luis */
 
   int show_pos_area;     // boolean show/hide semidisc of position area
