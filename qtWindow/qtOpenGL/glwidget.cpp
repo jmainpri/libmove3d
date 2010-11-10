@@ -38,7 +38,9 @@ QGLWidget(parent)
 	up[2] = 0;
 	up[3] = 0;
 	
-	size = 600;
+	_w = 800;
+	_h = 600;
+	_size = 600;
 	
 	az = INIT_AZ;
 	el = INIT_EL;
@@ -80,7 +82,16 @@ GLWidget::~GLWidget()
 
 void GLWidget::setWinSize(double size)
 {
-	this->size = size;
+	this->_size = size;
+}
+
+void GLWidget::setWinSize(int w,int h)
+{
+	_w = w;
+	_h = h;
+	_size = _h;
+
+	cout << "setWinSize : "  << _w << " , " << _h << endl;  
 }
 
 // -------------------------------------------------------
@@ -190,7 +201,7 @@ void GLWidget::initG3DFunctions()
 // -------------------------------------------------------
 void GLWidget::initializeGL()
 {
-	glViewport(0,0,(GLint) 800,(GLint) 600);
+	glViewport(0,0,(GLint) _w,(GLint) _h);
 	//glClearColor(G3D_WIN->vs.bg[0],G3D_WIN->vs.bg[1],G3D_WIN->vs.bg[2],.0);
 	
 	//   glMatrixMode(GL_PROJECTION);
@@ -223,29 +234,6 @@ void GLWidget::initializeGL()
 		cout << "GroundCostObj, vs.displayFloor = false" << endl;
 		G3D_WIN->vs.displayFloor = false;
 	}
-	
-	//	glViewport(0, 0, (GLint) 800, (GLint) 600);
-	//
-	//        if(!GroundCostObj)
-	//        {
-	//            qglClearColor(trolltechGrey);
-	//        }
-	//        else
-	//        {
-	//            qglClearColor(trolltechWhite);
-	//            G3D_WIN->vs.displayFloor = false;
-	//        }
-	//
-	//	glMatrixMode(GL_PROJECTION);
-	//	glLoadIdentity();
-	//
-	//	gluPerspective(40.0, (GLdouble) 800 / (GLdouble) 600, size / 1000., size
-	//			* 1000.0);
-	//
-	//	glMatrixMode(GL_MODELVIEW);
-	//	glLoadIdentity();
-	
-	//	cout << "initGL" << endl; 
 }
 
 void GLWidget::setThreadWorking(bool isWorking)
@@ -341,7 +329,7 @@ void GLWidget::resizeGL(int width, int height)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	
-	gluPerspective(40.0, (GLdouble) width / (GLdouble) height, size / 10000.0, size * 1000.0);
+	gluPerspective(40.0, (GLdouble) width / (GLdouble) height, _size / 10000.0, _size * 1000.0);
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
