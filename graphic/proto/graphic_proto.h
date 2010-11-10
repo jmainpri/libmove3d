@@ -4,6 +4,8 @@
 
 #include "../graphic/proto/g3d_states_proto.h"
 #include "../graphic/proto/g3d_window_proto.h"
+#include "../graphic/proto/uglyfont.h"
+
 #ifdef P3D_COLLISION_CHECKING
 #include "../graphic/proto/g3d_kcd_draw_proto.h"
 #endif

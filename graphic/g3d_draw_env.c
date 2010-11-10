@@ -28,7 +28,6 @@ int HRI_DRAW_TRAJ;
 #ifdef HRI_PLANNER
 
 #include "Hri_planner-pkg.h"
-#include <uglyfont.h>
 
 // Hri distance draw
 extern double hri_cost_to_display;
@@ -1321,18 +1320,7 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, double camera_fov, p3d_
   free(image);
 
   return 0;
-}  
-
-void g3d_setOrthographicProjection(int width, int height)
-{
-	glPushAttrib(GL_TRANSFORM_BIT);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glOrtho(0, width, 0, height, -1, 1);
-	glPopAttrib();
-}
+} 
 
 void g3d_draw_env_custom()
 {
@@ -1368,30 +1356,11 @@ void g3d_draw_env_custom()
 #endif
 	
 #ifdef HRI_PLANNER
-	GLint viewport[4];
-	char string[50];
-	
-	glGetIntegerv(GL_VIEWPORT, viewport);
-	//g3d_setOrthographicProjection(viewport[2],viewport[3]);
-	
-	glPushAttrib(GL_TRANSFORM_BIT);
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0, viewport[2], 0, viewport[3], -1, 1);
-	
-	glTranslatef(viewport[2]-150,50, 0);
-	glScalef(15.0, 15.0,1.0);
+	// Display a string with text
+	char string[50]; 
 	sprintf(string, "HRI cost = %2.2f", hri_cost_to_display );
-	YsDrawUglyFont(string, -1);
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-  glPopMatrix();
-	glPopAttrib();
+	
+	g3d_draw_text(string);
 	
 	if (hri_draw_distance) 
 	{

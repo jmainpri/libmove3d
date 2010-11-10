@@ -4,7 +4,7 @@
 
  */
 #ifndef __CEXTRACT__
-
+extern void g3d_draw_text(char* string);
 extern void g3d_set_color_vect ( int color, GLdouble color_vect[4] );
 extern void g3d_get_color_vect(int color, GLdouble color_vect[4]);
 extern void g3d_set_color ( int color, GLdouble color_vect[4] );
