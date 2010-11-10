@@ -47,11 +47,12 @@ public:
 	
 	void setMainWindow(MainWindow* w) { m_mainWindow = w; }
 	void setWinSize(double size);
+        void setWinSize(int x, int y);
 	void resetImageVector();
 	void setThreadWorking(bool isWorking);
 	void newG3dWindow();
 	void initG3DFunctions();
-  void setAutoBufferSwapping(bool swapping);
+        void setAutoBufferSwapping(bool swapping);
 	
 	public slots:
 	void saveView();
@@ -88,7 +89,8 @@ private:
 	GLdouble   x,y,z,el,az,zo;
 	
 	// size of the OpenGl scene
-	double size;
+	int _w,_h;
+	double _size;
 	
 	p3d_vector4  up;
 	
