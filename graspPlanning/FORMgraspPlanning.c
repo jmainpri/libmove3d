@@ -13,7 +13,7 @@
 
 
 // static char ObjectName[]= "Horse";
-static char ObjectName[]= "Mug";
+static char ObjectName[]= "GREY_TAPE";
 static char RobotName[]= "JIDO_ROBOT";
 static char HandRobotName[]= "";
 static bool display_grasps= false;
@@ -994,9 +994,9 @@ static void CB_SAHandRight_obj ( FL_OBJECT *obj, long arg )
   if ( count>GRASPLIST.size() )
   {  count= 0;  }
 
-//   gpSet_robot_hand_grasp_configuration(robot, object, GRASP);
+  gpSet_robot_hand_grasp_configuration(robot, object, GRASP);
 
-   gpSet_robot_hand_grasp_open_configuration(robot, object, GRASP);
+//    gpSet_robot_hand_grasp_open_configuration(robot, object, GRASP);
 
    p3d_copy_config_into(robot, p3d_get_robot_config(robot), &robot->ROBOT_POS);
 
