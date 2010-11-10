@@ -615,7 +615,7 @@ int main(int argc, char ** argv) {
 	printf("Test functions : ManipulationTestFunctions\n");
 	if (manip_test_run) 
 	{
-		new qtG3DWindow();
+// 		new qtG3DWindow();
 		ManipulationTestFunctions tests;
 		tests.runTest(manip_test_id);
 	}
