@@ -611,7 +611,7 @@ int main(int argc, char ** argv) {
 
   g3d_loop();
 #endif
-#if defined( LIGHT_PLANNER )&& defined( MULTILOCALPATH ) && defined( GRASP_PLANNING )
+#if defined( LIGHT_PLANNER )&& defined( MULTILOCALPATH ) && defined( GRASP_PLANNING ) && defined( QT_GL )
 	printf("Test functions : ManipulationTestFunctions\n");
 	if (manip_test_run) 
 	{
