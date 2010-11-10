@@ -25,6 +25,17 @@ int HRI_DRAW_TRAJ;
 #include "../planner/dpg/proto/DpgGrid.h"
 #endif
 
+#ifdef HRI_PLANNER
+
+#include "Hri_planner-pkg.h"
+#include <uglyfont.h>
+
+// Hri distance draw
+extern double hri_cost_to_display;
+extern bool hri_draw_distance;
+extern std::vector<double> hri_disp_dist;
+#endif
+
 int G3D_DRAW_TRACE = FALSE;
 int G3D_DRAW_OCUR_SPECIAL;
 int G3D_SELECTED_JOINT = -999;
@@ -1312,6 +1323,17 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, double camera_fov, p3d_
   return 0;
 }  
 
+void g3d_setOrthographicProjection(int width, int height)
+{
+	glPushAttrib(GL_TRANSFORM_BIT);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glOrtho(0, width, 0, height, -1, 1);
+	glPopAttrib();
+}
+
 void g3d_draw_env_custom()
 {
   G3D_Window *win;
@@ -1344,8 +1366,48 @@ void g3d_draw_env_custom()
   execute_Mightability_Map_functions();
 #endif
 #endif
-  
+	
+#ifdef HRI_PLANNER
+	GLint viewport[4];
+	char string[50];
+	
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	//g3d_setOrthographicProjection(viewport[2],viewport[3]);
+	
+	glPushAttrib(GL_TRANSFORM_BIT);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0, viewport[2], 0, viewport[3], -1, 1);
+	
+	glTranslatef(viewport[2]-150,50, 0);
+	glScalef(15.0, 15.0,1.0);
+	sprintf(string, "HRI cost = %2.2f", hri_cost_to_display );
+	YsDrawUglyFont(string, -1);
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+	glPopAttrib();
+	
+	if (hri_draw_distance) 
+	{
+		glLineWidth(3.);
+		
+		for (unsigned int i = 0; i < hri_disp_dist.size() / 6; i++)
+		{
+			g3d_drawOneLine(hri_disp_dist[0 + 6 * i], hri_disp_dist[1 + 6 * i],
+											hri_disp_dist[2 + 6 * i], hri_disp_dist[3 + 6 * i],
+											hri_disp_dist[4 + 6 * i], hri_disp_dist[5 + 6 * i], Red, NULL);
+		}
+		glLineWidth(1.);
+	}
+#endif
 }
+
 
 //! @ingroup graphic 
 void g3d_draw_env()
@@ -1384,7 +1446,6 @@ void g3d_draw_env()
 	
   g3d_kcd_draw_closest_points();
 #endif
-	
 	
   /* Debut Modification Thibaut */
   if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win);
