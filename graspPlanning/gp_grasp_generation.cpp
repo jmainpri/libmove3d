@@ -2761,12 +2761,11 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
 
     tmpList= graspList;
 
-    gpRemove_edge_grasps(tmpList, graspList, 80*DEGTORAD, 0.03);
+    gpRemove_edge_grasps(tmpList, graspList, 80*DEGTORAD, 0.025);
     tmpList= graspList;
  
-    gpReduce_grasp_list_size(tmpList, graspList, 40);
+    gpReduce_grasp_list_size(tmpList, graspList, 50);
 
-//     gpCompute_grasp_open_configs(graspList, hand_robot, object);
     for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
       igrasp->computeOpenConfig(hand_robot, object);
     }
