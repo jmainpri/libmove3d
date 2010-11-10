@@ -440,11 +440,11 @@ return;
 gpHand_properties prop;
 prop.initialize(GP_SAHAND_RIGHT);
 // prop.draw(p3d_mat4IDENTITY);
-gpDraw_reachable_points((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), (p3d_rob *)p3d_get_robot_by_name("Horse"), prop);
-// gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), prop, 1);
-// gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), prop, 2);
-// gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), prop, 3);
-// gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), prop, 4);
+gpDraw_reachable_points((p3d_rob *)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME), (p3d_rob *)p3d_get_robot_by_name("Horse"), prop);
+// gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME), prop, 1);
+// gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME), prop, 2);
+// gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME), prop, 3);
+// gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME), prop, 4);
 return;
 gpSAHandInfo data;
 gpDraw_SAHfinger_outer_workspace(data, 0.1);
@@ -564,10 +564,10 @@ glPopMatrix();
 
 // gpHand_properties handData;
 // handData.initialize(GP_SAHAND_RIGHT);
-//   gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), handData, 1);
-//   gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), handData, 2);
-//   gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), handData, 3);
-//   gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), handData, 4);
+//   gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME), handData, 1);
+//   gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME), handData, 2);
+//   gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME), handData, 3);
+//   gpDraw_SAHfinger_manipulability_ellipsoid((p3d_rob *)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME), handData, 4);
 
 
 // glEnable(GL_SMOOTH);
@@ -581,7 +581,7 @@ return;
 // gpHand_properties data;
 // p3d_matrix4 frame;
 // data.initialize(GP_SAHAND_RIGHT);
-// p3d_rob *hand1= p3d_get_robot_by_name("SAHandRight_robot");
+// p3d_rob *hand1= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
 // if(hand1!=NULL) gpGet_wrist_frame(hand1, frame);
 // data.draw(frame);
 // GRASP.draw(0.03);
@@ -1431,7 +1431,7 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
   std::list<gpGrasp> graspList1, graspList2;
 
   hand1= p3d_get_robot_by_name("JIDO_GRIPPER");
-  hand2= p3d_get_robot_by_name("SAHandRight_robot");
+  hand2= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
 
   object= p3d_get_robot_by_name(ObjectName);
   justin= p3d_get_robot_by_name("ROBOT");
@@ -1578,11 +1578,11 @@ GRID= !GRID;
 // g3d_win *win= NULL;
 // win= g3d_get_cur_win();
 // 
-// p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.palm", NULL);
+// p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight.hand.palm", NULL);
 // p3d_export_robot_as_one_body(XYZ_ENV->cur_robot,XYZ_ENV->cur_robot->ROBOT_POS);
-// // p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger2", NULL);
-// // p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger3", NULL);
-// // p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger4", NULL);
+// // p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight.hand.finger2", NULL);
+// // p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight.hand.finger3", NULL);
+// // p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight.hand.finger4", NULL);
 // 
 // return;
 // p3d_rob *jido= p3d_get_robot_by_name("JIDO_ROBOT");
@@ -1650,9 +1650,9 @@ GRID= !GRID;
 //  return;
 /*
 //p3d_export_robot_as_multipart_OBJ((p3d_rob *)p3d_get_robot_by_name("SAHandLeft_robot"), NULL);
-//p3d_export_robot_as_multipart_OBJ((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), NULL);
+//p3d_export_robot_as_multipart_OBJ((p3d_rob *)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME), NULL);
 return;
-//   gpSwap_ghost_and_graphic_bodies((p3d_rob *)p3d_get_robot_by_name("SAHandLeft_robot"));return;
+//   gpSwap_ghost_and_graphic_bodies((p3d_rob *)p3d_get_robot_by_name("SAHandLeft"));return;
  static int firstTime= 1;
  if(firstTime)
  { 
@@ -1693,7 +1693,7 @@ return;
   if ( count>GRASPLIST.size() )
           {  count= 1;  }
 
- gpSet_robot_hand_grasp_configuration((p3d_rob*)p3d_get_robot_by_name("SAHandRight_robot"), (p3d_rob*)p3d_get_robot_by_name("Horse"), GRASP);
+ gpSet_robot_hand_grasp_configuration((p3d_rob*)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME), (p3d_rob*)p3d_get_robot_by_name("Horse"), GRASP);
 
   redraw();
   return;*/
@@ -1852,8 +1852,8 @@ return;
   p3d_rob *SAHandRight_robot, *SAHandLeft_robot, *object, *justin;
   std::list<gpGrasp> graspList1, graspList2;
 
-  SAHandRight_robot= p3d_get_robot_by_name("SAHandRight_robot");
-  SAHandLeft_robot= p3d_get_robot_by_name("SAHandLeft_robot");
+  SAHandRight_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
+  SAHandLeft_robot= p3d_get_robot_by_name("SAHandLeft");
   object= p3d_get_robot_by_name("Horse");
   justin= p3d_get_robot_by_name("ROBOT");
 
