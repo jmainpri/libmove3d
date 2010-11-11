@@ -1354,26 +1354,26 @@ void g3d_draw_env_custom()
   execute_Mightability_Map_functions();
 #endif
 #endif
-	
+  
 #ifdef HRI_PLANNER
-	// Display a string with text
-	char string[50]; 
-	sprintf(string, "HRI cost = %2.2f", hri_cost_to_display );
-	
-	g3d_draw_text(string);
-	
-	if (hri_draw_distance) 
-	{
-		glLineWidth(3.);
-		
-		for (unsigned int i = 0; i < hri_disp_dist.size() / 6; i++)
-		{
-			g3d_drawOneLine(hri_disp_dist[0 + 6 * i], hri_disp_dist[1 + 6 * i],
-											hri_disp_dist[2 + 6 * i], hri_disp_dist[3 + 6 * i],
-											hri_disp_dist[4 + 6 * i], hri_disp_dist[5 + 6 * i], Red, NULL);
-		}
-		glLineWidth(1.);
-	}
+  if(FALSE) { // Writing text or anything else breaks visibility functions. They should be enabled/disabled inside win->vs
+    // Display a string with text
+    char string[50]; 
+    sprintf(string, "HRI cost = %2.2f", hri_cost_to_display );
+    
+    g3d_draw_text(string);
+    
+    if (hri_draw_distance) {
+      glLineWidth(3.);
+      
+      for (unsigned int i = 0; i < hri_disp_dist.size() / 6; i++) {
+	g3d_drawOneLine(hri_disp_dist[0 + 6 * i], hri_disp_dist[1 + 6 * i],
+			hri_disp_dist[2 + 6 * i], hri_disp_dist[3 + 6 * i],
+			hri_disp_dist[4 + 6 * i], hri_disp_dist[5 + 6 * i], Blue, NULL);
+      }
+      glLineWidth(1.);
+    }
+  }
 #endif
 }
 
