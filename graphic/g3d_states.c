@@ -927,9 +927,9 @@ int g3d_load_logo_texture(g3d_states &vs)
 //! Displays the LAAS logo.
 //! \param offsetX X position of the logo lower-left corner (from the image lower-left corner)
 //! \param offsetY Y position of the logo lower-left corner (from the image lower-left corner)
-//! \param scale scale factor to apply to the logo (original size in g3d_logo.h)
+//! \param widthRatio ratio of the logo width with respect of the OpenGL window width (e.g.: use 0.1 if you want the logo width to be 1/10 of the window width) 
 //! \return 0 in case of success, 1 otherwise
-int g3d_display_logo(g3d_states &vs, float offsetX, float offsetY, float scale)
+int g3d_display_logo(g3d_states &vs, float offsetX, float offsetY, float widthRatio)
 {
   static int firstTime= TRUE;
 
@@ -942,10 +942,14 @@ int g3d_display_logo(g3d_states &vs, float offsetX, float offsetY, float scale)
 
   GLint viewport[4];
   int width, height;
+  float scale;
 
   glGetIntegerv(GL_VIEWPORT, viewport);
   width  = viewport[2];
   height = viewport[3];
+
+  scale= widthRatio*width/( (float) LOGO_WIDTH);
+
  #ifdef USE_SHADERS
   g3d_no_shader();
  #endif

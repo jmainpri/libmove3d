@@ -45,6 +45,6 @@ extern int g3d_load_state(g3d_win *win, g3d_states *st);
 extern int g3d_checkGLerrors(char *message);
 
 int g3d_load_logo_texture(g3d_states &vs);
-int g3d_display_logo(g3d_states &vs, float offsetX, float offsetY, float scale);
+int g3d_display_logo(g3d_states &vs, float offsetX, float offsetY, float widthRatio);
 
 #endif // G3D_STATES_PROTO_H
