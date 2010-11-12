@@ -25,6 +25,16 @@ int HRI_DRAW_TRAJ;
 #include "../planner/dpg/proto/DpgGrid.h"
 #endif
 
+#ifdef HRI_PLANNER
+
+#include "Hri_planner-pkg.h"
+
+// Hri distance draw
+extern double hri_cost_to_display;
+extern bool hri_draw_distance;
+extern std::vector<double> hri_disp_dist;
+#endif
+
 int G3D_DRAW_TRACE = FALSE;
 int G3D_DRAW_OCUR_SPECIAL;
 int G3D_SELECTED_JOINT = -999;
@@ -1310,7 +1320,7 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, double camera_fov, p3d_
   free(image);
 
   return 0;
-}  
+} 
 
 void g3d_draw_env_custom()
 {
@@ -1345,7 +1355,28 @@ void g3d_draw_env_custom()
 #endif
 #endif
   
+#ifdef HRI_PLANNER
+  if(FALSE) { // Writing text or anything else breaks visibility functions. They should be enabled/disabled inside win->vs
+    // Display a string with text
+    char string[50]; 
+    sprintf(string, "HRI cost = %2.2f", hri_cost_to_display );
+    
+    g3d_draw_text(string);
+    
+    if (hri_draw_distance) {
+      glLineWidth(3.);
+      
+      for (unsigned int i = 0; i < hri_disp_dist.size() / 6; i++) {
+	g3d_drawOneLine(hri_disp_dist[0 + 6 * i], hri_disp_dist[1 + 6 * i],
+			hri_disp_dist[2 + 6 * i], hri_disp_dist[3 + 6 * i],
+			hri_disp_dist[4 + 6 * i], hri_disp_dist[5 + 6 * i], Blue, NULL);
+      }
+      glLineWidth(1.);
+    }
+  }
+#endif
 }
+
 
 //! @ingroup graphic 
 void g3d_draw_env()
@@ -1384,7 +1415,6 @@ void g3d_draw_env()
 	
   g3d_kcd_draw_closest_points();
 #endif
-	
 	
   /* Debut Modification Thibaut */
   if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win);

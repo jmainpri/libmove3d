@@ -57,6 +57,36 @@ int mod(int a, int b) {
 
 /*******************************************************************************/
 //! @ingroup graphic 
+//! Get the current display size and displays the text in
+//! the right/bottom corner
+//! \param string contains a string to draw
+void g3d_draw_text(char* string)
+{
+	GLint viewport[4];
+	
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	
+	glPushAttrib(GL_TRANSFORM_BIT);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0, viewport[2], 0, viewport[3], -1, 1);
+	
+	glTranslatef(viewport[2]-150,50, 0);
+	glScalef(15.0, 15.0,1.0);
+	YsDrawUglyFont(string, -1);
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glPopAttrib();
+}
+
+/*******************************************************************************/
+//! @ingroup graphic 
 //! Sets the current OpenGL color from a color index or an RGBA vector.
 //! \param color color index (see the #define in include/p3d_type.h)
 //! \param color_vect a vector of RGBA components (used only if color==Any)

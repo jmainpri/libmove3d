@@ -90,6 +90,8 @@ void GLWidget::setWinSize(int w,int h)
 	_w = w;
 	_h = h;
 	_size = _h;
+	
+	resize(_w,_h);
 
 	cout << "setWinSize : "  << _w << " , " << _h << endl;  
 }
