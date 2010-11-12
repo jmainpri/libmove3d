@@ -1715,8 +1715,7 @@ void g3d_draw(void)
   
   g3d_draw_env();
 
-  float scale= 0.7;
   if(win->vs.enableLogo==1) {
-    g3d_display_logo(win->vs, 10.0, 10.0, 0.7);
+    g3d_display_logo(win->vs, 10.0, 10.0, 0.33);
   }
 }
