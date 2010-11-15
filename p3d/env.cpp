@@ -22,7 +22,7 @@ Env::Env()
 	mBoolMap.insert(boolMap_t(Env::drawDisabled, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawFrame, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::drawGraph, new boolContainer(false)));
-	mBoolMap.insert(boolMap_t(Env::drawTraj, new boolContainer(true)));
+	mBoolMap.insert(boolMap_t(Env::drawTraj, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawTrajVector, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawAll, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawGrid, new boolContainer(false)));

@@ -408,14 +408,14 @@ int p3d_convert_traj_to_softMotion(p3d_traj *trajPt, bool param_write_file, std:
 	  p3d_softMotion_export_traj(robotPt, trajSmPt, 1, (char*)"softMotion_Smoothed_Q.traj",  (char*)"softMotion_Smoothed_Seg.traj",ENV.getBool(Env::plotSoftMotionCurve),  lp, positions, smTraj) ;
 	  //smTraj.print();
 	}
-	if (fct_draw){(*fct_draw)();}
+	//if (fct_draw){(*fct_draw)();}
 
 
 
-	g3d_win *win= NULL;
-	win= g3d_get_cur_win();
-	win->fct_draw2 = &(draw_trajectory_ptp);
-	g3d_draw_allwin_active();
+	//g3d_win *win= NULL;
+	//win= g3d_get_cur_win();
+	//win->fct_draw2 = &(draw_trajectory_ptp);
+	//g3d_draw_allwin_active();
 
 	return FALSE;
 
