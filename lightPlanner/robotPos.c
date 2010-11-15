@@ -184,6 +184,9 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
           q[ffjntIndex + 5] = rz;
         }else {
           if(robot->isCarryingObject){
+            if(cntrtToActivate == -1){
+              cntrtToActivate = 0;
+            }
             p3d_rob* carriedObject = (*robot->armManipulationData)[cntrtToActivate].getCarriedObject();
             configPt carriedObjectRefConf = p3d_alloc_config(carriedObject);
             configPt carriedObjectConf = p3d_alloc_config(carriedObject);

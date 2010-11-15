@@ -19,6 +19,10 @@ Manipulation::Manipulation(p3d_rob * robot){
   _robot = robot;
   _offlineGraph = NULL;
   p3d_set_object_to_carry(_robot, (char*)GP_OBJECT_NAME_DEFAULT);
+  for(int i = 0; i < (int) _robot->armManipulationData->size(); i++){
+    (*_robot->armManipulationData)[i].setCarriedObject((char*)GP_OBJECT_NAME_DEFAULT);
+    cout << GP_OBJECT_NAME_DEFAULT << endl;
+  }
   p3d_mat4Copy(p3d_mat4IDENTITY, _exchangeMat);
 }
 
@@ -113,8 +117,8 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
     prop2.initialize(secondGraspData->getGrasp()->hand_type);
     gpDeactivate_hand_selfcollisions(_robot, 1);
     gpDeactivate_hand_selfcollisions(_robot, 2);
-    gpDeactivate_object_fingertips_collisions(_robot, _robot->carriedObject->joints[1]->o, prop1);
-    gpDeactivate_object_fingertips_collisions(_robot, _robot->carriedObject->joints[1]->o, prop2);
+    gpDeactivate_object_fingertips_collisions(_robot, (*_robot->armManipulationData)[0].getCarriedObject()->joints[1]->o, prop1);
+    gpDeactivate_object_fingertips_collisions(_robot, (*_robot->armManipulationData)[1].getCarriedObject()->joints[1]->o, prop2);
     if (offlineFile.compare("")) {
       p3d_readGraph(offlineFile.c_str(), DEFAULTGRAPH);
       loadedGraph = XYZ_GRAPH;
@@ -805,7 +809,7 @@ double Manipulation::getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpH
     //Check the rest configuration of the hand
     gpSet_grasp_open_configuration(_robot, grasp, q, whichArm);
     p3d_set_and_update_this_robot_conf(_robot, q);
-//     g3d_draw_allwin_active();
+    g3d_draw_allwin_active();
     if(!p3d_col_test()){
       p3d_copy_config_into(_robot, q, approachConfig);
       p3d_destroy_config(_robot, q);
@@ -880,7 +884,7 @@ void Manipulation::computeDoubleGraspConfigList(){
     if(getCollisionFreeDoubleGraspAndApproach(_exchangeMat, handProp, (*itDouble), &dGraspConfig)){
       data->setDoubleGrasp((*itDouble));
       _handsDoubleGraspsConfigs.push_back(data);
-      //showConfig(dGraspConfig);
+      showConfig(dGraspConfig);
     }else{
       delete(data);
     }
@@ -930,6 +934,9 @@ int Manipulation::getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, 
   q = setTwoArmsRobotGraspPosWithoutBase(_robot, exchangeMat, rTatt, lTatt, TRUE, -1, true);
   if(q){
     //Test the collisions with open hands
+    gpActivate_hand_selfcollisions(_robot, 1);
+    gpActivate_hand_selfcollisions(_robot, 2);
+    
     p3d_desactivateCntrt(_robot, _robot->ccCntrts[0]);
     p3d_desactivateCntrt(_robot, _robot->ccCntrts[1]);
     configPt doubleGraspOpen = p3d_copy_config(_robot, q);
@@ -940,7 +947,7 @@ int Manipulation::getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, 
     if (p3d_col_test()) {
       p3d_destroy_config(_robot, q);
       p3d_destroy_config(_robot, doubleGraspOpen);
-//      g3d_draw_allwin_active();
+      g3d_draw_allwin_active();
       return 0;
     }
     //test the other hand
