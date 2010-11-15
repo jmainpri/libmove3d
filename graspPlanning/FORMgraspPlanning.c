@@ -52,6 +52,8 @@ static p3d_vector3 Ai= {0.0,0.0,0.0}, Af= {0.0,0.0,0.0}, Bi= {0.0,0.0,0.0}, Bf= 
 // static p3d_vector3 E= {0.0,0.0,0.0};
 static bool GRID= false;
 
+#include "ManipulationPlanner.hpp"
+static ManipulationPlanner *manipulation= NULL;
 // static unsigned int CNT= 0;
 static configPt *PATH= NULL;
 static int NB_CONFIGS= 0;
@@ -1471,9 +1473,11 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
   redraw();
 }
 
-
+void test_manipulation();
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+test_manipulation();
+
 // std::vector<gpSphere> spheres;
 // gpSAHandInfo data;
 // gpSAHfinger_workspace_approximation(data, DEGTORAD*2, 0.0, 50,  spheres);
@@ -2827,4 +2831,23 @@ void GP_Reset()
 	win->fct_key2 = NULL;
 }
 
+
+void test_manipulation()
+{
+  p3d_rob * robotPt= p3d_get_robot_by_name("JIDOKUKA_ROBOT");
+  manipulation= new ManipulationPlanner(robotPt);
+
+  std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
+  std::vector <SM_TRAJ> smTrajs;
+  std::vector <p3d_traj*> trajs;
+  ManipulationData configs(manipulation->robot());
+  p3d_rob* object= (p3d_rob*) p3d_get_robot_by_name(ObjectName);
+  p3d_matrix4 T, tAtt;
+  gpGrasp grasp;
+  p3d_matrix4 handFrame;
+  gpHand_properties armHandProp = (*manipulation->robot()->armManipulationData)[0].getHandProperties();
+  
+  manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), ObjectName, (char*)"", confs, smTrajs);
+
+}
 

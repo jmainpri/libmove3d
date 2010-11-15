@@ -260,7 +260,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
     graspList.clear();
     //Compute the grasp list for the given hand and object
     gpGet_grasp_list(object->name, armHandProp.type, graspList);
-
 		
     if (graspList.size() == 0){
       status = MANIPULATION_TASK_NO_GRASP;
@@ -353,8 +352,14 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(
 		
     //Check the open configuration of the hand
     gpSet_grasp_open_configuration(_robot, grasp, q, mData.getHandProperties().type);
-		bool isCollisionFree = p3d_is_collision_free(_robot,q);
-		g3d_draw_allwin_active();
+    bool isCollisionFree = p3d_is_collision_free(_robot,q);
+    g3d_draw_allwin_active();
+
+    // if the grasp open config is colliding, recompute it taking into account the environment:
+    grasp.computeOpenConfig(_robot, object, true);
+    gpSet_grasp_open_configuration(_robot, grasp, q, mData.getHandProperties().type);
+    isCollisionFree = p3d_is_collision_free(_robot,q);
+
     if(isCollisionFree){
       configs.setOpenConfig(q);
       //Extract configuration

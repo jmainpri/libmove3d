@@ -1660,7 +1660,9 @@ ws= 0;
 //! If there is a contact the opening is stopped and the DOF is set to 0.5*(qstart+qopen).
 //! \param robot pointer to the robot hand (a freeflyer)
 //! \param object pointer to the object (a freeflyer robot)
-int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object)
+//! \param environment take into account the environment in the collision test or not
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object, bool environment)
 {
   #ifdef GP_DEBUG
   if(this==NULL)
@@ -1681,7 +1683,7 @@ int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object)
   #endif
 
   unsigned int i, j, k, nbSteps;
-  int result, nbChanges;
+  int result, nbChanges, col_test;
   double qnew[4]; // SAHand finger joint parameters to set (the first one is only needed by the thumb)
   p3d_matrix4 objectFrame, objectFrameInv;
   configPt config0, config;
@@ -1764,7 +1766,16 @@ int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object)
           {
             qnew[k]=  q[3*i+k] + delta[3*i+k];
             result= gpSet_SAHfinger_joint_angles(robot, handProp, qnew, i+1);
-            if( result==GP_ERROR || p3d_col_test_robot_other(robot, object, 0) || p3d_col_test_self_collision(robot, 0) )
+
+            if(result==GP_OK)
+            {
+              if(environment)
+              { col_test= p3d_col_test_robot(robot, 0);  }
+              else
+              { col_test= p3d_col_test_robot_other(robot, object, 0) + p3d_col_test_self_collision(robot, 0); }
+            }
+
+            if( result==GP_ERROR || col_test )
             {
               qnew[k]= q[3*i+k];
               if(result==GP_OK) 

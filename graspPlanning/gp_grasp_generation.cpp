@@ -2763,17 +2763,18 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
 
     gpRemove_edge_grasps(tmpList, graspList, 80*DEGTORAD, 0.025);
     tmpList= graspList;
- 
-    gpReduce_grasp_list_size(tmpList, graspList, 50);
 
-    for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
-      igrasp->computeOpenConfig(hand_robot, object);
-    }
+    gpReduce_grasp_list_size(tmpList, graspList, 50);
 
     elapsedTime= ( clock()-clock0 ) /CLOCKS_PER_SEC;
 
     printf("%d grasps were computed.\n",graspList.size() );
     printf("Computation time: %2.1fs= %dmin%ds\n",elapsedTime, ( int ) ( elapsedTime/60.0 ), ( int ) ( elapsedTime - 60* ( ( int ) ( elapsedTime/60.0 ) ) ) );
+
+    printf("Now, compute open configurations.\n");
+    for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
+      igrasp->computeOpenConfig(hand_robot, object, false);
+    }
 
     gpSave_grasp_list ( graspList, graspListFile );
   }
@@ -2788,10 +2789,6 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
     {
       printf("%s: %d: gpGet_grasp_list_SAHand(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str() );
       printf("It contains %d grasps.\n",graspList.size() );
-    }
-
-    for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
-      igrasp->computeOpenConfig(hand_robot, object);
     }
   }
 
