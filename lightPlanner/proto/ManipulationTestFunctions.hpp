@@ -32,6 +32,7 @@ private:
 	
 	bool testArmFree();
 	bool testArmPickGoto();
+	bool testArmPickToFree();
 	
 	p3d_rob* m_Robot;
 	
