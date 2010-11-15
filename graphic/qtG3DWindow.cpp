@@ -38,6 +38,7 @@ void (*ext_g3d_export_cpp_graph)();
 void (*ext_g3d_draw_allwin_active)();
 void (*ext_calc_cam_param)(g3d_cam_param& p);
 void (*ext_get_win_mouse)(int* x, int* y);
+void (*ext_qt_add_traj)(char* name,int i);
 
 // --------------------------------------------------------------------
 // External functions
@@ -92,6 +93,12 @@ void get_win_mouse(int*x,int*y)
 	
 }
 
+//! dummy function to add a traj 
+void add_traj_to_ui( char* name, int i )
+{
+	
+}
+
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
 
@@ -116,11 +123,13 @@ qtG3DWindow::qtG3DWindow()
 	ext_get_win_mouse = /*(void (*) (int*,int*))*/qt_get_win_mouse;
 	ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
 	ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
+	ext_qt_add_traj = add_traj_to_ui;
 #else
 #ifndef QT_GL
 	ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
 	ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
 	ext_get_win_mouse = /*(void (*) (int*,int*))*/get_win_mouse;
+	ext_qt_add_traj = add_traj_to_ui;
 #endif
 #endif
   
@@ -129,26 +138,18 @@ qtG3DWindow::qtG3DWindow()
 
 void g3d_draw_allwin_active(void)
 {
-  // TODO callback OOMOVE3D
-  //#if defined( QT_GL ) && defined (CXX_PLANNER)
-  //	if(pipe2openGl)
-  //	{
-  //		pipe2openGl->update();
-  //	}
-  //#endif
   ext_g3d_draw_allwin_active();
 }
 
 void g3d_draw_allwin_active_back_buffer(void)
 {
-  // TODO callback OOMOVE3D
-  //#if defined( QT_GL ) && defined (CXX_PLANNER)
-  //	if(pipe2openGl)
-  //	{
-  //		pipe2openGl->update();
-  //	}
-  //#endif
   ext_g3d_draw_allwin_active();
+}
+
+void g3d_add_traj ( char *name, int i )
+{
+	cout << "g3d_add_traj ( char *name, int i )" << endl;
+	ext_qt_add_traj(name,i);
 }
 
 void qt_canvas_viewing(int mouse_press, int button)
@@ -408,12 +409,6 @@ G3D_Window *g3d_get_win_by_name(char *s)
 	//	return NULL;
 	
 	return G3D_WIN;
-}
-
-void g3d_add_traj ( char *name, int i )
-{
-	cout << XformError << endl;
-	cout << "In Function : " <<  __func__ << endl;
 }
 
 void g3d_set_picking(unsigned int enabled)

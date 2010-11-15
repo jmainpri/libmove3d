@@ -51,7 +51,7 @@ extern int p3d_numcoll;	/* Variables externes pour le CC */
 #if defined( QT_GL ) && defined( CXX_PLANNER )
 #include "../qtWindow/qtOpenGL/Widget.hpp"
 #endif
-//#if defined( QT_LIBRARY ) && defined( OOMOVE3D_CORE )
+//#if defined( QT_LIBRARY ) && defined( MOVE3D_CORE )
 //#include "qtUI/qtOpenGL/Widget.hpp"
 //#endif
 

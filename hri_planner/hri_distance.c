@@ -14,11 +14,11 @@
 
 #include <limits>
 
-double hri_cost_to_display=0;
-bool hri_draw_distance=false;
-std::vector<double> hri_disp_dist; // to draw the distance between the human and the robot
-std::vector<double> hri_histo_dist; // to save all distances that have been computed
-static const double hri_safe_radius = 1.0; // in meters
+double								hri_cost_to_display=0;
+bool									hri_draw_distance=true;
+std::vector<double>		hri_disp_dist; // to draw the distance between the human and the robot
+std::vector<double>		hri_histo_dist; // to save all distances that have been computed
+static const double		hri_safe_radius = 1.0; // in meters
 
 //! Enables colision detection
 //! between the robot and the human
@@ -95,7 +95,6 @@ double hri_robot_min_distance( HRI_AGENTS* agents )
 			break;
 		}
 	}
-
 	
 	if(hri_draw_distance)
 	{
@@ -142,7 +141,9 @@ double hri_distance_cost(HRI_AGENTS* agents, double& distance)
 		//            Cost += _PenetrationDist[k];
 	}
 	
-	hri_cost_to_display = Cost;
+	
+	// Set the Hri Cost To Display
+	hri_cost_to_display = distance;
 	
 	return Cost;
 }

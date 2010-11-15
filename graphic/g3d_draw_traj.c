@@ -306,7 +306,6 @@ void g3d_show_search(void) {
  * Input:  the robot,
  *
  */
-
 int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath* curLp)) {
   double u = 0.0;
   double du, umax, dmax; /* parameters along the local path */

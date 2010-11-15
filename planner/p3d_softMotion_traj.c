@@ -297,6 +297,8 @@ int p3d_convert_ptpTraj_to_smoothedTraj(double *gain, int* ntest, p3d_traj *traj
 	/* update the number of local paths */
 	trajSmPt->nlp = p3d_compute_traj_nloc(trajSmPt);
 	trajSmPt->range_param = p3d_compute_traj_rangeparam(trajSmPt);
+	
+	trajSmPt->rob->tcur = trajSmPt;
 	g3d_add_traj((char*)"traj_SoftMotion", trajSmPt->num);
 
 	return FALSE;
@@ -389,6 +391,8 @@ int p3d_convert_traj_to_softMotion(p3d_traj *trajPt, bool param_write_file, std:
 	/* update the number of local paths */
 	trajSmPTPPt->nlp = p3d_compute_traj_nloc(trajSmPTPPt);
 	trajSmPTPPt->range_param = p3d_compute_traj_rangeparam(trajSmPTPPt);
+	
+	trajSmPTPPt->rob->tcur = trajSmPTPPt;
 	g3d_add_traj((char*)"traj_SoftMotion_PTP", trajSmPTPPt->num);
 	printf("BioMove3D: softMotion point-to-point trajectory OK\n");
 

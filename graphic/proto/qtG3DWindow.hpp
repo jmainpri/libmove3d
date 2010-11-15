@@ -37,5 +37,6 @@ extern void (*ext_g3d_draw_allwin_active)();
 extern void (*ext_calc_cam_param)(g3d_cam_param& p);
 extern void (*ext_get_win_mouse)(int* x, int* y);
 extern void (*ext_g3d_draw_cost_features)();
+extern void (*ext_qt_add_traj)(char* name,int i);
 
 #endif // QTG3DWINDOW_HPP

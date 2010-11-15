@@ -263,10 +263,10 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
 		
     if (graspList.size() == 0){
       status = MANIPULATION_TASK_NO_GRASP;
-			cout << "ManipulationPlanner::graspList.size() == 0" << endl;
+			//cout << "ManipulationPlanner::graspList.size() == 0" << endl;
     }else{
       status = MANIPULATION_TASK_NO_GRASP;
-			cout << "ManipulationPlanner::computingConfig()" << endl;
+			//cout << "ManipulationPlanner::computingConfig()" << endl;
       int counter = 0;
       bool validConf = false;
       for(list<gpGrasp>::iterator iter = graspList.begin(); iter != graspList.end(); iter++){
@@ -274,7 +274,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
         p3d_matrix4 tAtt;
         fixAllHands(NULL, true);
         status = getGraspOpenApproachExtractConfs(object, armId, armHandProp, (*iter), tAtt, data);
-				cout << "status = " << _ErrorMap[status] << endl;
+				//cout << "status = " << _ErrorMap[status] << endl;
         if(status == MANIPULATION_TASK_OK){
           if(data.getGraspConfigCost() < configs.getGraspConfigCost()){
             configs = data;
@@ -333,7 +333,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(
 	
 	if (q == NULL) 
 	{
-		cout << "ManipulationPlanner::getGraspOpenApproachExtractConfs::No configuration found" << endl;
+		//cout << "ManipulationPlanner::getGraspOpenApproachExtractConfs::No configuration found" << endl;
 	}
 	
   if(q){
@@ -482,7 +482,10 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::concatTrajectories (std::vector<p
   for(int i = 1; i < (int)trajs.size(); i++){
     p3d_concat_traj(*concatTraj, trajs[i]);
   }
+	
+	_robot->tcur = (*concatTraj);
   g3d_add_traj((char*)"Task", (*concatTraj)->num);
+	
   return MANIPULATION_TASK_OK;
 }
 
@@ -505,7 +508,7 @@ int ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, boo
   ENV.setDouble(Env::extensionStep, 2.0);
 
 
-#if defined (USE_CXX_PLANNER) || defined(OOMOVE3D_CORE)
+#if defined (USE_CXX_PLANNER) || defined(MOVE3D_CORE)
   ENV.setBool(Env::withSmoothing, true);
   ENV.setBool(Env::withShortCut, true);
   ENV.setBool(Env::withDeformation, false);
@@ -1005,7 +1008,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGotoAndTakeToFree(int armI
 	ManipulationData manipConfigs(_robot);
 	_configs = manipConfigs;
   
-	/*
+	
 	status = findArmGraspsConfigs(armId, object, _configs);
 	
   if (status == MANIPULATION_TASK_OK)
@@ -1035,7 +1038,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGotoAndTakeToFree(int armI
 														 _configs.getApproachGraspConfig(),
 														 *_configs.getGrasp(),
 														 trajs);
-	 */
 	
   return status;
 }
@@ -1145,8 +1147,10 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     printf("%s: %d: ManipulationPlanner::armPlanTask(): No robot initialized.\n", __FILE__, __LINE__);
     return MANIPULATION_TASK_NOT_INITIALIZED;
   }
-  p3d_multiLocalPath_disable_all_groupToPlan(_robot);
+  
+	p3d_multiLocalPath_disable_all_groupToPlan(_robot);
   p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1);
+	
   if ((returnMessage = armPlanTask(task, armId, qStart, qGoal, objectName, supportName, trajs)) == MANIPULATION_TASK_OK){
     //concatene
     if(concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK){
