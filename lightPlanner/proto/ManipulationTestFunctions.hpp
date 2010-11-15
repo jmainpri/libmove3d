@@ -25,14 +25,13 @@ public:
 	ManipulationTestFunctions(std::string RobotNameContains);
 	virtual ~ManipulationTestFunctions();
 	
-	void runTest(int i);
+	bool runTest(int i);
 	
 private:
 	void initManipulationGenom();
 	
-	bool testArmFree();
-	bool testArmPickGoto();
-	bool testArmPickToFree();
+	//! Generic function to test the genom requests
+	bool manipTest(MANIPULATION_TASK_TYPE_STR type);
 	
 	p3d_rob* m_Robot;
 	

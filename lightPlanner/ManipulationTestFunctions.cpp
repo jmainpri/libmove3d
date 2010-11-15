@@ -77,7 +77,7 @@ void ManipulationTestFunctions::initManipulationGenom()
   return;
 }
 
-bool ManipulationTestFunctions::testArmFree()
+bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 {
 	bool succeed = false;
 	
@@ -87,18 +87,18 @@ bool ManipulationTestFunctions::testArmFree()
 	
 	if (p3d_equal_config(m_Robot, m_qInit, m_qGoal)) 
 	{
-		cout << "Error : ManipulationTestFunctions::p3d_equal_config(m_Robot, m_qInit, m_qGoal)" << endl;
+		cout << "ManipulationTestFunctions::p3d_equal_config(m_Robot, m_qInit, m_qGoal)" << endl;
 		return succeed;
 	}
 	
-	switch ( m_manipulation->robot()->lpl_type ) 
+	MANIPULATION_TASK_MESSAGE status;
+	
+	switch ( (unsigned int) m_manipulation->robot()->lpl_type ) 
 	{
 		case P3D_LINEAR_PLANNER :
 		{
-			MANIPULATION_TASK_MESSAGE status = m_manipulation->armPlanTask(ARM_FREE,0,
-																																		 m_qInit, 
-																																		 m_qGoal, 
-																																		 m_OBJECT_NAME.c_str(), "", trajs);
+			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal,m_OBJECT_NAME.c_str(), "", trajs);
+			
 			if(status == MANIPULATION_TASK_OK )
 			{
 				m_manipulation->robot()->tcur = p3d_create_traj_by_copy(trajs[0]);
@@ -112,117 +112,31 @@ bool ManipulationTestFunctions::testArmFree()
 			
 		case P3D_MULTILOCALPATH_PLANNER :
 			
-			m_manipulation->armPlanTask(ARM_FREE,0,
-																	m_qInit, 
-																	m_qGoal, 
-																	m_OBJECT_NAME.c_str(), "", confs, smTrajs);
+			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal,m_OBJECT_NAME.c_str(), "", confs, smTrajs);
 			break;
 			
 		case P3D_SOFT_MOTION_PLANNER:
 			cout << "Manipulation : localpath softmotion should not be called" << endl;
+			succeed = false;
 			break;
 	}
 	
-	return succeed;
-}
-
-bool ManipulationTestFunctions::testArmPickGoto()
-{
-	bool succeed = false;
 	
-	std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
-	std::vector <SM_TRAJ> smTrajs;
-	std::vector <p3d_traj*> trajs; 
-	
-	switch ( m_manipulation->robot()->lpl_type ) 
+	if (status != MANIPULATION_TASK_OK ) 
 	{
-		case P3D_LINEAR_PLANNER :
-		{
-			MANIPULATION_TASK_MESSAGE status = m_manipulation->armPlanTask(ARM_PICK_GOTO,0,
-																																		 m_qInit, 
-																																		 m_qGoal, 
-																																		 m_OBJECT_NAME.c_str(), "", trajs);
-			if(status == MANIPULATION_TASK_OK )
-			{
-				m_manipulation->robot()->tcur = p3d_create_traj_by_copy(trajs[0]);
-				
-				for(unsigned int i = 1; i < trajs.size(); i++){
-					p3d_concat_traj(m_manipulation->robot()->tcur, trajs[i]);
-				}
-			}
-		}
-			break;
-			
-		case P3D_MULTILOCALPATH_PLANNER :
-			
-			m_manipulation->armPlanTask(ARM_PICK_GOTO,0,
-																	m_qInit, 
-																	m_qGoal, 
-																	m_OBJECT_NAME.c_str(), "", confs, smTrajs);
-			break;
-			
-		case P3D_SOFT_MOTION_PLANNER:
-			cout << "Manipulation : localpath softmotion should not be called" << endl;
-			break;
-			
-		default:
-			break;
+		succeed = false;
 	}
-	
-	return succeed;
-}
-
-bool ManipulationTestFunctions::testArmPickToFree()
-{
-	bool succeed = false;
-	
-	std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
-	std::vector <SM_TRAJ> smTrajs;
-	std::vector <p3d_traj*> trajs; 
-	
-	switch ( m_manipulation->robot()->lpl_type ) 
+	else 
 	{
-		case P3D_LINEAR_PLANNER :
-		{
-			MANIPULATION_TASK_MESSAGE status = m_manipulation->armPlanTask(ARM_PICK_GOTO_AND_TAKE_TO_FREE,0,
-																																	 m_qInit, 
-																																	 m_qGoal, 
-																																	 m_OBJECT_NAME.c_str(), (char*)"", trajs);
-			
-			if( status == MANIPULATION_TASK_OK)
-			{
-				m_manipulation->robot()->tcur = p3d_create_traj_by_copy(trajs[0]);
-				
-				for(unsigned int i = 1; i < trajs.size(); i++){
-					p3d_concat_traj(m_manipulation->robot()->tcur, trajs[i]);
-				}
-			}
-		}
-			break;
-			
-		case P3D_MULTILOCALPATH_PLANNER :
-			
-			m_manipulation->armPlanTask(ARM_PICK_GOTO_AND_TAKE_TO_FREE,0,
-																m_qInit, 
-																m_qGoal,  
-																m_OBJECT_NAME.c_str(), "", confs, smTrajs);
-			
-			break;
-			
-		case P3D_SOFT_MOTION_PLANNER:
-			cout << "Manipulation : localpath softmotion should not be called" << endl;
-			break;
-			
-		default:
-			break;
+		succeed = true;
 	}
-	
+
 	return succeed;
 }
 
 //! Main function that 
 //!
-void ManipulationTestFunctions::runTest(int id)
+bool ManipulationTestFunctions::runTest(int id)
 {
 	m_OBJECT_NAME = "GREY_TAPE";
 	
@@ -230,20 +144,19 @@ void ManipulationTestFunctions::runTest(int id)
 	
 	if (id == 1) 
 	{
-		testArmFree();
-		return;
+		return manipTest(ARM_FREE);
 	}
 	
 	if (id == 2) 
 	{
-		testArmPickGoto();
-		return;
+		return manipTest(ARM_PICK_GOTO);
 	}
 	
 	if (id == 3) 
 	{
-		testArmPickToFree();
-		return;
+		return manipTest(ARM_PICK_GOTO_AND_TAKE_TO_FREE);
 	}
+	
+	return false;
 }
 
