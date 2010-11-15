@@ -99,6 +99,11 @@ void add_traj_to_ui( char* name, int i )
 	
 }
 
+void dummy_g3d_draw_all_win_active()
+{
+	
+}
+
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
 
@@ -117,7 +122,7 @@ extern void g3d_export_cpp_graph();
 // --------------------------------------------------------------------
 qtG3DWindow::qtG3DWindow()
 {	
-#if defined( QT_GL ) && defined (CXX_PLANNER)
+#if defined( QT_GL ) && defined ( CXX_PLANNER )
   ext_g3d_draw_cost_features = (void (*)())(g3d_draw_cost_features);
   ext_g3d_export_cpp_graph = (void (*)())(g3d_export_cpp_graph);
 	ext_get_win_mouse = /*(void (*) (int*,int*))*/qt_get_win_mouse;
@@ -132,7 +137,11 @@ qtG3DWindow::qtG3DWindow()
 	ext_qt_add_traj = add_traj_to_ui;
 #endif
 #endif
-  
+
+#if !defined( WITH_XFORMS ) && !defined( QT_GL )
+	ext_g3d_draw_allwin_active = dummy_g3d_draw_all_win_active;
+#endif
+	
   newG3dWindow();
 }
 
