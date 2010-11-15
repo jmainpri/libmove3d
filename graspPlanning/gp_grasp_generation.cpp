@@ -131,7 +131,7 @@ int gpGrasps_from_grasp_frame_SAHand ( p3d_rob *robot, p3d_rob *object, int body
               p3d_xformPoint ( objectFrame_inv, iter->position, p ); //object frame -> world frame
   
               p3d_xformVect ( objectFrame_inv, iter->normal, contact_normal ); //object frame -> world frame
-              if(gpSAHfinger_inverse_kinematics(Twrist_world, hand, p, qik, fingerpad_normal, i+1) ==GP_OK )
+              if(gpSAHfinger_inverse_kinematics(Twrist_world, hand, p, qik, fingerpad_normal, i+1)==GP_OK )
               {
                   // printf("can reach point: finger %d (%f %f %f)\n", i, q[i][1]*RADTODEG, q[i][2]*RADTODEG, q[i][3]*RADTODEG);
 

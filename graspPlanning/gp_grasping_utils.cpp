@@ -725,9 +725,9 @@ int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
      fingerpad_normal_relative[2]=  -cos(q[2]+2*q[3]);
 
      p3d_xformVect(Tfinger_world, fingerpad_normal_relative, fingerpad_normal);
-     g3d_drawColorSphere( p[0], p[1], p[2],  0.005, Yellow, NULL);
-     glLineWidth(3);
-     g3d_drawOneLine( p[0], p[1], p[2], p[0]+0.03*fingerpad_normal[0], p[1]+0.03*fingerpad_normal[1], p[2]+0.03*fingerpad_normal[2], Red, NULL);
+//      g3d_drawColorSphere( p[0], p[1], p[2],  0.005, Yellow, NULL);
+//      glLineWidth(3);
+//      g3d_drawOneLine( p[0], p[1], p[2], p[0]+0.03*fingerpad_normal[0], p[1]+0.03*fingerpad_normal[1], p[2]+0.03*fingerpad_normal[2], Red, NULL);
     break;
     default:
        printf("%s: %d: gpSAHfinger_forward_kinematics(): this function only applies to GP_SAHAND_RIGHT et GP_SAHAND_LEFT hands.\n", __FILE__, __LINE__);
