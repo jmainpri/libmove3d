@@ -13,6 +13,16 @@
 #include <sstream>
 #include <fstream>
 
+#include <libxml2/libxml/xmlreader.h>
+
+std::string getNodeString(xmlDocPtr doc, xmlNodePtr node);
+void warningMessage(int line_number, const xmlChar *URL, const xmlChar *element_name, std::string &message);
+void formatErrorMessage(int line_number, const xmlChar *URL, const xmlChar *element_name, std::string &message);
+void elementMissingMessage(int line_number, const xmlChar *URL, const xmlChar *element_name, std::string &message);
+bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, gpElementParserData &data);
+bool gpParseContact(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserData &data);
+bool gpParseGrasp(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserData &data);
+
 //! @ingroup graspIO 
 //! Saves a grasp list as a file in XML format.
 //! \param graspList the grasp list to save
@@ -125,8 +135,7 @@ std::string getNodeString(xmlDocPtr doc, xmlNodePtr node)
   xmlChar *key;
   std::string  message, word;
   key= xmlNodeListGetString(doc, node->xmlChildrenNode, 1);
-  
-	std::string text((char *) key);
+  std::string text((char *) key);
   xmlFree(key);
 
   //Remove all the newline characters for UNIX file (\n) at the end of the line:
@@ -179,9 +188,7 @@ void elementMissingMessage(int line_number, const xmlChar *URL, const xmlChar *e
    return;
 }
 
-static std::string text;
-static std::string message, word;
-std::istringstream iss;
+
 
 //! @ingroup graspIO 
 //! Reads the content of the given node and fills the appropriate field in the gpElementParserData structure.
@@ -195,9 +202,12 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 {
   bool result;
   double x;
+  std::string text;
+  std::string message, word;
+  std::istringstream iss;
   xmlNodePtr cur= entry_node->xmlChildrenNode;
 	
-	iss.clear();
+  iss.clear();
 
   for(cur= entry_node->xmlChildrenNode; cur!=NULL; cur= cur->next)
   {

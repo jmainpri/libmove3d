@@ -51,6 +51,7 @@ static p3d_vector3 Oi= {0.0,0.0,0.0}, Of= {0.0,0.0,0.0};
 static p3d_vector3 Ai= {0.0,0.0,0.0}, Af= {0.0,0.0,0.0}, Bi= {0.0,0.0,0.0}, Bf= {0.0,0.0,0.0};
 // static p3d_vector3 E= {0.0,0.0,0.0};
 static bool GRID= false;
+static std::vector<gpHTMatrix> FRAMES; 
 
 #include "ManipulationPlanner.hpp"
 static ManipulationPlanner *manipulation= NULL;
@@ -357,6 +358,10 @@ void draw_grasp_planner()
     { ( *iter ).draw ( 0.005 );    }
   }
 
+  for(int i=0; i<FRAMES.size(); ++i)
+  {
+    FRAMES[i].draw();
+  }
 //   glPushAttrib(GL_ENABLE_BIT);
 //   glEnable(GL_LIGHTING);
 //   for(std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); ++iter)
@@ -977,11 +982,15 @@ static void CB_SAHandRight_obj ( FL_OBJECT *obj, long arg )
   p3d_rob *robot= (p3d_rob*)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
   p3d_rob *object= (p3d_rob*)p3d_get_robot_by_name(ObjectName);
   
+//  gpSample_grasp_frames(object->o[0]->pol[0]->poly, 5, 6, 6, 5000, FRAMES);
+//  redraw();
+//  return;
+
   if(firstTime)
   {
     firstTime= 0;
     gpGet_grasp_list(ObjectName, GP_SAHAND_RIGHT, GRASPLIST);
-    gpReduce_grasp_list_size(GRASPLIST, GRASPLIST, 7);
+//     gpReduce_grasp_list_size(GRASPLIST, GRASPLIST, 12);
   }
 
   i= 0;
@@ -998,7 +1007,7 @@ static void CB_SAHandRight_obj ( FL_OBJECT *obj, long arg )
 
   gpSet_robot_hand_grasp_configuration(robot, object, GRASP);
 
-//    gpSet_robot_hand_grasp_open_configuration(robot, object, GRASP);
+   gpSet_robot_hand_grasp_open_configuration(robot, object, GRASP);
 
    p3d_copy_config_into(robot, p3d_get_robot_config(robot), &robot->ROBOT_POS);
 

@@ -14,6 +14,15 @@
 #include "../graspPlanning/include/graspPlanning.h"
 #include "../graspPlanning/include/gpConvexHull.h"
 
+//! see qhull_interface.cpp for more information
+extern "C"
+{
+  #include "qhull/qhull_a.h"
+}
+
+#include "../include/p3d_matrix.h"
+
+
 //! Default gpRidge constructor (dimension= 2, size= 2)
 gpRidge::gpRidge()
 {

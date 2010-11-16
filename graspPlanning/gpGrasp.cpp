@@ -364,7 +364,7 @@ int gpGrasp::draw(double length, int nb_slices)
 //     g3d_drawColorSphere(closestPointHand[0], closestPointHand[1], closestPointHand[2], 0.008, Red, NULL);
 //     glColor3f(0,1,0);
 //     g3d_drawColorSphere(closestPointObject[0], closestPointObject[1], closestPointObject[2], 0.008, Green, NULL);
-//     g3d_draw_frame(frame, 4*length);
+    g3d_draw_frame(frame, 4*length);
 
 //     if(hand_type==GP_SAHAND_RIGHT)
 //     { 
@@ -764,10 +764,16 @@ int gpGrasp::computeQuality()
   }
 
   fcWeight= 1.0;
-  directionWeight= 1.0;
-  curvatureWeight= 6.0;
+  directionWeight= 8.0;
+  curvatureWeight= 2.0;
   configWeight= 1.0;
   centroidWeight= 1.0;
+
+//   fcWeight= 01.0;
+//   directionWeight= 8.0;
+//   curvatureWeight= 0.0;
+//   configWeight= 0.0;
+//   centroidWeight= 0.0;
 
 //   printf("fcScore= %f\n", fcScore);
 //   printf("directionScore= %f\n", directionScore);
@@ -1072,9 +1078,11 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        if(type==GP_SAHAND_RIGHT)
        {
           p3d_mat4Copy(p3d_mat4IDENTITY, T);
-          p3d_mat4Rot(T, axis, 23*DEGTORAD);
+//           p3d_mat4Rot(T, axis, 23*DEGTORAD);
+          p3d_mat4Rot(T, axis, 13*DEGTORAD);
           T[0][3]= 0.08;
-          T[1][3]= 0.02;
+//           T[1][3]= 0.02;
+          T[1][3]= 0.0;
           T[2][3]= 0.23;
           p3d_matInvertXform(T, Tgrasp_frame_hand);
        }

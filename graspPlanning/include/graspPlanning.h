@@ -31,12 +31,9 @@
 #include <list>
 #include <string>
 #include <sstream>
-#include <libxml2/libxml/xmlreader.h>
 #include "P3d-pkg.h"
 #include "p3d_type.h"
 #include "p3d.h"
-// #include "../include/p3d_matrix.h"
-// #include "../graphic/proto/g3d_draw_proto.h"
 
 
 //debug mode

@@ -151,7 +151,7 @@ typedef struct poly_polyhedre
      //! polyhedron's center of mass:
      p3d_vector3 cmass;
 
-     //! polyhedron's main inertia axes:
+     //! polyhedron's main inertia axes (in columns):
      p3d_matrix3 inertia_axes;
  
      //! polyhedron's volume

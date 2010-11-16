@@ -24,6 +24,12 @@
 #include <sstream>
 #include <iostream>
 
+extern "C" {
+#include "gbM/gbStruct.h"
+#include "gbM/gb.h"
+#include "gbM/Proto_gb.h"
+#include "gbM/Proto_gbModeles.h"
+}
 
 // 10% ouverture pince pour test collision
 //#define GRIP_OPEN_PERCENT 1.1
@@ -85,8 +91,9 @@ int gpGrasps_from_grasp_frame_SAHand ( p3d_rob *robot, p3d_rob *object, int body
 
     p3d_mat4Mult( objectFrame_inv, Twrist, Twrist_world );
 
-    gpInverse_geometric_model_freeflying_hand ( robot, objectFrame, gFrame, hand, config );
-    p3d_set_and_update_this_robot_conf ( robot, config );
+    gpInverse_geometric_model_freeflying_hand(robot, objectFrame, gFrame, hand, config);
+    p3d_set_and_update_this_robot_conf(robot, config);
+// g3d_draw_allwin_active();
 
     p3d_copy_config_into ( robot, config, &robot->ROBOT_POS );
 
@@ -110,6 +117,136 @@ int gpGrasps_from_grasp_frame_SAHand ( p3d_rob *robot, p3d_rob *object, int body
       return GP_ERROR;
     }
 
+
+//!/////////////////////////////////
+//     int status;
+//     p3d_vector3 newXaxis, newYaxis, newZaxis;
+//     p3d_vector3 pA, pB, pC, contactCentroids[4], midPoint;
+//     p3d_matrix4 newFrame;
+//     std::list<gpContact> fingerContacts[4];
+//     for(i=0; i<4; ++i) //for each finger:
+//     {
+//         q[i][0]= q_default[0];
+//         q[i][1]= q_default[1];
+//         q[i][2]= q_default[2];
+//         q[i][3]= q_default[3];
+//         gpSet_SAHfinger_joint_angles(robot, hand, q_default, i+1, 0);
+// 
+//         fingerContacts[i].clear();
+//         p3d_mat4Mult( Twrist, hand.Twrist_finger[i], T );
+// 
+//         for(j=0; j<hand.workspace.size(); ++j)
+//         {
+//           p3d_xformPoint(T, hand.workspace[j].center, center);
+//           kdtree.sphereIntersection(center, hand.workspace[j].radius, fingerContacts[i]);
+//           if(!fingerContacts[i].empty())
+//           {  break;  }
+//         }
+// // printf("fingerContacts[%d].size= %d\n",i, fingerContacts[i].size());
+//         if(fingerContacts[0].empty()) //thumb
+//         {  break; }
+// 
+//         if(!fingerContacts[i].empty())
+//         {
+//           contactCentroids[i][0]= 0.0;
+//           contactCentroids[i][1]= 0.0;
+//           contactCentroids[i][2]= 0.0;
+//           for(iter=fingerContacts[i].begin(); iter!=fingerContacts[i].end(); iter++)
+//           {
+//             contactCentroids[i][0]+= iter->position[0];
+//             contactCentroids[i][1]+= iter->position[1];
+//             contactCentroids[i][2]+= iter->position[2];
+//           }
+//           contactCentroids[i][0]/= (double) fingerContacts[i].size();
+//           contactCentroids[i][1]/= (double) fingerContacts[i].size();
+//           contactCentroids[i][2]/= (double) fingerContacts[i].size();
+//         }
+//     }
+//     if(fingerContacts[0].empty())
+//     {
+//       gpActivate_finger_collisions ( robot, 1, hand );
+//       gpActivate_finger_collisions ( robot, 2, hand );
+//       gpActivate_finger_collisions ( robot, 3, hand );
+//       gpActivate_finger_collisions ( robot, 4, hand );
+//       p3d_set_and_update_this_robot_conf ( robot, config0 );
+//       p3d_destroy_config ( robot, config0 );
+//       p3d_destroy_config ( robot, config );
+//       return GP_ERROR;
+//     }
+//     p3d_vectCopy(contactCentroids[0], pA);
+//     
+//     status= 0;
+//     if(!fingerContacts[1].empty())
+//     {
+//       p3d_vectCopy(contactCentroids[1], pB);
+//       if(!fingerContacts[3].empty())
+//       {
+//         p3d_vectCopy(contactCentroids[3], pC);
+//         status= 1;
+//       }
+//       else if(!fingerContacts[2].empty())
+//       {
+//         p3d_vectCopy(contactCentroids[2], pC);
+//         status= 1;
+//       }
+//     }
+//     else if(!fingerContacts[2].empty() && !fingerContacts[3].empty())
+//     {
+//       p3d_vectCopy(contactCentroids[2], pB);
+//       p3d_vectCopy(contactCentroids[3], pC);
+//       status= 1;
+//     }
+// 
+//     if(status==0)
+//     {
+//       gpActivate_finger_collisions ( robot, 1, hand );
+//       gpActivate_finger_collisions ( robot, 2, hand );
+//       gpActivate_finger_collisions ( robot, 3, hand );
+//       gpActivate_finger_collisions ( robot, 4, hand );
+//       p3d_set_and_update_this_robot_conf ( robot, config0 );
+//       p3d_destroy_config ( robot, config0 );
+//       p3d_destroy_config ( robot, config );
+//       return GP_ERROR;
+//     }
+// 
+//     for(i=0; i<3; ++i)
+//     {  midPoint[i]= 0.5*(pB[i]+pC[i]);  }
+// 
+// // printf("contactCentroids[0]= [%f %f %f]\n",contactCentroids[0][0],contactCentroids[0][1],contactCentroids[0][2]);
+// // printf("contactCentroids[1]= [%f %f %f]\n",contactCentroids[1][0],contactCentroids[1][1],contactCentroids[1][2]);
+// // printf("contactCentroids[2]= [%f %f %f]\n",contactCentroids[2][0],contactCentroids[2][1],contactCentroids[2][2]);
+// // printf("pA= [%f %f %f]\n",pA[0],pA[1],pA[2]);
+// // printf("pB= [%f %f %f]\n",pB[0],pB[1],pB[2]);
+// // printf("pC= [%f %f %f]\n",pC[0],pC[1],pC[2]);
+// 
+//     p3d_vectSub(pB, pC, newYaxis);
+//     p3d_vectNormalize(newYaxis, newYaxis);
+//     p3d_vectSub(pA, midPoint, newXaxis);
+//     p3d_vectNormalize(newXaxis, newXaxis);
+//     p3d_vectXprod(newXaxis, newYaxis, newZaxis);
+//     p3d_vectNormalize(newZaxis, newZaxis);
+//     p3d_vectXprod(newZaxis, newXaxis, newYaxis);
+//     
+//    p3d_mat4Copy(p3d_mat4IDENTITY, newFrame);
+//     for(i=0; i<3; ++i)
+//     {  
+//       newFrame[i][0]= newZaxis[i];
+//       newFrame[i][1]= newYaxis[i];
+//       newFrame[i][2]= -newXaxis[i];
+//       newFrame[i][3]= gFrame[i][3];
+//     }
+// // p3d_matrix4 Tgrasp_frame_hand_inv;
+// // p3d_matInvertXform(hand.Tgrasp_frame_hand, Tgrasp_frame_hand_inv);
+// // p3d_mat4Mult(newFrame, Tgrasp_frame_hand_inv, gFrame);
+// // g3d_draw_allwin_active();
+//  p3d_mat4Copy(newFrame, gFrame);
+//     gpInverse_geometric_model_freeflying_hand(robot, objectFrame, gFrame, hand, config);
+//     p3d_set_and_update_this_robot_conf(robot, config);
+//  
+// // g3d_draw_allwin_active();
+// 
+//     p3d_copy_config_into ( robot, config, &robot->ROBOT_POS );
+//!/////////////////////////////////
     for ( i=0; i<4; ++i ) //for each finger:
     {
         q[i][0]= q_default[0];
@@ -126,26 +263,26 @@ int gpGrasps_from_grasp_frame_SAHand ( p3d_rob *robot, p3d_rob *object, int body
           p3d_xformPoint ( T, hand.workspace[j].center, center );
           points.clear();
           kdtree.sphereIntersection ( center, hand.workspace[j].radius, points );
-          for ( iter=points.begin(); iter!=points.end(); iter++ )
+          for(iter=points.begin(); iter!=points.end(); iter++)
           {
               p3d_xformPoint ( objectFrame_inv, iter->position, p ); //object frame -> world frame
   
               p3d_xformVect ( objectFrame_inv, iter->normal, contact_normal ); //object frame -> world frame
               if(gpSAHfinger_inverse_kinematics(Twrist_world, hand, p, qik, fingerpad_normal, i+1)==GP_OK )
               {
-                  // printf("can reach point: finger %d (%f %f %f)\n", i, q[i][1]*RADTODEG, q[i][2]*RADTODEG, q[i][3]*RADTODEG);
+//                 printf("can reach point: finger %d (%f %f %f)\n", i, qik[1]*RADTODEG, qik[2]*RADTODEG, qik[3]*RADTODEG);
 
                 // contact normal and fingerpad normal must be in opposite directions:
                 if ( p3d_vectDotProd ( contact_normal, fingerpad_normal ) > -0.3 )
-                        {  continue;  }
+                {  continue;  }
 
                 gpSet_SAHfinger_joint_angles ( robot, hand, qik, i+1, 0 );
 
                 // if collision, bring the finger back to its default configuration
-                if ( p3d_col_test_self_collision ( robot, 0 ) || p3d_col_test_robot_other ( robot, object, 0 ) )
+                if( p3d_col_test_self_collision ( robot, 0 ) || p3d_col_test_robot_other ( robot, object, 0 ) )
                 {
-                        gpSet_SAHfinger_joint_angles ( robot, hand, q_default, i+1, 0 );
-                        continue;
+                  gpSet_SAHfinger_joint_angles ( robot, hand, q_default, i+1, 0 );
+                  continue;
                 }
                 q[i][0]= qik[0];
                 q[i][1]= qik[1];
@@ -1296,126 +1433,152 @@ int gpGrasp_frame_from_inertia_axes ( p3d_matrix3 iaxes, p3d_vector3 cmass, int 
 //! \param nbFramesMax maximal number of frames (the resolution will be adapted to reduce the number
 //! of frames under this threshold)
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSample_grasp_frames ( p3d_polyhedre *polyhedron, unsigned int nbPositions, unsigned int nbDirections, unsigned int nbRotations, unsigned int nbFramesMax, std::vector<gpHTMatrix> &frames )
+int gpSample_grasp_frames(p3d_polyhedre *polyhedron, unsigned int nbPositions, unsigned int nbDirections, unsigned int nbRotations, unsigned int nbFramesMax, std::vector<gpHTMatrix> &frames )
 {
 #ifdef GP_DEBUG
-	if ( polyhedron==NULL )
-	{
-		printf("%s: %d: gpSample_grasp_frames(): input p3d_polyhedre* is NULL.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
+  if ( polyhedron==NULL )
+  {
+    printf("%s: %d: gpSample_grasp_frames(): input p3d_polyhedre* is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
 #endif
 
-	unsigned int i, j, id, it, count= 0;
-	unsigned int nbSamples, nbPositionsMin, nbDirectionsMin, nbRotationsMin;
-	int result;
-	double translationStep, rotationStep;
-	double xmin, xmax, ymin, ymax, zmin, zmax, dimX, dimY, dimZ;
-	p3d_vector3 u, v, w;
-	p3d_matrix3 R1, R2, R3;
-	std::vector<gpVector3D> positions, directions;
-	gpHTMatrix M;
-	std::vector<gpHTMatrix> orientations;
+  unsigned int i, j, id, it, count= 0;
+  unsigned int nbSamples, nbPositionsMin, nbDirectionsMin, nbRotationsMin;
+  int result;
+  double translationStep, rotationStep;
+  double xmin, xmax, ymin, ymax, zmin, zmax, dimX, dimY, dimZ;
+  p3d_vector3 u, v, w;
+  p3d_matrix3 R1, R2, R3;
+  gpVector3D inertiaAxis;
+  std::vector<gpVector3D> positions, directions;
+  gpHTMatrix M;
+  std::vector<gpHTMatrix> orientations;
 
-	gpPolyhedron_AABB ( polyhedron, xmin, xmax, ymin, ymax, zmin, zmax );
+  gpPolyhedron_AABB ( polyhedron, xmin, xmax, ymin, ymax, zmin, zmax );
 
-	dimX= 1.1* ( xmax - xmin );
-	dimY= 1.1* ( ymax - ymin );
-	dimZ= 1.1* ( zmax - zmin );
-//   printf("dim %f %f %f\n",dimX,dimY,dimZ);
-//   result= gpSample_polyhedron_convex_hull(polyhedron, translationStep, positions);
-	nbPositionsMin= 30;
-	nbDirectionsMin= 6;
-	nbRotationsMin= 3;
+  dimX= 1.1* ( xmax - xmin );
+  dimY= 1.1* ( ymax - ymin );
+  dimZ= 1.1* ( zmax - zmin );
+  //   printf("dim %f %f %f\n",dimX,dimY,dimZ);
+  //   result= gpSample_polyhedron_convex_hull(polyhedron, translationStep, positions);
+  nbPositionsMin= 30;
+  nbDirectionsMin= 6;
+  nbRotationsMin= 4;
 
-	nbSamples= ( unsigned int ) ( nbPositions*nbDirections*nbRotations );
+  nbSamples= ( unsigned int ) ( nbPositions*nbDirections*nbRotations );
 
-	while ( nbSamples > nbFramesMax )
-	{
-		if ( nbPositions > nbPositionsMin )
-			{  nbPositions--;   }
-		else if ( nbRotations > nbRotationsMin )
-			{  nbRotations--;   }
-		else if ( nbDirections > nbDirectionsMin )
-			{  nbDirections--;   }
-		else
-			{  break; }
-		nbSamples= ( unsigned int ) ( 2*nbPositions*nbDirections*nbRotations );
-	}
-	printf("nbPositions= %d nbDirections= %d nbRotations= %d \n", nbPositions, nbDirections, nbRotations );
-	printf("nbSamples= %d nbFramesMax= %d \n", nbSamples, nbFramesMax );
-
-
-	translationStep= pow ( ( dimX*dimY*dimZ ) / ( ( double ) ( nbPositions ) ), ( 1.0/3.0 ) );
-	rotationStep= 2*M_PI/ ( ( double ) ( nbRotations ) );
-//  printf("translationStep= %f %d %f\n",translationStep, nbPositions, ((double) (nbPositions)));
-	result= gpSample_polyhedron_AABB ( polyhedron, translationStep, positions );
-//   printf("positions %d\n",positions.size());
-
-	if ( result==GP_ERROR )
-	{
-		printf("%s: %d: gpSample_grasp_frames(): position sampling error.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
-
-	result= gpSample_sphere_surface ( 1.0, nbDirections, directions );
-	if ( result==GP_ERROR )
-	{
-		printf("%s: %d: gpSample_grasp_frames(): problem with sphere surface sampling.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
-
-	orientations.resize ( nbRotations*directions.size() );
-	count= 0;
-	for ( id=0; id<directions.size(); ++id )
-	{
-		u[0]= directions[id].x;
-		u[1]= directions[id].y;
-		u[2]= directions[id].z;
-		gpOrthonormal_basis ( u, v, w );
-
-		R1[0][0]= v[0];
-		R1[1][0]= v[1];
-		R1[2][0]= v[2];
-
-		R1[0][1]= w[0];
-		R1[1][1]= w[1];
-		R1[2][1]= w[2];
-
-		R1[0][2]= u[0];
-		R1[1][2]= u[1];
-		R1[2][2]= u[2];
-
-		for ( it=0; it<nbRotations; it++ )
-		{
-			R2[0][0]= cos ( it*rotationStep ); R2[0][1]=-sin ( it*rotationStep ); R2[0][2]= 0;
-			R2[1][0]= sin ( it*rotationStep ); R2[1][1]= cos ( it*rotationStep ); R2[1][2]= 0;
-			R2[2][0]=                    0; R2[2][1]=                    0; R2[2][2]= 1;
-
-			p3d_mat3Mult ( R1, R2, R3 );
-			orientations.at ( count ).setRotation ( R3 );
-			count++;
-		}
-	}
-
-	frames.resize ( positions.size() *orientations.size() );
-
-	count= 0;
-	for ( i=0; i<positions.size(); i++ )
-	{
-		for ( j=0; j<orientations.size(); j++ )
-		{
-			frames.at ( count ) = orientations[j];
-
-			frames.at ( count ).m14= positions[i].x;
-			frames.at ( count ).m24= positions[i].y;
-			frames.at ( count ).m34= positions[i].z;
-			count++;
-		}
-	}
+  while ( nbSamples > nbFramesMax )
+  {
+    if ( nbPositions > nbPositionsMin )
+    {  nbPositions--;   }
+    else if ( nbRotations > nbRotationsMin )
+    {  nbRotations--;   }
+    else if ( nbDirections > nbDirectionsMin )
+    {  nbDirections--;   }
+    else
+    {  break; }
+    nbSamples= ( unsigned int ) ( 2*nbPositions*nbDirections*nbRotations );
+  }
+  printf("nbPositions= %d nbDirections= %d nbRotations= %d \n", nbPositions, nbDirections, nbRotations );
+  printf("nbSamples= %d nbFramesMax= %d \n", nbSamples, nbFramesMax );
 
 
-	return GP_OK;
+  translationStep= pow ( ( dimX*dimY*dimZ ) / ( ( double ) ( nbPositions ) ), ( 1.0/3.0 ) );
+  rotationStep= 2*M_PI/ ( ( double ) ( nbRotations ) );
+  //  printf("translationStep= %f %d %f\n",translationStep, nbPositions, ((double) (nbPositions)));
+  gpCompute_mass_properties(polyhedron);
+
+  result= gpSample_polyhedron_AABB(polyhedron, translationStep, positions);
+  //   printf("positions %d\n",positions.size());
+
+  if ( result==GP_ERROR )
+  {
+    printf("%s: %d: gpSample_grasp_frames(): position sampling error.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+
+  if(nbDirections > 6)
+  {
+    result= gpSample_sphere_surface ( 1.0, nbDirections-6, directions);
+    if ( result==GP_ERROR )
+    {
+      printf("%s: %d: gpSample_grasp_frames(): problem with sphere surface sampling.\n",__FILE__,__LINE__ );
+      return GP_ERROR;
+    }
+  }
+
+  // add the inertia axes (and their opposites) to the directions:
+  p3d_matrix4 J, Jinv;
+  p3d_mat4SetRotMatrix(polyhedron->inertia_axes, J);
+  p3d_matInvertXform(J, Jinv);
+  inertiaAxis.set(Jinv[0][0], Jinv[1][0], Jinv[2][0]);
+  directions.push_back(inertiaAxis);
+  inertiaAxis.set(-Jinv[0][0], -Jinv[1][0], -Jinv[2][0]);
+  directions.push_back(inertiaAxis);
+
+  inertiaAxis.set(Jinv[0][1], Jinv[1][1], Jinv[2][1]);
+  directions.push_back(inertiaAxis);
+  inertiaAxis.set(-Jinv[0][1], -Jinv[1][1], -Jinv[2][1]);
+  directions.push_back(inertiaAxis);
+
+  inertiaAxis.set(Jinv[0][2], Jinv[1][2], Jinv[2][2]);
+  directions.push_back(inertiaAxis);
+  inertiaAxis.set(-Jinv[0][2], -Jinv[1][2], -Jinv[2][2]);
+  directions.push_back(inertiaAxis);
+
+
+  orientations.resize(nbRotations*directions.size());
+  count= 0;
+  for( id=0; id<directions.size(); ++id)
+  {
+    u[0]= directions[id].x;
+    u[1]= directions[id].y;
+    u[2]= directions[id].z;
+    gpOrthonormal_basis ( u, v, w );
+
+    R1[0][0]= v[0];
+    R1[1][0]= v[1];
+    R1[2][0]= v[2];
+
+    R1[0][1]= w[0];
+    R1[1][1]= w[1];
+    R1[2][1]= w[2];
+
+    R1[0][2]= u[0];
+    R1[1][2]= u[1];
+    R1[2][2]= u[2];
+
+    for( it=0; it<nbRotations; it++)
+    {//rotationStep= 0.0;
+      R2[0][0]= cos ( it*rotationStep ); R2[0][1]=-sin ( it*rotationStep ); R2[0][2]= 0;
+      R2[1][0]= sin ( it*rotationStep ); R2[1][1]= cos ( it*rotationStep ); R2[1][2]= 0;
+      R2[2][0]=                    0;    R2[2][1]=                    0;    R2[2][2]= 1;
+
+      p3d_mat3Mult ( R1, R2, R3 );
+      orientations.at(count).setRotation(R3);
+      count++;
+    }
+  }
+
+  frames.resize( positions.size()*orientations.size());
+
+  count= 0;
+  for ( i=0; i<positions.size(); i++ )
+  {
+    for ( j=0; j<orientations.size(); j++ )
+    {
+      frames.at ( count ) = orientations[j];
+
+      frames.at ( count ).m14= positions[i].x;
+      frames.at ( count ).m24= positions[i].y;
+      frames.at ( count ).m34= positions[i].z;
+      count++;
+    }
+  }
+
+
+  return GP_OK;
 }
 
 //! @ingroup graspPlanning
@@ -1432,85 +1595,85 @@ int gpSample_grasp_frames ( p3d_polyhedre *polyhedron, unsigned int nbPositions,
 int gpGrasp_generation ( p3d_rob *robot, p3d_rob *object, int body_index, gpHand_properties &handProp, unsigned int nbPositions, unsigned int nbDirections, unsigned int nbRotations, std::list<class gpGrasp> &graspList )
 {
 #ifdef GP_DEBUG
-	if ( robot==NULL )
-	{
-		printf("%s: %d: gpGrasp_generation(): input robot is NULL.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
-	if ( object==NULL )
-	{
-		printf("%s: %d: gpGrasp_generation(): input object is NULL.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
-	if ( ( body_index < 0 ) || ( body_index > object->no-1 ) )
-	{
-		printf("%s: %d: gpGrasp_generation(): the index of selected body is not consistent with the number of bodies of the object.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
+  if ( robot==NULL )
+  {
+    printf("%s: %d: gpGrasp_generation(): input robot is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+  if ( object==NULL )
+  {
+    printf("%s: %d: gpGrasp_generation(): input object is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+  if ( ( body_index < 0 ) || ( body_index > object->no-1 ) )
+  {
+    printf("%s: %d: gpGrasp_generation(): the index of selected body is not consistent with the number of bodies of the object.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
 #endif
 
-	unsigned int i;
-	unsigned int nbGraspFramesMax= handProp.max_nb_grasp_frames; //to avoid excessive computations if the input parameters were not properly chosen
-	int result;
-	std::vector<gpHTMatrix> gframes;
-	p3d_matrix4 frame;
-	p3d_polyhedre *polyhedron= NULL;
-	std::list<gpGrasp>::iterator igrasp;
-	std::list<gpContact> contactList;
-	gpKdTree kdtree;
+  unsigned int i;
+  unsigned int nbGraspFramesMax= handProp.max_nb_grasp_frames; //to avoid excessive computations if the input parameters were not properly chosen
+  int result;
+  std::vector<gpHTMatrix> gframes;
+  p3d_matrix4 frame;
+  p3d_polyhedre *polyhedron= NULL;
+  std::list<gpGrasp>::iterator igrasp;
+  std::list<gpContact> contactList;
+  gpKdTree kdtree;
 
-	polyhedron= object->o[body_index]->pol[0]->poly;
+  polyhedron= object->o[body_index]->pol[0]->poly;
 
-	p3d_compute_edges_and_face_neighbours ( polyhedron );
+  p3d_compute_edges_and_face_neighbours ( polyhedron );
 
-	result= gpSample_grasp_frames ( polyhedron, nbPositions, nbDirections, nbRotations, nbGraspFramesMax, gframes );
+  result= gpSample_grasp_frames ( polyhedron, nbPositions, nbDirections, nbRotations, nbGraspFramesMax, gframes );
 
-	if ( result==GP_ERROR || gframes.empty() )
-	{
-		printf("%s: %d: gpGrasp_generation(): grasp frames were not correctly generated.\n",__FILE__,__LINE__ );
-		return GP_ERROR;
-	}
+  if ( result==GP_ERROR || gframes.empty() )
+  {
+    printf("%s: %d: gpGrasp_generation(): grasp frames were not correctly generated.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
 
-	printf("Grasp computation for object \"%s\": %d grasp frames will be used.\n", object->name, gframes.size() );
+  printf("Grasp computation for object \"%s\": %d grasp frames will be used.\n", object->name, gframes.size() );
 
-	switch ( handProp.type )
-	{
-		case GP_GRIPPER:
-			for ( i=0; i<gframes.size(); i++ )
-			{
-				gframes[i].copyIn_p3d_matrix4 ( frame );
-				gpGrasps_from_grasp_frame_gripper ( polyhedron, frame, handProp, graspList );
-			}
-			break;
-	case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-			gpSample_obj_surface ( object->o[body_index], 0.005, handProp.fingertip_radius, contactList );
-			kdtree.build ( contactList );
-			printf("%d samples on object surface \n",contactList.size() );
-			for ( i=0; i<gframes.size(); i++ )
-			{
-				gframes[i].copyIn_p3d_matrix4 ( frame );
-				gpGrasps_from_grasp_frame_SAHand ( robot, object, body_index, frame, handProp, kdtree, graspList );
-			}
-			break;
-		default:
-			printf("%s: %d: gpGrasp_generation(): undefined or unimplemented hand type.\n",__FILE__,__LINE__ );
-			return GP_ERROR;
-			break;
-	}
+  switch ( handProp.type )
+  {
+    case GP_GRIPPER:
+      for ( i=0; i<gframes.size(); i++ )
+      {
+        gframes[i].copyIn_p3d_matrix4 ( frame );
+        gpGrasps_from_grasp_frame_gripper ( polyhedron, frame, handProp, graspList );
+      }
+    break;
+    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
+      gpSample_obj_surface ( object->o[body_index], 0.005, handProp.fingertip_radius, contactList );
+      kdtree.build ( contactList );
+      printf("%d samples on object surface \n",contactList.size() );
+      for ( i=0; i<gframes.size(); i++ )
+      {
+        gframes[i].copyIn_p3d_matrix4 ( frame );
+        gpGrasps_from_grasp_frame_SAHand ( robot, object, body_index, frame, handProp, kdtree, graspList );
+      }
+    break;
+    default:
+      printf("%s: %d: gpGrasp_generation(): undefined or unimplemented hand type.\n",__FILE__,__LINE__ );
+      return GP_ERROR;
+    break;
+  }
 
 
-	for ( igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++ )
-	{
-		if ( igrasp->object==NULL )
-		{
-			igrasp->object= object;
-			igrasp->body_index= body_index;
-			igrasp->object_name= object->name;
-		}
-		igrasp->openConfig= igrasp->config;
-	}
+  for ( igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++ )
+  {
+    if ( igrasp->object==NULL )
+    {
+      igrasp->object= object;
+      igrasp->body_index= body_index;
+      igrasp->object_name= object->name;
+    }
+    igrasp->openConfig= igrasp->config;
+  }
 
-	return GP_OK;
+  return GP_OK;
 }
 
 //! @ingroup graspPlanning
@@ -1586,7 +1749,7 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
 //! \param object the grasped object
 //! \param hand structure containing information about the hand geometry
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpGrasp_context_collision_filter ( std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &hand )
+int gpGrasp_context_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &hand )
 {
   #ifdef GP_DEBUG
   if ( robot==NULL )
@@ -2760,11 +2923,11 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
     // printf("after %d\n",graspList.size());
 
     tmpList= graspList;
-
+ 
     gpRemove_edge_grasps(tmpList, graspList, 80*DEGTORAD, 0.025);
-    tmpList= graspList;
 
-    gpReduce_grasp_list_size(tmpList, graspList, 50);
+    tmpList= graspList;
+    gpReduce_grasp_list_size(tmpList, graspList, 150);
 
     elapsedTime= ( clock()-clock0 ) /CLOCKS_PER_SEC;
 
@@ -2775,6 +2938,7 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
     for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
       igrasp->computeOpenConfig(hand_robot, object, false);
     }
+    printf("Done.\n");
 
     gpSave_grasp_list ( graspList, graspListFile );
   }
@@ -2792,11 +2956,18 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
     }
   }
 
+  gpGrasp_context_collision_filter(graspList, hand_robot, object, handProp);
+
+
+  for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
+    igrasp->computeQuality();
+  }
+
 
   if(graspList.empty())
   {  return GP_ERROR;   }
   
-  gpCompute_mass_properties(graspList.front().object->o[graspList.front().body_index]->pol[0]->poly);
+//   gpCompute_mass_properties(graspList.front().object->o[graspList.front().body_index]->pol[0]->poly);
 //   gpCompute_mass_properties(poly);
 
   return GP_OK;
@@ -3182,8 +3353,10 @@ int gpReduce_grasp_list_size(const std::list<gpGrasp> &originalList, std::list<g
   }
 
   bool firstTest;
-  int i, remove;
+  int i, j, remove;
+//   int nbClusters, clusterSize;
   double d, dmin;
+//   std::vector< std::list<gpGrasp> > clusters;
   std::list<gpGrasp>::iterator iter1, iter2;
 
   reducedList= originalList;
@@ -3193,6 +3366,43 @@ int gpReduce_grasp_list_size(const std::list<gpGrasp> &originalList, std::list<g
   {
     iter1->ID= i++; 
   }
+
+
+//   nbClusters= maxSize;
+//   clusters.resize(nbClusters);
+//   clusterSize= (originalList.size()) / (nbClusters);
+//   printf("maxSize= %d \n",maxSize);
+//   printf("nbClusters= %d clusterSize= %d\n",nbClusters,clusterSize);
+// 
+//   for(i=0; i<clusters.size(); ++i)
+//   {
+//     reducedList.sort();
+//     reducedList.reverse();
+// 
+//     clusters.at(i).push_back(reducedList.front());
+//     iter1=reducedList.begin();
+//     for(iter2=reducedList.begin(); iter2!=reducedList.end(); ++iter2)
+//     {
+//       iter2->visibility= gpGraspDistance(*iter1, *iter2);
+//     }
+//     reducedList.pop_front();
+//     reducedList.sort(gpCompareVisibility);
+// 
+//     for(j=0; j<clusterSize; ++j)
+//     {
+//       if(reducedList.empty())
+//       {  break; }
+//       clusters.at(i).push_back(reducedList.front());
+//       reducedList.pop_front();
+//     }
+// 
+//   }
+//   reducedList.clear();
+//   for(i=0; i<clusters.size(); ++i)
+//   {
+//    reducedList.push_back( clusters.at(i).front() );
+//   }
+
 
   while(reducedList.size() > maxSize)
   {

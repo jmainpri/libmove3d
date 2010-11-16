@@ -7,14 +7,6 @@
 //! This module implements some classes to compute the convex hull of a point set (in arbitrary dimension).
 //! It is based on qhull( http://www.qhull.org/).
 
-//! see qhull_interface.cpp for more information
-extern "C"
-{
-  #include "qhull/qhull_a.h"
-}
-
-#include "../include/p3d_matrix.h"
-
 class gpConvexHull;
 
 
