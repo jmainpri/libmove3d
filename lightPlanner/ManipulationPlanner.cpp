@@ -762,8 +762,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
   
 	if ((*_robot->armManipulationData)[armId].getManipState() != handFree ) 
 	{
-		cout << "Manipulation planner : the robot is not in a hand free state" << endl;
-		return status;
+		cout << "Warning::ManipulationPlanner::the robot is not in a hand free state" << endl;
+		//return status;
 	}
 	
 	// Generate new manip configs
@@ -817,7 +817,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
 	
 	if(!p3d_is_collision_free(_robot,qStart))
 	{
-		cout << "ManipulationPlanner::armPickGoto => qStart is not collision free" << endl;
+		cout << "Warning::ManipulationPlanner::armPickGoto => qStart is not collision free" << endl;
 	}
 	
 //	cout << "g3d_draw_allwin_active" << endl;
@@ -877,8 +877,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
 	
 	if ((*_robot->armManipulationData)[armId].getManipState() != holdingObjectInStablePose) 
 	{
-		cout << "Manipulation planner : the robot is not holding object in a stable pose" << endl;
-		return status;
+		cout << "Warning::ManipulationPlanner:: the robot is not holding object in a stable pose" << endl;
+		//return status;
 	}
 	
   if (status == MANIPULATION_TASK_OK){
