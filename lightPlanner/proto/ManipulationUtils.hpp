@@ -239,7 +239,6 @@ class ArmManipulationData {
 	
 };
 
-#ifdef GRASP_PLANNING
 //! @ingroup manipulation
 //! this class holds the manipulation data
 //! hence every intermediary configuration that is used 
@@ -256,6 +255,7 @@ class ManipulationData{
       _approachGraspConfig = p3d_alloc_config(robot);
       p3d_mat4Copy(p3d_mat4IDENTITY ,_graspAttachFrame);
     };
+#ifdef GRASP_PLANNING   
     ManipulationData(p3d_rob* robot, gpGrasp* grasp, configPt graspConfig, configPt openConfig, configPt approachFreeConfig, configPt approachGraspConfig, p3d_matrix4 graspAttachFrame){
       _robot = robot;
       _grasp = grasp;
@@ -266,6 +266,7 @@ class ManipulationData{
       _approachGraspConfig = approachGraspConfig;
       p3d_mat4Copy(graspAttachFrame ,_graspAttachFrame);
     };
+#endif
     virtual ~ManipulationData(){
       if(_graspConfig){
         p3d_destroy_config(_robot, _graspConfig);
@@ -283,18 +284,23 @@ class ManipulationData{
         p3d_destroy_config(_robot, _approachGraspConfig);
         _approachGraspConfig = NULL;
       }
+#ifdef GRASP_PLANNING
       if(_grasp){
         delete(_grasp);
         _grasp = NULL;
       }
+#endif
+      
     }
     //Getters
     inline p3d_rob* getRobot() const{
       return _robot;
     }
+#ifdef GRASP_PLANNING
     inline gpGrasp* getGrasp() const{
       return _grasp;
     }
+#endif
     inline configPt getGraspConfig() const{
       return _graspConfig;
     }
@@ -322,6 +328,7 @@ class ManipulationData{
       return _graspConfigCost;
     }
     //Setters
+#ifdef GRASP_PLANNING
     inline void setGrasp(gpGrasp* grasp){
 			if (!grasp) {
 				_grasp = NULL;
@@ -333,6 +340,7 @@ class ManipulationData{
       }
       _grasp = new gpGrasp(*grasp);
     }
+#endif
     inline void setGraspConfig(configPt graspConfig){
       p3d_copy_config_into(_robot, graspConfig, &_graspConfig);
     }
@@ -366,7 +374,9 @@ class ManipulationData{
     }
   private:
     p3d_rob* _robot;
+#ifdef GRASP_PLANNING
     gpGrasp* _grasp;
+#endif
     configPt _graspConfig;
     configPt _openConfig;
     configPt _approachFreeConfig;
@@ -374,5 +384,4 @@ class ManipulationData{
     double _graspConfigCost;
     p3d_matrix4 _graspAttachFrame;
 };
-#endif
 #endif

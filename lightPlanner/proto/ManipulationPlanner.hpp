@@ -61,7 +61,13 @@ class  ManipulationPlanner {
 	void unfixManipulationJoints(int armId);
 	/** Generate needed configurations from the given grasp and object position */
 	MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, ManipulationData& configs);
-	MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpHand_properties& armHandProp, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;
+  
+  configPt getGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, double* confCost) const;
+  configPt getOpenGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf) const;
+  configPt getApproachFreeConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const;
+  configPt getApproachGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const;
+  
+	MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;
   
 	/* ******************************* */
   /* ******* Planning Modes ******** */
