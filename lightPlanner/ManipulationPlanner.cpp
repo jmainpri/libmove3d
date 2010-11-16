@@ -23,7 +23,7 @@
 #include "Util-pkg.h"
 
 #include <list>
-#define MPDEBUG 1
+#define MPDEBUG 0
 using namespace std;
 
 /* ******************************* */
@@ -370,7 +370,6 @@ configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gp
     gpUnFix_hand_configuration(_robot, handProp, handProp.type);
     gpSet_grasp_open_configuration(_robot, grasp, q, handProp.type);
     gpFix_hand_configuration(_robot, handProp, handProp.type);
-//     p3d_set_and_update_this_robot_conf(_robot, q);
     q = setRobotCloseToConfGraspApproachOrExtract(_robot, q, object->joints[1]->abs_pos, tAttTmp, false, armId, true);
     deactivateCcCntrts(_robot, armId);
     if(q){
@@ -386,7 +385,6 @@ configPt ManipulationPlanner::getApproachGraspConf(p3d_rob* object, int armId, g
     ArmManipulationData mData = (*_robot->armManipulationData)[armId];
     configPt q = p3d_copy_config(_robot, graspConf);
     //Extract configuration
-    
     _robot->isCarryingObject = TRUE;
     q[(*_robot->armManipulationData)[armId].getManipulationJnt()->index_dof + 2] += getApproachGraspOffset(); //Z axis of the manipulation joint
     p3d_set_and_update_this_robot_conf(_robot, q);

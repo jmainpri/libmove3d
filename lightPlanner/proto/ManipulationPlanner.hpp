@@ -61,10 +61,16 @@ class  ManipulationPlanner {
 	void unfixManipulationJoints(int armId);
 	/** Generate needed configurations from the given grasp and object position */
 	MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, ManipulationData& configs);
-  
+  /** Generate the grasp configuration given the grasp the arm and the object.
+  @return the attach matrix computed given the grasp and Tatt2 from the p3d file
+  @return the configuration cost
+  @return the grasp configuration*/
   configPt getGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, double* confCost) const;
+  /** Generate the open configuration given the grasp configuration, the grasp, the arm and the object.*/
   configPt getOpenGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf) const;
+  /** Generate the open approach configuration given the grasp configuration, the grasp, the arm, the attach matrix and the object.*/
   configPt getApproachFreeConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const;
+  /** Generate the grasp approach configuration given the grasp configuration, the grasp, the arm, the attach matrix and the object.*/
   configPt getApproachGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const;
   
 	MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;
