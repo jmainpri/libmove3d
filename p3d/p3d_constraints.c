@@ -55,7 +55,7 @@
 
 #define CNTRT_PA10_6_ARM_IK_NAME       "p3d_pa10_6_arm_ik"
 #define CNTRT_LWR_ARM_IK_NAME          "p3d_lwr_arm_ik"
-
+#define CNTRT_PR2_ARM_IK_NAME          "p3d_pr2_arm_ik"
 
 #define CNTRT_HEAD_OBJECT_TRACK_NAME   "p3d_head_object_track"
 #include "../graphic/proto/g3d_draw_proto.h"
@@ -246,12 +246,21 @@ static int
 p3d_fct_kuka_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl);
 
 #if defined(USE_GBM)
+
 /* -- functions for LWR arm IK -- */
 static int p3d_set_lwr_arm_ik(p3d_cntrt_management * cntrt_manager,
                               p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                               p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof, int *iVal,
                               double * dVal, int ct_num, int state);
 static int p3d_fct_lwr_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl);
+
+/* -- functions for LWR arm IK -- */
+static int p3d_set_pr2_arm_ik(p3d_cntrt_management * cntrt_manager,
+                              p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
+                              p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof, int *iVal,
+                              double * dVal, int ct_num, int state);
+static int p3d_fct_pr2_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl);
+
 #endif
 
 static int p3d_set_R7_human_arm_ik(p3d_cntrt_management * cntrt_manager,
@@ -430,6 +439,16 @@ void p3d_constraint_get_nb_param(const char *namecntrt, int *nb_Dofpasiv,
 		*nb_Ival = 2;//fixed joint, solution number 1-8   
 #else
 		printf("!!! Constraint %s not created !!! \n",CNTRT_LWR_ARM_IK_NAME);
+		printf("!!! Compile with GBM library !!! \n");
+#endif
+	} else if (strcmp(namecntrt, CNTRT_PR2_ARM_IK_NAME) == 0) {
+#if defined(USE_GBM)
+		*nb_Dofpasiv = 6;//1-2-4-5-6-7
+		*nb_Dofactiv = 1;//freeflyerDof
+		*nb_Dval = 0;
+		*nb_Ival = 2;//fixed joint, solution number 1-8   
+#else
+		printf("!!! Constraint %s not created !!! \n",CNTRT_PR2_ARM_IK_NAME);
 		printf("!!! Compile with GBM library !!! \n");
 #endif
 	} else if (strcmp(namecntrt, CNTRT_R7_HUMAN_ARM_NAME) == 0) {
@@ -626,6 +645,12 @@ int p3d_create_constraint(p3d_cntrt_management * cntrt_manager,
 	/* -- functions for LWR ARM IK -- */
 	if (strcmp(namecntrt, CNTRT_LWR_ARM_IK_NAME) == 0) {
 		return p3d_set_lwr_arm_ik(cntrt_manager, pas_jntPt, pas_jnt_dof,
+                              Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv, Ival, Dval,
+                              ct_num, state);
+	}
+  /* -- functions for PR2 ARM IK -- */
+	if (strcmp(namecntrt, CNTRT_PR2_ARM_IK_NAME) == 0) {
+		return p3d_set_pr2_arm_ik(cntrt_manager, pas_jntPt, pas_jnt_dof,
                               Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv, Ival, Dval,
                               ct_num, state);
 	}
@@ -4893,6 +4918,66 @@ static int p3d_set_lwr_arm_ik(p3d_cntrt_management * cntrt_manager,
 	return (TRUE);
   
 }
+
+/* -- functions for IK (of LWR ARM) -- */
+static int p3d_set_pr2_arm_ik(p3d_cntrt_management * cntrt_manager,
+                              p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
+                              p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof, int *iVal,
+                              double * dVal, int ct_num, int state) {
+  
+  printf("p3d_set_pr2_arm_ik\n");
+	p3d_cntrt *ct;
+	p3d_matrix4 r0Base;
+	int nb_act = 1, i;
+  
+	if (ct_num < 0) {
+		ct = p3d_create_generic_cntrts(cntrt_manager, CNTRT_PR2_ARM_IK_NAME,
+                                   6, pas_jntPt, pas_jnt_dof, pas_rob_dof, 1, act_jntPt,
+                                   act_jnt_dof, act_rob_dof);
+		if (ct == NULL) {
+			return FALSE;
+		}
+    
+		ct->fct_cntrt = p3d_fct_pr2_arm_ik;
+		//ct->nival = 3;
+		ct->nival = 2;
+		ct->ndval = 0;
+		ct->nbSol = 8;//This constraint has a maximum of 8 solutions.
+	} else {
+		ct = cntrt_manager->cntrts[ct_num];
+	}
+  
+	ct->argu_i[0] = iVal[0]; //the fixed joint
+	ct->argu_i[1] = iVal[1]; // Ik solution
+  
+	if (iVal[1] > ct->nbSol) { //if the user don't put a valid solution number
+		return FALSE;
+	}
+  
+	//Transformation between torso and the arm
+	p3d_matInvertXform(ct->pasjnts[0]->prev_jnt->prev_jnt->pos0, r0Base); //inverse matrix R0->base
+	p3d_mat4Mult(r0Base, ct->pasjnts[0]->prev_jnt->pos0, ct->Tbase); //store the transform matrix betweeen torso and the arm base
+  
+	for (i = 0; i < nb_act; i++) {
+		if (cntrt_manager->in_cntrt[act_rob_dof[i]] == DOF_PASSIF) {// if a active Dof Is a passiv Dof for another constraint enchain.
+			p3d_enchain_cntrt(ct, act_rob_dof[i],
+                        cntrt_manager->in_cntrt[act_rob_dof[i]]);
+		} else {
+			cntrt_manager->in_cntrt[act_rob_dof[i]] = DOF_ACTIF;
+		}
+	}
+  
+	if ((!state) || (!(ct->active) && state)) {
+		if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
+			return FALSE;
+		}
+	}
+	ct->active = state;
+	last_cntrt_set = ct;
+	return (TRUE);
+  
+}
+
 #endif
 
 /** Check if we don't go beyond the bounds of passive joints for all possible constraint
@@ -5340,6 +5425,186 @@ static int p3d_fct_lwr_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
 			for (i = 1; i <= 8; i++) {
 				printf("solution: %d, %d\n", i, ikLWRArmSolverUnique(
                                                              fixed->dof_data[0].v, armGrip, q, i));
+			}
+		}
+		for (i = 0; i < 6; i++) {
+			p3d_jnt_get_dof_bounds(ct->pasjnts[i], ct->pas_jnt_dof[i],
+                             &minmax[i][0], &minmax[i][1]);
+		}
+		if ((nbSolutions = p3d_valid_solutions(ct, qm, valid, minmax, ct->num))
+				== 0)
+			return FALSE; //no solution found
+    
+		if (DEBUG_CNTRTS) {
+			printf("nbSolution = %d\n", nbSolutions);
+		}
+		//if there is a solution, put it into robot config
+		for (i = 0; i < 7; i++) {
+			if (i != 2) {
+				j = i < 2 ? i : i - 1;
+				q[i] = st_ikSolConfig[ct->num][0][j];
+			}
+		}
+		q[2] = qm[0][2];
+		if (!p3d_check_joints_bounds(q, ct, qp, dl)) {
+			return (FALSE);
+		}
+		return (TRUE);
+	}
+	return FALSE;
+}
+
+/** Compute the inverse kinematic of Kuka PR2 Arm. 
+ * @param ct the constraint calling this function
+ * @param iksol the solution of the ik (given by the planner)
+ * @param qp the configuration pointer of the robot
+ * @param dl
+ * @return true if the function succeed false otherwise
+ */
+static int p3d_fct_pr2_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+  //printf("p3d_fct_pr2_arm_ik\n");
+	int i = 0, j = 0, valid[8], ikChoice = p3d_get_ik_choice(),
+  nbSolutions = 0;
+	p3d_matrix4 r0Arm, armR0, armGrip, tmp;
+	p3d_jnt * fixed;
+	double q[7], qm[8][7], minmax[6][2];
+  
+  // TODO : set from Joints Data
+  // This is the left arm values
+  double minDoFs[7];
+  double maxDoFs[7];
+  
+  minDoFs[0] = -41;
+  minDoFs[1] = -30;
+  minDoFs[2] = -45;
+  minDoFs[3] = -133;
+  minDoFs[4] = -45;
+  minDoFs[5] = -119;
+  minDoFs[6] = -180;
+  
+  maxDoFs[0] = 131;
+  maxDoFs[1] = 80;
+  maxDoFs[2] = 223;
+  maxDoFs[3] = 0;
+  maxDoFs[4] = 223;
+  maxDoFs[5] = 0;
+  maxDoFs[6] = 180;
+  
+  for(unsigned int i=0;i<7;i++)
+  {
+    minDoFs[i] *= M_PI/180;
+    maxDoFs[i] *= M_PI/180;
+  }
+  
+	if (!TEST_PHASE) {
+		p3d_update_this_robot_pos_without_cntrt_and_obj(ct->pasjnts[0]->rob);
+	}
+  
+	fixed = ct->pasjnts[0]->rob->joints[ct->argu_i[0]]; //get the fixed joint
+  
+	//Position of the grip in the arm Base
+	p3d_mat4Mult(ct->pasjnts[0]->prev_jnt->prev_jnt->abs_pos, ct->Tbase, r0Arm);
+	p3d_matInvertXform(r0Arm, armR0);
+	p3d_mat4Mult(ct->actjnts[0]->abs_pos, ct->Tatt, tmp);
+	p3d_mat4Mult(armR0, tmp, armGrip);
+  
+	if (DEBUG_CNTRTS) {
+		p3d_mat4Print(armGrip, "armGrip");
+		printf("fixed joint value = %f\n", fixed->dof_data[0].v);
+	}
+  
+	if (iksol != -1) {
+		//ikChoice = IK_NORMAL;
+    ikChoice = IK_UNIQUE;
+	}
+	if (ikChoice == IK_NORMAL || ikChoice == IK_UNIQUE) {
+		
+    // Choose the IK solution class
+    if (ikChoice == IK_UNIQUE) {
+			iksol = p3d_get_random_ikSol(ct->cntrt_manager, ct->num);
+		} else if (ikChoice == IK_NORMAL) {
+			iksol = iksol != -1 ? iksol : ct->argu_i[2];
+		}
+    
+		switch (ikPr2ArmSolverUnique(fixed->dof_data[0].v, minDoFs, maxDoFs, armGrip, q, i)) 
+    {		
+      case 1: {
+        if (DEBUG_CNTRTS)
+          printf("IK PR2 not valid\n");
+        if (st_niksol)
+          st_niksol[ct->num] = 0;
+        return (FALSE);
+      }
+      case 2: {
+        if (DEBUG_CNTRTS)
+          printf("IK PR2 not valid, incorrect parameters\n");
+        if (st_niksol)
+          st_niksol[ct->num] = 0;
+        return (FALSE);
+      }
+      case 3: {
+        if (DEBUG_CNTRTS)
+          printf("Singularity\n");
+        if (st_niksol)
+          st_niksol[ct->num] = 0;
+        return (FALSE);
+      }/*
+        case -3: {
+        if (DEBUG_CNTRTS)
+				printf("Singularity joint 0\n");
+        if (st_niksol)
+				st_niksol[ct->num] = 0;
+        return (FALSE);
+        }
+        case -4: {
+        if (DEBUG_CNTRTS)
+				printf("Singularity joint 3\n");
+        if (st_niksol)
+				st_niksol[ct->num] = 0;
+        return (FALSE);
+        }*/
+      default: {
+        if (DEBUG_CNTRTS) {
+          printf("jnt");
+          for (i = 0; i < 7; i++) {
+            printf("q[%d] = %f\n", i, q[i]);
+          }
+        }
+        if (!p3d_check_joints_bounds(q, ct, qp, dl)) {
+          if (DEBUG_CNTRTS) {
+            //             for(i = 1; i < 9; i++){
+            //               printf("test for sol = %d\n", i);
+            //               if(ikKUKAArmSolverUnique(fixed->dof_data[0].v,aArray,alphaArray,dArray,thetaArray, armGrip,
+            //                             q, ct->argu_i[1],i) == 1){
+            //                 if(p3d_check_joints_bounds(q, ct, qp, dl)){
+            //                   printf("Solution %d valide\n", i);
+            //                 }else{
+            //                   printf("Solution %d invalide\n", i);
+            //                 }
+            //               }
+            //             }
+          }
+          return (FALSE);
+        }
+        if (st_niksol) {
+          st_niksol[ct->num] = 1;
+          st_iksol[ct->num][0] = iksol;
+          for (i = 0; i < 7; i++) {
+            if (i != 2) {//the fixed joint
+              j = i < 2 ? i : i - 1;
+              st_ikSolConfig[ct->num][0][j] = q[i];
+            }
+          }
+        }
+        return (TRUE);
+      }
+		}
+	} else if (ikChoice == IK_MULTISOL) {
+		ikPr2ArmSolver(fixed->dof_data[0].v, armGrip, qm, valid);
+		if (DEBUG_CNTRTS) {
+			for (i = 1; i <= 8; i++) {
+				printf("solution: %d, %d\n", i, ikPr2ArmSolverUnique(
+                                                             fixed->dof_data[0].v, minDoFs, maxDoFs, armGrip, q, i));
 			}
 		}
 		for (i = 0; i < 6; i++) {
