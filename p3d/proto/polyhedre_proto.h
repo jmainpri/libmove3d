@@ -63,13 +63,7 @@ extern double p3d_triangle_area(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3);
 extern int p3d_compute_poly_centroid(p3d_polyhedre *poly);
 
 #ifdef GRASP_PLANNING
-extern int p3d_create_surface_GTS(p3d_polyhedre *poly);
-extern int p3d_coarsen_surface_GTS(p3d_polyhedre *poly, int edgeNumberMax);
-extern int p3d_compute_mean_curvature_GTS(p3d_polyhedre *poly);
-extern int p3d_draw_surface_GTS(p3d_polyhedre *poly);
-extern void draw_face_GTS(GtsFace *f, gpointer *data);
-extern int p3d_draw_mean_curvature_GTS(p3d_polyhedre *poly);
-//extern int p3d_curvature_segmentation_GTS(p3d_polyhedre *poly);
+extern int p3d_compute_mean_curvature(p3d_polyhedre *poly);
 #endif
 
 #endif /* __CEXTRACT__ */

@@ -63,4 +63,5 @@ extern int g3d_is_poly_transparent(p3d_poly *p);
 extern void g3d_draw_ellipsoid(double a, double b, double c, int nbSegments);
 extern void g3d_draw_wire_ellipsoid(double a, double b, double c);
 extern int g3d_draw_collision_cloud();
+extern int g3d_draw_poly_curvature(p3d_polyhedre *poly);
 #endif /* __CEXTRACT__ */

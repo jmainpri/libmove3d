@@ -15,9 +15,9 @@
 #include <stdlib.h>
 #include <locale.h>
 
-#ifdef GRASP_PLANNING
-#include "gts.h"
-#endif
+// #ifdef GRASP_PLANNING
+// #include "gts.h"
+// #endif
 
 
 /*#include "p3d_matrix.h" */
@@ -137,7 +137,8 @@ typedef struct poly_polyhedre
     poly_edge      *the_edges;
     poly_matrix4   pos;
     double *curvatures; //! same size as the_points: will contain the curvature of the surface at each vertex position
-    //! surface normals on each vertex (not computed and allocated by default, use p3d_compute_vertex_normals):
+
+    //! same size as the_points: surface normals on each vertex (not computed but allocated by default, use p3d_compute_vertex_normals):
     p3d_vector3  *vertex_normals; 
  
     p3d_vector3 centroid; //! centroid of the polyhedron. It is not computed by default; call p3d_compute_poly_centroid()   
@@ -156,17 +157,6 @@ typedef struct poly_polyhedre
  
      //! polyhedron's volume
      double volume;
-
-     //! model used by the GNU Triangulated Surface Library (GTS) 
-     GtsSurface *surface_GTS;
-     //! A hash table used to keep the correspondance between vertices of the gts_surface and the indices
-     //! in the p3d_polyhedre vertex array. It is created when calling p3d_create_gts_surface().
-     //! NB: if the gts_surface is modified, the hash table is no longer valid and no valid one can be created again.
-     //! A new gts_surface must be then created.
-     GHashTable *vertex_hash_GTS;
-     //! A hash table used to keep the correspondance between triangles of the gts_surface and the indices
-     //! in the p3d_polyhedre face array.
-     GHashTable *triangle_hash_GTS;
     #endif
   } poly_polyhedre;
 

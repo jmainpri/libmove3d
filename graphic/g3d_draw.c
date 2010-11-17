@@ -3798,3 +3798,74 @@ int g3d_draw_collision_cloud()
   return 0;
 }
 
+
+//! Draws a p3d_polyhedre with colors corresponding to its local curvature that must have
+//! been computed before by calling with p3d_compute_mean_curvature().
+//! \return 0 in case of success, 1 otherwise
+int g3d_draw_poly_curvature(p3d_polyhedre *poly)
+{
+  if(poly==NULL)
+  {
+    printf("%s: %d: g3d_draw_poly_curvature(): input p3d_polyhedre* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  unsigned int i, j, index;
+  p3d_matrix4 pose;
+  p3d_get_poly_pos(poly, pose );
+  p3d_vector3 axis;
+  double t;
+  double color[4];
+
+  p3d_mat4ExtractRot(pose, axis, &t);
+
+  glPushAttrib(GL_ENABLE_BIT);
+
+  glDisable(GL_LIGHTING);
+  glShadeModel(GL_SMOOTH);
+
+
+  #ifdef USE_SHADERS
+   GLint program;
+   glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+   if(program!=0)
+   { glUseProgram(0); }
+  #endif
+
+
+  glPushMatrix();
+//    glTranslatef(pose[0][3], pose[1][3], pose[2][3]);
+  glRotatef((180/M_PI)*t,axis[0], axis[1], axis[2]);
+
+   glBegin(GL_TRIANGLES);
+   for(i= 0; i<poly->nb_faces; i++)
+   {
+     if(poly->the_faces[i].nb_points!=3)
+     {  continue;  }
+
+     for(j=0; j<poly->the_faces[i].nb_points; j++)
+     {
+       index= poly->the_faces[i].the_indexs_points[j]-1;
+//        if( poly->the_faces[i].plane->normale!=NULL )
+//        { glNormal3dv(poly->the_faces[i].plane->normale); }
+       glNormal3dv(poly->vertex_normals[index]);
+       g3d_rgb_from_hue(poly->curvatures[index], color);
+       glColor3dv(color);
+       glVertex3dv(poly->the_points[index]);
+     }
+   }
+  glEnd();
+
+  glPopMatrix();
+
+  glPopAttrib();
+
+
+  #ifdef USE_SHADERS
+   if(program!=0)
+   { glUseProgram(program); }
+  #endif
+
+  return 0;
+}
+
