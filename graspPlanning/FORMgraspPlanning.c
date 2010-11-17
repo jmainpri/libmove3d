@@ -12,8 +12,8 @@
 #include "Manipulation.h"
 
 
-// static char ObjectName[]= "Horse";
-static char ObjectName[]= "GREY_TAPE";
+static char ObjectName[]= "Horse";
+// static char ObjectName[]= "GREY_TAPE";
 static char RobotName[]= "JIDO_ROBOT";
 static char HandRobotName[]= "";
 static bool display_grasps= false;
@@ -362,6 +362,10 @@ void draw_grasp_planner()
   {
     FRAMES[i].draw();
   }
+
+  p3d_rob *object= (p3d_rob*)p3d_get_robot_by_name(ObjectName);
+  
+  g3d_draw_poly_curvature(object->o[0]->pol[0]->poly);
 //   glPushAttrib(GL_ENABLE_BIT);
 //   glEnable(GL_LIGHTING);
 //   for(std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); ++iter)
@@ -399,7 +403,7 @@ glPopMatrix();
 
 return;
 
-p3d_rob *object= p3d_get_robot_by_name("Ball");
+// p3d_rob *object= p3d_get_robot_by_name("Ball");
 static p3d_vector3 exchange= {0,0,0};
 if(GRID==true)
 {
@@ -553,7 +557,7 @@ g3d_draw_p3d_polyhedre(poly);
 //p3d_draw_surface_GTS(poly);
 glPushMatrix();
 glTranslatef(0.0, 0.0, 0.2);
-p3d_draw_mean_curvature_GTS(poly);
+// p3d_draw_mean_curvature_GTS(poly);
 glPopMatrix();
 // gpHand_properties handData;
 // handData.initialize(GP_SAHAND_RIGHT);
@@ -982,6 +986,9 @@ static void CB_SAHandRight_obj ( FL_OBJECT *obj, long arg )
   p3d_rob *robot= (p3d_rob*)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
   p3d_rob *object= (p3d_rob*)p3d_get_robot_by_name(ObjectName);
   
+  p3d_compute_mean_curvature(object->o[0]->pol[0]->poly);
+redraw();
+return;
 //  gpSample_grasp_frames(object->o[0]->pol[0]->poly, 5, 6, 6, 5000, FRAMES);
 //  redraw();
 //  return;
@@ -1485,6 +1492,7 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 void test_manipulation();
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+
 test_manipulation();
 
 // std::vector<gpSphere> spheres;
@@ -1629,8 +1637,8 @@ GRID= !GRID;
 // p3d_polyhedre *poly= NULL;
 // p3d_rob *horse= p3d_get_robot_by_name("Horse");
 // poly= horse->o[0]->pol[0]->poly;
-// p3d_create_surface_GTS(poly);
-// // p3d_compute_mean_curvature_GTS(poly);
+
+// // p3d_compute_mean_curvature(poly);
 // 
 // redraw();
 // return;

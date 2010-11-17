@@ -45,7 +45,7 @@ extern "C" {
 //! \param hand variable containing information about the hand geometry
 //! \param graspList a grasp list the computed set of grasps will be added to
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpGrasps_from_grasp_frame_SAHand ( p3d_rob *robot, p3d_rob *object, int body_index, p3d_matrix4 gFrame, gpHand_properties &hand, gpKdTree &kdtree, std::list<class gpGrasp> &graspList )
+int gpGrasps_from_grasp_frame_SAHand ( p3d_rob *robot, p3d_rob *object, int body_index, p3d_matrix4 gFrame, gpHand_properties &hand, gpKdTree &kdtree, std::list<class gpGrasp> &graspList)
 {
 #ifdef GP_DEBUG
     if ( robot==NULL )
@@ -2868,9 +2868,7 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
 
   //geometric treatment on the object mesh:
   poly= object->o[0]->pol[0]->poly;
-  poly_build_planes ( poly );
-  p3d_create_surface_GTS ( poly );
-  p3d_compute_mean_curvature_GTS ( poly );
+  p3d_compute_mean_curvature(poly);
 
   pathName= std::string(getenv("HOME_MOVE3D")) + std::string("/graspPlanning/graspLists/");
   handFolderName= pathName + gpHand_type_to_folder_name (handProp.type);

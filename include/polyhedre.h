@@ -15,11 +15,6 @@
 #include <stdlib.h>
 #include <locale.h>
 
-// #ifdef GRASP_PLANNING
-// #include "gts.h"
-// #endif
-
-
 /*#include "p3d_matrix.h" */
 #ifdef _p3d_MATRIX_H
 
