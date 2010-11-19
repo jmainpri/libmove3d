@@ -11,6 +11,7 @@ extern void CB_start_optim_obj ( FL_OBJECT *ob, long arg );
 extern void CB_start_rand_obj ( FL_OBJECT *ob, long arg );
 extern void CB_stop_optim_obj ( FL_OBJECT *ob, long arg );
 extern double p3d_get_d0 ( void );
+extern double p3d_get_eps_elastic(void);
 extern int p3d_get_QUICK_DESCENT ( void );
 extern void compute_rand_optim(void (*fct_draw)(void), p3d_traj **trajectory);
 extern void p3d_enable_optim_time_limit(void);

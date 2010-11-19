@@ -55,7 +55,8 @@ class  ManipulationUtils {
 class ArmManipulationData {
 		
   public:
-    ArmManipulationData(p3d_cntrt* ccCntrt = NULL, p3d_cntrt* fkCntrt = NULL, p3d_jnt *manipulationJnt = NULL, int cartesianGroup = -1, int cartesianSmGroup = -1, int handGroup = -1, int handSmGroup = -1){
+    ArmManipulationData(int id = 0, p3d_cntrt* ccCntrt = NULL, p3d_cntrt* fkCntrt = NULL, p3d_jnt *manipulationJnt = NULL, int cartesianGroup = -1, int cartesianSmGroup = -1, int handGroup = -1, int handSmGroup = -1){
+       _id = id;
 			_manipState = handFree;
       _ccCntrt = ccCntrt;
       _fkCntrt = fkCntrt;
@@ -86,6 +87,9 @@ class ArmManipulationData {
     /***********/
     /* Setters */
     /***********/
+    inline void setId(int id) {
+      _id = id;
+    }
     inline void setCcCntrt(p3d_cntrt* ccCntrt){
       _ccCntrt = ccCntrt;
     };
@@ -142,7 +146,9 @@ class ArmManipulationData {
     /***********/
     /* Getters */
     /***********/
-
+    inline int getId() {
+      return _id;
+    }
     inline p3d_cntrt* getCcCntrt(void) const{
       return _ccCntrt;
     };
@@ -189,6 +195,8 @@ class ArmManipulationData {
 	}
 	
 	private :
+  //!arm ID
+  int _id;
 	//! Arm object-manipulation state
 	//! The state should be provided by an external module
 	MANIPULATION_ARM_STATE _manipState;

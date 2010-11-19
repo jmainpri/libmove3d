@@ -6,6 +6,10 @@
 #include "Move3d-pkg.h"
 #include "Graphic-pkg.h"
 
+/*Warning : This variable is also defined in FORMOptim for elastic smoothing algorithm. This one concerns only random algorithm.*/
+#define MAX_NB_TRY_OPTIM  20
+
+extern int STOP_OPTIM;
 
 /*
  *  Extract the local path that contains the configuration
@@ -33,6 +37,79 @@ p3d_localpath *p3d_localpath_from_traj(p3d_localpath *localpathPt,
   return localpathPt;
 }
 
+
+int p3d_optimize_traj(p3d_rob* robot, p3d_traj* traj, int rand, int elastic, int clean){
+  int i, ntest = 0, nb_optim = 0;
+  double gain = 1., gaintot = 1., epsilon = 0.0;
+
+  STOP_OPTIM = FALSE;
+#ifdef DPG
+  if (traj) {
+    traj->isOptimized = true;
+  }
+#endif
+   if (!traj || traj->nlp <= 1) {
+      printf("Optimization not possible: current trajectory\
+    contains one or zero local path\n");
+    return 1;
+  }
+
+  if(rand){
+    ChronoOn();
+    double tua = 0, tsa = 0, toot = 0;
+    while (fabs(gaintot - 1.0) < EPS6 && nb_optim < MAX_NB_TRY_OPTIM) {
+      for (i = 1; i <= p3d_get_NB_OPTIM() /*&& (gain > 0.0001 || gain == 0)*/; i++) {
+        if (p3d_optim_traj(traj, &gain, &ntest)) {
+          gaintot = gaintot * (1. - gain);
+          /* position the robot at the beginning of the optimized trajectory */
+          position_robot_at_beginning(robot->num, traj);
+        }
+        toot = tua;
+        if (fct_draw) {
+          (*fct_draw)();
+        }
+        if (!fct_stop_optim()) {
+          g3d_draw_allwin_active();
+          ChronoPrint("");
+          double tu = 0.0, ts = 0.0;
+          ChronoTimes(&tu, &ts);
+          if (getStatStatus()) {
+            XYZ_GRAPH->stat->postTime += tu;
+          }
+          ChronoOff();
+          return 0;
+        }
+      }
+      nb_optim++;
+    }
+    if (fabs(gaintot - 1.0) > EPS6) {
+      /* the curve has been optimized */
+      p3d_simplify_traj(traj);
+    }
+    gaintot = (1. - gaintot) * 100.;
+    printf("The trajectory is optimised by %f%%\n", gaintot);
+    printf("nb collision test : %d\n", ntest);
+    ChronoPrint("");
+    double tu = 0.0, ts = 0.0;
+    ChronoTimes(&tu, &ts);
+    if (getStatStatus()) {
+      XYZ_GRAPH->stat->postTime += tu;
+    }
+    ChronoOff();
+  }
+
+  if(elastic && p3d_get_ik_choice() == IK_NORMAL){
+    epsilon = 0.001 * p3d_get_eps_elastic();
+    printf("\ngradient descent optimization \n");
+    p3d_gradientDescentOptimize(traj, 0, epsilon, p3d_get_d0(), p3d_get_QUICK_DESCENT(),fct_stop_optim, fct_draw);
+    position_robot_at_beginning(robot->num, traj);
+  }else if (clean && p3d_get_ik_choice() == IK_NORMAL){
+    printf("\nclearing trajectory \n");
+    p3d_clearTraj(traj, 0, fct_stop_optim);
+    position_robot_at_beginning(robot->num, traj);
+  }
+  return 0;
+}
 
 
 /*
@@ -587,4 +664,21 @@ void p3d_simplify_traj(p3d_traj *trajPt) {
   /* update the number of local paths */
   trajPt->nlp = p3d_compute_traj_nloc(trajPt);
   trajPt->range_param = p3d_compute_traj_rangeparam(trajPt);
+}
+
+int fct_stop_optim(void) {
+  double ts, tu, tmax = p3d_get_optimization_time();
+  fl_check_forms();
+  ChronoMicroTimes(&tu, &ts);
+  if (p3d_get_use_optimization_time() && tu >= tmax) {
+    printf("Optimization stoped by counter.\n");
+    return FALSE;
+  }
+  if (STOP_OPTIM) {
+    STOP_OPTIM = FALSE;
+    printf("Optimization stoped by user.\n");
+    return (FALSE);
+  } else {
+    return (TRUE);
+  }
 }

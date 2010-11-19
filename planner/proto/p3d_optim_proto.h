@@ -8,5 +8,6 @@
 extern p3d_localpath *p3d_localpath_from_traj ( p3d_localpath *localpathPt, double length, double *distlocPt );
 extern int p3d_optim_traj ( p3d_traj *trajPt, double *gain, int *ntest );
 extern void p3d_simplify_traj ( p3d_traj *trajPt );
-
+extern int p3d_optimize_traj(p3d_rob* robot, p3d_traj* traj, int rand, int elastic, int clean);
+extern int fct_stop_optim(void);
 #endif /* __CEXTRACT__ */

@@ -95,7 +95,7 @@ int gpGrasps_from_grasp_frame_SAHand ( p3d_rob *robot, p3d_rob *object, int body
     p3d_set_and_update_this_robot_conf(robot, config);
 // g3d_draw_allwin_active();
 
-    p3d_copy_config_into ( robot, config, &robot->ROBOT_POS );
+    //p3d_copy_config_into ( robot, config, &robot->ROBOT_POS );
 
     // Deactivate the collision for all fingers
     gpDeactivate_finger_collisions ( robot, 1, hand );
@@ -2954,8 +2954,12 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
     }
   }
 
+  configPt q0=  p3d_alloc_config(hand_robot);
+  p3d_get_robot_config_into(hand_robot, &q0);
   gpGrasp_context_collision_filter(graspList, hand_robot, object, handProp);
-
+  p3d_set_and_update_this_robot_conf(hand_robot, q0);
+  p3d_destroy_config(hand_robot, q0);
+  
 
   for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
     igrasp->computeQuality();

@@ -332,7 +332,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
         returnValue = checkCollisionsOnPathAndReplan(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, optimized);
       }while(returnValue != 1 && returnValue != 0 && j < 10);
       if (optimized && j > 1){
-        optimiseTrajectory(100,6);
+        optimiseTrajectory(XYZ_ROBOT, XYZ_ROBOT->tcur, 100,6);
       }
 #endif
       break;

@@ -2653,6 +2653,7 @@ int p3d_set_removable_bb_for_grasp(p3d_rob* r, int nbJoints, int *joints){
 */
 int p3d_set_arm_data(p3d_rob* r, int *data){
   ArmManipulationData armData;
+  armData.setId(r->armManipulationData->size());
   armData.setCcCntrt(r, data[0]);
 #ifdef FK_CNTRT
   armData.setFkCntrt(p3d_create_FK_cntrts(r, armData.getCcCntrt()));

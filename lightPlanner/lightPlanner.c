@@ -208,7 +208,7 @@ static int findPath(void) {
  * @param nbSteps number of steps for random smoothing
  * @param maxTime The maximum time that the planner have to spend to smooth the trajectory
  */
-void optimiseTrajectory(int nbSteps, double maxTime) {
+void optimiseTrajectory(p3d_rob* robot, p3d_traj* traj, int nbSteps, double maxTime) {
   p3d_set_NB_OPTIM(nbSteps);
   if(maxTime <= 0){
     p3d_set_use_optimization_time(false);
@@ -216,9 +216,7 @@ void optimiseTrajectory(int nbSteps, double maxTime) {
   p3d_set_use_optimization_time(true);
   p3d_set_optimization_time(maxTime);
   }
-#ifdef WITH_XFORMS
-  CB_start_optim_obj(NULL, 0);
-#endif
+  p3d_optimize_traj(robot, traj, true, false, true);
 }
 /** ////////////////////////////////////////////
  * ////////////// Query functions //////////////
@@ -287,8 +285,9 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
   p3d_destroy_config(robot, transfertConf);
   rrtOptions();
   findPath();
-  optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   p3d_traj* justinTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+  optimiseTrajectory(robot, justinTraj, OPTIMSTEP, OPTIMTIME);
+
 
   //Plannification de la base
 #ifdef MULTILOCALPATH
@@ -317,11 +316,11 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
   deleteAllGraphs();
   rrtOptions();
   findPath();
-  optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
+  p3d_traj* baseTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+  optimiseTrajectory(robot, baseTraj, OPTIMSTEP, OPTIMTIME);
   setSafetyDistance(robot, 0);
   p3d_col_activate_obj_env(robot->curObjectJnt->o);
   p3d_col_env_set_traj_method(testcolMethod);
-  p3d_traj* baseTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
   if (justinTraj) {
     p3d_concat_traj(justinTraj, baseTraj);
   }
@@ -489,12 +488,13 @@ p3d_traj* touchObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, config
   CB_DiffusionMethod_obj(NULL, 1);
 #endif
   findPath();
-  optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
+  p3d_traj* traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+  optimiseTrajectory(robot, traj, OPTIMSTEP, OPTIMTIME);
   unFixJoint(robot, robot->curObjectJnt);
   unFixJoint(robot, robot->baseJnt);
   p3d_col_env_set_traj_method(testcolMethod);
   activateHandsVsObjectCol(robot);
-  return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+  return traj;
 }
 
 /**
@@ -702,12 +702,12 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
   setSafetyDistance(robot, (double)SAFETY_DIST);
   rrtOptions();
   findPath();
-  optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
+  p3d_traj* baseTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+  optimiseTrajectory(robot, baseTraj, OPTIMSTEP, OPTIMTIME);
   setSafetyDistance(robot, 0);
   activateHandsVsObjectCol(robot);
   desactivateTwoJointsFixCntrt(robot, robot->curObjectJnt, robot->baseJnt);
   p3d_col_env_set_traj_method(testcolMethod);
-  p3d_traj* baseTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
   if (extractTraj) {
     p3d_concat_traj(extractTraj, baseTraj);
   }

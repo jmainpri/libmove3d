@@ -1023,7 +1023,8 @@ int Manipulation::checkTraj(p3d_traj * traj, p3d_graph* graph){
     returnValue = checkCollisionsOnPathAndReplan(_robot, _robot->tcur, graph, optimized);//replanForCollidingPath(_robot, _robot->tcur, graph, curConfig, _robot->tcur->courbePt, optimized);
   }while(returnValue != 1 && returnValue != 0 && returnValue != -2 && j < 10);
   if (optimized && j > 1){
-    optimiseTrajectory(200,10);
+    p3d_traj* traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+    optimiseTrajectory(_robot, traj, 200,10);
   }
   traj = _robot->tcur;
 #endif

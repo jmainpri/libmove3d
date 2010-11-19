@@ -74,8 +74,8 @@ std::string gpHand_suffix_from_ID(int id)
     return suffix;
   }
 
-  if(id==0)
-  {  return suffix;  }
+//   if(id==0)
+//   {  return suffix;  }
 
   suffix= std::string("_") + convertToString(id);
   return suffix;
@@ -1806,7 +1806,7 @@ int gpGet_hand_configuration(p3d_rob *robot, gpHand_properties &handProp, int ha
 //! \param handProp geometric information about the hand
 //! \param config a std::vector containing the finger joint parameters associated to the grasp
 //! \param verbose flag to print information in case of error or not
-//! \param handID ID of the hand used by the grasp
+//! \param handID ID of the hand used by the grasp (see gpHand_suffix_from_ID)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &handProp, std::vector<double> config, bool verbose, int handID)
 {

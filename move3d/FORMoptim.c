@@ -12,9 +12,10 @@ FL_FORM *OPTIM_FORM = NULL;
 extern FL_OBJECT *OPTIM_OBJ;
 extern FL_OBJECT *SEARCH_DRAW_OPTIM_OBJ;
 
-static int STOP = FALSE;
+int STOP_OPTIM = FALSE;
 
 static int QUICK_DESCENT = TRUE;
+static double EPS_ELASTIC = 0.0001;
 
 static double D0 = 0;
 
@@ -50,7 +51,6 @@ void CB_start_optim_obj(FL_OBJECT * ob, long arg);
 void CB_stop_optim_obj(FL_OBJECT * ob, long arg);
 static void CB_start_elastic_obj(FL_OBJECT * ob, long arg);
 static void CB_start_clear_obj(FL_OBJECT * ob, long arg);
-static int fct_stop_optim(void);
 static void CB_set_nb_optim(FL_OBJECT * ob, long arg);
 static void CB_set_d0(FL_OBJECT * ob, long arg);
 static void CB_set_band_obj(FL_OBJECT * ob, long arg);
@@ -58,6 +58,7 @@ static int CB_optimForm_OnClose(FL_FORM * form, void *arg);
 static void CB_time_input(FL_OBJECT * ob, long arg);
 static void CB_time_activate(FL_OBJECT * ob, long arg);
 static void CB_clearTraj(FL_OBJECT * ob, long arg);
+static void CB_set_eps_elastic_obj(FL_OBJECT * ob, long arg);
 
 
 static int init_draw_optim(void (**fct_draw)(void));
@@ -169,6 +170,7 @@ g3d_create_optim_form(void) {
   g3d_create_valslider(&EPS_OBJ, FL_HOR_SLIDER, 224, 30.0,
                        "Optimization Precision",
                        (void **) &ELASTIC_FRAME_OBJ, 0);
+  fl_set_call_back(EPS_OBJ, CB_set_eps_elastic_obj, 0);
   fl_set_slider_bounds(EPS_OBJ, 0, 5);
   fl_set_slider_step(EPS_OBJ, 0.01);
   fl_set_slider_value(EPS_OBJ, 1);
@@ -252,9 +254,6 @@ g3d_delete_optim_form(void) {
   g3d_fl_free_object(SPACE6);
   g3d_fl_free_object(CLEAR_FRAME_OBJ);
 
-
-
-
   g3d_fl_free_form(OPTIM_FORM);
 }
 
@@ -272,109 +271,116 @@ CB_optimForm_OnClose(FL_FORM * form, void *arg) {
 
 void
 CB_start_optim_obj(FL_OBJECT * ob, long arg) {
-  void (*fct_draw)(void);
   p3d_traj *traj = (p3d_traj *) p3d_get_desc_curid(P3D_TRAJ);
-  int ir = p3d_get_desc_curnum(P3D_ROBOT);
-  int i, ntest = 0, nb_optim = 0;
-  double gain = 1., gaintot = 1., epsilon = 0.0;
+  p3d_rob* robot = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+  void (*fct_draw)(void);
+  int rand = false, elastic = false, clean = false;
+//   int i, ntest = 0, nb_optim = 0;
+//   double gain = 1., gaintot = 1., epsilon = 0.0;
 
-  STOP = FALSE;
+/*  STOP = FALSE;
 #ifdef DPG
   if (traj) {
     traj->isOptimized = true;
   }
-#endif
-  if (ob && !init_draw_optim(&fct_draw)) {
-    fl_set_button(ob, 0);
-    return;
+#endif*/
+  if (ob) {
+    fl_set_button(ob, 1);
+    fl_set_cursor(FL_ObjWin(ob), XC_watch);
+    if (!init_draw_optim(&fct_draw)) {
+      fl_set_button(ob, 0);
+      return;
+    }
   }
-  if (!traj || traj->nlp <= 1) {
+
+/*  if (!traj || traj->nlp <= 1) {
     if (ob) {    //if is not a automatic call
       printf("Optimization not possible: current trajectory\
     contains one or zero local path\n");
     }
     fl_set_button(START_OPTIM_OBJ, 0);
     return;
-  }
-  if (ob) {
-    fl_set_cursor(FL_ObjWin(ob), XC_watch);
-  }
+  }*/
+
   if (fl_get_button(DRAW_OPTIM_OBJ))
     fct_draw = g3d_draw_allwin_active;
   else
     fct_draw = NULL;
   if (fl_get_button(RAND_ACTIVATE_OBJ)) {
-    ChronoOn();
-    double tua = 0, tsa = 0, toot = 0;
-    while (fabs(gaintot - 1.0) < EPS6 && nb_optim < MAX_NB_TRY_OPTIM) {
-      for (i = 1; i <= p3d_get_NB_OPTIM() /*&& (gain > 0.0001 || gain == 0)*/; i++) {
-        if (p3d_optim_traj(traj, &gain, &ntest)) {
-          gaintot = gaintot * (1. - gain);
-          /* position the robot at the beginning of the optimized trajectory */
-          position_robot_at_beginning(ir, traj);
-        }
-//         printf("NbOptim = %d, Gain = %f, gain Total = %f\n", i, gain, gaintot);
-//         ChronoTimes(&tua, &tsa);
-//         printf("Time : %f\n", tua - toot);
-        toot = tua;
-        if (fct_draw) {
-          (*fct_draw)();
-        }
-        if (!fct_stop_optim()) {
-          g3d_draw_allwin_active();
-          ChronoPrint("");
-          /* When retrieving statistics;Commit Jim; date: 01/10/2008 */
-          double tu = 0.0, ts = 0.0;
-          ChronoTimes(&tu, &ts);
-          if (getStatStatus()) {
-            XYZ_GRAPH->stat->postTime += tu;
-          }
-          ChronoOff();
-          if (ob) {
-            fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);
-            fl_set_button(START_OPTIM_OBJ, 0);
-          }
-          return;
-        }
-      }
-      nb_optim++;
-    }
-    if (fabs(gaintot - 1.0) > EPS6) {
-      /* the curve has been optimized */
-      p3d_simplify_traj(traj);
-    }
-    gaintot = (1. - gaintot) * 100.;
-    printf("La courbe a ete optimisee de %f%%\n", gaintot);
-    printf("nb collision test : %d\n", ntest);
-    ChronoPrint("");
-    /* When retrieving statistics;Commit Jim; date: 01/10/2008 */
-    double tu = 0.0, ts = 0.0;
-    ChronoTimes(&tu, &ts);
-    if (getStatStatus()) {
-      XYZ_GRAPH->stat->postTime += tu;
-    }
-    ChronoOff();
+    rand = true;
+//     ChronoOn();
+//     double tua = 0, tsa = 0, toot = 0;
+//     while (fabs(gaintot - 1.0) < EPS6 && nb_optim < MAX_NB_TRY_OPTIM) {
+//       for (i = 1; i <= p3d_get_NB_OPTIM() /*&& (gain > 0.0001 || gain == 0)*/; i++) {
+//         if (p3d_optim_traj(traj, &gain, &ntest)) {
+//           gaintot = gaintot * (1. - gain);
+//           /* position the robot at the beginning of the optimized trajectory */
+//           position_robot_at_beginning(ir, traj);
+//         }
+// //         printf("NbOptim = %d, Gain = %f, gain Total = %f\n", i, gain, gaintot);
+// //         ChronoTimes(&tua, &tsa);
+// //         printf("Time : %f\n", tua - toot);
+//         toot = tua;
+//         if (fct_draw) {
+//           (*fct_draw)();
+//         }
+//         if (!fct_stop_optim()) {
+//           g3d_draw_allwin_active();
+//           ChronoPrint("");
+//           /* When retrieving statistics;Commit Jim; date: 01/10/2008 */
+//           double tu = 0.0, ts = 0.0;
+//           ChronoTimes(&tu, &ts);
+//           if (getStatStatus()) {
+//             XYZ_GRAPH->stat->postTime += tu;
+//           }
+//           ChronoOff();
+//           if (ob) {
+//             fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);
+//             fl_set_button(START_OPTIM_OBJ, 0);
+//           }
+//           return;
+//         }
+//       }
+//       nb_optim++;
+//     }
+//     if (fabs(gaintot - 1.0) > EPS6) {
+//       /* the curve has been optimized */
+//       p3d_simplify_traj(traj);
+//     }
+//     gaintot = (1. - gaintot) * 100.;
+//     printf("La courbe a ete optimisee de %f%%\n", gaintot);
+//     printf("nb collision test : %d\n", ntest);
+//     ChronoPrint("");
+//     /* When retrieving statistics;Commit Jim; date: 01/10/2008 */
+//     double tu = 0.0, ts = 0.0;
+//     ChronoTimes(&tu, &ts);
+//     if (getStatStatus()) {
+//       XYZ_GRAPH->stat->postTime += tu;
+//     }
+//     ChronoOff();
   }
   if (fl_get_button(ELASTIC_ACTIVATE_OBJ)
       && p3d_get_ik_choice() == IK_NORMAL) {
-    epsilon = 0.001 * fl_get_slider_value(EPS_OBJ);
-    printf("\ngradient descent optimization \n");
-
-    p3d_gradientDescentOptimize(traj, 0, epsilon, D0, QUICK_DESCENT,
-                                fct_stop_optim, fct_draw);
-    position_robot_at_beginning(ir, traj);
+    elastic = true;
+//     epsilon = 0.001 * fl_get_slider_value(EPS_OBJ);
+//     printf("\ngradient descent optimization \n");
+// 
+//     p3d_gradientDescentOptimize(traj, 0, epsilon, D0, QUICK_DESCENT,
+//                                 fct_stop_optim, fct_draw);
+//     position_robot_at_beginning(ir, traj);
   } else
     if (ENV.getBool(Env::withCleaning)
         && p3d_get_ik_choice() == IK_NORMAL) {
-      printf("\nclearing trajectory \n");
-      p3d_clearTraj(traj, 0, fct_stop_optim);
-      position_robot_at_beginning(ir, traj);
+      clean = true;
+//       printf("\nclearing trajectory \n");
+//       p3d_clearTraj(traj, 0, fct_stop_optim);
+//       position_robot_at_beginning(ir, traj);
     }
+
+  p3d_optimize_traj(robot, traj, rand, elastic, clean);
   g3d_draw_allwin_active();
   if (ob) {
     fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);
-  }
-  if (ob) {
     fl_set_button(ob, 0);
   }
 }
@@ -382,7 +388,7 @@ CB_start_optim_obj(FL_OBJECT * ob, long arg) {
 void
 CB_start_rand_obj(FL_OBJECT * ob, long arg) {
   void (*fct_draw)(void);
-  STOP = FALSE;
+  STOP_OPTIM = FALSE;
 
   if (!init_draw_optim(&fct_draw)) {
     fl_set_button(ob, 0);
@@ -399,7 +405,7 @@ CB_start_rand_obj(FL_OBJECT * ob, long arg) {
 static void
 CB_start_elastic_obj(FL_OBJECT * ob, long arg) {
   void (*fct_draw)(void);
-  STOP = FALSE;
+  STOP_OPTIM = FALSE;
 
   if (!init_draw_optim(&fct_draw)) {
     fl_set_button(ob, 0);
@@ -417,7 +423,7 @@ CB_start_elastic_obj(FL_OBJECT * ob, long arg) {
 static void
 CB_start_clear_obj(FL_OBJECT * ob, long arg) {
   p3d_traj *traj = (p3d_traj *) p3d_get_desc_curid(P3D_TRAJ);
-  STOP = FALSE;
+  STOP_OPTIM = FALSE;
 
   if (!traj) {
     printf("Optimize : ERREUR : no current traj\n");
@@ -434,31 +440,18 @@ CB_start_clear_obj(FL_OBJECT * ob, long arg) {
 
 void
 CB_stop_optim_obj(FL_OBJECT * ob, long arg) {
-  STOP = TRUE;
+  STOP_OPTIM = TRUE;
   fl_set_button(STOP_OPTIM_OBJ, 0);
-}
-
-static int
-fct_stop_optim(void) {
-  double ts, tu, tmax = p3d_get_optimization_time();
-  fl_check_forms();
-  ChronoMicroTimes(&tu, &ts);
-  if (p3d_get_use_optimization_time() && tu >= tmax) {
-    printf("Optimization stoped by counter.\n");
-    return FALSE;
-  }
-  if (STOP) {
-    STOP = FALSE;
-    printf("Optimization stoped by user.\n");
-    return (FALSE);
-  } else {
-    return (TRUE);
-  }
 }
 
 double
 p3d_get_d0() {
   return D0;
+}
+
+double
+p3d_get_eps_elastic() {
+  return EPS_ELASTIC;
 }
 
 int
@@ -469,6 +462,10 @@ p3d_get_QUICK_DESCENT() {
 static void
 CB_set_d0(FL_OBJECT * ob, long arg) {
   D0 = fl_get_slider_value(ob);
+}
+
+static void CB_set_eps_elastic_obj(FL_OBJECT * ob, long arg){
+  EPS_ELASTIC = fl_get_slider_value(EPS_OBJ);
 }
 
 static void

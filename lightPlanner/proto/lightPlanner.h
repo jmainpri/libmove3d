@@ -5,7 +5,7 @@
 extern void initLightPlannerForMLP(p3d_rob* robot);
 #endif
 extern void saveTrajInFile(const char* fileName, p3d_traj* traj, int smallIntervals,double dmax);
-extern void optimiseTrajectory(int nbSteps, double maxTime);
+extern void optimiseTrajectory(p3d_rob* robot, p3d_traj* traj, int nbSteps, double maxTime);
 extern p3d_traj* platformGotoObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2);
 extern p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configPt conf);
 extern traj* pickObject(p3d_rob* robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2);
