@@ -26,12 +26,12 @@ public:
 	virtual ~ManipulationTestFunctions();
 	
 	bool runTest(int i);
+  
+  //! Generic function to test the genom requests
+	bool manipTest(MANIPULATION_TASK_TYPE_STR type);
 	
 private:
 	void initManipulationGenom();
-	
-	//! Generic function to test the genom requests
-	bool manipTest(MANIPULATION_TASK_TYPE_STR type);
 	
 	p3d_rob* m_Robot;
 	

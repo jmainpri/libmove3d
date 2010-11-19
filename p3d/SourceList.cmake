@@ -52,8 +52,8 @@ ENDIF(P3D_COLLISION_CHECKING)
 IF(USE_GBM)
 BM3D_SRC_SUBDIR_PROCESS(
 	 p3d_ik_pa10.c 
-	 p3d_ik_lwr.c
-   p3d_ik_pr2.c
+	 p3d_ik_lwr.c	       
+   p3d_ik_pr2.c	      
 )
 ENDIF(USE_GBM)
 

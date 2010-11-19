@@ -87,6 +87,7 @@ void adaptClosedChainConfigToBasePos(p3d_rob* robot, p3d_matrix4 base, configPt 
 
 /** @brief The maximal number of shoot to try before returning false*/
 static int MaxNumberOfTry = 10000;
+
 /**
  * @brief Function for sampling a valid robot configuration given an object position. We assume that the center of the object is the center of object Joint.
  * @param robot the robot
@@ -102,8 +103,10 @@ static int MaxNumberOfTry = 10000;
  * @return the robot config or NULL if fail
  */
 configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt, double x, double y, double z, double rx, double ry, double rz, double minRadius, double maxRadius, int shootBase, int shootObject, int cntrtToActivate, bool nonUsedCntrtDesactivation){
+  
   double nominalRadius = 0.17; // 10 Deg
   configPt q = NULL;
+  
   if(robot && objectJnt && baseJnt){
     q = p3d_alloc_config(robot);
     configPt qInit = p3d_get_robot_config(robot);
@@ -447,6 +450,8 @@ configPt setRobotGraspPosWithoutBase(p3d_rob* robot, p3d_matrix4 objectPos, p3d_
       att[i][0][0] = att[i][0][1] = att[i][0][2] = 0;
     }
   }
+  
+  // Get a robot grasp config from the object Pos
   configPt q = getRobotGraspConf(robot, objectPos, att, FALSE, shootObject, armId, nonUsedCntrtDesactivation);
 #ifndef GRASP_PLANNING
   activateHandsVsObjectCol(robot);
@@ -511,7 +516,8 @@ static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_mat
   double x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0;
   configPt q = NULL;
   p3d_mat4ExtractPosReverseOrder(objectPos, &x, &y, &z, &rx, &ry, &rz);
-  //Backup and set the attach matrix
+  
+  // Backup and set the attach matrix
   p3d_matrix4 bakTatt[(int)robot->armManipulationData->size()];
 	
   for (int i = 0; i < (int)robot->armManipulationData->size(); i++) {
@@ -521,7 +527,7 @@ static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_mat
   
 	q = p3d_getRobotBaseConfigAroundTheObject(robot, robot->baseJnt, robot->curObjectJnt, x, y, z, rx, ry, rz, -1, ROBOT_MAX_LENGTH, shootBase, shootObjectRotation, cntrtToActivate, nonUsedCntrtDesactivation);
   
-	//Restore the attach matrix
+	// Restore the attach matrix
   for (int i = 0; i < (int)robot->armManipulationData->size(); i++) {
     p3d_mat4Copy(bakTatt[i], (*robot->armManipulationData)[i].getCcCntrt()->Tatt);
   }

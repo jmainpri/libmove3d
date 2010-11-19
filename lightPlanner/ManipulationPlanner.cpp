@@ -299,22 +299,69 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
   return status;
 }
 
+configPt ManipulationPlanner::getFreeHoldingConf( p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, p3d_vector3 WSPoint ) const{
+  
+  configPt tmpConf = p3d_get_robot_config(_robot);
+  
+    ArmManipulationData mData = (*_robot->armManipulationData)[armId];
+    configPt q = p3d_get_robot_config(_robot);
+    
+    _robot->isCarryingObject = TRUE;
+    
+    // Set Manipulation joint and hand configuration
+    p3d_matrix4 mat;
+    p3d_mat4Copy( object->joints[1]->abs_pos , mat );
+    
+    mat[3][0] = WSPoint[0];
+    mat[3][1] = WSPoint[1];
+    mat[3][2] = WSPoint[2];
+    
+    int idManipIndexDof = (*_robot->armManipulationData)[armId].getManipulationJnt()->index_dof;
+    
+    q[ idManipIndexDof + 0 ] = WSPoint[0];
+    q[ idManipIndexDof + 1 ] = WSPoint[1];
+    q[ idManipIndexDof + 2 ] = WSPoint[2];
+    
+    p3d_set_and_update_this_robot_conf(_robot, q);
+    gpSet_grasp_configuration(_robot, grasp, q, mData.getHandProperties().type);
+    
+    // Sample a configuration for the robot
+    q = setRobotGraspPosWithoutBase(_robot, mat , tAtt, false , armId, true);
+    deactivateCcCntrts(_robot, armId);
+    
+    // Reset robot to the initial robot configuration
+    p3d_set_and_update_this_robot_conf(_robot, tmpConf);
+    p3d_destroy_config(_robot, tmpConf);
+    
+    _robot->isCarryingObject = FALSE;
+    
+    if(q){
+      fixAllHands(NULL, true);
+      return q;
+    }
+  return NULL;
+}
+
+
 configPt ManipulationPlanner::getGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, double* confCost) const{
+  
   p3d_matrix4 handFrame;
   ArmManipulationData mData = (*_robot->armManipulationData)[armId];
   gpHand_properties handProp = mData.getHandProperties();
   p3d_mat4Mult(grasp.frame, handProp.Tgrasp_frame_hand, handFrame);
   p3d_mat4Mult(handFrame, mData.getCcCntrt()->Tatt2, tAtt);
 
-  //Check if there is a valid configuration of the robot using this graspFrame
+  // Check if a valid configuration exists
+  // of the robot using this graspFrame
   configPt q = NULL;
   gpSet_grasp_configuration(_robot, grasp, armId);
   gpFix_hand_configuration(_robot, handProp, armId);
 
   //Compute Grasp configuration
   q = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, FALSE, armId, true);
+  
   if(q){
-    //If it exist, try to find better Rest Arm config and
+    //If it exists, try to find better Rest Arm config and
     double restArmCost = setRobotArmsRest(_robot, object->joints[1]->abs_pos, armId, tAtt, _robot->openChainConf, q);
     double graspArmCost = computeRobotGraspArmCost(_robot, armId, grasp, q, _robot->openChainConf, object->joints[1]->abs_pos)/270;
     *confCost = (restArmCost + graspArmCost * 2) / 3;
@@ -381,21 +428,30 @@ configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gp
 }
 
 configPt ManipulationPlanner::getApproachGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const{
+  
+  configPt tmpConf = p3d_get_robot_config(_robot);
+  
   if(graspConf){
     ArmManipulationData mData = (*_robot->armManipulationData)[armId];
     configPt q = p3d_copy_config(_robot, graspConf);
-    //Extract configuration
+    
     _robot->isCarryingObject = TRUE;
+    
+    // Set Manipulation joint and hand configuration
     q[(*_robot->armManipulationData)[armId].getManipulationJnt()->index_dof + 2] += getApproachGraspOffset(); //Z axis of the manipulation joint
     p3d_set_and_update_this_robot_conf(_robot, q);
-    gpSet_grasp_configuration(_robot, grasp, q, armId);
+    gpSet_grasp_configuration(_robot, grasp, q, mData.getHandProperties().type);
+    
+    // Sample a configuration for the robot
     q = setRobotCloseToConfGraspApproachOrExtract(_robot, q, object->joints[1]->abs_pos, tAtt, false, armId, true);
     deactivateCcCntrts(_robot, armId);
-    configPt tmpConf = p3d_get_robot_config(_robot);
-    tmpConf[(*_robot->armManipulationData)[armId].getManipulationJnt()->index_dof + 2] -= getApproachGraspOffset();
+    
+    // Reset robot to the initial robot configuration
     p3d_set_and_update_this_robot_conf(_robot, tmpConf);
     p3d_destroy_config(_robot, tmpConf);
+    
     _robot->isCarryingObject = FALSE;
+    
     if(q){
       fixAllHands(NULL, true);
       return q;
@@ -520,7 +576,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::concatTrajectories (std::vector<p
 //! @param smootingTime : maximum smoothing Time
 //! @param biDir : is the RRT bidirectional
 int ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, bool biDir) {
+  
   int result;
+  
   p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
 
 #ifdef MULTIGRAPH
@@ -570,6 +628,7 @@ int ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, boo
 //! the PRM algortihm sample configuration in all C-Space
 //! @param ComputeTime : number of smoothing steps 
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armComputePRM(double ComputeTime) {
+  
   this->cleanRoadmap();
   
   checkConfigForCartesianMode(NULL);
@@ -604,6 +663,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armComputePRM(double ComputeTime)
 //! It first moves the qi and qf configuration to the ROBOT_POS and ROBOT_GOTO
 //! This method calls the compute RRT method from this class
 p3d_traj* ManipulationPlanner::computeTrajBetweenTwoConfigs(configPt qi, configPt qf) {
+  
   ManipulationUtils::forbidWindowEvents();
   p3d_copy_config_into(_robot, qi, &_robot->ROBOT_POS);
   p3d_copy_config_into(_robot, qf, &_robot->ROBOT_GOTO);
@@ -639,7 +699,6 @@ int ManipulationPlanner::checkCollisionOnTraj() {
     return 0;
   }
 }
-
 
 //! \brief Check if the current path is in collision or not
 //! \return 1 in case of collision, 0 otherwise
@@ -890,6 +949,43 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
   }
   return MANIPULATION_TASK_NO_TRAJ_FOUND;
 }
+
+//! The Arm Pick Take To Free method takes in an object in a goal configuration
+//! and then computes a vector of trajectories by calling
+//! the armPickTakeToPlace on the manipulation data
+//
+//! @param armId : which arm is used to grasp the object
+//! @param qGoal : the configuration to bring the object to
+//! @param object : pointer to the p3d_rob that represent the moving object
+//! @param trajs : the vector of trajector optained
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFreePoint(int armId, p3d_vector3 WSPoint , p3d_rob* object, std::vector <p3d_traj*> &trajs){
+  
+	MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+	
+	if ((*_robot->armManipulationData)[armId].getManipState() != holdingObjectInStablePose) 
+	{
+		cout << "Warning::ManipulationPlanner:: the robot is not holding object in a stable pose" << endl;
+		//return status;
+	}
+  
+  p3d_matrix4 tAtt;
+  _configs.getAttachFrame(tAtt);
+
+  configPt qGoal = getFreeHoldingConf(object, armId, *_configs.getGrasp(), tAtt, WSPoint );
+  
+	
+  if (status == MANIPULATION_TASK_OK){
+    //Compute the path between theses configurations
+    status = armPickTakeToFree(armId, qGoal, object,
+															 _configs.getGraspConfig(),
+															 _configs.getApproachGraspConfig(),
+															 *_configs.getGrasp(),
+															 trajs);
+  }
+	
+  return status;
+}
+
 
 //! The Arm Pick Take To Free method takes in an object in a goal configuration
 //! and then computes a vector of trajectories by calling

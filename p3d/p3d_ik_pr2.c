@@ -54,7 +54,7 @@ int ikPr2ArmSolverUnique(double fixedAngle, double min[7], double max[7] , doubl
   q.q4 = -20 * M_PI / 180;
   q.q5 = 20 * M_PI / 180;
   q.q6 = -20 * M_PI / 180;
-  q.q7 = 20 * M_PI / 180;
+  q.q7 = 0 * M_PI / 180;
   
   th07.vx.x = posArray[0][0];
   th07.vx.y = posArray[1][0];
@@ -94,8 +94,8 @@ int ikPr2ArmSolverUnique(double fixedAngle, double min[7], double max[7] , doubl
   
   if (nbsolution == 0) 
   {
-    printf("MGI_ERROR = No solution\n");
-    return 1;
+   printf("MGI_ERROR = No solution\n");
+   return 1;
   }
   
   if(status == MGI_ERROR) {
@@ -110,13 +110,14 @@ int ikPr2ArmSolverUnique(double fixedAngle, double min[7], double max[7] , doubl
   phiArray[5]= qsol[0].q6;
   phiArray[6]= qsol[0].q7;
   
-  cout << "phiArray[0] = " << phiArray[0] << endl;
-  cout << "phiArray[1] = " << phiArray[1] << endl;
-  cout << "phiArray[2] = " << phiArray[2] << endl;
-  cout << "phiArray[3] = " << phiArray[3] << endl;
-  cout << "phiArray[4] = " << phiArray[4] << endl;
-  cout << "phiArray[5] = " << phiArray[5] << endl;
-  cout << "phiArray[6] = " << phiArray[6] << endl;
+  cout << "------------------" << endl;
+  cout << "phiArray[0] = " << (180/M_PI)*phiArray[0] << endl;
+  cout << "phiArray[1] = " << (180/M_PI)*phiArray[1] << endl;
+  cout << "phiArray[2] = " << (180/M_PI)*phiArray[2] << endl;
+  cout << "phiArray[3] = " << (180/M_PI)*phiArray[3] << endl;
+  cout << "phiArray[4] = " << (180/M_PI)*phiArray[4] << endl;
+  cout << "phiArray[5] = " << (180/M_PI)*phiArray[5] << endl;
+  cout << "phiArray[6] = " << (180/M_PI)*phiArray[6] << endl;
 
   return result;
 }

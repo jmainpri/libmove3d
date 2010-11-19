@@ -5474,19 +5474,38 @@ static int p3d_fct_pr2_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
   double minDoFs[7];
   double maxDoFs[7];
   
-  minDoFs[0] = -41;
+  
+  // Left Arm
+//  minDoFs[0] = -41;
+//  minDoFs[1] = -30;
+//  minDoFs[2] = -45;
+//  minDoFs[3] = -133;
+//  minDoFs[4] = -45;
+//  minDoFs[5] = -119;
+//  minDoFs[6] = -180;
+//  
+//  maxDoFs[0] = 131;
+//  maxDoFs[1] = 80;
+//  maxDoFs[2] = 223;
+//  maxDoFs[3] = 0;
+//  maxDoFs[4] = 223;
+//  maxDoFs[5] = 0;
+//  maxDoFs[6] = 180;
+  
+  // Right Arm
+  minDoFs[0] = -131;
   minDoFs[1] = -30;
-  minDoFs[2] = -45;
+  minDoFs[2] = -223;
   minDoFs[3] = -133;
-  minDoFs[4] = -45;
+  minDoFs[4] = -223;
   minDoFs[5] = -119;
   minDoFs[6] = -180;
   
-  maxDoFs[0] = 131;
+  maxDoFs[0] = 41;
   maxDoFs[1] = 80;
-  maxDoFs[2] = 223;
+  maxDoFs[2] = 45;
   maxDoFs[3] = 0;
-  maxDoFs[4] = 223;
+  maxDoFs[4] = 45;
   maxDoFs[5] = 0;
   maxDoFs[6] = 180;
   
@@ -5584,6 +5603,7 @@ static int p3d_fct_pr2_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
             //               }
             //             }
           }
+          printf("Incorrect DoFs bounds\n");
           return (FALSE);
         }
         if (st_niksol) {

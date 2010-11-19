@@ -134,6 +134,7 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 	return succeed;
 }
 
+
 //! Main function that 
 //!
 bool ManipulationTestFunctions::runTest(int id)
