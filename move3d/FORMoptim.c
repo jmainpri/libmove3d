@@ -291,6 +291,8 @@ CB_start_optim_obj(FL_OBJECT * ob, long arg) {
       fl_set_button(ob, 0);
       return;
     }
+    /* position the robot at the beginning of the optimized trajectory */
+    position_robot_at_beginning(robot->num, traj);
   }
 
 /*  if (!traj || traj->nlp <= 1) {
@@ -378,6 +380,8 @@ CB_start_optim_obj(FL_OBJECT * ob, long arg) {
     }
 
   p3d_optimize_traj(robot, traj, rand, elastic, clean, fct_draw);
+  /* position the robot at the beginning of the optimized trajectory */
+  position_robot_at_beginning(robot->num, traj);
   g3d_draw_allwin_active();
   if (ob) {
     fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);

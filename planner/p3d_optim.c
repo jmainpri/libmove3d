@@ -65,8 +65,6 @@ int p3d_optimize_traj(p3d_rob* robot, p3d_traj* traj, int rand, int elastic, int
       for (i = 1; i <= p3d_get_NB_OPTIM() /*&& (gain > 0.0001 || gain == 0)*/; i++) {
         if (p3d_optim_traj(traj, &gain, &ntest)) {
           gaintot = gaintot * (1. - gain);
-          /* position the robot at the beginning of the optimized trajectory */
-          position_robot_at_beginning(robot->num, traj);
         }
         toot = tua;
 //         if (fct_draw) {
@@ -106,11 +104,9 @@ int p3d_optimize_traj(p3d_rob* robot, p3d_traj* traj, int rand, int elastic, int
     epsilon = 0.001 * p3d_get_eps_elastic();
     printf("\ngradient descent optimization \n");
     p3d_gradientDescentOptimize(traj, 0, epsilon, p3d_get_d0(), p3d_get_QUICK_DESCENT(),fct_stop_optim, fct_draw);
-    position_robot_at_beginning(robot->num, traj);
   }else if (clean && p3d_get_ik_choice() == IK_NORMAL){
     printf("\nclearing trajectory \n");
     p3d_clearTraj(traj, 0, fct_stop_optim);
-    position_robot_at_beginning(robot->num, traj);
   }
   return 0;
 }
