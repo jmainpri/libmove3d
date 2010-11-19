@@ -442,6 +442,7 @@ void
 CB_stop_optim_obj(FL_OBJECT * ob, long arg) {
   STOP_OPTIM = TRUE;
   fl_set_button(STOP_OPTIM_OBJ, 0);
+  fl_check_forms();
 }
 
 double

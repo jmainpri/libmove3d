@@ -668,7 +668,6 @@ void p3d_simplify_traj(p3d_traj *trajPt) {
 
 int fct_stop_optim(void) {
   double ts, tu, tmax = p3d_get_optimization_time();
-  fl_check_forms();
   ChronoMicroTimes(&tu, &ts);
   if (p3d_get_use_optimization_time() && tu >= tmax) {
     printf("Optimization stoped by counter.\n");
