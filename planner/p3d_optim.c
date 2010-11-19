@@ -9,7 +9,11 @@
 /*Warning : This variable is also defined in FORMOptim for elastic smoothing algorithm. This one concerns only random algorithm.*/
 #define MAX_NB_TRY_OPTIM  20
 
-extern int STOP_OPTIM;
+int QUICK_DESCENT = TRUE;
+double EPS_ELASTIC = 0.0001;
+double D0 = 0;
+
+int STOP_OPTIM = FALSE;
 
 /*
  *  Extract the local path that contains the configuration
@@ -38,7 +42,7 @@ p3d_localpath *p3d_localpath_from_traj(p3d_localpath *localpathPt,
 }
 
 
-int p3d_optimize_traj(p3d_rob* robot, p3d_traj* traj, int rand, int elastic, int clean){
+int p3d_optimize_traj(p3d_rob* robot, p3d_traj* traj, int rand, int elastic, int clean, void (*fct_draw)(void)){
   int i, ntest = 0, nb_optim = 0;
   double gain = 1., gaintot = 1., epsilon = 0.0;
 
@@ -56,7 +60,7 @@ int p3d_optimize_traj(p3d_rob* robot, p3d_traj* traj, int rand, int elastic, int
 
   if(rand){
     ChronoOn();
-    double tua = 0, tsa = 0, toot = 0;
+    double tua = 0, toot = 0;
     while (fabs(gaintot - 1.0) < EPS6 && nb_optim < MAX_NB_TRY_OPTIM) {
       for (i = 1; i <= p3d_get_NB_OPTIM() /*&& (gain > 0.0001 || gain == 0)*/; i++) {
         if (p3d_optim_traj(traj, &gain, &ntest)) {
@@ -65,9 +69,9 @@ int p3d_optimize_traj(p3d_rob* robot, p3d_traj* traj, int rand, int elastic, int
           position_robot_at_beginning(robot->num, traj);
         }
         toot = tua;
-        if (fct_draw) {
-          (*fct_draw)();
-        }
+//         if (fct_draw) {
+//           (*fct_draw)();
+//         }
         if (!fct_stop_optim()) {
           g3d_draw_allwin_active();
           ChronoPrint("");
@@ -680,4 +684,16 @@ int fct_stop_optim(void) {
   } else {
     return (TRUE);
   }
+}
+
+double p3d_get_d0() {
+  return D0;
+}
+
+double p3d_get_eps_elastic() {
+  return EPS_ELASTIC;
+}
+
+int p3d_get_QUICK_DESCENT() {
+  return QUICK_DESCENT;
 }

@@ -12,12 +12,12 @@ FL_FORM *OPTIM_FORM = NULL;
 extern FL_OBJECT *OPTIM_OBJ;
 extern FL_OBJECT *SEARCH_DRAW_OPTIM_OBJ;
 
-int STOP_OPTIM = FALSE;
+extern int STOP_OPTIM;
 
-static int QUICK_DESCENT = TRUE;
-static double EPS_ELASTIC = 0.0001;
+extern int QUICK_DESCENT;
+extern double EPS_ELASTIC;
+extern double D0;
 
-static double D0 = 0;
 
 static FL_OBJECT *OPTIM_FRAME_OBJ;
 static FL_OBJECT *START_OPTIM_OBJ;
@@ -377,7 +377,7 @@ CB_start_optim_obj(FL_OBJECT * ob, long arg) {
 //       position_robot_at_beginning(ir, traj);
     }
 
-  p3d_optimize_traj(robot, traj, rand, elastic, clean);
+  p3d_optimize_traj(robot, traj, rand, elastic, clean, fct_draw);
   g3d_draw_allwin_active();
   if (ob) {
     fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);
@@ -443,21 +443,6 @@ CB_stop_optim_obj(FL_OBJECT * ob, long arg) {
   STOP_OPTIM = TRUE;
   fl_set_button(STOP_OPTIM_OBJ, 0);
   fl_check_forms();
-}
-
-double
-p3d_get_d0() {
-  return D0;
-}
-
-double
-p3d_get_eps_elastic() {
-  return EPS_ELASTIC;
-}
-
-int
-p3d_get_QUICK_DESCENT() {
-  return QUICK_DESCENT;
 }
 
 static void

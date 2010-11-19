@@ -216,7 +216,7 @@ void optimiseTrajectory(p3d_rob* robot, p3d_traj* traj, int nbSteps, double maxT
   p3d_set_use_optimization_time(true);
   p3d_set_optimization_time(maxTime);
   }
-  p3d_optimize_traj(robot, traj, true, false, true);
+  p3d_optimize_traj(robot, traj, true, false, true, NULL);
 }
 /** ////////////////////////////////////////////
  * ////////////// Query functions //////////////
