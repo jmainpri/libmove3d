@@ -27,11 +27,12 @@ public:
 	
 	bool runTest(int i);
   
+  void initManipulationGenom();
+  
   //! Generic function to test the genom requests
 	bool manipTest(MANIPULATION_TASK_TYPE_STR type);
 	
 private:
-	void initManipulationGenom();
 	
 	p3d_rob* m_Robot;
 	

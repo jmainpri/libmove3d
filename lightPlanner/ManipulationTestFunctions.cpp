@@ -72,6 +72,8 @@ void ManipulationTestFunctions::initManipulationGenom()
 		m_qInit = p3d_copy_config(m_Robot,m_Robot->ROBOT_POS);
 		//m_qInit = p3d_get_robot_config(m_Robot);
 		m_qGoal = p3d_copy_config(m_Robot,m_Robot->ROBOT_GOTO);
+    
+    m_OBJECT_NAME = "GREY_TAPE";
   }
 	
   return;
@@ -91,6 +93,8 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 		cout << "ManipulationTestFunctions::p3d_equal_config(m_Robot, m_qInit, m_qGoal)" << endl;
 		return succeed;
 	}
+  
+  cout << "Manipulation planning for " << m_OBJECT_NAME << endl;
 	
 	MANIPULATION_TASK_MESSAGE status;
 	
@@ -140,8 +144,6 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 //!
 bool ManipulationTestFunctions::runTest(int id)
 {
-	m_OBJECT_NAME = "GREY_TAPE";
-	
 	initManipulationGenom();
 	
 	if (id == 1) 
