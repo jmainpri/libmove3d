@@ -1078,11 +1078,10 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        if(type==GP_SAHAND_RIGHT)
        {
           p3d_mat4Copy(p3d_mat4IDENTITY, T);
-//           p3d_mat4Rot(T, axis, 23*DEGTORAD);
-          p3d_mat4Rot(T, axis, 13*DEGTORAD);
+          p3d_mat4Rot(T, axis, 23*DEGTORAD);
+        //  p3d_mat4Rot(T, axis, 13*DEGTORAD);
           T[0][3]= 0.08;
           T[1][3]= 0.02;
-//           T[1][3]= 0.0;
           T[2][3]= 0.23;
           p3d_matInvertXform(T, Tgrasp_frame_hand);
        }

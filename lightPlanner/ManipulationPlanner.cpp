@@ -323,7 +323,7 @@ configPt ManipulationPlanner::getFreeHoldingConf( p3d_rob* object, int armId, gp
     q[ idManipIndexDof + 2 ] = WSPoint[2];
     
     p3d_set_and_update_this_robot_conf(_robot, q);
-    gpSet_grasp_configuration(_robot, grasp, q, mData.getHandProperties().type);
+    gpSet_grasp_configuration(_robot, grasp, q, armId);
     
     // Sample a configuration for the robot
     q = setRobotGraspPosWithoutBase(_robot, mat , tAtt, false , armId, true);
@@ -359,8 +359,9 @@ configPt ManipulationPlanner::getGraspConf(p3d_rob* object, int armId, gpGrasp& 
 
   //Compute Grasp configuration
   q = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, FALSE, armId, true);
-  
+
   if(q){
+
     //If it exists, try to find better Rest Arm config and
     double restArmCost = setRobotArmsRest(_robot, object->joints[1]->abs_pos, armId, tAtt, _robot->openChainConf, q);
     double graspArmCost = computeRobotGraspArmCost(_robot, armId, grasp, q, _robot->openChainConf, object->joints[1]->abs_pos)/270;
@@ -440,7 +441,7 @@ configPt ManipulationPlanner::getApproachGraspConf(p3d_rob* object, int armId, g
     // Set Manipulation joint and hand configuration
     q[(*_robot->armManipulationData)[armId].getManipulationJnt()->index_dof + 2] += getApproachGraspOffset(); //Z axis of the manipulation joint
     p3d_set_and_update_this_robot_conf(_robot, q);
-    gpSet_grasp_configuration(_robot, grasp, q, mData.getHandProperties().type);
+    gpSet_grasp_configuration(_robot, grasp, q, armId);
     
     // Sample a configuration for the robot
     q = setRobotCloseToConfGraspApproachOrExtract(_robot, q, object->joints[1]->abs_pos, tAtt, false, armId, true);
