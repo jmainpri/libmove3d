@@ -147,10 +147,10 @@ class  ManipulationPlanner {
   /* ******** Task Planning ******** */
   /* ******************************* */
     /** Computes a path for a given manipulation elementary task. Generate a set of Trajectories */
-    MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, const char* objectName,  const char* supportName, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName,  const char* supportName, std::vector <p3d_traj*> &trajs);
 #ifdef MULTILOCALPATH
     /** Computes a path for a given manipulation elementary task. Generate a set of SoftMotion Paths */
-    MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, const char* objectName,  const char* supportName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs);
+    MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName,  const char* supportName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs);
 #endif
 	
   private:

@@ -2857,6 +2857,7 @@ void test_manipulation()
   std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
   std::vector <SM_TRAJ> smTrajs;
   std::vector <p3d_traj*> trajs;
+  std::vector<double>  objStart, objGoto;
   ManipulationData configs(manipulation->robot());
   p3d_rob* object= (p3d_rob*) p3d_get_robot_by_name(ObjectName);
   p3d_matrix4 T, tAtt;
@@ -2864,7 +2865,7 @@ void test_manipulation()
   p3d_matrix4 handFrame;
   gpHand_properties armHandProp = (*manipulation->robot()->armManipulationData)[0].getHandProperties();
   
-  manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), ObjectName, (char*)"", confs, smTrajs);
+  manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(),  objStart, objGoto, ObjectName, (char*)"", confs, smTrajs);
 
 }
 

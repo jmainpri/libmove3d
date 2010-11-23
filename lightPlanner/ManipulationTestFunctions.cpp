@@ -83,7 +83,8 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 	
 	std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
 	std::vector <SM_TRAJ> smTrajs;
-	std::vector <p3d_traj*> trajs; 
+	std::vector <p3d_traj*> trajs;
+  std::vector<double> objStart, objGoto;
 	
 	if (p3d_equal_config(m_Robot, m_qInit, m_qGoal)) 
 	{
@@ -97,7 +98,7 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 	{
 		case P3D_LINEAR_PLANNER :
 		{
-			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal,m_OBJECT_NAME.c_str(), "", trajs);
+			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, objStart, objGoto, m_OBJECT_NAME.c_str(), "", trajs);
 			
 			if(status == MANIPULATION_TASK_OK )
 			{
@@ -112,7 +113,7 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 			
 		case P3D_MULTILOCALPATH_PLANNER :
 			
-			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal,m_OBJECT_NAME.c_str(), "", confs, smTrajs);
+			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, objStart, objGoto, m_OBJECT_NAME.c_str(), "", confs, smTrajs);
 			break;
 			
 		case P3D_SOFT_MOTION_PLANNER:

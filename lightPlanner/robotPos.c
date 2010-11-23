@@ -482,7 +482,10 @@ configPt setRobotCloseToConfGraspApproachOrExtract(p3d_rob* robot, configPt refC
       for(int j = 0; j < (*robot->armManipulationData)[i].getCcCntrt()->npasjnts; j++){
        unFixJoint(robot, (*robot->armManipulationData)[i].getCcCntrt()->pasjnts[i]);
       }
-      if(!strcmp((*robot->armManipulationData)[i].getCcCntrt()->namecntrt, "p3d_kuka_arm_ik")){ //TODO
+      if(!strcmp((*robot->armManipulationData)[i].getCcCntrt()->namecntrt, "p3d_kuka_arm_ik")){
+       unFixJoint(robot, robot->joints[(*robot->armManipulationData)[i].getCcCntrt()->argu_i[0]]);
+      }
+      if(!strcmp((*robot->armManipulationData)[i].getCcCntrt()->namecntrt, "p3d_lwr_arm_ik")){
        unFixJoint(robot, robot->joints[(*robot->armManipulationData)[i].getCcCntrt()->argu_i[0]]);
       }
     }else{

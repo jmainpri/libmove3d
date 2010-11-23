@@ -457,7 +457,8 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	
 	std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
 	std::vector <SM_TRAJ> smTrajs;
-	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(),(char*)"", (char*)"", confs, smTrajs);
+  std::vector <double>  objStart, objGoto;
+	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", confs, smTrajs);
 
 	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
 
@@ -517,7 +518,8 @@ int genomArmGotoX(p3d_rob* robotPt, int cartesian, double x, double y, double z,
 	}
   std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
   std::vector <SM_TRAJ> smTrajs;
-  return manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), (char*)"", (char*)"", confs, smTrajs);
+  std::vector <double> objStart, objGoto;
+  return manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", confs, smTrajs);
 }
 
 static void CB_genomCleanRoadmap_obj(FL_OBJECT *obj, long arg){
@@ -944,7 +946,8 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
 
   std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
   std::vector <SM_TRAJ> smTrajs;
-        manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, (char*)"", confs, smTrajs);
+  std::vector <double>  objStart, objGoto;
+        manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)"", confs, smTrajs);
 
         g3d_win *win= NULL;
         win= g3d_get_cur_win();
@@ -971,7 +974,8 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
 //         manipulation->setObjectToManipulate((char*)OBJECT_NAME);
 	std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
   std::vector<SM_TRAJ> smTrajs;
-        manipulation->armPlanTask(ARM_PICK_TAKE_TO_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, (char*)"", confs, smTrajs);
+  std::vector<double> objStart, objGoto;
+        manipulation->armPlanTask(ARM_PICK_TAKE_TO_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)"", confs, smTrajs);
 
 	g3d_draw_allwin_active();
 	return;
@@ -997,8 +1001,8 @@ static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg) {
 //   manipulation->setHuman((char*)HUMAN_NAME);
   std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
   std::vector <SM_TRAJ> smTrajs;
-  
-  manipulation->armPlanTask(ARM_PICK_TAKE_TO_PLACE,0,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, (char*)"", confs, smTrajs);
+  std::vector<double> objStart, objGoto;
+  manipulation->armPlanTask(ARM_PICK_TAKE_TO_PLACE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto, (char*)OBJECT_NAME, (char*)"", confs, smTrajs);
   g3d_draw_allwin_active();
 
   return;
@@ -1024,7 +1028,8 @@ static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
 
   std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
   std::vector <SM_TRAJ> smTrajs;
-  manipulation->armPlanTask(ARM_PLACE_FROM_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, (char*)"", confs, smTrajs);
+  std::vector<double> objStart, objGoto;
+  manipulation->armPlanTask(ARM_PLACE_FROM_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)"", confs, smTrajs);
 
   g3d_draw_allwin_active();
 
