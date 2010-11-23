@@ -52,6 +52,8 @@
 #include "../hri_planner/proto/hri_manip_proto.h"
 #include "../hri_planner/proto/hri_gik_proto.h"
 
+#include "../hri_planner/proto/hri_graphic_proto.h"
+
 #ifdef HRI_PLANNER_GUI
 #include "../hri_planner/include/perspective.h"
 
@@ -60,7 +62,6 @@
 #include"../hri_planner/proto/FORMgikjointselection_proto.h"
 #include"../hri_planner/proto/hri_wave_exp_proto.h"
 #include "../hri_planner/graphic/proto/hri_graphic_proto.h"
-#include "../hri_planner/proto/hri_graphic_proto.h"
 #include "../hri_planner/proto/p3d_perspective_proto.h"
 
 #endif

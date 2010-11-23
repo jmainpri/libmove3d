@@ -16,11 +16,6 @@
 
 #include "Graphic-pkg.h"
 
-#if defined( HRI_PLANNER_GUI )
-#include "Hri_planner-pkg.h"
-int HRI_DRAW_TRAJ;
-#endif
-
 #ifdef DPG
 #include "../planner/dpg/proto/DpgGrid.h"
 #endif
@@ -28,7 +23,7 @@ int HRI_DRAW_TRAJ;
 #ifdef HRI_PLANNER
 
 #include "Hri_planner-pkg.h"
-
+int HRI_DRAW_TRAJ;
 // Hri distance draw
 extern double hri_cost_to_display;
 extern bool hri_draw_distance;
@@ -1338,7 +1333,7 @@ void g3d_draw_env_custom()
   }
 #endif
   
-#ifdef HRI_PLANNER_GUI
+#ifdef HRI_PLANNER
   //hri_hri_inter_point_test();
   g3d_hri_bt_draw_active_bitmaps(BTSET);
   g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
