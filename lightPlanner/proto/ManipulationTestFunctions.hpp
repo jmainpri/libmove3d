@@ -40,6 +40,8 @@ private:
 	configPt m_qGoal;
 	
 	std::string m_OBJECT_NAME;
+  
+    std::vector<double> m_objStart, m_objGoto;
 	
 	ManipulationPlanner* m_manipulation;
 };

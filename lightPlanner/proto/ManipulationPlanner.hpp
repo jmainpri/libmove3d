@@ -65,7 +65,7 @@ class  ManipulationPlanner {
   /**
    * Generates a free configuration from a worspace point and a grasp 
    */
-  configPt getFreeHoldingConf( p3d_rob* obj, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, p3d_vector3 WSPoint ) const;
+  configPt getFreeHoldingConf( p3d_rob* obj, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, std::vector<double> &objGoto ) const;
   /** Generate the grasp configuration given the grasp the arm and the object.
   @return the attach matrix computed given the grasp and Tatt2 from the p3d file
   @return the configuration cost
@@ -79,6 +79,8 @@ class  ManipulationPlanner {
   configPt getApproachGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const;
   
 	MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;
+  
+  MANIPULATION_TASK_MESSAGE computeManipulationData(int armId,p3d_rob* object);
   
 	/* ******************************* */
   /* ******* Planning Modes ******** */
@@ -112,7 +114,7 @@ class  ManipulationPlanner {
     MANIPULATION_TASK_MESSAGE armPickGoto(int armId, configPt qStart, p3d_rob* object, configPt graspConfig, configPt openConfig, configPt approachFreeConfig, std::vector <p3d_traj*> &trajs);
 
     /** Move the arm from a grasping configuration (of the object placed on a support) to a free configuration */
-    MANIPULATION_TASK_MESSAGE armPickTakeToFreePoint(int armId, p3d_vector3 WSPoint , p3d_rob* object, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armPickTakeToFreePoint(int armId, std::vector<double> &objGoto, p3d_rob* object, std::vector <p3d_traj*> &trajs);
     MANIPULATION_TASK_MESSAGE armPickTakeToFree(int armId, configPt qGoal, p3d_rob* object, std::vector <p3d_traj*> &trajs);
 		MANIPULATION_TASK_MESSAGE armPickTakeToFree(int armId, configPt qGoal, p3d_rob* object, configPt qStart, configPt approachGraspConfig, gpGrasp &grasp, std::vector <p3d_traj*> &trajs);
 

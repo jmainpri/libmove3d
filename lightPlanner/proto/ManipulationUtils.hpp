@@ -374,9 +374,7 @@ class ManipulationData{
       setOpenConfig(data.getOpenConfig());
       setApproachFreeConfig(data.getApproachFreeConfig());
       setApproachGraspConfig(data.getApproachGraspConfig());
-      p3d_matrix4 att;
-      data.getAttachFrame(att);
-      setAttachFrame(att);
+      data.getAttachFrame(_graspAttachFrame);
       setGraspConfigCost(data.getGraspConfigCost());
       return *this;
     }

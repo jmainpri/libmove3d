@@ -73,7 +73,20 @@ void ManipulationTestFunctions::initManipulationGenom()
 		//m_qInit = p3d_get_robot_config(m_Robot);
 		m_qGoal = p3d_copy_config(m_Robot,m_Robot->ROBOT_GOTO);
     
+    
+    // Warning SCENARIO dependant part, gsJidoKukaSAHand.p3d
     m_OBJECT_NAME = "GREY_TAPE";
+    
+    m_objGoto.resize(3);
+    
+//    m_objGoto[0] = 3.90;  // X
+//    m_objGoto[1] = -2.85; // Y
+//    m_objGoto[2] = 1.30;  // Z
+    
+    m_objGoto[0] = 4.23;
+    m_objGoto[1] = -2.22;
+    m_objGoto[2] = 1.00;
+
   }
 	
   return;
@@ -86,7 +99,6 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 	std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
 	std::vector <SM_TRAJ> smTrajs;
 	std::vector <p3d_traj*> trajs;
-  std::vector<double> objStart, objGoto;
 	
 	if (p3d_equal_config(m_Robot, m_qInit, m_qGoal)) 
 	{
@@ -102,7 +114,7 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 	{
 		case P3D_LINEAR_PLANNER :
 		{
-			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, objStart, objGoto, m_OBJECT_NAME.c_str(), "", trajs);
+			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, m_OBJECT_NAME.c_str(), "", trajs);
 			
 			if(status == MANIPULATION_TASK_OK )
 			{
@@ -117,7 +129,7 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 			
 		case P3D_MULTILOCALPATH_PLANNER :
 			
-			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, objStart, objGoto, m_OBJECT_NAME.c_str(), "", confs, smTrajs);
+			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, m_OBJECT_NAME.c_str(), "", confs, smTrajs);
 			break;
 			
 		case P3D_SOFT_MOTION_PLANNER:
@@ -159,6 +171,18 @@ bool ManipulationTestFunctions::runTest(int id)
 	if (id == 3) 
 	{
 		return manipTest(ARM_PICK_GOTO_AND_TAKE_TO_FREE);
+	}
+  
+  if (id == 4) 
+	{
+    manipTest(ARM_PICK_GOTO);
+		return manipTest(ARM_PICK_TAKE_TO_FREE);
+	}
+  
+  if (id == 5) 
+	{
+    manipTest(ARM_PICK_GOTO);
+		return manipTest(ARM_PICK_TAKE_TO_FREE_POINT);
 	}
 	
 	return false;

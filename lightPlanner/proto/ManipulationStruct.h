@@ -12,7 +12,8 @@ typedef enum MANIPULATION_TASK_TYPE_STR {
   ARM_PICK_TAKE_TO_PLACE = 4,  /*!< move the arm from a grasping configuration to a configuration with the same grasp but a different object placement */
   ARM_PLACE_FROM_FREE = 5,  /*!< move the arm from a free configuration to a placement configuration */
   ARM_PICK_AND_PLACE = 6, /*!< move the arm from a free configuration to a grasping configuration of the object placed on a support then to a placement configuration */
-	ARM_PICK_GOTO_AND_TAKE_TO_FREE = 7
+	ARM_PICK_GOTO_AND_TAKE_TO_FREE = 7,
+  ARM_PICK_TAKE_TO_FREE_POINT = 8
 } MANIPULATION_TASK_TYPE_STR;
 
 
