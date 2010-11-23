@@ -10,8 +10,10 @@
 #if defined(MULTILOCALPATH)
 #include "gbM/gbStruct.h"
 #endif
-
-#include "../lightPlanner/proto/lightPlannerApi.h"
+#ifdef LIGHT_PLANNER
+  #include "lightPlannerApi.h"
+  #include "ManipulationUtils.hpp"
+#endif
 #include <iostream>
 
 // FOR DEBUGGING //
@@ -6087,17 +6089,17 @@ static int p3d_set_pa10_6_arm_ik(p3d_cntrt_management * cntrt_manager,
  * return 0 if there is an error
  */
 int p3d_update_virtual_object_config_for_arm_ik_constraint( p3d_rob* robot, int armId, configPt q) {
-	p3d_jnt *virObjJnt= NULL,*virObjJnt2= NULL, *wristJnt= NULL, *wristJnt2= NULL;
+	p3d_jnt *virObjJnt= NULL, *wristJnt= NULL;
 	p3d_matrix4 TattInv, Twrist, TvirtObj;
 	configPt q0= NULL;
-	p3d_cntrt* cntrt_arm = NULL, * cntrt_arm2 = NULL;
+	p3d_cntrt* cntrt_arm = NULL;
 
-	if(robot->nbCcCntrts==0) {
+	if(robot->armManipulationData->size() == 0) {
 		printf("%s: %d: p3d_update_virtual_object_config_for_arm_ik_constraint(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robot->name);
 		return FALSE;
 	}
 	else {
-    cntrt_arm = robot->ccCntrts[armId];
+    cntrt_arm = (*robot->armManipulationData)[armId].getCcCntrt();
     if (cntrt_arm == NULL) {
       printf("FATAL_ERROR : arm_IK constraint does not exist\n");
       return 0;
@@ -6115,8 +6117,7 @@ int p3d_update_virtual_object_config_for_arm_ik_constraint( p3d_rob* robot, int 
 	if (cntrt_arm->active == 1) {
 		return 1;
 	}
-	q0= p3d_alloc_config(robot);
-	p3d_get_robot_config_into(robot, &q0);
+	q0 = p3d_get_robot_config(robot);
 
 	p3d_set_and_update_this_robot_conf(robot, q);
 
@@ -6136,9 +6137,7 @@ int p3d_update_virtual_object_config_for_arm_ik_constraint( p3d_rob* robot, int 
 	p3d_destroy_config(robot, q0);
 	return 1;
 }
-#endif
 
-#ifdef LIGHT_PLANNER
 /** \brief p3d_update_virtual_object_config
  * return 0 if there is an error
  */
