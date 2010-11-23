@@ -698,11 +698,15 @@ p3d_traj *p3d_graph_to_traj(p3d_rob *robotPt) {
   bckw_path = xyz_graph->search_goal;
   last_node = NULL;
 
-  while (bckw_path != xyz_graph->search_start) {
+  while (bckw_path && bckw_path != xyz_graph->search_start) {
     path = addnode_before_list(bckw_path, last_node);
     last_node = path;
     bckw_path = bckw_path->search_from;
     iloc = iloc + 1;
+  }
+  if(!bckw_path){
+    printf("%s: %d: p3d_graph_to_traj: Error in graph search. bckw_path = NULL\n", __FILE__, __LINE__);
+    return NULL;
   }
 
   path = addnode_before_list(xyz_graph->search_start,
