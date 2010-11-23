@@ -455,15 +455,15 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	  }
 	}
 	
-// 	std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
-// 	std::vector <SM_TRAJ> smTrajs;
-//  std::vector <double>  objStart, objGoto;
-// 	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", confs, smTrajs);
+	std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
+	std::vector <SM_TRAJ> smTrajs;
+ std::vector <double>  objStart, objGoto;
+	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", confs, smTrajs);
  
-  std::vector <p3d_traj*> trajs;
-  std::vector <double>  objStart, objGoto;
-  manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", trajs);
-	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
+//   std::vector <p3d_traj*> trajs;
+//   std::vector <double>  objStart, objGoto;
+//   manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", trajs);
+// 	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
 
 //   std::cout << "Positions (nb conf = "<< confs[0].second.size() << "): " << std::endl;
  

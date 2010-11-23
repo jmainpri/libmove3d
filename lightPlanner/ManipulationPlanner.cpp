@@ -1233,60 +1233,60 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     fixAllHands(qf, false);
     p3d_set_and_update_this_robot_conf(_robot, qi);
     switch (task) {
-      case ARM_FREE: {
-        printf("plan for ARM_FREE task\n");
-        if (MPDEBUG) {
-          ManipulationUtils::copyConfigToFORM(_robot, qi);
-          ManipulationUtils::copyConfigToFORM(_robot, qf);
-        }
-        if ((traj = computeTrajBetweenTwoConfigs(qi, qf)) == NULL) {
-                printf("ERROR armPlanTask(ARM_FREE) on traj\n");
-          status = MANIPULATION_TASK_NO_TRAJ_FOUND;
-          break;
-        }
-        trajs.push_back(traj);
-        break;
-      }
-      case ARM_PICK_GOTO: {
-        printf("plan for ARM_PICK_GOTO task\n");
-        status = armPickGoto(armId, qi, object, trajs);
-        break;
-      }
-      case ARM_PICK_TAKE_TO_FREE:{
-        printf("plan for ARM_PICK_TAKE_TO_FREE task\n");
-        status = armPickTakeToFree(armId, qf, object, trajs);
-        break;
-      }
+          case ARM_FREE: {
+              printf("plan for ARM_FREE task\n");
+              if (MPDEBUG) {
+                  ManipulationUtils::copyConfigToFORM(_robot, qi);
+                  ManipulationUtils::copyConfigToFORM(_robot, qf);
+              }
+              if ((traj = computeTrajBetweenTwoConfigs(qi, qf)) == NULL) {
+                  printf("ERROR armPlanTask(ARM_FREE) on traj\n");
+                  status = MANIPULATION_TASK_NO_TRAJ_FOUND;
+                  break;
+              }
+              trajs.push_back(traj);
+              break;
+          }
+          case ARM_PICK_GOTO: {
+              printf("plan for ARM_PICK_GOTO task\n");
+              status = armPickGoto(armId, qi, object, trajs);
+              break;
+          }
+          case ARM_PICK_TAKE_TO_FREE: {
+              printf("plan for ARM_PICK_TAKE_TO_FREE task\n");
+              status = armPickTakeToFree(armId, qf, object, trajs);
+              break;
+          }
       case ARM_PICK_TAKE_TO_FREE_POINT:{
         printf("plan for ARM_PICK_TAKE_TO_FREE_POINT task\n");
         status = armPickTakeToFreePoint(armId, objGoto, object, trajs);
         break;
       }
-      case ARM_PICK_TAKE_TO_PLACE:{
-        printf("plan for ARM_PICK_TAKE_TO_PLACE task\n");
-        status = armPickTakeToPlace(armId, object, support, trajs);
-        break;
-      }
-      case ARM_PLACE_FROM_FREE:{
-        printf("plan for ARM_PLACE_FROM_FREE task\n");
-        status = armPlaceFromFree(armId, qi, object, support, trajs);
-        break;
-      }
-      case ARM_PICK_AND_PLACE:{
-        printf("plan for ARM_PICK_AND_PLACE task\n");
-        status = armPickAndPlace(armId, qi, qf, object, support, trajs);
-        break;
-      }
-      case ARM_PICK_GOTO_AND_TAKE_TO_FREE:{
-        printf("plan for ARM_PICK_GOTO_AND_TAKE_TO_FREE task\n");
-        status = armPickGotoAndTakeToFree(armId, qi, qf, object, support, trajs);
-        break;
-      }
-      default:{
-        printf("%s: %d: ManipulationPlanner::armPlanTask(): wrong task.\n", __FILE__, __LINE__);
-        status = MANIPULATION_TASK_INVALID_TASK;
-        break;
-      }
+          case ARM_PICK_TAKE_TO_PLACE: {
+              printf("plan for ARM_PICK_TAKE_TO_PLACE task\n");
+              status = armPickTakeToPlace(armId, object, support, trajs);
+              break;
+          }
+          case ARM_PLACE_FROM_FREE: {
+              printf("plan for ARM_PLACE_FROM_FREE task\n");
+              status = armPlaceFromFree(armId, qi, object, support, trajs);
+              break;
+          }
+          case ARM_PICK_AND_PLACE: {
+              printf("plan for ARM_PICK_AND_PLACE task\n");
+              status = armPickAndPlace(armId, qi, qf, object, support, trajs);
+              break;
+          }
+          case ARM_PICK_GOTO_AND_TAKE_TO_FREE: {
+              printf("plan for ARM_PICK_GOTO_AND_TAKE_TO_FREE task\n");
+              status = armPickGotoAndTakeToFree(armId, qi, qf, object, support, trajs);
+              break;
+          }
+          default: {
+              printf("%s: %d: ManipulationPlanner::armPlanTask(): wrong task.\n", __FILE__, __LINE__);
+              status = MANIPULATION_TASK_INVALID_TASK;
+              break;
+          }
     }
     unfixManipulationJoints(armId);
     p3d_sel_desc_id(P3D_ROBOT,cur_robot);
@@ -1318,17 +1318,20 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1);
 
     if ((returnMessage = armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, trajs)) == MANIPULATION_TASK_OK) {
-        //concatene
-        if (concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK) {
-            /* COMPUTE THE SOFTMOTION TRAJECTORY */
-            MANPIPULATION_TRAJECTORY_CONF_STR conf;
-            SM_TRAJ smTraj;
-            computeSoftMotion(traj, conf, smTraj);
-            confs.push_back(conf);
-            smTrajs.push_back(smTraj);
-        } else {
-            returnMessage = MANIPULATION_TASK_NO_TRAJ_FOUND;
+      //concatene
+      if (concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK) {
+        if(getArmCartesian(0)){ //TODO Softmotion smoothing
+          return returnMessage; 
         }
+        /* COMPUTE THE SOFTMOTION TRAJECTORY */
+        MANPIPULATION_TRAJECTORY_CONF_STR conf;
+        SM_TRAJ smTraj;
+        computeSoftMotion(traj, conf, smTraj);
+        confs.push_back(conf);
+        smTrajs.push_back(smTraj);
+      } else {
+        returnMessage = MANIPULATION_TASK_NO_TRAJ_FOUND;
+      }
     }
 
     return returnMessage;

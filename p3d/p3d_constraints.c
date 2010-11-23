@@ -6093,6 +6093,7 @@ int p3d_update_virtual_object_config_for_arm_ik_constraint( p3d_rob* robot, int 
 	p3d_matrix4 TattInv, Twrist, TvirtObj;
 	configPt q0= NULL;
 	p3d_cntrt* cntrt_arm = NULL;
+  int cntrtActive = false;
 
 	if(robot->armManipulationData->size() == 0) {
 		printf("%s: %d: p3d_update_virtual_object_config_for_arm_ik_constraint(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robot->name);
@@ -6115,12 +6116,13 @@ int p3d_update_virtual_object_config_for_arm_ik_constraint( p3d_rob* robot, int 
 
 
 	if (cntrt_arm->active == 1) {
-		return 1;
+    cntrtActive = true;
+		p3d_desactivateCntrt(robot, cntrt_arm);
 	}
 	q0 = p3d_get_robot_config(robot);
 
 	p3d_set_and_update_this_robot_conf(robot, q);
-
+  
 	p3d_mat4Copy(wristJnt->abs_pos, Twrist);
 	p3d_matInvertXform(cntrt_arm->Tatt, TattInv);
 	p3d_mat4Mult(Twrist, TattInv, TvirtObj);
@@ -6130,9 +6132,12 @@ int p3d_update_virtual_object_config_for_arm_ik_constraint( p3d_rob* robot, int 
 //   Mokhtar Inutile
 //   p3d_activateCntrt(robot, cntrt_arm);
 //   p3d_set_and_update_this_robot_conf(robot, q);
-// 
+//   p3d_get_robot_config_into(robot, &q);
 //   p3d_desactivateCntrt(robot, cntrt_arm);
   
+  if(cntrtActive){
+    p3d_activateCntrt(robot, cntrt_arm);
+  }
 	p3d_set_and_update_this_robot_conf(robot, q0);
 	p3d_destroy_config(robot, q0);
 	return 1;
