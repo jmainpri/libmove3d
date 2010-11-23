@@ -140,7 +140,7 @@ class ArmManipulationData {
     };
 #endif
     inline void setCartesian(bool cartesian){
-      cartesian = _cartesian;
+      _cartesian = cartesian;
     };
 
     /***********/

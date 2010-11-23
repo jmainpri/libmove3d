@@ -708,7 +708,7 @@ int p3d_multiLocalPath_update_joint_sampling_activation(p3d_rob* robotPt) {
  int indexJnt = 0;
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
  
-    		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
+    for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
 		   indexJnt = robotPt->mlp->mlpJoints[i]->joints[j];
 			p3d_jnt_set_is_active_for_planner2(robotPt->joints[indexJnt], FALSE);
 		}

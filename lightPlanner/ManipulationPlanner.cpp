@@ -216,7 +216,9 @@ void ManipulationPlanner::fixManipulationJoints(int armId, configPt q, p3d_rob* 
         p3d_set_and_update_this_robot_conf(_robot, q);
     }
     for (uint i = 0; i < (*_robot->armManipulationData).size(); i++) {
-        fixJoint(_robot, (*_robot->armManipulationData)[i].getManipulationJnt(), pos);
+        if(!(*_robot->armManipulationData)[i].getCartesian()){
+          fixJoint(_robot, (*_robot->armManipulationData)[i].getManipulationJnt(), pos);
+        }
     }
     if (q) {
         p3d_get_robot_config_into(_robot, &q);
@@ -533,20 +535,26 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::computeManipulationData(int armId
 /* ******* Motion Planning Modes * */
 /* ******************************* */
 
-void ManipulationPlanner::checkConfigForCartesianMode(configPt q) {
+void ManipulationPlanner::checkConfigForCartesianMode(configPt q, p3d_rob* object) {
     bool deleteConfig = false;
     if (q == NULL) {
         q = p3d_get_robot_config(_robot);
         deleteConfig = true;
     }
     for (uint i = 0; i < (*_robot->armManipulationData).size(); i++) {
-        ArmManipulationData armData  = (*_robot->armManipulationData)[i];
+        ArmManipulationData& armData  = (*_robot->armManipulationData)[i];
         if (armData.getCartesian()) {
             /* Uptdate the Virual object for inverse kinematics */
             p3d_update_virtual_object_config_for_arm_ik_constraint(_robot, i, q);
             activateCcCntrts(_robot, i, false);
+            #ifdef MULTILOCALPATH
+            if(_robot->lpl_type == P3D_MULTILOCALPATH_PLANNER){
+              p3d_multiLocalPath_set_groupToPlan(_robot, armData.getCartesianGroup(), 1);
+            }
+            #endif
         } else {
             deactivateCcCntrts(_robot, i);
+            fixManipulationJoints(i, q, object);
         }
     }
     p3d_set_and_update_this_robot_conf(_robot, q);
@@ -558,20 +566,25 @@ void ManipulationPlanner::checkConfigForCartesianMode(configPt q) {
 }
 
 void ManipulationPlanner::setArmCartesian(int armId, bool cartesian) {
-    ArmManipulationData armData  = (*_robot->armManipulationData)[armId];
+    ArmManipulationData& armData  = (*_robot->armManipulationData)[armId];
 
     armData.setCartesian(cartesian);
     //activate the corresponding group, constraint and set the sampling bounds of the object to sample
     if (cartesian) {
         activateCcCntrts(_robot, armId, 0);
         shootTheObjectArroundTheBase(_robot, _robot->baseJnt, armData.getManipulationJnt(), 2.0);
+        
 #ifdef MULTILOCALPATH
-        p3d_multiLocalPath_set_groupToPlan(_robot, armData.getCartesianGroup(), 1);
+        if(_robot->lpl_type == P3D_MULTILOCALPATH_PLANNER){
+          p3d_multiLocalPath_set_groupToPlan(_robot, armData.getCartesianGroup(), 1);
+        }
 #endif
     } else {
         deactivateCcCntrts(_robot, armId);
 #ifdef MULTILOCALPATH
-        p3d_multiLocalPath_set_groupToPlan(_robot, armData.getCartesianGroup(), 0);
+        if(_robot->lpl_type == P3D_MULTILOCALPATH_PLANNER){
+          p3d_multiLocalPath_set_groupToPlan(_robot, armData.getCartesianGroup(), 0);
+        }
 #endif
         shootTheObjectInTheWorld(_robot, armData.getManipulationJnt());
     }
@@ -677,7 +690,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armComputePRM(double ComputeTime)
 
     this->cleanRoadmap();
 
-    checkConfigForCartesianMode(NULL);
+    checkConfigForCartesianMode(NULL, NULL);
 #ifdef MULTILOCALPATH
     p3d_multiLocalPath_disable_all_groupToPlan(_robot);
     p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1);
@@ -761,7 +774,7 @@ int  ManipulationPlanner::checkCollisionOnTraj(int currentLpId) {
             traj = _robot->t[_robot->tcur->num - 2];
         }
     }
-    checkConfigForCartesianMode(NULL);
+    checkConfigForCartesianMode(NULL, NULL);
     if (currentLpId > _robot->tcur->nlp) {
         printf("BioMove3D: checkCollisionOnTraj given lpId  = %d > tcur nlp = %d\n", currentLpId, _robot->tcur->nlp);
         currentLpId = 0;
@@ -787,7 +800,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::replanCollidingTraj(int currentLp
             traj = _robot->t[_robot->tcur->num - 2];
         }
     }
-    checkConfigForCartesianMode(NULL);
+    checkConfigForCartesianMode(NULL, NULL);
     if (currentLpId > _robot->tcur->nlp) {
         printf("BioMove3D: checkCollisionOnTraj given lpId  = %d > tcur nlp = %d\n", currentLpId, _robot->tcur->nlp);
         currentLpId = 0;
@@ -1214,10 +1227,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     status = MANIPULATION_TASK_INVALID_TASK;
   } else {
     ENV.setBool(Env::drawTraj, false);
-    checkConfigForCartesianMode(qi);
-    checkConfigForCartesianMode(qf);
-    fixManipulationJoints(armId, qi, object);
-    fixManipulationJoints(armId, qf, object);
+        checkConfigForCartesianMode(qi, object);
+        checkConfigForCartesianMode(qf, object);
     fixAllHands(qi, false);
     fixAllHands(qf, false);
     p3d_set_and_update_this_robot_conf(_robot, qi);
@@ -1229,7 +1240,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
           ManipulationUtils::copyConfigToFORM(_robot, qf);
         }
         if ((traj = computeTrajBetweenTwoConfigs(qi, qf)) == NULL) {
-          printf("ERROR armPlanTask(ARM_FREE) on traj");
+                printf("ERROR armPlanTask(ARM_FREE) on traj\n");
           status = MANIPULATION_TASK_NO_TRAJ_FOUND;
           break;
         }

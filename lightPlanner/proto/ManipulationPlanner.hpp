@@ -86,7 +86,7 @@ class  ManipulationPlanner {
   /* ******* Planning Modes ******** */
   /* ******************************* */
     /** Update the config given as parameter to deal with cartesian mode */
-    void checkConfigForCartesianMode(configPt q);
+    void checkConfigForCartesianMode(configPt q, p3d_rob* object);
     /** Set the given Arm to be planified as cartesian */
     void setArmCartesian(int armId, bool cartesian);
     /** Get if the Arm will be planned in cartesian or not */
