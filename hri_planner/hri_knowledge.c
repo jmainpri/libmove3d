@@ -67,6 +67,8 @@ HRI_ENTITIES * hri_create_entities()
   return entities;     
 }
 
+/* By default the entity structure doesn't attached to agents */
+/* The user can call following function to link entities to agents */
 int hri_refine_entity_types(HRI_ENTITIES * entities, HRI_AGENTS * agents)
 {
   int i;

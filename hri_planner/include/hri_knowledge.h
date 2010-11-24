@@ -3,20 +3,20 @@
 
 typedef enum ENUM_HRI_ENTITY_TYPE {
   HRI_OBJECT = 0,
-  HRI_ISAGENT = 1,
+  HRI_ISAGENT = 1, /* There is already a type called HRI_AGENT */
   HRI_AGENT_PART = 2,
   HRI_OBJECT_PART = 3,
-  HRI_VIRTUAL_OBJECT = 4
+  HRI_VIRTUAL_OBJECT = 4 
 } HRI_ENTITY_TYPE;
 
 typedef struct STRUCT_HRI_ENTITY {
   
   HRI_ENTITY_TYPE type;
-  int can_disappear;
+  int can_disappear; /* Can this entity disappear? For example a furniture can be considered a not movable */
   
-  p3d_rob * robotPt;
+  p3d_rob * robotPt; 
   p3d_obj * partPt;
-  int agent_idx;
+  int agent_idx; /* if it's a part of an agent, then its index */
   
 } HRI_ENTITY;
 
@@ -28,14 +28,14 @@ typedef struct STRUCT_HRI_ENTITIES {
 typedef enum ENUM_HRI_VISIBILITY {
   HRI_VISIBLE = 0,
   HRI_INVISIBLE = 1,
-  HRI_UK_VIS = 2
+  HRI_UK_VIS = 2 /* Unknown visibility. meaning we don't know */
 } HRI_VISIBILITY;
 
 typedef enum ENUM_HRI_VISIBILITY_PLACEMENT {
   HRI_FOA = 1,
   HRI_FOV = 2,
   HRI_OOF = 3,
-  HRI_UK_VIS_PLACE = 4
+  HRI_UK_VIS_PLACE = 4 /* Unknown visibility placement. meaning we don't know */
 } HRI_VISIBILITY_PLACEMENT;
 
 typedef struct STRUCT_HRI_VISIBILITY_LIST {
@@ -48,13 +48,13 @@ typedef enum ENUM_HRI_REACHABILITY {
   HRI_UNREACHABLE = 0,
   HRI_REACHABLE = 1,
   HRI_HARDLY_REACHABLE = 2,
-  HRI_UK_REACHABILITY = 3
+  HRI_UK_REACHABILITY = 3 /* Unknown reachability. meaning we don't know */
 } HRI_REACHABILITY;
 
 typedef enum ENUM_HRI_MOTION {
   HRI_STATIC = 1,
   HRI_MOVING = 2,
-  HRI_UK_MOTION = 0
+  HRI_UK_MOTION = 0 /* Unknown motion. meaning we don't know */
 } HRI_MOTION;
 
 typedef enum ENUM_HRI_PLACEMENT_RELATION {
@@ -62,7 +62,7 @@ typedef enum ENUM_HRI_PLACEMENT_RELATION {
   HRI_ISON     = 1,
   HRI_ISNEXTTO = 2,
   HRI_NOPLR    = 3,
-  HRI_UK_PLR   = 4
+  HRI_UK_PLR   = 4 /* Unknown placement. meaning we don't know */
 } HRI_PLACEMENT_RELATION;
 
 typedef enum ENUM_HRI_SPATIAL_RELATION {
@@ -103,17 +103,20 @@ typedef struct STRUCT_HRI_KNOWLEDGE_ON_ENTITY {
   
 } HRI_KNOWLEDGE_ON_ENTITY;
 
+
+/* Each agent has a knowledge structure. It presents the agent's knowledge on the geometry of the world */
 typedef struct STRUCT_HRI_KNOWLEDGE {
   /* The spatial knowledge on the state of things from the perspective of the agent */
+  /* Normally all indexes should be synchronized with entities structure */
   
   HRI_VISIBILITY * sees;
   int sees_nb;
   HRI_REACHABILITY * reaches;
   int reaches_nb;
   
-  int * looks_at;
+  int * looks_at; /* indexes of entities in entity structure */
   int looks_at_nb;
-  int * points_at;
+  int * points_at; /* indexes of entities in entity structure */
   int points_at_nb;
   
   HRI_KNOWLEDGE_ON_ENTITY * entities;
