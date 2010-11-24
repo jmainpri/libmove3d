@@ -31,6 +31,7 @@ public:
   
   //! Generic function to test the genom requests
 	bool manipTest(MANIPULATION_TASK_TYPE_STR type);
+	bool manipTestGraspingWithDifferentObjectOrientations();
 	
 private:
 	

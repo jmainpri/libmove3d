@@ -11,6 +11,9 @@
 #include "proto/ManipulationPlanner.hpp"
 
 #include "Planner-pkg.h"
+//#include "P3d-pkg.h"
+#include "../p3d/proto/p3d_setpos_proto.h"
+#include "../p3d/proto/p3d_get_proto.h"
 
 using namespace std;
 
@@ -152,39 +155,83 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 }
 
 
+bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations()
+{
+  int n, nbOrientations;
+  bool result;
+  p3d_rob *object;
+  double x, y, z, rx, ry, rz;
+
+  object= (p3d_rob*) p3d_get_robot_by_name((char*) m_OBJECT_NAME.c_str());
+  if(object==NULL)
+  { 
+    printf("%s: %d: there is no robot named \"%s\".\n",__FILE__,__LINE__,m_OBJECT_NAME.c_str());
+    return false;
+  }
+  p3d_get_freeflyer_pose2(object, &x, &y, &z, &rx, &ry, &rz);
+
+  n= 0;
+  nbOrientations= 100;
+  for(int i=0; i<nbOrientations; ++i)
+  {
+    printf("**********************************************\n");
+    p3d_set_and_update_this_robot_conf(m_manipulation->robot(), m_qInit);
+    p3d_set_freeflyer_pose2(object, x, y, z, p3d_random(-M_PI,M_PI), p3d_random(-M_PI,M_PI), p3d_random(-M_PI,M_PI));
+    result= manipTest(ARM_PICK_GOTO);  
+    if(result==true)
+    {  n++; }    
+  }  
+  printf("---------------------------------------------------\n");
+  printf("---------------------------------------------------\n");
+  printf("---------------------------------------------------\n");
+  printf("---------------------------------------------------\n");
+  printf("%s: %d: ARM_PICK_GOTO succeeded for %d/%d different orientations of the object.\n",__FILE__,__LINE__,n,nbOrientations);
+  printf("---------------------------------------------------\n");
+  printf("---------------------------------------------------\n");
+  printf("---------------------------------------------------\n");
+  printf("---------------------------------------------------\n");
+  
+  return (n!=0 ? true : false);
+}
+
 //! Main function that 
 //!
 bool ManipulationTestFunctions::runTest(int id)
 {
-	initManipulationGenom();
-	
-	if (id == 1) 
-	{
-		return manipTest(ARM_FREE);
-	}
-	
-	if (id == 2) 
-	{
-		return manipTest(ARM_PICK_GOTO);
-	}
-	
-	if (id == 3) 
-	{
-		return manipTest(ARM_PICK_GOTO_AND_TAKE_TO_FREE);
-	}
+  initManipulationGenom();
+  
+  if (id == 1) 
+  {
+    return manipTest(ARM_FREE);
+  }
+  
+  if (id == 2) 
+  {
+    return manipTest(ARM_PICK_GOTO);
+  }
+  
+  if (id == 3) 
+  {
+    return manipTest(ARM_PICK_GOTO_AND_TAKE_TO_FREE);
+  }
   
   if (id == 4) 
-	{
+  {
     manipTest(ARM_PICK_GOTO);
-		return manipTest(ARM_PICK_TAKE_TO_FREE);
-	}
+    return manipTest(ARM_PICK_TAKE_TO_FREE);
+  }
   
   if (id == 5) 
-	{
+  {
     manipTest(ARM_PICK_GOTO);
-		return manipTest(ARM_PICK_TAKE_TO_FREE_POINT);
-	}
+    return manipTest(ARM_PICK_TAKE_TO_FREE_POINT);
+  }
+
+  if (id == 6) 
+  {
+    return this->manipTestGraspingWithDifferentObjectOrientations();
+  }
 	
-	return false;
+  return false;
 }
 

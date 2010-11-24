@@ -301,38 +301,12 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
     }
     (*_robot->armManipulationData)[armId].setCarriedObject((p3d_rob*)NULL);
     return status;
-      }
-      if(MPDEBUG){
-        printf("NbTest Before Config : %d\n", counter);
-      }
-      if(validConf){
-        status = MANIPULATION_TASK_OK;
-      }
-    }
+    
+
   }
-	
-  if(MPDEBUG){
-    showConfig_2(configs.getOpenConfig());
-    showConfig_2(configs.getGraspConfig());
-    showConfig_2(configs.getApproachGraspConfig());
-    showConfig_2(configs.getApproachFreeConfig());
-    printf("MinConfig Cost = %f\n", configs.getGraspConfigCost());
-	
-    ManipulationUtils::copyConfigToFORM(_robot, configs.getGraspConfig());
-    ManipulationUtils::copyConfigToFORM(_robot, configs.getOpenConfig());
-    ManipulationUtils::copyConfigToFORM(_robot, configs.getApproachGraspConfig());
-    ManipulationUtils::copyConfigToFORM(_robot, configs.getApproachFreeConfig());
-  }
-  (*_robot->armManipulationData)[armId].setCarriedObject((p3d_rob*)NULL);
-  return status;
-}
 
 configPt ManipulationPlanner::getFreeHoldingConf( p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, std::vector<double> &objGoto ) const {
 
-    configPt tmpConf = p3d_get_robot_config(_robot);
-
-configPt ManipulationPlanner::getFreeHoldingConf( p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, p3d_vector3 WSPoint ) const{
-  
   configPt tmpConf = p3d_get_robot_config(_robot);
   
     ArmManipulationData mData = (*_robot->armManipulationData)[armId];
@@ -549,7 +523,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::computeManipulationData(int armId
 	
 	_configs = manipConfigs;
 	
-  for(unsigned int i=0; i<3; i++)
+  for(unsigned int i=0; i<1; i++)
 	{
 		status = findArmGraspsConfigs( armId,object, _configs );
 		
