@@ -44,7 +44,6 @@ typedef struct gpGraspParserData
 
 extern int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename);
 
-
 extern int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList);
 
 extern int gpCheck_grasp_list_validity(std::list<gpGrasp> &graspList, std::string objectName);

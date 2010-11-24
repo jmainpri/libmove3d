@@ -1079,7 +1079,6 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        {
           p3d_mat4Copy(p3d_mat4IDENTITY, T);
           p3d_mat4Rot(T, axis, 23*DEGTORAD);
-        //  p3d_mat4Rot(T, axis, 13*DEGTORAD);
           T[0][3]= 0.08;
           T[1][3]= 0.02;
           T[2][3]= 0.23;
@@ -1378,9 +1377,9 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        workspace.at(50).radius= 0.003897; 
 
        nb_positions= 500;
-       nb_directions= 6;
-       nb_rotations= 6;
-       max_nb_grasp_frames= 5000;
+       nb_directions= 12;
+       nb_rotations= 10;
+       max_nb_grasp_frames= 7000;
     break;
     default:
        printf("%s: %d: gpHand_properties::initalize(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);

@@ -2514,7 +2514,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
   }
 
   smTraj.computeTimeOnTraj();
-  smTraj.setTrajId(36);
+//   smTraj.setTrajId(36);
   smTraj.save(fileNameSeg);
   printf("File %s created\n", fileNameSeg);
 
