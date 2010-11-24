@@ -1,8 +1,9 @@
-#ifndef _HRI_PLANNER_H
-#define _HRI_PLANNER_H
+#ifndef _HRI_AGENT_H
+#define _HRI_AGENT_H
 
 #include "hri_bitmap.h"
 #include "hri_manip.h"
+#include "hri_knowledge.h"
 
 #define GIK_MAX_JOINT_NO 50
 #define GIK_MAX_TASK_NO 5
@@ -73,24 +74,6 @@ typedef struct STRUCT_HRI_NAVIG {
 	int btset_initialized;
 } HRI_NAVIG;
 
-typedef enum ENUM_HRI_VISIBILITY {
-  HRI_VISIBLE = 0,
-  HRI_INVISIBLE = 1
-} HRI_VISIBILITY;
-
-typedef enum ENUM_HRI_VISIBILITY_PLACEMENT {
-  HRI_FOA = 1,
-  HRI_FOV = 2,
-  HRI_OOF = 3
-} HRI_VISIBILITY_PLACEMENT;
-
-typedef struct STRUCT_HRI_VISIBILITY_LIST {
-  HRI_VISIBILITY *vis; /* The index is the same as env->nb */
-  HRI_VISIBILITY_PLACEMENT *vispl; /* The index is the same as env->nb */
-  int vis_nb; /* Normally this number should be = to the number of robots in the env */
-} HRI_VISIBILITY_LIST;
-
-
 typedef struct STRUCT_HRI_PERSP {
   /* Visual Perspective */
   p3d_jnt * camjoint;
@@ -110,6 +93,12 @@ typedef struct STRUCT_HRI_PERSP {
   int enable_visible_objects_draw;
 } HRI_PERSP;
 
+/* --------------- */
+typedef enum ENUM_HRI_AGENT_POSTURE {
+  HRI_STANDING = 0,
+  HRI_SITTING = 1
+} HRI_AGENT_POSTURE;
+
 typedef struct STRUCT_HRI_AGENT {
 	HRI_AGENT_TYPE type;
   int is_human; //TODO: put something more generic, at least an enum. I don't like these stupid flags.
@@ -117,6 +106,7 @@ typedef struct STRUCT_HRI_AGENT {
 	HRI_MANIP * manip;
 	HRI_NAVIG * navig;
   HRI_PERSP * perspective;
+  HRI_KNOWLEDGE * knowledge;
   int exists;
 	/* number of possible states for this agent (e.g. SITTING/STANDING) */
   int states_no;
@@ -125,7 +115,6 @@ typedef struct STRUCT_HRI_AGENT {
 	/* TODO: change the name human_state -> agent state */
   hri_human_state * state;
 } HRI_AGENT;
-
 
 typedef struct STRUCT_HRI_AGENTS {
   HRI_AGENT ** all_agents; // The list of agents robots+humans

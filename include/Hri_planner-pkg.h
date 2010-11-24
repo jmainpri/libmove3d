@@ -51,6 +51,8 @@
 #include "../hri_planner/proto/hri_visibility_proto.h"
 #include "../hri_planner/proto/hri_manip_proto.h"
 #include "../hri_planner/proto/hri_gik_proto.h"
+#include "../hri_planner/proto/hri_knowledge_proto.h"
+
 
 #include "../hri_planner/proto/hri_graphic_proto.h"
 
@@ -97,6 +99,7 @@ extern void (*ext_g3d_draw_allwin_active_backbuffer)();
 
 extern int HRI_DRAW_TRAJ;
 extern HRI_AGENTS * GLOBAL_AGENTS;
+extern HRI_ENTITIES * GLOBAL_ENTITIES;
 
 #ifdef USE_MIGHTABILITY_MAPS
 extern int SHOW_MM_BASED_OBJECT_REACHABLE;

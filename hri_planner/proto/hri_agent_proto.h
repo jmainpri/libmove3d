@@ -20,3 +20,4 @@ extern int g3d_hri_display_shared_zone();
 extern int hri_agent_load_default_arm_posture(HRI_AGENT * agent, configPt q);
 extern int hri_agent_compute_posture(HRI_AGENT * agent, double neck_height, int state, configPt q);
 extern int hri_agent_compute_state_posture(HRI_AGENT * agent, int state, configPt q);
+extern int hri_is_robot_an_agent(p3d_rob * robot, HRI_AGENTS * agents, int * is_human, int * agent_idx);

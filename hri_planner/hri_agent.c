@@ -109,7 +109,7 @@ int hri_destroy_agents(HRI_AGENTS *agents)
 HRI_AGENT * hri_create_agent(p3d_rob * robot)
 {
   HRI_AGENT * hri_agent;
-
+  
   hri_agent = MY_ALLOC(HRI_AGENT,1);
   
   if(strcasestr(robot->name,"SUPERMAN")) {
@@ -141,57 +141,58 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
               hri_agent->type = HRI_JIDO1;
               hri_agent->is_human = FALSE;
             }
-	    else {
-	      if(strcasestr(robot->name,"HRP2")) {
-		hri_agent->type = HRI_HRP214;
-		hri_agent->is_human = FALSE;
-	      }
-	      else {
-		if(strcasestr(robot->name,"B21")) {
-		  hri_agent->type = HRI_B21;
-		  hri_agent->is_human = FALSE;
-		}
-		else {
-		  if(strcasestr(robot->name,"JUSTIN")) {
-		    hri_agent->type = HRI_MOBILE_JUSTIN;
-		    hri_agent->is_human = FALSE;
-		  }
-		  else {
-		    if(strcasestr(robot->name,"BH")) {
-		      hri_agent->type = HRI_BH;
-		      hri_agent->is_human = FALSE;
-		    }
-		    else {
-		      if(strcasestr(robot->name,"ICUB")) {
-			hri_agent->type = HRI_ICUB;
-			hri_agent->is_human = FALSE;
-		      }
-		      else {
-			if(strcasestr(robot->name,"BERT")) {
-			  hri_agent->type = HRI_BERT;
-			  hri_agent->is_human = FALSE;
-			}
-			else {
-			  PrintWarning(("Robot is unknown! Cannot initialize agents.\n"));
-			  return NULL;
-			}
-		      }
-		    }
-		  }
-		}
-	      }
-	    }
-	  }
-	}
+            else {
+              if(strcasestr(robot->name,"HRP2")) {
+                hri_agent->type = HRI_HRP214;
+                hri_agent->is_human = FALSE;
+              }
+              else {
+                if(strcasestr(robot->name,"B21")) {
+                  hri_agent->type = HRI_B21;
+                  hri_agent->is_human = FALSE;
+                }
+                else {
+                  if(strcasestr(robot->name,"JUSTIN")) {
+                    hri_agent->type = HRI_MOBILE_JUSTIN;
+                    hri_agent->is_human = FALSE;
+                  }
+                  else {
+                    if(strcasestr(robot->name,"BH")) {
+                      hri_agent->type = HRI_BH;
+                      hri_agent->is_human = FALSE;
+                    }
+                    else {
+                      if(strcasestr(robot->name,"ICUB")) {
+                        hri_agent->type = HRI_ICUB;
+                        hri_agent->is_human = FALSE;
+                      }
+                      else {
+                        if(strcasestr(robot->name,"BERT")) {
+                          hri_agent->type = HRI_BERT;
+                          hri_agent->is_human = FALSE;
+                        }
+                        else {
+                          PrintWarning(("Robot is unknown! Cannot initialize agents.\n"));
+                          return NULL;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
-
+  
   hri_agent->robotPt = robot;
   
   hri_agent->navig  = hri_create_agent_navig(hri_agent);
   hri_agent->manip = hri_create_agent_manip(hri_agent);
   hri_agent->perspective = hri_create_agent_perspective(hri_agent, robot->env);
+  hri_agent->knowledge = hri_create_empty_agent_knowledge(hri_agent);
   
   hri_agent->exists = FALSE;
 
@@ -1293,5 +1294,25 @@ int hri_agent_load_default_arm_posture(HRI_AGENT * agent, configPt q)
     printf("In %s:%d, Trying to load default arm posture to a unsupported robot\n",__FILE__,__LINE__);
     return FALSE;
   }
-  
 }
+
+int hri_is_robot_an_agent(p3d_rob * robot, HRI_AGENTS * agents, int * is_human, int * agent_idx)
+{
+  int i;
+  
+  for(i=0; i<agents->all_agents_no; i++) {
+    if(robot == agents->all_agents[i]->robotPt) {
+      *is_human = agents->all_agents[i]->is_human;
+      *agent_idx = i;
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+  
+  
+  
+  
+  
+
+
