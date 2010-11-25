@@ -31,7 +31,7 @@ public:
   
   //! Generic function to test the genom requests
 	bool manipTest(MANIPULATION_TASK_TYPE_STR type);
-	bool manipTestGraspingWithDifferentObjectOrientations();
+	bool manipTestGraspingWithDifferentObjectOrientations(bool rotate_only_around_z);
 	
 private:
 	
@@ -42,7 +42,7 @@ private:
 	
 	std::string m_OBJECT_NAME;
   
-    std::vector<double> m_objStart, m_objGoto;
+  std::vector<double> m_objStart, m_objGoto;
 	
 	ManipulationPlanner* m_manipulation;
 };

@@ -155,7 +155,10 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 }
 
 
-bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations()
+//! Tests the ARM_PICK_GOTO task for different orientations of the object (but keeping its current position).
+//! \param rotate_only_around_z if true the orientations are obtained from the object's current orientation by random rotations around the vertical axis,
+//! if false the rotations are fully randomly generated.
+bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations(bool rotate_only_around_z)
 {
   int n, nbOrientations;
   bool result;
@@ -174,9 +177,14 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
   nbOrientations= 100;
   for(int i=0; i<nbOrientations; ++i)
   {
-    printf("**********************************************\n");
+    printf("****************test %d/%d************************\n",i,nbOrientations);
     p3d_set_and_update_this_robot_conf(m_manipulation->robot(), m_qInit);
-    p3d_set_freeflyer_pose2(object, x, y, z, p3d_random(-M_PI,M_PI), p3d_random(-M_PI,M_PI), p3d_random(-M_PI,M_PI));
+
+    if(rotate_only_around_z)
+    {  p3d_set_freeflyer_pose2(object, x, y, z, 0, 0, p3d_random(-M_PI,M_PI));  }
+    else
+    {  p3d_set_freeflyer_pose2(object, x, y, z, p3d_random(-M_PI,M_PI), p3d_random(-M_PI,M_PI), p3d_random(-M_PI,M_PI));  } 
+ 
     result= manipTest(ARM_PICK_GOTO);  
     if(result==true)
     {  n++; }    
@@ -229,8 +237,14 @@ bool ManipulationTestFunctions::runTest(int id)
 
   if (id == 6) 
   {
-    return this->manipTestGraspingWithDifferentObjectOrientations();
+    return this->manipTestGraspingWithDifferentObjectOrientations(false);
   }
+
+  if (id == 7) 
+  {
+    return this->manipTestGraspingWithDifferentObjectOrientations(true);
+  }
+
 	
   return false;
 }
