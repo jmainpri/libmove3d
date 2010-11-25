@@ -6,3 +6,4 @@ extern HRI_PLACEMENT_RELATION hri_placement_relation(p3d_rob *sourceObj, p3d_rob
 extern int hri_is_on(p3d_vector3 sourceC, p3d_BB *targetBB);
 extern int hri_is_in(p3d_BB *sourceBB, p3d_BB *targetBB);
 extern int hri_is_nexto(p3d_vector3 sourceC, p3d_BB *sourceBB, p3d_vector3 targetC, p3d_BB *targetBB);
+extern HRI_SPATIAL_RELATION hri_spatial_relation(p3d_rob * object, p3d_rob * robot);

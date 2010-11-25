@@ -354,3 +354,75 @@ int hri_is_nexto(p3d_vector3 sourceC, p3d_BB *sourceBB, p3d_vector3 targetC, p3d
   return FALSE;
 }
 
+HRI_SPATIAL_RELATION hri_spatial_relation(p3d_rob * object, p3d_rob * robot)
+{
+  p3d_vector4 targetRealCoord;
+  p3d_vector4 targetRelativeCoord;
+  p3d_matrix4 inv;
+  double rho, phi, theta;
+  int isFar;
+  double frontAngle = 0.26; //TODO: Make this changeable
+  double farLimit = 5.0; //TODO: Make this changeable
+
+  if( (robot == NULL) || (object == NULL) ) {
+    return HRI_NO_RELATION;
+  }
+
+  targetRealCoord[0] = object->joints[1]->abs_pos[0][3];
+  targetRealCoord[1] = object->joints[1]->abs_pos[1][3];
+  targetRealCoord[2] = object->joints[1]->abs_pos[2][3];
+  targetRealCoord[3] = 1;
+
+  p3d_matInvertXform(robot->joints[1]->abs_pos, inv);
+
+  p3d_matvec4Mult(inv, targetRealCoord, targetRelativeCoord);
+
+  p3d_cartesian2spherical(targetRelativeCoord[0],targetRelativeCoord[1],targetRelativeCoord[2],
+                          &rho, &theta, &phi);
+
+
+  isFar = (farLimit < DISTANCE2D(targetRelativeCoord[0],targetRelativeCoord[1],0,0));
+
+  //  printf("real coord %f %f %f\n",targetRealCoord[0],targetRealCoord[1],targetRealCoord[2]);
+  //  printf("relative coord %f %f %f\n",targetRelativeCoord[0],targetRelativeCoord[1],targetRelativeCoord[2]);
+  //  printf("Phi is %f, isFar is %d\n",phi,isFar);
+
+  /* Phi is the horizontal one */
+
+  if(ABS(phi) < frontAngle) { /* In front */
+    if(isFar) return HRI_FAR_FRONT ;
+    else   return  HRI_NEAR_FRONT ;
+  }
+  if(frontAngle <= phi && phi < 3*M_PI/8) { /* Front left */
+    if(isFar)  return  HRI_FAR_FRONT_LEFT ;
+    else   return HRI_NEAR_FRONT_LEFT ;
+  }
+  if(3*M_PI/8 <= phi && phi < 5*M_PI/8) { /* left */
+    if(isFar)   return HRI_FAR_LEFT ;
+    else    return HRI_NEAR_LEFT ;
+  }
+  if(5*M_PI/8 <= phi && phi < 7*M_PI/8) { /* Back left */
+    if(isFar)  return  HRI_FAR_BACK_LEFT ;
+    else   return HRI_NEAR_BACK_LEFT ;
+  }
+  if(7*M_PI/8 <= ABS(phi)) { /* Back */
+    if(isFar)  return  HRI_FAR_BACK ;
+    else   return  HRI_NEAR_BACK ;
+  }
+  if(-7*M_PI/8 <= phi && phi < -5*M_PI/8) { /* Back right */
+    if(isFar)  return HRI_FAR_BACK_RIGHT ;
+    else  return HRI_NEAR_BACK_RIGHT ;
+  }
+  if(-5*M_PI/8 <= phi && phi < -3*M_PI/8) { /* right */
+    if(isFar) return HRI_FAR_RIGHT ;
+    else   return HRI_NEAR_RIGHT ;
+  }
+  if(-3*M_PI/8 <= phi && phi < -1*frontAngle) { /* Front right */
+    if(isFar)  return HRI_FAR_FRONT_RIGHT ;
+    else   return HRI_NEAR_FRONT_RIGHT ;
+  }
+  printf("Bad angle value, This shouldn't happen.\n");
+
+  return HRI_NO_RELATION;
+}
+
