@@ -425,7 +425,7 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
   double objx, objy, objz;
 
   GLOBAL_AGENTS = hri_create_agents();
-  hri_assign_source_agent("JIDOKUKA", GLOBAL_AGENTS);
+  hri_assign_source_agent((char*)"JIDOKUKA", GLOBAL_AGENTS);
 
   GLOBAL_ENTITIES = hri_create_entities();
   hri_refine_entity_types(GLOBAL_ENTITIES, GLOBAL_AGENTS);
@@ -1206,7 +1206,7 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
   HRI_AGENTS * agents;
   p3d_vector3 Tcoord[3];
   configPt q_r, q_h, q_hs, q_r_saved, q_h_saved, q_hs_saved;
-  int i,j=0;
+  int i, j=0;
   int rreached = FALSE, hreached = FALSE;
   int robot_in_collision = FALSE;
 
@@ -1397,8 +1397,8 @@ void CB_test_button4_obj(FL_OBJECT *obj, long arg)
 {
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int i,j;
-  p3d_rob * rob1, * rob2;
-  double rob1_cx, rob1_cy, rob1_cz, rob2_cx, rob2_cy, rob2_cz;
+  //p3d_rob * rob1, * rob2;
+  //double rob1_cx, rob1_cy, rob1_cz, rob2_cx, rob2_cy, rob2_cz;
   configPt q;
 
   q = p3d_get_robot_config(GLOBAL_AGENTS->humans[0]->robotPt);
@@ -1467,8 +1467,8 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
       continue;
     }
   }
-  double result;
-  g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
+  int result;
+//  g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
 //  g3d_is_object_visible_from_current_viewpoint2(win, object, &result, FALSE, NULL);
 //  return;
 
