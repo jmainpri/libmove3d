@@ -709,47 +709,6 @@ int hri_is_object_pointed(HRI_AGENT * agent, p3d_rob *object, int threshold, int
   else
     return FALSE;
 }
-void DrawSmallCube(double x, double y, double z)
-{
-
-  /* We tell we want to draw quads */
-  glBegin(GL_QUADS);
-
-  /* Every four calls to glVertex, a quad is drawn */
-  glVertex3f(-1+x, -1+y, -1+z);
-  glVertex3f(-1+x, -1+y,  1+z);
-  glVertex3f(-1+x,  1+y,  1+z);
-  glVertex3f(-1+x,  1+y, -1+z);
-
-  glVertex3f( 1+x, -1+y, -1+z);
-  glVertex3f( 1+x, -1+y,  1+z);
-  glVertex3f( 1+x,  1+y,  1+z);
-  glVertex3f( 1+x,  1+y, -1+z);
-
-  glVertex3f(-1+x, -1+y, -1+z);
-  glVertex3f(-1+x, -1+y,  1+z);
-  glVertex3f( 1+x, -1+y,  1+z);
-  glVertex3f( 1+x, -1+y, -1+z);
-
-  glVertex3f(-1+x,  1+y, -1+z);
-  glVertex3f(-1+x,  1+y,  1+z);
-  glVertex3f( 1+x,  1+y,  1+z);
-  glVertex3f( 1+x,  1+y, -1+z);
-
-  glVertex3f(-1+x, -1+y, -1+z);
-  glVertex3f(-1+x,  1+y, -1+z);
-  glVertex3f( 1+x,  1+y, -1+z);
-  glVertex3f( 1+x, -1+y, -1+z);
-
-  glVertex3f(-1+x, -1+y,  1+z);
-  glVertex3f(-1+x,  1+y,  1+z);
-  glVertex3f( 1+x,  1+y,  1+z);
-  glVertex3f( 1+x, -1+y,  1+z);
-
-  /* No more quads */
-  glEnd();
-
-}
 
 /* Occlusion test using GPU ARB extensions */
 /* It's not functional but it's left here to keep valuable code */
