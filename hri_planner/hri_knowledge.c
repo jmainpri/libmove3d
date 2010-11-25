@@ -188,3 +188,169 @@ HRI_REACHABILITY hri_is_reachable(HRI_ENTITY * object, HRI_AGENT *agent)
 
   return reachability;
 }
+
+/* Computes Placement relations (Ison, isin, etc) between two objects */
+HRI_PLACEMENT_RELATION hri_placement_relation(p3d_rob *sourceObj, p3d_rob *targetObj)
+{
+  p3d_vector3 sourceObjC, targetObjC;
+
+  if(sourceObj == NULL || targetObj == NULL) {
+    printf("%s:%d plrelation input is null",__FILE__,__LINE__);
+    return HRI_NOPLR;
+  }
+
+  sourceObjC[0] = (sourceObj->BB.xmin + sourceObj->BB.xmax)/2;
+  sourceObjC[1] = (sourceObj->BB.ymin + sourceObj->BB.ymax)/2;
+  sourceObjC[2] = (sourceObj->BB.zmin + sourceObj->BB.zmax)/2;
+
+  targetObjC[0] = (targetObj->BB.xmin + targetObj->BB.xmax)/2;
+  targetObjC[1] = (targetObj->BB.ymin + targetObj->BB.ymax)/2;
+  targetObjC[2] = (targetObj->BB.zmin + targetObj->BB.zmax)/2;
+
+  /* Test if source Obj is in targetObj */
+
+  if( hri_is_in(&sourceObj->BB, &targetObj->BB) )
+    return HRI_ISIN;
+
+  /* Test if sourceObj is on targetObj */
+
+  if( hri_is_on(sourceObjC, &targetObj->BB) )
+    return HRI_ISON;
+
+  /* Test if sourceObj is next to targetObj */
+
+  if ( hri_is_nexto(sourceObjC, &sourceObj->BB, targetObjC, &targetObj->BB) )
+    return HRI_ISNEXTTO;
+
+  return HRI_NOPLR;
+}
+
+/* Computes Placement relations (Ison, isin, etc) between two entities */
+HRI_PLACEMENT_RELATION hri_placement_relation(HRI_ENTITY *sourceObj, HRI_ENTITY *targetObj)
+{
+  p3d_vector3 sourceObjC, targetObjC;
+  p3d_BB * sourceBB, *targetBB;
+
+  if(sourceObj == NULL || targetObj == NULL) {
+    printf("%s:%d plrelation input is null",__FILE__,__LINE__);
+    return HRI_NOPLR;
+  }
+
+  if((sourceObj->type == HRI_OBJECT_PART) || (sourceObj->type == HRI_AGENT_PART) ) {
+    sourceObjC[0] = (sourceObj->partPt->BB.xmax + sourceObj->partPt->BB.xmin)/2;
+    sourceObjC[1] = (sourceObj->partPt->BB.ymax + sourceObj->partPt->BB.ymin)/2;
+    sourceObjC[2] = (sourceObj->partPt->BB.zmax + sourceObj->partPt->BB.zmin)/2;
+    sourceBB = &sourceObj->partPt->BB;
+  }
+  else {
+    sourceObjC[0] = (sourceObj->robotPt->BB.xmax + sourceObj->robotPt->BB.xmin)/2;
+    sourceObjC[1] = (sourceObj->robotPt->BB.ymax + sourceObj->robotPt->BB.ymin)/2;
+    sourceObjC[2] = (sourceObj->robotPt->BB.zmax + sourceObj->robotPt->BB.zmin)/2;
+    sourceBB = &sourceObj->robotPt->BB;
+  }
+
+  if((targetObj->type == HRI_OBJECT_PART) || (targetObj->type == HRI_AGENT_PART) ) {
+    targetObjC[0] = (targetObj->partPt->BB.xmax + targetObj->partPt->BB.xmin)/2;
+    targetObjC[1] = (targetObj->partPt->BB.ymax + targetObj->partPt->BB.ymin)/2;
+    targetObjC[2] = (targetObj->partPt->BB.zmax + targetObj->partPt->BB.zmin)/2;
+    targetBB = &targetObj->partPt->BB;
+  }
+  else {
+    targetObjC[0] = (targetObj->robotPt->BB.xmax + targetObj->robotPt->BB.xmin)/2;
+    targetObjC[1] = (targetObj->robotPt->BB.ymax + targetObj->robotPt->BB.ymin)/2;
+    targetObjC[2] = (targetObj->robotPt->BB.zmax + targetObj->robotPt->BB.zmin)/2;
+    targetBB = &targetObj->robotPt->BB;
+  }
+
+  /* TEST of placement relations */
+  /* Relations are mutually exclusive */
+
+  /* Test if source Obj is in targetObj */
+
+  if( hri_is_in(sourceBB, targetBB) )
+    return HRI_ISIN;
+
+  /* Test if sourceObj is on targetObj */
+
+  if( hri_is_on(sourceObjC, targetBB) )
+      return HRI_ISON;
+
+  /* Test if sourceObj is next to targetObj */
+
+  if ( hri_is_nexto(sourceObjC, sourceBB, targetObjC, targetBB) )
+      return HRI_ISNEXTTO;
+
+  return HRI_NOPLR;
+}
+
+/* Test if sourceObj is on targetObj */
+int hri_is_on(p3d_vector3 sourceC, p3d_BB *targetBB)
+{
+  /* Compute ON */
+
+  /* Test if sourceObj is on targetObj */
+  /* Condition 1: The center of SourceObj BB should be in the x,y limits of targetObj BB */
+  /* Condition 2: The lower part of SourceObj BB should either intersect with the upper part of targetObj BB */
+  /*              or there should be few cm's (1.2 times) */
+  // TODO: There is something weird here. is on do not depend on the BB of source object??
+
+  if((sourceC[0] >= targetBB->xmin) && (sourceC[0] <= targetBB->xmax) &&
+     (sourceC[1] >= targetBB->ymin) && (sourceC[1] <= targetBB->ymax) &&
+     (sourceC[2] >= targetBB->zmax)) {
+
+    if( ABS(sourceC[2]-targetBB->zmin)*1.2 >= ABS(sourceC[2]-targetBB->zmax)) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/* Test if source Obj is in targetObj */
+int hri_is_in(p3d_BB *sourceBB, p3d_BB *targetBB)
+{
+  /* Compute IN */
+  /* Test if source Obj is in targetObj */
+  /* Condition: Source Obj BB should be wholly in targetObj BB */
+
+  if((targetBB->xmin <= sourceBB->xmin) && (targetBB->xmax >= sourceBB->xmax) &&
+     (targetBB->ymin <= sourceBB->ymin) && (targetBB->ymax >= sourceBB->ymax) &&
+     (targetBB->zmin <= sourceBB->zmin) && (targetBB->zmax >= sourceBB->zmax)) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/* Test if sourceObj is next to targetObj */
+int hri_is_nexto(p3d_vector3 sourceC, p3d_BB *sourceBB, p3d_vector3 targetC, p3d_BB *targetBB)
+{
+  /* Compute NEXT */
+
+  /* Test if sourceObj is next to targetObj */
+  /* Condition 1: The Z values of sourceObj and targetObj BB's should intersect = One should not be wholly above the other */
+  /* Condition 2: Distance(sourceObj,targetObj) should be less then a constant */
+
+  if ( !(sourceBB->zmax <= targetBB->zmin || sourceBB->zmin >= targetBB->zmax) ) {
+    if(DISTANCE2D(sourceC[0], sourceC[1], targetC[0], targetC[1]) <
+       MAX(ABS(sourceBB->xmin-sourceBB->xmax), ABS(sourceBB->ymin-sourceBB->ymax)) &&
+       DISTANCE2D(sourceC[0], sourceC[1], targetC[0], targetC[1]) >
+       MAX(ABS(sourceBB->xmin-sourceBB->xmax)/2, ABS(sourceBB->ymin-sourceBB->ymax)/2)) {
+
+      return TRUE;
+    }
+  }
+
+  if ( !(targetBB->zmax <= sourceBB->zmin || targetBB->zmin >= sourceBB->zmax) ) {
+    if(DISTANCE2D(targetC[0], targetC[1], sourceC[0], sourceC[1]) <
+       MAX(ABS(targetBB->xmin-targetBB->xmax), ABS(targetBB->ymin-targetBB->ymax)) &&
+       DISTANCE2D(targetC[0], targetC[1], sourceC[0], sourceC[1]) >
+       MAX(ABS(targetBB->xmin-targetBB->xmax)/2, ABS(targetBB->ymin-targetBB->ymax)/2)) {
+
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
