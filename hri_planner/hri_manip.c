@@ -233,7 +233,7 @@ double hri_exp_rreach_val(hri_bitmapset * btset, int x, int y, int z)
 double hri_exp_hcomfort_val(hri_bitmapset * btset, int x, int y, int z)
 {
   double val;
-  
+
   if(human_max_reach_length == 0){
     human_max_reach_length = DISTANCE3D(btset->human[btset->actual_human]->HumanPt->joints[8]->abs_pos[0][3],
                                         btset->human[btset->actual_human]->HumanPt->joints[8]->abs_pos[1][3],
@@ -253,10 +253,10 @@ double hri_exp_hcomfort_val(hri_bitmapset * btset, int x, int y, int z)
                btset->human[btset->actual_human]->HumanPt->joints[3]->abs_pos[0][3],
                btset->human[btset->actual_human]->HumanPt->joints[3]->abs_pos[1][3],
                btset->human[btset->actual_human]->HumanPt->joints[3]->abs_pos[2][3])*cos(DTOR(30));
-    
+
     printf("Human reach lengh: %f\n",human_max_reach_length);
   }
-  
+
  // val = MIN(hri_exp_hlreach_val2(btset,x,y,z),
 //            hri_exp_hrreach_val2(btset,x,y,z)+0.2); /* penalty for the right arm as the human is left handed */
   val = hri_exp_hrreach_val2(btset,x,y,z);
@@ -277,32 +277,32 @@ double hri_exp_hlreach_val2(hri_bitmapset * btset, int x, int y, int z)
   realcoord[0] = x*btset->pace+btset->realx;
   realcoord[1] = y*btset->pace+btset->realy;
   realcoord[2] = z*btset->pace+btset->realz;
-  
+
   hneck[0] = btset->human[btset->actual_human]->HumanPt->joints[5]->abs_pos[0][3];
   hneck[1] = btset->human[btset->actual_human]->HumanPt->joints[5]->abs_pos[1][3];
   hneck[2] = btset->human[btset->actual_human]->HumanPt->joints[5]->abs_pos[2][3];
-  
+
   pointneckdist = DISTANCE3D(realcoord[0],realcoord[1],realcoord[2],hneck[0],hneck[1],hneck[2]);
   if(pointneckdist > human_max_reach_length)
     return 1;
-  
-  
+
+
   r = btset->human[btset->actual_human]->HumanPt;
   humanC = p3d_get_robot_config(r);
-  
+
   if(hri_agent_single_task_manip_move(GLOBAL_AGENTS->humans[0], GIK_LAREACH, &realcoord, 0.04, &humanC)) {
-  
+
     p3d_set_and_update_this_robot_conf(r, humanC);
-    
+
     first_lshoulder_dof = GLOBAL_AGENTS->humans[0]->robotPt->joints[15]->index_dof;
-    
+
     cost = (SQR(humanC[first_lshoulder_dof]-restq1) + SQR(humanC[first_lshoulder_dof+1]-restq2) +
             SQR(humanC[first_lshoulder_dof+2]-restq3) + SQR(humanC[first_lshoulder_dof+3]-restq4)-0.76)/23.4;
     potential = (btset->human[btset->actual_human]->HumanPt->joints[15]->abs_pos[2][3]+
                  btset->human[btset->actual_human]->HumanPt->joints[18]->abs_pos[2][3]-2.43)/0.67;
-    
+
     p3d_destroy_config(r,humanC);
-    
+
     return ABS(cost+potential)/2;
   }
   else {
@@ -321,30 +321,30 @@ double hri_exp_hrreach_val2(hri_bitmapset * btset, int x, int y, int z)
   int first_rshoulder_dof;
   double potential, cost;
   double pointneckdist;
-  
+
   realcoord[0] = x*btset->pace+btset->realx;
   realcoord[1] = y*btset->pace+btset->realy;
   realcoord[2] = z*btset->pace+btset->realz;
-  
+
   hneck[0] = btset->human[btset->actual_human]->HumanPt->joints[5]->abs_pos[0][3];
   hneck[1] = btset->human[btset->actual_human]->HumanPt->joints[5]->abs_pos[1][3];
   hneck[2] = btset->human[btset->actual_human]->HumanPt->joints[5]->abs_pos[2][3];
-  
+
   pointneckdist = DISTANCE3D(realcoord[0],realcoord[1],realcoord[2],hneck[0],hneck[1],hneck[2]);
   if(pointneckdist > human_max_reach_length)
     return 1;
   if( hneck[0]< realcoord[0])
     return 1;
-  
+
   r = btset->human[btset->actual_human]->HumanPt;
   humanC = p3d_get_robot_config(r);
   savedConf = p3d_get_robot_config(r);
   hri_agent_single_task_manip_move(GLOBAL_AGENTS->humans[0], GIK_RAREACH, &realcoord, 0.04, &humanC);
-  
+
   p3d_set_and_update_this_robot_conf(r, humanC);
-  
+
   first_rshoulder_dof = GLOBAL_AGENTS->humans[0]->robotPt->joints[8]->index_dof;
-  
+
   //cost = (SQR(humanC[first_rshoulder_dof]-restq1) + SQR(humanC[first_rshoulder_dof+1]-restq2) +
 //          SQR(humanC[first_rshoulder_dof+2]-restq3) + SQR(humanC[first_rshoulder_dof+3]-restq4)-0.76)/23.4;
   //potential = (btset->human[btset->actual_human]->HumanPt->joints[11]->abs_pos[2][3]+
@@ -354,17 +354,17 @@ double hri_exp_hrreach_val2(hri_bitmapset * btset, int x, int y, int z)
   potential = (btset->human[btset->actual_human]->HumanPt->joints[11]->abs_pos[2][3]+
                btset->human[btset->actual_human]->HumanPt->joints[12]->abs_pos[2][3])-1.4;
   //printf("cost: %f\n", cost);
-  
+
   p3d_set_and_update_this_robot_conf(r, savedConf);
-  
+
   p3d_destroy_config(r,humanC);
   p3d_destroy_config(r,savedConf);
-  
+
   //return cost;
-  
+
   return ABS(cost+potential)/2;
- 
-  
+
+
 }
 
 
@@ -825,7 +825,7 @@ hri_bitmapset* hri_exp_init()
 
   p3d_mat4ExtractPosReverseOrder(GLOBAL_AGENTS->humans[0]->robotPt->joints[GLOBAL_AGENTS->humans[0]->perspective->tilt_jnt_idx]->abs_pos,
                                  Ccoord, Ccoord+1, Ccoord+2, Ccoord+3, Ccoord+4, Ccoord+5);
-  
+
   hz = Ccoord[2] - (zsize/2.);
 
   btset->bitmap = MY_ALLOC(hri_bitmap*,7);

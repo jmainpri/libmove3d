@@ -25,7 +25,7 @@ int hri_assign_global_agents(HRI_AGENTS *agents)
 HRI_AGENT* hri_assign_source_agent(char *agent_name, HRI_AGENTS *agents)
 {
   int i;
-  
+
   if (agents == NULL) {
     printf("%s:%d - Cannot assign source agent\n",__FILE__, __LINE__);
     return NULL;
@@ -38,7 +38,7 @@ HRI_AGENT* hri_assign_source_agent(char *agent_name, HRI_AGENTS *agents)
       }
     }
   }
-  return NULL;  
+  return NULL;
 }
 
 HRI_AGENTS * hri_create_agents()
@@ -72,7 +72,7 @@ HRI_AGENTS * hri_create_agents()
       }
     }
   }
-    
+
   agents->all_agents_no = agents->robots_no + agents->humans_no;
   agents->all_agents = MY_ALLOC(HRI_AGENT *, agents->all_agents_no);
   i = 0;
@@ -80,7 +80,7 @@ HRI_AGENTS * hri_create_agents()
     agents->all_agents[i] = agents->robots[i_r];
   for(i_h=0; i_h<agents->humans_no; i_h++, i++)
     agents->all_agents[i] = agents->humans[i_h];
-  
+
   return agents;
 }
 
@@ -88,10 +88,10 @@ int hri_destroy_agents(HRI_AGENTS *agents)
 {
   int i;
   int res = 1;
-  
+
   if(agents == NULL)
     return TRUE;
-  
+
   for (i=0; i<agents->all_agents_no; i++) {
     res = res && hri_destroy_agent(agents->all_agents[i]);
   }
@@ -109,9 +109,9 @@ int hri_destroy_agents(HRI_AGENTS *agents)
 HRI_AGENT * hri_create_agent(p3d_rob * robot)
 {
   HRI_AGENT * hri_agent;
-  
+
   hri_agent = MY_ALLOC(HRI_AGENT,1);
-  
+
   if(strcasestr(robot->name,"SUPERMAN")) {
     hri_agent->type = HRI_SUPERMAN;
     hri_agent->is_human = TRUE;
@@ -186,35 +186,35 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
       }
     }
   }
-  
+
   hri_agent->robotPt = robot;
-  
+
   hri_agent->navig  = hri_create_agent_navig(hri_agent);
   hri_agent->manip = hri_create_agent_manip(hri_agent);
   hri_agent->perspective = hri_create_agent_perspective(hri_agent, robot->env);
   hri_agent->knowledge = hri_create_empty_agent_knowledge(hri_agent);
-  
+
   hri_agent->exists = FALSE;
 
   /* TODO: Fix proper state assignment */
   hri_agent->states_no = 0;
   hri_agent->actual_state = 0;
   hri_agent->state = NULL;
-  
+
   return hri_agent;
 }
 
 int hri_destroy_agent(HRI_AGENT *agent)
 {
   int res = 1;
-  
+
   if ( agent == NULL )
     return TRUE;
-  
+
   res = res && hri_destroy_agent_navig(agent->navig);
   res = res && hri_destroy_agent_manip(agent->manip);
   res = res && hri_destroy_agent_perspective(agent->perspective);
-  
+
   return res;
 }
 
@@ -235,9 +235,9 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env)
 {
   int i;
   HRI_PERSP *persp;
-  
+
   persp = MY_ALLOC(HRI_PERSP, 1);
-  
+
   switch (agent->type) {
     case HRI_JIDO1:
       persp->camjoint = agent->robotPt->joints[14];
@@ -246,7 +246,7 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env)
       persp->tilt_jnt_idx = 3;
       persp->pan_jnt_idx  = 2;
       persp->pointjoint = agent->robotPt->joints[17];
-      persp->point_tolerance = 20;      
+      persp->point_tolerance = 20;
       break;
     case HRI_HRP214:
       persp->camjoint = agent->robotPt->joints[49];
@@ -255,7 +255,7 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env)
       persp->tilt_jnt_idx = 16;
       persp->pan_jnt_idx  = 17;
       persp->pointjoint = agent->robotPt->joints[48];
-      persp->point_tolerance = 20;      
+      persp->point_tolerance = 20;
       break;
     case HRI_JIDOKUKA:
       persp->camjoint = agent->robotPt->joints[30];
@@ -264,25 +264,25 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env)
       persp->tilt_jnt_idx = 3;
       persp->pan_jnt_idx  = 2;
       persp->pointjoint = agent->robotPt->joints[33];
-      persp->point_tolerance = 20;      
+      persp->point_tolerance = 20;
       break;
     case HRI_PR2:
-      persp->camjoint = agent->robotPt->joints[24]; 
+      persp->camjoint = agent->robotPt->joints[24];
       persp->fov = 120; //TODO: put the correct value
       persp->foa = 60; //TODO: put the correct value
       persp->tilt_jnt_idx = 4;
       persp->pan_jnt_idx  = 3;
       persp->pointjoint = agent->robotPt->joints[26];
-      persp->point_tolerance = 20;   
+      persp->point_tolerance = 20;
       break;
     case HRI_ICUB:
-      persp->camjoint = agent->robotPt->joints[34]; 
+      persp->camjoint = agent->robotPt->joints[34];
       persp->fov = 120; //TODO: put the correct value
       persp->foa = 60; //TODO: put the correct value
       persp->tilt_jnt_idx = 31;
       persp->pan_jnt_idx  = 33;
       persp->pointjoint = agent->robotPt->joints[35];
-      persp->point_tolerance = 20;   
+      persp->point_tolerance = 20;
       break;
     case HRI_ACHILE:
       persp->camjoint = agent->robotPt->joints[42];
@@ -291,7 +291,7 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env)
       persp->tilt_jnt_idx = 6;
       persp->pan_jnt_idx  = 5;
       persp->pointjoint = agent->robotPt->joints[36];
-      persp->point_tolerance = 20;      
+      persp->point_tolerance = 20;
     break;
     case HRI_SUPERMAN:
       persp->camjoint = agent->robotPt->joints[1]; //TODO: put the correct value
@@ -300,7 +300,7 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env)
       persp->tilt_jnt_idx = 55;
       persp->pan_jnt_idx  = 54;
       persp->pointjoint = agent->robotPt->joints[1]; //TODO: put the correct value
-      persp->point_tolerance = 20;      
+      persp->point_tolerance = 20;
       break;
     default:
       persp->fov = 0;
@@ -314,19 +314,19 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env)
     persp->currently_sees.vis[i] = HRI_INVISIBLE;
     persp->currently_sees.vispl[i] = HRI_OOF;
   }
-  
+
   persp->enable_vision_draw = FALSE;
   persp->enable_pointing_draw = FALSE;
   persp->enable_visible_objects_draw = FALSE;
-  
+
   return persp;
 }
 
 int hri_destroy_agent_perspective(HRI_PERSP *persp)
-{  
-  MY_FREE(persp->currently_sees.vis, HRI_VISIBILITY, persp->currently_sees.vis_nb);  
-  MY_FREE(persp,HRI_PERSP,1);  
-  
+{
+  MY_FREE(persp->currently_sees.vis, HRI_VISIBILITY, persp->currently_sees.vis_nb);
+  MY_FREE(persp,HRI_PERSP,1);
+
   return TRUE;
 }
 
@@ -350,15 +350,15 @@ HRI_NAVIG * hri_create_agent_navig(HRI_AGENT * agent)
   navig = MY_ALLOC(HRI_NAVIG,1);
 
   navig->btset_initialized = FALSE;
-	
+
   navig->btset = hri_bt_create_bitmaps();
-	
+
   return navig;
 }
 
 int hri_destroy_agent_navig(HRI_NAVIG *navig)
 {
-  if(hri_bt_destroy_bitmapset(navig->btset)) {  
+  if(hri_bt_destroy_bitmapset(navig->btset)) {
     MY_FREE(navig,HRI_NAVIG,1);
     return TRUE;
   }
@@ -393,8 +393,8 @@ HRI_MANIP * hri_create_agent_manip(HRI_AGENT * agent)
 
 int hri_destroy_agent_manip(HRI_MANIP *manip)
 {
-  if(hri_gik_destroy_gik(manip->gik)) {  
-    MY_FREE(manip,HRI_MANIP,1);  
+  if(hri_gik_destroy_gik(manip->gik)) {
+    MY_FREE(manip,HRI_MANIP,1);
     return TRUE;
   }
   else {
@@ -410,7 +410,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       manip->type = TWO_ARMED;
       *tasklist_no = 7;
       *tasklist = MY_ALLOC(GIK_TASK, *tasklist_no);
-      
+
       // These values are the default joint numbers for gik task
       // It is completely dependent to the robot's macro
       // TODO: add a field to p3d to load them automatically
@@ -492,7 +492,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       manip->type = ONE_ARMED;
       *tasklist_no = 5;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
-      
+
       (*tasklist)[0].type = GIK_LOOK;
       (*tasklist)[0].default_joints[0] = 2;
       (*tasklist)[0].default_joints[1] = 3;
@@ -509,7 +509,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[1].default_joints[5] = 10;
       (*tasklist)[1].active_joint = 17; /* active joint */
       (*tasklist)[1].default_joints_no = 6;
-      
+
       (*tasklist)[2].type = GIK_RATREACH;
       (*tasklist)[2].default_joints[0] = 5;
       (*tasklist)[2].default_joints[1] = 6;
@@ -519,7 +519,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[2].default_joints[5] = 10;
       (*tasklist)[2].active_joint = 17; /* active joint */
       (*tasklist)[2].default_joints_no = 6;
-      
+
       (*tasklist)[3].type = GIK_RAPOINT;
       (*tasklist)[3].default_joints[0] = 5;
       (*tasklist)[3].default_joints[1] = 6;
@@ -529,7 +529,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[3].default_joints[5] = 10;
       (*tasklist)[3].active_joint = 16; /* active joint */
       (*tasklist)[3].default_joints_no = 6;
-      
+
       (*tasklist)[4].type = GIK_LAPOINT;
       (*tasklist)[4].default_joints[0] = 5;
       (*tasklist)[4].default_joints[1] = 6;
@@ -539,21 +539,21 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[4].default_joints[5] = 10;
       (*tasklist)[4].active_joint = 16; /* active joint */
       (*tasklist)[4].default_joints_no = 6;
-      
+
       return TRUE;
 
     case HRI_JIDOKUKA:
       manip->type = ONE_ARMED;
       *tasklist_no = 5;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
-      
+
       (*tasklist)[0].type = GIK_LOOK;
       (*tasklist)[0].default_joints[0] = 2;
       (*tasklist)[0].default_joints[1] = 3;
       (*tasklist)[0].default_joints[2] = 16;
       (*tasklist)[0].active_joint = 31; /* active joint */
       (*tasklist)[0].default_joints_no = 3;
-      
+
       (*tasklist)[1].type = GIK_LATREACH;
       (*tasklist)[1].default_joints[0] = 5;
       (*tasklist)[1].default_joints[1] = 6;
@@ -564,7 +564,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[1].default_joints[6] = 11;
       (*tasklist)[1].active_joint = 33; /* active joint */
       (*tasklist)[1].default_joints_no = 7;
-      
+
       (*tasklist)[2].type = GIK_RATREACH;
       (*tasklist)[2].default_joints[0] = 5;
       (*tasklist)[2].default_joints[1] = 6;
@@ -575,7 +575,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[2].default_joints[6] = 11;
       (*tasklist)[2].active_joint = 33; /* active joint */
       (*tasklist)[2].default_joints_no = 7;
-      
+
       (*tasklist)[3].type = GIK_RAPOINT;
       (*tasklist)[3].default_joints[0] = 5;
       (*tasklist)[3].default_joints[1] = 6;
@@ -586,7 +586,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[3].default_joints[6] = 11;
       (*tasklist)[3].active_joint = 32; /* active joint */
       (*tasklist)[3].default_joints_no = 7;
-      
+
       (*tasklist)[4].type = GIK_LAPOINT;
       (*tasklist)[4].default_joints[0] = 5;
       (*tasklist)[4].default_joints[1] = 6;
@@ -597,21 +597,21 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[4].default_joints[6] = 11;
       (*tasklist)[4].active_joint = 32; /* active joint */
       (*tasklist)[4].default_joints_no = 7;
-      
+
       return TRUE;
-     
+
     case HRI_PR2:
       manip->type = TWO_ARMED;
       *tasklist_no = 5;
       *tasklist = MY_ALLOC(GIK_TASK, *tasklist_no);
-      
+
       (*tasklist)[0].type = GIK_LOOK;
       (*tasklist)[0].default_joints[0] = 3;
       (*tasklist)[0].default_joints[1] = 4;
       (*tasklist)[0].default_joints[2] = 27;
       (*tasklist)[0].active_joint = 27; /* active joint */
       (*tasklist)[0].default_joints_no = 3;
-      
+
       (*tasklist)[1].type = GIK_RAPOINT;
       (*tasklist)[1].default_joints[0] = 15;
       (*tasklist)[1].default_joints[1] = 16;
@@ -623,7 +623,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[1].default_joints[7] = 29;
       (*tasklist)[1].active_joint = 29; /* active joint */
       (*tasklist)[1].default_joints_no = 8;
-      
+
       (*tasklist)[2].type = GIK_LAPOINT;
       (*tasklist)[2].default_joints[0] = 5;
       (*tasklist)[2].default_joints[1] = 6;
@@ -635,7 +635,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[2].default_joints[7] = 28;
       (*tasklist)[2].active_joint = 28; /* active joint */
       (*tasklist)[2].default_joints_no = 8;
-      
+
       (*tasklist)[3].type = GIK_RAREACH;
       (*tasklist)[3].default_joints[0] = 15;
       (*tasklist)[3].default_joints[1] = 16;
@@ -646,7 +646,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[3].default_joints[6] = 21;
       (*tasklist)[3].active_joint = 26; /* active joint */
       (*tasklist)[3].default_joints_no = 7;
-      
+
       (*tasklist)[4].type = GIK_LAREACH;
       (*tasklist)[4].default_joints[0] = 5;
       (*tasklist)[4].default_joints[1] = 6;
@@ -657,14 +657,14 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[4].default_joints[6] = 11;
       (*tasklist)[4].active_joint = 25; /* active joint */
       (*tasklist)[4].default_joints_no = 7;
-      
+
       return TRUE;
-      
+
     case HRI_ICUB:
       manip->type = TWO_ARMED;
       *tasklist_no = 4;
       *tasklist = MY_ALLOC(GIK_TASK, *tasklist_no);
-      
+
       (*tasklist)[0].type = GIK_RAREACH;
       (*tasklist)[0].default_joints[0] = 17;
       (*tasklist)[0].default_joints[1] = 18;
@@ -675,7 +675,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[0].default_joints[6] = 23;
       (*tasklist)[0].active_joint = 36; /* active joint */
       (*tasklist)[0].default_joints_no = 7;
-      
+
       (*tasklist)[1].type = GIK_LAREACH;
       (*tasklist)[1].default_joints[0] = 24;
       (*tasklist)[1].default_joints[1] = 25;
@@ -686,7 +686,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[1].default_joints[6] = 30;
       (*tasklist)[1].active_joint = 35; /* active joint */
       (*tasklist)[1].default_joints_no = 7;
-      
+
       (*tasklist)[2].type = GIK_RATREACH;
       (*tasklist)[2].default_joints[0] = 14;
       (*tasklist)[2].default_joints[1] = 15;
@@ -700,7 +700,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[2].default_joints[9] = 23;
       (*tasklist)[2].active_joint = 36; /* active joint */
       (*tasklist)[2].default_joints_no = 10;
-      
+
       (*tasklist)[3].type = GIK_LATREACH;
       (*tasklist)[3].default_joints[0] = 14;
       (*tasklist)[3].default_joints[1] = 15;
@@ -714,9 +714,9 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[3].default_joints[9] = 30;
       (*tasklist)[3].active_joint = 35; /* active joint */
       (*tasklist)[3].default_joints_no = 10;
-      
+
       return TRUE;
-      
+
     case HRI_SUPERMAN:
       manip->type = TWO_ARMED;
       *tasklist_no = 2;
@@ -759,7 +759,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       manip->type = TWO_ARMED;
       *tasklist_no = 9;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
-      
+
       (*tasklist)[0].type = GIK_RATREACH;
       (*tasklist)[0].default_joints[0] = 3;
       (*tasklist)[0].default_joints[1] = 4;
@@ -829,7 +829,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[5].default_joints[6] = 21;
       (*tasklist)[5].active_joint = 21; /* active joint */
       (*tasklist)[5].default_joints_no = 7;
-      
+
       (*tasklist)[6].type = GIK_LOOK;
       (*tasklist)[6].default_joints[0] = 3;
       (*tasklist)[6].default_joints[1] = 4;
@@ -838,7 +838,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[6].default_joints[4] = 43;
       (*tasklist)[6].active_joint = 43; /* active joint */
       (*tasklist)[6].default_joints_no = 5;
-           
+
       (*tasklist)[7].type = GIK_RAPOINT;
       (*tasklist)[7].default_joints[0] = 8;
       (*tasklist)[7].default_joints[1] = 9;
@@ -850,7 +850,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[7].default_joints[7] = 38;
       (*tasklist)[7].active_joint = 38; /* active joint */
       (*tasklist)[7].default_joints_no = 8;
-      
+
       (*tasklist)[8].type = GIK_LAPOINT;
       (*tasklist)[8].default_joints[0] = 15;
       (*tasklist)[8].default_joints[1] = 16;
@@ -862,7 +862,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[8].default_joints[7] = 39;
       (*tasklist)[8].active_joint = 39; /* active joint */
       (*tasklist)[8].default_joints_no = 8;
-      
+
       return TRUE;
 
     case HRI_BERT:
@@ -891,13 +891,13 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[1].default_joints_no = 6;
 
       return TRUE;
-		  
-		  
+
+
 	  case HRI_MOBILE_JUSTIN:
       manip->type = TWO_ARMED;
       *tasklist_no = 2;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
-		  
+
       (*tasklist)[0].type = GIK_RAREACH;
       (*tasklist)[0].default_joints[0] = 9;
       (*tasklist)[0].default_joints[1] = 10;
@@ -909,7 +909,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[0].default_joints[7] = 16;
       (*tasklist)[0].active_joint = 26; /* active joint */
       (*tasklist)[0].default_joints_no = 8;
-		  
+
       (*tasklist)[1].type = GIK_LAREACH;
       (*tasklist)[1].default_joints[0] = 17;
       (*tasklist)[1].default_joints[1] = 18;
@@ -921,14 +921,14 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[1].default_joints[7] = 24;
       (*tasklist)[1].active_joint = 28; /* active joint */
       (*tasklist)[1].default_joints_no = 8;
-		  
+
       return TRUE;
-      
+
     default:
       PrintError(("Agent type unknown. Cannot create manipulation structures\n"));
       return FALSE;
   }
-  
+
   return FALSE;
 }
 /* This function computes the tolerance distance of GIK computation depending on the BB of the object */
@@ -938,20 +938,20 @@ int hri_agent_single_task_manip_move(HRI_AGENT * agent, HRI_GIK_TASK_TYPE type, 
   double smallest_edge_dim;
   p3d_vector3 goalCoord;
   int res;
-  
+
   if(agent==NULL || object==NULL || q==NULL)
     return FALSE;
-  
+
   smallest_edge_dim = (object->BB.xmax-object->BB.xmin < object->BB.ymax-object->BB.ymin)?object->BB.xmax-object->BB.xmin:object->BB.ymax-object->BB.ymin;
-  
+
   smallest_edge_dim = (smallest_edge_dim < object->BB.zmax-object->BB.zmin)?smallest_edge_dim:object->BB.zmax-object->BB.zmin;
-  
+
   goalCoord[0] = (object->BB.xmax+object->BB.xmin)/2;
-  goalCoord[1] = (object->BB.ymax+object->BB.ymin)/2; 
-  goalCoord[2] = (object->BB.zmax+object->BB.zmin)/2; 
-  
+  goalCoord[1] = (object->BB.ymax+object->BB.ymin)/2;
+  goalCoord[2] = (object->BB.zmax+object->BB.zmin)/2;
+
   res = hri_agent_single_task_manip_move(agent, type, &goalCoord, smallest_edge_dim/2, q);
-    
+
   return res;
 }
 int hri_agent_single_task_manip_move(HRI_AGENT * agent, HRI_GIK_TASK_TYPE type, p3d_vector3 * goalCoord, double approach_distance, configPt *q)
@@ -1061,18 +1061,18 @@ int g3d_hri_display_shared_zone()
 static int hri_compute_leg_angles(double hipknee, double kneeankle, double ankleground, double hipground, double ankledist, double *hip, double *knee, double *ankle)
 {
   // legs form 2 triangles: (hipknee,kneeankle,hipankle) and (hipgound,ankledist,hipankle)
-  
+
   double alpha;  // alpha = angle between hipground and hipankle
   double hiptoanklelevel = hipground - ankleground;
   double hipankle = sqrt( SQR(hiptoanklelevel)+SQR(ankledist) );
-  
+
   if (hiptoanklelevel < ankleground) {
     *hip   = 0;
     *ankle = 0;
     *knee  = 0;
     return TRUE;
   }
-  
+
   if(hipankle > hipknee+kneeankle) {
     // Legs cannot reach to ankledist
     if(hipknee+kneeankle < ABS(hiptoanklelevel)) {
@@ -1089,10 +1089,10 @@ static int hri_compute_leg_angles(double hipknee, double kneeankle, double ankle
   }
   else {
     alpha = atan2(ankledist, hiptoanklelevel);
-    
+
     *hip   = acos( (SQR(hipknee)+SQR(hipankle)-SQR(kneeankle))/(2*hipknee*hipankle) ) + alpha;
     *knee  = M_PI - acos( (SQR(hipknee)+SQR(kneeankle)-SQR(hipankle))/(2*hipknee*kneeankle) );
-    *ankle = *knee - *hip; 
+    *ankle = *knee - *hip;
   }
   return TRUE;
 }
@@ -1102,17 +1102,17 @@ static int hri_compute_leg_angles(double hipknee, double kneeankle, double ankle
  */
 int hri_agent_compute_posture(HRI_AGENT * agent, double neck_height, int state, configPt q)
 {
-  double hiptoknee_dist, kneetoankle_dist, necktobase_dist, hiptoground_dist; 
+  double hiptoknee_dist, kneetoankle_dist, necktobase_dist, hiptoground_dist;
   double basetohip_dist, ankletoground_dist;
   double lhip_angle, lknee_angle, lankle_angle;
   double rhip_angle, rknee_angle, rankle_angle;
-  
+
   if(agent == NULL) return FALSE;
-  
+
   // Only supports ACHILE human model. Everything else returns FALSE.
-  
+
   if(agent->type == HRI_ACHILE) {
-    
+
     necktobase_dist = agent->robotPt->joints[5]->abs_pos[2][3]-agent->robotPt->joints[1]->abs_pos[2][3];
     hiptoknee_dist = DISTANCE3D(agent->robotPt->joints[23]->abs_pos[0][3],
                                 agent->robotPt->joints[23]->abs_pos[1][3],
@@ -1123,32 +1123,32 @@ int hri_agent_compute_posture(HRI_AGENT * agent, double neck_height, int state, 
     kneetoankle_dist = DISTANCE3D(agent->robotPt->joints[25]->abs_pos[0][3],
                                   agent->robotPt->joints[25]->abs_pos[1][3],
                                   agent->robotPt->joints[25]->abs_pos[2][3],
-                                  agent->robotPt->joints[27]->abs_pos[0][3],  
+                                  agent->robotPt->joints[27]->abs_pos[0][3],
                                   agent->robotPt->joints[27]->abs_pos[1][3],
                                   agent->robotPt->joints[27]->abs_pos[2][3]); // Constant -> 0.39
     basetohip_dist = agent->robotPt->joints[1]->abs_pos[2][3]-agent->robotPt->joints[23]->abs_pos[2][3];
     hiptoground_dist =  neck_height - necktobase_dist - basetohip_dist;
     ankletoground_dist = 0.09; // Fixed distance in ACHILE model
-    
+
     switch (state) {
-      case 0: // STANDING 
-        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0, 
+      case 0: // STANDING
+        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0,
                                &lhip_angle, &lknee_angle, &lankle_angle);
         rhip_angle = lhip_angle;
         rknee_angle = lknee_angle;
         rankle_angle = lankle_angle;
         break;
       case 1: // SITTING
-        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0.4, 
+        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0.4,
                                &lhip_angle, &lknee_angle, &lankle_angle);
         rhip_angle = lhip_angle;
         rknee_angle = lknee_angle;
         rankle_angle = lankle_angle;
         break;
       case 2: // MOVING
-        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0.2, 
+        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0.2,
                                &lhip_angle, &lknee_angle, &lankle_angle);
-        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, -0.2, 
+        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, -0.2,
                                &rhip_angle, &rknee_angle, &rankle_angle);
         break;
       default:
@@ -1164,16 +1164,16 @@ int hri_agent_compute_posture(HRI_AGENT * agent, double neck_height, int state, 
     q[agent->robotPt->joints[30]->index_dof] = -rhip_angle;
     q[agent->robotPt->joints[32]->index_dof] = rknee_angle;
     q[agent->robotPt->joints[34]->index_dof] = -rankle_angle;
-    
+
     agent->actual_state = state;
-    
+
     return TRUE;
-  } 
+  }
   else {
     //printf("In %s:%d, Trying to compute the posture of an unsupported robot\n",__FILE__,__LINE__);
     return FALSE;
   }
-  
+
 }
 
 /**
@@ -1181,18 +1181,18 @@ int hri_agent_compute_posture(HRI_AGENT * agent, double neck_height, int state, 
  */
 int hri_agent_compute_state_posture(HRI_AGENT * agent, int state, configPt q)
 {
-  double hiptoknee_dist, kneetoankle_dist, necktobase_dist, hiptoground_dist; 
+  double hiptoknee_dist, kneetoankle_dist, necktobase_dist, hiptoground_dist;
   double basetohip_dist, ankletoground_dist;
   double lhip_angle, lknee_angle, lankle_angle;
   double rhip_angle, rknee_angle, rankle_angle;
   double neck_height;
-  
+
   if(agent == NULL) return FALSE;
-  
+
   // Only supports ACHILE human model. Everything else returns FALSE.
-  
+
   if(agent->type == HRI_ACHILE) {
-    
+
     necktobase_dist = agent->robotPt->joints[5]->abs_pos[2][3]-agent->robotPt->joints[1]->abs_pos[2][3];
     hiptoknee_dist = DISTANCE3D(agent->robotPt->joints[23]->abs_pos[0][3],
                                 agent->robotPt->joints[23]->abs_pos[1][3],
@@ -1203,17 +1203,17 @@ int hri_agent_compute_state_posture(HRI_AGENT * agent, int state, configPt q)
     kneetoankle_dist = DISTANCE3D(agent->robotPt->joints[25]->abs_pos[0][3],
                                   agent->robotPt->joints[25]->abs_pos[1][3],
                                   agent->robotPt->joints[25]->abs_pos[2][3],
-                                  agent->robotPt->joints[27]->abs_pos[0][3],  
+                                  agent->robotPt->joints[27]->abs_pos[0][3],
                                   agent->robotPt->joints[27]->abs_pos[1][3],
                                   agent->robotPt->joints[27]->abs_pos[2][3]); // Constant -> 0.39
     basetohip_dist = agent->robotPt->joints[1]->abs_pos[2][3]-agent->robotPt->joints[23]->abs_pos[2][3];
     ankletoground_dist = 0.09; // Fixed distance in ACHILE model
-    
+
     switch (state) {
-      case 0: // STANDING 
+      case 0: // STANDING
         neck_height = 1.6;
         hiptoground_dist =  neck_height - necktobase_dist - basetohip_dist;
-        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0, 
+        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0,
                                &lhip_angle, &lknee_angle, &lankle_angle);
         rhip_angle = lhip_angle;
         rknee_angle = lknee_angle;
@@ -1222,7 +1222,7 @@ int hri_agent_compute_state_posture(HRI_AGENT * agent, int state, configPt q)
       case 1: // SITTING
         neck_height = 1.1;
         hiptoground_dist =  neck_height - necktobase_dist - basetohip_dist;
-        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0.4, 
+        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0.4,
                                &lhip_angle, &lknee_angle, &lankle_angle);
         rhip_angle = lhip_angle;
         rknee_angle = lknee_angle;
@@ -1231,9 +1231,9 @@ int hri_agent_compute_state_posture(HRI_AGENT * agent, int state, configPt q)
       case 2: // MOVING
         neck_height = 1.6;
         hiptoground_dist =  neck_height - necktobase_dist - basetohip_dist;
-        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0.2, 
+        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, 0.2,
                                &lhip_angle, &lknee_angle, &lankle_angle);
-        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, -0.2, 
+        hri_compute_leg_angles(hiptoknee_dist, kneetoankle_dist, ankletoground_dist, hiptoground_dist, -0.2,
                                &rhip_angle, &rknee_angle, &rankle_angle);
         break;
       default:
@@ -1250,25 +1250,25 @@ int hri_agent_compute_state_posture(HRI_AGENT * agent, int state, configPt q)
     q[agent->robotPt->joints[30]->index_dof] = -rhip_angle;
     q[agent->robotPt->joints[32]->index_dof] = rknee_angle;
     q[agent->robotPt->joints[34]->index_dof] = -rankle_angle;
-    
+
     agent->actual_state = state;
-    
+
     return TRUE;
-  } 
+  }
   else {
     //printf("In %s:%d, Trying to compute the posture of an unsupported robot\n",__FILE__,__LINE__);
     return FALSE;
   }
-  
+
 }
 
 
 int hri_agent_load_default_arm_posture(HRI_AGENT * agent, configPt q)
 {
   int first_rshoulder_dof,first_lshoulder_dof;
-  
+
   if(agent == NULL) return FALSE;
-  
+
   if(agent->type == HRI_ACHILE) {
     first_rshoulder_dof = agent->robotPt->joints[8]->index_dof;
     q[first_rshoulder_dof]   = DTOR( 80);
@@ -1278,7 +1278,7 @@ int hri_agent_load_default_arm_posture(HRI_AGENT * agent, configPt q)
     q[first_rshoulder_dof+4] = DTOR(  0);
     q[first_rshoulder_dof+5] = DTOR(  0);
     q[first_rshoulder_dof+6] = DTOR(  0);
-    
+
     first_lshoulder_dof = agent->robotPt->joints[15]->index_dof;
     q[first_lshoulder_dof]   = DTOR(-80);
     q[first_lshoulder_dof+1] = DTOR(  0);
@@ -1287,7 +1287,7 @@ int hri_agent_load_default_arm_posture(HRI_AGENT * agent, configPt q)
     q[first_lshoulder_dof+4] = DTOR(  0);
     q[first_lshoulder_dof+5] = DTOR(  0);
     q[first_lshoulder_dof+6] = DTOR(  0);
-    
+
     return TRUE;
   }
   else {
@@ -1299,7 +1299,7 @@ int hri_agent_load_default_arm_posture(HRI_AGENT * agent, configPt q)
 int hri_is_robot_an_agent(p3d_rob * robot, HRI_AGENTS * agents, int * is_human, int * agent_idx)
 {
   int i;
-  
+
   for(i=0; i<agents->all_agents_no; i++) {
     if(robot == agents->all_agents[i]->robotPt) {
       *is_human = agents->all_agents[i]->is_human;
@@ -1309,10 +1309,10 @@ int hri_is_robot_an_agent(p3d_rob * robot, HRI_AGENTS * agents, int * is_human, 
   }
   return FALSE;
 }
-  
-  
-  
-  
-  
+
+
+
+
+
 
 
