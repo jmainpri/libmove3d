@@ -160,8 +160,10 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 //! if false the rotations are fully randomly generated.
 bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations(bool rotate_only_around_z)
 {
+  MANIPULATION_TASK_MESSAGE status;
+  
+  bool result =false;
   int n, nbOrientations;
-  bool result;
   p3d_rob *object;
   double x, y, z, rx, ry, rz;
 
@@ -185,9 +187,15 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
     else
     {  p3d_set_freeflyer_pose2(object, x, y, z, p3d_random(-M_PI,M_PI), p3d_random(-M_PI,M_PI), p3d_random(-M_PI,M_PI));  } 
  
-    result= manipTest(ARM_PICK_GOTO);  
-    if(result==true)
-    {  n++; }    
+    //result = manipTest(ARM_PICK_GOTO);
+    //if( result )
+    //{  n++; }   
+    
+    ManipulationData data(m_Robot);
+    if ( m_manipulation->findArmGraspsConfigs(0, object, data) == MANIPULATION_TASK_OK) 
+    {
+      n++;
+    }
   }  
   printf("---------------------------------------------------\n");
   printf("---------------------------------------------------\n");
