@@ -82,7 +82,8 @@ typedef enum ENUM_HRI_SPATIAL_RELATION {
   HRI_FAR_BACK = 13,
   HRI_FAR_BACK_RIGHT = 14,
   HRI_FAR_RIGHT = 15,
-  HRI_FAR_FRONT_RIGHT = 16
+  HRI_FAR_FRONT_RIGHT = 16,
+  HRI_UK_RELATION = 17, /* Unknown relation. meaning we don't know */
 } HRI_SPATIAL_RELATION;
 
 typedef struct STRUCT_HRI_KNOWLEDGE_ON_ENTITY {
@@ -122,6 +123,5 @@ typedef struct STRUCT_HRI_KNOWLEDGE {
   HRI_KNOWLEDGE_ON_ENTITY * entities;
   int entities_nb;
 } HRI_KNOWLEDGE;
-
 
 #endif
