@@ -6,18 +6,18 @@ typedef enum ENUM_HRI_ENTITY_TYPE {
   HRI_ISAGENT = 1, /* There is already a type called HRI_AGENT */
   HRI_AGENT_PART = 2,
   HRI_OBJECT_PART = 3,
-  HRI_VIRTUAL_OBJECT = 4 
+  HRI_VIRTUAL_OBJECT = 4
 } HRI_ENTITY_TYPE;
 
 typedef struct STRUCT_HRI_ENTITY {
-  
+
   HRI_ENTITY_TYPE type;
   int can_disappear; /* Can this entity disappear? For example a furniture can be considered a not movable */
-  
-  p3d_rob * robotPt; 
+
+  p3d_rob * robotPt;
   p3d_obj * partPt;
   int agent_idx; /* if it's a part of an agent, then its index */
-  
+
 } HRI_ENTITY;
 
 typedef struct STRUCT_HRI_ENTITIES {
@@ -82,7 +82,8 @@ typedef enum ENUM_HRI_SPATIAL_RELATION {
   HRI_FAR_BACK = 13,
   HRI_FAR_BACK_RIGHT = 14,
   HRI_FAR_RIGHT = 15,
-  HRI_FAR_FRONT_RIGHT = 16
+  HRI_FAR_FRONT_RIGHT = 16,
+  HRI_UK_RELATION = 17, /* Unknown relation. meaning we don't know */
 } HRI_SPATIAL_RELATION;
 
 typedef struct STRUCT_HRI_KNOWLEDGE_ON_ENTITY {
@@ -90,17 +91,17 @@ typedef struct STRUCT_HRI_KNOWLEDGE_ON_ENTITY {
   HRI_ENTITY_TYPE type;
   long update_date;
   int is_present;
-  
+
   HRI_MOTION motion;
-  
+
   HRI_VISIBILITY_PLACEMENT is_placed_from_visibility;
-  
-  HRI_SPATIAL_RELATION * is_located_from_agent; 
+
+  HRI_SPATIAL_RELATION * is_located_from_agent;
   int is_located_from_agent_nb;    /* length is HRI_AGENTS->all_agents_nb */
-  
-  HRI_PLACEMENT_RELATION * is_placed;  
+
+  HRI_PLACEMENT_RELATION * is_placed;
   int is_placed_nb;  /* length is HRI_ENTITIES->all_entities_nb */
-  
+
 } HRI_KNOWLEDGE_ON_ENTITY;
 
 
@@ -108,20 +109,19 @@ typedef struct STRUCT_HRI_KNOWLEDGE_ON_ENTITY {
 typedef struct STRUCT_HRI_KNOWLEDGE {
   /* The spatial knowledge on the state of things from the perspective of the agent */
   /* Normally all indexes should be synchronized with entities structure */
-  
+
   HRI_VISIBILITY * sees;
   int sees_nb;
   HRI_REACHABILITY * reaches;
   int reaches_nb;
-  
+
   int * looks_at; /* indexes of entities in entity structure */
   int looks_at_nb;
   int * points_at; /* indexes of entities in entity structure */
   int points_at_nb;
-  
+
   HRI_KNOWLEDGE_ON_ENTITY * entities;
   int entities_nb;
 } HRI_KNOWLEDGE;
-
 
 #endif

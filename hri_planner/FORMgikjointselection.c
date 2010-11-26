@@ -20,7 +20,7 @@ typedef struct {
 static int gik_active_task_no = 0; /* By default Look at task is active */
 p3d_rob * GIK_target_robot = NULL;
 
-static int GIK_NOT_SUPPORTED_ROBOT = FALSE;
+//static int GIK_NOT_SUPPORTED_ROBOT = FALSE;
 
 double GIK_PRECISION = 0.05;
 int GIK_STEP = 100;

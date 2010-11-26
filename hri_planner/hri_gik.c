@@ -21,11 +21,11 @@ double p3d_psp_pointtolinedist(p3d_vector3 p, p3d_vector3 l1, p3d_vector3 l2)
 	p3d_vector3 l1mp;
 	p3d_vector3 l2ml1;
 	p3d_vector3 crossprod;
-	
+
 	p3d_vectSub(l1,p,l1mp);
 	p3d_vectSub(l2,l1,l2ml1);
 	p3d_vectXprod(l1mp,l2ml1,crossprod);
-	
+
 	return (p3d_vectNorm(crossprod)/p3d_vectNorm(l2ml1));
 }
 #endif
@@ -720,15 +720,15 @@ int hri_gik_compute_DX(hri_gik * gik, int task_no)
     //else
     gsl_vector_set(gik->task[task_no]->deltaX,i,gsl_vector_get(gik->task[task_no]->goal,i)-Ccoord[i]);
   }
-  
+
   // TEST CODE
   // Clamping target vector to reduce oscillations
   //double goal_i;
 //  double Dmax = 0.2;
-//  
+//
 //  for(i=0; i<gik->task[task_no]->m; i++){
 //    goal_i = gsl_vector_get(gik->task[task_no]->goal,i);
-//    
+//
 //    if(ABS(goal_i-Ccoord[i]) > Dmax) {
 //      gsl_vector_set(gik->task[task_no]->deltaX,i,Dmax*(goal_i-Ccoord[i])/ABS(goal_i-Ccoord[i]));
 //    }
@@ -746,9 +746,9 @@ int hri_gik_compute_DX(hri_gik * gik, int task_no)
 //  q[6] = gsl_vector_get(gik->task[task_no]->deltaX,0)+gik->robot->joints[37]->abs_pos[0][3];
 //  q[7] = gsl_vector_get(gik->task[task_no]->deltaX,1)+gik->robot->joints[37]->abs_pos[1][3];
 //  q[8] = gsl_vector_get(gik->task[task_no]->deltaX,2)+gik->robot->joints[37]->abs_pos[2][3];
-//  
+//
 //  p3d_set_and_update_this_robot_conf(env->robot[i], q);
-  
+
   //hri_gik_ShowTheVector(gik->task[task_no]->deltaX);
   //printf("\n");
 
@@ -977,7 +977,7 @@ int hri_gik_compute(p3d_rob * robot, hri_gik * gik, int step, double reach,
     hri_gik_compute_core(gik, DT);
 
     hri_gik_updaterobot(gik, DT);
-    
+
 #ifdef HRI_PLANNER_GUI
     /* printf("\n update vector is :\n"); hri_gik_ShowTheVector(DT); */
     if(viscount == GIK_VIS){
@@ -1055,7 +1055,7 @@ double hri_gik_remainingdistance(hri_gik * gik, int task_no)
  * \param gik      gik structure
  * \param task_no  task number
  * !
- 
+
  * \return double  the distance
  */
 /****************************************************************/
@@ -1066,38 +1066,38 @@ int hri_gik_compute_sdls(hri_gik * gik, gsl_vector * DT_final)
   int i, s;
   gsl_matrix *U, *Jt;
   gsl_vector *Dt;
-  
+
   hri_gik_compute_DX(gik,0);
-  
+
   Jt = gsl_matrix_alloc(gik->task[0]->n,gik->task[0]->m);
   U =  gsl_matrix_alloc(gik->task[0]->m,gik->task[0]->m);
   Dt = gsl_vector_alloc(gik->task[0]->m);
-  
+
   gsl_matrix_transpose_memcpy(Jt, gik->task[0]->Jacobian);
- 
+
   gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, gik->task[0]->Jacobian, Jt,
                  0.0, U); /* U = J * Jt */
-  
+
   // Add lambdasq to the diagonal of U
   for (i=0; i<(signed int)U->size1; i++) {
     val = gsl_matrix_get(U, i, i) + lambdasq;
     gsl_matrix_set(U, i, i, val);
   }
-  
+
   // Solve the equation Dt = U * DX
-  
+
   gsl_permutation *p = gsl_permutation_alloc(gik->task[0]->m);
-  
+
   gsl_linalg_LU_decomp(U, p, &s);
-  
+
   gsl_linalg_LU_solve (U, p, Dt, gik->task[0]->deltaX);
-  
+
   gsl_blas_dgemv(CblasNoTrans, 1.0, Jt, Dt,
                  0.0, DT_final); /* DTheta = Jt * Dt */
-  
+
   return TRUE;
 }
-  
+
 int hri_gik_sdls(p3d_rob * robot, hri_gik * gik, int step, double reach,
                  p3d_vector3* goal, configPt * qresult, int (*fct)(void))
 {
@@ -1106,14 +1106,14 @@ int hri_gik_sdls(p3d_rob * robot, hri_gik * gik, int step, double reach,
   int viscount = 0;
   gsl_vector * DT;
   configPt qsaved=NULL;
-  
+
   if(gik == NULL || !gik->GIKInitialized){
     PrintError(("Cant compute GIK: gik is not initialized"));
     return FALSE;
   }
-  
+
   qsaved = p3d_get_robot_config(robot);
-  
+
   if(goal != NULL){
     for(i=0; i<gik->task_no; i++){
       gsl_vector_set(gik->task[i]->goal, 0, goal[i][0]);
@@ -1126,13 +1126,13 @@ int hri_gik_sdls(p3d_rob * robot, hri_gik * gik, int step, double reach,
     return FALSE;
   }
   DT = gsl_vector_alloc(gik->joint_no);
-      
+
   hri_gik_computeJacobian(gik,0,FALSE);
   hri_gik_ShowTheMatrix(gik->task[0]->Jacobian);
   hri_gik_compute_sdls(gik, DT);
   hri_gik_ShowTheVector(DT);
   hri_gik_updaterobot(gik, DT);
-  
+
 #ifdef HRI_PLANNER_GUI
   /* printf("\n update vector is :\n"); hri_gik_ShowTheVector(DT); */
   if(viscount == GIK_VIS){
@@ -1144,7 +1144,7 @@ int hri_gik_sdls(p3d_rob * robot, hri_gik * gik, int step, double reach,
     viscount++;
   }
 #endif
-    
+
   maxdistance = 0;
   for(i=0; i<gik->task_no; i++){
     remainingdist = hri_gik_remainingdistance(gik,i);
@@ -1153,14 +1153,14 @@ int hri_gik_sdls(p3d_rob * robot, hri_gik * gik, int step, double reach,
     /*  printf("Remaining distance for task %d: %f\n",i, remainingdist);   */
   }
   /*  printf("\n");  */
-  
+
   gsl_vector_free(DT);
-  
+
   //  configPt qtmpo = p3d_get_robot_config(robot);
   p3d_get_robot_config_into(robot,qresult);
   p3d_set_and_update_this_robot_conf(robot,qsaved);
   p3d_destroy_config(robot,qsaved);
-  
+
   //g3d_draw_allwin_active();
   //  res = p3d_col_test_robot(gik->robot,0);
   //  if(res) return FALSE;
@@ -1169,6 +1169,6 @@ int hri_gik_sdls(p3d_rob * robot, hri_gik * gik, int step, double reach,
     return TRUE;
   else
     return FALSE;
-  
+
 }
 

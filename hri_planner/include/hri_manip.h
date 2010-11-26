@@ -36,7 +36,7 @@
 #define ROBOTj_LHAND 16
 #define ROBOTj_RSHOULDER 4
 #define ROBOTj_LSHOULDER 4
-  
+
 #elif defined(HRI_BHWO)
 
 #define ROBOT_ARM_JOINT_NO 8 /* 6 for jido, 8 for hrp2 */
@@ -176,8 +176,8 @@
 #define HUMANq_TORSO_TILT 13
 #endif
 #ifdef HRI_HUMAN_SUPERMAN
-#define HUMANq_PAN 64 
-#define HUMANq_TILT 65 
+#define HUMANq_PAN 64
+#define HUMANq_TILT 65
 #define HUMANq_TORSO_PAN 11
 #define HUMANq_TORSO_TILT 14
 #endif
@@ -188,7 +188,7 @@
 #define HUMANj_BODY 1
 
 #ifdef HRI_HUMAN_ACHILE
-#define HUMANj_NECK_PAN 5 // for achile ->5, for superman ->54 
+#define HUMANj_NECK_PAN 5 // for achile ->5, for superman ->54
 #define HUMANj_NECK_TILT 6 // for achile ->6, for superman ->55
 
 #define HUMANj_RHAND 36 // for achile ->36, for superman ->29 /* or 30 or 31 */

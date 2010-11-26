@@ -14,7 +14,7 @@ extern p3d_vector3 to_reach_target;
 extern struct grid_3D grid_around_HRP2;
 extern int HRP2_GIK_MANIP;// Just to set the type of the bitmap
 extern int HRP2_GIK_path_calculated;
-extern int Affordances_Found; 
+extern int Affordances_Found;
 
 extern int grid_3d_affordance_calculated;
 extern int HRP2_CURRENT_STATE;//1 for sitting, 2 for half sitting
@@ -38,8 +38,8 @@ typedef struct Mightability_Map_set{
 
 // For Human
 
-int reachable_by_human_LHand; 
-int reachable_by_human_RHand; 
+int reachable_by_human_LHand;
+int reachable_by_human_RHand;
 int visible_by_human_straight_head_orientation;
 int visible_by_human;
 int visible_by_human_neck_turn;
@@ -50,34 +50,34 @@ int visible_by_standing_human_torso_neack_turn;
 int visible_by_human_straight_head_orientation_standing;
 int inside; // -1 means grid cell is outside the surface boundary, 1 means inside the surface boundary, because grid will be constructed based on the bounding box so even it may be inside box but not necessarily inside the actual boundary
 
-int reachable_by_LHand_by_bending; 
-int reachable_by_RHand_by_bending; 
+int reachable_by_LHand_by_bending;
+int reachable_by_RHand_by_bending;
 
-int reachable_by_LHand_by_turning_around; 
+int reachable_by_LHand_by_turning_around;
 int reachable_by_RHand_by_turning_around;
 
-int reachable_by_LHand_by_turning_around_bending; 
-int reachable_by_RHand_by_turning_around_bending;  
+int reachable_by_LHand_by_turning_around_bending;
+int reachable_by_RHand_by_turning_around_bending;
 
 
-int reachable_by_LHand_by_standing; 
+int reachable_by_LHand_by_standing;
 int reachable_by_RHand_by_standing;
 
-int reachable_by_LHand_by_standing_bending; 
+int reachable_by_LHand_by_standing_bending;
 int reachable_by_RHand_by_standing_bending;
 
-int reachable_by_LHand_by_standing_turning_around; 
+int reachable_by_LHand_by_standing_turning_around;
 int reachable_by_RHand_by_standing_turning_around;
 
-int reachable_by_LHand_by_standing_turning_around_bending; 
-int reachable_by_RHand_by_standing_turning_around_bending;  
+int reachable_by_LHand_by_standing_turning_around_bending;
+int reachable_by_RHand_by_standing_turning_around_bending;
 
 
 
 
 //For HRP2
-int reachable_by_HRP2_LHand; 
-int reachable_by_HRP2_RHand; 
+int reachable_by_HRP2_LHand;
+int reachable_by_HRP2_RHand;
 int visible_by_HRP2_straight_head_orientation;
 int visible_by_HRP2;
 int visible_by_HRP2_neck_turn;
@@ -88,14 +88,14 @@ int visible_by_standing_HRP2_torso_neck_turn;
 int visible_by_HRP2_straight_head_orientation_standing;
 
 //For JIDO
-int reachable_by_JIDO_Hand; 
+int reachable_by_JIDO_Hand;
 int visible_by_JIDO;
 int visible_by_JIDO_straight_head_orientation;
 int visible_by_JIDO_neck_turn;
 
 
 
- 
+
 
 
 }Mightability_Map_set;
@@ -103,32 +103,32 @@ int visible_by_JIDO_neck_turn;
 typedef struct surface_grid_cell{
 
 // For Human
-int reachable_by_LHand; 
-int reachable_by_RHand; 
+int reachable_by_LHand;
+int reachable_by_RHand;
 int visible;
 int inside; // -1 means grid cell is outside the surface boundary, 1 means inside the surface boundary, because grid will be constructed based on the bounding box so even it may be inside box but not necessarily inside the actual boundary
 
-int reachable_by_LHand_by_bending; 
-int reachable_by_RHand_by_bending; 
+int reachable_by_LHand_by_bending;
+int reachable_by_RHand_by_bending;
 
-int reachable_by_LHand_by_turning_around; 
+int reachable_by_LHand_by_turning_around;
 int reachable_by_RHand_by_turning_around;
 
-int reachable_by_LHand_by_turning_around_bending; 
-int reachable_by_RHand_by_turning_around_bending;  
+int reachable_by_LHand_by_turning_around_bending;
+int reachable_by_RHand_by_turning_around_bending;
 
-int reachable_by_LHand_by_standing; 
+int reachable_by_LHand_by_standing;
 int reachable_by_RHand_by_standing;
 
-int reachable_by_LHand_by_standing_bending; 
+int reachable_by_LHand_by_standing_bending;
 int reachable_by_RHand_by_standing_bending;
 
 
 //For HRP2
-int reachable_by_HRP2_LHand; 
-int reachable_by_HRP2_RHand; 
+int reachable_by_HRP2_LHand;
+int reachable_by_HRP2_RHand;
 int visible_by_HRP2;
- 
+
 
 }surface_grid_cell;
 
@@ -156,8 +156,8 @@ int grid_j_max;// The maximum valid 2nd index of surf_grid[][j]
 
 
 typedef struct env_surfaces{
-flat_surface flat_surf[100]; // Total no. of surfaces in the environment 
-int total_no_of_surfaces; 
+flat_surface flat_surf[100]; // Total no. of surfaces in the environment
+int total_no_of_surfaces;
 
 }env_surfaces;
 
@@ -183,8 +183,8 @@ grid_3D()
 typedef struct candidate_poins_for_task{
 point_co_ordi point[1000];
 double weight[1000];
-int status[1000]; //0 is not tested for validity, 1 is accepted, 2 is rejected 
-int no_points; 
+int status[1000]; //0 is not tested for validity, 1 is accepted, 2 is rejected
+int no_points;
 }candidate_poins_for_task;
 
 typedef struct robots_status{
@@ -235,7 +235,7 @@ int first_non_visible_by_human_torso_neack_turn;
 int first_non_visible_by_standing_human;
 int first_non_visible_by_standing_human_neck_turn;
 int first_non_visible_by_standing_human_torso_neack_turn;
-int first_non_visible_by_human_straight_head_orientation_standing; 
+int first_non_visible_by_human_straight_head_orientation_standing;
 
 //For belonging to the first non visible cell of different type for HRP2
 int first_non_visible_by_HRP2_straight_head_orientation;
@@ -265,7 +265,7 @@ typedef struct MM_based_task
 
 typedef struct Symbolic_Mightability_Maps_Relations
 {
- 
+
  int reachable_for_grasping_to_carry_by_human;//For able to grasp, hold and carry
  int reachable_for_grasping_to_carry_by_HRP2;//For able to grasp, hold and carry
  int reachable_for_grasping_to_carry_by_JIDO;//For able to grasp, hold and carry
@@ -279,14 +279,14 @@ typedef struct Symbolic_Mightability_Maps_Relations
  MM_based_task reachable_for_putting_inside_by_human;//For able to reach sufficient area at the top of the object, so that something could be drop/put inside
  MM_based_task reachable_for_putting_inside_by_JIDO;//For able to reach sufficient area at the top of the object, so that something could be drop/put inside
  MM_based_task reachable_for_putting_inside_by_HRP2;//For able to reach sufficient area at the top of the object, so that something could be drop/put inside
- 
+
 //If Any cell which is occupied AND which belongs to that object is reachable by agent, then we assume agent can at least touch the object
  int reachable_for_touching_by_human;//For able to just touch the bounding box of the object
  int reachable_for_touching_by_HRP2;//For able to just touch the bounding box of the object
  int reachable_for_touching_by_JIDO;//For able to just touch the bounding box of the object
 
 }Symbolic_Mightability_Maps_Relations;
- 
+
 
 typedef struct object_mightability_set
 {
@@ -302,8 +302,8 @@ typedef struct object_Symbolic_Mightability_Maps_Relation
  ////////Mightability_Map_set object[50];//This index should be synchronized with the indices of robots in env
  object_mightability_set object[50];//This index should be synchronized with the indices of robots in env
 
- 
- 
+
+
 } object_Symbolic_Mightability_Maps_Relation;
 
 typedef struct robots_indices

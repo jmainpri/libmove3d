@@ -16,3 +16,4 @@ extern void p3d_cartesian2spherical(double x, double y, double z, double *rho, d
 extern void p3d_cartesian2spherical(double x, double y, double z, double originx, double originy, double originz, double *phi, double *theta);
 extern int g3d_is_object_visible_from_current_viewpoint2(g3d_win* win, p3d_rob *object, double *result, int save, char *path);
 extern int hri_compute_agent_sees(HRI_AGENT * agent, int threshold, int save, int draw_at_end);
+extern int hri_turn_agent_head_direction(HRI_AGENT *agent, double elevation, double azimuth);

@@ -121,7 +121,7 @@ typedef struct bitmap_cell{
   struct Mightability_Map_set Mightability_Map;//AKP
   struct Mightability_map_cell_object_info Mightability_map_cell_obj_info;//AKP
 #endif
-  
+
 
 } hri_bitmap_cell;
 
@@ -254,7 +254,7 @@ struct bitmap_set{
 
   hri_human ** human;
   p3d_rob * robot;
-  
+
   p3d_rob * visball;        // virtual move3d object for calculating hidden zones
   p3d_rob * object;         // for grasping
 

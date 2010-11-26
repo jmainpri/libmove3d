@@ -175,7 +175,7 @@ void g3d_create_hri_planner_form(void)
   g3d_create_psp_parameters_form();
 
   hri_initialize_visibility();
-  
+
 }
 
 void g3d_show_hri_planner_form(void)
@@ -425,8 +425,10 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
   double objx, objy, objz;
 
   GLOBAL_AGENTS = hri_create_agents();
-  hri_assign_source_agent("JIDOKUKA", GLOBAL_AGENTS);
+  hri_assign_source_agent((char*)"JIDOKUKA", GLOBAL_AGENTS);
 
+  GLOBAL_ENTITIES = hri_create_entities();
+  hri_refine_entity_types(GLOBAL_ENTITIES, GLOBAL_AGENTS);
   /* NAVIGATION */
   if(SELECTED_BTSET==1){
     if(BTSET != NULL)
@@ -1189,13 +1191,13 @@ static void g3d_create_TEST_group(void)
   TEST_BUTTON3_OBJ = fl_add_button(FL_NORMAL_BUTTON,framex+130,framey+10,50,50,"TEST3");
   TEST_BUTTON4_OBJ = fl_add_button(FL_NORMAL_BUTTON,framex+190,framey+10,50,50,"TEST4");
   TEST_BUTTON5_OBJ = fl_add_button(FL_NORMAL_BUTTON,framex+250,framey+10,50,50,"TEST5");
-  
+
   fl_set_call_back(TEST_BUTTON1_OBJ,CB_test_button1_obj,1);
   fl_set_call_back(TEST_BUTTON2_OBJ,CB_test_button2_obj,1);
   fl_set_call_back(TEST_BUTTON3_OBJ,CB_test_button3_obj,1);
   fl_set_call_back(TEST_BUTTON4_OBJ,CB_test_button4_obj,1);
   fl_set_call_back(TEST_BUTTON5_OBJ,CB_test_button5_obj,1);
-  
+
   fl_end_group();
 }
 
@@ -1204,12 +1206,12 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
   HRI_AGENTS * agents;
   p3d_vector3 Tcoord[3];
   configPt q_r, q_h, q_hs, q_r_saved, q_h_saved, q_hs_saved;
-  int i,j=0;
+  int i, j=0;
   int rreached = FALSE, hreached = FALSE;
   int robot_in_collision = FALSE;
-  
+
   SWITCH_TO_GREEN = FALSE;
-  
+
   /* CREATION OF AGENTS */
   agents = hri_create_agents();
 
@@ -1217,12 +1219,12 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
   q_h = p3d_get_robot_config(agents->humans[0]->robotPt);
   //q_hs = p3d_get_robot_config(agents->humans[1]->robotPt);
   //q_hs_saved = p3d_copy_config(agents->humans[1]->robotPt, agents->humans[1]->robotPt->ROBOT_POS);
- 
+
   q_r_saved = p3d_get_robot_config(agents->robots[0]->robotPt);
   q_h_saved = p3d_get_robot_config(agents->humans[0]->robotPt);
-  
+
   for(i=0; i<500; i++){
-    
+
     // Shoot random position
     Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = p3d_random(agents->robots[0]->robotPt->joints[1]->abs_pos[0][3],
                                                             agents->humans[0]->robotPt->joints[1]->abs_pos[0][3]);
@@ -1231,7 +1233,7 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
     Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = p3d_random(0.8, 1.5);
 
     // Test if Human can reach that position
-    
+
     p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r_saved);
     rreached = hri_agent_single_task_manip_move(agents->robots[0], GIK_RATREACH, Tcoord, 0.05, &q_r);
     p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r);
@@ -1255,12 +1257,12 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
 //      j++;
 //      continue;
 //    }
-    
-    p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r_saved);    
-    
+
+    p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r_saved);
+
     // Robot Can reach
     // Test if Human can reach that position
-    
+
     p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h_saved);
     hreached = hri_agent_single_task_manip_move(agents->humans[0], GIK_RATREACH, Tcoord, 0.02, &q_h);
     p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
@@ -1283,8 +1285,8 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
       j++;
       robot_in_collision = FALSE;
       continue;
-    }    
-      
+    }
+
     if(p3d_col_test_robot(agents->humans[0]->robotPt,FALSE)){
       zone[j].x = Tcoord[0][0]; zone[j].y = Tcoord[0][1]; zone[j].z = Tcoord[0][2];
       zone[j].value = -1; //human has reached but in collision
@@ -1387,7 +1389,7 @@ void CB_test_button3_obj(FL_OBJECT *obj, long arg)
   hri_gik_sdls(rob, HRI_GIK, 500, 0.01, &Tcoord, &q_s, NULL);
 
   p3d_set_and_update_this_robot_conf(rob, q_s);
-  
+
   g3d_draw_allwin_active();
 }
 
@@ -1395,43 +1397,55 @@ void CB_test_button4_obj(FL_OBJECT *obj, long arg)
 {
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int i,j;
-  p3d_rob * rob1, * rob2;
-  double rob1_cx, rob1_cy, rob1_cz, rob2_cx, rob2_cy, rob2_cz;
+  //p3d_rob * rob1, * rob2;
+  //double rob1_cx, rob1_cy, rob1_cz, rob2_cx, rob2_cy, rob2_cz;
   configPt q;
-  
-  //q = p3d_get_robot_config(GLOBAL_AGENTS->humans[0]->robotPt);
-  //hri_agent_compute_posture(GLOBAL_AGENTS->humans[0], GLOBAL_AGENTS->humans[0]->perspective->pan_jnt_idx, 1.3, q);
-  //p3d_set_and_update_this_robot_conf(GLOBAL_AGENTS->humans[0]->robotPt,q); 
-  
-  
+
+  q = p3d_get_robot_config(GLOBAL_AGENTS->humans[0]->robotPt);
+  hri_agent_load_default_arm_posture(GLOBAL_AGENTS->humans[0], q);
+  hri_agent_compute_state_posture(GLOBAL_AGENTS->humans[0], 0, q);
+  p3d_copy_config_into(GLOBAL_AGENTS->humans[0]->robotPt, q, &GLOBAL_AGENTS->humans[0]->robotPt->ROBOT_POS);
+
+  q = p3d_get_robot_config(GLOBAL_AGENTS->humans[1]->robotPt);
+  hri_agent_load_default_arm_posture(GLOBAL_AGENTS->humans[1], q);
+  hri_agent_compute_state_posture(GLOBAL_AGENTS->humans[1], 0, q);
+  p3d_copy_config_into(GLOBAL_AGENTS->humans[1]->robotPt, q, &GLOBAL_AGENTS->humans[1]->robotPt->ROBOT_POS);
+
+  //GLOBAL_AGENTS->robots[0]->perspective->enable_vision_draw = TRUE;
+  // GLOBAL_AGENTS->humans[0]->perspective->enable_pointing_draw = TRUE;
+  GLOBAL_AGENTS->humans[1]->perspective->enable_vision_draw = TRUE;
+  GLOBAL_AGENTS->humans[1]->perspective->enable_pointing_draw = TRUE;
+
+
+  return ;
   // Visibility performance test
   HRI_AGENT *selected_agent;
   p3d_rob *selected_target;
   float clock_val = 0;
   float elapsed_time = 0;
   int test_no = 10;
-  
-  for (i=0; i<test_no; i++) {  
+
+  for (i=0; i<test_no; i++) {
     selected_agent = GLOBAL_AGENTS->all_agents[random()%GLOBAL_AGENTS->all_agents_no];
     selected_target = env->robot[random()%env->nr];
-    
+
     clock_val = clock();
     hri_is_object_visible(selected_agent, selected_target, 50, FALSE, TRUE);
-    
+
     elapsed_time = (clock() - clock_val)/CLOCKS_PER_SEC + elapsed_time;
   }
   printf("TIME passed for %d visibility tests: %f EACH VIS: %f\n",test_no, elapsed_time,elapsed_time/test_no);
   // End test
 
-  
-  
-  
+
+
+
 }
 
 void CB_test_button5_obj(FL_OBJECT *obj, long arg)
 {
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-  int i;  
+  int i;
   int fov = FALSE, foa = FALSE;
   p3d_rob * robot;
   p3d_rob * object;
@@ -1440,9 +1454,9 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
   configPt q_source, q_object;
   double phi, theta;
   int tilt_joint, pan_joint;
-  int visible = FALSE;  
+  int visible = FALSE;
   configPt q;
-  
+
   for(i=0; i<env->nr; i++){
     if( strcasestr(env->robot[i]->name,"ROBOT") ){
       robot = env->robot[i];
@@ -1451,13 +1465,13 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
     if( strcasestr(env->robot[i]->name,"SPACENAV") ){
       object = env->robot[i];
       continue;
-    }    
+    }
   }
-  double result;
-  g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
+  int result;
+//  g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
 //  g3d_is_object_visible_from_current_viewpoint2(win, object, &result, FALSE, NULL);
 //  return;
-  
+
   // hri_object_visibility_placement(GLOBAL_AGENTS->robots[0], object, &visibil);
   //g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, 50, object, &phi);
   //g3d_object_visibility_placement(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, object, DTOR(90), DTOR(90*0.75), DTOR(50), DTOR(50*0.75), &visibil);
@@ -1465,43 +1479,43 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
  // GLOBAL_AGENTS->humans[0]->perspective->enable_pointing_draw = TRUE;
   GLOBAL_AGENTS->humans[1]->perspective->enable_vision_draw = TRUE;
  // GLOBAL_AGENTS->humans[1]->perspective->enable_pointing_draw = TRUE;
-  
+
   GLOBAL_AGENTS->robots[0]->perspective->enable_vision_draw = TRUE;
   //GLOBAL_AGENTS->robots[0]->perspective->enable_pointing_draw = TRUE;
   GLOBAL_AGENTS->robots[1]->perspective->enable_vision_draw = TRUE;
   //GLOBAL_AGENTS->robots[1]->perspective->enable_pointing_draw = TRUE;
- 
+
   // GLOBAL_AGENTS->humans[1]->perspective->enable_vision_draw = TRUE;
   //GLOBAL_AGENTS->humans[2]->perspective->enable_vision_draw = TRUE;
   //GLOBAL_AGENTS->humans[3]->perspective->enable_vision_draw = TRUE;
   //GLOBAL_AGENTS->humans[3]->perspective->enable_pointing_draw = TRUE;
-    
+
   q = p3d_get_robot_config(GLOBAL_AGENTS->humans[0]->robotPt);
   hri_agent_load_default_arm_posture(GLOBAL_AGENTS->humans[0], q);
   hri_agent_compute_state_posture(GLOBAL_AGENTS->humans[0], 0, q);
   p3d_set_and_update_this_robot_conf(GLOBAL_AGENTS->humans[0]->robotPt, q);
-  
+
   q = p3d_get_robot_config(GLOBAL_AGENTS->humans[1]->robotPt);
   hri_agent_load_default_arm_posture(GLOBAL_AGENTS->humans[1], q);
   hri_agent_compute_state_posture(GLOBAL_AGENTS->humans[1], 0, q);
   p3d_set_and_update_this_robot_conf(GLOBAL_AGENTS->humans[1]->robotPt, q);
-  
+
   return ;
   //printf("VISIBILITY RESULT ROBOT: %d PLACEMENT: %d\n ",result,visibil);
   result = hri_is_object_pointed(GLOBAL_AGENTS->humans[0],object, 50, TRUE);
   //g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->humans[0]->perspective->camjoint->abs_pos, 150, object, &phi);
-    
+
   printf("VISIBILITY RESULT HUMAN: %d\n",result);
-  
+
   q_source = p3d_get_robot_config(GLOBAL_AGENTS->humans[0]->robotPt);
   hri_agent_load_default_arm_posture(GLOBAL_AGENTS->humans[0], q_source);
   hri_agent_compute_posture(GLOBAL_AGENTS->humans[0],1.5 , 2, q_source);
   p3d_set_and_update_this_robot_conf(GLOBAL_AGENTS->humans[0]->robotPt, q_source);
-  
+
   return;
-  
+
   foa = psp_is_object_in_fov(robot, object, DTOR(foa_angle) , DTOR(foa_angle)*3/4);
-  
+
   if(foa){
     printf("IN FOA");
   }
@@ -1513,45 +1527,45 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
     else {
       printf("IN OOF");
     }
-    
+
   }
-  
+
   pan_joint = HUMANj_NECK_PAN;
   tilt_joint = HUMANj_NECK_TILT;
-  
+
   q_source = p3d_get_robot_config(robot);
   q_object = p3d_get_robot_config(object);
-  
+
   p3d_psp_cartesian2spherical(q_object[6],q_object[7],q_object[8],
                               robot->joints[HUMANj_NECK_TILT]->abs_pos[0][3],
                               robot->joints[HUMANj_NECK_TILT]->abs_pos[1][3],
                               robot->joints[HUMANj_NECK_TILT]->abs_pos[2][3],
                               &phi,&theta);
-  
-  theta = theta - M_PI_2;  
+
+  theta = theta - M_PI_2;
   printf("\nPhi: %f, theta: %f\n",RTOD(phi),RTOD(theta));
   printf("Robot Orient: %f\n",RTOD(q_source[11]));
-  
+
   //temp_orient = q_source[11] - M_PI_2;
-  
+
   //if(temp_orient < -M_PI) temp_orient = temp_orient + M_2PI;
   //if(temp_orient >  M_PI) temp_orient = temp_orient - M_2PI;
-  
-  //phi = phi - temp_orient;  
-  
+
+  //phi = phi - temp_orient;
+
   phi = phi - q_source[11];
-  
+
   if(phi < -M_PI) phi = phi + M_2PI;
   if(phi >  M_PI) phi = phi - M_2PI;
-//  
-  
-//  
-//  
+//
+
+//
+//
 //  phi = M_2PI - (temp_orient- phi);
-//  
+//
 //  if(phi < -M_PI) phi = phi + M_2PI;
 //  if(phi >  M_PI) phi = phi - M_2PI;
-  
+
   /* TURN PAN  */
   if(robot->joints[pan_joint]->dof_data[0].vmin > phi){
     q_source[robot->joints[pan_joint]->index_dof] = robot->joints[pan_joint]->dof_data[0].vmin;
@@ -1561,10 +1575,10 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
       q_source[robot->joints[pan_joint]->index_dof] = robot->joints[pan_joint]->dof_data[0].vmax;
     }
     else{
-      q_source[robot->joints[pan_joint]->index_dof] = phi;  
+      q_source[robot->joints[pan_joint]->index_dof] = phi;
     }
-  } 
-  
+  }
+
   /* TURN TILT */
   if(robot->joints[tilt_joint]->dof_data[0].vmin > theta){
     q_source[robot->joints[tilt_joint]->index_dof] = robot->joints[tilt_joint]->dof_data[0].vmin;
@@ -1574,22 +1588,22 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
       q_source[robot->joints[tilt_joint]->index_dof] = robot->joints[tilt_joint]->dof_data[0].vmax;
     }
     else{
-      q_source[robot->joints[tilt_joint]->index_dof] = theta;  
+      q_source[robot->joints[tilt_joint]->index_dof] = theta;
     }
   }
-  
-  
-  p3d_set_and_update_this_robot_conf(robot, q_source);  
-  
+
+
+  p3d_set_and_update_this_robot_conf(robot, q_source);
+
   //  visible = hri_is_object_visible(robot, object, 10,TRUE);
-  
+
   if(visible)
     printf("OBJECT VISIBLE\n");
-  else 
+  else
     printf("OBJECT INVISIBLE\n");
-  
+
  return ;
-  
+
 }
 
 

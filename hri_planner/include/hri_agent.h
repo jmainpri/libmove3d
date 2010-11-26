@@ -58,13 +58,13 @@ typedef enum HRI_MANIP_TYPE_ENUM {
 typedef struct STRUCT_HRI_MANIP {
 	hri_gik * gik;
   HRI_MANIP_TYPE type;
-  
+
 	signed int gik_max_step; //TODO: add these two to hri_gik structure
 	double reach_tolerance;
-  
+
 	GIK_TASK * tasklist;
 	int tasklist_no;
-  
+
 	int activetasks[GIK_MAX_TASK_NO];
   int activetasks_no;
 } HRI_MANIP;
@@ -82,11 +82,11 @@ typedef struct STRUCT_HRI_PERSP {
   int pan_jnt_idx;
   int tilt_jnt_idx;
   HRI_VISIBILITY_LIST currently_sees;
-  
+
   /* Reachability Perspective */
   p3d_jnt * pointjoint;
   double point_tolerance;
-  
+
   /* Graphics */
   int enable_vision_draw;
   int enable_pointing_draw;

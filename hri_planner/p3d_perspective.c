@@ -5634,12 +5634,12 @@ double pso_watch3_obj(int saveImage)
   unsigned char *pixels_inv= NULL;
   FILE *file= NULL;
   int j;
-  
+
 
   G3D_RESFRESH_PERSPECTIVE = FALSE;
-  
+
   fl_get_winsize(FL_ObjWin(ob),&w,&h);
-  
+
 //  glGetIntegerv(GL_VIEWPORT, viewport);
 //  w = viewport[2]/3;
 //  h = viewport[3]/3;
@@ -5674,53 +5674,53 @@ double pso_watch3_obj(int saveImage)
       }
     }
   }
-  
-  if(saveImage){   
+
+  if(saveImage){
     file= fopen("PSPOBJECTIVE.ppm","w");
     pixelsn    = (unsigned char*) malloc(3*w*h*sizeof(unsigned char));
     pixels_inv= (unsigned char*) malloc(3*w*h*sizeof(unsigned char));
-    
+
     // choose 1-byte alignment:
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    
+
     // get the image pixels (from (0,0) position):
     glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, pixelsn);
-    
+
     // glReadPixels returns an upside-down image.
     // we have to first flip it
     // NB: in pixels the 3 colors of a pixel follows each other immediately (RGBRGBRGB...RGB).
     for(i=0; i<w; i++)
-    { 
+    {
       for(j=0; j<h; j++)
-      { 
+      {
         pixels_inv[3*(i+j*w)]  = pixelsn[3*(i+(h-1-j)*w)+0];
         pixels_inv[3*(i+j*w)+1]= pixelsn[3*(i+(h-1-j)*w)+1];
         pixels_inv[3*(i+j*w)+2]= pixelsn[3*(i+(h-1-j)*w)+2];
       }
-    } 
-    
+    }
+
     fprintf(file, "P6\n");
     fprintf(file, "# creator: BioMove3D\n");
     fprintf(file, "%d %d\n", w, h);
     fprintf(file, "255\n");
-    
+
     fwrite(pixels_inv, sizeof(unsigned char), 3*w*h, file);
-    
+
     fclose(file);
-    
+
     free(pixelsn);
     free(pixels_inv);
   }
-  
-  
+
+
   glLoadIdentity();
   g3d_set_win_draw_mode(win,DIFFERENCE);
-  
+
   //g3d_refresh_win(win);
   canvas_expose_special(ob, NULL, w, h, NULL, win);
-  
+
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT,pixels);
-  
+
   for (i=firsti;i<=lasti;i+=3){
     if (pixels[i]>=0.0 && pixels[i]!=1.0){
       if ((pixels[i+1]>0.0) &&  (pixels[i+2]==0.0)){
@@ -5729,40 +5729,40 @@ double pso_watch3_obj(int saveImage)
 	    }
     }
   }
-  
-  if(saveImage){   
+
+  if(saveImage){
     file= fopen("PSPDIFFIMAGE.ppm","w");
     pixelsn    = (unsigned char*) malloc(3*w*h*sizeof(unsigned char));
     pixels_inv= (unsigned char*) malloc(3*w*h*sizeof(unsigned char));
-    
+
     // choose 1-byte alignment:
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    
+
     // get the image pixels (from (0,0) position):
     glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, pixelsn);
-    
+
     // glReadPixels returns an upside-down image.
     // we have to first flip it
     // NB: in pixels the 3 colors of a pixel follows each other immediately (RGBRGBRGB...RGB).
     for(i=0; i<w; i++)
-    { 
+    {
       for(j=0; j<h; j++)
-      { 
+      {
         pixels_inv[3*(i+j*w)]  = pixelsn[3*(i+(h-1-j)*w)+0];
         pixels_inv[3*(i+j*w)+1]= pixelsn[3*(i+(h-1-j)*w)+1];
         pixels_inv[3*(i+j*w)+2]= pixelsn[3*(i+(h-1-j)*w)+2];
       }
-    } 
-    
+    }
+
     fprintf(file, "P6\n");
     fprintf(file, "# creator: BioMove3D\n");
     fprintf(file, "%d %d\n", w, h);
     fprintf(file, "255\n");
-    
+
     fwrite(pixels_inv, sizeof(unsigned char), 3*w*h, file);
-    
+
     fclose(file);
-    
+
     free(pixelsn);
     free(pixels_inv);
   }
@@ -6058,7 +6058,7 @@ int p3d_init_robot_parameters()
                                        //talk
       currobotPt->max_pos_range = 4.0; //3.0;
     }
-    else 
+    else
       if(strcasestr(currobotPt->name,"ACHILE")){
         p3d_set_rob_cam_parameters(currobotPt,.1,-.10,.05,3.0,7.0,1.0,2.0,5,0,1.8,0.05);
         currobotPt->angle_range   = 2.0;
@@ -6070,7 +6070,7 @@ int p3d_init_robot_parameters()
       else
         if(strcasestr(currobotPt->name,"ROBOT"))
         {
-          
+
 #ifdef HRI_JIDO
         p3d_set_rob_cam_parameters(currobotPt,.0,-.10,.0,3.0,7.0,0.75,1.05,12,2,.0,.0);
 #elif defined HRI_TUM_BH
@@ -7644,12 +7644,12 @@ static int psp_is_point_in_perspective_fov(p3d_vector4 p)
 {
   int plan;
   G3D_Window *win = g3d_get_win_by_name((char *)"Perspective");
-  
+
   if(win==NULL){
     PrintError(("Perspective window nor initialized\n"));
     return FALSE;
   }
-  
+
   g3d_refresh_win(win);
 
   for(plan = 0; plan < 6; plan++ ) // for all perspective window frustum plans
