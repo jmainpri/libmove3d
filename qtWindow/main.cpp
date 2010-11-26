@@ -12,6 +12,7 @@
 #ifdef QT_GL
 QSemaphore* sem;
 GLWidget* openGlWidget;
+extern int mainMhp(int argc, char ** argv);
 #endif
 
 
@@ -38,7 +39,7 @@ Fl_thread::Fl_thread(int argc, char** argv, QObject* parent) :
 
 void Fl_thread::run()
 {
-  //  mainMhp(_argc, _argv);
+    mainMhp(_argc, _argv);
     cout << "Ends main_old" << endl;
 //    terminate();
 //    wait();
