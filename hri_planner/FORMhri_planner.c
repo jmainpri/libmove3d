@@ -429,6 +429,8 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
 
   GLOBAL_ENTITIES = hri_create_entities();
   hri_refine_entity_types(GLOBAL_ENTITIES, GLOBAL_AGENTS);
+  hri_initialize_all_agents_knowledge(GLOBAL_ENTITIES, GLOBAL_AGENTS);
+
   /* NAVIGATION */
   if(SELECTED_BTSET==1){
     if(BTSET != NULL)
@@ -1401,11 +1403,20 @@ void CB_test_button4_obj(FL_OBJECT *obj, long arg)
   //double rob1_cx, rob1_cy, rob1_cz, rob2_cx, rob2_cy, rob2_cz;
   configPt q;
 
+  hri_display_entities(GLOBAL_ENTITIES);
+  hri_compute_spatial_facts(GLOBAL_AGENTS, GLOBAL_ENTITIES);
+
+  hri_display_agent_knowledge(GLOBAL_AGENTS->humans[0]);
+
+
+  return;
+
   q = p3d_get_robot_config(GLOBAL_AGENTS->humans[0]->robotPt);
   hri_agent_load_default_arm_posture(GLOBAL_AGENTS->humans[0], q);
-  hri_agent_compute_state_posture(GLOBAL_AGENTS->humans[0], 0, q);
+  hri_agent_compute_state_posture(GLOBAL_AGENTS->humans[0], 1, q);
   p3d_copy_config_into(GLOBAL_AGENTS->humans[0]->robotPt, q, &GLOBAL_AGENTS->humans[0]->robotPt->ROBOT_POS);
 
+  return;
   q = p3d_get_robot_config(GLOBAL_AGENTS->humans[1]->robotPt);
   hri_agent_load_default_arm_posture(GLOBAL_AGENTS->humans[1], q);
   hri_agent_compute_state_posture(GLOBAL_AGENTS->humans[1], 0, q);
