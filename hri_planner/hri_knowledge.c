@@ -209,12 +209,12 @@ HRI_PLACEMENT_RELATION hri_placement_relation(p3d_rob *sourceObj, p3d_rob *targe
 
   /* Test if source Obj is in targetObj */
 
-  if( hri_is_in(&sourceObj->BB, &targetObj->BB) )
+  if( hri_is_in(sourceObjC, &targetObj->BB) )
     return HRI_ISIN;
 
   /* Test if sourceObj is on targetObj */
 
-  if( hri_is_on(sourceObjC, &targetObj->BB) )
+  if( hri_is_on(sourceObjC, &sourceObj->BB, &targetObj->BB) )
     return HRI_ISON;
 
   /* Test if sourceObj is next to targetObj */
@@ -267,12 +267,12 @@ HRI_PLACEMENT_RELATION hri_placement_relation(HRI_ENTITY *sourceObj, HRI_ENTITY 
 
   /* Test if source Obj is in targetObj */
 
-  if( hri_is_in(sourceBB, targetBB) )
+  if( hri_is_in(sourceObjC, targetBB) )
     return HRI_ISIN;
 
   /* Test if sourceObj is on targetObj */
 
-  if( hri_is_on(sourceObjC, targetBB) )
+  if( hri_is_on(sourceObjC, sourceBB, targetBB) )
       return HRI_ISON;
 
   /* Test if sourceObj is next to targetObj */
@@ -283,41 +283,35 @@ HRI_PLACEMENT_RELATION hri_placement_relation(HRI_ENTITY *sourceObj, HRI_ENTITY 
   return HRI_NOPLR;
 }
 
-/* Test if sourceObj is on targetObj */
-int hri_is_on(p3d_vector3 sourceC, p3d_BB *targetBB)
+/* Test if topObj is on bottomObj */
+int hri_is_on(p3d_vector3 topObjC, p3d_BB *topObjBB, p3d_BB *bottomObjBB)
 {
   /* Compute ON */
 
-  /* Test if sourceObj is on targetObj */
-  /* Condition 1: The center of SourceObj BB should be in the x,y limits of targetObj BB */
-  /* Condition 2: The lower part of SourceObj BB should either intersect with the upper part of targetObj BB */
-  /*              or there should be few cm's (1.2 times) */
-  // TODO: There is something weird here. is on do not depend on the BB of source object??
+  /* Test if topObj is on bottomObj */
+  /* Condition 1: The center of topObj BB should be in the x,y limits of bottomObj BB and higher than bottomObj maximum z limit */
+  /* Condition 2: The lower part of topObj BB souldn not be higher than 5 cm from the higher part of bottomObj BB */
 
-  if((sourceC[0] >= targetBB->xmin) && (sourceC[0] <= targetBB->xmax) &&
-     (sourceC[1] >= targetBB->ymin) && (sourceC[1] <= targetBB->ymax) &&
-     (sourceC[2] >= targetBB->zmax)) {
-
-    if( ABS(sourceC[2]-targetBB->zmin)*1.2 >= ABS(sourceC[2]-targetBB->zmax)) {
+  if((topObjC[0] >= bottomObjBB->xmin) && (topObjC[0] <= bottomObjBB->xmax) &&
+     (topObjC[1] >= bottomObjBB->ymin) && (topObjC[1] <= bottomObjBB->ymax) &&
+     (topObjC[2] >= bottomObjBB->zmax))
+    if((topObjBB->zmin > bottomObjBB->zmax) && (topObjBB->zmin-bottomObjBB->zmax < 0.05))
       return TRUE;
-    }
-  }
 
   return FALSE;
 }
 
-/* Test if source Obj is in targetObj */
-int hri_is_in(p3d_BB *sourceBB, p3d_BB *targetBB)
+/* Test if insideObj is in outsideObj */
+int hri_is_in(p3d_vector3 insideObjC, p3d_BB *outsideObjBB)
 {
   /* Compute IN */
-  /* Test if source Obj is in targetObj */
-  /* Condition: Source Obj BB should be wholly in targetObj BB */
+  /* Test if insideObj is in outsideObj */
+  /* Condition: insideObj center should be wholly in outsideObj BB */
 
-  if((targetBB->xmin <= sourceBB->xmin) && (targetBB->xmax >= sourceBB->xmax) &&
-     (targetBB->ymin <= sourceBB->ymin) && (targetBB->ymax >= sourceBB->ymax) &&
-     (targetBB->zmin <= sourceBB->zmin) && (targetBB->zmax >= sourceBB->zmax)) {
+  if((outsideObjBB->xmin <= insideObjC[0]) && (outsideObjBB->xmax >= insideObjC[0]) &&
+     (outsideObjBB->ymin <= insideObjC[1]) && (outsideObjBB->ymax >= insideObjC[1]) &&
+     (outsideObjBB->zmin <= insideObjC[2]) && (outsideObjBB->zmax >= insideObjC[2]))
     return TRUE;
-  }
 
   return FALSE;
 }
