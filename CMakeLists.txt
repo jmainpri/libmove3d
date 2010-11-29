@@ -1,5 +1,5 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.6.4)
-PROJECT (Move3D-core C CXX)
+PROJECT (BioMove3D C CXX)
 
 
 #--------- Set the project version
@@ -142,8 +142,6 @@ BM3D_flag(LIST_OF_PLANNERS "Sets the planning API to be default in Move3D" OFF)
 
 BM3D_flag(QT_LIBRARY "Sets QtLibrary compiling mode" OFF)
 BM3D_flag(QT_GL "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
-BM3D_flag(QT_UI_XML_FILES "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
-BM3D_flag(QWT "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
 
 BM3D_flag(USE_GSL "Mathematic Library" OFF)
 BM3D_flag(USE_CLAPACK "Mathematic Library" OFF)
@@ -162,9 +160,9 @@ BM3D_flag(MOVE3D_CORE "Enables compilation of Move3D-core" OFF)
 
 # META flags ------
 BM3D_flag(COMPILE_ON_JIDO "Check this flag to activate all dependencies for Jido" OFF WITH_XFORMS DPG USE_GBM CXX_PLANNER DPG PQP MULTIGRAPH LIGHT_PLANNER HRI_PLANNER HRI_PLANNER_GUI MULTILOCALPATH GRASP_PLANNING USE_GSL )# USE_MIGHTABILITY_MAPS )
-BM3D_flag(COMPILE_FOR_GENOM "Check this flag to activate all dependencies for spark&mhp modules" OFF DPG USE_GBM CXX_PLANNER DPG PQP MULTIGRAPH LIGHT_PLANNER HRI_COSTSPACE HRI_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GSL QT_LIBRARY QT_GL QT_UI_XML_FILES )# USE_MIGHTABILITY_MAPS )
+BM3D_flag(COMPILE_FOR_GENOM "Check this flag to activate all dependencies for spark&mhp modules" OFF USE_GBM PQP MULTIGRAPH LIGHT_PLANNER HRI_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GSL QT_LIBRARY QT_GL )# USE_MIGHTABILITY_MAPS )
 BM3D_flag(COMPILE_MANIPULATION_PLANNER_TESTING "Check this flag to activate the module without interface to test the manipulation planner" OFF PQP LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GBM)
-BM3D_flag(COMPILE_MOVE3DCORE "Check this flag to activate the module without interface to test the manipulation planner" OFF MOVE3D_CORE QT_LIBRARY QT_GL PQP MULTIGRAPH LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING HRI_PLANNER USE_GBM USE_GSL)
+BM3D_flag(COMPILE_MOVE3DCORE "Check this flag to activate the module without interface to test the manipulation planner" OFF MOVE3D_CORE QT_LIBRARY PQP MULTIGRAPH LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING HRI_PLANNER USE_GBM USE_GSL)
 
 BM3D_CheckCompilationFlags()
 
@@ -283,11 +281,17 @@ ENDIF(USE_SHADERS)
 
 #-------------- CXX_PLANNER -------------------------------
 #----------------------------------------------------------
-IF(CXX_PLANNER)
+IF(QT_GL)
   FIND_PACKAGE(EIGEN REQUIRED)
   INCLUDE_directories(${Eigen_INCLUDE_DIR})
   SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${Eigen_INCLUDE_DIR})
-ENDIF(CXX_PLANNER)
+  
+# boost is used e.g. for managing the cost functions (T-RRT).
+  FIND_PACKAGE(Boost REQUIRED)
+  INCLUDE_directories(${BOOST_INCLUDE_DIR})
+  SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${BOOST_INCLUDE_DIR})
+
+ENDIF(QT_GL)
 
 #-------------- GRASP PLANNER -----------------------------
 #----------------------------------------------------------
@@ -340,12 +344,6 @@ IF(BIO_BALL)
   SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${BALL_INCLUDE_DIR})
   SET(LIBS ${LIBS} ${BALL_LIBRARIES})
 ENDIF(BIO_BALL)
-IF(CXX_PLANNER)
-# boost is used e.g. for managing the cost functions (T-RRT).
-  FIND_PACKAGE(Boost REQUIRED)
-  INCLUDE_directories(${BOOST_INCLUDE_DIR})
-  SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${BOOST_INCLUDE_DIR})
-ENDIF(CXX_PLANNER)
 
 #-------------- HRP2 --------------------------------------
 #----------------------------------------------------------
@@ -403,14 +401,11 @@ graphic
 graspPlanning 
 groundHeight 
 hri_planner 
-hri_costspace 
 lightPlanner 
 localpath 
 move3d 
 p3d 
 planner 
-planner_cxx 
-qtWindow 
 userappli 
 util)
 
@@ -447,6 +442,7 @@ MACRO(BM3D_QT_GENERATE_UI_HEADERS)
   ENDFOREACH(file ${ARGV})
 ENDMACRO(BM3D_QT_GENERATE_UI_HEADERS)
 
+MESSAGE(BioMove3D_SOURCE_DIR : ${BioMove3D_SOURCE_DIR})
 FOREACH(srcDir ${BM3D_SOURCE_DIRECTORIES})
   INCLUDE(${BioMove3D_SOURCE_DIR}/${srcDir}/SourceList.cmake)
 ENDFOREACH(srcDir)

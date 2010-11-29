@@ -3,7 +3,7 @@
  *  BioMove3D
  *
  *  Created by Jim Mainprice on 30/04/10.
- *  Copyright 2010 __MyCompanyName__. All rights reserved.
+ *  Copyright 2010 LAAS/CNRS. All rights reserved.
  *
  */
 

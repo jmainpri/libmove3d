@@ -1,6 +1,6 @@
 #ifndef QTPKG_H
 #define QTPKG_H
 
-#include "../qtWindow/qtOpenGL/glwidget.hpp"
+#include "../graphic/proto/glwidget.hpp"
 
 #endif // QTPKG_H

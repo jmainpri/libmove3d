@@ -9,12 +9,6 @@ g3d_states.c
 uglyfont.cpp
 )
 
-IF(CXX_PLANNER)
-BM3D_SRC_SUBDIR_PROCESS(
-g3d_draw_cost.cpp
-)
-ENDIF(CXX_PLANNER)
-
 IF(USE_SHADERS)
 BM3D_SRC_SUBDIR_PROCESS(
 g3d_extensions.c
@@ -32,7 +26,12 @@ qtG3DWindow.cpp
 )
 ENDIF(WITH_XFORMS)
 
-
+IF(QT_GL)
+BM3D_SRC_SUBDIR_PROCESS(
+glwidget.cpp 
+)
+include(${BioMove3D_SOURCE_DIR}/${BM3D_MODULE_NAME}/cppDev/SourceList.cmake)
+ENDIF()
 
 IF(P3D_COLLISION_CHECKING)
 BM3D_SRC_SUBDIR_PROCESS(

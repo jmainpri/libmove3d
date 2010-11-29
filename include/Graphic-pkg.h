@@ -30,7 +30,7 @@
 #include "forms.h"
 #endif
 
-#if !defined (WITH_XFORMS) && ( defined( QT_LIBRARY ) )
+#if !defined (WITH_XFORMS) && ( defined( QT_GL ) )
 #include "../graphic/proto/qtG3DWindow.hpp"
 #include <iostream>
 #endif
