@@ -34,29 +34,33 @@ HRI_ENTITIES * hri_create_entities()
   int i, j;
   int ent_i;
   HRI_ENTITIES * entities;
+  char* objectrealname;
 
   entities = MY_ALLOC(HRI_ENTITIES, 1);
   entities->entities = NULL;
   ent_i = 0;
 
   for(i=0; i<env->nr; i++) {
-    if(!strcasestr(env->robot[i]->name,"GRIPPER") && !strcasestr(env->robot[i]->name,"VISBALL")) {
-      entities->entities = MY_REALLOC(entities->entities, HRI_ENTITY, ent_i, ent_i+1);
-      entities->entities[ent_i].can_disappear = TRUE;
-      entities->entities[ent_i].robotPt = env->robot[i];
-      entities->entities[ent_i].partPt = NULL;
-      entities->entities[ent_i].type = HRI_OBJECT;
+    if(!strcasestr(env->robot[i]->name,"GRIPPER") && !strcasestr(env->robot[i]->name,"VISBALL") && !strcasestr(env->robot[i]->name,"SAHandRight")) {
+      entities->entities = MY_REALLOC(entities->entities, HRI_ENTITY*, ent_i, ent_i+1);
+      entities->entities[ent_i] = MY_ALLOC(HRI_ENTITY,1);
+      entities->entities[ent_i]->can_disappear = TRUE;
+      entities->entities[ent_i]->robotPt = env->robot[i];
+      entities->entities[ent_i]->partPt = NULL;
+      entities->entities[ent_i]->type = HRI_OBJECT;
       ent_i++;
 
       for(j=0; j<env->robot[i]->no; j++) {
-        if(!strcasestr(env->robot[i]->o[j]->name,"GHOST") &&
-           (strcasestr(env->robot[i]->o[j]->name,"SURFACE") || strcasestr(env->robot[i]->o[j]->name,"HAND") ||
-            strcasestr(env->robot[i]->o[j]->name,"HEAD")    || strcasestr(env->robot[i]->o[j]->name,"CAMERA")) ) {
-             entities->entities = MY_REALLOC(entities->entities, HRI_ENTITY, ent_i, ent_i+1);
-             entities->entities[ent_i].can_disappear = TRUE;
-             entities->entities[ent_i].robotPt = env->robot[i];
-             entities->entities[ent_i].partPt = env->robot[i]->o[j];
-             entities->entities[ent_i].type = HRI_OBJECT_PART;
+        objectrealname = strrchr(env->robot[i]->o[j]->name, '.');
+        if(!strcasestr(objectrealname,"GHOST") &&
+           (strcasestr(objectrealname,"SURFACE") || strcasestr(objectrealname,"HAND") ||
+            strcasestr(objectrealname,"HEAD")    || strcasestr(objectrealname,"CAMERA")) ) {
+             entities->entities = MY_REALLOC(entities->entities, HRI_ENTITY*, ent_i, ent_i+1);
+             entities->entities[ent_i] = MY_ALLOC(HRI_ENTITY,1);
+             entities->entities[ent_i]->can_disappear = TRUE;
+             entities->entities[ent_i]->robotPt = env->robot[i];
+             entities->entities[ent_i]->partPt = env->robot[i]->o[j];
+             entities->entities[ent_i]->type = HRI_OBJECT_PART;
              ent_i++;
            }
       }
@@ -80,17 +84,17 @@ int hri_refine_entity_types(HRI_ENTITIES * entities, HRI_AGENTS * agents)
     return FALSE;
 
   for(i=0; i<entities->entities_nb; i++) {
-    switch (entities->entities[i].type) {
+    switch (entities->entities[i]->type) {
       case HRI_OBJECT:
-        if(hri_is_robot_an_agent(entities->entities[i].robotPt, agents, &is_human, &agent_idx)) {
-          entities->entities[i].type = HRI_ISAGENT;
-          entities->entities[i].agent_idx = agent_idx;
+        if(hri_is_robot_an_agent(entities->entities[i]->robotPt, agents, &is_human, &agent_idx)) {
+          entities->entities[i]->type = HRI_ISAGENT;
+          entities->entities[i]->agent_idx = agent_idx;
         }
         break;
       case HRI_OBJECT_PART:
-        if(hri_is_robot_an_agent(entities->entities[i].robotPt, agents, &is_human, &agent_idx)) {
-          entities->entities[i].type = HRI_AGENT_PART;
-          entities->entities[i].agent_idx = agent_idx;
+        if(hri_is_robot_an_agent(entities->entities[i]->robotPt, agents, &is_human, &agent_idx)) {
+          entities->entities[i]->type = HRI_AGENT_PART;
+          entities->entities[i]->agent_idx = agent_idx;
         }
         break;
       default:
@@ -100,6 +104,66 @@ int hri_refine_entity_types(HRI_ENTITIES * entities, HRI_AGENTS * agents)
   return TRUE;
 }
 
+int hri_initialize_all_agents_knowledge(HRI_ENTITIES * entities, HRI_AGENTS * agents)
+{
+  int i;
+
+  for(i=0; i<agents->all_agents_no; i++) {
+    if (!hri_initialize_agent_knowledge(agents->all_agents[i], entities, agents)) {
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
+int hri_initialize_agent_knowledge(HRI_AGENT * agent, HRI_ENTITIES * entities, HRI_AGENTS * agents)
+{
+  int i, j;
+
+  if((agent == NULL) || (entities == NULL) || (agents == NULL))
+    return FALSE;
+
+  agent->knowledge->sees = MY_ALLOC(HRI_VISIBILITY, entities->entities_nb);
+  agent->knowledge->sees_nb = entities->entities_nb;
+
+  agent->knowledge->reaches = MY_ALLOC(HRI_REACHABILITY, entities->entities_nb);
+  agent->knowledge->reaches_nb = entities->entities_nb;
+
+  for(i=0; i<agent->knowledge->sees_nb; i++) {
+    agent->knowledge->sees[i] = HRI_UK_VIS;
+    agent->knowledge->reaches[i] = HRI_UK_REACHABILITY;
+  }
+
+  agent->knowledge->entities = MY_ALLOC(HRI_KNOWLEDGE_ON_ENTITY, entities->entities_nb);
+  agent->knowledge->entities_nb = entities->entities_nb;
+
+  for(i=0; i<agent->knowledge->entities_nb; i++) {
+    if(entities->entities[i]->type == HRI_OBJECT_PART || entities->entities[i]->type == HRI_AGENT_PART)
+      strcpy(agent->knowledge->entities[i].name, entities->entities[i]->partPt->name);
+    else
+      strcpy(agent->knowledge->entities[i].name, entities->entities[i]->robotPt->name);
+
+    agent->knowledge->entities[i].is_present = FALSE;
+    agent->knowledge->entities[i].motion = HRI_UK_MOTION;
+    agent->knowledge->entities[i].is_placed_from_visibility = HRI_UK_VIS_PLACE;
+
+    agent->knowledge->entities[i].is_located_from_agent = MY_ALLOC(HRI_SPATIAL_RELATION, agents->all_agents_no);
+    agent->knowledge->entities[i].is_located_from_agent_nb = agents->all_agents_no;
+
+    for(j=0; j<agent->knowledge->entities[i].is_located_from_agent_nb; j++) {
+      agent->knowledge->entities[i].is_located_from_agent[j] = HRI_UK_RELATION;
+    }
+
+    agent->knowledge->entities[i].is_placed = MY_ALLOC(HRI_PLACEMENT_RELATION, entities->entities_nb);
+    agent->knowledge->entities[i].is_placed_nb = entities->entities_nb;
+
+    for(j=0; j<agent->knowledge->entities[i].is_placed_nb; j++) {
+      agent->knowledge->entities[i].is_placed[j] = HRI_UK_PLR;
+    }
+  }
+
+  return TRUE;
+}
 
 HRI_REACHABILITY hri_is_reachable(HRI_ENTITY * object, HRI_AGENT *agent)
 {
@@ -209,12 +273,12 @@ HRI_PLACEMENT_RELATION hri_placement_relation(p3d_rob *sourceObj, p3d_rob *targe
 
   /* Test if source Obj is in targetObj */
 
-  if( hri_is_in(&sourceObj->BB, &targetObj->BB) )
+  if( hri_is_in(sourceObjC, &targetObj->BB) )
     return HRI_ISIN;
 
   /* Test if sourceObj is on targetObj */
 
-  if( hri_is_on(sourceObjC, &targetObj->BB) )
+  if( hri_is_on(sourceObjC, &sourceObj->BB, &targetObj->BB) )
     return HRI_ISON;
 
   /* Test if sourceObj is next to targetObj */
@@ -267,12 +331,12 @@ HRI_PLACEMENT_RELATION hri_placement_relation(HRI_ENTITY *sourceObj, HRI_ENTITY 
 
   /* Test if source Obj is in targetObj */
 
-  if( hri_is_in(sourceBB, targetBB) )
+  if( hri_is_in(sourceObjC, targetBB) )
     return HRI_ISIN;
 
   /* Test if sourceObj is on targetObj */
 
-  if( hri_is_on(sourceObjC, targetBB) )
+  if( hri_is_on(sourceObjC, sourceBB, targetBB) )
       return HRI_ISON;
 
   /* Test if sourceObj is next to targetObj */
@@ -283,41 +347,35 @@ HRI_PLACEMENT_RELATION hri_placement_relation(HRI_ENTITY *sourceObj, HRI_ENTITY 
   return HRI_NOPLR;
 }
 
-/* Test if sourceObj is on targetObj */
-int hri_is_on(p3d_vector3 sourceC, p3d_BB *targetBB)
+/* Test if topObj is on bottomObj */
+int hri_is_on(p3d_vector3 topObjC, p3d_BB *topObjBB, p3d_BB *bottomObjBB)
 {
   /* Compute ON */
 
-  /* Test if sourceObj is on targetObj */
-  /* Condition 1: The center of SourceObj BB should be in the x,y limits of targetObj BB */
-  /* Condition 2: The lower part of SourceObj BB should either intersect with the upper part of targetObj BB */
-  /*              or there should be few cm's (1.2 times) */
-  // TODO: There is something weird here. is on do not depend on the BB of source object??
+  /* Test if topObj is on bottomObj */
+  /* Condition 1: The center of topObj BB should be in the x,y limits of bottomObj BB and higher than bottomObj maximum z limit */
+  /* Condition 2: The lower part of topObj BB souldn not be higher than 5 cm from the higher part of bottomObj BB */
 
-  if((sourceC[0] >= targetBB->xmin) && (sourceC[0] <= targetBB->xmax) &&
-     (sourceC[1] >= targetBB->ymin) && (sourceC[1] <= targetBB->ymax) &&
-     (sourceC[2] >= targetBB->zmax)) {
-
-    if( ABS(sourceC[2]-targetBB->zmin)*1.2 >= ABS(sourceC[2]-targetBB->zmax)) {
+  if((topObjC[0] >= bottomObjBB->xmin) && (topObjC[0] <= bottomObjBB->xmax) &&
+     (topObjC[1] >= bottomObjBB->ymin) && (topObjC[1] <= bottomObjBB->ymax) &&
+     (topObjC[2] >= bottomObjBB->zmax))
+    if((topObjBB->zmin > bottomObjBB->zmax) && (topObjBB->zmin-bottomObjBB->zmax < 0.05))
       return TRUE;
-    }
-  }
 
   return FALSE;
 }
 
-/* Test if source Obj is in targetObj */
-int hri_is_in(p3d_BB *sourceBB, p3d_BB *targetBB)
+/* Test if insideObj is in outsideObj */
+int hri_is_in(p3d_vector3 insideObjC, p3d_BB *outsideObjBB)
 {
   /* Compute IN */
-  /* Test if source Obj is in targetObj */
-  /* Condition: Source Obj BB should be wholly in targetObj BB */
+  /* Test if insideObj is in outsideObj */
+  /* Condition: insideObj center should be wholly in outsideObj BB */
 
-  if((targetBB->xmin <= sourceBB->xmin) && (targetBB->xmax >= sourceBB->xmax) &&
-     (targetBB->ymin <= sourceBB->ymin) && (targetBB->ymax >= sourceBB->ymax) &&
-     (targetBB->zmin <= sourceBB->zmin) && (targetBB->zmax >= sourceBB->zmax)) {
+  if((outsideObjBB->xmin <= insideObjC[0]) && (outsideObjBB->xmax >= insideObjC[0]) &&
+     (outsideObjBB->ymin <= insideObjC[1]) && (outsideObjBB->ymax >= insideObjC[1]) &&
+     (outsideObjBB->zmin <= insideObjC[2]) && (outsideObjBB->zmax >= insideObjC[2]))
     return TRUE;
-  }
 
   return FALSE;
 }
@@ -426,3 +484,180 @@ HRI_SPATIAL_RELATION hri_spatial_relation(p3d_rob * object, p3d_rob * robot)
   return HRI_NO_RELATION;
 }
 
+HRI_SPATIAL_RELATION hri_spatial_relation(HRI_ENTITY * object, HRI_AGENT * agent)
+{
+  p3d_vector4 targetRealCoord;
+  p3d_vector4 targetRelativeCoord;
+  p3d_matrix4 inv;
+  p3d_BB *objectBB;
+  double rho, phi, theta;
+  int isFar;
+  double frontAngle = 0.26; //TODO: Make this changeable
+  double farLimit = 5.0; //TODO: Make this changeable
+
+  if( (agent == NULL) || (object == NULL) ) {
+    return HRI_NO_RELATION;
+  }
+
+  if(object->type == HRI_OBJECT_PART || object->type == HRI_AGENT_PART)
+    objectBB = &object->partPt->BB;
+  else
+    objectBB = &object->robotPt->BB;
+
+  targetRealCoord[0] = (objectBB->xmax+objectBB->xmin)/2;
+  targetRealCoord[1] = (objectBB->ymax+objectBB->ymin)/2;
+  targetRealCoord[2] = (objectBB->zmax+objectBB->zmin)/2;
+  targetRealCoord[3] = 1;
+
+  p3d_matInvertXform(agent->robotPt->joints[1]->abs_pos, inv);
+
+  p3d_matvec4Mult(inv, targetRealCoord, targetRelativeCoord);
+
+  p3d_cartesian2spherical(targetRelativeCoord[0],targetRelativeCoord[1],targetRelativeCoord[2],
+                          &rho, &theta, &phi);
+
+
+  isFar = (farLimit < DISTANCE2D(targetRelativeCoord[0],targetRelativeCoord[1],0,0));
+
+  //  printf("real coord %f %f %f\n",targetRealCoord[0],targetRealCoord[1],targetRealCoord[2]);
+  //  printf("relative coord %f %f %f\n",targetRelativeCoord[0],targetRelativeCoord[1],targetRelativeCoord[2]);
+  //  printf("Phi is %f, isFar is %d\n",phi,isFar);
+
+  /* Phi is the horizontal one */
+
+  if(ABS(phi) < frontAngle) { /* In front */
+    if(isFar) return HRI_FAR_FRONT ;
+    else   return  HRI_NEAR_FRONT ;
+  }
+  if(frontAngle <= phi && phi < 3*M_PI/8) { /* Front left */
+    if(isFar)  return  HRI_FAR_FRONT_LEFT ;
+    else   return HRI_NEAR_FRONT_LEFT ;
+  }
+  if(3*M_PI/8 <= phi && phi < 5*M_PI/8) { /* left */
+    if(isFar)   return HRI_FAR_LEFT ;
+    else    return HRI_NEAR_LEFT ;
+  }
+  if(5*M_PI/8 <= phi && phi < 7*M_PI/8) { /* Back left */
+    if(isFar)  return  HRI_FAR_BACK_LEFT ;
+    else   return HRI_NEAR_BACK_LEFT ;
+  }
+  if(7*M_PI/8 <= ABS(phi)) { /* Back */
+    if(isFar)  return  HRI_FAR_BACK ;
+    else   return  HRI_NEAR_BACK ;
+  }
+  if(-7*M_PI/8 <= phi && phi < -5*M_PI/8) { /* Back right */
+    if(isFar)  return HRI_FAR_BACK_RIGHT ;
+    else  return HRI_NEAR_BACK_RIGHT ;
+  }
+  if(-5*M_PI/8 <= phi && phi < -3*M_PI/8) { /* right */
+    if(isFar) return HRI_FAR_RIGHT ;
+    else   return HRI_NEAR_RIGHT ;
+  }
+  if(-3*M_PI/8 <= phi && phi < -1*frontAngle) { /* Front right */
+    if(isFar)  return HRI_FAR_FRONT_RIGHT ;
+    else   return HRI_NEAR_FRONT_RIGHT ;
+  }
+  printf("Bad angle value, This shouldn't happen.\n");
+
+  return HRI_NO_RELATION;
+}
+
+
+void hri_display_entities(HRI_ENTITIES * ents)
+{
+  int i;
+
+  if(ents == NULL) {
+    printf("ENTITIES not initialized\n");
+    return ;
+  }
+
+  for(i=0; i<ents->entities_nb; i++) {
+    if(ents->entities[i]->type ==HRI_OBJECT_PART || ents->entities[i]->type ==HRI_AGENT_PART)
+      printf("ENTITIY name: %s type: %d\n",ents->entities[i]->partPt->name, ents->entities[i]->type);
+    else
+      printf("ENTITIY name: %s type: %d\n",ents->entities[i]->robotPt->name, ents->entities[i]->type);
+  }
+}
+
+void hri_display_agent_knowledge(HRI_AGENT * agent)
+{
+  int i, j;
+  HRI_KNOWLEDGE * kn;
+
+  if(agent == NULL || agent->knowledge == NULL) {
+    printf("AGENT not initialized\n");
+    return ;
+  }
+
+  kn = agent->knowledge;
+
+  printf("FOR AGENT %s:\n", agent->robotPt->name);
+
+  printf("\nVISIBILITY STATES: ");
+  for(i=0; i<kn->sees_nb; i++)
+    printf("%d,",kn->sees[i]);
+
+  printf("\nREACHABILITY STATES: ");
+  for(i=0; i<kn->reaches_nb; i++)
+    printf("%d,",kn->reaches[i]);
+
+  printf("\nKNOWLEDGE ON ENTITY ");
+  for(i=0; i<kn->entities_nb; i++) {
+    printf("%s\n", kn->entities[i].name);
+
+    printf("IsPresent: %d\n", kn->entities[i].is_present);
+    printf("Motion: %d\n", kn->entities[i].motion);
+    printf("IsPlaced(vis): %d\n",kn->entities[i].is_placed_from_visibility);
+
+    printf("IsLocated(byAgent): ");
+    for(j=0; j<kn->entities[i].is_located_from_agent_nb; j++)
+      printf("%d,",kn->entities[i].is_located_from_agent[j]);
+
+    printf("\nIsPlaced(Entities): ");
+    for(j=0; j<kn->entities[i].is_placed_nb; j++)
+      printf("%d,",kn->entities[i].is_placed[j]);
+
+     printf("\n\n");
+  }
+}
+
+int hri_compute_spatial_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
+{
+  int a_i, e_i;
+  double elevation, azimuth;
+  HRI_ENTITY * ent;
+  HRI_AGENT * agent;
+  HRI_KNOWLEDGE_ON_ENTITY * kn_on_ent;
+  int res;
+
+  for(a_i=0; a_i<agents->all_agents_no; a_i++) {
+    agent = agents->all_agents[a_i];
+
+    for(e_i=0; e_i<ents->entities_nb ; e_i++) {
+      ent = ents->entities[e_i];
+      kn_on_ent = &agent->knowledge->entities[e_i];
+
+      if(!kn_on_ent->is_present || !kn_on_ent->disappeared)
+        continue;
+
+      hri_object_visibility_placement(agent, ent->robotPt, &res, &elevation, &azimuth);
+      kn_on_ent->is_placed_from_visibility = (HRI_VISIBILITY_PLACEMENT) res;
+
+      if(kn_on_ent->is_placed_from_visibility == HRI_OOF) {
+        agent->knowledge->sees[e_i] = HRI_INVISIBLE;
+        continue;
+        // If the entity is in OOF then we cannot know anything about it -> jump to the next entitiy
+      }
+
+      res = hri_is_object_visible(agent, ent->robotPt, 40, FALSE, FALSE);
+      if(res == FALSE) {
+        agent->knowledge->sees[e_i] = HRI_INVISIBLE;
+        continue;
+      }
+
+    }
+  }
+
+  return TRUE;
+}

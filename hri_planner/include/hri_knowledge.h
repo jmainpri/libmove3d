@@ -21,7 +21,7 @@ typedef struct STRUCT_HRI_ENTITY {
 } HRI_ENTITY;
 
 typedef struct STRUCT_HRI_ENTITIES {
-  HRI_ENTITY * entities;
+  HRI_ENTITY ** entities;
   int entities_nb;
 } HRI_ENTITIES;
 
@@ -91,6 +91,7 @@ typedef struct STRUCT_HRI_KNOWLEDGE_ON_ENTITY {
   HRI_ENTITY_TYPE type;
   long update_date;
   int is_present;
+  int disappeared;
 
   HRI_MOTION motion;
 
