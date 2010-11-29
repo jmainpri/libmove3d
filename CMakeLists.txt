@@ -129,14 +129,12 @@ BM3D_flag(DPG "Dynamic planning using grids" OFF CXX_PLANNER)
 
 BM3D_flag(HRI_PLANNER_GUI "Xforms user interface OFF Human Robot Interaction planner module" OFF HRI_PLANNER WITH_XFORMS)
 BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module" OFF USE_GSL PQP)
-BM3D_flag(HRI_COSTSPACE "Human Robot Interaction planner module for Move3D" OFF)
 
 BM3D_flag(MULTILOCALPATH "Compilation avec le module Multi-Localpath" OFF USE_GBM)
 BM3D_flag(GRASP_PLANNING "Module de planification de prises" OFF PQP)
 
 BM3D_flag(FK_CNTRT "to use the automatic generation of forward kinematics constraints (reciprocal of the closed chained constraints)" OFF LIGHT_PLANNER)
 
-BM3D_flag(CXX_PLANNER "Compiles the planning API and planners" OFF P3D_PLANNER)
 BM3D_flag(USE_CXX_PLANNER "Sets the planning API to be default in Move3D" OFF)
 BM3D_flag(LIST_OF_PLANNERS "Sets the planning API to be default in Move3D" OFF)
 
