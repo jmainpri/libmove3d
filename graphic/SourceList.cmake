@@ -26,7 +26,7 @@ qtG3DWindow.cpp
 )
 ENDIF(WITH_XFORMS)
 
-IF(QT_GL)
+IF(QT_GL_WIDGET)
 BM3D_SRC_SUBDIR_PROCESS(
 glwidget.cpp 
 )
