@@ -160,7 +160,7 @@ BM3D_flag(MOVE3D_CORE "Enables compilation of Move3D-core" OFF)
 # META flags ------
 BM3D_flag(COMPILE_ON_JIDO "Check this flag to activate all dependencies for Jido" OFF WITH_XFORMS USE_GBM  MULTIGRAPH LIGHT_PLANNER HRI_PLANNER HRI_PLANNER_GUI MULTILOCALPATH GRASP_PLANNING USE_GSL )# USE_MIGHTABILITY_MAPS )
 BM3D_flag(COMPILE_FOR_GENOM "Check this flag to activate all dependencies for spark&mhp modules" OFF USE_GBM  MULTIGRAPH LIGHT_PLANNER HRI_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GSL QT_LIBRARY QT_GL QT_GL_WIDGET )# USE_MIGHTABILITY_MAPS )
-BM3D_flag(COMPILE_MANIPULATION_PLANNER_TESTING "Check this flag to activate the module without interface to test the manipulation planner" OFF PQP LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GBM)
+BM3D_flag(COMPILE_MANIPULATION_PLANNER_TESTING "Check this flag to activate the module without interface to test the manipulation planner" OFF LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GBM)
 BM3D_flag(COMPILE_MOVE3DCORE "Check this flag to activate the module without interface to test the manipulation planner" OFF MOVE3D_CORE QT_LIBRARY QT_GL  MULTIGRAPH LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING HRI_PLANNER USE_GBM USE_GSL)
 BM3D_CheckCompilationFlags()
 
@@ -291,13 +291,6 @@ IF(QT_GL)
 
 ENDIF(QT_GL)
 
-
-#-------------- PQP ---------------------------------------
-#----------------------------------------------------------
-FIND_PACKAGE(PQP REQUIRED)
-INCLUDE_directories(${PQP_INCLUDE_DIR})
-SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${PQP_INCLUDE_DIR})
-SET(LIBS ${LIBS} ${PQP_LIBRARIES})
 
 #-------------- GRASP PLANNER -----------------------------
 #----------------------------------------------------------

@@ -278,14 +278,12 @@ int main(int argc, char ** argv) {
         col_det_set = TRUE;
         ++i;
       }
-#ifdef PQP
 	else if (strcmp(argv[i], "pqp") == 0) {
     	printf("Colmod pqp");
     	col_mode_to_be_set= p3d_col_mode_pqp;
     	col_det_set = TRUE;
 	++i;
       }
-#endif
 #endif
  else if (strcmp(argv[i], "bio") == 0) {
         col_mode_to_be_set = p3d_col_mode_bio;
@@ -634,7 +632,7 @@ int main(int argc, char ** argv) {
 static void use(void) {
 
   printf("main : ERROR : wrong arguments !\n move3d -d data_directory -f file -sc scenario -s random_seed -c collision_detector -tol tolerance -dmax dist [-v size | -vol volume] -o -x -nkcdd\n");
-  printf("collision_detector may be: icollide, vcollide, solid, kcd, kng, none\n");
+  printf("collision_detector may be: icollide, vcollide, solid, kcd, kng, pqp, none\n");
   printf("(kng == kcd without gjk)\n");
   printf("-o: consider polyhedrons as objects (only for vcollide)\n");
   printf("-x: do filtering by robot body (default: don't filter)\n");

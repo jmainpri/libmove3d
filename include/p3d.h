@@ -23,7 +23,7 @@
 #define CYLINDER_ENTITY 6
 #define CONE_ENTITY 7
 
-#include <pqp/PQP.h>
+#include <../collision/PQP/include/PQP.h>
 
 typedef double * configPt;
 
