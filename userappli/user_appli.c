@@ -29,14 +29,12 @@ static void printCollidingPairs(){
     p3d_kcd_get_pairObjInCollision ( &o1Pt, &o2Pt );
     printf("colliding pair: %s %s\n", o1Pt->name, o2Pt->name);    
   }
-#ifdef PQP
   else if(p3d_col_get_mode() == p3d_col_mode_pqp){
     if(pqp_colliding_pair(&o1Pt, &o2Pt)){
       printf("%s: %d: \n\t",__FILE__,__LINE__);
       printf("PQP: Collision between \"%s\" and \"%s\"\n", o1Pt->name, o2Pt->name);
     }
   }
-#endif
 }
 
 void openChainPlannerOptions(void) {

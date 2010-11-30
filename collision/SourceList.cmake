@@ -11,13 +11,11 @@ p3d_filter.c
 p3d_kcd.c 
 p3d_triangles.c 
 p3d_v_collide.c
+p3d_pqp.c
 )
-IF(PQP)
-BM3D_SRC_SUBDIR_PROCESS(p3d_pqp.c)
-ENDIF(PQP)
+
 
 include(${BioMove3D_SOURCE_DIR}/${BM3D_MODULE_NAME}/Kcd/SourceList.cmake)
-include(${BioMove3D_SOURCE_DIR}/${BM3D_MODULE_NAME}/PQP/SourceList.cmake)
 include(${BioMove3D_SOURCE_DIR}/${BM3D_MODULE_NAME}/Vcollide/SourceList.cmake)
 ENDIF(P3D_COLLISION_CHECKING)
 

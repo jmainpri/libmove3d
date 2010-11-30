@@ -23,9 +23,7 @@
 #define CYLINDER_ENTITY 6
 #define CONE_ENTITY 7
 
-#ifdef PQP
-  #include <../collision/PQP/PQP.h>
-#endif
+#include <pqp/PQP.h>
 
 typedef double * configPt;
 
@@ -245,14 +243,16 @@ typedef struct obj {
   p3d_BB      BB0;
   int concat; //if the object is concat flag to don't draw it
   int contact_surface; /*!< flag to indicates that (in some circumstances) contacts will be allowed with this object */
-#ifdef PQP
+
+
   PQP_Model *pqpModel; /*!< pointer to the collision model used by the PQP library */
   struct obj *pqpPreviousBody; /*!< possible previous body in the kinematics chain */
   unsigned int pqpID; /*!< identifiant used as an index in the collision pair array (see p3d_pqp.h) */
   p3d_matrix4 pqpPose; 
   struct obj *pqpUnconcatObj; /*!<if the object flag "concat" is 1, this will point to the object that is associated 
              to the same joint (that has the same field "jnt") but has flag concat=0 */
-#endif
+
+
 
   p3d_obj_display_mode display_mode;  /*!< used to modify how the object will be displayed (default display, red display,etc.)*/
 

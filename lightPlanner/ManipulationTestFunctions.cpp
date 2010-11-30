@@ -177,7 +177,7 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
 
   n= 0;
   nbOrientations= 100;
-  for(int i=0; i<nbOrientations; ++i)
+  for(int i=1; i<=nbOrientations; ++i)
   {
     printf("****************test %d/%d************************\n",i,nbOrientations);
     p3d_set_and_update_this_robot_conf(m_manipulation->robot(), m_qInit);

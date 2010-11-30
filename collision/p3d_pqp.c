@@ -4,7 +4,7 @@
 #include "Graphic-pkg.h"
 
 
-#include <../collision/PQP/include/PQP.h>
+#include <pqp/PQP.h>
 #include <../collision/PQP/include/p3d_pqp.h>
 
 

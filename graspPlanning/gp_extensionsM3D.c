@@ -321,11 +321,9 @@ int p3d_col_test_rob_obj(p3d_rob *robot, p3d_obj *object)
 
    switch( p3d_col_get_mode() )
    {
-     #ifdef PQP
      case p3d_col_mode_pqp:
          pqp_robot_obj_collision_test(robot, object);
      break;
-     #endif
      case p3d_col_mode_kcd:
           handlePt= kcd_get_cur_col_handle();
 
@@ -1393,9 +1391,8 @@ int gpExport_bodies_for_coldman(p3d_rob *robot)
   FILE *file= NULL;
   char *path= NULL;
   std::string bodyName, pathName, objName, mtlName;
-  #ifdef PQP
   pqp_triangle *triangles= NULL;
-  #endif 
+
 
   path= getenv("HOME_MOVE3D");
   
@@ -1553,9 +1550,7 @@ int gpExport_obstacles_for_coldman()
   char str[128];
   FILE *file= NULL;
   std::string bodyName;
-  #ifdef PQP
   pqp_triangle *triangles= NULL;
-  #endif 
 
   for(i=0; i<XYZ_ENV->no; i++)
   {

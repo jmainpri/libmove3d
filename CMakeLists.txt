@@ -119,7 +119,6 @@ BM3D_flag(KCD_CP_IS_SOLID "Convex polyhedron as a solid instead of as a collecti
 BM3D_flag(USE_P3D_BODY_AABB "test with AABB around body of robot" ON P3D_COLLISION_CHECKING)
 BM3D_flag(KCD_APPROX_ROBOT "KCD with volume" OFF P3D_COLLISION_CHECKING)
 BM3D_flag(GJK "Use gjk (just for debugging" OFF P3D_COLLISION_CHECKING)
-BM3D_flag(PQP "To compile with PQP (Proximity Query Package) collision library" OFF P3D_COLLISION_CHECKING)
 BM3D_flag(OBB_EVAL "write a file with OBB tree information (just for debugging" OFF P3D_COLLISION_CHECKING)
 BM3D_flag(VCOLLIDE "Use vCollide Collision detector" OFF)
 
@@ -128,10 +127,11 @@ BM3D_flag(LIGHT_PLANNER "Extern Mode (Use this mode to have a scriped functions 
 BM3D_flag(DPG "Dynamic planning using grids" OFF CXX_PLANNER)
 
 BM3D_flag(HRI_PLANNER_GUI "Xforms user interface OFF Human Robot Interaction planner module" OFF HRI_PLANNER WITH_XFORMS)
-BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module" OFF USE_GSL PQP)
+BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module" OFF USE_GSL)
+
 
 BM3D_flag(MULTILOCALPATH "Compilation avec le module Multi-Localpath" OFF USE_GBM)
-BM3D_flag(GRASP_PLANNING "Module de planification de prises" OFF PQP)
+BM3D_flag(GRASP_PLANNING "Module de planification de prises" OFF)
 
 BM3D_flag(FK_CNTRT "to use the automatic generation of forward kinematics constraints (reciprocal of the closed chained constraints)" OFF LIGHT_PLANNER)
 
@@ -158,11 +158,10 @@ BM3D_flag(USE_SHADERS "Enables use of OpenGL shaders" OFF)
 BM3D_flag(MOVE3D_CORE "Enables compilation of Move3D-core" OFF)
 
 # META flags ------
-BM3D_flag(COMPILE_ON_JIDO "Check this flag to activate all dependencies for Jido" OFF WITH_XFORMS USE_GBM PQP MULTIGRAPH LIGHT_PLANNER HRI_PLANNER HRI_PLANNER_GUI MULTILOCALPATH GRASP_PLANNING USE_GSL )# USE_MIGHTABILITY_MAPS )
-BM3D_flag(COMPILE_FOR_GENOM "Check this flag to activate all dependencies for spark&mhp modules" OFF USE_GBM PQP MULTIGRAPH LIGHT_PLANNER HRI_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GSL QT_LIBRARY QT_GL QT_GL_WIDGET )# USE_MIGHTABILITY_MAPS )
+BM3D_flag(COMPILE_ON_JIDO "Check this flag to activate all dependencies for Jido" OFF WITH_XFORMS USE_GBM  MULTIGRAPH LIGHT_PLANNER HRI_PLANNER HRI_PLANNER_GUI MULTILOCALPATH GRASP_PLANNING USE_GSL )# USE_MIGHTABILITY_MAPS )
+BM3D_flag(COMPILE_FOR_GENOM "Check this flag to activate all dependencies for spark&mhp modules" OFF USE_GBM  MULTIGRAPH LIGHT_PLANNER HRI_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GSL QT_LIBRARY QT_GL QT_GL_WIDGET )# USE_MIGHTABILITY_MAPS )
 BM3D_flag(COMPILE_MANIPULATION_PLANNER_TESTING "Check this flag to activate the module without interface to test the manipulation planner" OFF PQP LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GBM)
-BM3D_flag(COMPILE_MOVE3DCORE "Check this flag to activate the module without interface to test the manipulation planner" OFF MOVE3D_CORE QT_LIBRARY QT_GL PQP MULTIGRAPH LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING HRI_PLANNER USE_GBM USE_GSL)
-
+BM3D_flag(COMPILE_MOVE3DCORE "Check this flag to activate the module without interface to test the manipulation planner" OFF MOVE3D_CORE QT_LIBRARY QT_GL  MULTIGRAPH LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING HRI_PLANNER USE_GBM USE_GSL)
 BM3D_CheckCompilationFlags()
 
 #################################################################
@@ -291,6 +290,14 @@ IF(QT_GL)
   SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${BOOST_INCLUDE_DIR})
 
 ENDIF(QT_GL)
+
+
+#-------------- PQP ---------------------------------------
+#----------------------------------------------------------
+FIND_PACKAGE(PQP REQUIRED)
+INCLUDE_directories(${PQP_INCLUDE_DIR})
+SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${PQP_INCLUDE_DIR})
+SET(LIBS ${LIBS} ${PQP_LIBRARIES})
 
 #-------------- GRASP PLANNER -----------------------------
 #----------------------------------------------------------

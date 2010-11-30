@@ -29,12 +29,12 @@ extern void p3d_pushRobotTransitionsDegToRad(configPt q_deg, int position);
 extern int p3d_set_obj_display_mode(p3d_obj *o, p3d_obj_display_mode, double *color=NULL);
 extern int p3d_set_robot_display_mode(p3d_rob *robotPt, p3d_rob_display_mode, double *color=NULL);
 
-#ifdef PQP
+
 extern int p3d_set_robot_carrying_joint(p3d_rob *robotPt, p3d_jnt *joint);
 extern int p3d_grab_object(p3d_rob *robotPt, int armCntrt);
 extern int p3d_release_object(p3d_rob *robotPt);
 extern int p3d_grab_object2(p3d_rob *robotPt, int armCntrt);
-#endif
+
 #ifdef LIGHT_PLANNER
 extern int p3d_set_object_to_carry(p3d_rob *robotPt, const char *object_name);
 extern int p3d_set_object_to_carry_to_arm(p3d_rob *robotPt, int arm_id,const char *object_name);

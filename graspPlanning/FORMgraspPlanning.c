@@ -2310,9 +2310,7 @@ void GP_Reset()
 #endif
 
 	//reinit all the initial collision context:
-#ifdef PQP
 	pqp_create_collision_pairs();
-#endif
 
 	win= g3d_get_cur_win();
 	win->fct_draw2= NULL;

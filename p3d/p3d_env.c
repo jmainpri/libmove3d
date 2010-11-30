@@ -2011,13 +2011,13 @@ void *p3d_beg_obj(char *name, int type) {
   o->caption_selected = 0;
 #endif
   o->contact_surface= 0;
-#ifdef PQP
+
   o->pqpModel= NULL;
   o->pqpPreviousBody= NULL;
   o->pqpID= 0;
   p3d_mat4Copy(p3d_mat4IDENTITY, o->pqpPose);
   o->pqpUnconcatObj= NULL;
-#endif
+
 #ifdef DPG
   o->nbPointCloud = 0;
   o->pointCloud = NULL;
