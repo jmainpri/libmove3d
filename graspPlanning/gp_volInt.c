@@ -409,10 +409,12 @@ void gpCompute_mass_properties(p3d_polyhedre *poly)
    }
 
    Mass_properties mass_prop;
-   VOLINT_POLYHEDRON p;
+   VOLINT_POLYHEDRON *p= NULL;
 
-   readPolyhedron(poly, &p);
-   compMassProperties(&p, &mass_prop);
+   p= (VOLINT_POLYHEDRON *) malloc(sizeof(VOLINT_POLYHEDRON));
+
+   readPolyhedron(poly, p);
+   compMassProperties(p, &mass_prop);
 
    poly->cmass[0]= mass_prop.r[0];
    poly->cmass[1]= mass_prop.r[1];
@@ -431,4 +433,6 @@ void gpCompute_mass_properties(p3d_polyhedre *poly)
    poly->inertia_axes[2][2]= mass_prop.J[2][2];
 
    poly->volume= mass_prop.volume; 
+
+   free(p);
 }
