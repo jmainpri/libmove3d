@@ -679,7 +679,11 @@ int gpGrasp::computeQuality()
   p3d_vector3 graspingDirection; //direction of the grasping force of the hand
   p3d_vector3 centroid;
 //   p3d_vector3 closest;
-  double (*_contacts)[3], (*_normals)[3], *_mu;
+  double (*_contacts)[3];
+  double (*_normals)[3];
+  double *_mu;
+
+
 //   double edge_angle, dist_to_edge;
   //double weight1, weight2, weight3, weight4;
   double score2, score3;
@@ -687,9 +691,13 @@ int gpGrasp::computeQuality()
   double fcScore, directionScore, curvatureScore, configScore, centroidScore;
   p3d_polyhedre *poly= NULL;
 
-  _contacts= (double (*)[3]) new double[3*contacts.size()];
-  _normals = (double (*)[3]) new double[3*contacts.size()];
-  _mu     = (double *) new double[contacts.size()];
+//   _contacts= (double (*)[3]) new double[3*contacts.size()];
+//   _normals = (double (*)[3]) new double[3*contacts.size()];
+//   _mu     = (double *) new double[contacts.size()];
+  _contacts= new double[contacts.size()][3];
+  _normals=  new double[contacts.size()][3];
+  _mu     =  new double[contacts.size()];
+
 
   switch(hand_type)
   {
