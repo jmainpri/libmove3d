@@ -95,12 +95,16 @@ typedef struct STRUCT_HRI_KNOWLEDGE_ON_ENTITY {
 
   HRI_MOTION motion;
 
-  HRI_VISIBILITY_PLACEMENT is_placed_from_visibility;
+  HRI_VISIBILITY visibility;
 
-  HRI_SPATIAL_RELATION * is_located_from_agent;
+  HRI_REACHABILITY reachability;
+
+  HRI_VISIBILITY_PLACEMENT is_placed_from_visibility; /* oof, fov, ... */
+
+  HRI_SPATIAL_RELATION * is_located_from_agent; /* Front, right, .... */
   int is_located_from_agent_nb;    /* length is HRI_AGENTS->all_agents_nb */
 
-  HRI_PLACEMENT_RELATION * is_placed;
+  HRI_PLACEMENT_RELATION * is_placed; /* on, in, ... */
   int is_placed_nb;  /* length is HRI_ENTITIES->all_entities_nb */
 
 } HRI_KNOWLEDGE_ON_ENTITY;
@@ -110,11 +114,6 @@ typedef struct STRUCT_HRI_KNOWLEDGE_ON_ENTITY {
 typedef struct STRUCT_HRI_KNOWLEDGE {
   /* The spatial knowledge on the state of things from the perspective of the agent */
   /* Normally all indexes should be synchronized with entities structure */
-
-  HRI_VISIBILITY * sees;
-  int sees_nb;
-  HRI_REACHABILITY * reaches;
-  int reaches_nb;
 
   int * looks_at; /* indexes of entities in entity structure */
   int looks_at_nb;

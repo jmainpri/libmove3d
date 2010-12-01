@@ -10,10 +10,6 @@ HRI_KNOWLEDGE * hri_create_empty_agent_knowledge(HRI_AGENT * hri_agent)
 
   kn = MY_ALLOC(HRI_KNOWLEDGE, 1);
 
-  kn->sees = NULL;
-  kn->sees_nb = 0;
-  kn->reaches = NULL;
-  kn->reaches_nb = 0;
   kn->points_at = 0;
   kn->points_at_nb = 0;
   kn->looks_at = NULL;
@@ -42,13 +38,16 @@ HRI_ENTITIES * hri_create_entities()
 
   for(i=0; i<env->nr; i++) {
     if(!strcasestr(env->robot[i]->name,"GRIPPER") && !strcasestr(env->robot[i]->name,"VISBALL") && !strcasestr(env->robot[i]->name,"SAHandRight")) {
-      entities->entities = MY_REALLOC(entities->entities, HRI_ENTITY*, ent_i, ent_i+1);
-      entities->entities[ent_i] = MY_ALLOC(HRI_ENTITY,1);
-      entities->entities[ent_i]->can_disappear = TRUE;
-      entities->entities[ent_i]->robotPt = env->robot[i];
-      entities->entities[ent_i]->partPt = NULL;
-      entities->entities[ent_i]->type = HRI_OBJECT;
-      ent_i++;
+
+      if(!strcasestr(env->robot[i]->name,"CHAIR") && !strcasestr(env->robot[i]->name,"TABLE") ) {
+        entities->entities = MY_REALLOC(entities->entities, HRI_ENTITY*, ent_i, ent_i+1);
+        entities->entities[ent_i] = MY_ALLOC(HRI_ENTITY,1);
+        entities->entities[ent_i]->can_disappear = TRUE;
+        entities->entities[ent_i]->robotPt = env->robot[i];
+        entities->entities[ent_i]->partPt = NULL;
+        entities->entities[ent_i]->type = HRI_OBJECT;
+        ent_i++;
+      }
 
       for(j=0; j<env->robot[i]->no; j++) {
         objectrealname = strrchr(env->robot[i]->o[j]->name, '.');
@@ -74,7 +73,7 @@ HRI_ENTITIES * hri_create_entities()
 
 /* By default the entity structure doesn't attached to agents */
 /* The user can call following function to link entities to agents */
-int hri_refine_entity_types(HRI_ENTITIES * entities, HRI_AGENTS * agents)
+int hri_link_agents_with_entities(HRI_ENTITIES * entities, HRI_AGENTS * agents)
 {
   int i;
   int is_human;
@@ -89,18 +88,33 @@ int hri_refine_entity_types(HRI_ENTITIES * entities, HRI_AGENTS * agents)
         if(hri_is_robot_an_agent(entities->entities[i]->robotPt, agents, &is_human, &agent_idx)) {
           entities->entities[i]->type = HRI_ISAGENT;
           entities->entities[i]->agent_idx = agent_idx;
+          agents->all_agents[agent_idx]->entity_idx = i;
         }
         break;
       case HRI_OBJECT_PART:
         if(hri_is_robot_an_agent(entities->entities[i]->robotPt, agents, &is_human, &agent_idx)) {
           entities->entities[i]->type = HRI_AGENT_PART;
           entities->entities[i]->agent_idx = agent_idx;
+          if(strcasestr(entities->entities[i]->partPt->name, "head") || strcasestr(entities->entities[i]->partPt->name, "camera")) {
+            agents->all_agents[agent_idx]->head_idx = MY_REALLOC(agents->all_agents[agent_idx]->head_idx, int,
+                                                                 agents->all_agents[agent_idx]->head_nb,
+                                                                 agents->all_agents[agent_idx]->head_nb+1);
+            agents->all_agents[agent_idx]->head_idx[agents->all_agents[agent_idx]->head_nb++] = i;
+
+          }
+          if(strcasestr(entities->entities[i]->partPt->name, "hand")) {
+            agents->all_agents[agent_idx]->hand_idx = MY_REALLOC(agents->all_agents[agent_idx]->hand_idx, int,
+                                                                 agents->all_agents[agent_idx]->hand_nb,
+                                                                 agents->all_agents[agent_idx]->hand_nb+1);
+            agents->all_agents[agent_idx]->hand_idx[agents->all_agents[agent_idx]->hand_nb++] = i;
+          }
         }
         break;
       default:
         break;
     }
   }
+
   return TRUE;
 }
 
@@ -109,62 +123,57 @@ int hri_initialize_all_agents_knowledge(HRI_ENTITIES * entities, HRI_AGENTS * ag
   int i;
 
   for(i=0; i<agents->all_agents_no; i++) {
-    if (!hri_initialize_agent_knowledge(agents->all_agents[i], entities, agents)) {
+    if (!hri_initialize_agent_knowledge(agents->all_agents[i]->knowledge, entities, agents)) {
       return FALSE;
     }
   }
   return TRUE;
 }
 
-int hri_initialize_agent_knowledge(HRI_AGENT * agent, HRI_ENTITIES * entities, HRI_AGENTS * agents)
+int hri_initialize_agent_knowledge(HRI_KNOWLEDGE * knowledge, HRI_ENTITIES * entities, HRI_AGENTS * agents)
 {
   int i, j;
 
-  if((agent == NULL) || (entities == NULL) || (agents == NULL))
+  if((knowledge == NULL) || (entities == NULL) || (agents == NULL))
     return FALSE;
 
-  agent->knowledge->sees = MY_ALLOC(HRI_VISIBILITY, entities->entities_nb);
-  agent->knowledge->sees_nb = entities->entities_nb;
+  knowledge->entities = MY_ALLOC(HRI_KNOWLEDGE_ON_ENTITY, entities->entities_nb);
+  knowledge->entities_nb = entities->entities_nb;
 
-  agent->knowledge->reaches = MY_ALLOC(HRI_REACHABILITY, entities->entities_nb);
-  agent->knowledge->reaches_nb = entities->entities_nb;
-
-  for(i=0; i<agent->knowledge->sees_nb; i++) {
-    agent->knowledge->sees[i] = HRI_UK_VIS;
-    agent->knowledge->reaches[i] = HRI_UK_REACHABILITY;
-  }
-
-  agent->knowledge->entities = MY_ALLOC(HRI_KNOWLEDGE_ON_ENTITY, entities->entities_nb);
-  agent->knowledge->entities_nb = entities->entities_nb;
-
-  for(i=0; i<agent->knowledge->entities_nb; i++) {
+  for(i=0; i<knowledge->entities_nb; i++) {
     if(entities->entities[i]->type == HRI_OBJECT_PART || entities->entities[i]->type == HRI_AGENT_PART)
-      strcpy(agent->knowledge->entities[i].name, entities->entities[i]->partPt->name);
+      strcpy(knowledge->entities[i].name, entities->entities[i]->partPt->name);
     else
-      strcpy(agent->knowledge->entities[i].name, entities->entities[i]->robotPt->name);
+      strcpy(knowledge->entities[i].name, entities->entities[i]->robotPt->name);
 
-    agent->knowledge->entities[i].is_present = FALSE;
-    agent->knowledge->entities[i].motion = HRI_UK_MOTION;
-    agent->knowledge->entities[i].is_placed_from_visibility = HRI_UK_VIS_PLACE;
+    knowledge->entities[i].is_present = TRUE; //TODO: Warning! Change this to FALSE. TRUE is only for test.
+    knowledge->entities[i].disappeared = FALSE;
+    knowledge->entities[i].motion = HRI_UK_MOTION;
+    knowledge->entities[i].is_placed_from_visibility = HRI_UK_VIS_PLACE;
 
-    agent->knowledge->entities[i].is_located_from_agent = MY_ALLOC(HRI_SPATIAL_RELATION, agents->all_agents_no);
-    agent->knowledge->entities[i].is_located_from_agent_nb = agents->all_agents_no;
+    knowledge->entities[i].visibility = HRI_UK_VIS;
+    knowledge->entities[i].reachability = HRI_UK_REACHABILITY;
 
-    for(j=0; j<agent->knowledge->entities[i].is_located_from_agent_nb; j++) {
-      agent->knowledge->entities[i].is_located_from_agent[j] = HRI_UK_RELATION;
+    knowledge->entities[i].is_located_from_agent = MY_ALLOC(HRI_SPATIAL_RELATION, agents->all_agents_no);
+    knowledge->entities[i].is_located_from_agent_nb = agents->all_agents_no;
+
+    for(j=0; j<knowledge->entities[i].is_located_from_agent_nb; j++) {
+      knowledge->entities[i].is_located_from_agent[j] = HRI_UK_RELATION;
     }
 
-    agent->knowledge->entities[i].is_placed = MY_ALLOC(HRI_PLACEMENT_RELATION, entities->entities_nb);
-    agent->knowledge->entities[i].is_placed_nb = entities->entities_nb;
+    knowledge->entities[i].is_placed = MY_ALLOC(HRI_PLACEMENT_RELATION, entities->entities_nb);
+    knowledge->entities[i].is_placed_nb = entities->entities_nb;
 
-    for(j=0; j<agent->knowledge->entities[i].is_placed_nb; j++) {
-      agent->knowledge->entities[i].is_placed[j] = HRI_UK_PLR;
+    for(j=0; j<knowledge->entities[i].is_placed_nb; j++) {
+      knowledge->entities[i].is_placed[j] = HRI_UK_PLR;
     }
   }
 
   return TRUE;
 }
 
+// TODO: There is a serious problem on the bounding boxes of robot parts.
+// I think the reason is that in a macro the first body is takeninto account ghost <->real switch
 HRI_REACHABILITY hri_is_reachable(HRI_ENTITY * object, HRI_AGENT *agent)
 {
   int reached = FALSE;
@@ -178,7 +187,7 @@ HRI_REACHABILITY hri_is_reachable(HRI_ENTITY * object, HRI_AGENT *agent)
     Tcoord[1] = (object->partPt->BB.ymax + object->partPt->BB.ymin)/2;
     Tcoord[2] = (object->partPt->BB.zmax + object->partPt->BB.zmin)/2;
   }
-  else { //TODO: make it go to the center of the object
+  else {
     Tcoord[0] = (object->robotPt->BB.xmax + object->robotPt->BB.xmin)/2;
     Tcoord[1] = (object->robotPt->BB.ymax + object->robotPt->BB.ymin)/2;
     Tcoord[2] = (object->robotPt->BB.zmax + object->robotPt->BB.zmin)/2;
@@ -574,9 +583,9 @@ void hri_display_entities(HRI_ENTITIES * ents)
 
   for(i=0; i<ents->entities_nb; i++) {
     if(ents->entities[i]->type ==HRI_OBJECT_PART || ents->entities[i]->type ==HRI_AGENT_PART)
-      printf("ENTITIY name: %s type: %d\n",ents->entities[i]->partPt->name, ents->entities[i]->type);
+      printf("%d - ENTITIY name: %s type: %d\n", i, ents->entities[i]->partPt->name, ents->entities[i]->type);
     else
-      printf("ENTITIY name: %s type: %d\n",ents->entities[i]->robotPt->name, ents->entities[i]->type);
+      printf("%d - ENTITIY name: %s type: %d\n", i, ents->entities[i]->robotPt->name, ents->entities[i]->type);
   }
 }
 
@@ -592,15 +601,7 @@ void hri_display_agent_knowledge(HRI_AGENT * agent)
 
   kn = agent->knowledge;
 
-  printf("FOR AGENT %s:\n", agent->robotPt->name);
-
-  printf("\nVISIBILITY STATES: ");
-  for(i=0; i<kn->sees_nb; i++)
-    printf("%d,",kn->sees[i]);
-
-  printf("\nREACHABILITY STATES: ");
-  for(i=0; i<kn->reaches_nb; i++)
-    printf("%d,",kn->reaches[i]);
+  printf("\nFOR AGENT %s:\n", agent->robotPt->name);
 
   printf("\nKNOWLEDGE ON ENTITY ");
   for(i=0; i<kn->entities_nb; i++) {
@@ -608,6 +609,8 @@ void hri_display_agent_knowledge(HRI_AGENT * agent)
 
     printf("IsPresent: %d\n", kn->entities[i].is_present);
     printf("Motion: %d\n", kn->entities[i].motion);
+    printf("Visibility: %d\n",kn->entities[i].visibility);
+    printf("Reachability: %d\n",kn->entities[i].reachability);
     printf("IsPlaced(vis): %d\n",kn->entities[i].is_placed_from_visibility);
 
     printf("IsLocated(byAgent): ");
@@ -622,42 +625,101 @@ void hri_display_agent_knowledge(HRI_AGENT * agent)
   }
 }
 
-int hri_compute_spatial_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
+
+// Function computing geometric facts between agents and objects
+// Each agent has its own view of the environment.
+
+int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
 {
-  int a_i, e_i;
+  int a_i, e_i, e_j, j;
   double elevation, azimuth;
   HRI_ENTITY * ent;
   HRI_AGENT * agent;
   HRI_KNOWLEDGE_ON_ENTITY * kn_on_ent;
   int res;
+  int counter =0;
+  if(agents == NULL || ents == NULL) {
+    printf("Not Initialized\n");
+    return FALSE;
+  }
 
   for(a_i=0; a_i<agents->all_agents_no; a_i++) {
     agent = agents->all_agents[a_i];
 
-    for(e_i=0; e_i<ents->entities_nb ; e_i++) {
+    for(e_i=0; e_i<ents->entities_nb; e_i++) {
       ent = ents->entities[e_i];
       kn_on_ent = &agent->knowledge->entities[e_i];
 
-      if(!kn_on_ent->is_present || !kn_on_ent->disappeared)
+      // If the entity is a part of the current agent, we skip it since it doesn't make sense to compute it from his own point of view
+      // TODO: Or does it?
+      if( (ent->type == HRI_AGENT_PART) || (ent->type == HRI_ISAGENT) ) {
+        if( agent == agents->all_agents[ent->agent_idx] )
+          continue;
+      }
+
+      // If the entity is not present in the environment or has disappeared, we don't compute any more
+      // TODO: Maybe a knowledge reset function?
+      if(!kn_on_ent->is_present || kn_on_ent->disappeared)
         continue;
 
+      // VISIBILITY PLACEMENT - FOV,FOA,OOF
       hri_object_visibility_placement(agent, ent->robotPt, &res, &elevation, &azimuth);
       kn_on_ent->is_placed_from_visibility = (HRI_VISIBILITY_PLACEMENT) res;
 
-      if(kn_on_ent->is_placed_from_visibility == HRI_OOF) {
-        agent->knowledge->sees[e_i] = HRI_INVISIBLE;
-        continue;
-        // If the entity is in OOF then we cannot know anything about it -> jump to the next entitiy
-      }
+      hri_turn_agent_head_direction(agent, elevation, azimuth);
 
+      // VISIBILITY - VISIBLE, INVISIBLE
       res = hri_is_object_visible(agent, ent->robotPt, 40, FALSE, FALSE);
-      if(res == FALSE) {
-        agent->knowledge->sees[e_i] = HRI_INVISIBLE;
-        continue;
-      }
+      counter++;
+      if(res == FALSE)
+        kn_on_ent->visibility = HRI_INVISIBLE;
+      else
+        kn_on_ent->visibility = HRI_VISIBLE;
+
+      // REACHABILITY - REACHABLE, UNREACHABLE, HARDLY REACHABLE
+      // TODO: Fix this global variable use. It's ugly.
+      // GIK_VIS = 500;
+      // kn_on_ent->reachability = hri_is_reachable(ent, agent);
 
     }
   }
+  // Checkpoint: Visibilities and Reachabilities for all agents are now computed.
 
-  return TRUE;
+  // LOCATION FROM AGENT, FRONT, BACK, etc
+
+  for(a_i=0; a_i<agents->all_agents_no; a_i++) {
+    agent = agents->all_agents[a_i];
+
+    for(e_i=0; e_i<ents->entities_nb; e_i++) {
+      ent = ents->entities[e_i];
+      kn_on_ent = &agent->knowledge->entities[e_i];
+
+      // No need to compute for agent's own parts
+      if((ent->type == HRI_AGENT_PART) && (ent->agent_idx == a_i))
+        continue;
+
+      // if the entity is visible and the agent is visible then we compute
+      if(kn_on_ent->visibility == HRI_VISIBLE) {
+
+        for(j=0; j<agents->all_agents_no; j++) {
+          if( (a_i == j) || (agents->all_agents[a_i]->knowledge->entities[e_i].visibility == HRI_VISIBLE)) {
+            kn_on_ent->is_located_from_agent[j] = hri_spatial_relation(ent, agents->all_agents[j]);
+          }
+          else {
+            // TODO: Check if we need to do this assignment. It should be UK default anyways.
+            kn_on_ent->is_located_from_agent[j] = HRI_UK_RELATION;
+          }
+        }
+
+        for(e_j=0; e_j<ents->entities_nb; e_j++) {
+          if(e_j != e_i)
+            kn_on_ent->is_placed[e_j] = hri_placement_relation(ent, ents->entities[e_j]);
+        }
+      }
+    }
+  }
+
+
+
+  return counter;
 }

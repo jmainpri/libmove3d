@@ -60,7 +60,7 @@ int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera
   GLint viewport[4];
   g3d_states st;
   g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
-  int save = TRUE;
+  int save = FALSE;
 
   if(object==NULL){
     printf("%s: %d: g3d_is_object_visible_from_viewpoint(): input object is NULL.\n",__FILE__,__LINE__);

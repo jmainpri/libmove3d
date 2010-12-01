@@ -59,7 +59,7 @@ typedef struct STRUCT_HRI_MANIP {
 	hri_gik * gik;
   HRI_MANIP_TYPE type;
 
-	signed int gik_max_step; //TODO: add these two to hri_gik structure
+	signed int gik_max_step; /* TODO: add these two to hri_gik structure */
 	double reach_tolerance;
 
 	GIK_TASK * tasklist;
@@ -101,7 +101,7 @@ typedef enum ENUM_HRI_AGENT_POSTURE {
 
 typedef struct STRUCT_HRI_AGENT {
 	HRI_AGENT_TYPE type;
-  int is_human; //TODO: put something more generic, at least an enum. I don't like these stupid flags.
+  int is_human; /* TODO: put something more generic, at least an enum. I don't like these stupid flags. */
 	p3d_rob * robotPt;
 	HRI_MANIP * manip;
 	HRI_NAVIG * navig;
@@ -114,12 +114,20 @@ typedef struct STRUCT_HRI_AGENT {
   /* possible states */
 	/* TODO: change the name human_state -> agent state */
   hri_human_state * state;
+
+  /* Link with entities */
+  int entity_idx;
+  int * head_idx; /* Table containing indexes of head entities */
+  int head_nb; /* a Human cannot have 2 hands, but a robot can have multiple cameras */
+  int * hand_idx;
+  int hand_nb;
+
 } HRI_AGENT;
 
 typedef struct STRUCT_HRI_AGENTS {
-  HRI_AGENT ** all_agents; // The list of agents robots+humans
+  HRI_AGENT ** all_agents; /* The list of agents robots+humans */
   int all_agents_no;
-  int source_agent_idx; // This is the index of the agent who is the robot
+  int source_agent_idx; /* This is the index of the agent who is the robot */
   HRI_AGENT ** robots;
   int robots_no;
   HRI_AGENT ** humans;
