@@ -35,7 +35,7 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robotPt) :
 {
     _optimizeSteps = 100;
     _optimizeTime = 4.0; // 4 secondes
-    _approachFreeOffset = 0.02; //0.1 meters
+    _approachFreeOffset = 0.1; //0.1 meters
     _approachGraspOffset = 0.05; //0.1 meters
 
 
@@ -305,9 +305,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
 
 configPt ManipulationPlanner::getFreeHoldingConf( p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, std::vector<double> &objGoto ) const {
 
-  configPt tmpConf = p3d_get_robot_config(_robot);
+    configPt tmpConf = p3d_get_robot_config(_robot);
   
-    ArmManipulationData mData = (*_robot->armManipulationData)[armId];
+    ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
     configPt q = p3d_get_robot_config(_robot);
 
     p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
@@ -356,7 +356,7 @@ configPt ManipulationPlanner::getFreeHoldingConf( p3d_rob* object, int armId, gp
 configPt ManipulationPlanner::getGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, double* confCost) const {
 
     p3d_matrix4 handFrame;
-    ArmManipulationData mData = (*_robot->armManipulationData)[armId];
+    ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
     gpHand_properties handProp = mData.getHandProperties();
     p3d_mat4Mult(grasp.frame, handProp.Tgrasp_frame_hand, handFrame);
     p3d_mat4Mult(handFrame, mData.getCcCntrt()->Tatt2, tAtt);
@@ -367,12 +367,12 @@ configPt ManipulationPlanner::getGraspConf(p3d_rob* object, int armId, gpGrasp& 
     gpSet_grasp_configuration(_robot, grasp, armId);
     gpFix_hand_configuration(_robot, handProp, armId);
 
-    //Compute Grasp configuration
-    q = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, FALSE, armId, true);
+    // Compute Grasp configuration
+    q = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, false , armId, true);
 
-    if (q) {
-
-        //If it exists, try to find better Rest Arm config and
+    if (q) 
+    {
+        // If it exists, try to find better Rest Arm config and
         double restArmCost = setRobotArmsRest(_robot, object->joints[1]->abs_pos, armId, tAtt, _robot->openChainConf, q);
         double graspArmCost = computeRobotGraspArmCost(_robot, armId, grasp, q, _robot->openChainConf, object->joints[1]->abs_pos)/270;
         *confCost = (restArmCost + graspArmCost * 2) / 3;
@@ -387,14 +387,18 @@ configPt ManipulationPlanner::getGraspConf(p3d_rob* object, int armId, gpGrasp& 
     return NULL;
 }
 
-configPt ManipulationPlanner::getOpenGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf) const {
-    if (graspConf) {
-        ArmManipulationData mData = (*_robot->armManipulationData)[armId];
+configPt ManipulationPlanner::getOpenGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf) const 
+{
+    if (graspConf) 
+    {
+        ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
         configPt q = p3d_copy_config(_robot, graspConf);
 
         //Check the open configuration of the hand
         gpSet_grasp_open_configuration(_robot, grasp, q, armId);
-        if (!p3d_is_collision_free(_robot,q)) {
+      
+        if (!p3d_is_collision_free(_robot,q)) 
+        {
             // if the grasp open config is colliding, recompute it taking into account the environment:
             grasp.computeOpenConfig(_robot, object, true);
             gpSet_grasp_open_configuration(_robot, grasp, q, armId);
@@ -408,42 +412,97 @@ configPt ManipulationPlanner::getOpenGraspConf(p3d_rob* object, int armId, gpGra
     return NULL;
 }
 
-configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const {
-    if (graspConf) {
-        ArmManipulationData mData = (*_robot->armManipulationData)[armId];
-        configPt q = p3d_copy_config(_robot, graspConf);
-        gpHand_properties handProp = mData.getHandProperties();
-
-        p3d_matrix4 objTmp;
-        p3d_vector3 tAttY;
-        p3d_mat4Copy(object->joints[1]->abs_pos, objTmp);
-        if (!strcmp(mData.getCcCntrt()->namecntrt, "p3d_kuka_arm_ik")) {
-            p3d_mat4ExtractColumnY(tAtt, tAttY);
-        } else if (!strcmp(mData.getCcCntrt()->namecntrt, "p3d_lwr_arm_ik")) {
-            p3d_mat4ExtractColumnZ(tAtt, tAttY);
-        }
-        objTmp[0][3] -= getApproachFreeOffset() * tAttY[0];
-        objTmp[1][3] -= getApproachFreeOffset() * tAttY[1];
-        objTmp[2][3] -= getApproachFreeOffset() * tAttY[2];
-//         q[mData.getManipulationJnt()->index_dof + 0] -= getApproachFreeOffset() * tAttY[0];
-//         q[mData.getManipulationJnt()->index_dof + 1] -= getApproachFreeOffset() * tAttY[1];
-//         q[mData.getManipulationJnt()->index_dof + 2] -= getApproachFreeOffset() * tAttY[2];
-        gpUnFix_hand_configuration(_robot, handProp, armId);
-        gpSet_grasp_open_configuration(_robot, grasp, q, armId);
-        gpFix_hand_configuration(_robot, handProp, armId);
-        q = setRobotCloseToConfGraspApproachOrExtract(_robot, q, objTmp, tAtt, false, armId, true);
-        deactivateCcCntrts(_robot, armId);
-        if (q) {
-            fixAllHands(NULL, true);
-            return q;
-        }
+double ManipulationPlanner::distConfig( configPt q1, configPt q2, int group ) const
+{
+  double ljnt = 0.;
+  int nbJoints = _robot->mlp->mlpJoints[group]->nbJoints;
+  
+  for (int i = 0; i < nbJoints; i++) 
+  {
+    int k = _robot->mlp->mlpJoints[group]->joints[i];
+    p3d_jnt* jntPt = _robot->joints[k];
+    
+    for (int j = 0; j < jntPt->dof_equiv_nbr; j++) 
+    {
+      double dist = SQR(p3d_jnt_calc_dof_dist(jntPt, j, q1, q2));
+      //printf(" dist[%d] = %f\n",jntPt->index_dof + j,dist);
+      ljnt += dist;
     }
-    return NULL;
+  }
+  
+  double l = sqrt(ljnt);
+  
+  return l;
+}
+
+configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const 
+{
+  if (graspConf) {
+    ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
+    configPt q = p3d_copy_config(_robot, graspConf);
+    gpHand_properties handProp = mData.getHandProperties();
+    
+    p3d_matrix4 objTmp;
+    p3d_vector3 tAttY;
+    p3d_mat4Copy(object->joints[1]->abs_pos, objTmp);
+    if (!strcmp(mData.getCcCntrt()->namecntrt, "p3d_kuka_arm_ik")) {
+      p3d_mat4ExtractColumnY(tAtt, tAttY);
+    } else if (!strcmp(mData.getCcCntrt()->namecntrt, "p3d_lwr_arm_ik")) {
+      p3d_mat4ExtractColumnZ(tAtt, tAttY);
+    }
+    objTmp[0][3] -= getApproachFreeOffset() * tAttY[0];
+    objTmp[1][3] -= getApproachFreeOffset() * tAttY[1];
+    objTmp[2][3] -= getApproachFreeOffset() * tAttY[2];
+    //         q[mData.getManipulationJnt()->index_dof + 0] -= getApproachFreeOffset() * tAttY[0];
+    //         q[mData.getManipulationJnt()->index_dof + 1] -= getApproachFreeOffset() * tAttY[1];
+    //         q[mData.getManipulationJnt()->index_dof + 2] -= getApproachFreeOffset() * tAttY[2];
+    gpUnFix_hand_configuration(_robot, handProp, armId);
+    gpSet_grasp_open_configuration(_robot, grasp, q, armId);
+    gpFix_hand_configuration(_robot, handProp, armId);
+    
+    std::pair<double,configPt> distToGraspQ;
+    std::vector< std::pair<double,configPt> > allQ;
+    
+    for (unsigned int i=0; i<1000; i++) 
+    {
+      configPt qApproachFree = setRobotCloseToConfGraspApproachOrExtract(_robot, q, objTmp, tAtt, false, armId, true);
+      
+      if ( qApproachFree ) 
+      {
+        distToGraspQ.first  = distConfig( qApproachFree , graspConf , _UpBodyMLP );
+        distToGraspQ.second = p3d_copy_config( _robot, qApproachFree );
+        std::cout << "Configuration cost : " << distToGraspQ.first << std::endl;
+        allQ.push_back( distToGraspQ );
+      }
+      else {
+        break;
+      }
+    }
+    
+    if (!allQ.empty()) 
+    {
+      std::sort(allQ.begin(),allQ.end());
+      std::cout << "Configuration cost : " << allQ[0].first << std::endl;
+      std::cout << "--------------------------------------" << std::endl;
+      q = allQ[0].second;
+      
+      for (unsigned int i=1; i<allQ.size(); i++) {
+        p3d_destroy_config( _robot, allQ[i].second );
+      }
+    }
+    
+    deactivateCcCntrts(_robot, armId);
+    if (q) {
+      fixAllHands(NULL, true);
+      return q;
+    }
+  }
+  return NULL;
 }
 
 configPt ManipulationPlanner::getApproachGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const{
   
-  configPt tmpConf = p3d_get_robot_config(_robot);
+  //  configPt tmpConf = p3d_get_robot_config(_robot);
   
   if(graspConf){
     ArmManipulationData mData = (*_robot->armManipulationData)[armId];
@@ -454,23 +513,23 @@ configPt ManipulationPlanner::getApproachGraspConf(p3d_rob* object, int armId, g
     // Set Manipulation joint and hand configuration
     q[(*_robot->armManipulationData)[armId].getManipulationJnt()->index_dof + 2] += getApproachGraspOffset(); //Z axis of the manipulation joint
     p3d_set_and_update_this_robot_conf(_robot, q);
-        gpSet_grasp_configuration(_robot, grasp, q, armId);
-
-        // Sample a configuration for the robot
-        q = setRobotCloseToConfGraspApproachOrExtract(_robot, q, object->joints[1]->abs_pos, tAtt, false, armId, true);
-        deactivateCcCntrts(_robot, armId);
-
-        // Reset robot to the initial robot configuration
-        p3d_set_and_update_this_robot_conf(_robot, graspConf);
-
-        _robot->isCarryingObject = FALSE;
-
-        if (q) {
-            fixAllHands(NULL, true);
-            return q;
-        }
+    gpSet_grasp_configuration(_robot, grasp, q, armId);
+    
+    // Sample a configuration for the robot
+    q = setRobotCloseToConfGraspApproachOrExtract(_robot, q, object->joints[1]->abs_pos, tAtt, false, armId, true);
+    deactivateCcCntrts(_robot, armId);
+    
+    // Reset robot to the initial robot configuration
+    p3d_set_and_update_this_robot_conf(_robot, graspConf);
+    
+    _robot->isCarryingObject = FALSE;
+    
+    if (q) {
+      fixAllHands(NULL, true);
+      return q;
     }
-    return NULL;
+  }
+  return NULL;
 }
 
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const {
@@ -654,7 +713,7 @@ int ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, boo
     ENV.setDouble(Env::extensionStep, 3.0);
 
 
-#if defined (USE_CXX_PLANNER) || defined(MOVE3D_CORE)
+#if 0 &&( defined(USE_CXX_PLANNER) || defined(MOVE3D_CORE) )
     ENV.setBool(Env::drawGraph, false);
     ENV.setBool(Env::withSmoothing, true);
     ENV.setBool(Env::withShortCut, true);

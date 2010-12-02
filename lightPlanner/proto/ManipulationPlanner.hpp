@@ -62,14 +62,16 @@ class  ManipulationPlanner {
 	/** Generate needed configurations from the given grasp and object position */
 	MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, ManipulationData& configs);
   
-  /**
-   * Generates a free configuration from a worspace point and a grasp 
-   */
+  //! Compute the distance between 2 configurations for 
+  //! one local path group
+  double distConfig( configPt q1, configPt q2, int group ) const ;
+  
+  //! Generates a free configuration from a worspace point and a grasp 
   configPt getFreeHoldingConf( p3d_rob* obj, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, std::vector<double> &objGoto ) const;
   /** Generate the grasp configuration given the grasp the arm and the object.
   @return the attach matrix computed given the grasp and Tatt2 from the p3d file
   @return the configuration cost
-  @return the grasp configuration*/
+  @return the grasp configuration */
   configPt getGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, double* confCost) const;
   /** Generate the open configuration given the grasp configuration, the grasp, the arm and the object.*/
   configPt getOpenGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf) const;

@@ -445,7 +445,11 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
           du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
         }
 			} else if (localpathPt->type_lp == SOFT_MOTION){
-				du =  p3d_get_env_graphic_dmax();  //0.05;
+#ifdef MOVE3D_CORE
+        du = ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax()/10;
+#else
+        du =  p3d_get_env_graphic_dmax();  //0.05;
+#endif
 			} else {
 #endif
 				du = ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/

@@ -1,10 +1,35 @@
 #ifndef ROBOTPOS_H
 #define ROBOTPOS_H
-#include "Planner-pkg.h"
+#include "P3d-pkg.h"
 
 #include <map>
 
-extern configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt, double x, double y, double z, double rx, double ry, double rz, double minRadius, double maxRadius, int shootBase, int shootObject, int cntrtToActivate, bool nonUsedCntrtDesactivation, bool gaussianShoot = false);
+/**
+ * @breif small class that takes a matrix and extracts the rotation for each axes
+ */
+class p3d_objectPos {
+  
+public:
+  p3d_objectPos() { };
+  p3d_objectPos(p3d_matrix4 m) 
+  {
+    p3d_mat4ExtractPosReverseOrder(m, &_x, &_y, &_z, &_rx, &_ry, &_rz);
+  };
+  
+  void setFromMatrix(p3d_matrix4 m)
+  {
+    p3d_mat4ExtractPosReverseOrder(m, &_x, &_y, &_z, &_rx, &_ry, &_rz);
+  };
+  
+  double _x;//! x the object x coordinate
+  double _y; //! y the object y coordinate
+  double _z; //! z the object z coordinate
+  double _rx; //! rx the object rotation around x axis
+  double _ry; //! ry the object rotation around y axis
+  double _rz; //! rz the object rotation around z axis
+};
+
+extern configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt, p3d_objectPos& objPos, double minRadius, double maxRadius, int shootBase, int shootObject, int cntrtToActivate, bool nonUsedCntrtDesactivation, bool gaussianShoot = false);
 extern configPt setBodyConfigForBaseMovement(p3d_rob * robot, configPt baseConfig, configPt bodyConfig);
 extern void adaptClosedChainConfigToBasePos(p3d_rob *robot, p3d_matrix4 base, configPt refConf);
 extern configPt setTwoArmsRobotGraspPosWithoutBase(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2, int shootObject, int cntrtToActivate, bool nonUsedCntrtDesactivation);
