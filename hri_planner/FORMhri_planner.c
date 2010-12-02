@@ -428,7 +428,7 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
   hri_assign_source_agent((char*)"JIDOKUKA", GLOBAL_AGENTS);
 
   GLOBAL_ENTITIES = hri_create_entities();
-  hri_refine_entity_types(GLOBAL_ENTITIES, GLOBAL_AGENTS);
+  hri_link_agents_with_entities(GLOBAL_ENTITIES, GLOBAL_AGENTS);
   hri_initialize_all_agents_knowledge(GLOBAL_ENTITIES, GLOBAL_AGENTS);
 
   /* NAVIGATION */
@@ -1399,15 +1399,24 @@ void CB_test_button4_obj(FL_OBJECT *obj, long arg)
 {
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int i,j;
+  HRI_AGENT *selected_agent;
+  p3d_rob *selected_target;
+  float clock_val = 0;
+  float elapsed_time = 0;
+  int test_no = 10;
+
+
   //p3d_rob * rob1, * rob2;
   //double rob1_cx, rob1_cy, rob1_cz, rob2_cx, rob2_cy, rob2_cz;
   configPt q;
 
   hri_display_entities(GLOBAL_ENTITIES);
-  hri_compute_spatial_facts(GLOBAL_AGENTS, GLOBAL_ENTITIES);
-
-  hri_display_agent_knowledge(GLOBAL_AGENTS->humans[0]);
-
+  clock_val = clock();
+  test_no = hri_compute_geometric_facts(GLOBAL_AGENTS, GLOBAL_ENTITIES);
+  elapsed_time = (clock() - clock_val)/CLOCKS_PER_SEC + elapsed_time;
+  printf("TIME passed for fact computation:%d tests, %f overall, per entity: %f\n",test_no, elapsed_time, elapsed_time/(GLOBAL_ENTITIES->entities_nb * GLOBAL_AGENTS->all_agents_no));
+  //hri_display_agent_knowledge(GLOBAL_AGENTS->humans[0]);
+  hri_display_agent_knowledge(GLOBAL_AGENTS->robots[0]);
 
   return;
 
@@ -1429,12 +1438,6 @@ void CB_test_button4_obj(FL_OBJECT *obj, long arg)
 
 
   return ;
-  // Visibility performance test
-  HRI_AGENT *selected_agent;
-  p3d_rob *selected_target;
-  float clock_val = 0;
-  float elapsed_time = 0;
-  int test_no = 10;
 
   for (i=0; i<test_no; i++) {
     selected_agent = GLOBAL_AGENTS->all_agents[random()%GLOBAL_AGENTS->all_agents_no];
@@ -1486,21 +1489,21 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
   // hri_object_visibility_placement(GLOBAL_AGENTS->robots[0], object, &visibil);
   //g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, 50, object, &phi);
   //g3d_object_visibility_placement(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, object, DTOR(90), DTOR(90*0.75), DTOR(50), DTOR(50*0.75), &visibil);
-  GLOBAL_AGENTS->humans[0]->perspective->enable_vision_draw = TRUE;
+  //GLOBAL_AGENTS->humans[0]->perspective->enable_vision_draw = TRUE;
  // GLOBAL_AGENTS->humans[0]->perspective->enable_pointing_draw = TRUE;
-  GLOBAL_AGENTS->humans[1]->perspective->enable_vision_draw = TRUE;
+ //GLOBAL_AGENTS->humans[1]->perspective->enable_vision_draw = TRUE;
  // GLOBAL_AGENTS->humans[1]->perspective->enable_pointing_draw = TRUE;
 
   GLOBAL_AGENTS->robots[0]->perspective->enable_vision_draw = TRUE;
   //GLOBAL_AGENTS->robots[0]->perspective->enable_pointing_draw = TRUE;
-  GLOBAL_AGENTS->robots[1]->perspective->enable_vision_draw = TRUE;
+  //GLOBAL_AGENTS->robots[1]->perspective->enable_vision_draw = TRUE;
   //GLOBAL_AGENTS->robots[1]->perspective->enable_pointing_draw = TRUE;
 
   // GLOBAL_AGENTS->humans[1]->perspective->enable_vision_draw = TRUE;
   //GLOBAL_AGENTS->humans[2]->perspective->enable_vision_draw = TRUE;
   //GLOBAL_AGENTS->humans[3]->perspective->enable_vision_draw = TRUE;
   //GLOBAL_AGENTS->humans[3]->perspective->enable_pointing_draw = TRUE;
-
+  return ;
   q = p3d_get_robot_config(GLOBAL_AGENTS->humans[0]->robotPt);
   hri_agent_load_default_arm_posture(GLOBAL_AGENTS->humans[0], q);
   hri_agent_compute_state_posture(GLOBAL_AGENTS->humans[0], 0, q);

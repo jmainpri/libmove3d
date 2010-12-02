@@ -201,6 +201,13 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
   hri_agent->actual_state = 0;
   hri_agent->state = NULL;
 
+  // By default link with entities is inexistant
+  hri_agent->entity_idx = -1;
+  hri_agent->head_idx = NULL;
+  hri_agent->head_nb = 0;
+  hri_agent->hand_idx = NULL;
+  hri_agent->hand_nb = 0;
+
   return hri_agent;
 }
 
