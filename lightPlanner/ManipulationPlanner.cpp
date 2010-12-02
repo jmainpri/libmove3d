@@ -23,6 +23,7 @@
 #include "Util-pkg.h"
 
 #include <list>
+#include <algorithm>
 #define MPDEBUG 0
 using namespace std;
 

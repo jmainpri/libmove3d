@@ -69,14 +69,10 @@ void ManipulationTestFunctions::initManipulationGenom()
 		p3d_destroy_config(m_Robot,m_qInit);
 		p3d_destroy_config(m_Robot,m_qGoal);
 		
-		//		print_config(m_Robot, m_Robot->ROBOT_POS);
-		//		print_config(m_Robot, m_Robot->ROBOT_GOTO);
-		
 		m_qInit = p3d_copy_config(m_Robot,m_Robot->ROBOT_POS);
 		//m_qInit = p3d_get_robot_config(m_Robot);
 		m_qGoal = p3d_copy_config(m_Robot,m_Robot->ROBOT_GOTO);
-    
-    
+
     // Warning SCENARIO dependant part, gsJidoKukaSAHand.p3d
     m_OBJECT_NAME = "GREY_TAPE";
     

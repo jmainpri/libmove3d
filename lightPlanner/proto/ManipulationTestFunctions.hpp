@@ -28,7 +28,9 @@ public:
 	bool runTest(int i);
   
   void initManipulationGenom();
-  
+
+  //!Getters
+  inline ManipulationPlanner* getManipulationPlanner(){return m_manipulation;}
   //! Generic function to test the genom requests
 	bool manipTest(MANIPULATION_TASK_TYPE_STR type);
 	bool manipTestGraspingWithDifferentObjectOrientations(bool rotate_only_around_z);
