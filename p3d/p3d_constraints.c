@@ -6129,11 +6129,11 @@ int p3d_update_virtual_object_config_for_arm_ik_constraint( p3d_rob* robot, int 
 
 	p3d_mat4ExtractPosReverseOrder(TvirtObj, &q[virObjJnt->index_dof], &q[virObjJnt->index_dof+1], &q[virObjJnt->index_dof+2], &q[virObjJnt->index_dof+3], &q[virObjJnt->index_dof+4], &q[virObjJnt->index_dof+5]);
 
-//   Mokhtar Inutile
-//   p3d_activateCntrt(robot, cntrt_arm);
-//   p3d_set_and_update_this_robot_conf(robot, q);
-//   p3d_get_robot_config_into(robot, &q);
-//   p3d_desactivateCntrt(robot, cntrt_arm);
+  p3d_set_and_update_this_robot_conf(robot, q);
+  p3d_activateCntrt(robot, cntrt_arm);
+ // p3d_set_and_update_this_robot_conf(robot, q);
+  p3d_get_robot_config_into(robot, &q);
+  p3d_desactivateCntrt(robot, cntrt_arm);
   
   if(cntrtActive){
     p3d_activateCntrt(robot, cntrt_arm);

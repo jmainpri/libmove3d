@@ -24,7 +24,7 @@
 
 #include <list>
 #include <algorithm>
-#define MPDEBUG 0
+#define MPDEBUG 1
 using namespace std;
 
 /* ******************************* */
@@ -472,7 +472,7 @@ configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gp
       {
         distToGraspQ.first  = distConfig( qApproachFree , graspConf , _UpBodyMLP );
         distToGraspQ.second = p3d_copy_config( _robot, qApproachFree );
-        std::cout << "Configuration cost : " << distToGraspQ.first << std::endl;
+        //std::cout << "Configuration cost : " << distToGraspQ.first << std::endl;
         allQ.push_back( distToGraspQ );
       }
       else {
@@ -483,8 +483,8 @@ configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gp
     if (!allQ.empty()) 
     {
       std::sort(allQ.begin(),allQ.end());
-      std::cout << "Configuration cost : " << allQ[0].first << std::endl;
-      std::cout << "--------------------------------------" << std::endl;
+      //std::cout << "Configuration cost : " << allQ[0].first << std::endl;
+      //std::cout << "--------------------------------------" << std::endl;
       q = allQ[0].second;
       
       for (unsigned int i=1; i<allQ.size(); i++) {
@@ -618,11 +618,13 @@ void ManipulationPlanner::checkConfigForCartesianMode(configPt q, p3d_rob* objec
             /* Uptdate the Virual object for inverse kinematics */
             p3d_update_virtual_object_config_for_arm_ik_constraint(_robot, i, q);
             activateCcCntrts(_robot, i, false);
+            unfixManipulationJoints(i);
             #ifdef MULTILOCALPATH
             if(_robot->lpl_type == P3D_MULTILOCALPATH_PLANNER){
               p3d_multiLocalPath_set_groupToPlan(_robot, armData.getCartesianGroup(), 1);
             }
             #endif
+            armData.getManipulationJnt()->dist = _robot->joints[_robot->mlp->mlpJoints[armData.getHandGroup()]->joints[0]]->dist;
         } else {
             deactivateCcCntrts(_robot, i);
             fixManipulationJoints(i, q, object);
@@ -711,7 +713,7 @@ int ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, boo
     ENV.setInt(Env::MaxExpandNodeFail, 10000);
     ENV.setInt(Env::maxNodeCompco, 10000);
     ENV.setExpansionMethod(Env::Extend);
-    ENV.setDouble(Env::extensionStep, 3.0);
+    ENV.setDouble(Env::extensionStep, 6.0);
 
 
 #if 0 &&( defined(USE_CXX_PLANNER) || defined(MOVE3D_CORE) )
@@ -1019,7 +1021,16 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
 
     fixAllHands(qStart, false);
     fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
-    fixJoint(_robot, armData.getManipulationJnt() , armData.getManipulationJnt()->abs_pos);
+
+    checkConfigForCartesianMode(qStart, object);
+    ManipulationUtils::copyConfigToFORM(_robot, qStart);
+    checkConfigForCartesianMode(approachFreeConfig, object);
+    ManipulationUtils::copyConfigToFORM(_robot, approachFreeConfig);
+    checkConfigForCartesianMode(openConfig, object);
+    ManipulationUtils::copyConfigToFORM(_robot, openConfig);
+    checkConfigForCartesianMode(graspConfig, object);
+    ManipulationUtils::copyConfigToFORM(_robot, graspConfig);
+    //fixJoint(_robot, armData.getManipulationJnt() , armData.getManipulationJnt()->abs_pos);
 
     if (!p3d_is_collision_free(_robot,qStart)){
         cout << "Warning::ManipulationPlanner::armPickGoto => qStart is not collision free" << endl;
@@ -1028,28 +1039,25 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
     if (!p3d_is_collision_free(_robot,approachFreeConfig)){
         cout << "ManipulationPlanner::armPickGoto => approachFreeConfig is not collision free" << endl;
     }
-
     // Compute to Approach config
     if ((traj = computeTrajBetweenTwoConfigs(qStart, approachFreeConfig))){
+      trajs.push_back(traj);
+      // Compute to Open config
+      if ((traj = computeTrajBetweenTwoConfigs(approachFreeConfig, openConfig))){
         trajs.push_back(traj);
-
-        // Compute to Open config
-        if ((traj = computeTrajBetweenTwoConfigs(approachFreeConfig, openConfig))){
+        (*_robot->armManipulationData)[armId].unFixHand(_robot);
+        p3d_multiLocalPath_set_groupToPlan(_robot, (*_robot->armManipulationData)[armId].getHandGroup(), 1);
+        // Compute to Grasp Config
+        if ((traj = computeTrajBetweenTwoConfigs(openConfig, graspConfig))){
             trajs.push_back(traj);
 
-            (*_robot->armManipulationData)[armId].unFixHand(_robot);
+            // This state should be set
+            // After acknolegment by another module
+            (*_robot->armManipulationData)[armId].getManipState() = holdingObjectInStablePose;
 
-            // Compute to Grasp Config
-            if ((traj = computeTrajBetweenTwoConfigs(openConfig, graspConfig))){
-                trajs.push_back(traj);
-
-                // This state should be set
-                // After acknolegment by another module
-                (*_robot->armManipulationData)[armId].getManipState() = holdingObjectInStablePose;
-
-                return MANIPULATION_TASK_OK;
-            }
+            return MANIPULATION_TASK_OK;
         }
+      }
     }
     return MANIPULATION_TASK_NO_TRAJ_FOUND;
 }
@@ -1299,66 +1307,66 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     status = MANIPULATION_TASK_INVALID_TASK;
   } else {
     ENV.setBool(Env::drawTraj, false);
-        checkConfigForCartesianMode(qi, object);
-        checkConfigForCartesianMode(qf, object);
+    checkConfigForCartesianMode(qi, object);
+    checkConfigForCartesianMode(qf, object);
     fixAllHands(qi, false);
     fixAllHands(qf, false);
     p3d_set_and_update_this_robot_conf(_robot, qi);
     switch (task) {
-          case ARM_FREE: {
-              printf("plan for ARM_FREE task\n");
-              if (MPDEBUG) {
-                  ManipulationUtils::copyConfigToFORM(_robot, qi);
-                  ManipulationUtils::copyConfigToFORM(_robot, qf);
-              }
-              if ((traj = computeTrajBetweenTwoConfigs(qi, qf)) == NULL) {
-                  printf("ERROR armPlanTask(ARM_FREE) on traj\n");
-                  status = MANIPULATION_TASK_NO_TRAJ_FOUND;
-                  break;
-              }
-              trajs.push_back(traj);
-              break;
-          }
-          case ARM_PICK_GOTO: {
-              printf("plan for ARM_PICK_GOTO task\n");
-              status = armPickGoto(armId, qi, object, trajs);
-              break;
-          }
-          case ARM_PICK_TAKE_TO_FREE: {
-              printf("plan for ARM_PICK_TAKE_TO_FREE task\n");
-              status = armPickTakeToFree(armId, qf, object, trajs);
-              break;
-          }
-          case ARM_PICK_TAKE_TO_FREE_POINT:{
-              printf("plan for ARM_PICK_TAKE_TO_FREE_POINT task\n");
-              status = armPickTakeToFreePoint(armId, objGoto, object, trajs);
-              break;
-          }
-          case ARM_PICK_TAKE_TO_PLACE: {
-              printf("plan for ARM_PICK_TAKE_TO_PLACE task\n");
-              status = armPickTakeToPlace(armId, object, support, trajs);
-              break;
-          }
-          case ARM_PLACE_FROM_FREE: {
-              printf("plan for ARM_PLACE_FROM_FREE task\n");
-              status = armPlaceFromFree(armId, qi, object, support, trajs);
-              break;
-          }
-          case ARM_PICK_AND_PLACE: {
-              printf("plan for ARM_PICK_AND_PLACE task\n");
-              status = armPickAndPlace(armId, qi, qf, object, support, trajs);
-              break;
-          }
-          case ARM_PICK_GOTO_AND_TAKE_TO_FREE: {
-              printf("plan for ARM_PICK_GOTO_AND_TAKE_TO_FREE task\n");
-              status = armPickGotoAndTakeToFree(armId, qi, qf, object, support, trajs);
-              break;
-          }
-          default: {
-              printf("%s: %d: ManipulationPlanner::armPlanTask(): wrong task.\n", __FILE__, __LINE__);
-              status = MANIPULATION_TASK_INVALID_TASK;
-              break;
-          }
+      case ARM_FREE: {
+        printf("plan for ARM_FREE task\n");
+        if (MPDEBUG) {
+            ManipulationUtils::copyConfigToFORM(_robot, qi);
+            ManipulationUtils::copyConfigToFORM(_robot, qf);
+        }
+        if ((traj = computeTrajBetweenTwoConfigs(qi, qf)) == NULL) {
+            printf("ERROR armPlanTask(ARM_FREE) on traj\n");
+            status = MANIPULATION_TASK_NO_TRAJ_FOUND;
+            break;
+        }
+        trajs.push_back(traj);
+        break;
+      }
+      case ARM_PICK_GOTO: {
+        printf("plan for ARM_PICK_GOTO task\n");
+        status = armPickGoto(armId, qi, object, trajs);
+        break;
+      }
+      case ARM_PICK_TAKE_TO_FREE: {
+        printf("plan for ARM_PICK_TAKE_TO_FREE task\n");
+        status = armPickTakeToFree(armId, qf, object, trajs);
+        break;
+      }
+      case ARM_PICK_TAKE_TO_FREE_POINT:{
+        printf("plan for ARM_PICK_TAKE_TO_FREE_POINT task\n");
+        status = armPickTakeToFreePoint(armId, objGoto, object, trajs);
+        break;
+      }
+      case ARM_PICK_TAKE_TO_PLACE: {
+        printf("plan for ARM_PICK_TAKE_TO_PLACE task\n");
+        status = armPickTakeToPlace(armId, object, support, trajs);
+        break;
+      }
+      case ARM_PLACE_FROM_FREE: {
+        printf("plan for ARM_PLACE_FROM_FREE task\n");
+        status = armPlaceFromFree(armId, qi, object, support, trajs);
+        break;
+      }
+      case ARM_PICK_AND_PLACE: {
+        printf("plan for ARM_PICK_AND_PLACE task\n");
+        status = armPickAndPlace(armId, qi, qf, object, support, trajs);
+        break;
+      }
+      case ARM_PICK_GOTO_AND_TAKE_TO_FREE: {
+        printf("plan for ARM_PICK_GOTO_AND_TAKE_TO_FREE task\n");
+        status = armPickGotoAndTakeToFree(armId, qi, qf, object, support, trajs);
+        break;
+      }
+      default: {
+        printf("%s: %d: ManipulationPlanner::armPlanTask(): wrong task.\n", __FILE__, __LINE__);
+        status = MANIPULATION_TASK_INVALID_TASK;
+        break;
+      }
     }
     unfixManipulationJoints(armId);
     p3d_sel_desc_id(P3D_ROBOT,cur_robot);

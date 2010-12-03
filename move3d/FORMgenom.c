@@ -935,17 +935,15 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
 	  initManipulationGenom();
 	}
 
-	if(FORMGENOM_CARTESIAN == 1) {
-// 	  manipulation->setArmCartesian(true);
-	} else {
-// 	  manipulation->setArmCartesian(false);
-	}
-
-//         manipulation->setObjectToManipulate((char*)OBJECT_NAME);
-//         manipulation->setSupport((char*)SUPPORT_NAME);
-//         manipulation->setCameraJnt((char*)CAMERA_JNT_NAME);
-//         manipulation->setCameraFOV(CAMERA_FOV);
-//         manipulation->setCameraImageSize(200, 200);
+  if(FORMGENOM_CARTESIAN == 1) {
+    for(int i=0; i<manipulation->robot()->armManipulationData->size(); i++) {
+     manipulation->setArmCartesian(i,true);
+    }
+  } else {
+    for(int i=0; i<manipulation->robot()->armManipulationData->size(); i++) {
+      manipulation->setArmCartesian(i,false);
+    }
+  }
 
   std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
   std::vector <SM_TRAJ> smTrajs;
