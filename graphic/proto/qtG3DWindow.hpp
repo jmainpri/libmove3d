@@ -28,6 +28,9 @@ private:
 // in the higher level modules
 void calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw);
 void qt_canvas_viewing(int mouse_press, int button);
+void qt_change_mob_frame(G3D_Window* win,pp3d_matrix4 frame);
+void qt_reset_mob_frame(G3D_Window* win);
+
 G3D_Window * qt_get_cur_g3d_win();
 
 // Function pointer 
