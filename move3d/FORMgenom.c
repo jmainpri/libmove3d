@@ -74,6 +74,7 @@ static FL_OBJECT * BT_GRAB_OBJECT = NULL;
 static FL_OBJECT * BT_RELEASE_OBJECT = NULL;
 
 static FL_OBJECT * BT_PICK_UP_TAKE = NULL;
+static FL_OBJECT * BT_PICK_UP_TAKE_XYZ = NULL;
 static FL_OBJECT * BT_PLACE = NULL;
 static FL_OBJECT * BT_CONSTRUCTPRM = NULL;
 #ifdef DPG
@@ -102,6 +103,7 @@ static void CB_grab_object(FL_OBJECT *obj, long arg);
 static void CB_release_object(FL_OBJECT *obj, long arg);
 
 static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg);
+static void CB_genomPickUp_takeObjectToXYZ(FL_OBJECT *obj, long arg);
 static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg);
 static void CB_genomPlaceObject(FL_OBJECT *obj, long arg);
 #ifdef DPG
@@ -141,7 +143,7 @@ static void g3d_create_genom_group(void) {
 	int x, y, dy, w, h;
 	FL_OBJECT *obj;
 
-	obj = fl_add_labelframe(FL_ENGRAVED_FRAME, 5, 15, 140, 720, "Genom Requests");
+	obj = fl_add_labelframe(FL_ENGRAVED_FRAME, 5, 15, 140, 760, "Genom Requests");
 
 	GENOMGROUP = fl_bgn_group();
 
@@ -194,7 +196,10 @@ static void g3d_create_genom_group(void) {
 	y+= dy;
         BT_PICK_UP_TAKE =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Pick Up (take)");
         fl_set_call_back(BT_PICK_UP_TAKE, CB_genomPickUp_takeObject, 1);
-	
+
+  y+= dy;
+        BT_PICK_UP_TAKE_XYZ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Pick Up (XYZ)");
+        fl_set_call_back(BT_PICK_UP_TAKE_XYZ, CB_genomPickUp_takeObjectToXYZ, 1);
 	y+= dy;
         BT_PLACE =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Pick Up (place)");
         fl_set_call_back(BT_PLACE, CB_genomPickUp_placeObject, 1);	
@@ -447,7 +452,7 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 
 	if(FORMGENOM_CARTESIAN == 1) {
 	  for(int i=0; i<manipulation->robot()->armManipulationData->size(); i++) {
- 	   manipulation->setArmCartesian(i,true);
+      manipulation->setArmCartesian(i,true);
 	  }
 	} else {
 	  for(int i=0; i<manipulation->robot()->armManipulationData->size(); i++) {
@@ -457,7 +462,7 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	
 	std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
 	std::vector <SM_TRAJ> smTrajs;
- std::vector <double>  objStart, objGoto;
+  std::vector <double>  objStart, objGoto;
 	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", confs, smTrajs);
  
 //   std::vector <p3d_traj*> trajs;
@@ -959,9 +964,6 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
 }
 
 static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
-
-
-
 	if (manipulation== NULL) {
 	  initManipulationGenom();
 	}
@@ -971,8 +973,6 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
 	} else {
 // 	  manipulation->setArmCartesian(false);
 	}
-
-//         manipulation->setObjectToManipulate((char*)OBJECT_NAME);
 	std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
   std::vector<SM_TRAJ> smTrajs;
   std::vector<double> objStart, objGoto;
@@ -982,6 +982,30 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
 	return;
 }
 
+static void CB_genomPickUp_takeObjectToXYZ(FL_OBJECT *obj, long arg) {
+  if (manipulation== NULL) {
+    initManipulationGenom();
+  }
+
+  if(FORMGENOM_CARTESIAN == 1) {
+//    manipulation->setArmCartesian(true);
+  } else {
+//    manipulation->setArmCartesian(false);
+  }
+  std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
+  std::vector<SM_TRAJ> smTrajs;
+  std::vector<double> objStart, objGoto;
+    objGoto.push_back(4.426253);
+    objGoto.push_back(-2.324680);
+    objGoto.push_back(0.983677);
+    objGoto.push_back(0.0);
+    objGoto.push_back(0.0);
+    objGoto.push_back(0.0);
+        manipulation->armPlanTask(ARM_PICK_TAKE_TO_FREE_POINT,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)"", confs, smTrajs);
+
+  g3d_draw_allwin_active();
+  return;
+}
 
 static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg) {
 

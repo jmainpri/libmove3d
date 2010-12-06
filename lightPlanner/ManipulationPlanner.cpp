@@ -313,48 +313,51 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
 
 configPt ManipulationPlanner::getFreeHoldingConf( p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, std::vector<double> &objGoto ) const {
 
-    configPt tmpConf = p3d_get_robot_config(_robot);
+  configPt tmpConf = p3d_get_robot_config(_robot);
+
+  ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
+  configPt q = p3d_get_robot_config(_robot);
+  mData.setCarriedObject(object);
+  _robot->isCarryingObject = TRUE;
+  //p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
+
+  // Set Manipulation joint and hand configuration
+  p3d_matrix4 mat;
+  p3d_mat4Copy( object->joints[1]->abs_pos , mat );
+
+//     mat[0][3] = objGoto[0];
+//     mat[1][3] = objGoto[1];
+//     mat[2][3] = objGoto[2];
+
+  int idManipIndexDof = mData.getManipulationJnt()->index_dof;
+
+  q[ idManipIndexDof + 0 ] = objGoto[0];
+  q[ idManipIndexDof + 1 ] = objGoto[1];
+  q[ idManipIndexDof + 2 ] = objGoto[2];
+  p3d_set_and_update_this_robot_conf(_robot, q);
+  gpSet_grasp_configuration(_robot, grasp, q, armId);
+
+  // Sample a configuration for the robot
+  q = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, false, true , armId, true);
+  deactivateCcCntrts(_robot, armId);
   
-    ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
-    configPt q = p3d_get_robot_config(_robot);
+  _robot->isCarryingObject = FALSE;
+  mData.setCarriedObject((p3d_rob*)NULL);
+  // Reset robot to the initial robot configuration
+  p3d_set_and_update_this_robot_conf(_robot, tmpConf);
+  p3d_destroy_config(_robot, tmpConf);
 
-    p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
-  
-    // Set Manipulation joint and hand configuration
-    p3d_matrix4 mat;
-    p3d_mat4Copy( object->joints[1]->abs_pos , mat );
+  _robot->isCarryingObject = FALSE;
+  mData.setCarriedObject((p3d_rob*)NULL);
 
-    mat[0][3] = objGoto[0];
-    mat[1][3] = objGoto[1];
-    mat[2][3] = objGoto[2];
-
-//    int idManipIndexDof = (*_robot->armManipulationData)[armId].getManipulationJnt()->index_dof;
-//
-//    q[ idManipIndexDof + 0 ] = objGoto[0];
-//    q[ idManipIndexDof + 1 ] = objGoto[1];
-//    q[ idManipIndexDof + 2 ] = objGoto[2];
-//    p3d_set_and_update_this_robot_conf(_robot, q);
-
-    gpSet_grasp_configuration(_robot, grasp, q, armId);
-
-    // Sample a configuration for the robot
-    q = setRobotGraspPosWithoutBase(_robot, mat , tAtt, false , armId, true);
-    deactivateCcCntrts(_robot, armId);
-
-    // Reset robot to the initial robot configuration
-    p3d_set_and_update_this_robot_conf(_robot, tmpConf);
-    p3d_destroy_config(_robot, tmpConf);
-
-    _robot->isCarryingObject = FALSE;
-    
-    if(q)
-    {
-      fixAllHands(NULL, true);
-      return q;
-    }
-    else {
-      cout << "No config found by setRobotGraspPosWithoutBase" << endl;
-    }
+  if(q)
+  {
+    fixAllHands(NULL, true);
+    return q;
+  }
+  else {
+    cout << "No config found by setRobotGraspPosWithoutBase" << endl;
+  }
 
   
   return NULL;
@@ -376,7 +379,7 @@ configPt ManipulationPlanner::getGraspConf(p3d_rob* object, int armId, gpGrasp& 
     gpFix_hand_configuration(_robot, handProp, armId);
 
     // Compute Grasp configuration
-    q = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, false , armId, true);
+    q = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, false, false, armId, true);
 
     if (q) 
     {
@@ -399,7 +402,6 @@ configPt ManipulationPlanner::getOpenGraspConf(p3d_rob* object, int armId, gpGra
 {
     if (graspConf) 
     {
-        ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
         configPt q = p3d_copy_config(_robot, graspConf);
 
         //Check the open configuration of the hand
@@ -1024,8 +1026,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt qStart, p3d_rob* object, configPt graspConfig, configPt openConfig, configPt approachFreeConfig, std::vector <p3d_traj*> &trajs) {
 
     p3d_traj* traj = NULL;
-
-    ArmManipulationData& armData = (*_robot->armManipulationData)[armId];
 
     fixAllHands(qStart, false);
     fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
