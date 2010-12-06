@@ -104,6 +104,11 @@ void dummy_g3d_draw_all_win_active()
 	
 }
 
+void dummy_add_traj(char* name,int i)
+{
+  
+}
+
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
 
@@ -141,7 +146,11 @@ qtG3DWindow::qtG3DWindow()
 #if !defined( WITH_XFORMS ) && !defined( QT_GL )
 	ext_g3d_draw_allwin_active = dummy_g3d_draw_all_win_active;
 #endif
-	
+  
+#if defined( QT_GL_WIDGET )
+	ext_qt_add_traj = dummy_add_traj;
+#endif
+  
   newG3dWindow();
 }
 
