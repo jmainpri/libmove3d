@@ -31,6 +31,8 @@ class  ManipulationPlanner {
   /* ******************************* */
   /* ******* (Ge)Setters *********** */
   /* ******************************* */
+    void setDebugMode(bool value);
+  
     void setOptimizeSteps(int nbSteps);
     int getOptimizeSteps(void) const;
 

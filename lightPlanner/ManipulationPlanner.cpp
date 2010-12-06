@@ -24,7 +24,9 @@
 
 #include <list>
 #include <algorithm>
-#define MPDEBUG 1
+
+static bool MPDEBUG=true;
+
 using namespace std;
 
 /* ******************************* */
@@ -125,6 +127,11 @@ int ManipulationPlanner::cleanTraj() {
 /* ******************************* */
 /* ******* (Ge)Setters *********** */
 /* ******************************* */
+void ManipulationPlanner::setDebugMode(bool value)
+{
+  MPDEBUG = value;
+}
+
 void ManipulationPlanner::setOptimizeSteps(int nbSteps) {
     if (nbSteps > 0) {
         _optimizeSteps = nbSteps;
@@ -288,7 +295,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
     }
   }
   
-  if (MPDEBUG) {
+  if (MPDEBUG && (status == MANIPULATION_TASK_OK) ) {
     showConfig_2(configs.getOpenConfig());
     showConfig_2(configs.getGraspConfig());
     showConfig_2(configs.getApproachGraspConfig());
@@ -460,6 +467,7 @@ configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gp
     gpUnFix_hand_configuration(_robot, handProp, armId);
     gpSet_grasp_open_configuration(_robot, grasp, q, armId);
     gpFix_hand_configuration(_robot, handProp, armId);
+    
     
     std::pair<double,configPt> distToGraspQ;
     std::vector< std::pair<double,configPt> > allQ;

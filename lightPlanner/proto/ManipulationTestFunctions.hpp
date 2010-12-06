@@ -27,6 +27,11 @@ public:
 	
 	bool runTest(int i);
   
+  //! Sets the planner in debug mode
+  void setDebugMode(bool value);
+  
+  //! Creates a manipulation planner
+  //! if it doesnot exists, if it does eares it
   void initManipulationGenom();
 
   //!Getters

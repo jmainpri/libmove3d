@@ -47,6 +47,14 @@ ManipulationTestFunctions::~ManipulationTestFunctions()
 	
 }
 
+void ManipulationTestFunctions::setDebugMode(bool value)
+{
+  if( m_manipulation )
+  {
+    m_manipulation->setDebugMode(value);
+  }
+}
+
 //! Initializes the manipulation
 //! A new manipulation planner is created 
 //! and the initial and goal configuration
