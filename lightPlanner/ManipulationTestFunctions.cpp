@@ -107,11 +107,11 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 	std::vector <SM_TRAJ> smTrajs;
 	std::vector <p3d_traj*> trajs;
 	
-	if (p3d_equal_config(m_Robot, m_qInit, m_qGoal)) 
-	{
-		cout << "ManipulationTestFunctions::p3d_equal_config(m_Robot, m_qInit, m_qGoal)" << endl;
-		return succeed;
-	}
+//	if (p3d_equal_config(m_Robot, m_qInit, m_qGoal)) 
+//	{
+//		cout << "ManipulationTestFunctions::p3d_equal_config(m_Robot, m_qInit, m_qGoal)" << endl;
+//		return succeed;
+//	}
   
   cout << "Manipulation planning for " << m_OBJECT_NAME << endl;
 	
@@ -178,6 +178,8 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
     return false;
   }
   p3d_get_freeflyer_pose2(object, &x, &y, &z, &rx, &ry, &rz);
+  
+  m_manipulation->setDebugMode(false);
 
   n= 0;
   nbOrientations= 100;
@@ -198,8 +200,14 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
     ManipulationData data(m_Robot);
     if ( m_manipulation->findArmGraspsConfigs(0, object, data) == MANIPULATION_TASK_OK) 
     {
+      p3d_set_and_update_this_robot_conf( m_manipulation->robot(), data.getGraspConfig() );
       n++;
     }
+    else {
+      p3d_set_and_update_this_robot_conf(m_manipulation->robot(), m_qInit);
+    }
+
+    g3d_draw_allwin_active();
   }  
   printf("---------------------------------------------------\n");
   printf("---------------------------------------------------\n");
@@ -255,6 +263,9 @@ bool ManipulationTestFunctions::runTest(int id)
   if (id == 7) 
   {
     return this->manipTestGraspingWithDifferentObjectOrientations(true);
+  }
+  else {
+    cout << "Test : " << id << " not defined " << endl;
   }
 
 	

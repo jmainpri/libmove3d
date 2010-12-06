@@ -364,38 +364,79 @@ configPt ManipulationPlanner::getFreeHoldingConf( p3d_rob* object, int armId, gp
 }
 
 
-configPt ManipulationPlanner::getGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, double* confCost) const {
+configPt ManipulationPlanner::getGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, double& confCost) const {
 
-    p3d_matrix4 handFrame;
-    ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
-    gpHand_properties handProp = mData.getHandProperties();
-    p3d_mat4Mult(grasp.frame, handProp.Tgrasp_frame_hand, handFrame);
-    p3d_mat4Mult(handFrame, mData.getCcCntrt()->Tatt2, tAtt);
-
-    // Check if a valid configuration exists
-    // of the robot using this graspFrame
-    configPt q = NULL;
-    gpSet_grasp_configuration(_robot, grasp, armId);
-    gpFix_hand_configuration(_robot, handProp, armId);
-
-    // Compute Grasp configuration
-    q = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, false, false, armId, true);
-
-    if (q) 
+  p3d_matrix4 handFrame;
+  ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
+  gpHand_properties handProp = mData.getHandProperties();
+  p3d_mat4Mult(grasp.frame, handProp.Tgrasp_frame_hand, handFrame);
+  p3d_mat4Mult(handFrame, mData.getCcCntrt()->Tatt2, tAtt);
+  
+  // Check if a valid configuration exists
+  // of the robot using this graspFrame
+  configPt q = NULL;
+  gpSet_grasp_configuration(_robot, grasp, armId);
+  gpFix_hand_configuration(_robot, handProp, armId);
+  
+  
+  std::pair<double,configPt> costAndConf;
+  std::vector< std::pair<double,configPt> > graspConfigs;
+  
+  const unsigned int NbTry=20;
+  
+  for (unsigned int i=0; i<NbTry; i++) 
+  {
+    configPt qGrasp = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, false, false, armId, true);
+    
+    if ( qGrasp ) 
     {
-        // If it exists, try to find better Rest Arm config and
-        double restArmCost = setRobotArmsRest(_robot, object->joints[1]->abs_pos, armId, tAtt, _robot->openChainConf, q);
-        double graspArmCost = computeRobotGraspArmCost(_robot, armId, grasp, q, _robot->openChainConf, object->joints[1]->abs_pos)/270;
-        *confCost = (restArmCost + graspArmCost * 2) / 3;
-
-        //printf("configuration Cost = %f\n", *confCost);
-
-        deactivateCcCntrts(_robot, armId);
-        gpSet_grasp_configuration(_robot, grasp, q, armId);
-        return q;
+      // If it exists, try to find better Rest Arm config and
+      double restArmCost = setRobotArmsRest(_robot, object->joints[1]->abs_pos, armId, tAtt, _robot->openChainConf,  qGrasp );
+      double graspArmCost = computeRobotGraspArmCost(_robot, armId, grasp, qGrasp , _robot->openChainConf, object->joints[1]->abs_pos)/270;
+      
+      costAndConf.first  = (restArmCost + graspArmCost * 2) / 3;
+      costAndConf.second = p3d_copy_config( _robot, qGrasp );
+      
+      if( MPDEBUG )
+      {
+        std::cout << "Grasp Q cost : " << costAndConf.first << std::endl;
+      }
+      
+      // Store Q and its cost as a pair
+      graspConfigs.push_back( costAndConf );
     }
-    *confCost = -1;
-    return NULL;
+    else {
+      break;
+    }
+  }
+  
+  if ( !graspConfigs.empty() ) 
+  {
+    std::sort(graspConfigs.begin(),graspConfigs.end());
+    
+    confCost = graspConfigs[0].first;
+    q = graspConfigs[0].second;
+    
+    for (unsigned int i=1; i<graspConfigs.size(); i++) {
+      p3d_destroy_config( _robot, graspConfigs[i].second );
+    }
+  }
+  
+  if (q) 
+  {
+    if( MPDEBUG )
+    {
+      std::cout << "--------------------------------------" << std::endl;
+      std::cout << " Grasp Confort cost : " << confCost << std::endl;
+      std::cout << "--------------------------------------" << std::endl;
+    }
+    
+    deactivateCcCntrts(_robot, armId);
+    gpSet_grasp_configuration(_robot, grasp, q, armId);
+    return q;
+  }
+  confCost = -1;
+  return NULL;
 }
 
 configPt ManipulationPlanner::getOpenGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf) const 
@@ -546,7 +587,7 @@ configPt ManipulationPlanner::getApproachGraspConf(p3d_rob* object, int armId, g
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const {
     double confCost = -1;
   
-    configPt q = getGraspConf(object, armId, grasp, tAtt, &confCost);
+    configPt q = getGraspConf(object, armId, grasp, tAtt, confCost);
   
     if (q) {
       cout << "FOUND Grasp Config!!!!!" << endl;
