@@ -294,7 +294,7 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env)
     case HRI_ACHILE:
       persp->camjoint = agent->robotPt->joints[42];
       persp->fov = 160;
-      persp->foa = 30;
+      persp->foa = 70; // TODO: By default This should be 30. Change for a particular manip while waiting a fix on vis placements
       persp->tilt_jnt_idx = 6;
       persp->pan_jnt_idx  = 5;
       persp->pointjoint = agent->robotPt->joints[36];
