@@ -267,7 +267,7 @@ int p3d_del_graph(p3d_graph *G) {
   }
 
   MY_FREE(G, p3d_graph, 1);
-
+  G = NULL;
   return (TRUE);
 }
 

@@ -4,6 +4,7 @@
 
  */
 #ifndef __CEXTRACT__
+extern void p3d_to_gl_matrix(p3d_matrix4 T, GLfloat mat[16]);
 extern void g3d_draw_text(char* string);
 extern void g3d_set_color_vect ( int color, GLdouble color_vect[4] );
 extern void g3d_get_color_vect(int color, GLdouble color_vect[4]);

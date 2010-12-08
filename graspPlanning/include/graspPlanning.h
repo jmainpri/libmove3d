@@ -32,6 +32,7 @@
 #include <string>
 #include <sstream>
 #include "P3d-pkg.h"
+#include "Graphic-pkg.h"
 #include "p3d_type.h"
 #include "p3d.h"
 

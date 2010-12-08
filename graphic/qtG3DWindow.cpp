@@ -38,7 +38,8 @@ void (*ext_g3d_export_cpp_graph)();
 void (*ext_g3d_draw_allwin_active)();
 void (*ext_calc_cam_param)(g3d_cam_param& p);
 void (*ext_get_win_mouse)(int* x, int* y);
-void (*ext_qt_add_traj)(char* name,int i);
+void (*ext_add_traj_to_ui)(char* name,int i);
+void (*ext_add_config_to_ui)(char* name,p3d_rob* rob,double* q);
 
 // --------------------------------------------------------------------
 // External functions
@@ -93,18 +94,17 @@ void get_win_mouse(int*x,int*y)
 	
 }
 
-//! dummy function to add a traj 
-void add_traj_to_ui( char* name, int i )
-{
-	
-}
-
 void dummy_g3d_draw_all_win_active()
 {
 	
 }
 
 void dummy_add_traj(char* name,int i)
+{
+  
+}
+
+void dummy_add_config(char* name,p3d_rob* rob,double* q)
 {
   
 }
@@ -132,14 +132,16 @@ qtG3DWindow::qtG3DWindow()
   ext_g3d_export_cpp_graph = (void (*)())(g3d_export_cpp_graph);
 	ext_get_win_mouse = /*(void (*) (int*,int*))*/qt_get_win_mouse;
 	ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
-	ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
-	ext_qt_add_traj = add_traj_to_ui;
+	ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;+
+	ext_add_traj_to_ui = dummy_add_traj;
+  ext_add_config_to_ui = dummy_add_traj;
 #else
 #ifndef QT_GL
 	ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
 	ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
 	ext_get_win_mouse = /*(void (*) (int*,int*))*/get_win_mouse;
-	ext_qt_add_traj = add_traj_to_ui;
+	ext_add_traj_to_ui = dummy_add_traj;
+  ext_add_config_to_ui = dummy_add_traj;
 #endif
 #endif
 
@@ -148,7 +150,8 @@ qtG3DWindow::qtG3DWindow()
 #endif
   
 #if defined( QT_GL_WIDGET )
-	ext_qt_add_traj = dummy_add_traj;
+	ext_add_traj_to_ui = dummy_add_traj;
+  ext_add_config_to_ui = dummy_add_config;
 #endif
   
   newG3dWindow();
@@ -164,10 +167,16 @@ void g3d_draw_allwin_active_back_buffer(void)
   ext_g3d_draw_allwin_active();
 }
 
-void g3d_add_traj ( char *name, int i )
+void g3d_add_traj_to_ui ( char *name, int i )
 {
 	cout << "g3d_add_traj ( char *name, int i )" << endl;
-	ext_qt_add_traj(name,i);
+	ext_add_traj_to_ui(name,i);
+}
+
+void g3d_add_config_to_ui(char* name,p3d_rob* rob,double* q)
+{
+  cout << "add_configuration_to_ui" << endl;
+  ext_add_config_to_ui(name,rob,q);
 }
 
 void qt_canvas_viewing(int mouse_press, int button)

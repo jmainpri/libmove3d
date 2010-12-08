@@ -30,6 +30,16 @@
 #include <vector>
 #endif
 
+#include "p3d_sys.h"
+#include "p3d_type.h"
+#include "p3d_matrix.h"
+#include "polyhedre.h"
+#include "p3d_poly.h"
+#include "dyna_list.h"              // modif Juan
+#include "p3d.h"
+#include "traj.h"
+#include "localpath.h"
+
 /*--------------------------------------------------------------------------*/
 /*! \brief Structure to hold the informations on links between joints.
  *  \note  Use only for the interface of joint creation.

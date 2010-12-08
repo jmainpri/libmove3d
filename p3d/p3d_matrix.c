@@ -1747,18 +1747,6 @@ void p3d_orthonormal_basis(p3d_vector3 u, p3d_vector3 v, p3d_vector3 w)
     p3d_vectNormalize(w, w);
 }
 
-//! Converts a p3d pose matrix to an OpenGL one.
-//! \param T the input p3d_matrix4
-//! \param mat a float array that will be filled with the converted matrix
-void p3d_to_gl_matrix(p3d_matrix4 T, GLfloat mat[16])
-{
-   mat[0]= T[0][0];      mat[4]= T[0][1];      mat[8]=  T[0][2];      mat[12]= T[0][3];
-   mat[1]= T[1][0];      mat[5]= T[1][1];      mat[9]=  T[1][2];      mat[13]= T[1][3];
-   mat[2]= T[2][0];      mat[6]= T[2][1];      mat[10]= T[2][2];      mat[14]= T[2][3];
-   mat[3]=       0;      mat[7]=       0;      mat[11]=       0;      mat[15]=       1;
-}
-
-
 //! Converts a quaternion to a rotation matrix.
 void p3d_quaternion_to_matrix3(p3d_vector4 q0, p3d_matrix3 R)
 {

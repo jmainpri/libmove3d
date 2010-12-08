@@ -286,6 +286,11 @@ double g3d_get_qf(int i)
   return(robotPt->ROBOT_GOTO[i]);
 }
 
+void g3d_add_config_to_ui(char* name,p3d_rob* rob,double* q)
+{
+  
+}
+
 /* ajoute une trajectoire aux trajectoires du robot disponibles */
 void g3d_add_traj(char *name,int i){
  char str[100];

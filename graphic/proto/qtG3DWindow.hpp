@@ -1,7 +1,7 @@
 #ifndef QTG3DWINDOW_HPP
 #define QTG3DWINDOW_HPP
 
-#include "p3d_matrix.h"
+#include "device.h"
 
 typedef struct g3d_win G3D_Window;
 
@@ -40,6 +40,7 @@ extern void (*ext_g3d_draw_allwin_active)();
 extern void (*ext_calc_cam_param)(g3d_cam_param& p);
 extern void (*ext_get_win_mouse)(int* x, int* y);
 extern void (*ext_g3d_draw_cost_features)();
-extern void (*ext_qt_add_traj)(char* name,int i);
+extern void (*ext_add_traj_to_ui)(char* name,int i);
+extern void (*ext_add_config_to_ui)(char* name,p3d_rob* rob,double* q);
 
 #endif // QTG3DWINDOW_HPP

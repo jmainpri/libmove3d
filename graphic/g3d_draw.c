@@ -56,6 +56,18 @@ int mod(int a, int b) {
 }
 
 /*******************************************************************************/
+//! Converts a p3d pose matrix to an OpenGL one.
+//! \param T the input p3d_matrix4
+//! \param mat a float array that will be filled with the converted matrix
+void p3d_to_gl_matrix(p3d_matrix4 T, GLfloat mat[16])
+{
+  mat[0]= T[0][0];      mat[4]= T[0][1];      mat[8]=  T[0][2];      mat[12]= T[0][3];
+  mat[1]= T[1][0];      mat[5]= T[1][1];      mat[9]=  T[1][2];      mat[13]= T[1][3];
+  mat[2]= T[2][0];      mat[6]= T[2][1];      mat[10]= T[2][2];      mat[14]= T[2][3];
+  mat[3]=       0;      mat[7]=       0;      mat[11]=       0;      mat[15]=       1;
+}
+
+/*******************************************************************************/
 //! @ingroup graphic 
 //! Get the current display size and displays the text in
 //! the right/bottom corner

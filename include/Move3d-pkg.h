@@ -18,6 +18,7 @@ extern Pixmap GetApplicationIcon( );
 #include "../move3d/proto/move3d_proto.h"
 
 #else
+
 #include "P3d-pkg.h"
 // Functions Without XFORMS
 extern int fct_stop(void);
@@ -27,6 +28,7 @@ extern int p3d_get_user_drawnjnt(void);
 extern void p3d_set_user_drawnjnt(int jnt);
 extern p3d_traj *p3d_graph_to_traj ( p3d_rob *robotPt );
 extern void g3d_add_traj ( char *name, int i );
+extern void g3d_add_config_to_ui( char *name, p3d_rob *robotPt , configPt q );
 #endif
 
 #endif /* #ifndef MOVE3D_PKG_H */
