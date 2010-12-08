@@ -594,7 +594,7 @@ int p3d_specific_search(char* filePrefix){
   for (int i = 0; i < p3d_get_NB_specific(); i++) {
     qs = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
     if (ENV.getBool(Env::expandToGoal) == true) {
-	 qg = p3d_copy_config(robotPt, robotPt->ROBOT_GOTO);
+      qg = p3d_copy_config(robotPt, robotPt->ROBOT_GOTO);
     }
 
     printf("\n#### START OF TEST NUM.%d ####\n\n", i + 1);
@@ -962,6 +962,12 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
       PrintInfo(("qs reliee au graphe\n"));
     else
       p3d_APInode_expand(G, Ns, fct_stop, fct_draw);
+  }else{
+    //If Ns already exists, qs have to be destroyed. qs is a copy of Ns->q
+    if(Ns->q != qs){
+      p3d_destroy_config(robotPt, qs);
+      qs = Ns->q;
+    }
   }
   if ((ENV.getBool(Env::expandToGoal) == true) && (Ng == NULL)) {
     p3d_set_robot_config(robotPt, qg);
@@ -989,6 +995,12 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
       PrintInfo(("qg reliee au graphe\n"));
     else
       p3d_APInode_expand(G, Ng, fct_stop, fct_draw);
+  }else{
+    //If Ns already exists, qs have to be destroyed. qs is a copy of Ns->q
+    if(Ng->q != qg){
+      p3d_destroy_config(robotPt, qg);
+      qg = Ng->q;
+    }
   }
 
   p3d_set_robot_config(robotPt, Ns->q);

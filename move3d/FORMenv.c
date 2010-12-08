@@ -312,7 +312,8 @@ static void g3d_delete_kcd_which_test_button(void)
  fl_free_object(KCD_DIST_EST);
  fl_free_object(KCD_DIST_EXACT);
  fl_free_object(KCD_SHOW_INFO_OBJ); 
- fl_free_object(KCD_SHOW_INFO_2_OBJ); 
+ fl_free_object(KCD_SHOW_INFO_2_OBJ);
+ fl_free_object(GROUP2);
  fl_free_form(KCD_FORM_2);
 }
 
@@ -870,7 +871,7 @@ void g3d_delete_env_form(void)
   fl_free_object(VOL_OBJ);
   fl_free_object(DMAX_SLIDER_OBJ); // modif Pepijn
   fl_free_object(MICROCOLLISION_OBJ);
-
+  fl_free_object(PARAM_GROUP);
   fl_free_form(ENV_FORM);
 }
 

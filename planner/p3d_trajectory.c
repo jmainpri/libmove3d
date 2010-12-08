@@ -417,7 +417,9 @@ int p3d_concat_traj(p3d_traj *traj1Pt, p3d_traj *traj2Pt)
         printf("q1_end : \n");
         print_config(robotPt, q1_end);
         printf("q2_start : \n");
-        print_config(robotPt, q2_start); 
+        print_config(robotPt, q2_start);
+        p3d_destroy_config(robotPt, q1_end);
+        p3d_destroy_config(robotPt, q2_start);
         return TRUE;
 					}
 				}
@@ -431,6 +433,8 @@ int p3d_concat_traj(p3d_traj *traj1Pt, p3d_traj *traj2Pt)
     print_config(robotPt, q1_end);
     printf("q2_start : \n");
     print_config(robotPt, q2_start);
+    p3d_destroy_config(robotPt, q1_end);
+    p3d_destroy_config(robotPt, q2_start);
     return TRUE;
   }
 #endif
@@ -599,6 +603,11 @@ int p3d_destroy_traj(p3d_rob* robotPt, p3d_traj* traj){
       }
     }
   }
+  p3d_destroy_traj_content(robotPt, traj);
+  return found;
+}
+
+void p3d_destroy_traj_content(p3d_rob* robotPt, p3d_traj* traj){
   destroy_list_localpath(robotPt, traj->courbePt);
   if(traj->name != NULL) {
     free(traj->name);
@@ -607,7 +616,6 @@ int p3d_destroy_traj(p3d_rob* robotPt, p3d_traj* traj){
     free(traj->file);
   }
   MY_FREE(traj,p3d_traj,1);
-  return found;
 }
 
 void p3d_compute_traj_project(p3d_rob* robotPt, p3d_traj* traj1Pt, p3d_traj* traj2Pt, int nstep) {

@@ -477,6 +477,7 @@ int p3d_desactivate_col_check_automatic() {
 		}	
     printf("\nnbPair = %d\n", nbPair);
 	}
+	MY_FREE(graphicObjects, int, nof_obj_for_rob);
   MY_FREE(hierarchical_father, int, nof_obj_for_rob);
   return 0;
 }

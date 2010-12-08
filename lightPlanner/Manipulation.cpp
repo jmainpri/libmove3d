@@ -772,7 +772,7 @@ int Manipulation::findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectP
       p3d_copy_config_into(_robot, graspConfig, &openConfig);
       gpSet_grasp_open_configuration(_robot, (*iter), openConfig, armId + 1);
       (*iter).IKscore = 1 - configCost;
-      data->setGrasp(new gpGrasp(*iter));
+      data->setGrasp(&(*iter));
       data->setGraspConfigCost(configCost);
       configMap.insert(pair<int, ManipulationData*> ((*iter).ID, data));
     }else{

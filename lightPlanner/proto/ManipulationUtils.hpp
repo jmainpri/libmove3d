@@ -300,6 +300,31 @@ class ManipulationData{
 #endif
       
     }
+    //Reset
+    void clear(){
+      if(_graspConfig){
+        p3d_destroy_config(_robot, _graspConfig);
+        _graspConfig = NULL;
+      }
+      if(_openConfig){
+        p3d_destroy_config(_robot, _openConfig);
+        _openConfig = NULL;
+      }
+      if(_approachFreeConfig){
+        p3d_destroy_config(_robot, _approachFreeConfig);
+        _approachFreeConfig = NULL;
+      }
+      if(_approachGraspConfig){
+        p3d_destroy_config(_robot, _approachGraspConfig);
+        _approachGraspConfig = NULL;
+      }
+      #ifdef GRASP_PLANNING
+      if(_grasp){
+        delete(_grasp);
+        _grasp = NULL;
+      }
+      #endif
+    }
     //Getters
     inline p3d_rob* getRobot() const{
       return _robot;
@@ -339,6 +364,9 @@ class ManipulationData{
 #ifdef GRASP_PLANNING
     inline void setGrasp(gpGrasp* grasp){
 			if (!grasp) {
+        if(_grasp){
+          delete(_grasp);
+        }
 				_grasp = NULL;
 				return;
 			}

@@ -477,8 +477,8 @@ int p3d_poly_del_poly(p3d_poly *p) { /*p3d_col_del_poly(p);*/
     p3d_poly_destroy_primitive(p->primitive_data);
     if(p->poly){
       p3d_destroy_poly(p->poly);
-      MY_FREE(p,p3d_poly,1);
       p->poly = NULL;
+      MY_FREE(p,p3d_poly,1);
       p3d_polymax--;
     }
     /*

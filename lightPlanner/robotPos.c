@@ -361,6 +361,8 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
     } while (p3d_col_test() && nbTry < MaxNumberOfTry);
     
     if(nbTry >= MaxNumberOfTry){
+      p3d_destroy_config(robot, qInit);
+      p3d_destroy_config(robot, q);
       return NULL;
     }
     
@@ -374,6 +376,7 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
       }
     }
     p3d_get_robot_config_into( robot, &q );
+    p3d_destroy_config(robot, qInit);
   }
   return q;
 }

@@ -395,7 +395,7 @@ static int s_p3d_build_jnt_data(p3d_read_jnt_data * data)
 {
   double * dofs, * dofs_rand;
   double * velocity_max = NULL, * acceleration_max = NULL, * jerk_max = NULL;
-  double * velocity_torque_max;  
+  double * velocity_torque_max = NULL;
   int i;
   p3d_matrix4 tmp_mat;
   p3d_matrix4 inv_mat;
@@ -405,16 +405,37 @@ static int s_p3d_build_jnt_data(p3d_read_jnt_data * data)
     PrintWarning(("!!! WARNING: Joint links not allowed in the environment description !!!\n"));
     return FALSE;    
   }
-
+  if (data->nb_dof < 0){
+    PrintError(("s_p3d_build_jnt_data : data->nb_dof = %d\n", data->nb_dof));
+    return FALSE;
+  }
   dofs      = MY_ALLOC(double, 3 * (data->nb_dof));
   dofs_rand = MY_ALLOC(double, 2 * (data->nb_dof));
   velocity_torque_max = MY_ALLOC(double, 2 * (data->nb_dof));
 
- velocity_max = MY_ALLOC(double, (data->nb_dof));
- acceleration_max = MY_ALLOC(double, (data->nb_dof));
- jerk_max = MY_ALLOC(double, (data->nb_dof));
+  velocity_max = MY_ALLOC(double, (data->nb_dof));
+  acceleration_max = MY_ALLOC(double, (data->nb_dof));
+  jerk_max = MY_ALLOC(double, (data->nb_dof));
   
-  if ((data->nb_dof>0) && ((dofs == NULL) || (dofs_rand == NULL))) {
+  if ((data->nb_dof > 0) && ((dofs == NULL) || (dofs_rand == NULL) || (velocity_torque_max == NULL) || (velocity_max == NULL) || (acceleration_max == NULL) || (jerk_max == NULL)) ) {
+    if(dofs){
+      MY_FREE(dofs, double, 3 * (data->nb_dof));
+    }
+    if(dofs_rand){
+      MY_FREE(dofs_rand, double, 2 * (data->nb_dof));
+    }
+    if(velocity_torque_max){
+      MY_FREE(velocity_torque_max, double, 2 * (data->nb_dof));
+    }
+    if(velocity_max){
+      MY_FREE(velocity_max, double, (data->nb_dof));
+    }
+    if(acceleration_max){
+      MY_FREE(acceleration_max, double, (data->nb_dof));
+    }
+    if(jerk_max){
+      MY_FREE(jerk_max, double, (data->nb_dof));
+    }
     PrintError(("Not enough memory !!!\n"));
     return FALSE;
   }
@@ -440,6 +461,7 @@ static int s_p3d_build_jnt_data(p3d_read_jnt_data * data)
   MY_FREE(dofs, double, 3 * (data->nb_dof));
   MY_FREE(dofs_rand, double, 2 * (data->nb_dof));
 
+  MY_FREE(velocity_torque_max, double, 2 * (data->nb_dof));
   MY_FREE(velocity_max, double, (data->nb_dof));
   MY_FREE(acceleration_max, double, (data->nb_dof));
   MY_FREE(jerk_max, double, (data->nb_dof));

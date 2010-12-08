@@ -2217,7 +2217,7 @@ void g3d_init_box2(p3d_poly *p, int fill) {
       p->listfil = poly->listfil;
     }
   }
-
+  p3d_poly_del_poly (poly);
 
 }
 
@@ -2391,7 +2391,7 @@ void g3d_init_cylindreGLU2(p3d_poly* p, int fill, float base_radius,float top_ra
       p->listfil = poly->listfil;
     }
   }
-
+  p3d_poly_del_poly(poly);
 }
 
 
@@ -2575,11 +2575,7 @@ void g3d_init_sphereGLU(p3d_poly* p, int fill) {
       }
     }
   }
-
-
-
-
-
+  gluDeleteQuadric(ps_gluqobj);
 }
 
 

@@ -21,6 +21,7 @@ extern p3d_traj* p3d_get_sub_traj(p3d_traj *traj1Pt, p3d_localpath* startLp, p3d
 
 //start path deform
 extern int p3d_destroy_traj(p3d_rob* robotPt, p3d_traj* traj);
+extern void p3d_destroy_traj_content(p3d_rob* robotPt, p3d_traj* traj);
 extern void p3d_compute_traj_project(p3d_rob* robotPt, p3d_traj* traj1Pt, p3d_traj* traj2Pt, int nstep);
 extern int p3d_is_one_project(p3d_rob* robotPt, p3d_traj* traj1Pt, p3d_traj* traj2Pt, double param1, double param2);
 extern int p3d_test_projection(p3d_rob* robotPt , p3d_traj *traj1Pt, p3d_traj* traj2Pt, int nstep);

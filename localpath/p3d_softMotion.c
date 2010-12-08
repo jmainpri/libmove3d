@@ -1576,6 +1576,8 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
     for(int i = 0; i < sub_localpathPt->nbActiveCntrts; i++){
       sub_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
     }
+  }else{
+    p3d_destroy_softMotion_data(robotPt, softMotion_data);
   }
   MY_FREE(segmentl1, SM_SEGMENT, softMotion_data->nbDofs);
   MY_FREE(condl1, SM_COND, softMotion_data->nbDofs);

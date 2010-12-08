@@ -151,7 +151,7 @@ void poly_init_poly(poly_polyhedre *polyhedre, char *name)
       polyhedre->curvatures=NULL;
       polyhedre->vertex_normals=NULL;
       polyhedre->centroid[0]= polyhedre->centroid[1]= polyhedre->centroid[2]= 0.0;
-      polyhedre->areEdgesAndNeighboursUpToDate=NULL;
+      polyhedre->areEdgesAndNeighboursUpToDate=FALSE;
 
       #ifdef GRASP_PLANNING
       polyhedre->cmass[0]= polyhedre->cmass[1]= polyhedre->cmass[2]= 0.0;
@@ -195,6 +195,14 @@ void poly_destroy_poly(poly_polyhedre *polyhedre)
 { unsigned int i;
   MY_FREE(polyhedre->name,char,(strlen(polyhedre->name)+1));
   MY_FREE(polyhedre->the_points,poly_vector3,polyhedre->nb_points);
+  if(polyhedre->curvatures){
+    MY_FREE(polyhedre->curvatures,double,polyhedre->nb_points);
+    polyhedre->curvatures = NULL;
+  }
+  if(polyhedre->vertex_normals){
+    MY_FREE(polyhedre->vertex_normals,p3d_vector3,polyhedre->nb_points);
+    polyhedre->vertex_normals = NULL;
+  }
   poly_destroy_edges(polyhedre);
   poly_destroy_planes(polyhedre);
   for(i=0;i<polyhedre->nb_faces;i++)
@@ -1102,6 +1110,7 @@ int poly_build_face(poly_index *the_indexs ,unsigned int nombre, poly_polyhedre 
       { if (poly_error_on_shell)
           PrintInfo(("\nErreur d allocation memoire pour les faces dans polyhedre.c: poly_build_face\n"));
         poly_error_value=poly_error_malloc_failled;
+        free(triangles);
         return FALSE;
       }
     else
@@ -1116,6 +1125,7 @@ int poly_build_face(poly_index *the_indexs ,unsigned int nombre, poly_polyhedre 
           { if (poly_error_on_shell)
               PrintInfo(("\nErreur d allocation memoire pour les indexs dans polyhedre.c: poly_build_face\n"));
             poly_error_value=poly_error_malloc_failled;
+            free(triangles);
             return FALSE;
           }
 
@@ -1728,6 +1738,7 @@ int p3d_compute_vertex_normals(poly_polyhedre *polyhedron)
    if(polyhedron->vertex_normals!=NULL)
    {
      free(polyhedron->vertex_normals);
+     polyhedron->vertex_normals= NULL;
    }
 
    polyhedron->vertex_normals= (p3d_vector3 *) malloc(polyhedron->nb_points*sizeof(p3d_vector3));

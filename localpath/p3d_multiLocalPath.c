@@ -1,5 +1,3 @@
-#ifdef MULTILOCALPATH
-
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 #include "Localpath-pkg.h"
@@ -845,8 +843,3 @@ int p3d_multiLocalPath_get_group_by_name(p3d_rob* robotPt, char* name) {
    p3d_multiLocalPath_update_joint_sampling_activation(robotPt);
    return 0;
 }
-
-
-
-
-#endif
