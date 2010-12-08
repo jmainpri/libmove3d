@@ -94,17 +94,19 @@ void get_win_mouse(int*x,int*y)
 	
 }
 
+
 void dummy_g3d_draw_all_win_active()
 {
 	
 }
 
-void dummy_add_traj(char* name,int i)
+void dummy_add_traj_to_ui(char* name,int i)
 {
   
 }
 
-void dummy_add_config(char* name,p3d_rob* rob,double* q)
+
+void dummy_add_config_to_ui(char* name,p3d_rob* robot, double* q)
 {
   
 }
@@ -128,20 +130,20 @@ extern void g3d_export_cpp_graph();
 qtG3DWindow::qtG3DWindow()
 {	
 #if defined( QT_GL ) && defined ( CXX_PLANNER )
-  ext_g3d_draw_cost_features = (void (*)())(g3d_draw_cost_features);
-  ext_g3d_export_cpp_graph = (void (*)())(g3d_export_cpp_graph);
+	ext_g3d_draw_cost_features = (void (*)())(g3d_draw_cost_features);
+	ext_g3d_export_cpp_graph = (void (*)())(g3d_export_cpp_graph);
 	ext_get_win_mouse = /*(void (*) (int*,int*))*/qt_get_win_mouse;
 	ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
 	ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;+
-	ext_add_traj_to_ui = dummy_add_traj;
-  ext_add_config_to_ui = dummy_add_traj;
+	ext_add_traj_to_ui = dummy_add_traj_to_ui;
+	ext_add_config_to_ui = dummy_add_config_to_ui;
 #else
 #ifndef QT_GL
 	ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
 	ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
 	ext_get_win_mouse = /*(void (*) (int*,int*))*/get_win_mouse;
-	ext_add_traj_to_ui = dummy_add_traj;
-  ext_add_config_to_ui = dummy_add_traj;
+	ext_add_traj_to_ui = dummy_add_traj_to_ui;
+	ext_add_config_to_ui = dummy_add_config_to_ui;
 #endif
 #endif
 
@@ -150,8 +152,8 @@ qtG3DWindow::qtG3DWindow()
 #endif
   
 #if defined( QT_GL_WIDGET )
-	ext_add_traj_to_ui = dummy_add_traj;
-  ext_add_config_to_ui = dummy_add_config;
+	ext_add_traj_to_ui = dummy_add_traj_to_ui;
+  ext_add_config_to_ui = dummy_add_config_to_ui;
 #endif
   
   newG3dWindow();
@@ -167,7 +169,7 @@ void g3d_draw_allwin_active_back_buffer(void)
   ext_g3d_draw_allwin_active();
 }
 
-void g3d_add_traj_to_ui ( char *name, int i )
+void g3d_add_traj ( char *name, int i )
 {
 	cout << "g3d_add_traj ( char *name, int i )" << endl;
 	ext_add_traj_to_ui(name,i);
