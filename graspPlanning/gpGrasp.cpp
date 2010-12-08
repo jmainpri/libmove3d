@@ -412,7 +412,7 @@ double gpGrasp::configCost()
 
   switch(hand_type)
   {
-    case GP_GRIPPER:
+    case GP_GRIPPER: case GP_PR2_GRIPPER:
        // for the gripper, we consider that is better to have a configuration
        // where the gripper is not close to its maximal opening so
        // we use a function that decreases with the config parameter but is finite in 0 
@@ -701,7 +701,7 @@ int gpGrasp::computeQuality()
 
   switch(hand_type)
   {
-    case GP_GRIPPER: case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
+    case GP_GRIPPER: case GP_PR2_GRIPPER: case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
       graspingDirection[0]= 1.0;
       graspingDirection[1]= 0.0;
       graspingDirection[2]= 0.0;
@@ -1028,7 +1028,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        qopen[0]= qmax[0];
 
        p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp_frame_hand);
-      Tgrasp_frame_hand[2][3]= 0.007;
+       Tgrasp_frame_hand[2][3]= 0.007;
 //        Tgrasp_frame_hand[2][3]= 0.018;
 
       //transformation grasp frame -> arm's wrist frame:
@@ -1063,6 +1063,30 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        nb_directions= 12;
        nb_rotations= 6;
        max_nb_grasp_frames= 160000;
+
+       nb_positions= 100;
+       nb_directions= 12;
+       nb_rotations= 6;
+       max_nb_grasp_frames= 5000;
+    break;
+    case GP_PR2_GRIPPER:
+       nb_fingers= 2;
+       nb_dofs= 1;
+       fingertip_distance =   0.04;
+       fingertip_radius   =   0.0042;
+       min_opening        =   0.01005;
+       max_opening        =  0.075007;
+       min_opening_jnt_value =   0.0;
+       max_opening_jnt_value =   0.0325;
+
+       qmin.resize(1);
+       qmax.resize(1);
+       qrest.resize(1);
+       qopen.resize(1);
+       qmin[0]= 0.0;
+       qmax[0]= 0.0325;
+       qrest[0]= qmax[0];
+       qopen[0]= qmax[0];
 
        nb_positions= 100;
        nb_directions= 12;
@@ -1423,25 +1447,34 @@ p3d_rob* gpHand_properties::initialize()
   }
   else
   {
-    hand_robot= p3d_get_robot_by_name((char*)GP_SAHAND_RIGHT_ROBOT_NAME);
+    hand_robot= p3d_get_robot_by_name((char*)GP_PR2_GRIPPER_ROBOT_NAME);
     if(hand_robot!=NULL)
     {
-       type= GP_SAHAND_RIGHT;
+       type= GP_PR2_GRIPPER;
     }
     else
     {
-      hand_robot= p3d_get_robot_by_name((char*)GP_SAHAND_LEFT_ROBOT_NAME);
+      hand_robot= p3d_get_robot_by_name((char*)GP_SAHAND_RIGHT_ROBOT_NAME);
       if(hand_robot!=NULL)
       {
-       type= GP_SAHAND_LEFT;
+        type= GP_SAHAND_RIGHT;
       }
       else
       {
-        printf("There must be a robot named \"%s\" or \"%s\" or \"%s\".\n", GP_GRIPPER_ROBOT_NAME, GP_SAHAND_RIGHT_ROBOT_NAME, GP_SAHAND_LEFT_ROBOT_NAME);
-        return NULL;
+        hand_robot= p3d_get_robot_by_name((char*)GP_SAHAND_LEFT_ROBOT_NAME);
+        if(hand_robot!=NULL)
+        {
+        type= GP_SAHAND_LEFT;
+        }
+        else
+        {
+          printf("There must be a robot named \"%s\" or \"%s\" or \"%s\" or \"%s\".\n", GP_GRIPPER_ROBOT_NAME, GP_PR2_GRIPPER_ROBOT_NAME, GP_SAHAND_RIGHT_ROBOT_NAME, GP_SAHAND_LEFT_ROBOT_NAME);
+          return NULL;
+        }
       }
     }
   }
+
 
   initialize(type);
 

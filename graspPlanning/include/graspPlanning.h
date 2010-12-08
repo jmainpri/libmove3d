@@ -103,6 +103,7 @@ template<class T> std::string convertToString(const T& t)
 //! Symbolic name of the special hand-robot used for the grasp computations;
 //! there must be a robot with one of these names:
 #define GP_GRIPPER_ROBOT_NAME "JIDO_GRIPPER"
+#define GP_PR2_GRIPPER_ROBOT_NAME "PR2_GRIPPER"
 #define GP_SAHAND_RIGHT_ROBOT_NAME "SAHandRight"
 #define GP_SAHAND_LEFT_ROBOT_NAME   "SAHandLeft"
 
@@ -144,6 +145,7 @@ typedef enum gpHand_type
   GP_GRIPPER,
   GP_SAHAND_RIGHT,
   GP_SAHAND_LEFT,
+  GP_PR2_GRIPPER,
   GP_HAND_NONE
 } gpHand_type;
 
@@ -207,7 +209,7 @@ class gpHand_properties
   //! vector to reach from a given grasp configuration in order to find an pregrasp configuration
   std::vector<double> qopen;
 
-  /////////////////////////////////3-fingered gripper (JIDO)//////////////////////////////////
+  /////////////////////////////////gripper (JIDO or PR2)//////////////////////////////////
   double fingertip_distance;   /*!< distance between the two first fingers (the ones on the same U-shaped body) */
   double min_opening;          /*!< minimal distance between the gripper's jaws (minimal opening)*/
   double max_opening;          /*!< minimal distance between the gripper's jaws (maximal opening)*/

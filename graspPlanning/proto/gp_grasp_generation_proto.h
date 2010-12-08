@@ -6,6 +6,8 @@ extern int gpSample_grasp_frames(p3d_polyhedre *polyhedron, unsigned int nbPosit
 
 extern int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFrame, gpHand_properties &handProp, std::list<class gpGrasp> &graspList);
 
+extern int gpGrasps_from_grasp_frame_pr2_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFrame, gpHand_properties &handProp, std::list<class gpGrasp> &graspList);
+
 extern int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_index, p3d_matrix4 gFrame, gpHand_properties &handProp, gpKdTree &kdtree, std::list<class gpGrasp> &graspList);
 
 extern int gpGrasp_frame_from_inertia_axes(p3d_matrix3 iaxes, p3d_vector3 cmass, int direction, double displacement, int axis, double angle, p3d_matrix4 gframe);

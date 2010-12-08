@@ -426,385 +426,518 @@ int gpGrasps_from_grasp_frame_SAHand ( p3d_rob *robot, p3d_rob *object, int body
 //! \return 1 if grasps were found and added to the list, 0 otherwise
 int gpGrasps_from_grasp_frame_gripper ( p3d_polyhedre *polyhedron, p3d_matrix4 gFrame, gpHand_properties &hand, std::list<class gpGrasp> &graspList )
 {
-#ifdef GP_DEBUG
-	if ( polyhedron==NULL )
-	{
-		printf("%s: %d: gpGrasp_from_grasp_frame_gripper(): polyhedron=NULL.\n",__FILE__,__LINE__ );
-		return 0;
-	}
-	if ( hand.type != GP_GRIPPER )
-	{
-		printf("%s: %d: gpGrasp_from_grasp_frame_gripper(): this function can not be applied to this hand model.\n",__FILE__,__LINE__ );
-		return 0;
-	}
-#endif
+  #ifdef GP_DEBUG
+  if ( polyhedron==NULL )
+  {
+    printf("%s: %d: gpGrasp_from_grasp_frame_gripper(): polyhedron=NULL.\n",__FILE__,__LINE__ );
+    return 0;
+  }
+  if ( hand.type != GP_GRIPPER )
+  {
+    printf("%s: %d: gpGrasp_from_grasp_frame_gripper(): this function can not be applied to this hand model.\n",__FILE__,__LINE__ );
+    return 0;
+  }
+  #endif
 
-	unsigned int i, j, k;
-	p3d_vector3 origin, new_origin, xAxis, yAxis, zAxis, new_xAxis, new_xAxis_neg, new_yAxis, new_zAxis;
-	p3d_vector3 px, py, shift, pinter1, pinter2, result2, middle_point;
-	p3d_plane gPlane;
+  unsigned int i, j, k;
+  p3d_vector3 origin, new_origin, xAxis, yAxis, zAxis, new_xAxis, new_xAxis_neg, new_yAxis, new_zAxis;
+  p3d_vector3 px, py, shift, pinter1, pinter2, result2, middle_point;
+  p3d_plane gPlane;
 
-	p3d_vector3 p1, p2, p3; //Les positions des doigts (de leur centre)
-	p3d_vector3 p1_s, p2_s, p3_s; //points de contacts sur la surface de l'objet;
-	//par rapport à l'explication: p_s= p   et p= p'
-	p3d_vector3 p1p3_s;
-	double distance_p1p2 = hand.fingertip_distance; //distance entre les deux premiers doigts
-	//(ceux du même côté de la paume)
-	double fingertip_radius= hand.fingertip_radius; //rayon des doigts
-	double max_opening= hand.max_opening;            //ouverture maximale de la pince
-	//(mouvement de translation)
+  p3d_vector3 p1, p2, p3; //Les positions des doigts (de leur centre)
+  p3d_vector3 p1_s, p2_s, p3_s; //points de contacts sur la surface de l'objet;
+  //par rapport à l'explication: p_s= p   et p= p'
+  p3d_vector3 p1p3_s;
+  double distance_p1p2 = hand.fingertip_distance; //distance entre les deux premiers doigts
+  //(ceux du même côté de la paume)
+  double fingertip_radius= hand.fingertip_radius; //rayon des doigts
+  double max_opening= hand.max_opening;            //ouverture maximale de la pince
+  //(mouvement de translation)
 
-	//distance maximale possible entre les contacts 1 et 3:
-	double max_distance_p1p3_s= sqrt ( SQR ( 0.5*distance_p1p2 ) + SQR ( max_opening ) );
+  //distance maximale possible entre les contacts 1 et 3:
+  double max_distance_p1p3_s= sqrt ( SQR ( 0.5*distance_p1p2 ) + SQR ( max_opening ) );
 
-	int nbinter= 0;
-	poly_index *ind;
+  int nbinter= 0;
+  poly_index *ind;
 
-	for ( i=0; i<3; i++ )
-	{
-		origin[i]= gFrame[i][3];
-		xAxis[i] = gFrame[i][0];
-		yAxis[i] = gFrame[i][1];
-		zAxis[i] = gFrame[i][2];
-	}
+  for ( i=0; i<3; i++ )
+  {
+    origin[i]= gFrame[i][3];
+    xAxis[i] = gFrame[i][0];
+    yAxis[i] = gFrame[i][1];
+    zAxis[i] = gFrame[i][2];
+  }
 
-	p3d_vectAdd ( origin, xAxis, px );
-	p3d_vectAdd ( origin, yAxis, py );
+  p3d_vectAdd ( origin, xAxis, px );
+  p3d_vectAdd ( origin, yAxis, py );
 
-	//le plan de prise:
-	gPlane= p3d_plane_from_points ( origin, px, py );
+  //le plan de prise:
+  gPlane= p3d_plane_from_points ( origin, px, py );
 
-	gpGrasp grasp;
+  gpGrasp grasp;
+  gpContact contact;
 
-
-	gpContact contact;
-
-	//vector contenant les contacts trouvés pour les doigts 1 et 2 :
-	std::vector<gpContact> contacts1;
-	contacts1.reserve ( 10 );
-	std::vector<gpContact> contacts2;
-	contacts2.reserve ( 10 );
+  //vector contenant les contacts trouvés pour les doigts 1 et 2 :
+  std::vector<gpContact> contacts1;
+  contacts1.reserve ( 10 );
+  std::vector<gpContact> contacts2;
+  contacts2.reserve ( 10 );
 
 
-	unsigned int nb_contacts12= 0; //nombre actuel de paires de contacts trouvées pour les doigts 1 et 2
+  unsigned int nb_contacts12= 0; //nombre actuel de paires de contacts trouvées pour les doigts 1 et 2
 
-	int nb_grasps= 0; //nombre actuel de prises trouvées (contacts des doigts 1, 2 et 3)
-	bool isNeighbourIntersected= false;
+  int nb_grasps= 0; //nombre actuel de prises trouvées (contacts des doigts 1, 2 et 3)
+  bool isNeighbourIntersected= false;
 
-	p3d_vector3 *points= polyhedron->the_points;
-	unsigned int nb_faces= ( unsigned int ) polyhedron->nb_faces;
-	p3d_face *faces= polyhedron->the_faces;
-	p3d_plane plane;
-// printf("-------contacts1.size()= %d\n",contacts1.size());
-	///////////////////////////premier point de contact///////////////////////////
-	for ( i=0; i<nb_faces; i++ )
-	{
+  p3d_vector3 *points= polyhedron->the_points;
+  unsigned int nb_faces= ( unsigned int ) polyhedron->nb_faces;
+  p3d_face *faces= polyhedron->the_faces;
+  p3d_plane plane;
+  ///////////////////////////premier point de contact///////////////////////////
+  for ( i=0; i<nb_faces; i++ )
+  {
 //         if(part!=0 && faces[i].part!=part)
 //            continue;
 
-		ind= faces[i].the_indexs_points;
+    ind= faces[i].the_indexs_points;
 
-		if ( faces[i].plane==NULL )
-		{
-			printf("%s: %d: gpGrasp_from_grasp_frame_gripper(): a plane of a face has not been computed -> call p3d_build_planes() first.\n",__FILE__,__LINE__ );
-			continue;
-		}
+    if ( faces[i].plane==NULL )
+    {
+      printf("%s: %d: gpGrasp_from_grasp_frame_gripper(): a plane of a face has not been computed -> call p3d_build_planes() first.\n",__FILE__,__LINE__ );
+      continue;
+    }
 
-		// On cherche des faces dont la normale est orientée dans le même sens que l'axe X:
-		if ( p3d_vectDotProd ( faces[i].plane->normale, xAxis ) < 0 )
-			{    continue;   }
+    // On cherche des faces dont la normale est orientée dans le même sens que l'axe X:
+    if ( p3d_vectDotProd ( faces[i].plane->normale, xAxis ) < 0 )
+    {    continue;   }
 
-		// Pour éviter de prendre en compte plusieurs fois le même point de contact si l'axe X coupe des triangles différents
-		// en un même point (sur un de leurs sommets ou arêtes communs), on regarde parmi les points de contacts trouvés
-		// si l'un d'entre eux n'est pas sur un des voisins du triangle courant:
-		isNeighbourIntersected= false;
-		for ( j=0; j<nb_contacts12; j++ )
-		{
-			for ( k=0; k<3; k++ )
-			{
-				if ( faces[i].neighbours[k]!=-1 && contacts1[j].face== ( unsigned int ) faces[i].neighbours[k] )
-				{
-					isNeighbourIntersected= true;
-					break;
-				}
-			}
-			if ( isNeighbourIntersected )
-				{  break; }
-		}
+    // Pour éviter de prendre en compte plusieurs fois le même point de contact si l'axe X coupe des triangles différents
+    // en un même point (sur un de leurs sommets ou arêtes communs), on regarde parmi les points de contacts trouvés
+    // si l'un d'entre eux n'est pas sur un des voisins du triangle courant:
+    isNeighbourIntersected= false;
+    for ( j=0; j<nb_contacts12; j++ )
+    {
+      for ( k=0; k<3; k++ )
+      {
+        if ( faces[i].neighbours[k]!=-1 && contacts1[j].face== ( unsigned int ) faces[i].neighbours[k] )
+        {
+                isNeighbourIntersected= true;
+                break;
+        }
+      }
+      if ( isNeighbourIntersected )
+      {  break; }
+    }
 
-		if ( isNeighbourIntersected )
-			{  continue; }
+    if ( isNeighbourIntersected )
+    {  continue; }
 
-		// On teste maintenant l'intersection triangle courant/axe X:
-		nbinter= gpLine_triangle_intersection ( origin, px, points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], p1_s );
-		plane= p3d_plane_from_points ( points[ind[0]-1], points[ind[1]-1], points[ind[2]-1] );
+    // On teste maintenant l'intersection triangle courant/axe X:
+    nbinter= gpLine_triangle_intersection ( origin, px, points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], p1_s );
+    plane= p3d_plane_from_points ( points[ind[0]-1], points[ind[1]-1], points[ind[2]-1] );
 
-// printf("nbinter= %d\n",nbinter);
+    if ( nbinter!=0 )
+    {
+      // shift = fingertip_radius*normale:
+      p3d_vectScale ( faces[i].plane->normale, shift, fingertip_radius );
+  
+      // Le centre du premier doigt:
+      p3d_vectAdd ( p1_s, shift, p1 );
 
-// printf("i= %d (%d %d %d) nbinter= %d\n",i, ind[0],ind[1],ind[2],nbinter);
-//  printf("t (%f %f %f) (%f %f %f) (%f %f %f)\n",points[ind[0]-1][0],points[ind[0]-1][1],points[ind[0]-1][2],points[ind[1]-1][0],points[ind[1]-1][1],points[ind[1]-1][2],points[ind[2]-1][0],points[ind[2]-1][1],points[ind[2]-1][2]);
-// printf("px (%f %f %f) \n",px[0],px[1],px[2]);
-// printf("p1_s (%f %f %f) \n",p1_s[0],p1_s[1],p1_s[2]);
+      ///////////////////////////recherche d'un deuxieme point de contact///////////////////////////
+      for ( j=0; j<nb_faces; j++ )
+      {
+        ind= faces[j].the_indexs_points;
 
-		if ( nbinter!=0 )
-		{
-// printf("ray %f %f %f \n",origin[0]-px[0],origin[1]-px[1],origin[2]-px[2] );
-// printf("plane %f %f %f  %f\n",plane.normale[0],plane.normale[1],plane.normale[2],plane.d );
-// printf("tri %d %d %d \n",ind[0]-1, ind[1]-1, ind[2]-1 );
+        // Les deux premiers contacts doivent avoir des normales dans des directions non
+        // opposees:
+        if ( p3d_vectDotProd ( faces[i].plane->normale, faces[j].plane->normale ) < 0 )
+        {  continue;  }
 
-			// shift = fingertip_radius*normale:
-			p3d_vectScale ( faces[i].plane->normale, shift, fingertip_radius );
+        nbinter= gpTriangle_plane_intersection ( points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], gPlane, pinter1, pinter2 );
+        if ( nbinter != 2 )
+        {  continue;  }
 
-			// Le centre du premier doigt:
-			p3d_vectAdd ( p1_s, shift, p1 );
-
-			///////////////////////////recherche d'un deuxieme point de contact///////////////////////////
-			for ( j=0; j<nb_faces; j++ )
-			{
-				ind= faces[j].the_indexs_points;
-
-				// Les deux premiers contacts doivent avoir des normales dans des directions non
-				// opposees:
-				if ( p3d_vectDotProd ( faces[i].plane->normale, faces[j].plane->normale ) < 0 )
-					{  continue;  }
-
-				nbinter= gpTriangle_plane_intersection ( points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], gPlane, pinter1, pinter2 );
-				if ( nbinter != 2 )
-					{  continue;  }
-
-				// shift = fingertip_radius*normale:
-				p3d_vectScale ( faces[j].plane->normale, shift, fingertip_radius );
+        // shift = fingertip_radius*normale:
+        p3d_vectScale ( faces[j].plane->normale, shift, fingertip_radius );
 
 
-				// décalage selon la normale à la surface:
-				p3d_vectAdd ( pinter1, shift, pinter1 );
-				p3d_vectAdd ( pinter2, shift, pinter2 );
+        // décalage selon la normale à la surface:
+        p3d_vectAdd ( pinter1, shift, pinter1 );
+        p3d_vectAdd ( pinter2, shift, pinter2 );
 
-				// Le deuxième point de contact est dans p2:
-				nbinter= gpLine_segment_sphere_intersection ( pinter1, pinter2, p1_s, distance_p1p2, p2, result2 );
+        // Le deuxième point de contact est dans p2:
+        nbinter= gpLine_segment_sphere_intersection ( pinter1, pinter2, p1_s, distance_p1p2, p2, result2 );
 
-				if ( nbinter==0 )
-					{  continue;  }
-				else
-				{
-					// calcul du point de contact sur la face:
-					p3d_vectSub ( p2, shift, p2_s );
+        if ( nbinter==0 )
+        {  continue;  }
+        else
+        {
+            // calcul du point de contact sur la face:
+            p3d_vectSub ( p2, shift, p2_s );
 
-					// calcul du nouvel axe Y (axe p1-p2):
-					p3d_vectSub ( p2, p1, new_yAxis );
-					p3d_vectNormalize ( new_yAxis, new_yAxis );
+            // calcul du nouvel axe Y (axe p1-p2):
+            p3d_vectSub ( p2, p1, new_yAxis );
+            p3d_vectNormalize ( new_yAxis, new_yAxis );
 
-					if ( p3d_vectDotProd ( new_yAxis, yAxis ) > 0 )
-						break;
-					else
-					{
-						if ( nbinter==2 ) // s'il y avait un deuxieme point d'intersection
-						{
-							p3d_vectCopy ( result2, p2 );
-							p3d_vectSub ( p2, shift, p2_s );
+            if ( p3d_vectDotProd ( new_yAxis, yAxis ) > 0 )
+                    break;
+            else
+            {
+              if ( nbinter==2 ) // s'il y avait un deuxieme point d'intersection
+              {
+                p3d_vectCopy ( result2, p2 );
+                p3d_vectSub ( p2, shift, p2_s );
 
-							// calcul du nouvel axe Y (axe p1-p2):
-							p3d_vectSub ( p2, p1, new_yAxis );
-							p3d_vectNormalize ( new_yAxis, new_yAxis );
-							if ( p3d_vectDotProd ( new_yAxis, yAxis ) > 0 )
-								break;
-						}
-					}
-				}
-			}
+                // calcul du nouvel axe Y (axe p1-p2):
+                p3d_vectSub ( p2, p1, new_yAxis );
+                p3d_vectNormalize ( new_yAxis, new_yAxis );
+                if ( p3d_vectDotProd ( new_yAxis, yAxis ) > 0 )
+                        break;
+              }
+            }
+        }
+      }
 
-			if ( j<nb_faces )
-			{
-				// on a trouve une paire p1p2:
-				contact.surface= polyhedron;
-				contact.face= i;
-				p3d_vectCopy ( p1_s, contact.position );
-				p3d_vectCopy ( faces[i].plane->normale, contact.normal );
-				contact.computeBarycentricCoordinates();
-				contact.computeCurvature();
-				contact.mu= GP_FRICTION_COEFFICIENT;
-				contacts1.push_back ( contact );
+      if ( j<nb_faces )
+      {
+        // on a trouve une paire p1p2:
+        contact.surface= polyhedron;
+        contact.face= i;
+        p3d_vectCopy ( p1_s, contact.position );
+        p3d_vectCopy ( faces[i].plane->normale, contact.normal );
+        contact.computeBarycentricCoordinates();
+        contact.computeCurvature();
+        contact.mu= GP_FRICTION_COEFFICIENT;
+        contacts1.push_back ( contact );
 
-				contact.surface= polyhedron;
-				contact.face= j;
-				p3d_vectCopy ( p2_s, contact.position );
-				p3d_vectCopy ( faces[j].plane->normale, contact.normal );
-				contact.computeBarycentricCoordinates();
-				contact.computeCurvature();
-				contact.mu= GP_FRICTION_COEFFICIENT;
-				contacts2.push_back ( contact );
+        contact.surface= polyhedron;
+        contact.face= j;
+        p3d_vectCopy ( p2_s, contact.position );
+        p3d_vectCopy ( faces[j].plane->normale, contact.normal );
+        contact.computeBarycentricCoordinates();
+        contact.computeCurvature();
+        contact.mu= GP_FRICTION_COEFFICIENT;
+        contacts2.push_back ( contact );
 
-				nb_contacts12++;
-			}
+        nb_contacts12++;
+      }
 
-		}
+    }
 
-	}
+  }
 // printf("contacts1: %d\n",contacts1.size());
 // printf("contacts2: %d\n",contacts2.size());
 
-	if ( nb_contacts12==0 ) //pas d'intersection (le repere de saisie est hors du volume de l'objet)
-	{
-		contacts1.clear();
-		contacts2.clear();
-		return 0;
-	}
+  if ( nb_contacts12==0 ) //pas d'intersection (le repere de saisie est hors du volume de l'objet)
+  {
+          contacts1.clear();
+          contacts2.clear();
+          return 0;
+  }
 
 // printf("nb_contacts12= %d\n", nb_contacts12);
-	///////////////////////////troisieme point de contact///////////////////////////
-	for ( i=0; i<nb_contacts12; i++ )
-	{
-		p3d_vectCopy ( contacts1[i].position, p1_s );
-		p3d_vectScale ( contacts1[i].normal, shift, fingertip_radius );
-		p3d_vectAdd ( p1_s, shift, p1 );
+    ///////////////////////////troisieme point de contact///////////////////////////
+    for ( i=0; i<nb_contacts12; i++ )
+    {
+      p3d_vectCopy ( contacts1[i].position, p1_s );
+      p3d_vectScale ( contacts1[i].normal, shift, fingertip_radius );
+      p3d_vectAdd ( p1_s, shift, p1 );
 
-		p3d_vectCopy ( contacts2[i].position, p2_s );
-		p3d_vectScale ( contacts2[i].normal, shift, fingertip_radius );
-		p3d_vectAdd ( p2_s, shift, p2 );
+      p3d_vectCopy ( contacts2[i].position, p2_s );
+      p3d_vectScale ( contacts2[i].normal, shift, fingertip_radius );
+      p3d_vectAdd ( p2_s, shift, p2 );
 
-		//  Calcul des nouveaux axes:
-		//  nouvel axe Y
-		p3d_vectSub ( p2, p1, new_yAxis );
-		p3d_vectNormalize ( new_yAxis, new_yAxis );
+      //  Calcul des nouveaux axes:
+      //  nouvel axe Y
+      p3d_vectSub ( p2, p1, new_yAxis );
+      p3d_vectNormalize ( new_yAxis, new_yAxis );
 
-		//  nouvel axe Z (normale au plan forme par les points (origine du repere initial, p1, p2))
-		//  NB: on doit changer d'axe Z car le nouvel axe Y calculé plus haut n'est pas forcément orthogonal à l'ancien axe Z.
-		p3d_plane plane= p3d_plane_from_points ( origin, contacts1[i].position, contacts2[i].position );
-		p3d_vectCopy ( plane.normale, new_zAxis );
-		p3d_vectNormalize ( new_zAxis, new_zAxis );
-		if ( p3d_vectDotProd ( zAxis, new_zAxis ) < 0.0 )
-			{ p3d_vectNeg ( new_zAxis, new_zAxis );  }
+      //  nouvel axe Z (normale au plan forme par les points (origine du repere initial, p1, p2))
+      //  NB: on doit changer d'axe Z car le nouvel axe Y calculé plus haut n'est pas forcément orthogonal à l'ancien axe Z.
+      p3d_plane plane= p3d_plane_from_points ( origin, contacts1[i].position, contacts2[i].position );
+      p3d_vectCopy ( plane.normale, new_zAxis );
+      p3d_vectNormalize ( new_zAxis, new_zAxis );
+      if ( p3d_vectDotProd ( zAxis, new_zAxis ) < 0.0 )
+      { p3d_vectNeg ( new_zAxis, new_zAxis );  }
 
-		//calcul du nouvel axe X
-		p3d_vectXprod ( new_yAxis, new_zAxis, new_xAxis );   //p3d_vectXprod(new_yAxis, zAxis, new_xAxis);
-		p3d_vectNeg ( new_xAxis, new_xAxis_neg ); //On va chercher l'intersection avec l'axe -(Ox)
-
-
-		middle_point[0]= ( p1[0] + p2[0] ) /2;
-		middle_point[1]= ( p1[1] + p2[1] ) /2;
-		middle_point[2]= ( p1[2] + p2[2] ) /2;
+      //calcul du nouvel axe X
+      p3d_vectXprod ( new_yAxis, new_zAxis, new_xAxis );   //p3d_vectXprod(new_yAxis, zAxis, new_xAxis);
+      p3d_vectNeg ( new_xAxis, new_xAxis_neg ); //On va chercher l'intersection avec l'axe -(Ox)
 
 
-		for ( j=0; j<nb_faces; j++ )
-		{
-			//il ne faut pas réintersecter la face du point p1 ni celle du point p2
-			if ( j==contacts1[i].face || j==contacts2[i].face )
-				continue;
-
-			//Plus généralement, comme le point de départ du rayon est hors de la surface,
-			// il faut s'assurer que l'intersection se fait
-			//du bon côté de la surface de l'objet (c'est-à-dire pas du même côté que p1 et p2).
-			//La face doit être intersectée par le rayon du côté intérieur de l'objet:
-			if ( p3d_vectDotProd ( faces[j].plane->normale, new_xAxis_neg ) < 0 )
-				continue;
-
-			ind= faces[j].the_indexs_points;
-			nbinter= gpRay_triangle_intersection ( middle_point, new_xAxis_neg, points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], p3_s );
-
-			if ( nbinter==1 )
-			{
-				// shift = fingertip_radius*normale:
-				p3d_vectScale ( faces[j].plane->normale, shift, fingertip_radius );
-
-				// décalage selon la normale à la surface:
-				p3d_vectAdd ( p3_s, shift, p3 );
-
-				p3d_vectSub ( p3_s, p1_s, p1p3_s );
-
-				if ( p3d_vectNorm ( p1p3_s )  > max_distance_p1p3_s ) //les contacts sont trop éloignés pour la pince
-				{
-					continue;
-				}
-				else
-				{
-					// une prise a été trouvée:
-
-					// calcul de la nouvelle origine:
-					new_origin[0]= ( middle_point[0] + p3[0] ) /2;
-					new_origin[1]= ( middle_point[1] + p3[1] ) /2;
-					new_origin[2]= ( middle_point[2] + p3[2] ) /2;
-
-					nb_grasps++;
-
-					grasp.hand_type= GP_GRIPPER;
-					grasp.ID= graspList.size() + 1;
-					grasp.config.resize ( 1 );
-
-					//grasp.finger_opening= sqrt( pow(p3d_vectNorm(p1p3_s), 2) - pow(distance_p1p2/2.0,2) );
-
-					//middle of contact1-contact2:
-					middle_point[0]= 0.5* ( contacts1[i].position[0] + contacts2[i].position[0] );
-					middle_point[1]= 0.5* ( contacts1[i].position[1] + contacts2[i].position[1] );
-					middle_point[2]= 0.5* ( contacts1[i].position[2] + contacts2[i].position[2] );
-
-					grasp.finger_opening= sqrt ( SQR ( p3_s[0]-middle_point[0] ) + SQR ( p3_s[1]-middle_point[1] ) + SQR ( p3_s[2]-middle_point[2] ) ) +2*hand.fingertip_radius;
-
-					//La configuration de la pince est calculée telle qu'elle se ferme sur l'objet. Pour les tests
-					//de collision, il faudra l'ouvrir un peu plus.
-//             grasp.config[0]= hand.min_opening_jnt_value + ( (grasp.finger_opening - hand.min_opening)/(hand.max_opening - hand.min_opening) )*(hand.max_opening_jnt_value - hand.min_opening_jnt_value);
-					grasp.config[0]= hand.qmin.at ( 0 ) + ( ( grasp.finger_opening - hand.min_opening ) / ( hand.max_opening - hand.min_opening ) ) * ( hand.qmax.at ( 0 ) - hand.qmin.at ( 0 ) );
-
-					if ( grasp.config[0] <= hand.min_opening_jnt_value || grasp.config[0] >= hand.max_opening_jnt_value )
-						{   continue;  }
-
-					if ( isnan ( grasp.finger_opening ) )
-					{
-						grasp.finger_opening= hand.min_opening;
-//               grasp.config[0]= hand.min_opening_jnt_value;
-						grasp.config[0]= hand.qmin.at ( 0 );
-					}
-
-					for ( k=0; k<3; k++ )
-					{
-						grasp.frame[k][0]= new_xAxis[k];
-						grasp.frame[k][1]= new_yAxis[k];
-						grasp.frame[k][2]= new_zAxis[k];
-						grasp.frame[k][3]= new_origin[k];
-						grasp.frame[3][k]=   0;
-					}
-					grasp.frame[3][3]=  1;
-
-					grasp.contacts.resize ( 3 );
-					grasp.object= NULL;
-
-					grasp.contacts[0]= contacts1[i];
-					grasp.contacts[0].fingerID= 1;
-
-					grasp.contacts[1]= contacts2[i];
-					grasp.contacts[1].fingerID= 2;
+      middle_point[0]= ( p1[0] + p2[0] ) /2;
+      middle_point[1]= ( p1[1] + p2[1] ) /2;
+      middle_point[2]= ( p1[2] + p2[2] ) /2;
 
 
-					grasp.contacts[2].surface= polyhedron;
-					grasp.contacts[2].face= j;
-					grasp.contacts[2].fingerID= 3;
+      for ( j=0; j<nb_faces; j++ )
+      {
+        //il ne faut pas réintersecter la face du point p1 ni celle du point p2
+        if ( j==contacts1[i].face || j==contacts2[i].face )
+        {  continue;  }
 
-					p3d_vectCopy ( p3_s, grasp.contacts[2].position );
-					p3d_vectCopy ( faces[j].plane->normale, grasp.contacts[2].normal );
-					grasp.contacts[2].computeBarycentricCoordinates();
-					grasp.contacts[2].computeCurvature();
-					grasp.contacts[2].mu= GP_FRICTION_COEFFICIENT;
+        //Plus généralement, comme le point de départ du rayon est hors de la surface,
+        // il faut s'assurer que l'intersection se fait
+        //du bon côté de la surface de l'objet (c'est-à-dire pas du même côté que p1 et p2).
+        //La face doit être intersectée par le rayon du côté intérieur de l'objet:
+        if ( p3d_vectDotProd ( faces[j].plane->normale, new_xAxis_neg ) < 0 )
+        {  continue;  }
 
-					graspList.push_back ( grasp );
-				}
+        ind= faces[j].the_indexs_points;
+        nbinter= gpRay_triangle_intersection ( middle_point, new_xAxis_neg, points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], p3_s );
 
-			}
+        if ( nbinter==1 )
+        {
+          // shift = fingertip_radius*normale:
+          p3d_vectScale ( faces[j].plane->normale, shift, fingertip_radius );
 
-		}
+          // décalage selon la normale à la surface:
+          p3d_vectAdd ( p3_s, shift, p3 );
+
+          p3d_vectSub ( p3_s, p1_s, p1p3_s );
+
+          if ( p3d_vectNorm ( p1p3_s )  > max_distance_p1p3_s ) //les contacts sont trop éloignés pour la pince
+          {
+            continue;
+          }
+          else
+          {
+            // une prise a été trouvée:
+
+            // calcul de la nouvelle origine:
+            new_origin[0]= ( middle_point[0] + p3[0] ) /2;
+            new_origin[1]= ( middle_point[1] + p3[1] ) /2;
+            new_origin[2]= ( middle_point[2] + p3[2] ) /2;
+
+            nb_grasps++;
+
+            grasp.hand_type= GP_GRIPPER;
+            grasp.ID= graspList.size() + 1;
+            grasp.config.resize ( 1 );
+
+            //grasp.finger_opening= sqrt( pow(p3d_vectNorm(p1p3_s), 2) - pow(distance_p1p2/2.0,2) );
+
+            //middle of contact1-contact2:
+            middle_point[0]= 0.5* ( contacts1[i].position[0] + contacts2[i].position[0] );
+            middle_point[1]= 0.5* ( contacts1[i].position[1] + contacts2[i].position[1] );
+            middle_point[2]= 0.5* ( contacts1[i].position[2] + contacts2[i].position[2] );
+
+            grasp.finger_opening= sqrt ( SQR ( p3_s[0]-middle_point[0] ) + SQR ( p3_s[1]-middle_point[1] ) + SQR ( p3_s[2]-middle_point[2] ) ) +2*hand.fingertip_radius;
+
+            //La configuration de la pince est calculée telle qu'elle se ferme sur l'objet. Pour les tests
+            //de collision, il faudra l'ouvrir un peu plus.
+            grasp.config[0]= hand.qmin.at ( 0 ) + ( ( grasp.finger_opening - hand.min_opening ) / ( hand.max_opening - hand.min_opening ) ) * ( hand.qmax.at ( 0 ) - hand.qmin.at ( 0 ) );
+
+            if ( grasp.config[0] <= hand.min_opening_jnt_value || grasp.config[0] >= hand.max_opening_jnt_value )
+            {   continue;  }
+
+            if ( isnan ( grasp.finger_opening ) )
+            {
+              grasp.finger_opening= hand.min_opening;
+              grasp.config[0]= hand.qmin.at ( 0 );
+            }
+
+            for ( k=0; k<3; k++ )
+            {
+              grasp.frame[k][0]= new_xAxis[k];
+              grasp.frame[k][1]= new_yAxis[k];
+              grasp.frame[k][2]= new_zAxis[k];
+              grasp.frame[k][3]= new_origin[k];
+              grasp.frame[3][k]=   0;
+            }
+            grasp.frame[3][3]=  1;
+
+            grasp.contacts.resize ( 3 );
+            grasp.object= NULL;
+
+            grasp.contacts[0]= contacts1[i];
+            grasp.contacts[0].fingerID= 1;
+
+            grasp.contacts[1]= contacts2[i];
+            grasp.contacts[1].fingerID= 2;
 
 
-	}
+            grasp.contacts[2].surface= polyhedron;
+            grasp.contacts[2].face= j;
+            grasp.contacts[2].fingerID= 3;
+
+            p3d_vectCopy ( p3_s, grasp.contacts[2].position );
+            p3d_vectCopy ( faces[j].plane->normale, grasp.contacts[2].normal );
+            grasp.contacts[2].computeBarycentricCoordinates();
+            grasp.contacts[2].computeCurvature();
+            grasp.contacts[2].mu= GP_FRICTION_COEFFICIENT;
+
+            graspList.push_back ( grasp );
+          }
+
+      }
+
+    }
+  }
 
 
-	contacts1.clear();
-	contacts2.clear();
+  contacts1.clear();
+  contacts2.clear();
 
-	if ( nb_grasps==0 )
-		{  return 0;  }
-	else
-		{ return 1; }
+  if ( nb_grasps==0 )
+  {  return 0;  }
+  else
+  { return 1; }
 
 }
 
+
+//! \param polyhedron the polyhedral mesh of the object surface
+//! \param part if the object has been previously segmented, "part" is used to select a part of the object (a set of triangles). Set to 0 to select all the triangles.
+//! \param gFrame the grasp frame (a 4x4 homogeneous transform matrix)
+//! \param hand structure containing information about the hand geometry
+//! \param graspList a grasp list the computed set of grasps will be added to
+//! \return 1 if grasps were found and added to the list, 0 otherwise
+int gpGrasps_from_grasp_frame_pr2_gripper ( p3d_polyhedre *polyhedron, p3d_matrix4 gFrame, gpHand_properties &hand, std::list<class gpGrasp> &graspList )
+{
+  #ifdef GP_DEBUG
+  if ( polyhedron==NULL )
+  {
+    printf("%s: %d: gpGrasps_from_grasp_frame_pr2_gripper(): polyhedron=NULL.\n",__FILE__,__LINE__ );
+    return 0;
+  }
+  if ( hand.type != GP_PR2_GRIPPER )
+  {
+    printf("%s: %d: gpGrasps_from_grasp_frame_pr2_gripper(): this function can not be applied to this hand model.\n",__FILE__,__LINE__ );
+    return 0;
+  }
+  #endif
+
+/*
+
+  unsigned int i, j, k;
+  p3d_vector3 origin, new_origin, xAxis, yAxis, zAxis, new_xAxis, new_xAxis_neg, new_yAxis, new_zAxis;
+  p3d_vector3 px, py, shift, pinter1, pinter2, result2, middle_point;
+  p3d_plane gPlane;
+
+  p3d_vector3 p1, p2, p3; //Les positions des doigts (de leur centre)
+  p3d_vector3 p1_s, p2_s, p3_s; //points de contacts sur la surface de l'objet;
+  //par rapport à l'explication: p_s= p   et p= p'
+  p3d_vector3 p1p3_s;
+  double distance_p1p2 = hand.fingertip_distance; //distance entre les deux premiers doigts
+  //(ceux du même côté de la paume)
+  double fingertip_radius= hand.fingertip_radius; //rayon des doigts
+  double max_opening= hand.max_opening;            //ouverture maximale de la pince
+  //(mouvement de translation)
+
+  //distance maximale possible entre les contacts 1 et 3:
+  double max_distance_p1p3_s= sqrt ( SQR ( 0.5*distance_p1p2 ) + SQR ( max_opening ) );
+
+  int nbinter= 0;
+  poly_index *ind;
+
+  for ( i=0; i<3; i++ )
+  {
+    origin[i]= gFrame[i][3];
+    xAxis[i] = gFrame[i][0];
+    yAxis[i] = gFrame[i][1];
+    zAxis[i] = gFrame[i][2];
+  }
+
+  p3d_vectAdd ( origin, xAxis, px );
+  p3d_vectAdd ( origin, yAxis, py );
+
+  //le plan de prise:
+  gPlane= p3d_plane_from_points ( origin, px, py );
+
+  gpGrasp grasp;
+  gpContact contact;
+
+  //vector contenant les contacts trouvés pour les doigts 1 et 2 :
+  std::vector<gpContact> contacts1;
+  contacts1.reserve ( 10 );
+  std::vector<gpContact> contacts2;
+  contacts2.reserve ( 10 );
+
+
+  unsigned int nb_contacts12= 0; //nombre actuel de paires de contacts trouvées pour les doigts 1 et 2
+
+  int nb_grasps= 0; //nombre actuel de prises trouvées (contacts des doigts 1, 2 et 3)
+  bool isNeighbourIntersected= false;
+
+  p3d_vector3 *points= polyhedron->the_points;
+  unsigned int nb_faces= ( unsigned int ) polyhedron->nb_faces;
+  p3d_face *faces= polyhedron->the_faces;
+  p3d_plane plane;
+  ///////////////////////////premier point de contact///////////////////////////
+  for ( i=0; i<nb_faces; i++ )
+  {
+//         if(part!=0 && faces[i].part!=part)
+//            continue;
+
+    ind= faces[i].the_indexs_points;
+
+    if ( faces[i].plane==NULL )
+    {
+      printf("%s: %d: gpGrasp_from_grasp_frame_gripper(): a plane of a face has not been computed -> call p3d_build_planes() first.\n",__FILE__,__LINE__ );
+      continue;
+    }
+
+    // On cherche des faces dont la normale est orientée dans le même sens que l'axe X:
+    if ( p3d_vectDotProd ( faces[i].plane->normale, xAxis ) < 0 )
+    {    continue;   }
+
+    // Pour éviter de prendre en compte plusieurs fois le même point de contact si l'axe X coupe des triangles différents
+    // en un même point (sur un de leurs sommets ou arêtes communs), on regarde parmi les points de contacts trouvés
+    // si l'un d'entre eux n'est pas sur un des voisins du triangle courant:
+    isNeighbourIntersected= false;
+    for ( j=0; j<nb_contacts12; j++ )
+    {
+      for ( k=0; k<3; k++ )
+      {
+        if ( faces[i].neighbours[k]!=-1 && contacts1[j].face== ( unsigned int ) faces[i].neighbours[k] )
+        {
+                isNeighbourIntersected= true;
+                break;
+        }
+      }
+      if ( isNeighbourIntersected )
+      {  break; }
+    }
+
+    if ( isNeighbourIntersected )
+    {  continue; }
+
+    // On teste maintenant l'intersection triangle courant/axe X:
+    nbinter= gpLine_triangle_intersection ( origin, px, points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], p1_s );
+    plane= p3d_plane_from_points ( points[ind[0]-1], points[ind[1]-1], points[ind[2]-1] );
+
+    if ( nbinter!=0 )
+    {
+      // shift = fingertip_radius*normale:
+      p3d_vectScale ( faces[i].plane->normale, shift, fingertip_radius );
+  
+      // Le centre du premier doigt:
+      p3d_vectAdd ( p1_s, shift, p1 );
+
+      ///////////////////////////recherche d'un deuxieme point de contact///////////////////////////
+      for ( j=0; j<nb_faces; j++ )
+      {
+        ind= faces[j].the_indexs_points;
+
+        // Les deux premiers contacts doivent avoir des normales dans des directions non
+        // opposees:
+        if ( p3d_vectDotProd ( faces[i].plane->normale, faces[j].plane->normale ) < 0 )
+        {  continue;  }
+
+        nbinter= gpTriangle_plane_intersection ( points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], gPlane, pinter1, pinter2 );
+        if ( nbinter != 2 )
+        {  continue;  }
+
+        // shift = fingertip_radius*normale:
+        p3d_vectScale ( faces[j].plane->normale, shift, fingertip_radius );
+      }
+    }
+  }*/
+
+  return 1;
+}
 
 //! \deprecated
 // Cette fonction calcule un repere de prise (matrice 4x4).
@@ -990,7 +1123,7 @@ int gpCompute_grasp_open_configs ( std::list<gpGrasp> &graspList, p3d_rob *robot
 
     switch(igrasp->hand_type)
     {
-      case GP_GRIPPER:
+      case GP_GRIPPER: case GP_PR2_GRIPPER:
         igrasp->openConfig.at ( 0 ) = handProp.qmax.at ( 0 );
       break;
       case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
@@ -1643,6 +1776,13 @@ int gpGrasp_generation ( p3d_rob *robot, p3d_rob *object, int body_index, gpHand
       {
         gframes[i].copyIn_p3d_matrix4 ( frame );
         gpGrasps_from_grasp_frame_gripper ( polyhedron, frame, handProp, graspList );
+      }
+    break;
+    case GP_PR2_GRIPPER:
+      for ( i=0; i<gframes.size(); i++ )
+      {
+        gframes[i].copyIn_p3d_matrix4 ( frame );
+        gpGrasps_from_grasp_frame_pr2_gripper ( polyhedron, frame, handProp, graspList );
       }
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
@@ -2834,6 +2974,15 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
           return GP_ERROR;
         }
       break;
+     case GP_PR2_GRIPPER:
+        handProp.initialize(GP_PR2_GRIPPER);
+        hand_robot= p3d_get_robot_by_name((char*) GP_PR2_GRIPPER_ROBOT_NAME);
+        if(hand_robot==NULL)
+        {
+          printf("%s: %d: gpGet_grasp_list(): a robot \"%s\" is required.\n",__FILE__,__LINE__, (char*)GP_PR2_GRIPPER_ROBOT_NAME);
+          return GP_ERROR;
+        }
+      break;
       case GP_SAHAND_RIGHT:
         handProp.initialize(GP_SAHAND_RIGHT);
         hand_robot= p3d_get_robot_by_name((char*) GP_SAHAND_RIGHT_ROBOT_NAME);
@@ -2911,7 +3060,7 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
     gpGrasp_generation(hand_robot, object, 0, handProp, handProp.nb_positions, handProp.nb_directions, handProp.nb_rotations, graspList );
 
     // printf("before stability %d\n",graspList.size());
-    if (hand_type == GP_GRIPPER) {
+    if( (hand_type==GP_GRIPPER) || (hand_type==GP_GRIPPER) ) {
       gpGrasp_collision_filter ( graspList, hand_robot, object, handProp );
     }
     gpGrasp_stability_filter(graspList);
@@ -3047,6 +3196,18 @@ int gpExpand_grasp_list ( p3d_rob *robot, std::list<class gpGrasp> &graspList, i
           gpGrasps_from_grasp_frame_gripper ( polyhedron, gframe, handProp, newGraspList );
         }
     break;
+    case GP_PR2_GRIPPER:
+        for ( i=0; i<nbTries; ++i )
+        {
+          p3d_random_quaternion ( quat );
+          p3d_quaternion_to_matrix4 ( quat, gframe );
+          gframe[0][3]= p3d_random ( xmin, xmax );
+          gframe[1][3]= p3d_random ( ymin, ymax );
+          gframe[2][3]= p3d_random ( zmin, zmax );
+  
+          gpGrasps_from_grasp_frame_pr2_gripper ( polyhedron, gframe, handProp, newGraspList );
+        }
+    break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
         gpSample_obj_surface ( object->o[body_index], 0.005, handProp.fingertip_radius, contactList );
         kdtree.build ( contactList );
@@ -3081,7 +3242,7 @@ int gpExpand_grasp_list ( p3d_rob *robot, std::list<class gpGrasp> &graspList, i
 
   switch ( hand_type )
   {
-    case GP_GRIPPER:
+    case GP_GRIPPER: case GP_PR2_GRIPPER:
         gpGrasp_collision_filter ( newGraspList, robot, object, handProp );
     break;
     default:
