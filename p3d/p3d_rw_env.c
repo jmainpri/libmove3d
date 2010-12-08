@@ -709,7 +709,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 		}
 #endif
 		
-		if (strcmp(fct, "p3d_set_camera_pos") == 0) {
+   if (strcmp(fct, "p3d_set_camera_pos") == 0) {
 			if ( !read_desc_double ( fd, 10, dtab ) ) return ( read_desc_error ( fct ) );
       //if (!p3d_read_string_n_double(&pos, 10, &dtab, &size_max_dtab)) return(read_desc_error(fct));
       g3d_load_saved_camera_params(dtab);      
