@@ -262,9 +262,15 @@ g3d_restore_win_camera(g3d_states &vs) {
   for(i=0;i<4;i++) vs.up[i] = vs.sup[i];
 }
 
+// When the file is parsed
+// with the Qt ui the states structure is not initialized
+bool isSavedParmas = false;
+double mySavedParams[10];
+
 void
 g3d_load_saved_camera_params(double* params)
 {
+#ifdef WITH_XFORMS
   g3d_states vs =  g3d_get_states_by_name((char*)"Move3D");
   int i;
 
@@ -274,6 +280,26 @@ g3d_load_saved_camera_params(double* params)
   vs.szo = params[3];
   vs.saz = params[4], vs.sel = params[5];
   for(i=0;i<4;i++) vs.sup[i] = params[6+i];
+#else
+  if( !isSavedParmas )
+  {
+    isSavedParmas = true;
+    
+    for(int i=0;i<10;i++) { 
+      mySavedParams[i] = params[i];
+    }
+  }
+  else {
+    g3d_states vs =  g3d_get_states_by_name((char*)"Move3D");
+    
+    vs.sx = mySavedParams[0];
+    vs.sy = mySavedParams[1];
+    vs.sz = mySavedParams[2];
+    vs.szo = mySavedParams[3];
+    vs.saz = mySavedParams[4], vs.sel = mySavedParams[5];
+    for(int i=0;i<4;i++) vs.sup[i] = mySavedParams[6+i];
+  }
+#endif
 }
 
 /* fonctions pour copier les donnees relies a la camera de     */
