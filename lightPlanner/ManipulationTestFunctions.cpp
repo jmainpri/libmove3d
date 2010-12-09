@@ -211,9 +211,8 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
     else {
       p3d_set_and_update_this_robot_conf(m_manipulation->robot(), m_qInit);
     }
-    p3d_set_and_update_this_robot_conf( m_manipulation->robot(), data.getGraspConfig() );
+    p3d_set_and_update_this_robot_conf( m_manipulation->robot(), data.getApproachFreeConfig() );
     g3d_draw_allwin_active();
-    initManipulationGenom() ;
   }  
   
   printf("---------------------------------------------------\n");

@@ -38,8 +38,8 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robotPt) :
 {
     _optimizeSteps = 100;
     _optimizeTime = 4.0; // 4 secondes
-    _approachFreeOffset = 0.1; //0.1 meters
-    _approachGraspOffset = 0.05; //0.1 meters
+    _approachFreeOffset = 0.10; //0.05 meters
+    _approachGraspOffset = 0.10; //0.05 meters
 
 
     // Warning : Not very efficient
@@ -233,8 +233,8 @@ void ManipulationPlanner::fixManipulationJoints(int armId, configPt q, p3d_rob* 
     }
 }
 
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p3d_rob* object, ManipulationData& configs) {
-
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p3d_rob* object, ManipulationData& configs) 
+{
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   
   (*_robot->armManipulationData)[armId].setCarriedObject(object);
@@ -263,7 +263,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
       //cout << "ManipulationPlanner::computingConfig()" << endl;
       int counter = 0;
       bool validConf = false;
-      for (list<gpGrasp>::iterator iter = graspList.begin(); iter != graspList.end(); iter++) {
+      
+      for (list<gpGrasp>::iterator iter = graspList.begin(); iter != graspList.end(); iter++) 
+      {
         ManipulationData data(_robot);
         p3d_matrix4 tAtt;
         fixAllHands(NULL, true);
@@ -380,15 +382,15 @@ configPt ManipulationPlanner::getGraspConf(p3d_rob* object, int armId, gpGrasp& 
   gpSet_grasp_configuration(_robot, grasp, armId);
   gpFix_hand_configuration(_robot, handProp, armId);
   
-  
   std::pair<double,configPt> costAndConf;
   std::vector< std::pair<double,configPt> > graspConfigs;
   
-  const unsigned int NbTry=20;
+  const unsigned int NbTry=30;
   
   for (unsigned int i=0; i<NbTry; i++) 
   {
     configPt qGrasp = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, false, false, armId, true);
+    //q = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, false, false, armId, true);
     
     if ( qGrasp ) 
     {
@@ -397,8 +399,9 @@ configPt ManipulationPlanner::getGraspConf(p3d_rob* object, int armId, gpGrasp& 
       double graspArmCost = computeRobotGraspArmCost(_robot, armId, grasp, qGrasp , _robot->openChainConf, object->joints[1]->abs_pos)/270;
       
       costAndConf.first  = (restArmCost + graspArmCost * 2) / 3;
-      costAndConf.second = p3d_copy_config( _robot, qGrasp );
-      p3d_destroy_config(_robot, qGrasp);
+      costAndConf.second = qGrasp;
+      
+      confCost  = (restArmCost + graspArmCost * 2) / 3;
       
       if( MPDEBUG )
       {
@@ -436,8 +439,14 @@ configPt ManipulationPlanner::getGraspConf(p3d_rob* object, int armId, gpGrasp& 
     
     deactivateCcCntrts(_robot, armId);
     gpSet_grasp_configuration(_robot, grasp, q, armId);
+    //cout << "Show Grasp -----------------------" << endl;
+    //showConfig_2(q);
+    
     return q;
   }
+  
+  // Warning
+  p3d_destroy_config( _robot, q );
   confCost = -1;
   return NULL;
 }
@@ -451,17 +460,27 @@ configPt ManipulationPlanner::getOpenGraspConf(p3d_rob* object, int armId, gpGra
         //Check the open configuration of the hand
         gpSet_grasp_open_configuration(_robot, grasp, q, armId);
       
-        if (!p3d_is_collision_free(_robot,q)) 
+        if (p3d_is_collision_free(_robot,q)) 
         {
+          return q;
+            
+        } 
+        else {
             // if the grasp open config is colliding, recompute it taking into account the environment:
             grasp.computeOpenConfig(_robot, object, true);
             gpSet_grasp_open_configuration(_robot, grasp, q, armId);
             if (p3d_is_collision_free(_robot,q)) {
                 return q;
-            }
-        } else {
-            return q;
+          }
+//          showConfig_2(q);
+//          cout << "Grasp in collision" << endl;
+//          p3d_print_col_pair();
+          
         }
+//        showConfig_2(q);
+//        p3d_print_col_pair();
+//        showConfig_2(graspConf);
+//        cout << "Grasp in collision" << endl;
     }
     return NULL;
 }
@@ -491,7 +510,8 @@ double ManipulationPlanner::distConfig( configPt q1, configPt q2, int group ) co
 
 configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const 
 {
-  if (graspConf) {
+  if (graspConf) 
+  {
     ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
     configPt q = p3d_copy_config(_robot, graspConf);
     gpHand_properties handProp = mData.getHandProperties();
@@ -499,17 +519,21 @@ configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gp
     p3d_matrix4 objTmp;
     p3d_vector3 tAttY;
     p3d_mat4Copy(object->joints[1]->abs_pos, objTmp);
+    
     if (!strcmp(mData.getCcCntrt()->namecntrt, "p3d_kuka_arm_ik")) {
       p3d_mat4ExtractColumnY(tAtt, tAttY);
     } else if (!strcmp(mData.getCcCntrt()->namecntrt, "p3d_lwr_arm_ik")) {
       p3d_mat4ExtractColumnZ(tAtt, tAttY);
     }
-    objTmp[0][3] -= getApproachFreeOffset() * tAttY[0];
-    objTmp[1][3] -= getApproachFreeOffset() * tAttY[1];
-    objTmp[2][3] -= getApproachFreeOffset() * tAttY[2];
-    //         q[mData.getManipulationJnt()->index_dof + 0] -= getApproachFreeOffset() * tAttY[0];
-    //         q[mData.getManipulationJnt()->index_dof + 1] -= getApproachFreeOffset() * tAttY[1];
-    //         q[mData.getManipulationJnt()->index_dof + 2] -= getApproachFreeOffset() * tAttY[2];
+    
+//    objTmp[0][3] -= getApproachFreeOffset() * tAttY[0];
+//    objTmp[1][3] -= getApproachFreeOffset() * tAttY[1];
+//    objTmp[2][3] -= getApproachFreeOffset() * tAttY[2];
+    
+    q[mData.getManipulationJnt()->index_dof + 0] -= getApproachFreeOffset() * tAttY[0];
+    q[mData.getManipulationJnt()->index_dof + 1] -= getApproachFreeOffset() * tAttY[1];
+    q[mData.getManipulationJnt()->index_dof + 2] -= getApproachFreeOffset() * tAttY[2];
+    
     gpUnFix_hand_configuration(_robot, handProp, armId);
     gpSet_grasp_open_configuration(_robot, grasp, q, armId);
     gpFix_hand_configuration(_robot, handProp, armId);
@@ -518,15 +542,16 @@ configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gp
     std::pair<double,configPt> distToGraspQ;
     std::vector< std::pair<double,configPt> > allQ;
     
-    for (unsigned int i=0; i<1000; i++) 
+    const unsigned int NbTry=1000;
+    
+    for (unsigned int i=0; i<NbTry; i++) 
     {
       configPt qApproachFree = setRobotCloseToConfGraspApproachOrExtract(_robot, q, objTmp, tAtt, false, armId, true);
       
       if ( qApproachFree ) 
       {
         distToGraspQ.first  = distConfig( qApproachFree , graspConf , _UpBodyMLP );
-        distToGraspQ.second = p3d_copy_config( _robot, qApproachFree );
-        p3d_destroy_config(_robot, qApproachFree);
+        distToGraspQ.second = qApproachFree;
         //std::cout << "Configuration cost : " << distToGraspQ.first << std::endl;
         allQ.push_back( distToGraspQ );
       }
@@ -535,6 +560,8 @@ configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gp
       }
     }
     p3d_destroy_config(_robot, q);
+    q = NULL;
+    
     if (!allQ.empty()) 
     {
       std::sort(allQ.begin(),allQ.end());
@@ -550,6 +577,7 @@ configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gp
     deactivateCcCntrts(_robot, armId);
     if (q) {
       fixAllHands(NULL, true);
+      //showConfig_2(q);
       return q;
     }
   }
@@ -589,53 +617,77 @@ configPt ManipulationPlanner::getApproachGraspConf(p3d_rob* object, int armId, g
 }
 
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const {
+    
+    const bool debug_configs = false; 
     double confCost = -1;
+    
+  
+    if( debug_configs )
+    {
+      cout << "----- **************** -----" << endl;
+      cout << "-----  getGraspConf()  -----" << endl;
+    }
   
     configPt q = getGraspConf(object, armId, grasp, tAtt, confCost);
   
-    if (q) {
-      if(MPDEBUG){
+    if (q) 
+    {
+      if( debug_configs || MPDEBUG ) {
         cout << "FOUND Grasp Config!!!!!" << endl;
         cout << confCost << endl;
         ManipulationUtils::copyConfigToFORM(_robot, q);
-        showConfig_2(q);
+        //showConfig_2(q);
       }
+      
       configs.setGraspConfig(q);
       configs.setGraspConfigCost(confCost);
       configs.setGrasp(&grasp);
       configs.setAttachFrame(tAtt);
+      
       p3d_destroy_config(_robot, q);
- 
-      configPt q = getOpenGraspConf(object, armId, grasp, configs.getGraspConfig());
+      q = NULL;
+      
+      q = getOpenGraspConf(object, armId, grasp, configs.getGraspConfig());
       
       if (q) {
-        if(MPDEBUG){
+        if( debug_configs || MPDEBUG ) {  
           cout << "FOUND Open Config!!!!!" << endl;
 
         }
         configs.setOpenConfig(q);
         p3d_destroy_config(_robot, q);
-    
-        configPt q = getApproachFreeConf(object, armId, grasp, configs.getGraspConfig(), tAtt);
+        q = NULL;
         
-        if (q) {
-          if(MPDEBUG){
-            cout << "FOUND Approach Config!!!!!" << endl;
+        if ( debug_configs ) 
+        {
+          cout << "-----------------------------------------------------" << endl;
+          cout << "-----------------------------------------------------" << endl;
+          cout << " getApproachFreeConf() " << endl;
+        }
+        
+        q = getApproachFreeConf(object, armId, grasp, configs.getGraspConfig(), tAtt);
+        
+        if (q ) {
+          if( debug_configs || MPDEBUG ){
+            cout << "FOUND Approach Free Config!!!!!" << endl;
           }
           configs.setApproachFreeConfig( configs.getOpenConfig() );
           configs.setApproachFreeConfig(q);
           p3d_destroy_config(_robot, q);
+          q = NULL;
           
-          configPt q = getApproachGraspConf(object, armId, grasp, configs.getGraspConfig(), tAtt);
+          q = getApproachGraspConf(object, armId, grasp, configs.getGraspConfig(), tAtt);
           
           if (q) {
-            if(MPDEBUG){
+            if( debug_configs || MPDEBUG ){
               cout << "FOUND Approach Grasp Config!!!!!" << endl;
             }
             configs.setApproachGraspConfig(q);
             p3d_destroy_config(_robot, q);
+            q = NULL;
+            
             deactivateCcCntrts(_robot, armId);
-            if(MPDEBUG){
+            if( debug_configs || MPDEBUG ){
               cout << "SUCCES ALL CONFIG FOUND" << endl;
             }
             return MANIPULATION_TASK_OK; //success
@@ -744,6 +796,73 @@ bool ManipulationPlanner::getArmCartesian(int armId) const {
  * \param trajs A vector of trajectories
  * \param concatTraj The concatenated trajectory to return
  * \return Message of success or fail */
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::cutTrajInSmall ( p3d_traj* inputTraj, p3d_traj* outputTraj ) {
+  
+  if ( _robot==NULL ) {
+    PrintInfo ( ( "cutTrajInSmall: robot is NULL.\n" ) );
+    return MANIPULATION_TASK_NOT_INITIALIZED;
+  }
+  
+  if ( !inputTraj ) {
+    PrintInfo ( ( "cutTrajInSmall: the trajectory is NULL.\n" ) );
+    return MANIPULATION_TASK_NOT_INITIALIZED;
+  }
+  
+  vector<p3d_localpath> trajArray;
+  
+  const double dmax = 0.10;
+  
+  outputTraj = p3d_create_empty_trajectory(_robot);
+  inputTraj->range_param = p3d_compute_traj_rangeparam(inputTraj);
+  
+  p3d_localpath* lastPath = NULL;
+  
+  unsigned int i=0;
+  
+	for(double param = 0; param < inputTraj->range_param; param += dmax )
+  {
+    configPt q_init = p3d_config_at_param_along_traj(inputTraj,param);
+    configPt q_goal = p3d_config_at_param_along_traj(inputTraj,param+dmax);
+      
+    if (p3d_equal_config(_robot, q_init, q_goal )) {
+      break;
+    }
+    
+    p3d_localpath* path = p3d_local_planner(_robot,q_init,q_goal);
+    cout << "LocalPath nb : " << i++ << endl;
+      
+    if( lastPath != NULL )
+    {
+      while (lastPath->next_lp != NULL) 
+      {
+          lastPath = lastPath->next_lp;
+      }
+      lastPath->next_lp = path;
+      path->prev_lp = lastPath;
+    }
+    else {
+      outputTraj->courbePt = path;
+    }
+
+    lastPath = path;
+    
+    p3d_destroy_config(_robot,q_init);
+    p3d_destroy_config(_robot,q_goal);
+	}
+
+  outputTraj->range_param = p3d_compute_traj_rangeparam(outputTraj);
+  outputTraj->nlp = p3d_compute_traj_nloc(outputTraj);
+  
+  cout << "Number of localpaths : " << outputTraj->nlp << endl;
+  
+  return MANIPULATION_TASK_OK;
+}
+
+/** Concatenes all the current trajectories of the robot into the first one.
+ * NB: only the first trajectory will remain (and grown up); the others are destroyed.
+ * \param trajs A vector of trajectories
+ * \param concatTraj The concatenated trajectory to return
+ * \return Message of success or fail */
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::concatTrajectories (std::vector<p3d_traj*>& trajs, p3d_traj** concatTraj) {
     if ( _robot==NULL ) {
         PrintInfo ( ( "concateneAllTrajectories: robot is NULL.\n" ) );
@@ -783,31 +902,29 @@ int ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, boo
     ENV.setInt(Env::maxNodeCompco, 10000);
     ENV.setExpansionMethod(Env::Extend);
     ENV.setDouble(Env::extensionStep, 6.0);
+  
+    if(_robot->GRAPH)
+    {
+      p3d_del_graph(_robot->GRAPH);
+    }
 
-
-#if 0 &&( defined(USE_CXX_PLANNER) || defined(MOVE3D_CORE) )
-    ENV.setBool(Env::drawGraph, false);
+#if ( ( 0 || defined(USE_CXX_PLANNER) ) && defined(MOVE3D_CORE) )
+  
+    //ENV.setBool(Env::drawGraph, false);
     ENV.setBool(Env::withSmoothing, true);
     ENV.setBool(Env::withShortCut, true);
     ENV.setBool(Env::withDeformation, false);
     ENV.setInt(Env::nbCostOptimize, smoothingSteps);
     ENV.setDouble(Env::timeOptimize, smootingTime);
 
-  ChronoOn();
+    ChronoOn();
 	
-	if(_robot->GRAPH)
-	{
-		p3d_del_graph(_robot->GRAPH);
-	}
-	
-  result = ext_p3d_run_rrt( _robot->GRAPH, fct_stop, fct_draw );
-
-    if (_robot->GRAPH)
+    if(_robot->GRAPH)
     {
-        p3d_del_graph(_robot->GRAPH);
+      p3d_del_graph(_robot->GRAPH);
     }
-
-    result = ext_p3d_run_rrt(_robot->GRAPH, fct_stop, fct_draw);
+	
+    result = ext_p3d_run_rrt( _robot->GRAPH, fct_stop, fct_draw );
 
     ChronoPrint("");
     ChronoOff();
@@ -865,6 +982,16 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armComputePRM(double ComputeTime)
 //! This method calls the compute RRT method from this class
 p3d_traj* ManipulationPlanner::computeTrajBetweenTwoConfigs(configPt qi, configPt qf) {
 
+  
+    if( p3d_equal_config(_robot, qi, qf) )
+    {
+       print_config(_robot, qi);
+       print_config(_robot, qf);
+       showConfig_2(qi);
+       showConfig_2(qf);
+       cout << "ManipulationPlanner::computeTrajBetweenTwoConfigs::p3d_equal_config(_robot, qi, qf)" << endl;
+    }
+       
     ManipulationUtils::forbidWindowEvents();
     p3d_copy_config_into(_robot, qi, &_robot->ROBOT_POS);
     p3d_copy_config_into(_robot, qf, &_robot->ROBOT_GOTO);
@@ -1107,21 +1234,27 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
     }
 
     if (!p3d_is_collision_free(_robot,approachFreeConfig)){
-        cout << "ManipulationPlanner::armPickGoto => approachFreeConfig is not collision free" << endl;
+        cout << "Warning::ManipulationPlanner::armPickGoto => approachFreeConfig is not collision free" << endl;
     }
-
+  
     // Compute to Approach config
-    if ((traj = computeTrajBetweenTwoConfigs(qStart, approachFreeConfig))){
+    if ((traj = computeTrajBetweenTwoConfigs(qStart, approachFreeConfig)))
+    {
       trajs.push_back(traj);
+      
       // Compute to Open config
-      if ((traj = computeTrajBetweenTwoConfigs(approachFreeConfig, openConfig))){
+      if ((traj = computeTrajBetweenTwoConfigs(approachFreeConfig, openConfig)))
+      {
         trajs.push_back(traj);
+        
+        // Set the hand as group to plan
         (*_robot->armManipulationData)[armId].unFixHand(_robot);
         
         p3d_multiLocalPath_disable_all_groupToPlan(_robot);
         p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1);
         // Compute to Grasp Config
-        if ((traj = computeTrajBetweenTwoConfigs(openConfig, graspConfig))){
+        if ((traj = computeTrajBetweenTwoConfigs(openConfig, graspConfig)))
+        {
             trajs.push_back(traj);
 
             // This state should be set
@@ -1130,8 +1263,18 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
 
             return MANIPULATION_TASK_OK;
         }
+        else {
+          cout << "Warning::ManipulationPlanner::armPickGoto computeTraj failed between openConfig and graspConfig" << endl;
+        }
+      }
+      else {
+        cout << "Warning::ManipulationPlanner::armPickGoto computeTraj failed between approachFreeConfig and openConfig" << endl;
       }
     }
+    else {
+      cout << "Warning::ManipulationPlanner::armPickGoto computeTraj failed between qStart and approachFreeConfig" << endl;
+    }
+  
     return MANIPULATION_TASK_NO_TRAJ_FOUND;
 }
 

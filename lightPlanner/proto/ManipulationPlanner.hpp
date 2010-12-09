@@ -33,6 +33,17 @@ class  ManipulationPlanner {
   /* ******************************* */
     void setDebugMode(bool value);
   
+#ifdef MULTILOCALPATH
+  /** Multilocalpath Id for the base */
+  int getBaseMLP() { return _BaseMLP; } 
+  /** Multilocalpath Id for the head */
+  int getHeadMLP() { return _HeadMLP; }
+  /** Multilocalpath Id for the upper body (arms + torso) with linear localplanner */
+  int getUpBodyMLP() { return _UpBodyMLP; }
+  /** Multilocalpath Id for the upper body (arms + torso) with softMotion localplanner */
+  int getUpBodysmMLP() { return _UpBodySmMLP; }
+#endif
+  
     void setOptimizeSteps(int nbSteps);
     int getOptimizeSteps(void) const;
 
@@ -100,6 +111,8 @@ class  ManipulationPlanner {
   /* ******************************* */
   /* ******* Motion Planning ******* */
   /* ******************************* */
+    /** Creates a trajectory cut in localpaths every step **/
+    MANIPULATION_TASK_MESSAGE cutTrajInSmall ( p3d_traj* inputTraj, p3d_traj* outputTraj );
     /** concatenate a vector of p3d_traj */
     MANIPULATION_TASK_MESSAGE concatTrajectories (std::vector<p3d_traj*>& trajs, p3d_traj** concatTraj);
     /** Set the parameters to compute an RRT */

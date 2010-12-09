@@ -16,6 +16,8 @@ extern double SAFETY_DIST;
 extern double APROACH_OFFSET;
 extern double ROBOT_MAX_LENGTH;
 
+using namespace std;
+
 /**
  * @brief compute a configuration for the whole robot according the configuration of the base, the object and the rest of the robot. The configuration of the base and the object are given in the param baseConfig and the rest of the robot in the param bodyConfig.
  The base and object joints values are given during the initialisation (the p3d file here)
@@ -245,6 +247,9 @@ static int MaxNumberOfTry = 10000;
  * @param nonUsedCntrtDesactivation when one arm is active make the other active or not
  * @return the robot config or NULL if fail
  */
+
+bool debugConfAroundTheObject = false;
+
 configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt, p3d_objectPos& objPos, double minRadius, double maxRadius, int shootBase, int shootObjectPos, int shootObjectRot, int cntrtToActivate, bool nonUsedCntrtDesactivation , bool gaussianShoot){
   
   configPt q = NULL;
@@ -276,6 +281,8 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
     }
     
     int nbTry = 0;
+    int nbTryColliding = 0;
+    bool collision = false;
     bool isKukaBoundOff = false;
     do { 
       // Continues until there is a 
@@ -358,9 +365,20 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
         
       } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && nbTry < MaxNumberOfTry);
 //        g3d_draw_allwin_active();
-    } while (p3d_col_test() && nbTry < MaxNumberOfTry);
+      nbTryColliding++;
+      collision = p3d_col_test();
+      
+      if ( debugConfAroundTheObject && collision ) {
+        p3d_print_col_pair();
+      }
+    } while ( collision && ( nbTry < MaxNumberOfTry ) );
     
-    if(nbTry >= MaxNumberOfTry){
+    if(nbTry >= MaxNumberOfTry)
+    {
+      if (debugConfAroundTheObject) {
+        cout << "NbTry = " << nbTry << endl;
+        cout << "nbTryColliding = " << nbTryColliding << endl;
+      }
       p3d_destroy_config(robot, qInit);
       p3d_destroy_config(robot, q);
       return NULL;
@@ -610,7 +628,9 @@ configPt setRobotGraspPosWithoutBase(p3d_rob* robot, p3d_matrix4 objectPos, p3d_
  * @return the robot config
  */
 configPt setRobotCloseToConfGraspApproachOrExtract(p3d_rob* robot, configPt refConf, p3d_matrix4 objectPos, p3d_matrix4 tAtt, int shootObject, int armId, bool nonUsedCntrtDesactivation) {
+  
   int  shootObjectPos = false, shootObjectRot = false;
+  
 #ifndef GRASP_PLANNING4
   deactivateHandsVsObjectCol(robot);
 #endif
@@ -645,7 +665,9 @@ configPt setRobotCloseToConfGraspApproachOrExtract(p3d_rob* robot, configPt refC
     shootObjectPos = true;
     shootObjectRot = true;
   }
+  
   configPt q = getRobotGraspConf(robot, objectPos, att, false, shootObjectPos, shootObjectRot, armId, nonUsedCntrtDesactivation,true);
+
 #ifndef GRASP_PLANNING
   activateHandsVsObjectCol(robot);
 #endif
