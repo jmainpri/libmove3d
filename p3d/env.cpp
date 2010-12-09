@@ -198,12 +198,35 @@ Env::Env()
 	mStringMap.insert(stringMap_t(Env::ObjectToCarry, new stringContainer("Nothing")));
 	mStringMap.insert(stringMap_t(Env::ActiveGrid, new stringContainer("Nothing")));
 #endif
+  
 	mVectorMap.insert(vectorMap_t(Env::costAlongTraj, new vectorContainer()));
 	
 	mExpansionMethod = Connect;
 }
 
 Env::~Env() {
+  for (map<boolParameter,boolContainer*>::iterator it = mBoolMap.begin();
+      it !=  mBoolMap.end(); ++it ) {
+    delete it->second;
+  }
+  for (map<intParameter,intContainer*>::iterator it = mIntMap.begin();
+       it !=  mIntMap.end(); ++it ) {
+    delete it->second;
+  }
+  for (map<doubleParameter, doubleContainer*>::iterator it = mDoubleMap.begin();
+       it !=  mDoubleMap.end(); ++it ) {
+    delete it->second;
+  }
+#ifdef QT_LIBRARY
+  for (map<stringParameter, stringContainer*>::iterator it = mStringMap.begin();
+       it !=  mStringMap.end(); ++it ) {
+    delete it->second;
+  }
+#endif
+  for (map<vectorParameter, vectorContainer*>::iterator it = mVectorMap.begin();
+       it !=  mVectorMap.end(); ++it ) {
+    delete it->second;
+  }
 }
 
 int Env::getInt(intParameter p) {

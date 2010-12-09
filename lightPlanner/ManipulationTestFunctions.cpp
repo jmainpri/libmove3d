@@ -44,7 +44,8 @@ ManipulationTestFunctions::ManipulationTestFunctions(std::string RobotNameContai
 //! Destructor
 ManipulationTestFunctions::~ManipulationTestFunctions()
 {
-	
+	p3d_destroy_config(m_Robot,m_qInit);
+  p3d_destroy_config(m_Robot,m_qGoal);
 }
 
 void ManipulationTestFunctions::setDebugMode(bool value)
@@ -182,7 +183,7 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
   m_manipulation->setDebugMode(false);
   
   n= 0;
-  nbOrientations= 100;
+  nbOrientations= 1;
   for(int i=1; i<=nbOrientations; ++i)
   {
     printf("****************test %d/%d************************\n",i,nbOrientations);
