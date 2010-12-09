@@ -180,7 +180,7 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
   p3d_get_freeflyer_pose2(object, &x, &y, &z, &rx, &ry, &rz);
   
   m_manipulation->setDebugMode(false);
-
+  
   n= 0;
   nbOrientations= 100;
   for(int i=1; i<=nbOrientations; ++i)
@@ -196,19 +196,26 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
     //result = manipTest(ARM_PICK_GOTO);
     //if( result )
     //{  n++; }   
+    p3d_multiLocalPath_disable_all_groupToPlan(m_manipulation->robot());
+    p3d_multiLocalPath_set_groupToPlan(m_manipulation->robot(), m_manipulation->getUpBodyMLP() , 1);
+    
+    m_manipulation->checkConfigForCartesianMode(m_qInit, object);
+    m_manipulation->fixAllHands(m_qInit, false);
     
     ManipulationData data(m_Robot);
     if ( m_manipulation->findArmGraspsConfigs(0, object, data) == MANIPULATION_TASK_OK) 
     {
-      p3d_set_and_update_this_robot_conf( m_manipulation->robot(), data.getGraspConfig() );
       n++;
+      cout << "!!! OK =-) !!!" << endl;
     }
     else {
       p3d_set_and_update_this_robot_conf(m_manipulation->robot(), m_qInit);
     }
-
+    p3d_set_and_update_this_robot_conf( m_manipulation->robot(), data.getGraspConfig() );
     g3d_draw_allwin_active();
+    initManipulationGenom() ;
   }  
+  
   printf("---------------------------------------------------\n");
   printf("---------------------------------------------------\n");
   printf("---------------------------------------------------\n");
@@ -260,6 +267,10 @@ bool ManipulationTestFunctions::runTest(int id)
     return this->manipTestGraspingWithDifferentObjectOrientations(false);
   }
 
+  if (id == 7) 
+  {
+    return this->manipTestGraspingWithDifferentObjectOrientations(true);
+  }
   if (id == 7) 
   {
     return this->manipTestGraspingWithDifferentObjectOrientations(true);
