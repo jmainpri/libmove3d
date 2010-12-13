@@ -18,6 +18,7 @@ class gpContact
   double mu;         /*!<  friction coefficient of the contact */
   p3d_vector3 baryCoords; /*!< barycentric coordinates (defined by the vertices of the triangle) of the contact */
   double curvature; /*!<  curvature of the object surface at the contact point */
+  double score; /*!< a score that can be used for any ordering need */
  
   gpContact();
   ~gpContact();
@@ -28,6 +29,7 @@ class gpContact
   int computeCurvature();
 };
 
+bool gpCompareContactScore(const gpContact &contact1, const gpContact &contact2); 
 
 
 //! @ingroup graspPlanning 

@@ -24,6 +24,9 @@ std::string gpHand_type_to_string(gpHand_type hand_type)
     case GP_GRIPPER:
       return "GP_GRIPPER";
     break;
+    case GP_PR2_GRIPPER:
+      return "GP_PR2_GRIPPER";
+    break;
     case GP_SAHAND_RIGHT:
       return "GP_SAHAND_RIGHT";
     break;
@@ -46,6 +49,9 @@ std::string gpHand_type_to_folder_name(gpHand_type hand_type)
   {
     case GP_GRIPPER:
       return "gripper";
+    break;
+    case GP_PR2_GRIPPER:
+      return "pr2_gripper";
     break;
     case GP_SAHAND_RIGHT:
       return "SAHandRight";
@@ -1003,14 +1009,9 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
   std::stringstream out;
   p3d_obj *fingertip;
   
-  if(hand.type ==0)
-  {
-    base_name= std::string(GP_HAND_BODY_PREFIX) + "." +std::string( GP_FINGER_BODY_PREFIX);
-  }
-  else
-  {
-    base_name=  std::string(GP_HAND_BODY_PREFIX) + convertToString(hand.type) + "." + std::string( GP_FINGER_BODY_PREFIX);
-  } 
+
+  base_name= std::string(GP_HAND_BODY_PREFIX) + "." +std::string(GP_FINGER_BODY_PREFIX);
+  
 
 //  base_name= std::string(GP_HAND_BODY_PREFIX) + std::string(".") +std::string( GP_FINGER_BODY_PREFIX);
 
@@ -1168,7 +1169,7 @@ int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
 
   switch(hand.type)
   {
-    case GP_GRIPPER:
+    case GP_GRIPPER: case GP_PR2_GRIPPER:
       q[0]= hand.max_opening_jnt_value;
     break;
 //! warning: in the following the SAHand joint values should not be their maximal bounds:
@@ -1208,7 +1209,7 @@ int gpClose_hand(p3d_rob *robot, gpHand_properties &hand)
 
   switch(hand.type)
   {
-    case GP_GRIPPER:
+    case GP_GRIPPER: case GP_PR2_GRIPPER:
 //       q[0]= hand.min_opening_jnt_value;
       q[0]= hand.qmin.at(0);
     break;
@@ -1258,22 +1259,22 @@ int gpClose_hand(p3d_rob *robot, gpHand_properties &hand)
   return GP_OK;
 }
 
-int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand)
+int gpClose_gripper_until_contact(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
    {
-     printf("%s: %d: gpClose_gripper_until_collision(): robot is NULL.\n",__FILE__,__LINE__);
+     printf("%s: %d: gpClose_gripper_until_contact(): robot is NULL.\n",__FILE__,__LINE__);
      return GP_ERROR;
    }
    if(object==NULL)
    {
-     printf("%s: %d: gpClose_gripper_until_collision(): object is NULL.\n",__FILE__,__LINE__);
+     printf("%s: %d: gpClose_gripper_until_contact(): object is NULL.\n",__FILE__,__LINE__);
      return GP_ERROR;
    }
-   if(hand.type!=GP_GRIPPER)
+   if(hand.type!=GP_GRIPPER && hand.type!=GP_PR2_GRIPPER)
    {
-     printf("%s: %d: gpClose_gripper_until_collision(): this function only applies to GP_GRIPPER.\n",__FILE__,__LINE__);
+     printf("%s: %d: gpClose_gripper_until_contact(): this function only applies to GP_GRIPPER.\n",__FILE__,__LINE__);
      return GP_ERROR;
    }
   #endif
@@ -1283,12 +1284,20 @@ int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_prop
   std::vector<double> q0;
   std::vector<double> q;
   std::vector<double> qprev;
+  std::vector<p3d_obj*> fingertipBodies, handBodies;
 
   q0.resize(hand.nb_dofs);
   q.resize(hand.nb_dofs);
   qprev.resize(hand.nb_dofs);
 
   gpGet_hand_configuration(robot, hand, 0, q0);
+
+
+  gpGet_fingertip_bodies(robot, hand, fingertipBodies);
+
+  gpGet_non_fingertip_bodies(robot, hand, handBodies);
+
+
 
   if(p3d_col_test_robot_obj(robot, object))
   {
@@ -1703,7 +1712,7 @@ int gpGet_hand_configuration(p3d_rob *robot, gpHand_properties &handProp, int ha
 
   switch(handProp.type)
   {
-    case GP_GRIPPER:
+    case GP_GRIPPER: case GP_PR2_GRIPPER:
       jointName= std::string(GP_GRIPPERJOINT) + suffix;
       fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
       if(fingerJoint==NULL)
@@ -1839,7 +1848,7 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &handProp, std::v
 
   switch(handProp.type)
   {
-    case GP_GRIPPER:
+    case GP_GRIPPER: case GP_PR2_GRIPPER:
       jointName= std::string(GP_GRIPPERJOINT) + suffix;
       fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
       if(fingerJoint==NULL)
@@ -2018,7 +2027,7 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
 
   switch(hand.type)
   {
-    case GP_GRIPPER:
+    case GP_GRIPPER: case GP_PR2_GRIPPER:
       jointName= std::string(GP_GRIPPERJOINT) + suffix;
       fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
       if(fingerJoint==NULL)
@@ -2356,7 +2365,7 @@ int gpFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID
 
   switch(hand.type)
   {
-    case GP_GRIPPER:
+    case GP_GRIPPER: case GP_PR2_GRIPPER:
       jointName= std::string(GP_GRIPPERJOINT) + suffix;
       fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
       if(fingerJoint==NULL)
@@ -2408,7 +2417,7 @@ int gpUnFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int hand
 
   switch(hand.type)
   {
-    case GP_GRIPPER:
+    case GP_GRIPPER: case GP_PR2_GRIPPER:
       jointName= std::string(GP_GRIPPERJOINT) + suffix;
       fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
       if(fingerJoint==NULL)
@@ -2915,24 +2924,103 @@ int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHa
   return GP_OK;
 }
 
+
+
 //! @ingroup graspPlanning 
-//! Computes a set of contact points on the surface of an object mesh.
-//! \param object the object
+//! Gets all the bodies corresponding of the fingertips.
+//! \param robot the robot (its finger bodies must have specific names, defined in graspPlanning.h)
+//! \param hand a gpHand_properties variable filled with information concerning the chosen hand characteristics
+//! \param bodies a vector of pointers to the bodies
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGet_fingertip_bodies(p3d_rob *robot, gpHand_properties &hand, std::vector<p3d_obj*> &bodies)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: gpGet_fingertip_bodies(): robot is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  int i;
+  std::string fingertip_suffix, body_name;
+  std::stringstream out;
+
+  fingertip_suffix= GP_FINGERTIP_BODY_NAME;
+
+  for(i=0; i<robot->no; i++)
+  {
+    body_name= robot->o[i]->name;
+
+    if(body_name.compare(body_name.size() - fingertip_suffix.length(), fingertip_suffix.length(), fingertip_suffix)==0)
+    { 
+      bodies.push_back(robot->o[i]);
+      continue;
+    }
+  }
+
+  return GP_OK;
+}
+
+
+//! @ingroup graspPlanning 
+//! Gets all the bodies of the hand except for the fingertip bodies.
+//! \param robot the robot (its finger bodies must have specific names, defined in graspPlanning.h)
+//! \param hand a gpHand_properties variable filled with information concerning the chosen hand characteristics
+//! \param bodies a vector of pointers to the bodies
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGet_non_fingertip_bodies(p3d_rob *robot, gpHand_properties &hand, std::vector<p3d_obj*> &bodies)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: gpGet_non_fingertip_bodies(): robot is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  int i;
+  std::string hand_body_base_name, fingertip_suffix, body_name;
+  std::stringstream out;
+
+  hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX);
+  fingertip_suffix= GP_FINGERTIP_BODY_NAME;
+
+  for(i=0; i<robot->no; i++)
+  {
+    body_name= robot->o[i]->name;
+
+    if(body_name.compare(0, hand_body_base_name.length(), hand_body_base_name)==0)
+    { 
+      if(body_name.compare(body_name.size() - fingertip_suffix.length(), fingertip_suffix.length(), fingertip_suffix)!=0)
+      {
+        bodies.push_back(robot->o[i]);
+        continue;
+      }
+    }
+  }
+
+  return GP_OK;
+}
+
+//! @ingroup graspPlanning 
+//! Computes a set of contact points on the surface of a mesh.
+//! \param poly the p3d_polyhedre
 //! \param step the discretization step of the sampling (if it is bigger than the triangle dimensions, there will be only one sample generated, positioned at the triangle center)
 //! \param shift the point will be shifted in the direction of the surface normal of a distance 'shift'
 //! \param contactList a contactList list the computed set of contacts will be added to
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<gpContact> &contactList)
+int gpSample_poly_surface(p3d_polyhedre *poly, double step, double shift, std::list<gpContact> &contactList)
 {
+  if(poly==NULL)
+  {
+    printf("%s: %d: gpSample_poly_surface(): input p3d_polyhedre is NULL.\n",__FILE__,__LINE__); 
+    return GP_ERROR;
+  }
+
   unsigned int nb_samples= 0, nb_faces= 0;
   unsigned int i, j;
   p3d_index *indices= NULL;
   p3d_vector3 *points= NULL, *surf_points= NULL;
   p3d_face *faces= NULL;
-  p3d_polyhedre *poly= NULL;
   gpContact contact;
 
-  poly= object->pol[0]->poly;
   points= poly->the_points;
   nb_faces= poly->nb_faces;
   faces= poly->the_faces;
@@ -2942,13 +3030,11 @@ int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<g
     p3d_build_planes(poly);
   }
 
-//   p3d_compute_vertex_normals(poly);
-
   for(i=0; i<nb_faces; ++i)
   {
     if(faces[i].plane==NULL)
     {
-      printf("%s: %d: gpSample_obj_surface(): a plane of a face has not been computed -> call p3d_build_planes() first.\n",__FILE__,__LINE__);
+      printf("%s: %d: gpSample_poly_surface(): a plane of a face has not been computed -> call p3d_build_planes() first.\n",__FILE__,__LINE__);
       continue;
     }
 
@@ -2973,6 +3059,97 @@ int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<g
   }
 
   return GP_OK;
+}
+
+
+//! @ingroup graspPlanning 
+//! Computes a set of contact points on the surface of a mesh.
+//! \param poly the p3d_polyhedre
+//! \param nb_samples the desired number of samples
+//! \param shift the point will be shifted in the direction of the surface normal of a distance 'shift'
+//! \param contactList a contactList list the computed set of contacts will be added to
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSample_poly_surface_random(p3d_polyhedre *poly, unsigned int nb_samples, double shift, std::list<gpContact> &contactList)
+{
+  if(poly==NULL)
+  {
+    printf("%s: %d: gpSample_poly_surface(): input p3d_polyhedre is NULL.\n",__FILE__,__LINE__); 
+    return GP_ERROR;
+  }
+
+  unsigned int nb_faces= 0;
+  unsigned int i, irand;
+  double areaMax, arand, alpha, beta;
+  p3d_vector3 p;
+  std::vector<double> areas;
+  p3d_index *indices= NULL;
+  p3d_vector3 *points= NULL;
+  p3d_face *faces= NULL;
+  gpContact contact;
+
+  points= poly->the_points;
+  nb_faces= poly->nb_faces;
+  faces= poly->the_faces;
+
+  if(faces[0].plane==NULL)
+  {
+    p3d_build_planes(poly);
+  }
+
+  areas.resize(nb_faces);
+  for(i=0; i<nb_faces; ++i)
+  {
+    indices= faces[i].the_indexs_points;
+    areas[i]= gpTriangle_area(points[indices[0]-1], points[indices[1]-1], points[indices[2]-1]);
+    if( (i==0) || (areas[i]>areaMax) )
+    {
+      areaMax= areas[i];
+    }
+  }
+
+  for(i=0; i<nb_samples; ++i)
+  {
+    while(true)
+    {
+      irand= (unsigned int) p3d_random(0.0, nb_faces);
+      arand= p3d_random(0.0, areaMax);
+      if(areas[irand] > arand)
+      {  break; }
+    }
+    indices= faces[irand].the_indexs_points;
+    alpha= p3d_random(0.0, 1.0);
+    beta= p3d_random(0.0, 1.0);
+    gpPoint_in_triangle_from_parameters(alpha, beta, points[indices[0]-1], points[indices[1]-1], points[indices[2]-1], p);
+    p3d_vectCopy(p, contact.position);
+    p3d_vectCopy(faces[irand].plane->normale, contact.normal);
+    contact.position[0]+= shift*contact.normal[0];
+    contact.position[1]+= shift*contact.normal[1];
+    contact.position[2]+= shift*contact.normal[2];
+    contact.surface= poly;
+    contact.face= irand;
+    contactList.push_back(contact);
+  }
+
+
+  return GP_OK;
+}
+
+//! @ingroup graspPlanning 
+//! Computes a set of contact points on the surface of an object mesh.
+//! \param object the object
+//! \param step the discretization step of the sampling (if it is bigger than the triangle dimensions, there will be only one sample generated, positioned at the triangle center)
+//! \param shift the point will be shifted in the direction of the surface normal of a distance 'shift'
+//! \param contactList a contactList list the computed set of contacts will be added to
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<gpContact> &contactList)
+{
+  if(object==NULL)
+  {
+    printf("%s: %d: gpSample_obj_surface(): input p3d_obj is NULL.\n",__FILE__,__LINE__); 
+    return GP_ERROR;
+  }
+
+  return gpSample_poly_surface(object->pol[0]->poly, step, shift, contactList);
 }
 
 //! does not work

@@ -91,7 +91,17 @@ extern int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_in
 
 extern int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand, int handID= 0);
 
+extern int gpSample_poly_surface(p3d_polyhedre *poly, double step, double shift, std::list<gpContact> &contactList);
+
 extern int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<gpContact> &contactList);
+
+extern int gpSample_poly_surface_random(p3d_polyhedre *poly, unsigned int nb_samples, double shift, std::list<gpContact> &contactList);
+
+
+extern int gpGet_fingertip_bodies(p3d_rob *robot, gpHand_properties &hand, std::vector<p3d_obj*> &bodies);
+
+extern int gpGet_non_fingertip_bodies(p3d_rob *robot, gpHand_properties &hand, std::vector<p3d_obj*> &bodies);
+
 
 #ifdef LIGHT_PLANNER
 extern int gpFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID);

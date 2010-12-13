@@ -1381,7 +1381,7 @@ void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, GLfloat mat[16])
 int gpExport_bodies_for_coldman(p3d_rob *robot)
 {
   size_t pos;
-  unsigned int it, k, nb_triangles, countM;
+  unsigned int k, countM;
   int i, j, shift;
   double color_vect[4];
   p3d_index *indices= NULL;
@@ -1391,8 +1391,6 @@ int gpExport_bodies_for_coldman(p3d_rob *robot)
   FILE *file= NULL;
   char *path= NULL;
   std::string bodyName, pathName, objName, mtlName;
-  pqp_triangle *triangles= NULL;
-
 
   path= getenv("HOME_MOVE3D");
   
@@ -1540,7 +1538,7 @@ int gpExport_bodies_for_coldman(p3d_rob *robot)
 int gpExport_obstacles_for_coldman()
 {
   size_t pos;
-  unsigned int it, k, nb_triangles, countM;
+  unsigned int k, countM;
   int i, j, shift;
   double color_vect[4];
   p3d_index *indices= NULL;
@@ -1550,7 +1548,6 @@ int gpExport_obstacles_for_coldman()
   char str[128];
   FILE *file= NULL;
   std::string bodyName;
-  pqp_triangle *triangles= NULL;
 
   for(i=0; i<XYZ_ENV->no; i++)
   {

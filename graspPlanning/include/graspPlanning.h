@@ -125,7 +125,7 @@ template<class T> std::string convertToString(const T& t)
 #define GP_FINGER_BODY_PREFIX     "finger"
 
 
-//! Prefix of the symbolic names of the fingertip bodies:
+//! Suffix of the symbolic names of the fingertip bodies:
 #define GP_FINGERTIP_BODY_NAME "fingertip"
 
 
@@ -217,6 +217,8 @@ class gpHand_properties
   double max_opening_jnt_value;   /*!< the value of the gripper joint's DOF when the gripper opening is maximal */
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
+  //////PR2's gripper///////
+  double joint_fingertip_distance; /*!< distance from the gripper's joint to the middle of the fingerpads */
 
   /////////////////////////////////////////SAHAND///////////////////////////////////////////////////
   //! lengths of the thumb's first phalanx and of the proximal, middle et distal phalanges:

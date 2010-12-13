@@ -14,7 +14,8 @@
 
 // static char ObjectName[]= "Horse";
 // static char ObjectName[]= "GREY_TAPE";
-static char ObjectName[]= "OrangeBottle";
+static char ObjectName[]= "Mug";
+// static char ObjectName[]= "OrangeBottle";
 static char RobotName[]= "JIDO_ROBOT";
 static char HandRobotName[]= "";
 static bool display_grasps= false;
@@ -344,6 +345,13 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 
 void draw_grasp_planner()
 {   
+//   for(std::list<gpContact>::iterator iter= CONTACTLIST.begin(); iter!=CONTACTLIST.end(); ++iter)
+//   { 
+//     iter->draw(0.01);
+//   }return;
+
+
+  GRASP.draw(0.05);
 // chull->draw();
   G3D_Window *win;
 //   p3d_rob *hand_robot= p3d_get_robot_by_name((char*)(GP_GRIPPER_ROBOT_NAME));
@@ -380,7 +388,7 @@ void draw_grasp_planner()
 
 
 
-  GRASP.draw(0.05);
+
 //   DOUBLEGRASP.draw(0.5);
 
   return;
@@ -620,7 +628,7 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
 //   T[1][3]= 0;
 //   T[2][3]= -0.268;
 //   handProp.setThand_wrist(T);
-  handProp.setArmType(ARM_TYPE);
+//   handProp.setArmType(ARM_TYPE);
 
   p3d_col_deactivate_robot(hand_robot);
 
@@ -675,12 +683,14 @@ static void CB_gripper_obj ( FL_OBJECT *obj, long arg )
 { printf("CB_gripper\n");
   unsigned int i;
   static unsigned int count= 0, firstTime= TRUE;
+  p3d_rob *robot= NULL;
   
   if(firstTime)
   {
     firstTime= 0;
-    gpGet_grasp_list(ObjectName, GP_GRIPPER, GRASPLIST);
-    gpReduce_grasp_list_size(GRASPLIST, GRASPLIST, 35);
+//     gpGet_grasp_list(ObjectName, GP_GRIPPER, GRASPLIST);
+    gpGet_grasp_list(ObjectName, GP_PR2_GRIPPER, GRASPLIST);
+//     gpReduce_grasp_list_size(GRASPLIST, GRASPLIST, 35);
   }
 
   i= 0;
@@ -695,9 +705,13 @@ static void CB_gripper_obj ( FL_OBJECT *obj, long arg )
   if ( count>GRASPLIST.size() )
   {  count= 0;  }
 
-  std::string robotName= GP_GRIPPER_ROBOT_NAME;
-
-  gpSet_robot_hand_grasp_configuration((p3d_rob*)p3d_get_robot_by_name((char*)(GP_GRIPPER_ROBOT_NAME)), (p3d_rob*)p3d_get_robot_by_name(ObjectName), GRASP);
+  GRASP.print();
+  std::string robotName= GP_PR2_GRIPPER_ROBOT_NAME;
+  robot= (p3d_rob*)p3d_get_robot_by_name( (char*)(robotName.c_str()) );
+  gpSet_robot_hand_grasp_configuration(robot, (p3d_rob*)p3d_get_robot_by_name(ObjectName), GRASP);
+  configPt q= p3d_get_robot_config( robot );
+  p3d_copy_config_into( robot, q, &robot->ROBOT_POS );
+  p3d_destroy_config( robot, q );
 
   redraw();
   return;
@@ -1276,6 +1290,11 @@ void computeGraspFrame(p3d_matrix4 grasp_frame, std::vector<double> &config)
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+//   p3d_rob *o= (p3d_rob*)p3d_get_robot_by_name("Mug");
+// gpSample_poly_surface_random(o->o[0]->pol[0]->poly, 1500, 0.0, CONTACTLIST);
+// redraw();
+// return;
+
   p3d_rob *kuka= (p3d_rob*)p3d_get_robot_by_name("JIDOKUKA_ROBOT");
   p3d_jnt *joint= p3d_get_robot_jnt_by_name(kuka, "armJoint7");
   p3d_jnt *baseJoint= p3d_get_robot_jnt_by_name(kuka, "armJoint1");//"platformJoint");

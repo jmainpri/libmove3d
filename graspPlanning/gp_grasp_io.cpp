@@ -564,13 +564,15 @@ bool gpParseGrasp(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserData &data)
   {
     if(elementData.hand_type=="GP_GRIPPER")
     {  data.hand_type= GP_GRIPPER;  }
+    else if(elementData.hand_type=="GP_PR2_GRIPPER")
+    {  data.hand_type= GP_PR2_GRIPPER;  }
     else if(elementData.hand_type=="GP_SAHAND_RIGHT")
     {  data.hand_type= GP_SAHAND_RIGHT;  }
     else if(elementData.hand_type=="GP_SAHAND_LEFT")
     {  data.hand_type= GP_SAHAND_LEFT;    }
     else
     {
-      message= "Usage: <hand_type> type of the robot gripper or hand (GP_GRIPPER, GP_SAHAND_RIGHT or GP_SAHAND_LEFT) </hand_type>.";
+      message= "Usage: <hand_type> type of the robot gripper or hand (GP_GRIPPER, GP_PR2_GRIPPER, GP_SAHAND_RIGHT or GP_SAHAND_LEFT) </hand_type>.";
       formatErrorMessage((int) xmlGetLineNo(entry_node), doc->URL, entry_node->name, message);
       return false;
     }

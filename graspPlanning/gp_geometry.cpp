@@ -573,9 +573,6 @@ SQR( p2[0]-center[0] ) + SQR( p2[1]-center[1] ) + SQR( p2[2]-center[2] ) < SQR(r
 
     return nbSolutions;
   }
-
-
-
 }
 
 
@@ -905,7 +902,7 @@ void gpOrthogonal_vector(p3d_vector3 v, p3d_vector3 result)
    #ifdef GP_DEBUG
    if( p3d_vectNorm(v) < EPSILON )
    {
-      printf("%s: %d: gpOrthogonal_vector(): bad input (vector of null norm).\n",__FILE__,__LINE__);
+//       printf("%s: %d: gpOrthogonal_vector(): bad input (vector of null norm).\n",__FILE__,__LINE__);
       result[0]= 1; result[1]= 0; result[2]= 0;
       return;
    }

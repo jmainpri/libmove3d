@@ -23,7 +23,7 @@ gpContact::gpContact()
   normal[0]= normal[1]= normal[2]= 0.0;
   baryCoords[0]= baryCoords[1]= baryCoords[2]= 0.0;
   curvature= 0;
-  mu= 0.0;
+  mu= 0.3;
 }  
 
 
@@ -42,6 +42,7 @@ gpContact::gpContact(const gpContact &contact)
   }
   mu= contact.mu;
   curvature= contact.curvature;
+  score= contact.score;
 }  
 
 gpContact::~gpContact()
@@ -66,6 +67,7 @@ gpContact & gpContact::operator = (const gpContact &contact)
     }
     mu= contact.mu;
     curvature= contact.curvature;
+    score= contact.score;
   }   
 
   return *this;
@@ -198,6 +200,11 @@ int gpContact::computeCurvature()
   return GP_OK;
 }
 
+//! Comparison function of the scores of two contacts.
+bool gpCompareContactScore(const gpContact &contact1, const gpContact &contact2)
+{
+  return (contact1.score < contact2.score) ? true : false;
+}
 
 //! Default constructor of the class gpGrasp
 gpGrasp::gpGrasp()
@@ -687,13 +694,12 @@ int gpGrasp::computeQuality()
 //   double edge_angle, dist_to_edge;
   //double weight1, weight2, weight3, weight4;
   double score2, score3;
+  double minCurvatureScore;
   double fcWeight, directionWeight, curvatureWeight, configWeight, centroidWeight;
   double fcScore, directionScore, curvatureScore, configScore, centroidScore;
   p3d_polyhedre *poly= NULL;
 
-//   _contacts= (double (*)[3]) new double[3*contacts.size()];
-//   _normals = (double (*)[3]) new double[3*contacts.size()];
-//   _mu     = (double *) new double[contacts.size()];
+
   _contacts= new double[contacts.size()][3];
   _normals=  new double[contacts.size()][3];
   _mu     =  new double[contacts.size()];
@@ -737,7 +743,7 @@ int gpGrasp::computeQuality()
 
   directionScore= 0.0; 
   curvatureScore= 0.0;
-  for(i=0; i<contacts.size(); i++)
+  for(i=0; i<contacts.size(); ++i)
   {
      _contacts[i][0]= contacts[i].position[0];
      _contacts[i][1]= contacts[i].position[1];
@@ -751,6 +757,11 @@ int gpGrasp::computeQuality()
      directionScore+= fabs( graspingDirection[0]*_normals[i][0] + graspingDirection[1]*_normals[i][1] + graspingDirection[2]*_normals[i][2] );
 
      curvatureScore+= 1 - contacts[i].curvature;
+
+     if( i==0 || (curvatureScore < minCurvatureScore) )
+     {
+        minCurvatureScore= curvatureScore;
+     }
   }
   contactCentroid(centroid);
   centroidScore= p3d_vectDistance(poly->cmass, centroid);
@@ -788,8 +799,16 @@ int gpGrasp::computeQuality()
 //   printf("curvatureScore= %f\n", curvatureScore);
 //   printf("configScore= %f\n", configScore);
 //   printf("centroidScore= %f\n", centroidScore);
+  if(this->hand_type==GP_PR2_GRIPPER)
+  {
+    quality= minCurvatureScore;//stability + curvatureScore;
+  }
+  else
+  {
+    quality= fcWeight*fcScore + directionWeight*directionScore + curvatureWeight*curvatureScore + configWeight*configScore + centroidWeight*centroidScore;
+  }
 
-  quality= fcWeight*fcScore + directionWeight*directionScore + curvatureWeight*curvatureScore + configWeight*configScore + centroidWeight*centroidScore;
+
 
   delete [] _contacts;
   delete [] _normals;
@@ -1066,18 +1085,19 @@ int gpHand_properties::initialize(gpHand_type hand_type)
 
        nb_positions= 100;
        nb_directions= 12;
-       nb_rotations= 6;
+       nb_rotations= 2;
        max_nb_grasp_frames= 5000;
     break;
     case GP_PR2_GRIPPER:
        nb_fingers= 2;
        nb_dofs= 1;
-       fingertip_distance =   0.04;
-       fingertip_radius   =   0.0042;
-       min_opening        =   0.01005;
-       max_opening        =  0.075007;
+       fingertip_radius= 0.01;
+       joint_fingertip_distance= 0.1;
        min_opening_jnt_value =   0.0;
-       max_opening_jnt_value =   0.0325;
+       max_opening_jnt_value =   31.3981*DEGTORAD;
+
+       p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp_frame_hand);
+       Tgrasp_frame_hand[2][3]= 0.0;
 
        qmin.resize(1);
        qmax.resize(1);
@@ -1088,8 +1108,8 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        qrest[0]= qmax[0];
        qopen[0]= qmax[0];
 
-       nb_positions= 100;
-       nb_directions= 12;
+       nb_positions= 500;
+       nb_directions= 6;
        nb_rotations= 6;
        max_nb_grasp_frames= 5000;
     break;
@@ -1418,8 +1438,6 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        return GP_ERROR;
     break;
   }
-
-  setArmType(GP_PA10);
 
   return GP_OK;
 }
@@ -1755,7 +1773,7 @@ int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object, bool environment
 
   switch(this->hand_type)
   {
-    case GP_GRIPPER:
+    case GP_GRIPPER: case GP_PR2_GRIPPER:
       this->openConfig.at(0)= handProp.qopen.at(0);
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
