@@ -370,6 +370,38 @@ void g3d_set_color(int color, double color_vect[4]) {
   glColor4dv(color_array);
 }
 
+GLdouble m_color_vect[4];
+
+//! @ingroup graphic 
+//! Stores one color to be called latter to draw a robot for example
+//! \param draw_custom TRUE or FALSE
+void g3d_set_custom_color_draw(p3d_rob* r, int draw_custom)
+{
+  r->draw_custom_color = draw_custom;
+}
+
+//! @ingroup graphic 
+//! Stores one color to be called latter to draw a robot for example
+//! \param color_vect the vector that will be filled with RGBA components
+void g3d_set_custom_color_vect(GLdouble color_vect[4])
+{
+  m_color_vect[0] = color_vect[0];
+  m_color_vect[1] = color_vect[1];
+  m_color_vect[2] = color_vect[2];
+  m_color_vect[3] = color_vect[3];
+}
+
+//! @ingroup graphic 
+//! Stores one color to be called latter to draw a robot for example
+//! \param color_vect the vector that will be filled with RGBA components
+void g3d_get_custom_color_vect(GLdouble color_vect[4])
+{
+  color_vect[0] = m_color_vect[0];
+  color_vect[1] = m_color_vect[1];
+  color_vect[2] = m_color_vect[2];
+  color_vect[3] = m_color_vect[3];
+}
+
 //! @ingroup graphic
 /****************************************************************************************************/
 void g3d_drawDisc(double x,double y,double z, float r, int color, GLdouble color_vect[4]) {
@@ -1481,6 +1513,9 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
   
   if(fill && !win->vs.allIsBlack) {
     switch(coll) {
+      case 2:
+        g3d_get_custom_color_vect(color_vect);
+        break;
       case 1:
         g3d_get_color_vect(Red, color_vect);
       break;

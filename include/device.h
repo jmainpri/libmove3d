@@ -766,6 +766,7 @@ typedef struct rob
   int nbDpgCells;
   class DpgCell ** dpgCells;
 #endif
+  int draw_custom_color;
 } p3d_rob, *pp3d_rob;
 
 #endif /* #ifndef _DEVICE_H */

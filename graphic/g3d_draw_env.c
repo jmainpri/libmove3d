@@ -935,6 +935,9 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
   nb = p3d_get_desc_number(P3D_BODY);
 
   num = p3d_get_desc_curnum(P3D_ROBOT);
+  
+  p3d_rob *r;
+  r=(p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 
 #ifdef P3D_COLLISION_CHECKING
   if (p3d_numcoll) {
@@ -942,14 +945,15 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
   }
 #endif
 	
+  if ( r->draw_custom_color ) {
+    coll = 2;
+  }
+  
   for (ib = 0;ib < nb;ib++) {
     p3d_sel_desc_num(P3D_BODY, ib);
     g3d_draw_body(coll, win);
   }
   p3d_sel_desc_num(P3D_BODY,b);
-
-  p3d_rob *r;
-  r=(p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   
 #ifdef DPG
   if(ENV.getBool(Env::drawGrid) && r->GRAPH && r->GRAPH->dpgGrid){
