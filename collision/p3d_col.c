@@ -2713,11 +2713,37 @@ int p3d_col_add_obstacle_list(p3d_obj **obst, int nof_obst)
   return success;
 }
 
+
+//! Computes the distance between the closest points of two obj relatively to each other.
+//! \param obj1 pointer to the first p3d_obj
+//! \param obj2 pointer to the second p3d_obj
+//! \param closest_point_obj1 closest point on to the first obj (given in world frame)
+//! \param closest_point_obj1 closest point on to the second obj (given in world frame)
+//! \return the computed distance
+double p3d_col_obj_obj_distance(p3d_obj *obj1, p3d_obj *obj2, p3d_vector3 closest_point_obj1, p3d_vector3 closest_point_obj2)
+{
+  if(obj1==NULL || obj2==NULL)
+  {
+    printf("%s: %d: p3d_col_obj_obj_distance(): one or more p3d_obj* input is NULL.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  switch(p3d_col_mode){ 
+    case p3d_col_mode_pqp:
+      return pqp_distance(obj1, obj2, closest_point_obj1, closest_point_obj2);
+    break;
+    default:
+      printf("%s: %d: p3d_col_obj_obj_distance(): this function only works with PQP.\n",__FILE__,__LINE__);
+      return 0;
+    break;
+  }
+}
+
 //! Computes the distance between the closest points of two robots relatively to each other.
 //! \param robot1 pointer to the first robot
 //! \param robot2 pointer to the second robot
 //! \param closest_point_rob1 closest point on to the first robot (given in world frame)
-//! \param closest_point_rob1 closest point on to the first robot (given in world frame)
+//! \param closest_point_rob1 closest point on to the second robot (given in world frame)
 //! \return the computed distance
 double p3d_col_robot_robot_distance(p3d_rob *robot1, p3d_rob *robot2, p3d_vector3 closest_point_rob1, p3d_vector3 closest_point_rob2)
 {

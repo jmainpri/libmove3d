@@ -434,6 +434,9 @@ int pqp_create_pqpModel(p3d_obj *obj)
   if(nb_triangles==0)
   {
     printf("%s: %d: pqp_create_pqpModel(): no triangles were added to the PQP model of \"%s\".\n",__FILE__,__LINE__,obj->name);
+    obj->pqpModel->EndModel();
+    delete obj->pqpModel;
+    obj->pqpModel= NULL;
     return PQP_ERROR;
   }
   obj->pqpModel->EndModel();
@@ -3377,7 +3380,6 @@ int pqp_robot_obj_collision_test(p3d_rob *robot, p3d_obj *obj)
          }
          return 1;
        }
-
     }
 
     return 0;
