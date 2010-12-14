@@ -2960,3 +2960,70 @@ int p3d_is_point_above_plane(p3d_vector3 point, p3d_plane plane)
 
   return 0;
 }
+
+//! Scales a body to make it fit the length of its associated "bone" (the segments between its joint and the next joint).
+//! \param name name of the body (as it will appear in the .macro file of the robot)
+//! \return 0 in case of success, 1 otherwise
+int p3d_adjust_deformable_body(char *name) {
+  unsigned int i, j, k;
+  double d, minD, maxD;
+  double originalLength, lengthShift, scale;
+  p3d_vector3 direction, t;
+  p3d_jnt *joint= NULL;
+  p3d_obj *obj= NULL;
+
+
+  obj = p3d_get_body_by_name(name);
+  if (obj == NULL) {
+    printf("%s: %d: p3d_adjust_deformable_body(): no body with name \"%s\" is declared.\n", __FILE__, __LINE__, name);
+    return 1;
+  } 
+  //get bone length:
+  joint= obj->jnt;
+
+  if(joint==NULL) {
+    printf("%s: %d: p3d_adjust_deformable_body(): body named \"%s\" should have an associated joint.\n", __FILE__, __LINE__, name);
+    return 1;
+  }
+// 
+//   if(joint->type!=P3D_TRANSLATE) {
+//     printf("%s: %d: p3d_adjust_deformable_body(): body named \"%s\" should be of type P3D_TRANSLATE.\n", __FILE__, __LINE__, name);
+//     return 1;
+//   }
+// 
+//   lengthShift= joint->dof_data[0].v;
+
+  // scaling direction:
+  p3d_mat4ExtractColumnY(joint->abs_pos, direction);
+  p3d_vectNormalize(direction, direction);
+   
+  for(i=0; i<obj->np; ++i) {
+    d= p3d_vectDotProd(obj->pol[i]->poly->the_points[0], direction);
+    minD= maxD= d;
+
+    for(j=1; j<obj->pol[i]->poly->nb_points; ++j) {
+      d= p3d_vectDotProd(obj->pol[i]->poly->the_points[0], direction);
+      if( d < minD ) { 
+        minD= d;
+      }
+      if( d > maxD ) { 
+        maxD= d;
+      }
+    }
+
+    originalLength= maxD - minD;
+
+    scale= (originalLength + lengthShift) / originalLength;
+//     scale= 2.0;
+
+    for(j=0; j<obj->pol[i]->poly->nb_points; ++j) {
+      d= p3d_vectDotProd(obj->pol[i]->poly->the_points[j], direction);
+      for(k=0; k<3; ++k) {
+        obj->pol[i]->poly->the_points[j][k]= obj->pol[i]->poly->the_points[j][k] + d*(scale-1.0)*direction[k];
+      }
+    }
+  }
+
+  return 0;
+}
+

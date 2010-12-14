@@ -2249,6 +2249,24 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			continue;
 		}
 
+		if (  strcmp ( fct, "p3d_make_body_deformable" ) == 0   )
+		{
+			if ( !read_desc_name ( fd, name ) )  return ( read_desc_error ( fct ) );
+			if ( fileType )  //is a macro file
+			{
+				strcpy ( namecompl, nameobj );
+				strcat ( namecompl, "." );
+				strcat ( namecompl, name );
+			}
+			else
+			{
+				strcpy ( namecompl, name );
+			}
+                        printf("%s: %d: p3d_make_body_deformable %s\n", __FILE__,__LINE__,namecompl);
+                        p3d_adjust_deformable_body(namecompl);
+			continue;
+		}
+
 		if ( ( strcmp ( fct, "p3d_set_prim_color" ) == 0 ) || ( strcmp ( fct, "M3D_set_prim_color" ) == 0 ) )
 		{
 			if ( !read_desc_name ( fd, name ) )  return ( read_desc_error ( fct ) );
