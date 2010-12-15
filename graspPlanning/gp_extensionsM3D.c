@@ -1461,22 +1461,6 @@ int gpExport_bodies_for_coldman(p3d_rob *robot)
         {
           fprintf(file, "f %d %d %d\n", indices[0]+shift, indices[1]+shift, indices[2]+shift);
         }
-        else
-        {
-          #ifndef PQP
-          printf("%s: %d: gpExport_bodies_for_coldman(): some functions in p3d_pqp are needed to deal with non triangular faces.\n", __FILE__,__LINE__);
-          #else
-          triangles= pqp_triangulate_face(body->pol[j]->poly, k, &nb_triangles);
-          if(triangles!=NULL)
-          {
-            for(it=0; it<nb_triangles; it++)
-            {
-              fprintf(file, "f %d %d %d\n", triangles[it][0]+1+shift, triangles[it][1]+1+shift, triangles[it][2]+1+shift);
-            }
-            free(triangles);
-          }
-          #endif
-        }
       }
       shift+= body->pol[j]->poly->nb_points;
     }
@@ -1611,22 +1595,6 @@ int gpExport_obstacles_for_coldman()
         if(body->pol[j]->poly->the_faces[k].nb_points==3)
         {
           fprintf(file, "f %d %d %d\n", indices[0]+shift, indices[1]+shift, indices[2]+shift);
-        }
-        else
-        {
-          #ifndef PQP
-          printf("%s: %d: gpExport_obstacles_for_coldman(): some functions in p3d_pqp are needed to deal with non triangular faces.\n", __FILE__,__LINE__);
-          #else
-          triangles= pqp_triangulate_face(body->pol[j]->poly, k, &nb_triangles);
-          if(triangles!=NULL)
-          {
-            for(it=0; it<nb_triangles; it++)
-            {
-              fprintf(file, "f %d %d %d\n", triangles[it][0]+1+shift, triangles[it][1]+1+shift, triangles[it][2]+1+shift);
-            }
-            free(triangles);
-          }
-          #endif
         }
       }
       shift+= body->pol[j]->poly->nb_points;
