@@ -40,6 +40,9 @@ int gpSAHfinger_forward_kinematics(double length1, double length2, double length
 {
   double a;
 
+  //reverse the abduction angle to fit the new model
+  q1= -q1;
+
 //   x= -sin(q1)*(  length1*cos(q2) + length2*cos(q2+q3) + length3*cos(q2+2*q3)  ); 
 //   y=  cos(q1)*(  length1*cos(q2) + length2*cos(q2+q3) + length3*cos(q2+2*q3)  );
 //   z= -length1*sin(q2) - length2*sin(q2+q3) - length3*sin(q2+2*q3);
@@ -963,7 +966,7 @@ printf("contacts %d\n",contactList.size());
       p3d_xformPoint(T, handProp.workspace[j].center, center);
       points.clear();
       kdtree.sphereIntersection(center, handProp.workspace[j].radius, points);
-printf("points %d\n",points.size());
+
       glPushMatrix();
       glMultMatrixf(mat);
         glBegin(GL_POINTS);

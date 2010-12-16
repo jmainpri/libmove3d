@@ -3624,8 +3624,10 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
 
     tmpList= graspList;
  
-    gpRemove_edge_grasps(tmpList, graspList, 80*DEGTORAD, 0.025);
+    printf("Remove grasps close to edges (currently %d grasps).\n",graspList.size());
+//     gpRemove_edge_grasps(tmpList, graspList, 80*DEGTORAD, 0.025);
 
+    printf("Reduce grasp list size (currently %d grasps).\n",graspList.size());
     tmpList= graspList;
     gpReduce_grasp_list_size(tmpList, graspList, 80);
 

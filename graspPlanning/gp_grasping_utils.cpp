@@ -691,6 +691,9 @@ int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
    }
   #endif
 
+  //reverse the abduction angle to fit the new model
+  q[1]= -q[1];
+
   double l0, l1, l2, l3;
   double x, y, z;
   p3d_vector3 p_finger, fingerpad_normal_relative;
@@ -961,7 +964,11 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
 
         gpSAHfinger_forward_kinematics(Twrist, hand, q, p2, fingerpad_normal, finger_index);
         if( sqrt( SQR(p2[0]-p[0]) + SQR(p2[1]-p[1]) + SQR(p2[2]-p[2]) ) < 1e-3)
-        { return GP_OK; }
+        { 
+          // reverse the abduction angle to fit the new model:
+          q[1]= -q[1];
+          return GP_OK;
+        }
 
       }
       if( q1_found[i] && q3_found[j] && q2_found[2*j+1] )
@@ -973,7 +980,11 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
 
         gpSAHfinger_forward_kinematics(Twrist, hand, q, p2, fingerpad_normal, finger_index);
         if( sqrt( SQR(p2[0]-p[0]) + SQR(p2[1]-p[1]) + SQR(p2[2]-p[2]) ) < 1e-3)
-        { return GP_OK; }
+        { 
+          // reverse the abduction angle to fit the new model:
+          q[1]= -q[1];
+          return GP_OK;
+        }
       }
     }
   }

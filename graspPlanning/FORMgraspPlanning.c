@@ -14,7 +14,7 @@
 
 // static char ObjectName[]= "Horse";
 // static char ObjectName[]= "GREY_TAPE";
-static char ObjectName[]= "Mug";
+static char ObjectName[]= "SpaceNav_Box";
 // static char ObjectName[]= "OrangeBottle";
 static char RobotName[]= "JIDO_ROBOT";
 static char HandRobotName[]= "";
@@ -1261,88 +1261,15 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 void test_manipulation();
 
-void computeGraspFrame(p3d_matrix4 grasp_frame, std::vector<double> &config)
+//! Computes the current grasp frame and hand config (for SAHand right) 
+void addCurrentGraspToList(std::list<gpGrasp> &graspList)
 {
   gpHand_properties handProp;
   p3d_rob *robot= (p3d_rob*)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
   p3d_rob *object= (p3d_rob*)p3d_get_robot_by_name(ObjectName);
-  p3d_matrix4 Tobject, Tobject_inv, Trobot, Tgrasp_frame_hand_inv, Ttmp;
-
-  p3d_get_freeflyer_pose(robot, Trobot);
-  p3d_get_freeflyer_pose(object, Tobject);
-
-//   Tobject_inv*Trobot*Tgh_inv= grasp_frame;
-  handProp.initialize(GP_SAHAND_RIGHT);
-  p3d_matInvertXform(Tobject, Tobject_inv);
-  p3d_matInvertXform(handProp.Tgrasp_frame_hand, Tgrasp_frame_hand_inv);
-
-  p3d_matMultXform(Tobject_inv, Trobot, Ttmp);
-  p3d_matMultXform(Ttmp, Tgrasp_frame_hand_inv, grasp_frame);
-  p3d_mat4Print(grasp_frame, "grasp_frame");
-
-  gpGet_hand_configuration(robot, handProp, 0, config);
-
-  printf("config= [ ");
-  for(unsigned int i=0; i<config.size(); ++i)
-  {  printf("%f\n",config.at(i)); }
-  printf("\n");
-}
-
-static void CB_test_obj ( FL_OBJECT *obj, long arg )
-{
-//   p3d_rob *o= (p3d_rob*)p3d_get_robot_by_name("Mug");
-// gpSample_poly_surface_random(o->o[0]->pol[0]->poly, 1500, 0.0, CONTACTLIST);
-// redraw();
-// return;
-
-  p3d_rob *kuka= (p3d_rob*)p3d_get_robot_by_name("JIDOKUKA_ROBOT");
-  p3d_jnt *joint= p3d_get_robot_jnt_by_name(kuka, "armJoint7");
-  p3d_jnt *baseJoint= p3d_get_robot_jnt_by_name(kuka, "armJoint1");//"platformJoint");
-  configPt q= p3d_get_robot_config(kuka);
-  double r3, r5;
-  Gb_q7 Q;
-  Gb_th th07;
-  p3d_matrix4 mat, Tbase, T, Tinv;
-
-  Q.q1= q[14];
-  Q.q2= q[15];
-  Q.q3= q[16];
-  Q.q4= q[17];
-  Q.q5= q[18];
-  Q.q6= q[19];
-  Q.q7= q[20];
-
-printf("%f %f %f %f %f %f %f \n",Q.q1*180.0/M_PI,Q.q2*180.0/M_PI,Q.q3*180.0/M_PI,Q.q4*180.0/M_PI,Q.q5*180.0/M_PI,Q.q6*180.0/M_PI,Q.q7*180.0/M_PI);
-  r3 = 0.4;
-  r5 = 0.39;
-  kukaLBR_mgd(&Q, r3, r5, &th07);
-  Gb_th_matrix4(&th07, mat);
-  p3d_matInvertXform(baseJoint->abs_pos, Tinv);
-  Tbase[0][0]= 0;   Tbase[0][1]= 1;  Tbase[0][2]= 0;  Tbase[0][3]= 0.165000;
-  Tbase[1][0]= 0;   Tbase[1][1]= 0;  Tbase[1][2]=-1;  Tbase[1][3]= -0.137000;
-  Tbase[2][0]=-1;   Tbase[2][1]= 0;  Tbase[2][2]= 0;  Tbase[2][3]= 0.907000;
-  Tbase[3][0]= 0;   Tbase[3][1]= 0;  Tbase[3][2]= 0;  Tbase[3][3]= 1;
-
-  p3d_matInvertXform(Tbase, Tinv);
-
-  p3d_matMultXform(Tinv, joint->abs_pos, T);
-  p3d_mat4Print(mat, "gb");
-  p3d_mat4Print(T, "Move3D");
-
-//   p3d_mat4Print(baseJoint->abs_pos, "base");
-  p3d_destroy_config(kuka, q);
-return;
-
-  gpHand_properties handProp;
-  p3d_rob *robot= (p3d_rob*)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
-  p3d_rob *object= (p3d_rob*)p3d_get_robot_by_name(ObjectName);
-  p3d_matrix4 Tobject, grasp_frame;
-  p3d_vector3 zAxis;
-  double alpha, beta, gamma;
-  std::vector<double> config, openConfig;
-  double height= 0.21;
-  std::list<gpGrasp> graspList;
+  p3d_matrix4 grasp_frame, Tobject, Tobject_inv, Trobot, Tgrasp_frame_hand_inv, Ttmp;
   gpGrasp grasp; 
+  std::vector<double> config, openConfig;
 
   grasp.object_name= ObjectName;
   grasp.hand_type= GP_SAHAND_RIGHT;
@@ -1369,10 +1296,51 @@ return;
 
   grasp.openConfig= openConfig;
 
+  p3d_get_freeflyer_pose(robot, Trobot);
   p3d_get_freeflyer_pose(object, Tobject);
 
-    computeGraspFrame(grasp_frame, config);
+//   Tobject_inv*Trobot*Tgh_inv= grasp_frame;
+  handProp.initialize(GP_SAHAND_RIGHT);
+  p3d_matInvertXform(Tobject, Tobject_inv);
+  p3d_matInvertXform(handProp.Tgrasp_frame_hand, Tgrasp_frame_hand_inv);
 
+  p3d_matMultXform(Tobject_inv, Trobot, Ttmp);
+  p3d_matMultXform(Ttmp, Tgrasp_frame_hand_inv, grasp_frame);
+//   p3d_mat4Print(grasp_frame, "grasp_frame");
+
+  gpGet_hand_configuration(robot, handProp, 0, config);
+
+  grasp.config= config;
+  p3d_mat4Copy(grasp_frame, grasp.frame); 
+  grasp.ID= graspList.size()+1;
+  graspList.push_back(grasp);
+
+//   printf("config= [ ");
+//   for(unsigned int i=0; i<config.size(); ++i)
+//   {  printf("%f\n",config.at(i)); }
+//   printf("\n");
+}
+
+static void CB_test_obj ( FL_OBJECT *obj, long arg )
+{
+  gpHand_properties handProp;
+  p3d_rob *robot= (p3d_rob*)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
+  p3d_rob *object= (p3d_rob*)p3d_get_robot_by_name(ObjectName);
+  p3d_matrix4 T, Tobject, grasp_frame;
+  p3d_vector3 zAxis;
+  double alpha, beta, gamma;
+  std::vector<double> config, openConfig;
+  double height= 0.21;
+  std::list<gpGrasp> graspList;
+  gpGrasp grasp; 
+  std::string filename;
+
+  filename= "../graspPlanning/graspLists/SAHandRight/"+ std::string(ObjectName) + "Grasps.xml";
+
+
+  addCurrentGraspToList(GRASPLIST);
+
+/*
   for(int i=0; i<24; ++i)
   {
 //     if(i<4)
@@ -1411,17 +1379,13 @@ return;
       T[1][3]-= 0.5*height*zAxis[1];
       T[2][3]-= 0.5*height*zAxis[2];
     }
-
-
     p3d_set_freeflyer_pose(object, T);
-    computeGraspFrame(grasp_frame, config);
-    grasp.config= config;
-    p3d_mat4Copy(grasp_frame, grasp.frame); 
-    grasp.ID= i+1;
-    graspList.push_back(grasp);
+    addCurrentGraspToList(GRASPLIST);
   }
+*/
 
-  gpSave_grasp_list(graspList, "OrangeBottleGrasps.xml");
+std::cout << filename << std::endl;
+  gpSave_grasp_list(GRASPLIST, filename);
 
 return;
 
