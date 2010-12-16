@@ -2024,6 +2024,7 @@ void *p3d_beg_obj(char *name, int type) {
 #endif
   o->robot_part= P3D_NOT_A_PART;
   o->distance_weight= 1.0;
+  o->isDeformable= false;
   return((void *)(XYZ_OBSTACLES = o));
 }
 
@@ -2961,67 +2962,98 @@ int p3d_is_point_above_plane(p3d_vector3 point, p3d_plane plane)
   return 0;
 }
 
-//! Scales a body to make it fit the length of its associated "bone" (the segments between its joint and the next joint).
+//! Prepares a body to make it deformable i.e. a body that will be rescaled according to the DOF
+//! of a prismatic joint it is related to.
 //! \param name name of the body (as it will appear in the .macro file of the robot)
 //! \return 0 in case of success, 1 otherwise
-int p3d_adjust_deformable_body(char *name) {
-  unsigned int i, j, k;
-  double d, minD, maxD;
-  double originalLength, lengthShift, scale;
-  p3d_vector3 direction, t;
-  p3d_jnt *joint= NULL;
+int p3d_make_body_deformable(char *name) {
+  int i;
+  unsigned int j;
   p3d_obj *obj= NULL;
-
 
   obj = p3d_get_body_by_name(name);
   if (obj == NULL) {
     printf("%s: %d: p3d_adjust_deformable_body(): no body with name \"%s\" is declared.\n", __FILE__, __LINE__, name);
     return 1;
   } 
-  //get bone length:
+
+  obj->isDeformable= true;
+
+  // make a copy of the original vertex positions:
+  for(i=0; i<obj->np; ++i) {
+    obj->pol[i]->poly->originalPoints= (p3d_vector3*) malloc(obj->pol[i]->poly->nb_points*sizeof(p3d_vector3));
+    for(j=0; j<obj->pol[i]->poly->nb_points; ++j) {
+      p3d_vectCopy(obj->pol[i]->poly->the_points[j], obj->pol[i]->poly->originalPoints[j]);
+    }
+  }
+
+  return 0;
+}
+
+
+//! Scales a body to make it fit the length of its associated "bone" (the segments between its joint and the next joint).
+//! \param name name of the body (as it will appear in the .macro file of the robot)
+//! \return 0 in case of success, 1 otherwise
+int p3d_adjust_deformable_body(p3d_obj *obj) {
+  if(obj==NULL) {
+    printf("%s: %d: p3d_adjust_deformable_body(): input p3d_obj is NULL.\n", __FILE__, __LINE__);
+    return 1;
+  }
+  if(obj->isDeformable==false) {
+    return 1;
+  }
+
+  int i;
+  unsigned int j;
+  double d;
+  double lengthShift, length, scale;
+  p3d_vector3 p1, p2, direction, t;
+  p3d_jnt *joint= NULL, *translationJoint= NULL, *prevJoint= NULL, *nextJoint= NULL;
+
   joint= obj->jnt;
 
   if(joint==NULL) {
-    printf("%s: %d: p3d_adjust_deformable_body(): body named \"%s\" should have an associated joint.\n", __FILE__, __LINE__, name);
+    printf("%s: %d: p3d_adjust_deformable_body(): body named \"%s\" should have an associated joint.\n", __FILE__, __LINE__, obj->name);
     return 1;
   }
-// 
-//   if(joint->type!=P3D_TRANSLATE) {
-//     printf("%s: %d: p3d_adjust_deformable_body(): body named \"%s\" should be of type P3D_TRANSLATE.\n", __FILE__, __LINE__, name);
-//     return 1;
-//   }
-// 
-//   lengthShift= joint->dof_data[0].v;
 
-  // scaling direction:
-  p3d_mat4ExtractColumnY(joint->abs_pos, direction);
-  p3d_vectNormalize(direction, direction);
-   
+  translationJoint=  joint->next_jnt[0];
+  prevJoint= joint->prev_jnt;
+  nextJoint= joint->next_jnt[0]->next_jnt[0];
+
+  if(translationJoint->type!=P3D_TRANSLATE) {
+    printf("%s: %d: p3d_adjust_deformable_body(): joint named \"%s\" should be of type P3D_TRANSLATE.\n", __FILE__, __LINE__, joint->name);
+    return 1;
+  }
+
+  p3d_mat4ExtractTrans(prevJoint->abs_pos, p1);
+  p3d_mat4ExtractTrans(nextJoint->abs_pos, p2);
+  p3d_vectSub(p2, p1, t);
+  length= p3d_vectNorm(t);
+
+  lengthShift= translationJoint->dof_data[0].v;
+
+  direction[0]= 0;
+  direction[1]= 1;
+  direction[2]= 0;
+
+  scale= length/(length-lengthShift);
+
   for(i=0; i<obj->np; ++i) {
-    d= p3d_vectDotProd(obj->pol[i]->poly->the_points[0], direction);
-    minD= maxD= d;
-
-    for(j=1; j<obj->pol[i]->poly->nb_points; ++j) {
-      d= p3d_vectDotProd(obj->pol[i]->poly->the_points[0], direction);
-      if( d < minD ) { 
-        minD= d;
-      }
-      if( d > maxD ) { 
-        maxD= d;
-      }
-    }
-
-    originalLength= maxD - minD;
-
-    scale= (originalLength + lengthShift) / originalLength;
-//     scale= 2.0;
 
     for(j=0; j<obj->pol[i]->poly->nb_points; ++j) {
-      d= p3d_vectDotProd(obj->pol[i]->poly->the_points[j], direction);
-      for(k=0; k<3; ++k) {
-        obj->pol[i]->poly->the_points[j][k]= obj->pol[i]->poly->the_points[j][k] + d*(scale-1.0)*direction[k];
-      }
+      d= p3d_vectDotProd(obj->pol[i]->poly->originalPoints[j], direction);
+
+      obj->pol[i]->poly->the_points[j][0]= obj->pol[i]->poly->originalPoints[j][0] + d*(scale-1.0)*direction[0];
+      obj->pol[i]->poly->the_points[j][1]= obj->pol[i]->poly->originalPoints[j][1] + d*(scale-1.0)*direction[1];
+      obj->pol[i]->poly->the_points[j][2]= obj->pol[i]->poly->originalPoints[j][2] + d*(scale-1.0)*direction[2];
     }
+    g3d_delete_poly(obj->pol[i], 0);
+    g3d_delete_poly(obj->pol[i], 1);
+    g3d_delete_poly(obj->pol[i], 2);
+    g3d_init_poly(obj->pol[i], 0);
+    g3d_init_poly(obj->pol[i], 1);
+    g3d_init_poly(obj->pol[i], 2);
   }
 
   return 0;

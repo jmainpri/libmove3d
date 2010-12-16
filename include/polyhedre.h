@@ -14,6 +14,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <locale.h>
+#include <vector>
 
 /*#include "p3d_matrix.h" */
 #ifdef _p3d_MATRIX_H
@@ -140,6 +141,8 @@ typedef struct poly_polyhedre
 
     //! boolean to know if the edges and neighbours have been computed
     int areEdgesAndNeighboursUpToDate;
+
+     poly_vector3  *originalPoints;
 
     #ifdef GRASP_PLANNING 
      //! all the following values are left to zero by default and computed

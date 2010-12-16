@@ -2262,8 +2262,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			{
 				strcpy ( namecompl, name );
 			}
-                        printf("%s: %d: p3d_make_body_deformable %s\n", __FILE__,__LINE__,namecompl);
-                        p3d_adjust_deformable_body(namecompl);
+                        p3d_make_body_deformable(namecompl);
 			continue;
 		}
 

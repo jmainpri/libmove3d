@@ -270,6 +270,7 @@ typedef struct obj {
 #endif
   enum p3d_robot_part robot_part; //! used to mark the body as belonging to a specific part of the robot
   double distance_weight; //! weight used in robot distance computation (to another robot or body)
+  bool isDeformable; //! for human morphology adaptation
 } p3d_obj, *pp3d_obj;
 
 

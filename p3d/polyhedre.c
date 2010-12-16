@@ -151,6 +151,7 @@ void poly_init_poly(poly_polyhedre *polyhedre, char *name)
       polyhedre->the_edges=NULL;
       polyhedre->curvatures=NULL;
       polyhedre->vertex_normals=NULL;
+      polyhedre->originalPoints=NULL;
       polyhedre->centroid[0]= polyhedre->centroid[1]= polyhedre->centroid[2]= 0.0;
       polyhedre->areEdgesAndNeighboursUpToDate=FALSE;
 
@@ -204,6 +205,11 @@ void poly_destroy_poly(poly_polyhedre *polyhedre)
     MY_FREE(polyhedre->vertex_normals,p3d_vector3,polyhedre->nb_points);
     polyhedre->vertex_normals = NULL;
   }
+  if(polyhedre->originalPoints){
+    MY_FREE(polyhedre->originalPoints,p3d_vector3,polyhedre->nb_points);
+    polyhedre->originalPoints = NULL;
+  }
+
   poly_destroy_edges(polyhedre);
   poly_destroy_planes(polyhedre);
   for(i=0;i<polyhedre->nb_faces;i++)
