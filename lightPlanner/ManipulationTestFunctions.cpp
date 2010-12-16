@@ -183,7 +183,7 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
   m_manipulation->setDebugMode(false);
   
   n= 0;
-  nbOrientations= 1;
+  nbOrientations= 100;
   for(int i=1; i<=nbOrientations; ++i)
   {
     printf("****************test %d/%d************************\n",i,nbOrientations);
@@ -245,21 +245,11 @@ bool ManipulationTestFunctions::runTest(int id)
     return manipTest(ARM_PICK_GOTO);
   }
   
-  if (id == 3) 
-  {
-    return manipTest(ARM_PICK_GOTO_AND_TAKE_TO_FREE);
-  }
   
   if (id == 4) 
   {
     manipTest(ARM_PICK_GOTO);
-    return manipTest(ARM_PICK_TAKE_TO_FREE);
-  }
-  
-  if (id == 5) 
-  {
-    manipTest(ARM_PICK_GOTO);
-    return manipTest(ARM_PICK_TAKE_TO_FREE_POINT);
+    return manipTest(ARM_TAKE_TO_FREE);
   }
 
   if (id == 6) 

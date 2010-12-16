@@ -48,6 +48,10 @@ class  ManipulationUtils {
     //! Copy the given configuration to the robot XForm window
     //! \return 0 in case of success, 1 otherwise
     static int copyConfigToFORM(p3d_rob* robot, configPt q);
+
+    //! Check if the given vector is valid or not
+    //! \return true if the vector is valid false otherwise
+    static bool isValidVector(std::vector<double> ObjectPos);
 };
 
 //! @ingroup manipulation

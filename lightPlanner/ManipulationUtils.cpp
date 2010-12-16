@@ -153,3 +153,12 @@ int ManipulationUtils::copyConfigToFORM(p3d_rob* robot, configPt q) {
   p3d_set_and_update_this_robot_conf_multisol(robot, robot->confcur->q, NULL, 0, robot->ikSol);
   return 0;
 }
+
+bool ManipulationUtils::isValidVector(std::vector<double> objectPos){
+  for(unsigned int i = 0; i < objectPos.size(); i++){
+    if (objectPos[i] != P3D_HUGE){
+      return true;
+    }
+  }
+  return false;
+}

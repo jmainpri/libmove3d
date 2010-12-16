@@ -929,9 +929,13 @@ int ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, boo
     ChronoPrint("");
     ChronoOff();
 #else
-    result = p3d_specific_search((char *)"");
-    p3d_traj* traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
-    optimiseTrajectory(_robot, traj, smoothingSteps, smootingTime);
+result = p3d_specific_search((char *)"");
+    if(result){
+      p3d_traj* traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+      if(traj){
+        optimiseTrajectory(_robot, traj, smoothingSteps, smootingTime);
+      }
+    }
 #endif
     if (!result) {
       printf("ArmGotoQ: could not find a path.\n");
@@ -1548,17 +1552,16 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
         status = armPickGoto(armId, qi, object, trajs);
         break;
       }
-      case ARM_PICK_TAKE_TO_FREE: {
+      case ARM_TAKE_TO_FREE: {
         printf("plan for ARM_PICK_TAKE_TO_FREE task\n");
-        status = armPickTakeToFree(armId, qf, object, trajs);
+        if(!ManipulationUtils::isValidVector(objGoto)){
+          status = armPickTakeToFree(armId, qf, object, trajs);
+        }else{
+          status = armPickTakeToFreePoint(armId, objGoto, object, trajs);
+        }
         break;
       }
-      case ARM_PICK_TAKE_TO_FREE_POINT:{
-        printf("plan for ARM_PICK_TAKE_TO_FREE_POINT task\n");
-        status = armPickTakeToFreePoint(armId, objGoto, object, trajs);
-        break;
-      }
-      case ARM_PICK_TAKE_TO_PLACE: {
+      case ARM_TAKE_TO_PLACE: {
         printf("plan for ARM_PICK_TAKE_TO_PLACE task\n");
         status = armPickTakeToPlace(armId, object, support, trajs);
         break;
@@ -1568,16 +1571,21 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
         status = armPlaceFromFree(armId, qi, object, support, trajs);
         break;
       }
-      case ARM_PICK_AND_PLACE: {
-        printf("plan for ARM_PICK_AND_PLACE task\n");
-        status = armPickAndPlace(armId, qi, qf, object, support, trajs);
-        break;
-      }
-      case ARM_PICK_GOTO_AND_TAKE_TO_FREE: {
-        printf("plan for ARM_PICK_GOTO_AND_TAKE_TO_FREE task\n");
-        status = armPickGotoAndTakeToFree(armId, qi, qf, object, support, trajs);
-        break;
-      }
+//       case ARM_TAKE_TO_FREE_POINT:{
+//         printf("plan for ARM_PICK_TAKE_TO_FREE_POINT task\n");
+//         status = armPickTakeToFreePoint(armId, objGoto, object, trajs);
+//         break;
+//       }
+//       case ARM_PICK_AND_PLACE: {
+//         printf("plan for ARM_PICK_AND_PLACE task\n");
+//         status = armPickAndPlace(armId, qi, qf, object, support, trajs);
+//         break;
+//       }
+//       case ARM_PICK_GOTO_AND_TAKE_TO_FREE: {
+//         printf("plan for ARM_PICK_GOTO_AND_TAKE_TO_FREE task\n");
+//         status = armPickGotoAndTakeToFree(armId, qi, qf, object, support, trajs);
+//         break;
+//       }
       default: {
         printf("%s: %d: ManipulationPlanner::armPlanTask(): wrong task.\n", __FILE__, __LINE__);
         status = MANIPULATION_TASK_INVALID_TASK;
