@@ -398,21 +398,12 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 16 :{
-#if defined(GRASP_PLANNING) && defined(LIGHT_PLANNER)
-  configPt q = p3d_alloc_config(XYZ_ROBOT);
-  gpGrasp grasp;
-  p3d_matrix4 id;
-  double maxCost, cost;
-  
-  for (int i = 0 ; i < 1; i++){
-    p3d_shoot(XYZ_ROBOT, q, 1);
-    p3d_set_and_update_this_robot_conf(XYZ_ROBOT,q);
-    g3d_draw_allwin_active();
-//     cost = computeRobotGraspArmCost(XYZ_ROBOT, 0, grasp, q, XYZ_ROBOT->ROBOT_POS, id);
-//     maxCost = cost > maxCost ? cost : maxCost;
-  }
-  printf("MaxCost = %f \n", maxCost);
-#endif
+      double x, y, z, rx, ry, rz;
+      p3d_rob* object = (p3d_rob*) p3d_get_robot_by_name((char*)"GREY_TAPE");
+      p3d_get_freeflyer_pose2(object, &x, &y, &z, &rx, &ry, &rz);
+      double zValue = p3d_random(-M_PI,M_PI);
+      p3d_set_freeflyer_pose2(object, x, y, z, 0, 0, zValue);
+      printf("Z value = %f\n", zValue*180/M_PI);
 //#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
 //      configPt startConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
 //      configPt endConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
