@@ -115,6 +115,8 @@ class  ManipulationPlanner {
     MANIPULATION_TASK_MESSAGE cutTrajInSmall ( p3d_traj* inputTraj, p3d_traj* outputTraj );
     /** concatenate a vector of p3d_traj */
     MANIPULATION_TASK_MESSAGE concatTrajectories (std::vector<p3d_traj*>& trajs, p3d_traj** concatTraj);
+    /** Correct the given configuration to be inside of the joints bounds. and print Warning */
+    void fitConfigurationToRobotBounds(configPt q);
     /** Set the parameters to compute an RRT */
     int computeRRT(int smoothingSteps, double smootingTime, bool biDir);
     /** Set the parameters to compute a PRM the input is the maximal computation time*/

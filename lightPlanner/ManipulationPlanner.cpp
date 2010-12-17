@@ -883,6 +883,24 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::concatTrajectories (std::vector<p
     return MANIPULATION_TASK_OK;
 }
 
+void ManipulationPlanner::fitConfigurationToRobotBounds(configPt q){
+  for (int i = 0; i < _robot->njoints; i++) {
+    p3d_jnt* jnt = _robot->joints[i];
+    for (int j = 0; j < jnt->dof_equiv_nbr; j++) {
+      double vmin = -P3D_HUGE, vmax = P3D_HUGE;
+      p3d_jnt_get_dof_bounds(jnt, j, &vmin, &vmax);
+      if(q[jnt->index_dof + j] < vmin){
+        cout << "WARNING : Configuration correction : Joint " << jnt->name << " has value = " << q[jnt->index_dof + j] << " and its minimal bound = " << vmin << endl;
+        q[jnt->index_dof + j] = vmin;
+      }
+      if(q[jnt->index_dof + j] > vmax){
+        cout << "WARNING : Configuration correction : Joint " << jnt->name << " has value = " << q[jnt->index_dof + j] << " and its maximal bound = " << vmax << endl;
+        q[jnt->index_dof + j] = vmax;
+      }
+    }
+  }
+}
+
 //! Compute an RRT with
 //! @param smoothingSteps : number of smoothing steps
 //! @param smootingTime : maximum smoothing Time
@@ -1424,9 +1442,10 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     }
 
 // Wraning comment to see traj in Linear mode
-//  _robot->isCarryingObject = false;
-//  desactivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(),
-//                               armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
+  _robot->isCarryingObject = false;
+  armData.setCarriedObject((p3d_rob*)NULL);
+  desactivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(),
+                               armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
 
     return status;
 }
@@ -1519,6 +1538,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
   configPt qi = p3d_copy_config(_robot, qStart), qf = p3d_copy_config(_robot, qGoal);
   p3d_rob* cur_robot = (p3d_rob*)p3d_get_desc_curid(P3D_ROBOT);
   p3d_rob* object = p3d_get_robot_by_name(objectName);
+  if(!object && task != ARM_FREE){
+    return MANIPULATION_TASK_UNKNOWN_OBJECT;
+  }
   p3d_rob* support = p3d_get_robot_by_name(supportName);
   p3d_sel_desc_id(P3D_ROBOT, _robot);
   p3d_traj *traj = NULL;
@@ -1527,6 +1549,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     status = MANIPULATION_TASK_INVALID_TASK;
   } else {
     ENV.setBool(Env::drawTraj, false);
+    fitConfigurationToRobotBounds(qi);
+    fitConfigurationToRobotBounds(qf);
     checkConfigForCartesianMode(qi, object);
     checkConfigForCartesianMode(qf, object);
     fixAllHands(qi, false);
@@ -1536,13 +1560,13 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       case ARM_FREE: {
         printf("plan for ARM_FREE task\n");
         if (MPDEBUG) {
-            ManipulationUtils::copyConfigToFORM(_robot, qi);
-            ManipulationUtils::copyConfigToFORM(_robot, qf);
+          ManipulationUtils::copyConfigToFORM(_robot, qi);
+          ManipulationUtils::copyConfigToFORM(_robot, qf);
         }
         if ((traj = computeTrajBetweenTwoConfigs(qi, qf)) == NULL) {
-            printf("ERROR armPlanTask(ARM_FREE) on traj\n");
-            status = MANIPULATION_TASK_NO_TRAJ_FOUND;
-            break;
+          printf("ERROR armPlanTask(ARM_FREE) on traj\n");
+          status = MANIPULATION_TASK_NO_TRAJ_FOUND;
+          break;
         }
         trajs.push_back(traj);
         break;
@@ -1571,21 +1595,21 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
         status = armPlaceFromFree(armId, qi, object, support, trajs);
         break;
       }
-//       case ARM_TAKE_TO_FREE_POINT:{
-//         printf("plan for ARM_PICK_TAKE_TO_FREE_POINT task\n");
-//         status = armPickTakeToFreePoint(armId, objGoto, object, trajs);
-//         break;
-//       }
-//       case ARM_PICK_AND_PLACE: {
-//         printf("plan for ARM_PICK_AND_PLACE task\n");
-//         status = armPickAndPlace(armId, qi, qf, object, support, trajs);
-//         break;
-//       }
-//       case ARM_PICK_GOTO_AND_TAKE_TO_FREE: {
-//         printf("plan for ARM_PICK_GOTO_AND_TAKE_TO_FREE task\n");
-//         status = armPickGotoAndTakeToFree(armId, qi, qf, object, support, trajs);
-//         break;
-//       }
+        //       case ARM_TAKE_TO_FREE_POINT:{
+        //         printf("plan for ARM_PICK_TAKE_TO_FREE_POINT task\n");
+        //         status = armPickTakeToFreePoint(armId, objGoto, object, trajs);
+        //         break;
+        //       }
+        //       case ARM_PICK_AND_PLACE: {
+        //         printf("plan for ARM_PICK_AND_PLACE task\n");
+        //         status = armPickAndPlace(armId, qi, qf, object, support, trajs);
+        //         break;
+        //       }
+        //       case ARM_PICK_GOTO_AND_TAKE_TO_FREE: {
+        //         printf("plan for ARM_PICK_GOTO_AND_TAKE_TO_FREE task\n");
+        //         status = armPickGotoAndTakeToFree(armId, qi, qf, object, support, trajs);
+        //         break;
+        //       }
       default: {
         printf("%s: %d: ManipulationPlanner::armPlanTask(): wrong task.\n", __FILE__, __LINE__);
         status = MANIPULATION_TASK_INVALID_TASK;
