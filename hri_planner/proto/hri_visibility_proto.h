@@ -1,9 +1,10 @@
 extern void hri_initialize_visibility();
 extern int hri_is_object_visible(HRI_AGENT * agent,p3d_rob *object, int threshold, int save, int draw_at_end);
-extern int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera_fov, p3d_rob *object, double *result);
-extern int g3d_are_given_objects_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera_fov, p3d_rob **objects, int objects_nb, double *results);
+extern int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera_fov, p3d_rob *object, double *result, int save);
+extern int g3d_get_given_entities_pixelpresence_from_viewpoint(p3d_matrix4 camera_frame, double camera_fov, HRI_ENTITY **objects, int objects_nb, double *results, int save);
 extern int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, double *result, int save, char *path);
-extern int g3d_compute_visibility_for_given_objects_in_current_viewpoint(g3d_win* win, p3d_rob **objects, int objects_nb,  double *res, int save, char *path);
+extern int g3d_get_given_entities_pixelpresence_in_current_viewpoint(g3d_win* win, HRI_ENTITY **objects, int objects_nb, double *vis_results, int save, char *path);
+extern int g3d_visibility_for_given_objects_in_current_viewpoint_pixelpercentage(g3d_win* win, p3d_rob **objects, int objects_nb, double *res, int save, char *path);
 extern int hri_object_visibility_placement(HRI_AGENT *agent, p3d_rob *object, int *result, double *elevation, double *azimuth);
 extern int hri_object_pointing_placement(HRI_AGENT *agent, p3d_rob *object, int *result, double *elevation, double *azimuth);
 extern int g3d_object_visibility_placement(p3d_matrix4 camera_frame, p3d_rob *object, double Hfov, double Vfov, double Hfoa, double Vfoa, int *result, double *phi_result, double *theta_result);
@@ -17,3 +18,4 @@ extern void p3d_cartesian2spherical(double x, double y, double z, double originx
 extern int g3d_is_object_visible_from_current_viewpoint2(g3d_win* win, p3d_rob *object, double *result, int save, char *path);
 extern int hri_compute_agent_sees(HRI_AGENT * agent, int threshold, int save, int draw_at_end);
 extern int hri_turn_agent_head_direction(HRI_AGENT *agent, double elevation, double azimuth);
+extern int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * agent, HRI_VISIBILITY * res, int res_nb);

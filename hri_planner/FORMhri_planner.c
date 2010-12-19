@@ -1411,12 +1411,40 @@ void CB_test_button4_obj(FL_OBJECT *obj, long arg)
   configPt q;
 
   hri_display_entities(GLOBAL_ENTITIES);
+
+  HRI_VISIBILITY results[50];
   clock_val = clock();
-  test_no = hri_compute_geometric_facts(GLOBAL_AGENTS, GLOBAL_ENTITIES);
+
+
+  //g3d_compute_visibility_for_all_entities(GLOBAL_ENTITIES, GLOBAL_AGENTS->all_agents[0], results, GLOBAL_ENTITIES->entities_nb );
+  //g3d_compute_visibility_for_all_entities(GLOBAL_ENTITIES, GLOBAL_AGENTS->all_agents[1], results, GLOBAL_ENTITIES->entities_nb );
+  for(i=0; i<100; i++)
+    hri_compute_geometric_facts(GLOBAL_AGENTS, GLOBAL_ENTITIES);
+
   elapsed_time = (clock() - clock_val)/CLOCKS_PER_SEC + elapsed_time;
-  printf("TIME passed for fact computation:%d tests, %f overall, per entity: %f\n",test_no, elapsed_time, elapsed_time/(GLOBAL_ENTITIES->entities_nb * GLOBAL_AGENTS->all_agents_no));
-  //hri_display_agent_knowledge(GLOBAL_AGENTS->humans[0]);
-  hri_display_agent_knowledge(GLOBAL_AGENTS->robots[0]);
+  printf("TIME passed for:%d tests, %f overall, per entity: %f\n",GLOBAL_AGENTS->all_agents_no*GLOBAL_ENTITIES->entities_nb, elapsed_time, elapsed_time/(GLOBAL_ENTITIES->entities_nb * GLOBAL_AGENTS->all_agents_no));
+
+  //for(i=0; i<GLOBAL_ENTITIES->entities_nb; i++) {
+//    if(GLOBAL_ENTITIES->entities[i]->type == HRI_OBJECT_PART || GLOBAL_ENTITIES->entities[i]->type == HRI_AGENT_PART)
+//      printf("%s visibility: %d\n",GLOBAL_ENTITIES->entities[i]->partPt->name, results[i]);
+//    else
+//      printf("%s visibility: %d\n",GLOBAL_ENTITIES->entities[i]->robotPt->name, results[i]);
+//  }
+
+  return;
+  clock_val = clock();
+  //test_no = hri_compute_geometric_facts(GLOBAL_AGENTS, GLOBAL_ENTITIES);
+  for(i=0; i<GLOBAL_AGENTS->all_agents_no; i++) {
+    for(j=0; j<GLOBAL_ENTITIES->entities_nb; j++) {
+      if(hri_is_object_visible(GLOBAL_AGENTS->all_agents[i], GLOBAL_ENTITIES->entities[j]->robotPt, 40, FALSE, FALSE))
+        printf("%s is visible to %s\n",GLOBAL_ENTITIES->entities[j]->robotPt->name, GLOBAL_AGENTS->all_agents[i]->robotPt->name);
+    }
+  }
+
+  elapsed_time = (clock() - clock_val)/CLOCKS_PER_SEC;
+  printf("TIME passed for:%d tests, %f overall, per entity: %f\n",GLOBAL_AGENTS->all_agents_no*GLOBAL_ENTITIES->entities_nb, elapsed_time, elapsed_time/(GLOBAL_ENTITIES->entities_nb * GLOBAL_AGENTS->all_agents_no));
+  // hri_display_agent_knowledge(GLOBAL_AGENTS->humans[0]);
+  // hri_display_agent_knowledge(GLOBAL_AGENTS->robots[0]);
 
   return;
 
@@ -1481,10 +1509,12 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
       continue;
     }
   }
-  int result;
-//  g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
-//  g3d_is_object_visible_from_current_viewpoint2(win, object, &result, FALSE, NULL);
-//  return;
+  double result;
+  g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
+
+  g3d_is_object_visible_from_current_viewpoint(win, object, &result, FALSE, NULL);
+
+  return;
 
   // hri_object_visibility_placement(GLOBAL_AGENTS->robots[0], object, &visibil);
   //g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, 50, object, &phi);

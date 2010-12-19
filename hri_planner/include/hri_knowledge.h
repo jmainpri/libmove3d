@@ -14,6 +14,9 @@ typedef struct STRUCT_HRI_ENTITY {
   HRI_ENTITY_TYPE type;
   int can_disappear; /* Can this entity disappear? For example a furniture can be considered a not movable */
 
+  int is_present; /* Is present in the env, i.e. at least seen once by the robot */
+  int disappeared; /* Is present but it is not at the place where it is supposed to be */
+
   p3d_rob * robotPt;
   p3d_obj * partPt;
   int agent_idx; /* if it's a part of an agent, then its index */
@@ -88,10 +91,10 @@ typedef enum ENUM_HRI_SPATIAL_RELATION {
 
 typedef struct STRUCT_HRI_KNOWLEDGE_ON_ENTITY {
   char name[64];
+
   HRI_ENTITY_TYPE type;
+
   long update_date;
-  int is_present;
-  int disappeared;
 
   HRI_MOTION motion;
 
@@ -101,8 +104,7 @@ typedef struct STRUCT_HRI_KNOWLEDGE_ON_ENTITY {
 
   HRI_VISIBILITY_PLACEMENT is_placed_from_visibility; /* oof, fov, ... */
 
-  HRI_SPATIAL_RELATION * is_located_from_agent; /* Front, right, .... */
-  int is_located_from_agent_nb;    /* length is HRI_AGENTS->all_agents_nb */
+  HRI_SPATIAL_RELATION is_located_from_agent; /* Front, right, .... */
 
   HRI_PLACEMENT_RELATION * is_placed; /* on, in, ... */
   int is_placed_nb;  /* length is HRI_ENTITIES->all_entities_nb */

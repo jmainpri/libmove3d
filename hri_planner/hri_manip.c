@@ -267,7 +267,7 @@ double hri_exp_hcomfort_val(hri_bitmapset * btset, int x, int y, int z)
 double hri_exp_hlreach_val2(hri_bitmapset * btset, int x, int y, int z)
 {
   p3d_rob *r;
-  configPt humanC, savedConf;
+  configPt humanC;
   p3d_vector3 realcoord, hneck;
   double restq1 = DTOR(-80),restq2 = DTOR(0),restq3 = DTOR(20),restq4 = DTOR(-45);
   int first_lshoulder_dof;
