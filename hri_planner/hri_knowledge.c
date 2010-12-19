@@ -43,7 +43,7 @@ HRI_ENTITIES * hri_create_entities()
         entities->entities = MY_REALLOC(entities->entities, HRI_ENTITY*, ent_i, ent_i+1);
         entities->entities[ent_i] = MY_ALLOC(HRI_ENTITY,1);
         entities->entities[ent_i]->can_disappear = TRUE;
-        entities->entities[ent_i]->is_present = TRUE; //TODO: Warning! Change this to FALSE. TRUE is only for test.
+        entities->entities[ent_i]->is_present = FALSE;
         entities->entities[ent_i]->disappeared = FALSE;
         entities->entities[ent_i]->robotPt = env->robot[i];
         entities->entities[ent_i]->partPt = NULL;
@@ -59,7 +59,7 @@ HRI_ENTITIES * hri_create_entities()
              entities->entities = MY_REALLOC(entities->entities, HRI_ENTITY*, ent_i, ent_i+1);
              entities->entities[ent_i] = MY_ALLOC(HRI_ENTITY,1);
              entities->entities[ent_i]->can_disappear = TRUE;
-             entities->entities[ent_i]->is_present = TRUE; //TODO: Warning! Change this to FALSE. TRUE is only for test.
+             entities->entities[ent_i]->is_present = FALSE;
              entities->entities[ent_i]->disappeared = FALSE;
              entities->entities[ent_i]->robotPt = env->robot[i];
              entities->entities[ent_i]->partPt = env->robot[i]->o[j];
