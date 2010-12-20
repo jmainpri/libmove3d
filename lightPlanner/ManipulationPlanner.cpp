@@ -1327,8 +1327,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFreePoint(int armId,
                                         objGoto );
   if (qGoal) 
   {
-    //cout << "Goal Config = " << endl;
-    //showConfig_2(qGoal);
+    cout << "Goal Config = " << endl;
+    showConfig_2(qGoal);
 
     if (status == MANIPULATION_TASK_OK){
         //Compute the path between theses configurations
@@ -1549,8 +1549,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     status = MANIPULATION_TASK_INVALID_TASK;
   } else {
     ENV.setBool(Env::drawTraj, false);
-    fitConfigurationToRobotBounds(qi);
-    fitConfigurationToRobotBounds(qf);
+//    fitConfigurationToRobotBounds(qi);
+//    fitConfigurationToRobotBounds(qf);
     checkConfigForCartesianMode(qi, object);
     checkConfigForCartesianMode(qf, object);
     fixAllHands(qi, false);

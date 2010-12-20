@@ -202,7 +202,7 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
   do{
     // This loop continues 
     // until a configuration is found collision free for the carried object
-    g3d_draw_allwin_active();
+ //   g3d_draw_allwin_active();
     p3d_gaussian_config2_specific(carriedObject, carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, true);
     if(!shootObjectPos){
       carriedObjectConf[6]  = objPos._x;
