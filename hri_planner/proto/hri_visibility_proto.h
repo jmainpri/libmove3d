@@ -6,8 +6,9 @@ extern int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *o
 extern int g3d_get_given_entities_pixelpresence_in_current_viewpoint(g3d_win* win, HRI_ENTITY **objects, int objects_nb, double *vis_results, int save, char *path);
 extern int g3d_visibility_for_given_objects_in_current_viewpoint_pixelpercentage(g3d_win* win, p3d_rob **objects, int objects_nb, double *res, int save, char *path);
 extern int hri_object_visibility_placement(HRI_AGENT *agent, p3d_rob *object, int *result, double *elevation, double *azimuth);
+extern int hri_entity_visibility_placement(HRI_AGENT *agent, HRI_ENTITY *ent, int *result, double *elevation, double *azimuth);
 extern int hri_object_pointing_placement(HRI_AGENT *agent, p3d_rob *object, int *result, double *elevation, double *azimuth);
-extern int g3d_object_visibility_placement(p3d_matrix4 camera_frame, p3d_rob *object, double Hfov, double Vfov, double Hfoa, double Vfoa, int *result, double *phi_result, double *theta_result);
+extern int g3d_object_visibility_placement(p3d_matrix4 camera_frame, p3d_vector4 objectCenter, double Hfov, double Vfov, double Hfoa, double Vfoa, int *result, double *phi_result, double *theta_result);
 extern int g3d_draw_agent_fov(HRI_AGENT *agent);
 extern int g3d_draw_visibility_by_frame(p3d_matrix4 camera_frame, double Hfov, double Vfov, double max_dist, GLdouble source_color[],GLdouble dest_color[]);
 extern int g3d_draw_agent_pointing(HRI_AGENT *agent);

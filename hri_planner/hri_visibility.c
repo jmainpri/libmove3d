@@ -296,7 +296,6 @@ int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, 
 int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * agent, HRI_VISIBILITY * res, int ent_nb)
 {
   double saved_pan_value, saved_tilt_value;
-  double saved_fov;
   configPt q;
   p3d_rob * robot;
   p3d_jnt * panJnt, * tiltJnt;
@@ -330,7 +329,6 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
   // SAVE AGENT PARAMETERS
   saved_pan_value = q[panJnt->index_dof];
   saved_tilt_value = q[tiltJnt->index_dof];
-  saved_fov = agent->perspective->fov;
 
   // COMPUTE HOW MANY TIMES AGENTS NEEDS TO TURN HIS HEAD TO SEE ALL THE SCENE
   max_head_turning = RTOD(panJnt->dof_data[0].vmax - panJnt->dof_data[0].vmin);
@@ -425,6 +423,11 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
       res[entities_to_test_indexes[i]] = HRI_VISIBLE;
     }
   }
+
+  // RESTORE AGENT HEAD POSITION
+  q[panJnt->index_dof] = saved_pan_value; 
+  q[tiltJnt->index_dof] = saved_tilt_value;
+  p3d_set_and_update_this_robot_conf(robot, q);
 
   MY_FREE(results, double, ent_nb); // FREE
   MY_FREE(entities_to_test, HRI_ENTITY *, ent_nb); // FREE
@@ -671,16 +674,50 @@ void p3d_cartesian2spherical(double x, double y, double z,
   *theta = acos( (z-originz)/distance );
 }
 
+int hri_entity_visibility_placement(HRI_AGENT *agent, HRI_ENTITY *ent, int *result, double *elevation, double *azimuth)
+{
+
+  p3d_vector4 entCenter;
+  p3d_BB * entBB;
+  
+  if(ent==NULL || agent==NULL){
+    printf("%s: %d: hri_entity_visibility_placement(): input object is NULL.\n",__FILE__,__LINE__);
+    return FALSE;
+  }
+
+  if((ent->type == HRI_OBJECT_PART) || (ent->type == HRI_AGENT_PART) )
+    entBB = &ent->partPt->BB;
+  else
+    entBB = &ent->robotPt->BB;
+
+  entCenter[0] = (((entBB->xmax - entBB->xmin)/2) + entBB->xmin);
+  entCenter[1] = (((entBB->ymax - entBB->ymin)/2) + entBB->ymin);
+  entCenter[2] = (((entBB->zmax - entBB->zmin)/2) + entBB->zmin);
+  entCenter[3] = 1.0;
+
+  g3d_object_visibility_placement(agent->perspective->camjoint->abs_pos, entCenter,
+                                  DTOR(agent->perspective->fov),DTOR(agent->perspective->fov*0.75),
+                                  DTOR(agent->perspective->foa),DTOR(agent->perspective->foa*0.75),
+                                  result, elevation, azimuth);
+  return TRUE;
+}
 
 int hri_object_visibility_placement(HRI_AGENT *agent, p3d_rob *object, int *result, double *elevation, double *azimuth)
 {
+
+  p3d_vector4 objectCenter;
 
   if(object==NULL || agent==NULL){
     printf("%s: %d: hri_object_visibility_placement(): input object is NULL.\n",__FILE__,__LINE__);
     return FALSE;
   }
 
-  g3d_object_visibility_placement(agent->perspective->camjoint->abs_pos, object,
+  objectCenter[0] = (((object->BB.xmax - object->BB.xmin)/2) + object->BB.xmin);
+  objectCenter[1] = (((object->BB.ymax - object->BB.ymin)/2) + object->BB.ymin);
+  objectCenter[2] = (((object->BB.zmax - object->BB.zmin)/2) + object->BB.zmin);
+  objectCenter[3] = 1.0;
+
+  g3d_object_visibility_placement(agent->perspective->camjoint->abs_pos, objectCenter,
                                   DTOR(agent->perspective->fov),DTOR(agent->perspective->fov*0.75),
                                   DTOR(agent->perspective->foa),DTOR(agent->perspective->foa*0.75),
                                   result, elevation, azimuth);
@@ -689,13 +726,19 @@ int hri_object_visibility_placement(HRI_AGENT *agent, p3d_rob *object, int *resu
 
 int hri_object_pointing_placement(HRI_AGENT *agent, p3d_rob *object, int *result, double *elevation, double *azimuth)
 {
-
+  p3d_vector4 objectCenter;
+  
   if(object==NULL || agent==NULL){
     printf("%s: %d: hri_object_pointing_placement(): input object is NULL.\n",__FILE__,__LINE__);
     return FALSE;
   }
 
-  g3d_object_visibility_placement(agent->perspective->pointjoint->abs_pos, object,
+  objectCenter[0] = (((object->BB.xmax - object->BB.xmin)/2) + object->BB.xmin);
+  objectCenter[1] = (((object->BB.ymax - object->BB.ymin)/2) + object->BB.ymin);
+  objectCenter[2] = (((object->BB.zmax - object->BB.zmin)/2) + object->BB.zmin);
+  objectCenter[3] = 1.0;
+  
+  g3d_object_visibility_placement(agent->perspective->pointjoint->abs_pos, objectCenter,
                                   DTOR(agent->perspective->point_tolerance),DTOR(agent->perspective->point_tolerance),
                                   DTOR(agent->perspective->point_tolerance),DTOR(agent->perspective->point_tolerance),
                                   result, elevation, azimuth);
@@ -703,20 +746,15 @@ int hri_object_pointing_placement(HRI_AGENT *agent, p3d_rob *object, int *result
 }
 
 
-int g3d_object_visibility_placement(p3d_matrix4 camera_frame, p3d_rob *object, double Hfov, double Vfov, double Hfoa, double Vfoa, int *result, double *phi_result, double *theta_result)
+int g3d_object_visibility_placement(p3d_matrix4 camera_frame, p3d_vector4 objectCenter, double Hfov, double Vfov, double Hfoa, double Vfoa, int *result, double *phi_result, double *theta_result)
 {
-  p3d_vector4 objectCenter,objectCenterCamFr;
+  p3d_vector4 objectCenterCamFr;
   p3d_matrix4 invM;
   double rho,phi,theta;
-
-  objectCenter[0] = (((object->BB.xmax - object->BB.xmin)/2) + object->BB.xmin);
-  objectCenter[1] = (((object->BB.ymax - object->BB.ymin)/2) + object->BB.ymin);
-  objectCenter[2] = (((object->BB.zmax - object->BB.zmin)/2) + object->BB.zmin);
-  objectCenter[3] = 1.0;
-
+  
   p3d_matInvertXform(camera_frame,invM);
   p3d_matvec4Mult(invM, objectCenter, objectCenterCamFr);
-
+  
   p3d_cartesian2spherical(objectCenterCamFr[0],objectCenterCamFr[1],objectCenterCamFr[2],
                           &rho,&phi,&theta);
   //printf("Distance:%f, Elevation: %f, Azimuth: %f\n",rho,RTOD(phi),RTOD(theta));

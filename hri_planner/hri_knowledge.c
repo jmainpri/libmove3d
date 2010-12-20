@@ -680,7 +680,7 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
 
       // VISIBILITY PLACEMENT - FOV,FOA,OOF
       // TODO: visibility placement for robot parts
-      hri_object_visibility_placement(agent, ent->robotPt, &res, &elevation, &azimuth);
+      hri_entity_visibility_placement(agent, ent, &res, &elevation, &azimuth);
       kn_on_ent->is_placed_from_visibility = (HRI_VISIBILITY_PLACEMENT) res;
 
       // REACHABILITY - REACHABLE, UNREACHABLE, HARDLY REACHABLE
