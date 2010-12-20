@@ -34,6 +34,7 @@ HRI_AGENT* hri_assign_source_agent(char *agent_name, HRI_AGENTS *agents)
     for (i=0; i<agents->all_agents_no; i++) {
       if (strcasestr(agents->all_agents[i]->robotPt->name, agent_name)) {
         agents->source_agent_idx = i;
+	agents->all_agents[i]->is_present = TRUE;
         return agents->all_agents[i];
       }
     }
@@ -194,7 +195,7 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
   hri_agent->perspective = hri_create_agent_perspective(hri_agent, robot->env);
   hri_agent->knowledge = hri_create_empty_agent_knowledge(hri_agent);
 
-  hri_agent->exists = FALSE;
+  hri_agent->is_present = FALSE;
 
   /* TODO: Fix proper state assignment */
   hri_agent->states_no = 0;

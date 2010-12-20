@@ -10,44 +10,44 @@
 #define GIK_CONSTRAINTS 3
 
 typedef enum HRI_AGENT_TYPE_ENUM {
-	HRI_JIDO1,
+  HRI_JIDO1,
   HRI_JIDOKUKA,
   HRI_PR2,
-	HRI_HRP214,
-	HRI_B21,
-	HRI_JUSTIN,
-	HRI_ICUB,
-	HRI_BERT,
-	HRI_SUPERMAN,
-	HRI_ACHILE,
-	HRI_TINMAN,
-	HRI_BH,
-	HRI_MOBILE_JUSTIN
+  HRI_HRP214,
+  HRI_B21,
+  HRI_JUSTIN,
+  HRI_ICUB,
+  HRI_BERT,
+  HRI_SUPERMAN,
+  HRI_ACHILE,
+  HRI_TINMAN,
+  HRI_BH,
+  HRI_MOBILE_JUSTIN
 }	HRI_AGENT_TYPE;
 
 typedef enum HRI_GIK_TASK_TYPE_ENUM {
-	GIK_LOOK,
-	GIK_RAREACH,
-	GIK_LAREACH,
-	GIK_RATREACH,
-	GIK_LATREACH,
-	GIK_RAWREACH,
-	GIK_LAWREACH,
-	GIK_RAPOINT,
-	GIK_LAPOINT,
-	GIK_RATPOINT,
-	GIK_LATPOINT,
-	GIK_NOTASK
+  GIK_LOOK,
+  GIK_RAREACH,
+  GIK_LAREACH,
+  GIK_RATREACH,
+  GIK_LATREACH,
+  GIK_RAWREACH,
+  GIK_LAWREACH,
+  GIK_RAPOINT,
+  GIK_LAPOINT,
+  GIK_RATPOINT,
+  GIK_LATPOINT,
+  GIK_NOTASK
 } HRI_GIK_TASK_TYPE;
 
 typedef struct STRUCT_GIK_TASK {
-	HRI_GIK_TASK_TYPE type;
-	int default_joints[GIK_MAX_JOINT_NO];
-	int default_joints_no;
-	int actual_joints[GIK_MAX_JOINT_NO];
-	int actual_joints_no;
-	int active_joint;
-	double target[GIK_CONSTRAINTS];
+  HRI_GIK_TASK_TYPE type;
+  int default_joints[GIK_MAX_JOINT_NO];
+  int default_joints_no;
+  int actual_joints[GIK_MAX_JOINT_NO];
+  int actual_joints_no;
+  int active_joint;
+  double target[GIK_CONSTRAINTS];
 } GIK_TASK;
 
 typedef enum HRI_MANIP_TYPE_ENUM {
@@ -56,22 +56,22 @@ typedef enum HRI_MANIP_TYPE_ENUM {
 } HRI_MANIP_TYPE;
 
 typedef struct STRUCT_HRI_MANIP {
-	hri_gik * gik;
+  hri_gik * gik;
   HRI_MANIP_TYPE type;
 
-	signed int gik_max_step; /* TODO: add these two to hri_gik structure */
-	double reach_tolerance;
+  signed int gik_max_step; /* TODO: add these two to hri_gik structure */
+  double reach_tolerance;
 
-	GIK_TASK * tasklist;
-	int tasklist_no;
+  GIK_TASK * tasklist;
+  int tasklist_no;
 
-	int activetasks[GIK_MAX_TASK_NO];
+  int activetasks[GIK_MAX_TASK_NO];
   int activetasks_no;
 } HRI_MANIP;
 
 typedef struct STRUCT_HRI_NAVIG {
   hri_bitmapset * btset;
-	int btset_initialized;
+  int btset_initialized;
 } HRI_NAVIG;
 
 typedef struct STRUCT_HRI_PERSP {
@@ -100,19 +100,19 @@ typedef enum ENUM_HRI_AGENT_POSTURE {
 } HRI_AGENT_POSTURE;
 
 typedef struct STRUCT_HRI_AGENT {
-	HRI_AGENT_TYPE type;
+  HRI_AGENT_TYPE type;
   int is_human; /* TODO: put something more generic, at least an enum. I don't like these stupid flags. */
-	p3d_rob * robotPt;
-	HRI_MANIP * manip;
-	HRI_NAVIG * navig;
+  p3d_rob * robotPt;
+  HRI_MANIP * manip;
+  HRI_NAVIG * navig;
   HRI_PERSP * perspective;
   HRI_KNOWLEDGE * knowledge;
-  int exists;
-	/* number of possible states for this agent (e.g. SITTING/STANDING) */
+  int is_present;
+  /* number of possible states for this agent (e.g. SITTING/STANDING) */
   int states_no;
   int actual_state;
   /* possible states */
-	/* TODO: change the name human_state -> agent state */
+  /* TODO: change the name human_state -> agent state */
   hri_human_state * state;
 
   /* Link with entities */

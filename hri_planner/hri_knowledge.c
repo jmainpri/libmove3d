@@ -656,15 +656,20 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
       present_ents_nb++;
     }
   }
-
+  
   for(a_i=0; a_i<agents->all_agents_no; a_i++) {
     agent = agents->all_agents[a_i];
-
+    
+    if(agent->is_present == FALSE)
+      continue;
+    
     for(e_i=0; e_i<present_ents_nb; e_i++) {
       ge_i = present_ents_global_idxs[e_i];
-
+      
       ent = ents->entities[ge_i];
       kn_on_ent = &agent->knowledge->entities[ge_i];
+      
+      printf("Testing: %s with %s\n", agent->robotPt->name, ent->robotPt->name);
 
       // If the entity is a part of the current agent, we skip it since it doesn't make sense to compute it from his own point of view
       // TODO: Or does it?
@@ -674,7 +679,7 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
       }
 
       // VISIBILITY PLACEMENT - FOV,FOA,OOF
-      //TODO: visibility placement for robot parts
+      // TODO: visibility placement for robot parts
       hri_object_visibility_placement(agent, ent->robotPt, &res, &elevation, &azimuth);
       kn_on_ent->is_placed_from_visibility = (HRI_VISIBILITY_PLACEMENT) res;
 
