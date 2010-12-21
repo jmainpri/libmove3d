@@ -23,8 +23,8 @@ int ikPr2ArmSolverUnique(double fixedAngle, double min[7], double max[7] , doubl
   int result;
   
   double a1=0.1; 
-  double r3=0.45;  
-  double r5=1.0;
+  double r3=0.4;  
+  double r5=0.321;
   
   Gb_q7 qsol[32];
   

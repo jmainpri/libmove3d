@@ -4926,8 +4926,6 @@ static int p3d_set_pr2_arm_ik(p3d_cntrt_management * cntrt_manager,
                               p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                               p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof, int *iVal,
                               double * dVal, int ct_num, int state) {
-  
-  printf("p3d_set_pr2_arm_ik\n");
 	p3d_cntrt *ct;
 	p3d_matrix4 r0Base;
 	int nb_act = 1, i;
@@ -4941,7 +4939,6 @@ static int p3d_set_pr2_arm_ik(p3d_cntrt_management * cntrt_manager,
 		}
     
 		ct->fct_cntrt = p3d_fct_pr2_arm_ik;
-		//ct->nival = 3;
 		ct->nival = 2;
 		ct->ndval = 0;
 		ct->nbSol = 8;//This constraint has a maximum of 8 solutions.
@@ -4950,15 +4947,15 @@ static int p3d_set_pr2_arm_ik(p3d_cntrt_management * cntrt_manager,
 	}
   
 	ct->argu_i[0] = iVal[0]; //the fixed joint
-	ct->argu_i[1] = iVal[1]; // Ik solution
+	ct->argu_i[1] = iVal[1]; //Ik solution
   
 	if (iVal[1] > ct->nbSol) { //if the user don't put a valid solution number
 		return FALSE;
 	}
   
 	//Transformation between torso and the arm
-	p3d_matInvertXform(ct->pasjnts[0]->prev_jnt->prev_jnt->pos0, r0Base); //inverse matrix R0->base
-	p3d_mat4Mult(r0Base, ct->pasjnts[0]->prev_jnt->pos0, ct->Tbase); //store the transform matrix betweeen torso and the arm base
+	p3d_matInvertXform(ct->pasjnts[0]->prev_jnt->pos0, r0Base); //inverse matrix R0->base
+	p3d_mat4Mult(r0Base, ct->pasjnts[0]->pos0, ct->Tbase); //store the transform matrix betweeen torso and the arm base
   
 	for (i = 0; i < nb_act; i++) {
 		if (cntrt_manager->in_cntrt[act_rob_dof[i]] == DOF_PASSIF) {// if a active Dof Is a passiv Dof for another constraint enchain.
@@ -5495,26 +5492,36 @@ static int p3d_fct_pr2_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
 //  maxDoFs[6] = 180;
   
   // Right Arm
-  minDoFs[0] = -131;
-  minDoFs[1] = -30;
-  minDoFs[2] = -223;
-  minDoFs[3] = -133;
-  minDoFs[4] = -223;
-  minDoFs[5] = -119;
-  minDoFs[6] = -180;
+//  minDoFs[0] = -131;
+//  minDoFs[1] = -30;
+//  minDoFs[2] = -223;
+//  minDoFs[3] = -133;
+//  minDoFs[4] = -223;
+//  minDoFs[5] = -119;
+//  minDoFs[6] = -180;
+//  
+//  maxDoFs[0] = 41;
+//  maxDoFs[1] = 80;
+//  maxDoFs[2] = 45;
+//  maxDoFs[3] = 0;
+//  maxDoFs[4] = 45;
+//  maxDoFs[5] = 0;
+//  maxDoFs[6] = 180;
+//  
+//  for(unsigned int i=0;i<7;i++)
+//  {
+//    minDoFs[i] *= M_PI/180;
+//    maxDoFs[i] *= M_PI/180;
+//  }
   
-  maxDoFs[0] = 41;
-  maxDoFs[1] = 80;
-  maxDoFs[2] = 45;
-  maxDoFs[3] = 0;
-  maxDoFs[4] = 45;
-  maxDoFs[5] = 0;
-  maxDoFs[6] = 180;
   
-  for(unsigned int i=0;i<7;i++)
-  {
-    minDoFs[i] *= M_PI/180;
-    maxDoFs[i] *= M_PI/180;
+  for(int i = 0, j = 0; i < 7; i++){
+    if(i == 2){
+      p3d_get_robot_jnt_bounds(ct->argu_i[0], &minDoFs[i], &maxDoFs[i]);
+    }else{
+      p3d_get_robot_jnt_bounds(ct->pasjnts[j]->num, &minDoFs[i], &maxDoFs[i]);
+      j++;
+    }
   }
   
 	if (!TEST_PHASE) {
@@ -5524,7 +5531,7 @@ static int p3d_fct_pr2_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
 	fixed = ct->pasjnts[0]->rob->joints[ct->argu_i[0]]; //get the fixed joint
   
 	//Position of the grip in the arm Base
-	p3d_mat4Mult(ct->pasjnts[0]->prev_jnt->prev_jnt->abs_pos, ct->Tbase, r0Arm);
+	p3d_mat4Mult(ct->pasjnts[0]->prev_jnt->abs_pos, ct->Tbase, r0Arm);
 	p3d_matInvertXform(r0Arm, armR0);
 	p3d_mat4Mult(ct->actjnts[0]->abs_pos, ct->Tatt, tmp);
 	p3d_mat4Mult(armR0, tmp, armGrip);
@@ -5569,21 +5576,7 @@ static int p3d_fct_pr2_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
         if (st_niksol)
           st_niksol[ct->num] = 0;
         return (FALSE);
-      }/*
-        case -3: {
-        if (DEBUG_CNTRTS)
-				printf("Singularity joint 0\n");
-        if (st_niksol)
-				st_niksol[ct->num] = 0;
-        return (FALSE);
-        }
-        case -4: {
-        if (DEBUG_CNTRTS)
-				printf("Singularity joint 3\n");
-        if (st_niksol)
-				st_niksol[ct->num] = 0;
-        return (FALSE);
-        }*/
+      }
       default: {
         if (DEBUG_CNTRTS) {
           printf("jnt");
