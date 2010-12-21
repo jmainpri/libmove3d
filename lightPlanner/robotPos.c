@@ -197,12 +197,12 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
   p3d_sel_desc_num(P3D_ROBOT,carriedObject->num);
   p3d_get_BB_rob_max_size(carriedObject, &robotSize);
   translationFactor = robotSize/5;
-  rotationFactor = robotSize/2;
+  rotationFactor = 1;
   
   do{
     // This loop continues 
     // until a configuration is found collision free for the carried object
- //   g3d_draw_allwin_active();
+//    g3d_draw_allwin_active();
     p3d_gaussian_config2_specific(carriedObject, carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, true);
     if(!shootObjectPos){
       carriedObjectConf[6]  = objPos._x;

@@ -260,22 +260,22 @@ class ManipulationData{
     ManipulationData(p3d_rob* robot){
       _robot = robot;
       _grasp = NULL;
-      _graspConfig = p3d_alloc_config(robot);
+      _graspConfig = NULL;
       _graspConfigCost = P3D_HUGE;
-      _openConfig = p3d_alloc_config(robot);
-      _approachFreeConfig = p3d_alloc_config(robot);
-      _approachGraspConfig = p3d_alloc_config(robot);
-      p3d_mat4Copy(p3d_mat4IDENTITY ,_graspAttachFrame);
+      _openConfig = NULL;
+      _approachFreeConfig = NULL;
+      _approachGraspConfig = NULL;
+      _graspAttachFrame[0][0] = _graspAttachFrame[0][1] = _graspAttachFrame[0][2] = _graspAttachFrame[0][3] =  0;
     };
 #ifdef GRASP_PLANNING   
     ManipulationData(p3d_rob* robot, gpGrasp* grasp, configPt graspConfig, configPt openConfig, configPt approachFreeConfig, configPt approachGraspConfig, p3d_matrix4 graspAttachFrame){
       _robot = robot;
       _grasp = grasp;
-      _graspConfig = graspConfig;
+      _graspConfig = p3d_copy_config(robot, graspConfig);
       _graspConfigCost = P3D_HUGE;
-      _openConfig = openConfig;
-      _approachFreeConfig = approachFreeConfig;
-      _approachGraspConfig = approachGraspConfig;
+      _openConfig = p3d_copy_config(robot, openConfig);
+      _approachFreeConfig = p3d_copy_config(robot, approachFreeConfig);
+      _approachGraspConfig = p3d_copy_config(robot, approachGraspConfig);
       p3d_mat4Copy(graspAttachFrame ,_graspAttachFrame);
     };
 #endif
@@ -382,16 +382,40 @@ class ManipulationData{
     }
 #endif
     inline void setGraspConfig(configPt graspConfig){
-      p3d_copy_config_into(_robot, graspConfig, &_graspConfig);
+      if(graspConfig){
+        if(_graspConfig){
+          p3d_copy_config_into(_robot, graspConfig, &_graspConfig);
+        }else{
+          _graspConfig = p3d_copy_config(_robot, graspConfig);
+        }
+      }
     }
     inline void setOpenConfig(configPt openConfig){
-      p3d_copy_config_into(_robot, openConfig, &_openConfig);
+      if(openConfig){
+        if(_openConfig){
+          p3d_copy_config_into(_robot, openConfig, &_openConfig);
+        }else{
+          _openConfig = p3d_copy_config(_robot, openConfig);
+        }
+      }
     }
     inline void setApproachFreeConfig(configPt approachFreeConfig){
-      p3d_copy_config_into(_robot, approachFreeConfig, &_approachFreeConfig);
+      if(approachFreeConfig){
+        if(_approachFreeConfig){
+          p3d_copy_config_into(_robot, approachFreeConfig, &_approachFreeConfig);
+        }else{
+          _approachFreeConfig = p3d_copy_config(_robot, approachFreeConfig);
+        }
+      }
     }
     inline void setApproachGraspConfig(configPt approachGraspConfig){
-      p3d_copy_config_into(_robot, approachGraspConfig, &_approachGraspConfig);
+      if(approachGraspConfig){
+        if(_approachGraspConfig){
+        p3d_copy_config_into(_robot, approachGraspConfig, &_approachGraspConfig);
+        }else{
+          _approachGraspConfig = p3d_copy_config(_robot, approachGraspConfig);
+        }
+      }
     }
     inline void setAttachFrame(p3d_matrix4 graspAttachFrame){
       p3d_mat4Copy(graspAttachFrame, _graspAttachFrame);
