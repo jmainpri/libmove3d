@@ -42,6 +42,7 @@ HRI_ENTITIES * hri_create_entities()
       if(!strcasestr(env->robot[i]->name,"CHAIR") && !strcasestr(env->robot[i]->name,"TABLE") ) {
         entities->entities = MY_REALLOC(entities->entities, HRI_ENTITY*, ent_i, ent_i+1);
         entities->entities[ent_i] = MY_ALLOC(HRI_ENTITY,1);
+	strcpy(entities->entities[ent_i]->name, env->robot[i]->name);
         entities->entities[ent_i]->can_disappear = TRUE;
         entities->entities[ent_i]->is_present = FALSE;
         entities->entities[ent_i]->disappeared = FALSE;
@@ -52,12 +53,13 @@ HRI_ENTITIES * hri_create_entities()
       }
 
       for(j=0; j<env->robot[i]->no; j++) {
-        objectrealname = strrchr(env->robot[i]->o[j]->name, '.');
+        objectrealname = strrchr(env->robot[i]->o[j]->name, '.')+1;
         if(!strcasestr(objectrealname,"GHOST") &&
            (strcasestr(objectrealname,"SURFACE") || strcasestr(objectrealname,"HAND") ||
             strcasestr(objectrealname,"HEAD")    || strcasestr(objectrealname,"CAMERA")) ) {
              entities->entities = MY_REALLOC(entities->entities, HRI_ENTITY*, ent_i, ent_i+1);
              entities->entities[ent_i] = MY_ALLOC(HRI_ENTITY,1);
+	     strcpy(entities->entities[ent_i]->name, objectrealname);
              entities->entities[ent_i]->can_disappear = TRUE;
              entities->entities[ent_i]->is_present = FALSE;
              entities->entities[ent_i]->disappeared = FALSE;
@@ -145,10 +147,8 @@ int hri_initialize_agent_knowledge(HRI_KNOWLEDGE * knowledge, HRI_ENTITIES * ent
   knowledge->entities_nb = entities->entities_nb;
 
   for(i=0; i<knowledge->entities_nb; i++) {
-    if(entities->entities[i]->type == HRI_OBJECT_PART || entities->entities[i]->type == HRI_AGENT_PART)
-      strcpy(knowledge->entities[i].name, entities->entities[i]->partPt->name);
-    else
-      strcpy(knowledge->entities[i].name, entities->entities[i]->robotPt->name);
+
+    knowledge->entities[i].entPt = entities->entities[i];
 
     knowledge->entities[i].motion = HRI_UK_MOTION;
     knowledge->entities[i].is_placed_from_visibility = HRI_UK_VIS_PLACE;
@@ -579,10 +579,7 @@ void hri_display_entities(HRI_ENTITIES * ents)
   }
 
   for(i=0; i<ents->entities_nb; i++) {
-    if(ents->entities[i]->type ==HRI_OBJECT_PART || ents->entities[i]->type ==HRI_AGENT_PART)
-      printf("%d - ENTITY name: %s type: %d\n", i, ents->entities[i]->partPt->name, ents->entities[i]->type);
-    else
-      printf("%d - ENTITY name: %s type: %d\n", i, ents->entities[i]->robotPt->name, ents->entities[i]->type);
+      printf("%d - ENTITY name: %s type: %d\n", i, ents->entities[i]->name, ents->entities[i]->type);
   }
 }
 
@@ -602,7 +599,7 @@ void hri_display_agent_knowledge(HRI_AGENT * agent)
 
   printf("\nKNOWLEDGE ON ENTITY ");
   for(i=0; i<kn->entities_nb; i++) {
-    printf("%s\n", kn->entities[i].name);
+    printf("%s\n", kn->entities[i].entPt->name);
 
     printf("Motion: %d\n", kn->entities[i].motion);
     printf("Visibility: %d\n",kn->entities[i].visibility);
