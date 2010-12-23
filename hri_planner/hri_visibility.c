@@ -308,7 +308,7 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
   double elevation, azimuth;
   int pan_div_no, tilt_div_no;
   int vis_pl;
-  int save_images = TRUE;
+  int save_images = FALSE;
 
   //TODO: Do not compute all visibility placements in each step
   //TODO: There should be a more intelligent way of dealing with the tilt angle
