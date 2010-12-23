@@ -102,17 +102,17 @@ int hri_link_agents_with_entities(HRI_ENTITIES * entities, HRI_AGENTS * agents)
           entities->entities[i]->type = HRI_AGENT_PART;
           entities->entities[i]->agent_idx = agent_idx;
           if(strcasestr(entities->entities[i]->partPt->name, "head") || strcasestr(entities->entities[i]->partPt->name, "camera")) {
-            agents->all_agents[agent_idx]->head_idx = MY_REALLOC(agents->all_agents[agent_idx]->head_idx, int,
-                                                                 agents->all_agents[agent_idx]->head_nb,
-                                                                 agents->all_agents[agent_idx]->head_nb+1);
-            agents->all_agents[agent_idx]->head_idx[agents->all_agents[agent_idx]->head_nb++] = i;
-
+            agents->all_agents[agent_idx]->head = MY_REALLOC(agents->all_agents[agent_idx]->head, HRI_ENTITY*,
+							     agents->all_agents[agent_idx]->head_nb,
+							     agents->all_agents[agent_idx]->head_nb+1);
+            agents->all_agents[agent_idx]->head[agents->all_agents[agent_idx]->head_nb++] = entities->entities[i];
+	    
           }
           if(strcasestr(entities->entities[i]->partPt->name, "hand")) {
-            agents->all_agents[agent_idx]->hand_idx = MY_REALLOC(agents->all_agents[agent_idx]->hand_idx, int,
-                                                                 agents->all_agents[agent_idx]->hand_nb,
-                                                                 agents->all_agents[agent_idx]->hand_nb+1);
-            agents->all_agents[agent_idx]->hand_idx[agents->all_agents[agent_idx]->hand_nb++] = i;
+            agents->all_agents[agent_idx]->hand = MY_REALLOC(agents->all_agents[agent_idx]->hand, HRI_ENTITY*,
+							     agents->all_agents[agent_idx]->hand_nb,
+							     agents->all_agents[agent_idx]->hand_nb+1);
+            agents->all_agents[agent_idx]->hand[agents->all_agents[agent_idx]->hand_nb++] = entities->entities[i];
           }
         }
         break;

@@ -117,9 +117,9 @@ typedef struct STRUCT_HRI_AGENT {
 
   /* Link with entities */
   int entity_idx;
-  int * head_idx; /* Table containing indexes of head entities */
+  HRI_ENTITY ** head; /* Table containing indexes of head entities */
   int head_nb; /* a Human cannot have 2 hands, but a robot can have multiple cameras */
-  int * hand_idx;
+  HRI_ENTITY ** hand;
   int hand_nb;
 
 } HRI_AGENT;
