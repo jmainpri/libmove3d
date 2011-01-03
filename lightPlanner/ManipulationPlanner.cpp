@@ -1422,9 +1422,17 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     gpHand_properties handProp = armData.getHandProperties();
     std::vector <double> handConf;
     gpGet_hand_configuration(_robot, handProp, armId, handConf);
+
     gpSet_hand_configuration(_robot, handProp, handConf, approachGraspConfig, armId);
+    p3d_set_and_update_this_robot_conf(_robot, approachGraspConfig);
+    p3d_get_robot_config_into(_robot, &approachGraspConfig);
+
     gpSet_hand_configuration(_robot, handProp, handConf, qGoal, armId);
-    
+    p3d_set_and_update_this_robot_conf(_robot, qGoal);
+    p3d_get_robot_config_into(_robot, &qGoal);
+
+    p3d_set_and_update_this_robot_conf(_robot, qStart);
+
     // set the approachGraspConfig
     // To be computed with the IK of the robot (mult matrix problem)
     p3d_set_and_update_this_robot_conf(_robot,approachGraspConfig);
@@ -1439,9 +1447,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId + 1 ); //the hand name is hand1 for arm0 and hand 2 for arm1
 
     // Compute to Approach config
-    if ((traj = computeTrajBetweenTwoConfigs(qStart, approachGraspConfig)))
-    {
-        trajs.push_back(traj);
+//    if ((traj = computeTrajBetweenTwoConfigs(qStart, approachGraspConfig)))
+//    {
+//        trajs.push_back(traj);
 
         // Compute to Open config
         if ((traj = computeTrajBetweenTwoConfigs(approachGraspConfig, qGoal)))
@@ -1450,7 +1458,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
             cout << "Manipulation : traj found" << endl;
             status =  MANIPULATION_TASK_OK;
         }
-    }
+//    }
     gpActivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId + 1 ); //the hand name is hand1 for arm0 and hand 2 for arm1
 // Warning comment to see traj in Linear mode
   _robot->isCarryingObject = false;
