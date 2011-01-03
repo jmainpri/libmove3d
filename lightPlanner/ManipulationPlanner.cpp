@@ -38,8 +38,8 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robotPt) :
 {
     _optimizeSteps = 100;
     _optimizeTime = 4.0; // 4 secondes
-    _approachFreeOffset = 0.10; //0.05 meters
-    _approachGraspOffset = 0.10; //0.05 meters
+    _approachFreeOffset = 0.10; //0.1 meters
+    _approachGraspOffset = 0.10; //0.1 meters
 
 
     // Warning : Not very efficient
@@ -1430,7 +1430,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     //cout << "qGoal : " << endl;
     //showConfig_2(qGoal);
     //_configs.getAttachFrame(ct->Tatt);
-
+    gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp);
 
     // Compute to Approach config
     if ((traj = computeTrajBetweenTwoConfigs(qStart, approachGraspConfig)))
