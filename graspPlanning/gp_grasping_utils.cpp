@@ -1108,12 +1108,13 @@ int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpH
      out.seekp(std::ios::beg);
 
      fingertip= NULL;
-     fingertip= p3d_get_body_by_name((char *) body_name.c_str());
+     fingertip= p3d_get_robot_body_by_name(robot, (char *) body_name.c_str());
      if(fingertip==NULL)
      {
        printf("%s: %d: gpActivate_object_fingertips_collisions(): robot \"%s\" should have a body named \"%s\".\n",__FILE__,__LINE__, robot->name, body_name.c_str());
+     }else{
+       p3d_col_activate_pair_of_objects(fingertip, object);
      }
-     p3d_col_activate_pair_of_objects(fingertip, object);
   }
 
   return GP_OK;

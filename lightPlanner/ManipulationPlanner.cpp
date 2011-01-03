@@ -1418,6 +1418,13 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     //cout << "qStart : " << endl;
     //showConfig_2(qStart);
 
+
+    gpHand_properties handProp = armData.getHandProperties();
+    std::vector <double> handConf;
+    gpGet_hand_configuration(_robot, handProp, armId, handConf);
+    gpSet_hand_configuration(_robot, handProp, handConf, approachGraspConfig, armId);
+    gpSet_hand_configuration(_robot, handProp, handConf, qGoal, armId);
+    
     // set the approachGraspConfig
     // To be computed with the IK of the robot (mult matrix problem)
     p3d_set_and_update_this_robot_conf(_robot,approachGraspConfig);
@@ -1425,8 +1432,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     //cout << "approachGraspConfig : " << endl;
     //showConfig_2(approachGraspConfig);
 
-    gpHand_properties handProp = armData.getHandProperties();
-    gpSet_grasp_configuration(_robot, grasp, qGoal, armId);
+//     gpSet_grasp_configuration(_robot, grasp, qGoal, armId);
     //cout << "qGoal : " << endl;
     //showConfig_2(qGoal);
     //_configs.getAttachFrame(ct->Tatt);
