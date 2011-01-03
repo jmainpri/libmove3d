@@ -398,12 +398,17 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 16 :{
-      double x, y, z, rx, ry, rz;
-      p3d_rob* object = (p3d_rob*) p3d_get_robot_by_name((char*)"GREY_TAPE");
-      p3d_get_freeflyer_pose2(object, &x, &y, &z, &rx, &ry, &rz);
-      double zValue = p3d_random(-M_PI,M_PI);
-      p3d_set_freeflyer_pose2(object, x, y, z, 0, 0, zValue);
-      printf("Z value = %f\n", zValue*180/M_PI);
+      p3d_rob* object = p3d_get_robot_by_name("GREY_TAPE");
+      gpHand_properties prop = (*XYZ_ROBOT->armManipulationData)[0].getHandProperties();
+    gpDeactivate_object_fingertips_collisions(XYZ_ROBOT, object->joints[1]->o, prop, 1);
+
+      
+//       double x, y, z, rx, ry, rz;
+//       p3d_rob* object = (p3d_rob*) p3d_get_robot_by_name((char*)"GREY_TAPE");
+//       p3d_get_freeflyer_pose2(object, &x, &y, &z, &rx, &ry, &rz);
+//       double zValue = p3d_random(-M_PI,M_PI);
+//       p3d_set_freeflyer_pose2(object, x, y, z, 0, 0, zValue);
+//       printf("Z value = %f\n", zValue*180/M_PI);
 //#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
 //      configPt startConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
 //      configPt endConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);

@@ -999,7 +999,7 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
 //! \param object the object
 //! \param hand structure containing information about the hand geometry
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand)
+int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand, int handID)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
@@ -1021,8 +1021,15 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
   p3d_obj *fingertip;
   
 
-  base_name= std::string(GP_HAND_BODY_PREFIX) + "." +std::string(GP_FINGER_BODY_PREFIX);
-  
+//   base_name= std::string(GP_HAND_BODY_PREFIX) + "." +std::string(GP_FINGER_BODY_PREFIX);
+  if(handID==0)
+  {
+    base_name = std::string(GP_HAND_BODY_PREFIX) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
+  }
+  else
+  {
+    base_name = std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
+  }
 
 //  base_name= std::string(GP_HAND_BODY_PREFIX) + std::string(".") +std::string( GP_FINGER_BODY_PREFIX);
 
@@ -1033,7 +1040,7 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
      body_name+= out.str();
      body_name+= std::string(".") + GP_FINGERTIP_BODY_NAME;
      out.seekp(std::ios::beg);
-
+     
      fingertip= NULL;
      fingertip= p3d_get_robot_body_by_name(robot, (char *) body_name.c_str());
      if(fingertip==NULL)
@@ -1061,7 +1068,7 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
 //! \param object the object
 //! \param hand structure containing information about the hand geometry
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand)
+int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand, int handID)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
@@ -1081,8 +1088,17 @@ int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpH
   std::stringstream out;
   p3d_obj *fingertip;
 
-  base_name= std::string(robot->name) + std::string(".") + std::string(GP_HAND_BODY_PREFIX) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
+//   base_name= std::string(robot->name) + std::string(".") + std::string(GP_HAND_BODY_PREFIX) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
+  if(handID==0)
+  {
+    base_name = std::string(GP_HAND_BODY_PREFIX) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
+  }
+  else
+  {
+    base_name = std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
+  }
 
+  
   for(i=1; i<=hand.nb_fingers; i++)
   {
      body_name= base_name;

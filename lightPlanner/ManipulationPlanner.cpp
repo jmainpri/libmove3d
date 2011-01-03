@@ -694,22 +694,22 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::computeManipulationData(int armId
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   
   // Generate new manip configs
-	ManipulationData manipConfigs(_robot);
-	
-	_configs = manipConfigs;
-	
+  ManipulationData manipConfigs(_robot);
+  
+  _configs = manipConfigs;
+  
   for(unsigned int i=0; i<1; i++)
-	{
-		status = findArmGraspsConfigs( armId,object, _configs );
-		
-		if (status == MANIPULATION_TASK_OK) 
-		{
-			break;
-		}
-		else {
-			cout << "ManipulationPlanner::status => " << _ErrorMap[status] << endl;
-		}
-	}
+  {
+    status = findArmGraspsConfigs( armId,object, _configs );
+    
+    if (status == MANIPULATION_TASK_OK) 
+    {
+      break;
+    }
+    else {
+      cout << "ManipulationPlanner::status => " << _ErrorMap[status] << endl;
+    }
+  }
   return status;
 }
 
@@ -809,7 +809,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::cutTrajInSmall ( p3d_traj* inputT
   
   unsigned int i=0;
   
-	for(double param = 0; param < inputTraj->range_param; param += dmax )
+  for(double param = 0; param < inputTraj->range_param; param += dmax )
   {
     configPt q_init = p3d_config_at_param_along_traj(inputTraj,param);
     configPt q_goal = p3d_config_at_param_along_traj(inputTraj,param+dmax);
@@ -838,7 +838,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::cutTrajInSmall ( p3d_traj* inputT
     
     p3d_destroy_config(_robot,q_init);
     p3d_destroy_config(_robot,q_goal);
-	}
+  }
 
   outputTraj->range_param = p3d_compute_traj_rangeparam(outputTraj);
   outputTraj->nlp = p3d_compute_traj_nloc(outputTraj);
@@ -926,12 +926,12 @@ int ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, boo
     ENV.setDouble(Env::timeOptimize, smootingTime);
 
     ChronoOn();
-	
+  
     if(_robot->GRAPH)
     {
       p3d_del_graph(_robot->GRAPH);
     }
-	
+  
     result = ext_p3d_run_rrt( _robot->GRAPH, fct_stop, fct_draw );
 
     ChronoPrint("");
@@ -1188,28 +1188,28 @@ int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECT
 //! @param object : pointer to the p3d_rob that represent the moving object
 //! @param trajs : the vector of trajector optained
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt qStart, p3d_rob* object, std::vector <p3d_traj*> &trajs){
-	
+  
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   
-	if ((*_robot->armManipulationData)[armId].getManipState() != handFree ) 
-	{
-		cout << "Warning::ManipulationPlanner::the robot is not in a hand free state" << endl;
-		//return status;
-	}
+  if ((*_robot->armManipulationData)[armId].getManipState() != handFree ) 
+  {
+    cout << "Warning::ManipulationPlanner::the robot is not in a hand free state" << endl;
+    //return status;
+  }
   
   status = computeManipulationData(armId,object);
-	
+  
   if (status == MANIPULATION_TASK_OK)
-	{
+  {
     //Compute the path between theses configurations
     status = armPickGoto(armId, qStart, object, 
-												 _configs.getGraspConfig(), 
-												 _configs.getOpenConfig(), 
-												 _configs.getApproachFreeConfig(), trajs);
+                         _configs.getGraspConfig(), 
+                         _configs.getOpenConfig(), 
+                         _configs.getApproachFreeConfig(), trajs);
   }
-	else {
-			cout << "Fail to findArmGraspsConfigs(armId,object,_configs)" << endl;
-	}
+  else {
+      cout << "Fail to findArmGraspsConfigs(armId,object,_configs)" << endl;
+  }
 
   return status;
     if ((*_robot->armManipulationData)[armId].getManipState() != handFree ){
@@ -1300,14 +1300,14 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
 //! @param trajs : the vector of trajector optained
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFreePoint(int armId, configPt qStart, std::vector<double> &objGoto , p3d_rob* object, std::vector <p3d_traj*> &trajs){
   
-	MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   int updateTatt = false;
-	
-	if ((*_robot->armManipulationData)[armId].getManipState() != holdingObjectInStablePose) 
-	{
-		cout << "Warning::ManipulationPlanner:: the robot is not holding object in a stable pose" << endl;
-		//return status;
-	}
+  
+  if ((*_robot->armManipulationData)[armId].getManipState() != holdingObjectInStablePose) 
+  {
+    cout << "Warning::ManipulationPlanner:: the robot is not holding object in a stable pose" << endl;
+    //return status;
+  }
   deactivateCcCntrts(_robot, armId);
   p3d_set_and_update_this_robot_conf(_robot, qStart);
   
@@ -1430,7 +1430,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     //cout << "qGoal : " << endl;
     //showConfig_2(qGoal);
     //_configs.getAttachFrame(ct->Tatt);
-    gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp);
+    gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId + 1 ); //the hand name is hand1 for arm0 and hand 2 for arm1
 
     // Compute to Approach config
     if ((traj = computeTrajBetweenTwoConfigs(qStart, approachGraspConfig)))
@@ -1445,8 +1445,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
             status =  MANIPULATION_TASK_OK;
         }
     }
-
-// Wraning comment to see traj in Linear mode
+    gpActivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId + 1 ); //the hand name is hand1 for arm0 and hand 2 for arm1
+// Warning comment to see traj in Linear mode
   _robot->isCarryingObject = false;
   armData.setCarriedObject((p3d_rob*)NULL);
   desactivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(),
@@ -1484,46 +1484,46 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickAndPlace(int armId, config
 //! and takes the object to a free configuration
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGotoAndTakeToFree(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* placement, std::vector <p3d_traj*> &trajs)
 {
-	MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
-	
-	ArmManipulationData& armData = (*_robot->armManipulationData)[armId];
-	
-	if (armData.getManipState() != handFree ) 
-	{
-		cout << "Manipulation planner : the robot is not in a hand free state" << endl;
-		//return MANIPULATION_TASK_INVALID_QSTART;
-	}
-	
-	// Generate new manip configs
-	status = computeManipulationData(armId,object);
-	
-  if (status == MANIPULATION_TASK_OK)
-	{
-    // Compute the path between Start configuration
-		// and the GraspConfig
-    status = armPickGoto(armId, qStart, object, 
-												 _configs.getGraspConfig(), 
-												 _configs.getOpenConfig(), 
-												 _configs.getApproachFreeConfig(), trajs);
+  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+  
+  ArmManipulationData& armData = (*_robot->armManipulationData)[armId];
+  
+  if (armData.getManipState() != handFree ) 
+  {
+    cout << "Manipulation planner : the robot is not in a hand free state" << endl;
+    //return MANIPULATION_TASK_INVALID_QSTART;
   }
-	else 
-	{
-		return MANIPULATION_TASK_NO_TRAJ_FOUND;
-	}
-	
-	
-	if (armData.getManipState() != holdingObjectInStablePose) 
-	{
-		cout << "Manipulation planner : the robot is not holding object in a stable pose" << endl;
-		return MANIPULATION_TASK_INVALID_QSTART;
-	}
-	
-	//Compute the path between theses configurations
-	status = armPickTakeToFree(armId, _configs.getGraspConfig(), qGoal, object,
-														 _configs.getApproachGraspConfig(),
-														 *_configs.getGrasp(),
-														 trajs);
-	
+  
+  // Generate new manip configs
+  status = computeManipulationData(armId,object);
+  
+  if (status == MANIPULATION_TASK_OK)
+  {
+    // Compute the path between Start configuration
+    // and the GraspConfig
+    status = armPickGoto(armId, qStart, object, 
+                         _configs.getGraspConfig(), 
+                         _configs.getOpenConfig(), 
+                         _configs.getApproachFreeConfig(), trajs);
+  }
+  else 
+  {
+    return MANIPULATION_TASK_NO_TRAJ_FOUND;
+  }
+  
+  
+  if (armData.getManipState() != holdingObjectInStablePose) 
+  {
+    cout << "Manipulation planner : the robot is not holding object in a stable pose" << endl;
+    return MANIPULATION_TASK_INVALID_QSTART;
+  }
+  
+  //Compute the path between theses configurations
+  status = armPickTakeToFree(armId, _configs.getGraspConfig(), qGoal, object,
+                             _configs.getApproachGraspConfig(),
+                             *_configs.getGrasp(),
+                             trajs);
+  
   return status;
 }
 
