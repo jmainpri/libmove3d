@@ -1120,6 +1120,106 @@ int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpH
   return GP_OK;
 }
 
+//! @ingroup graspPlanning
+//! Deactivates the collision tests between an object and the hand of a robot (that has some).
+//! \param robot the robot (its fingertip bodies must have specific names, defined in graspPlanning.h)
+//! \param object the object
+//! \param hand structure containing information about the hand geometry
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpDeactivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand, int handID)
+{
+  #ifdef GP_DEBUG
+   if(robot==NULL)
+   {
+      printf("%s: %d: gpDeactivate_object_fingertips_collisions(): robot is NULL.\n",__FILE__,__LINE__);
+      return GP_ERROR;
+   }
+   if(object==NULL)
+   {
+      printf("%s: %d: gpDeactivate_object_fingertips_collisions(): object is NULL.\n",__FILE__,__LINE__);
+      return GP_ERROR;
+   }
+  #endif
+
+  int i;
+  std::string base_name, body_name;
+  std::stringstream out;
+
+
+  if(handID==0)
+  {
+    base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX);
+  }
+  else
+  {
+    base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID);
+  }
+
+  std::string body1_name;
+  
+  for( i=0; i < robot->no; i++)
+  {
+    body1_name= robot->o[i]->name;
+    if(body1_name.compare(0, base_name.length(), base_name)==0)
+    {
+      p3d_col_deactivate_pair_of_objects(robot->o[i], object);
+    }
+  }
+
+  return GP_OK;
+}
+
+
+//! @ingroup graspPlanning
+//! Activates the collision tests between an object and the hand of a robot (that has some).
+//! \param robot the robot (its fingertip bodies must have specific names, defined in graspPlanning.h)
+//! \param object the object
+//! \param hand structure containing information about the hand geometry
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpActivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand, int handID)
+{
+  #ifdef GP_DEBUG
+   if(robot==NULL)
+   {
+      printf("%s: %d: gpAactivate_object_fingertips_collisions(): robot is NULL.\n",__FILE__,__LINE__);
+      return GP_ERROR;
+   }
+   if(object==NULL)
+   {
+      printf("%s: %d: gpAactivate_object_fingertips_collisions(): object is NULL.\n",__FILE__,__LINE__);
+      return GP_ERROR;
+   }
+  #endif
+
+  int i;
+  std::string base_name, body_name;
+  std::stringstream out;
+
+
+  if(handID==0)
+  {
+    base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX);
+  }
+  else
+  {
+    base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID);
+  }
+
+  std::string body1_name;
+
+  for( i=0; i < robot->no; i++)
+  {
+    body1_name= robot->o[i]->name;
+    if(body1_name.compare(0, base_name.length(), base_name)==0)
+    {
+      p3d_col_activate_pair_of_objects(robot->o[i], object);
+    }
+  }
+
+  return GP_OK;
+}
+
+
 //! @ingroup graspPlanning 
 //! Checks if the fingertips of the robot (that has some) are in collision with the object.
 //! \param robot the robot (its fingertip bodies must have specific names, defined in graspPlanning.h)

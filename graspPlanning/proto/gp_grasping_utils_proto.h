@@ -87,6 +87,10 @@ extern int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *ob
 
 extern int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand, int handID = 0);
 
+extern int gpDeactivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand, int handID = 0);
+
+extern int gpActivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand, int handID = 0);
+
 extern int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand, int handID= 0);
 
 extern int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand, int handID= 0);

@@ -1413,11 +1413,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
     setAndActivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(),
                                     armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
-    //unfixManipulationJoints(armId);
-
-    //cout << "qStart : " << endl;
-    //showConfig_2(qStart);
-
 
     gpHand_properties handProp = armData.getHandProperties();
     std::vector <double> handConf;
@@ -1437,19 +1432,13 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     // To be computed with the IK of the robot (mult matrix problem)
     p3d_set_and_update_this_robot_conf(_robot,approachGraspConfig);
     p3d_get_robot_config_into(_robot, &approachGraspConfig);
-    //cout << "approachGraspConfig : " << endl;
-    //showConfig_2(approachGraspConfig);
 
-//     gpSet_grasp_configuration(_robot, grasp, qGoal, armId);
-    //cout << "qGoal : " << endl;
-    //showConfig_2(qGoal);
-    //_configs.getAttachFrame(ct->Tatt);
-    gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId + 1 ); //the hand name is hand1 for arm0 and hand 2 for arm1
+    gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId + 1 ); //the hand name is hand1 for arm0 and hand 2 for arm1
 
-    // Compute to Approach config
-//    if ((traj = computeTrajBetweenTwoConfigs(qStart, approachGraspConfig)))
-//    {
-//        trajs.push_back(traj);
+    //Compute to Approach config
+    if ((traj = computeTrajBetweenTwoConfigs(qStart, approachGraspConfig)))
+    {
+        trajs.push_back(traj);
 
         // Compute to Open config
         if ((traj = computeTrajBetweenTwoConfigs(approachGraspConfig, qGoal)))
@@ -1458,8 +1447,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
             cout << "Manipulation : traj found" << endl;
             status =  MANIPULATION_TASK_OK;
         }
-//    }
-    gpActivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId + 1 ); //the hand name is hand1 for arm0 and hand 2 for arm1
+    }
+    gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId + 1 ); //the hand name is hand1 for arm0 and hand 2 for arm1
 // Warning comment to see traj in Linear mode
   _robot->isCarryingObject = false;
   armData.setCarriedObject((p3d_rob*)NULL);

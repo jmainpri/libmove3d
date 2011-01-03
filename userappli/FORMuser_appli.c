@@ -400,7 +400,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
     case 16 :{
       p3d_rob* object = p3d_get_robot_by_name("GREY_TAPE");
       gpHand_properties prop = (*XYZ_ROBOT->armManipulationData)[0].getHandProperties();
-    gpDeactivate_object_fingertips_collisions(XYZ_ROBOT, object->joints[1]->o, prop, 1);
+    gpDeactivate_object_collisions(XYZ_ROBOT, object->joints[1]->o, prop, 1);
 
       
 //       double x, y, z, rx, ry, rz;
