@@ -3119,9 +3119,9 @@ static int p3d_fct_lin_rel_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl
 	/*  if((j->num == 0)||(j->num == ct->actjnts[0])||(j->num == ct->pasjnts[0])) { */
 	//   if (p3d_go_into_cntrt_fct(ct)) {
   
-	if (!TEST_PHASE) {
-		p3d_update_this_robot_pos_without_cntrt_and_obj(ct->pasjnts[0]->rob);
-	}
+// 	if (!TEST_PHASE) {
+// 		p3d_update_this_robot_pos_without_cntrt_and_obj(ct->pasjnts[0]->rob);
+// 	}
   
 	/*Modif Mokhtar Before :
 	 valso = p3d_jnt_get_dof_deg(ct->actjnts[0], ct->act_jnt_dof[0]);
