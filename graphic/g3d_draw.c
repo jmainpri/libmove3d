@@ -3040,15 +3040,15 @@ void g3d_rgb_from_int(int i, double color[4])
 //! Computes an RGB color from a hue value.
 //! If the hue parameter varies from 0 to 1, the color will vary from red -> green -> cyan -> blue -> magenta -> red
 //! with all intermediate hues.
-//! \param x hue value (must be between 0 and 1)
+//! \param hue hue value (must be between 0 and 1)
 //! \param color an array that will be filled with the RGB values corresponding to the given hue. The fourth element is set to 1
-void g3d_rgb_from_hue(double x, double color[4])
+void g3d_rgb_from_hue(double hue, double color[4])
 {
-   double x1, x2, x3, x4, x5;
+   double x, x1, x2, x3, x4, x5;
 
+   x= hue;
    if(x < 0.0)
    { x= 0.0; }
-
    if(x > 1.0)
    { x= 1.0; }
 
