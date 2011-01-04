@@ -998,6 +998,7 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
 //! \param robot the robot (its fingertip bodies must have specific names, defined in graspPlanning.h)
 //! \param object the object
 //! \param hand structure containing information about the hand geometry
+//! \param handID the id of the hand (if the robot has n hands, the ids are 0,1,...n-1)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand, int handID)
 {
@@ -1019,19 +1020,8 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
   std::string base_name, body_name;
   std::stringstream out;
   p3d_obj *fingertip;
-  
 
-//   base_name= std::string(GP_HAND_BODY_PREFIX) + "." +std::string(GP_FINGER_BODY_PREFIX);
-  if(handID==0)
-  {
-    base_name = std::string(GP_HAND_BODY_PREFIX) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
-  }
-  else
-  {
-    base_name = std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
-  }
-
-//  base_name= std::string(GP_HAND_BODY_PREFIX) + std::string(".") +std::string( GP_FINGER_BODY_PREFIX);
+  base_name = std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
 
   for(i=1; i<=hand.nb_fingers; i++)
   {
@@ -1067,6 +1057,7 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
 //! \param robot the robot (its fingertip bodies must have specific names, defined in graspPlanning.h)
 //! \param object the object
 //! \param hand structure containing information about the hand geometry
+//! \param handID the id of the hand (if the robot has n hands, the ids are 0,1,...n-1)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand, int handID)
 {
@@ -1088,17 +1079,8 @@ int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpH
   std::stringstream out;
   p3d_obj *fingertip;
 
-//   base_name= std::string(robot->name) + std::string(".") + std::string(GP_HAND_BODY_PREFIX) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
-  if(handID==0)
-  {
-    base_name = std::string(GP_HAND_BODY_PREFIX) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
-  }
-  else
-  {
-    base_name = std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
-  }
+  base_name = std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
 
-  
   for(i=1; i<=hand.nb_fingers; i++)
   {
      body_name= base_name;
@@ -1125,6 +1107,7 @@ int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpH
 //! \param robot the robot (its fingertip bodies must have specific names, defined in graspPlanning.h)
 //! \param object the object
 //! \param hand structure containing information about the hand geometry
+//! \param handID the id of the hand (if the robot has n hands, the ids are 0,1,...n-1)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDeactivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand, int handID)
 {
@@ -1146,17 +1129,10 @@ int gpDeactivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_prope
   std::stringstream out;
 
 
-  if(handID==0)
-  {
-    base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX);
-  }
-  else
-  {
-    base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID);
-  }
+  base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID);
 
   std::string body1_name;
-  
+
   for( i=0; i < robot->no; i++)
   {
     body1_name= robot->o[i]->name;
@@ -1175,6 +1151,7 @@ int gpDeactivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_prope
 //! \param robot the robot (its fingertip bodies must have specific names, defined in graspPlanning.h)
 //! \param object the object
 //! \param hand structure containing information about the hand geometry
+//! \param handID the id of the hand (if the robot has n hands, the ids are 0,1,...n-1)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpActivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand, int handID)
 {
@@ -1195,15 +1172,7 @@ int gpActivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_propert
   std::string base_name, body_name;
   std::stringstream out;
 
-
-  if(handID==0)
-  {
-    base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX);
-  }
-  else
-  {
-    base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID);
-  }
+  base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID);
 
   std::string body1_name;
 
@@ -1220,61 +1189,6 @@ int gpActivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_propert
 }
 
 
-//! @ingroup graspPlanning 
-//! Checks if the fingertips of the robot (that has some) are in collision with the object.
-//! \param robot the robot (its fingertip bodies must have specific names, defined in graspPlanning.h)
-//! \param object the object
-//! \param hand structure containing information about the hand geometry
-//! \return the number of fingertips in contact with the object, 0 in case of errror
-int gpCount_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand)
-{
-  #ifdef GP_DEBUG
-   if(robot==NULL)
-   {
-      printf("%s: %d: gpCheck_object_fingertips_collisions(): robot is NULL.\n",__FILE__,__LINE__);
-      return GP_ERROR;
-   }
-   if(object==NULL)
-   {
-      printf("%s: %d: gpCheck_object_fingertips_collisions(): object is NULL.\n",__FILE__,__LINE__);
-      return GP_ERROR;
-   }
-  #endif
-
-  unsigned int i;
-  int nb_contacts;
-  std::string base_name, body_name;
-  std::stringstream out;
-  p3d_obj *fingertip;
-
-  base_name= std::string(robot->name) + std::string(".") + GP_HAND_BODY_PREFIX + std::string(".") + GP_FINGER_BODY_PREFIX;
-
-  nb_contacts= 0;
-  for(i=1; i<=hand.nb_fingers; i++)
-  {
-     body_name= base_name;
-     out << i;
-     body_name+= out.str();
-     body_name+= std::string(".") + std::string(GP_FINGERTIP_BODY_NAME);
-     out.seekp(std::ios::beg);
-
-     fingertip= NULL;
-     fingertip= p3d_get_body_by_name((char *) body_name.c_str());
-     if(fingertip==NULL)
-     {
-       printf("%s: %d: gpCheck_object_fingertips_collisions(): robot \"%s\" should have a body named \"%s\".\n",__FILE__,__LINE__, robot->name, body_name.c_str());
-       continue;
-     }
-printf("test %s vs %s \n",fingertip->name, object->name);
-//      if(p3d_col_test_obj_obj(fingertip, object)) MODIF XAV
-			 if(p3d_col_test_pair(fingertip, object))
-		 {
-       nb_contacts++;
-     }
-  }
-
-  return nb_contacts;
-}
 
 //! @ingroup graspPlanning 
 //! Opens the gripper or hand at its maximum.
@@ -1385,73 +1299,6 @@ int gpClose_hand(p3d_rob *robot, gpHand_properties &hand)
   gpSet_hand_configuration(robot, hand , q, false);
 
   return GP_OK;
-}
-
-int gpClose_gripper_until_contact(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand)
-{
-  #ifdef GP_DEBUG
-   if(robot==NULL)
-   {
-     printf("%s: %d: gpClose_gripper_until_contact(): robot is NULL.\n",__FILE__,__LINE__);
-     return GP_ERROR;
-   }
-   if(object==NULL)
-   {
-     printf("%s: %d: gpClose_gripper_until_contact(): object is NULL.\n",__FILE__,__LINE__);
-     return GP_ERROR;
-   }
-   if(hand.type!=GP_GRIPPER && hand.type!=GP_PR2_GRIPPER)
-   {
-     printf("%s: %d: gpClose_gripper_until_contact(): this function only applies to GP_GRIPPER.\n",__FILE__,__LINE__);
-     return GP_ERROR;
-   }
-  #endif
-
-  unsigned int i, n= 30, nb_contacts;
-  double alpha;
-  std::vector<double> q0;
-  std::vector<double> q;
-  std::vector<double> qprev;
-  std::vector<p3d_obj*> fingertipBodies, handBodies;
-
-  q0.resize(hand.nb_dofs);
-  q.resize(hand.nb_dofs);
-  qprev.resize(hand.nb_dofs);
-
-  gpGet_hand_configuration(robot, hand, 0, q0);
-
-
-  gpGet_fingertip_bodies(robot, hand, fingertipBodies);
-
-  gpGet_non_fingertip_bodies(robot, hand, handBodies);
-
-
-
-  if(p3d_col_test_robot_obj(robot, object))
-  {
-    return GP_ERROR;
-  }
-
-  nb_contacts= 0;
-  for(i=0; i<n; ++i)
-  {
-    alpha= ((double) i)/((double) n);
-//     q[0]= (1-alpha)*q0[0] + alpha*hand.min_opening_jnt_value;
-    q[0]= (1-alpha)*q0[0] + alpha*hand.qmin.at(0);
-
-    gpSet_hand_configuration(robot, hand , q, false);
-
-    if(p3d_col_test_robot_obj(robot, object))
-    {
-      nb_contacts= gpCount_object_fingertips_collisions(robot, object, hand);
-      gpSet_hand_configuration(robot, hand , qprev, false);
-      return nb_contacts;
-    }
-  }
-
-   gpSet_hand_configuration(robot, hand , q0, false);
-
-  return GP_ERROR;
 }
 
 //! @ingroup graspPlanning 
@@ -2779,6 +2626,7 @@ int gpActivate_arm_collisions(p3d_rob *robot, int armID)
 //! @ingroup graspPlanning 
 //! Deactivates all the collision tests for the hand bodies of the specified robot.
 //! \param robot the robot (its hand bodies must have specific names, defined in graspPlanning.h)
+//! \param handID the id of the hand (if the robot has n hands, the ids are 0,1,...n-1)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDeactivate_hand_collisions(p3d_rob *robot, int handID)
 {
@@ -2793,7 +2641,7 @@ int gpDeactivate_hand_collisions(p3d_rob *robot, int handID)
   int i;
   std::string hand_body_base_name, body_name;
 
-  hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + std::string(".");
+  hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".");
 
   for(i=0; i<robot->no; i++)
   {
@@ -2814,6 +2662,7 @@ int gpDeactivate_hand_collisions(p3d_rob *robot, int handID)
 //! @ingroup graspPlanning 
 //! Activates all the collision tests for the hand bodies of the specified robot.
 //! \param robot the robot (its hand bodies must have specific names, defined in graspPlanning.h)
+//! \param handID the id of the hand (if the robot has n hands, the ids are 0,1,...n-1)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpActivate_hand_collisions(p3d_rob *robot, int handID)
 {
@@ -2828,15 +2677,7 @@ int gpActivate_hand_collisions(p3d_rob *robot, int handID)
   int i;
   std::string hand_body_base_name, body_name;
 
-  if(handID==0)
-  {
-    hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + std::string(".");
-  }
-  else
-  {
-    hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".");
-  }
-
+  hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".");
 
   for(i=0; i<robot->no; i++)
   {
@@ -2858,6 +2699,7 @@ int gpActivate_hand_collisions(p3d_rob *robot, int handID)
 //! @ingroup graspPlanning 
 //! Deactivates all the selfcollision tests for the hand bodies of the specified robot.
 //! \param robot the robot (its hand bodies must have specific names, defined in graspPlanning.h)
+//! \param handID the id of the hand (if the robot has n hands, the ids are 0,1,...n-1)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDeactivate_hand_selfcollisions(p3d_rob *robot, int handID)
 {
@@ -2872,14 +2714,7 @@ int gpDeactivate_hand_selfcollisions(p3d_rob *robot, int handID)
   int i, j;
   std::string hand_body_base_name, body1_name, body2_name;
 
-  if(handID==0)
-  {
-    hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + std::string(".");
-  }
-  else
-  {
-    hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".");
-  } 
+  hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".");
 
   for(i=0; i<robot->no; i++)
   {
@@ -2911,6 +2746,7 @@ int gpDeactivate_hand_selfcollisions(p3d_rob *robot, int handID)
 //! @ingroup graspPlanning 
 //! Activates all the selfcollision tests for the hand bodies of the specified robot.
 //! \param robot the robot (its hand bodies must have specific names, defined in graspPlanning.h)
+//! \param handID the id of the hand (if the robot has n hands, the ids are 0,1,...n-1)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpActivate_hand_selfcollisions(p3d_rob *robot, int handID)
 {
@@ -2925,14 +2761,7 @@ int gpActivate_hand_selfcollisions(p3d_rob *robot, int handID)
   int i, j;
   std::string hand_body_base_name, body1_name, body2_name;
 
-  if(handID==0)
-  {
-    hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + std::string(".");
-  }
-  else
-  {
-    hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".");
-  } 
+  hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".");
 
   for(i=0; i<robot->no; i++)
   {
@@ -2966,6 +2795,7 @@ int gpActivate_hand_selfcollisions(p3d_rob *robot, int handID)
 //! \param robot the robot (its finger bodies must have specific names, defined in graspPlanning.h)
 //! \param finger_index the number of the finger ( 1 <= finger_index <= hand number of fingers)
 //! \param hand a gpHand_properties variable filled with information concerning the chosen hand characteristics
+//! \param handID the id of the hand (if the robot has n hands, the ids are 0,1,...n-1)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand, int handID)
 {
@@ -2986,7 +2816,7 @@ int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gp
   std::string finger_body_base_name, body_name;
   std::stringstream out;
 
-  finger_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + std::string(".") + GP_FINGER_BODY_PREFIX;
+  finger_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".") + GP_FINGER_BODY_PREFIX;
   out << finger_index;
   finger_body_base_name+= out.str();
 
@@ -3011,6 +2841,7 @@ int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gp
 //! \param robot the robot (its finger bodies must have specific names, defined in graspPlanning.h)
 //! \param finger_index the number of the finger ( 1 <= finger_index <= hand number of fingers)
 //! \param hand a gpHand_properties variable filled with information concerning the chosen hand characteristics
+//! \param handID the id of the hand (if the robot has n hands, the ids are 0,1,...n-1)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand, int handID)
 {
@@ -3031,7 +2862,7 @@ int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHa
   std::string finger_body_base_name, body_name;
   std::stringstream out;
 
-  finger_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + std::string(".") + GP_FINGER_BODY_PREFIX;
+  finger_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".") + GP_FINGER_BODY_PREFIX;
 
   out << finger_index;
   finger_body_base_name+= out.str();
