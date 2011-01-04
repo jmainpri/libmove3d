@@ -208,11 +208,11 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
     {
       n++;
       cout << "!!! OK =-) !!!" << endl;
+      p3d_set_and_update_this_robot_conf( m_manipulation->robot(), data.getApproachFreeConfig() );
     }
     else {
       p3d_set_and_update_this_robot_conf(m_manipulation->robot(), m_qInit);
     }
-    p3d_set_and_update_this_robot_conf( m_manipulation->robot(), data.getApproachFreeConfig() );
     g3d_draw_allwin_active();
   }  
   
@@ -245,7 +245,6 @@ bool ManipulationTestFunctions::runTest(int id)
     return manipTest(ARM_PICK_GOTO);
   }
   
-  
   if (id == 4) 
   {
     manipTest(ARM_PICK_GOTO);
@@ -257,10 +256,6 @@ bool ManipulationTestFunctions::runTest(int id)
     return this->manipTestGraspingWithDifferentObjectOrientations(false);
   }
 
-  if (id == 7) 
-  {
-    return this->manipTestGraspingWithDifferentObjectOrientations(true);
-  }
   if (id == 7) 
   {
     return this->manipTestGraspingWithDifferentObjectOrientations(true);
