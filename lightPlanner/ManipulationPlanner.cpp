@@ -1433,7 +1433,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     p3d_set_and_update_this_robot_conf(_robot,approachGraspConfig);
     p3d_get_robot_config_into(_robot, &approachGraspConfig);
 
-    gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId + 1 ); //the hand name is hand1 for arm0 and hand 2 for arm1
+    gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId); //the hand name is hand1 for arm0 and hand 2 for arm1
 
     //Compute to Approach config
     if ((traj = computeTrajBetweenTwoConfigs(qStart, approachGraspConfig)))
@@ -1448,7 +1448,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
             status =  MANIPULATION_TASK_OK;
         }
     }
-    gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId + 1 ); //the hand name is hand1 for arm0 and hand 2 for arm1
+    gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId); //the hand name is hand1 for arm0 and hand 2 for arm1
 // Warning comment to see traj in Linear mode
   _robot->isCarryingObject = false;
   armData.setCarriedObject((p3d_rob*)NULL);
