@@ -1318,7 +1318,7 @@ int hri_is_robot_an_agent(p3d_rob * robot, HRI_AGENTS * agents, int * is_human, 
   return FALSE;
 }
 
-#defined ACHILE_FOR_KINECT 1 
+#undef ACHILE_FOR_KINECT
 
 #ifdef ACHILE_FOR_KINECT
 // Only HEAD, NECK, TORSO, 
