@@ -652,7 +652,7 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
         }
       }
 			if (localpathPt[i] != NULL) {
-				#if defined(PQP) && defined(LIGHT_PLANNER)
+				#if defined(LIGHT_PLANNER)
 				localpathPt[i]->isCarryingObject = robotPt->isCarryingObject;
 				localpathPt[i]->carriedObject = robotPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
 				//				p3d_mat4Copy(robotPt->Tgrasp, localpathPt[i]->Tgrasp);
