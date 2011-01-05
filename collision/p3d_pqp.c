@@ -3455,15 +3455,15 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
     if(XYZ_ENV->robot[i]==robot)
     {  continue;  }
 
-    #ifdef LIGHT_PLANNER
-    if(XYZ_ENV->robot[i]==robot->carriedObject && robot->isCarryingObject==1)
-    {  
-      nb_cols= pqp_robot_robot_collision_test_without_contact_surface(robot, robot->carriedObject);
-      if(nb_cols!=0)
-      {  return 1;  }
-      continue;
-    }
-    #endif
+//     #ifdef LIGHT_PLANNER
+//     if(XYZ_ENV->robot[i]==robot->carriedObject && robot->isCarryingObject==1)
+//     {  
+//       nb_cols= pqp_robot_robot_collision_test_without_contact_surface(robot, robot->carriedObject);
+//       if(nb_cols!=0)
+//       {  return 1;  }
+//       continue;
+//     }
+//     #endif
 
     nb_cols= pqp_robot_robot_collision_test(XYZ_ENV->robot[i], robot);
     if(nb_cols!=0)

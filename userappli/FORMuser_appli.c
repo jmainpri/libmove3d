@@ -400,7 +400,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
     case 16 :{
       p3d_rob* object = p3d_get_robot_by_name("GREY_TAPE");
       gpHand_properties prop = (*XYZ_ROBOT->armManipulationData)[0].getHandProperties();
-    gpDeactivate_object_collisions(XYZ_ROBOT, object->joints[1]->o, prop, 1);
+    gpDeactivate_object_collisions(XYZ_ROBOT, object->joints[1]->o, prop, 0);
 
       
 //       double x, y, z, rx, ry, rz;
@@ -516,7 +516,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 17:{
-#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
+#if defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
       configPt startConfig = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS), gotoConfig = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
       char graphFile[1024];
 //      sprintf(graphFile, "%s/video/regrasp19.graph", getenv("HOME_MOVE3D"));
@@ -548,7 +548,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 18:{
-#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING) && defined (MULTIGRAPH)
+#if defined(LIGHT_PLANNER) && defined(GRASP_PLANNING) && defined (MULTIGRAPH)
       for (int i = 0; i < 15; i++) {
         manip.computeOfflineRoadmap();
         char graphFile[1024], mgGraphFile[1024];
@@ -564,7 +564,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 19:{
-#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
+#if defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
       configPt startConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
       configPt endConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
       std::string graphFile(getenv("HOME_MOVE3D"));
@@ -610,13 +610,13 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 20:{
-#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
+#if defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
       manip.drawSimpleGraspConfigs();
 #endif
       break;
     }
     case 21:{
-#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
+#if defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
       manip.drawDoubleGraspConfigs();
 #endif
       break;

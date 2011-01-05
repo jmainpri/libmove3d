@@ -336,7 +336,7 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
     }
 #endif
 
-//#if defined(PQP) && defined(LIGHT_PLANNER)
+//#if defined(LIGHT_PLANNER)
 //		robotPt->isCarryingObject = localpathPt->isCarryingObject;
 //		robotPt->carriedObject = localpathPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
 //		p3d_mat4Copy(localpathPt->Tgrasp, robotPt->Tgrasp);
@@ -505,7 +505,7 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 	
 	if (fct) if (((*fct)(robotPt, localpathPt)) == FALSE) return(count);
 
-//#if defined(PQP) && defined(LIGHT_PLANNER)
+//#if defined(LIGHT_PLANNER)
 //	p3d_release_object(robotPt);
 //#endif
   MY_FREE(distances, double, njnt + 1);

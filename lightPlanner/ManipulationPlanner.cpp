@@ -348,10 +348,10 @@ configPt ManipulationPlanner::getFreeHoldingConf( p3d_rob* object, int armId, gp
     gpSet_grasp_configuration(_robot, grasp, q, armId);
   }
   fixAllHands(NULL, false);
-  gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);
+  gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
   // Sample a configuration for the robot
   q = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, false, true , armId, true);
-  gpActivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);
+  gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
   deactivateCcCntrts(_robot, armId);
   
   _robot->isCarryingObject = FALSE;
@@ -385,7 +385,7 @@ configPt ManipulationPlanner::getGraspConf(p3d_rob* object, int armId, gpGrasp& 
   std::pair<double,configPt> costAndConf;
   std::vector< std::pair<double,configPt> > graspConfigs;
   
-  const unsigned int NbTry=1;
+  const unsigned int NbTry=30;
   
   gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);
   
@@ -533,7 +533,7 @@ configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gp
     std::pair<double,configPt> distToGraspQ;
     std::vector< std::pair<double,configPt> > allQ;
     
-    const unsigned int NbTry=1;
+    const unsigned int NbTry=30;
     gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);
     for (unsigned int i=0; i<NbTry; i++) 
     {
@@ -594,10 +594,10 @@ configPt ManipulationPlanner::getApproachGraspConf(p3d_rob* object, int armId, g
       gpSet_grasp_configuration(_robot, grasp, q, armId);
     }
     fixAllHands(NULL, false);
-    gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);
+    gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
     // Sample a configuration for the robot
     configPt approachConfig = setRobotCloseToConfGraspApproachOrExtract(_robot, q, object->joints[1]->abs_pos, tAtt, false, armId, true);
-    gpActivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);
+    gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
     deactivateCcCntrts(_robot, armId);
     p3d_destroy_config(_robot, q);
     // Reset robot to the initial robot configuration
@@ -1341,6 +1341,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFreePoint(int armId,
   if (qGoal) {
     if(!_configs.getApproachGraspConfig()){
       configPt approachGraspConfig = getApproachGraspConf(object, armId, *(_configs.getGrasp()), qStart, tAtt);
+      showConfig_2(approachGraspConfig);
       if(approachGraspConfig){
         _configs.setApproachGraspConfig(approachGraspConfig);
       }else{
@@ -1437,19 +1438,13 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     p3d_get_robot_config_into(_robot, &qGoal);
 
     p3d_set_and_update_this_robot_conf(_robot, qStart);
-
-    // set the approachGraspConfig
-    // To be computed with the IK of the robot (mult matrix problem)
-    p3d_set_and_update_this_robot_conf(_robot,approachGraspConfig);
-    p3d_get_robot_config_into(_robot, &approachGraspConfig);
-
+   
     gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId); //the hand name is hand1 for arm0 and hand 2 for arm1
 
     //Compute to Approach config
     if ((traj = computeTrajBetweenTwoConfigs(qStart, approachGraspConfig)))
     {
         trajs.push_back(traj);
-
         // Compute to Open config
         if ((traj = computeTrajBetweenTwoConfigs(approachGraspConfig, qGoal)))
         {
@@ -1464,7 +1459,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
   armData.setCarriedObject((p3d_rob*)NULL);
   desactivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(),
                                armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
-
     return status;
 }
 

@@ -606,7 +606,7 @@ void p3d_col_cur_deactivate_all(void)
     break;
     case p3d_col_mode_pqp:
       pair = p3d_col_pair_get_cur();
-//       p3d_BB_deactivate_all(pair->BB_handlePt);
+//        p3d_BB_deactivate_all(pair->BB_handlePt);
       pqp_deactivate_all_collisions();
     break;
   default:
