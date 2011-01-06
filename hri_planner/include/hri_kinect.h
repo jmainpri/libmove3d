@@ -24,6 +24,8 @@ struct kinectData
   p3d_vector3 ELBOW_LEFT;
   p3d_vector3 HIP_LEFT;
   p3d_vector3 HIP_RIGHT;
+  p3d_vector3 HAND_RIGHT;
+  p3d_vector3 HAND_LEFT;
 };
 
 struct kinectAgent 

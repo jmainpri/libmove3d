@@ -35,6 +35,8 @@ void hri_set_human_config_from_kinect( HRI_AGENTS * agents , configPt q , kinect
   //return FALSE;
 }
 
+//! Computes a condfiguration
+//! from a set of points 
 configPt hri_get_configuration_from_kinect_data( p3d_rob* robot, kinectData& data )
 {
   // Set pelvis
@@ -45,16 +47,69 @@ configPt hri_get_configuration_from_kinect_data( p3d_rob* robot, kinectData& dat
   
   q[index_dof+0] = data.TORSO[0];
   q[index_dof+1] = data.TORSO[1];
-  q[index_dof+2] = data.TORSO[2];
+  q[index_dof+2] = data.TORSO[2]; // Hack 1 meter
   
+  // calcul de l'orientation du torso
   p3d_vector3 sum,midP;
+  p3d_vectAdd( data.SHOULDER_LEFT, data.SHOULDER_RIGHT , sum );
+  p3d_vectScale(  sum , midP , 0.5 );
   
-  p3d_vectAdd( data.HIP_LEFT, data.HIP_RIGHT , sum);
-  p3d_vectScale( midP , sum , 0.5 );
-  
-  
-  double dist = sqrt( pow(data.HIP_LEFT[0]-midP[0],2) + pow(data.HIP_LEFT[1]-midP[1],2) );
-  q[index_dof+5] = asin( ( data.HIP_LEFT[1] - midP[1] ) / dist  );
-  
+  q[index_dof+5] = atan2( data.SHOULDER_LEFT[1]-midP[1] , data.SHOULDER_LEFT[0]-midP[0]  );
+  q[index_dof+5] += -M_PI/2; // Hack + 3 Pi / 2
+
+
+  // Set and update robot to 
+  // new position
+  p3d_set_and_update_this_robot_conf( robot, q );
+
+  p3d_vector3 pos;
+  joint = p3d_get_robot_jnt_by_name(robot, (char*) "rShoulderX");
+  p3d_jnt_get_cur_vect_point( joint , pos );
+
+  index_dof = p3d_get_robot_jnt_by_name(robot, (char*) "rShoulderY")->index_dof; 
+  q[index_dof+1] = p3d_vectDistance( data.ELBOW_RIGHT , pos ) - 0.2066 ;
+
+  printf(" distance = %f \n", q[index_dof+1] );
+  printf(" x = %f , y = %f , z = %f \n" , data.SHOULDER_RIGHT[0] , data.SHOULDER_RIGHT[1] , data.SHOULDER_RIGHT[2] );
+  printf(" x = %f , y = %f , z = %f \n" , pos[0] , pos[1] , pos[2] );
+
+  // calcul de la direction pour le bras droit
+  p3d_vector3 sub,dir;
+  p3d_vectSub( data.ELBOW_RIGHT , pos , sub );
+  p3d_vectNormalize( sub , dir );
+
+  double c2 = sqrt( pow( -dir[0] , 2 ) + pow( dir[2] , 2 ) );
+
+  // selon x
+  double alpha1 = atan2( dir[2]/c2 , -dir[1]/c2 );
+
+  // selon z
+  double alpha2 = atan2( -dir[0] , c2 );
+
+  //index_dof = p3d_get_robot_jnt_by_name(robot, (char*) "rShoulderX")->index_dof;
+  //q[index_dof] = alpha1;
+
+  index_dof = p3d_get_robot_jnt_by_name(robot, (char*) "rShoulderZ")->index_dof;
+  q[index_dof] = alpha2;
+
+  p3d_vectSub( data.HAND_RIGHT , data.ELBOW_RIGHT , sub ); 
+  p3d_vectNormalize( sub , dir ); 
+
+  double s4 = sqrt( pow( dir[0] , 2 ) + pow( dir[2] , 2 ) ); 
+
+  // selon y  
+  double alpha3 = atan2( -dir[2]/s4, -dir[0]/s4 ); 
+
+  // coude 
+  double alpha4 = atan2( s4 , dir[1] ); 
+
+//   index_dof = p3d_get_robot_jnt_by_name(robot, (char*) "rShoulderY")->index_dof; 
+//   q[index_dof] = alpha3; 
+
+//   index_dof = p3d_get_robot_jnt_by_name(robot, (char*) "rElbowZ")->index_dof; 
+//   q[index_dof] = alpha4; 
+
+//   printf("Human new condifuration\n"); 
+//   printf("-----------------------------------\n"); 
   return q;
 }
