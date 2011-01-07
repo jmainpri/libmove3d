@@ -3,15 +3,20 @@
  *  Move3D-core
  *
  *  Created by Jim Mainprice on 06/01/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
+ *  Copyright 2011 LAAS/CNRS. All rights reserved.
  *
  */
 
 #include "Hri_planner-pkg.h"
 #include "P3d-pkg.h"
 
-// right arm 1,2,3
-//  left arm 4,5,6
+//! human kinect information
+bool        m_data_exists = false;
+kinectData  m_humKin;
+
+//! set the human position form the kinect information
+//! right arm 1,2,3
+//! left arm 4,5,6
 void hri_set_human_config_from_kinect( HRI_AGENTS * agents , configPt q , kinectData& humKin )
 {
   p3d_rob * robot = NULL;
@@ -112,4 +117,63 @@ configPt hri_get_configuration_from_kinect_data( p3d_rob* robot, kinectData& dat
 //   printf("Human new condifuration\n"); 
 //   printf("-----------------------------------\n"); 
   return q;
+}
+
+void hri_store_kinect_model( kinectData& data )
+{
+  m_data_exists = true;
+  m_humKin = data;
+}
+
+//!
+//! 
+void hri_draw_kinect_points()
+{
+  if (!m_data_exists) {
+    return;
+  }
+  
+  double r = 0.10;
+  g3d_drawSphere(m_humKin.HEAD[0],m_humKin.HEAD[1],m_humKin.HEAD[2],r);
+  g3d_drawSphere(m_humKin.NECK[0],m_humKin.NECK[1],m_humKin.NECK[2],r);
+  
+  g3d_drawSphere(m_humKin.TORSO[0],
+                 m_humKin.TORSO[1],
+                 m_humKin.TORSO[2],r);
+  
+  g3d_drawSphere(m_humKin.SHOULDER_RIGHT[0],
+                 m_humKin.SHOULDER_RIGHT[1],
+                 m_humKin.SHOULDER_RIGHT[2],r);
+  
+  g3d_drawSphere(m_humKin.SHOULDER_LEFT[0],
+                 m_humKin.SHOULDER_LEFT[1],
+                 m_humKin.SHOULDER_LEFT[2],r);
+  
+  g3d_drawSphere(m_humKin.SHOULDER_RIGHT[0],
+                 m_humKin.SHOULDER_RIGHT[1],
+                 m_humKin.SHOULDER_RIGHT[2],r);
+
+  g3d_drawSphere(m_humKin.ELBOW_RIGHT[0],
+                 m_humKin.ELBOW_RIGHT[1],
+                 m_humKin.ELBOW_RIGHT[2],r);
+  
+  g3d_drawSphere(m_humKin.ELBOW_LEFT[0],
+                 m_humKin.ELBOW_LEFT[1],
+                 m_humKin.ELBOW_LEFT[2],r);
+  
+  g3d_drawSphere(m_humKin.HIP_RIGHT[0],
+                 m_humKin.HIP_RIGHT[1],
+                 m_humKin.HIP_RIGHT[2],r);
+  
+  g3d_drawSphere(m_humKin.HIP_LEFT[0],
+                 m_humKin.HIP_LEFT[1],
+                 m_humKin.HIP_LEFT[2],r);
+  
+  g3d_drawSphere(m_humKin.HAND_RIGHT[0],
+                 m_humKin.HAND_RIGHT[1],
+                 m_humKin.HAND_RIGHT[2],r);
+  
+  g3d_drawSphere(m_humKin.HAND_LEFT[0],
+                 m_humKin.HAND_LEFT[1],
+                 m_humKin.HAND_LEFT[2],r);
 }

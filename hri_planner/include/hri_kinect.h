@@ -44,5 +44,7 @@ struct kinectAgents
 };
 
 configPt hri_get_configuration_from_kinect_data( p3d_rob* robot, kinectData& data );
+void hri_store_kinect_model( kinectData& data );
+void hri_draw_kinect_points();
 
 #endif
