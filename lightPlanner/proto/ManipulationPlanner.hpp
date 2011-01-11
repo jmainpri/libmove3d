@@ -61,6 +61,8 @@ class  ManipulationPlanner {
     inline configPt robotStart() const{if (_robot != NULL) {return _robot->ROBOT_POS;} else {return NULL;}}
     inline configPt robotGoto() const{if (_robot != NULL) {return _robot->ROBOT_GOTO;} else {return NULL;}}
 	
+
+    inline ManipulationData getManipulationData()  const {return _configs;}
 	/* ******************************* */
   /* ******* Hands / Grasping ****** */
   /* ******************************* */
@@ -74,6 +76,7 @@ class  ManipulationPlanner {
 	void unfixManipulationJoints(int armId);
 	/** Generate needed configurations from the given grasp and object position */
 	MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, ManipulationData& configs);
+	MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, gpGrasp grasp, ManipulationData& configs);
   
   //! Compute the distance between 2 configurations for 
   //! one local path group
@@ -96,6 +99,7 @@ class  ManipulationPlanner {
 	MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;
   
   MANIPULATION_TASK_MESSAGE computeManipulationData(int armId,p3d_rob* object);
+  MANIPULATION_TASK_MESSAGE computeManipulationData(int armId,p3d_rob* object,gpGrasp grasp);
   
 	/* ******************************* */
   /* ******* Planning Modes ******** */
@@ -131,6 +135,7 @@ class  ManipulationPlanner {
     /** Move the arm from a free configuration to a grasping configuration of the object placed on a support */
     MANIPULATION_TASK_MESSAGE armPickGoto(int armId, configPt qStart, p3d_rob* object, std::vector <p3d_traj*> &trajs);
     MANIPULATION_TASK_MESSAGE armPickGoto(int armId, configPt qStart, p3d_rob* object, configPt graspConfig, configPt openConfig, configPt approachFreeConfig, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armPickGoto(int armId, configPt qStart, p3d_rob* object, gpGrasp grasp, std::vector <p3d_traj*> &trajs);
 
     /** Move the arm from a grasping configuration (of the object placed on a support) to a free configuration */
     MANIPULATION_TASK_MESSAGE armPickTakeToFreePoint(int armId, configPt qStart, std::vector<double> &objGoto, p3d_rob* object, std::vector <p3d_traj*> &trajs);
@@ -169,9 +174,12 @@ class  ManipulationPlanner {
   /* ******************************* */
     /** Computes a path for a given manipulation elementary task. Generate a set of Trajectories */
     MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName,  const char* supportName, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName,  const char* supportName, gpGrasp grasp, std::vector <p3d_traj*> &trajs);
+
 #ifdef MULTILOCALPATH
     /** Computes a path for a given manipulation elementary task. Generate a set of SoftMotion Paths */
     MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName,  const char* supportName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs);
+    MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName,  const char* supportName, gpGrasp grasp, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs);
 #endif
 	
   private:

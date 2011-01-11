@@ -25,7 +25,7 @@ p3d_perspective.c
 )
 IF(USE_MIGHTABILITY_MAPS)
 BM3D_SRC_SUBDIR_PROCESS(
-Mightability_Maps.c 
+Mightability_Maps.cpp 
 FORM_HRI_affordance.c
 HRI_tasks.cpp
 )
