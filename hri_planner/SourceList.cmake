@@ -11,6 +11,7 @@ hri_distance.c
 hri_bitmap.c
 hri_manip.c 
 hri_knowledge.c
+hri_kinect.c
 )
 include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/hri_bitmap/SourceList.cmake)
 ENDIF(HRI_PLANNER)

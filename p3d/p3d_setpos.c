@@ -427,12 +427,11 @@ void p3d_update_this_robot_pos_without_cntrt(p3d_rob *robotPt) {
   #endif
 
   // update deformable bodies:
-  for(int i=0; i<robotPt->no; ++i) {
-    if(robotPt->o[i]->isDeformable==true) {
-       p3d_adjust_deformable_body(robotPt->o[i]);
-     }
-
-  }
+  // for(int i=0; i<robotPt->no; ++i) {
+  //  if(robotPt->o[i]->isDeformable==true) {
+  //     p3d_adjust_deformable_body(robotPt->o[i]);
+  //   }
+  //}
 }
 
 

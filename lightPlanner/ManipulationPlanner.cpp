@@ -25,7 +25,7 @@
 #include <list>
 #include <algorithm>
 
-static bool MPDEBUG=true;
+static bool MPDEBUG=false;
 
 using namespace std;
 
@@ -142,8 +142,6 @@ void ManipulationPlanner::setOptimizeSteps(int nbSteps) {
 }
 int ManipulationPlanner::getOptimizeSteps(void) const {
     return _optimizeSteps;
-#ifdef XFORMS
-#endif
 }
 
 void ManipulationPlanner::setOptimizeTime(double time) {
@@ -392,10 +390,8 @@ configPt ManipulationPlanner::getFreeHoldingConf( p3d_rob* object, int armId, gp
   configPt q = p3d_get_robot_config(_robot);
   mData.setCarriedObject(object);
   _robot->isCarryingObject = TRUE;
-
+  deactivateCcCntrts(_robot, armId);
   // Set Manipulation joint and hand configuration
-  p3d_matrix4 mat;
-  p3d_mat4Copy( object->joints[1]->abs_pos , mat );
 
   int idManipIndexDof = mData.getManipulationJnt()->index_dof;
 
@@ -1379,13 +1375,21 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
     fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
 
     checkConfigForCartesianMode(qStart, object);
-    ManipulationUtils::copyConfigToFORM(_robot, qStart);
+    if(MPDEBUG){
+      ManipulationUtils::copyConfigToFORM(_robot, qStart);
+    }
     checkConfigForCartesianMode(approachFreeConfig, object);
-    ManipulationUtils::copyConfigToFORM(_robot, approachFreeConfig);
+    if(MPDEBUG){
+      ManipulationUtils::copyConfigToFORM(_robot, approachFreeConfig);
+    }
     checkConfigForCartesianMode(openConfig, object);
-    ManipulationUtils::copyConfigToFORM(_robot, openConfig);
+    if(MPDEBUG){
+      ManipulationUtils::copyConfigToFORM(_robot, openConfig);
+    }
     checkConfigForCartesianMode(graspConfig, object);
-    ManipulationUtils::copyConfigToFORM(_robot, graspConfig);
+    if(MPDEBUG){
+      ManipulationUtils::copyConfigToFORM(_robot, graspConfig);
+    }
     //fixJoint(_robot, armData.getManipulationJnt() , armData.getManipulationJnt()->abs_pos);
 
     if (!p3d_is_collision_free(_robot,qStart)){
@@ -1448,7 +1452,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
 //! @param qGoal : the configuration to bring the object to
 //! @param object : pointer to the p3d_rob that represent the moving object
 //! @param trajs : the vector of trajector optained
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFreePoint(int armId, configPt qStart, std::vector<double> &objGoto , p3d_rob* object, std::vector <p3d_traj*> &trajs){
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFreePoint(int armId, configPt qStart, std::vector<double> &objGoto , p3d_rob* object, p3d_rob* support, std::vector <p3d_traj*> &trajs){
   
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   int updateTatt = false;
@@ -1481,23 +1485,19 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFreePoint(int armId,
   if (qGoal) {
     if(!_configs.getApproachGraspConfig()){
       configPt approachGraspConfig = getApproachGraspConf(object, armId, *(_configs.getGrasp()), qStart, tAtt);
-      showConfig_2(approachGraspConfig);
       if(approachGraspConfig){
         _configs.setApproachGraspConfig(approachGraspConfig);
       }else{
-         status = MANIPULATION_TASK_NO_TRAJ_FOUND;
+         status = MANIPULATION_TASK_NO_GRASP;
       }
     }
   } else {
-    status = MANIPULATION_TASK_NO_TRAJ_FOUND;
+    status = MANIPULATION_TASK_NO_GRASP;
   }
   
   if (status == MANIPULATION_TASK_OK){
     //Compute the path between theses configurations
-    status = armPickTakeToFree(armId, qStart, qGoal, object,
-                                _configs.getApproachGraspConfig(),
-                                *_configs.getGrasp(),
-                                trajs);
+    status = armPickTakeToFree(armId, qStart, qGoal, object, support, _configs.getApproachGraspConfig(), *_configs.getGrasp(), trajs);
   }
 
   return status;
@@ -1512,7 +1512,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFreePoint(int armId,
 //! @param qGoal : the configuration to bring the object to
 //! @param object : pointer to the p3d_rob that represent the moving object
 //! @param trajs : the vector of trajector optained
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, configPt qStart, configPt qGoal, p3d_rob* object, std::vector <p3d_traj*> &trajs) {
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* support, std::vector <p3d_traj*> &trajs) {
 
     MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
 
@@ -1524,7 +1524,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
 
     if (status == MANIPULATION_TASK_OK) {
         //Compute the path between theses configurations
-        status = armPickTakeToFree(armId, qStart, qGoal, object,
+        status = armPickTakeToFree(armId, qStart, qGoal, object, support, 
                                    _configs.getApproachGraspConfig(),
                                    *_configs.getGrasp(),
                                    trajs);
@@ -1541,14 +1541,12 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
 //! @param qGoal : the configuration to bring the object to
 //! @param object : pointer to the p3d_rob that represent the moving object
 //! @param trajs : the vector of trajector optained
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, configPt qStart, configPt qGoal,  p3d_rob* object, configPt approachGraspConfig , gpGrasp &grasp , std::vector <p3d_traj*> &trajs) {
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, configPt qStart, configPt qGoal,  p3d_rob* object, p3d_rob* support, configPt approachGraspConfig , gpGrasp &grasp , std::vector <p3d_traj*> &trajs) {
 
     MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_NO_TRAJ_FOUND;
 
     p3d_traj* traj = NULL;
-
     ArmManipulationData& armData = (*_robot->armManipulationData)[armId];
-
     fixAllHands( qStart, false );
     fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
 
@@ -1565,6 +1563,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     setAndActivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(),
                                     armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
 
+    p3d_set_and_update_this_robot_conf(_robot, qStart);
     gpHand_properties handProp = armData.getHandProperties();
     std::vector <double> handConf;
     gpGet_hand_configuration(_robot, handProp, armId, handConf);
@@ -1572,19 +1571,22 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     gpSet_hand_configuration(_robot, handProp, handConf, approachGraspConfig, armId);
     p3d_set_and_update_this_robot_conf(_robot, approachGraspConfig);
     p3d_get_robot_config_into(_robot, &approachGraspConfig);
-
+    
     gpSet_hand_configuration(_robot, handProp, handConf, qGoal, armId);
     p3d_set_and_update_this_robot_conf(_robot, qGoal);
     p3d_get_robot_config_into(_robot, &qGoal);
-
-    p3d_set_and_update_this_robot_conf(_robot, qStart);
    
     gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId); //the hand name is hand1 for arm0 and hand 2 for arm1
-
+    if(support){
+      p3d_col_deactivate_pair_of_objects(object->joints[1]->o, support->joints[1]->o);
+    }
     //Compute to Approach config
     if ((traj = computeTrajBetweenTwoConfigs(qStart, approachGraspConfig)))
     {
         trajs.push_back(traj);
+        if(support){
+          p3d_col_activate_pair_of_objects(object->joints[1]->o, support->joints[1]->o);
+        }
         // Compute to Open config
         if ((traj = computeTrajBetweenTwoConfigs(approachGraspConfig, qGoal)))
         {
@@ -1666,7 +1668,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGotoAndTakeToFree(int armI
   }
   
   //Compute the path between theses configurations
-  status = armPickTakeToFree(armId, _configs.getGraspConfig(), qGoal, object,
+  p3d_rob* support = NULL;
+  status = armPickTakeToFree(armId, _configs.getGraspConfig(), qGoal, object, support, 
                              _configs.getApproachGraspConfig(),
                              *_configs.getGrasp(),
                              trajs);
@@ -1711,7 +1714,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       case ARM_FREE: {
         printf("plan for ARM_FREE task\n");
         if (MPDEBUG) {
-          ManipulationUtils::copyConfigToFORM(_robot, qi);
+              ManipulationUtils::copyConfigToFORM(_robot, qi);
           ManipulationUtils::copyConfigToFORM(_robot, qf);
         }
         if ((traj = computeTrajBetweenTwoConfigs(qi, qf)) == NULL) {
@@ -1730,9 +1733,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       case ARM_TAKE_TO_FREE: {
         printf("plan for ARM_PICK_TAKE_TO_FREE task\n");
         if(!ManipulationUtils::isValidVector(objGoto)){
-          status = armPickTakeToFree(armId, qi, qf, object, trajs);
+          status = armPickTakeToFree(armId, qi, qf, object, support, trajs);
         }else{
-          status = armPickTakeToFreePoint(armId, qi, objGoto, object, trajs);
+          status = armPickTakeToFreePoint(armId, qi, objGoto, object, support, trajs);
         }
         break;
       }
@@ -1900,7 +1903,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
 
     p3d_multiLocalPath_disable_all_groupToPlan(_robot);
     p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1);
-
     if ((returnMessage = armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, trajs)) == MANIPULATION_TASK_OK) {
       //concatene
       if (concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK) {
@@ -1923,6 +1925,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
 //     if(traj){
 //       p3d_destroy_traj_content(_robot, traj);
 //     }
+<<<<<<< HEAD
     return returnMessage;
 }
 
@@ -1962,6 +1965,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
 //     if(traj){
 //       p3d_destroy_traj_content(_robot, traj);
 //     }
+=======
+>>>>>>> b186f74f064144d8c47b51f0098e2650264935d2
     return returnMessage;
 }
 
