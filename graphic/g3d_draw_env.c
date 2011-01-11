@@ -1373,6 +1373,8 @@ void g3d_draw_env_custom()
       glLineWidth(1.);
     }
   }
+
+  hri_draw_kinect_points();
 #endif
 }
 

@@ -26,6 +26,10 @@ struct kinectData
   p3d_vector3 HIP_RIGHT;
   p3d_vector3 HAND_RIGHT;
   p3d_vector3 HAND_LEFT;
+  p3d_vector3 KNEE_RIGHT;
+  p3d_vector3 KNEE_LEFT;
+  p3d_vector3 FOOT_RIGHT;
+  p3d_vector3 FOOT_LEFT;
 };
 
 struct kinectAgent 
