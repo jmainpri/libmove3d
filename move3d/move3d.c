@@ -353,6 +353,21 @@ int main(int argc, char ** argv) {
   /* lecture du fichier environnement */
   p3d_set_directory(file_directory);
 #ifdef WITH_XFORMS
+  int fontsize = 10;
+  FL_IOPT fl_cntl;
+  fl_cntl.buttonFontSize = fontsize;
+  fl_set_defaults(FL_PDButtonFontSize, &fl_cntl);
+  fl_cntl.menuFontSize = fontsize;
+  fl_set_defaults(FL_PDMenuFontSize, &fl_cntl);
+  fl_cntl.choiceFontSize = fontsize;
+  fl_set_defaults(FL_PDChoiceFontSize, &fl_cntl);
+  fl_cntl.browserFontSize = fontsize;
+  fl_set_defaults(FL_PDBrowserFontSize, &fl_cntl);
+  fl_cntl.inputFontSize = fontsize;
+  fl_set_defaults(FL_PDInputFontSize, &fl_cntl);
+  fl_cntl.labelFontSize = fontsize;
+  fl_set_defaults(FL_PDLabelFontSize, &fl_cntl);
+  
   fl_initialize(&argc, argv, "FormDemo", 0, 0);
   fl_set_border_width(1);
 #endif
