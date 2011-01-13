@@ -149,9 +149,9 @@ configPt hri_get_configuration_from_kinect_data( p3d_rob* robot, kinectData& dat
   // selon z
   double alpha2r = atan2( pos[0] , -pos[1] );
 
-  printf("alpha1 = %f\n", alpha1r );
-  printf("alpha2 = %f\n", alpha2r );
-  printf("dir = ( %f , %f , %f )\n", pos[0] , pos[1] , pos[2] );
+  //  printf("alpha1 = %f\n", alpha1r );
+  //  printf("alpha2 = %f\n", alpha2r );
+  //  printf("dir = ( %f , %f , %f )\n", pos[0] , pos[1] , pos[2] );
   
   p3d_vector3 Zaxis = { 0 , 0 , 1 };
   p3d_matrix4 Trot4;
@@ -222,9 +222,9 @@ configPt hri_get_configuration_from_kinect_data( p3d_rob* robot, kinectData& dat
   index_dof = p3d_get_robot_jnt_by_name(robot, (char*) "lShoulderZ")->index_dof;
   q[index_dof] = alpha2l;
 
-  printf("alpha1 = %f\n", alpha1l );
-  printf("alpha2 = %f\n", alpha2l );
-  printf("dir = ( %f , %f , %f )\n", pos[0] , pos[1] , pos[2] );
+  //  printf("alpha1 = %f\n", alpha1l );
+  //  printf("alpha2 = %f\n", alpha2l );
+  //  printf("dir = ( %f , %f , %f )\n", pos[0] , pos[1] , pos[2] );
 
   p3d_mat4TransRot( Trot2 , 0 , 0 , 0 , Zaxis , alpha2l );
   p3d_matMultXform( Trot3 , Trot2 , Trot4 );
@@ -268,7 +268,7 @@ void hri_draw_kinect_points()
 /*   p3d_jnt* joint = p3d_get_robot_jnt_by_name(m_human, (char*) "rShoulderX"); */
 /*   g3d_draw_frame( joint->abs_pos , 0.5 ); */
 
-  g3d_draw_frame( m_absPos , 0.5 );
+//  g3d_draw_frame( m_absPos , 0.5 );
 
   double r = 0.03;
   g3d_drawSphere(m_humKin.HEAD[0],m_humKin.HEAD[1],m_humKin.HEAD[2],r);
@@ -302,8 +302,8 @@ void hri_draw_kinect_points()
                  m_humKin.HAND_LEFT[1],
                  m_humKin.HAND_LEFT[2],r);
 
-  r = 0.1;
-  glColor3f(0,1,0);
+  //  r = 0.1;
+  //  glColor3f(0,1,0);
   
   g3d_drawSphere(m_humKin.HIP_RIGHT[0],
                  m_humKin.HIP_RIGHT[1],

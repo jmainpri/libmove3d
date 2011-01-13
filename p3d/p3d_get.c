@@ -1056,7 +1056,7 @@ p3d_rob* p3d_get_robot_by_name(const char *name)
    return NULL;
 }
 
-//! Retourne un pointeur sur le robot dont le nom contient donne en parametre.
+//! Retourne un pointeur sur le robot dont le nom contient name.
 //! \param name the name of the robot
 //! \return a pointer to the robot with the given name
 p3d_rob* p3d_get_robot_by_name_containing(const char *name)
@@ -1071,7 +1071,7 @@ p3d_rob* p3d_get_robot_by_name_containing(const char *name)
 	
 	for(int i=0; i<XYZ_ENV->nr; i++)
 	{
-		printf("Robot[%d] is %s\n",i,XYZ_ENV->robot[i]->name);
+	  //printf("Robot[%d] is %s\n",i,XYZ_ENV->robot[i]->name);
 		if( strstr(XYZ_ENV->robot[i]->name,name) != NULL )
 		{  return(XYZ_ENV->robot[i]);  }
 	}
