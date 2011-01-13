@@ -1617,7 +1617,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
 /*!
  * \brief A* search: calculate neighbours
  *
- * all neighbors not opened yet will be opened, all openedneighbors will
+ * all neighbors not opened yet will be opened,
  * all opened neighbors will be updated if they are cheaper to reach by the center cell
  *
  * \param bitmap the bitmap

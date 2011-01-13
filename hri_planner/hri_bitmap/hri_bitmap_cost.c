@@ -9,11 +9,13 @@
 
 /**
  * calculates the g cost of A*, the cost of a the path up to this cell,
- * based on the costs to its parent cell in the path
+ * considering it is reached from a certain parent cell.
+ * This may return different values depending on from where we try to reach this cell.
  *
  * dimensions refers to the dimensions of the bitmap
  */
 double hri_bt_A_CalculateCellG(hri_bitmapset * btset, hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell, double distance ) {
+  // fromcell is closed, meaning its cost from search start are known to be minimal.
   if (fromcell->g < 0 || current_cell->val < 0){
     return -1;
   }
