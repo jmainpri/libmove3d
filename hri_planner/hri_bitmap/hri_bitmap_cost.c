@@ -322,6 +322,35 @@ int hri_bt_keep_old_path(hri_bitmapset* bitmapset, hri_bitmap* bitmap_oldpath, h
   return useOldPath;
 }
 
+
+double hri_bt_calc_dist_value_human(hri_bitmapset * btset, hri_human* cur_human, int x, int y, int z)
+{
+  double radius,height;
+  double val = 0, sigmoid = 0, quot = 0;
+  double realx, realy;
+  double humanx, humany;
+  double distance;
+  height = cur_human->state[cur_human->actual_state].dheight;
+     radius = cur_human->state[cur_human->actual_state].dradius;
+
+     realx = (x*btset->pace)+btset->realx;
+     realy = (y*btset->pace)+btset->realy;
+     humanx = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
+     humany = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
+
+     distance = DISTANCE2D(realx,realy,humanx,humany);
+
+     if(distance > radius) {
+       val = 0;
+     } else {
+       // sigmoid function up to radius
+       sigmoid = cos(distance / radius * M_PI_2) + 0;
+       quot = 1 / (0.6 + distance );
+       val = pow(height * (sigmoid * quot), 3);
+     }
+     return val;
+}
+
 /****************************************************************/
 /*!
  * \brief Calculate safety cost of the given coordinate
@@ -335,11 +364,7 @@ int hri_bt_keep_old_path(hri_bitmapset* bitmapset, hri_bitmap* bitmap_oldpath, h
 double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
 {
   int i;
-  double radius,height;
-  double val = 0, sigmoid = 0, quot = 0, res =0;
-  double realx, realy;
-  double humanx, humany;
-  double distance;
+  double res = 0, val;
 
   if(btset==NULL){
     PrintError(("btset is null, cant get distance value\n"));
@@ -347,27 +372,9 @@ double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
   }
 
   for(i=0; i<btset->human_no; i++){
-    hri_human* cur_human =  btset->human[i];
-    if(!cur_human->exists)
-      continue;
-    height = cur_human->state[cur_human->actual_state].dheight;
-    radius = cur_human->state[cur_human->actual_state].dradius;
-
-    realx = (x*btset->pace)+btset->realx;
-    realy = (y*btset->pace)+btset->realy;
-    humanx = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
-    humany = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
-
-    distance = DISTANCE2D(realx,realy,humanx,humany);
-
-    if(distance > radius) {
-      val = 0;
-    } else {
-      // sigmoid function up to radius
-      sigmoid = cos(distance / radius * M_PI_2) + 0;
-      quot = 1 / (0.6 + distance );
-      val = pow(height * (sigmoid * quot), 3);
-    }
+    if(!btset->human[i]->exists)
+          continue;
+    val = hri_bt_calc_dist_value_human(btset, btset->human[i], x, y, z);
     if(res < val) {
       res = val;
     }
@@ -392,13 +399,69 @@ double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
 /****************************************************************/
 double hri_bt_calc_vel_value(hri_bitmapset * btset,int x, int y, int z)
 {
-
-
-
+  // TODO
   return 0;
 }
 
+double hri_bt_calc_vis_value_human(hri_bitmapset * btset, hri_human* cur_human, int x, int y, int z)
+{
+    double radius,height,stretch_back;
+    double val;
+    double realx, realy;
+    double angle,angle_deviation,deltax,deltay, orient,distance_cosine;
+    double humanx, humany;
+    double distance;
+    height = cur_human->state[cur_human->actual_state].vheight;
+    stretch_back = cur_human->state[cur_human->actual_state].vback;
+      radius = cur_human->state[cur_human->actual_state].vradius;
 
+
+      realx = (x*btset->pace)+btset->realx;
+      realy = (y*btset->pace)+btset->realy;
+      humanx = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
+      humany = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
+      orient = cur_human->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v + cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[5].v;
+
+      distance = DISTANCE2D(realx,realy,humanx,humany);
+
+      if(distance > radius ) {
+        val = 0;
+      } else {
+
+        deltax = realx-humanx;
+        deltay = realy-humany;
+        angle = atan2(deltay, deltax);
+        // orient goes from -PI to PI, angle goes from - PI to PI
+        // get the absolute angle deviation between 0 and PI
+        angle_deviation = ABS(getAngleDeviation(orient, angle));
+
+        if (cur_human->actual_state != BT_MOVING) {
+          if ((angle_deviation < M_PI_4 )) {
+              // leave open area in front of human
+              val =0;
+          } else {
+              // cosine function is 0 at borders of radius
+              distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
+
+              // use stretch to increase / decrease weight more on more backward angles
+              val = distance_cosine * (height + (angle_deviation - M_PI_4) * stretch_back);
+          }
+        } else {
+          // if human is moving, visibility does not matter, however we predict
+          // space in front of the human, assuming that's the direction the human is moving to
+          if (angle_deviation < M_PI_4 ) {
+              // predictive costs
+              distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
+
+              // use stretch to increase / decrease weight more on more backward angles
+              val = distance_cosine * (height + (M_PI - angle_deviation) * stretch_back);
+          } else {
+              val = 0;
+          }
+        }
+      }
+      return val;
+}
 
 /****************************************************************/
 /*!
@@ -413,12 +476,8 @@ double hri_bt_calc_vel_value(hri_bitmapset * btset,int x, int y, int z)
 double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
 {
   int i;
-  double radius,height,stretch_back;
-  double val = 0,res =0;
-  double realx, realy;
-  double angle,angle_deviation,deltax,deltay, orient,distance_cosine;
-  double humanx, humany;
-  double distance;
+  double val = 0, res =0;
+
 
   if(btset==NULL){
     PrintError(("btset is null, cant get visibility value\n"));
@@ -426,58 +485,11 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
   }
 
   for (i=0; i<btset->human_no; i++) {
-    hri_human* cur_human =  btset->human[i];
-    if(!cur_human->exists)
-      continue;
-    height = cur_human->state[cur_human->actual_state].vheight;
-    stretch_back = cur_human->state[cur_human->actual_state].vback;
-    radius = cur_human->state[cur_human->actual_state].vradius;
+    if(!btset->human[i]->exists)
+          continue;
+    val = hri_bt_calc_vis_value_human(btset, btset->human[i], x, y, z);
 
 
-    realx = (x*btset->pace)+btset->realx;
-    realy = (y*btset->pace)+btset->realy;
-    humanx = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
-    humany = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
-    orient = cur_human->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v + cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[5].v;
-
-    distance = DISTANCE2D(realx,realy,humanx,humany);
-
-    if(distance > radius ) {
-      val = 0;
-    } else {
-
-      deltax = realx-humanx;
-      deltay = realy-humany;
-      angle = atan2(deltay, deltax);
-      // orient goes from -PI to PI, angle goes from - PI to PI
-      // get the absolute angle deviation between 0 and PI
-      angle_deviation = ABS(getAngleDeviation(orient, angle));
-
-      if (cur_human->actual_state != BT_MOVING) {
-        if ((angle_deviation < M_PI_4 )) {
-            // leave open area in front of human
-            val =0;
-        } else {
-            // cosine function is 0 at borders of radius
-            distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
-
-            // use stretch to increase / decrease weight more on more backward angles
-            val = distance_cosine * (height + (angle_deviation - M_PI_4) * stretch_back);
-        }
-      } else {
-        // if human is moving, visibility does not matter, however we predict
-        // space in front of the human, assuming that's the direction the human is moving to
-        if (angle_deviation < M_PI_4 ) {
-            // predictive costs
-            distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
-
-            // use stretch to increase / decrease weight more on more backward angles
-            val = distance_cosine * (height + (M_PI - angle_deviation) * stretch_back);
-        } else {
-            val = 0;
-        }
-      }
-    }
     if(res < val) {
       res = val;
     }
@@ -604,6 +616,77 @@ static int is_in_fow(double xh, double yh, double xt, double yt, double orient, 
 
 }
 
+double hri_bt_calc_hz_value_human(hri_bitmapset * btset, hri_human* cur_human, double robotx, double  roboty)
+{
+    double humanx, humany;
+    // the closest grid cells where the human stands (rounded down)
+    configPt qhuman, qtarget;
+    double dist;
+    p3d_localpath *path=NULL;
+    double treshhold;
+    double temp_env_dmax, val;
+
+    int ntest;
+
+
+   treshhold = cur_human->state[cur_human->actual_state].hradius;
+
+   humanx = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
+   humany = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
+
+   dist = DISTANCE2D(humanx,humany,robotx,roboty);
+
+   if (dist>treshhold){
+     return -3;
+   }
+   val = -2;
+
+   /* to check if position is hidden, let visball go from human config
+    * to target config and check for collisions.
+    */
+   //    check the angle is in human head field of view
+   if (is_in_fow(humanx, humany,
+                 robotx, roboty,
+                 /* head orientation */
+                 cur_human->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v +
+                 cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[5].v,
+                 /* roughly 80 degrees */ 0.8 )) {
+
+     // create visball configuration at human position
+     qhuman = p3d_copy_config(btset->visball, btset->visball->ROBOT_POS); /*ALLOC */
+     qhuman[6] = humanx;
+     qhuman[7] = humany;
+     qhuman[8] = cur_human->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos[2][3];
+
+     // create visball configuration at target grid cell position
+     qtarget = p3d_copy_config(btset->visball, qhuman); /*ALLOC */
+     qtarget[6] = robotx;
+     qtarget[7] = roboty;
+
+     // deactivate collisions between visball and human and robot
+     p3d_col_deactivate_rob_rob(btset->visball, cur_human->HumanPt);
+     p3d_col_deactivate_rob_rob(btset->visball, btset->robot);
+
+     temp_env_dmax = p3d_get_env_dmax();
+     p3d_set_env_dmax(0);
+
+     // calculate a localpath object for visball from human to goal
+     path = p3d_local_planner(btset->visball, qtarget, qhuman);
+
+     val = -1;
+     if (path == NULL ||  p3d_unvalid_localpath_test(btset->visball, path, &ntest)){
+       val = (double)( (((double)-1000) / treshhold) * dist + 1000);
+     }
+
+     p3d_set_env_dmax(temp_env_dmax);
+     destroy_list_localpath(btset->visball, path);
+
+
+     p3d_destroy_config(btset->visball, qhuman); /* FREE */
+     p3d_destroy_config(btset->visball, qtarget); /* FREE */
+   }  // end if is_in_fow
+  return val;
+}
 
 /****************************************************************/
 /*!
@@ -618,18 +701,10 @@ static int is_in_fow(double xh, double yh, double xt, double yt, double orient, 
 /****************************************************************/
 double hri_bt_calc_hz_value(hri_bitmapset * btset, int rob_grid_x, int rob_grid_y, int rob_grid_z)
 {
-
-  double humanx, humany;
+  int i;
+  double res=-3, val;
   // the position where we want to test for visibility
   double robotx, roboty;
-  // the closest grid cells where the human stands (rounded down)
-  configPt qhuman, qtarget;
-  double dist;
-  p3d_localpath *path=NULL;
-  double treshhold;
-  double temp_env_dmax, val,res=-3;
-
-  int i, ntest;
 
   //cannot calculate with empty bitmap or missing visball
   if (btset == NULL || btset->visball == NULL) {
@@ -644,66 +719,10 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int rob_grid_x, int rob_grid_
   // that of human and target space, else ghost zones will appear
 
   for(i=0; i<btset->human_no; i++){
-    hri_human* cur_human =  btset->human[i];
 
-    if(!cur_human->exists)
-      continue;
-    val = -2;
-    treshhold = cur_human->state[cur_human->actual_state].hradius;
-
-    humanx = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
-    humany = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
-
-    dist = DISTANCE2D(humanx,humany,robotx,roboty);
-
-    if (dist>treshhold){
-      continue;
-    }
-
-    /* to check if position is hidden, let visball go from human config
-     * to target config and check for collisions.
-     */
-    //    check the angle is in human head field of view
-    if (is_in_fow(humanx, humany,
-                  robotx, roboty,
-                  /* head orientation */
-                  cur_human->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v +
-                  cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[5].v,
-                  /* roughly 80 degrees */ 0.8 )) {
-
-      // create visball configuration at human position
-      qhuman = p3d_copy_config(btset->visball, btset->visball->ROBOT_POS); /*ALLOC */
-      qhuman[6] = humanx;
-      qhuman[7] = humany;
-      qhuman[8] = cur_human->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos[2][3];
-
-      // create visball configuration at target grid cell position
-      qtarget = p3d_copy_config(btset->visball, qhuman); /*ALLOC */
-      qtarget[6] = robotx;
-      qtarget[7] = roboty;
-
-      // deactivate collisions between visball and human and robot
-      p3d_col_deactivate_rob_rob(btset->visball, cur_human->HumanPt);
-      p3d_col_deactivate_rob_rob(btset->visball, btset->robot);
-
-      temp_env_dmax = p3d_get_env_dmax();
-      p3d_set_env_dmax(0);
-
-      // calculate a localpath object for visball from human to goal
-      path = p3d_local_planner(btset->visball, qtarget, qhuman);
-
-      val = -1;
-      if (path == NULL ||  p3d_unvalid_localpath_test(btset->visball, path, &ntest)){
-        val = (double)( (((double)-1000) / treshhold) * dist + 1000);
-      }
-
-      p3d_set_env_dmax(temp_env_dmax);
-      destroy_list_localpath(btset->visball, path);
-
-
-      p3d_destroy_config(btset->visball, qhuman); /* FREE */
-      p3d_destroy_config(btset->visball, qtarget); /* FREE */
-    }  // end if is_in_fow
+    if(!btset->human[i]->exists)
+          continue;
+    val = hri_bt_calc_hz_value_human(btset, btset->human[i], robotx, roboty);
 
     // take the maximum of vals for all humans
     if(res < val){
