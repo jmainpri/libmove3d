@@ -462,15 +462,17 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   bitmapset->parameters->soft_collision_base_cost = 15;
   bitmapset->parameters->start_cell_tolerance = 2;
   bitmapset->parameters->goal_cell_tolerance = 8; // high tolerance for flawed grasp planning
-  /** reluctance is an experimental feature to prefer previously planned
+  /** reluctance is an experimental feature to prefer previously planned. Default is FALSE.
    * paths to new ones, that does not seem to change the robot behavior much (maybe in special cases?).
    * Also might be buggy as result path start is not request start */
   bitmapset->parameters->use_changepath_reluctance = FALSE;
   bitmapset->parameters->path_reuse_cell_startcell_tolerance = 3;
   bitmapset->parameters->path_reuse_threshold = 30;
-  /** corridors is an experimental feature to increase costs in the middle of corridors, benefit was not proved yet.*/
+  /** corridors is an experimental feature to increase costs in the middle of corridors, benefit was not proved yet. Default is FALSE*/
   bitmapset->parameters->use_corridors = FALSE;
   bitmapset->parameters->corridor_Costs = 50;
+  /** directional calculations are an experimenatl feature, default is FALSE */
+  bitmapset->parameters->static_calculations = FALSE;
 }
 
 

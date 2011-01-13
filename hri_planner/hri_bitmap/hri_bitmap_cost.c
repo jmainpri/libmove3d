@@ -6,6 +6,16 @@
  *
  */
 
+/**
+ * calculates directional path cost.
+ * Going towards or away from a human may have different social costs.
+ *
+ * experimental code
+ */
+double getDirectionalVal(hri_bitmapset * btset, hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell, double distance) {
+  // TODO: calculate val depending on direction
+  return current_cell->val;
+}
 
 /**
  * calculates the g cost of A*, the cost of a the path up to this cell,
@@ -15,12 +25,21 @@
  * dimensions refers to the dimensions of the bitmap
  */
 double hri_bt_A_CalculateCellG(hri_bitmapset * btset, hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell, double distance ) {
+  double result ;
   // fromcell is closed, meaning its cost from search start are known to be minimal.
   if (fromcell->g < 0 || current_cell->val < 0){
     return -1;
   }
-  double result = fromcell->g + current_cell->val + (distance * btset->parameters->path_length_weight);
-
+  if (btset->parameters->static_calculations == TRUE) {
+    // add the costs of the path to the parent, the social costs in this cell, and the path length
+    result = fromcell->g +
+                                current_cell->val +
+                                (distance * btset->parameters->path_length_weight);
+  } else {
+    result = fromcell->g +
+                               getDirectionalVal(btset, current_cell, fromcell, distance) +
+                               (distance * btset->parameters->path_length_weight);
+  }
 
   return result;
 }
