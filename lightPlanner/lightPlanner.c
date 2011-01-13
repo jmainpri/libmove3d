@@ -803,7 +803,7 @@ void preComputeCarryObject(p3d_rob * robot, p3d_matrix4 att1, p3d_matrix4 att2){
  * ////////////// Grasping functions ///////////
  * ///////////////////////////////////////////*/
 //#define GRASP_PLANNING
-#if defined(GRASP_PLANNING) && defined(PQP)
+#if defined(GRASP_PLANNING)
 // gpGrasp DEBUGGRASP;
 // int WHICHHANDDEBUG = 0;
 // void debugLightPlanner(){

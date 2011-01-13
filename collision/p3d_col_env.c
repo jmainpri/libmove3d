@@ -314,10 +314,10 @@ void p3d_col_env_switch_env(p3d_type_col_env_context type) {
 void p3d_col_env_switch_robot(p3d_rob * robotPt, p3d_type_col_env_context type) {
   p3d_col_env_robot_context * robot_contPt;
 
-	#if  defined(PQP)
-          if(p3d_col_get_mode()==p3d_col_mode_pqp)
-	  {  return;  }
-	#endif
+	
+  if(p3d_col_get_mode()==p3d_col_mode_pqp)
+  {  return;  }
+
 
   if (s_p3d_col_env_active_context()) {
     if ((robotPt == NULL) || (robotPt->num < 0) ||

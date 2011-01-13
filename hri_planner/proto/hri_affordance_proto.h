@@ -8,7 +8,7 @@
 
 extern int find_affordance();
 extern int show_affordance();
-extern int create_3d_grid_for_HRP2_GIK();
+extern int create_3d_grid_for_HRP2_GIK(point_co_ordi grid_center);
 extern int show_3d_grid_for_HRP2_GIK();
 extern int Find_AStar_Path(double qs[3], double qf[3], hri_bitmapset* bitmapset, int manip);
 extern int show_HRP2_gik_sol();
@@ -40,7 +40,7 @@ extern int find_HRP2_GIK_sol_for_hand_orientation(p3d_vector3 req_hand_orientati
 extern double* get_HRP2_hand_x_axis_orientation_in_global_frame(int for_hand);//1 for left, 2 for right hand
 extern int find_affordance_new();
 extern int find_reachable_sphere_surface(int for_hand, int for_agent);
-extern int show_weighted_candidate_points_to_show_obj();
+extern int show_weighted_candidate_points_to_show_obj(int show_weight);
 extern int HRP2_show_object_to_human();
 extern int show_weighted_candidate_points_to_hide_obj();
 extern int HRP2_hide_object_from_human();
@@ -57,17 +57,21 @@ extern int show_3D_workspace_Bounding_Box();
 extern int make_cells_around_point_obstacle_free(double hand_pos[3], int expansion);
 extern int make_cells_around_point_as_obstacle(hri_bitmapset *btset, int bt_type, point_co_ordi point, int extension);
 extern int find_candidate_points_on_plane_to_put_obj_new();
-extern int assign_weights_on_candidte_points_to_put_obj();
+extern int assign_weights_on_candidte_points_to_put_obj(char *object_name);
 extern int reverse_sort_weighted_candidate_points_to_put_obj();
-extern int assign_weights_on_candidte_points_to_show_obj();
-extern int assign_weights_on_candidte_points_to_hide_obj();
+extern int assign_weights_on_candidte_points_to_show_obj(char *object_name);
+extern int assign_weights_on_candidte_points_to_hide_obj(char *object_name);
 extern int reverse_sort_weighted_candidate_points_to_show_obj();
 extern int reverse_sort_weighted_candidate_points_to_hide_obj();
-extern int find_candidate_points_to_hide_obj_new();
+extern int find_candidate_points_on_plane_to_hide_obj_new();
 extern int find_candidate_points_to_show_obj_new();
 extern int find_candidate_points_on_plane_to_put_obj();
+extern int find_candidate_points_on_plane_to_hide_away_obj();
+extern int find_candidate_points_on_plane_to_put_away_obj();
+extern int find_candidate_points_to_give_obj();
 extern int Create_and_init_Mightability_Maps();
-extern int get_set_of_points_to_put_object();
+extern int get_set_of_points_to_put_object(char *object_name);
+extern int get_set_of_points_to_show_object(char *object_name);
 extern int JIDO_find_candidate_points_on_plane_to_put_obj();
 extern int find_symbolic_Mightability_Map();
 extern int show_symbolic_Mightability_Map_Relations();
@@ -91,5 +95,56 @@ extern int update_object_pos_from_mocap(point_co_ordi *mrkrs_pos, int obj_index,
 extern int read_update_object_pos_from_mocap_data_file();
 extern int update_human_pos_from_mocap_eye_glasses(point_co_ordi *mrkrs_pos, int obj_index, char object_name[30], int is_primary_human);
 extern int update_human_pos_from_mocap_rigid_hat(point_co_ordi *mrkrs_pos, int obj_index, char object_name[30], int is_primary_human);
+extern int init_mocap_data_run_file();
+extern int show_axis_of_FOV_from_mocap_eye_glass_data();
+extern int virtually_update_human_state_new(int state); //1 means sitting 0 means standing
+extern int virtually_update_non_primary_human_state(int state, int hum_index); //1 means sitting 0 means standing, hum_index is the index of robot in environment (envPt)
+extern int JIDO_make_obj_accessible_to_human ( char obj_to_manipulate[50] );
+// extern int show_world_state_of_entire_plan(int exec_path_configs);
+extern int JIDO_show_obj_to_human ( char obj_to_manipulate[50] );
+extern int JIDO_find_candidate_points_to_show_obj();
+/*extern int test_geometric_plan_creation_for_JIDO();*/
+extern int JIDO_give_obj_to_human ( char obj_to_manipulate[50] );
+extern int JIDO_find_candidate_points_to_give_obj();
+extern int assign_weights_on_candidte_points_to_give_obj(char *object_name); 
+extern int show_weighted_candidate_points_to_give_obj(int show_weight);
+extern int JIDO_find_candidate_points_on_plane_to_hide_obj();
+extern int JIDO_hide_obj_from_human ( char obj_to_manipulate[50] );
+extern int JIDO_find_candidate_points_to_hide_obj();
+extern int assign_weights_on_candidte_points_to_hide_away_obj(char *object_name);
+extern int JIDO_find_candidate_points_on_plane_to_hide_away_obj();
+extern int JIDO_hide_away_obj_from_human ( char obj_to_manipulate[50] );
+extern int JIDO_find_candidate_points_to_hide_away_obj();
+extern int show_weighted_candidate_points_to_hide_away_obj(int show_weight);
+extern int assign_weights_on_candidte_points_to_put_away_obj(char *object_name);
+extern int JIDO_find_candidate_points_on_plane_to_put_away_obj();
+extern int JIDO_put_away_obj_from_human ( char obj_to_manipulate[50] );
+extern int JIDO_find_candidate_points_to_put_away_obj();
+extern int show_weighted_candidate_points_to_put_away_obj(int show_weight);
+extern int show_humans_perspective(HRI_AGENT * agent, int save);//AKP WARNING: FOV is not taken from agent->perspective->fov; It is set as 120 degree in this function itself
+extern int restore_previous_win_state();
+extern int is_object_visible_for_agent(HRI_AGENT * agent, p3d_rob *object, int threshold, int save, int draw_at_end);
+////extern int get_placements_in_3D(p3d_rob *object,  std::list<gpPlacement> &placementListOut);
+extern int show_all_how_to_placements_in_3D(point_co_ordi at_place,int use_random_colors, int skip, int semi_transparent);
+extern int initialize_MM_resultant_set();
+extern int caculate_and_show_resultant_MM();
+extern int show_current_ranked_candidate_placements();
+extern int show_current_task_candidate_points(int show_weight_by_color, int show_weight_by_length);
+extern int show_candidate_points_for_current_task(int show_weight_by_color, int show_weight_by_length);
+
+extern int assign_weights_on_candidate_points_to_displace_obj(char *object_name);
+extern int reverse_sort_weighted_candidate_points_to_displace_obj();
+extern int find_candidate_points_on_plane_to_displace_obj();
+extern int show_weighted_candidate_points_to_displace_obj(int show_weight);
+// extern int test_geometric_plan_creation_new();
+extern int HRP2_make_obj_accessible_to_human( char obj_to_manipulate[50] );
+extern int HRP2_show_obj_to_human( char obj_to_manipulate[50] );
+extern int HRP2_give_obj_to_human( char obj_to_manipulate[50] );
+extern int HRP2_hide_obj_from_human( char obj_to_manipulate[50] );
+extern int make_cells_corresponding_to_object_obstacle_free(char *object_name);
+extern int HRP2_take_object(char obj_to_manipulate[50]);
+extern int set_current_HRI_manipulation_task(int arg);
+extern int find_current_HRI_manip_task_solution();
+extern int find_Mightability_Maps();
 #endif /* __CEXTRACT__ */
 

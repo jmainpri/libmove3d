@@ -699,6 +699,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			continue;
 		}
 #endif
+
 #if defined( FK_CNTRT ) && defined( LIGHT_PLANNER ) 
 		if ( strcmp ( fct, "p3d_set_fk_constraint" ) == 0 )
 		{

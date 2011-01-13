@@ -197,7 +197,12 @@ class ArmManipulationData {
 	MANIPULATION_ARM_STATE& getManipState() {
 		return _manipState;
 	}
+
 	
+	void setManipState(MANIPULATION_ARM_STATE newState) {
+                 _manipState= newState;
+	}
+
 	private :
   //!arm ID
   int _id;

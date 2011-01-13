@@ -976,18 +976,10 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
 	std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
   std::vector<SM_TRAJ> smTrajs;
   std::vector<double> objStart, objGoto;
-  objStart[0] = P3D_HUGE;
-  objStart[1] = P3D_HUGE;
-  objStart[2] = P3D_HUGE;
-  objStart[3] = P3D_HUGE;
-  objStart[4] = P3D_HUGE;
-  objStart[5] = P3D_HUGE;
-  objGoto[0] = P3D_HUGE;
-  objGoto[1] = P3D_HUGE;
-  objGoto[2] = P3D_HUGE;
-  objGoto[3] = P3D_HUGE;
-  objGoto[4] = P3D_HUGE;
-  objGoto[5] = P3D_HUGE;
+  for(unsigned int i = 0; i < 6; i++){
+    objStart.push_back(P3D_HUGE);
+    objGoto.push_back(P3D_HUGE);
+  }
   manipulation->armPlanTask(ARM_TAKE_TO_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)"", confs, smTrajs);
 
 	g3d_draw_allwin_active();
@@ -1019,7 +1011,7 @@ static void CB_genomPickUp_takeObjectToXYZ(FL_OBJECT *obj, long arg) {
     objGoto.push_back(0.0);
     objGoto.push_back(0.0);
     objGoto.push_back(0.0);
-    manipulation->armPlanTask(ARM_TAKE_TO_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)"", confs, smTrajs);
+    manipulation->armPlanTask(ARM_TAKE_TO_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)"SHELF", confs, smTrajs);
 
   g3d_draw_allwin_active();
   return;

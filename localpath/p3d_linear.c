@@ -211,7 +211,10 @@ configPt p3d_lin_config_at_distance(p3d_rob *robotPt,
     distance = 0;
   if (distance > localpathPt->length_lp)
     distance = localpathPt->length_lp;
-
+  if(localpathPt->length_lp == 0){
+    p3d_destroy_config(robotPt, q);
+    return p3d_copy_config(robotPt, q_init);
+  }
   alpha = distance / localpathPt->length_lp;
 
 #if defined(MULTILOCALPATH)

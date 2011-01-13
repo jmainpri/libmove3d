@@ -1348,7 +1348,8 @@ void g3d_draw_env_custom()
   g3d_draw_all_agents_fovs(GLOBAL_AGENTS);
   g3d_hri_display_all_agents_sees(GLOBAL_AGENTS);
   if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
-#if defined(USE_MIGHTABILITY_MAPS) && !defined(COMPILE_ON_JIDO)
+////#if defined(USE_MIGHTABILITY_MAPS) && !defined(COMPILE_ON_JIDO)
+#if defined(USE_MIGHTABILITY_MAPS)
   ////printf("Inside g3d_draw_env_custom() \n");
   execute_Mightability_Map_functions();
 #endif
@@ -1373,6 +1374,8 @@ void g3d_draw_env_custom()
       glLineWidth(1.);
     }
   }
+
+  hri_draw_kinect_points();
 #endif
 }
 

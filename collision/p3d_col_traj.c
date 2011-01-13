@@ -2145,7 +2145,7 @@ int p3d_col_test_localpath(p3d_rob *robotPt, p3d_localpath *localpathPt, int *nt
       collision = p3d_col_test_localpath_classic(robotPt, localpathPt,
                   ntest, &Kpath, NULL);  // <- modif Juan
 
-      //if (!collision) //! original
+//       if (!collision) //! original
       if (!collision && p3d_col_get_mode() != p3d_col_mode_pqp) //! <- modif JPS: be careful with this
       {
         p3d_col_env_restore();
@@ -2205,10 +2205,10 @@ int p3d_col_test_localpath(p3d_rob *robotPt, p3d_localpath *localpathPt, int *nt
       PrintWarning(("WARNING: p3d_col_test_localpath mode unknowed !!!\n"));
   }
   set_kcd_which_test(mode_compute_dist);
-#if  defined(PQP)
+
   if(p3d_col_get_mode()==p3d_col_mode_pqp)
   {  return collision;  }
-#endif
+
   p3d_col_env_restore();
   return collision;
 }

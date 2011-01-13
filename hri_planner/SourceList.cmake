@@ -11,6 +11,7 @@ hri_distance.c
 hri_bitmap.c
 hri_manip.c 
 hri_knowledge.c
+hri_kinect.c
 )
 include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/hri_bitmap/SourceList.cmake)
 ENDIF(HRI_PLANNER)
@@ -25,7 +26,7 @@ p3d_perspective.c
 )
 IF(USE_MIGHTABILITY_MAPS)
 BM3D_SRC_SUBDIR_PROCESS(
-Mightability_Maps.c 
+Mightability_Maps.cpp 
 FORM_HRI_affordance.c
 HRI_tasks.cpp
 )

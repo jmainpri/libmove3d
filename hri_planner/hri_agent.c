@@ -1317,10 +1317,3 @@ int hri_is_robot_an_agent(p3d_rob * robot, HRI_AGENTS * agents, int * is_human, 
   }
   return FALSE;
 }
-
-
-
-
-
-
-
