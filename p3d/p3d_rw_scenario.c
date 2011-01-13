@@ -598,11 +598,13 @@ static int read_scenario(FILE *f)
 #endif
       continue;
     }
+#if defined(QT_GL) || defined(WITH_XFORMS)
     if (strcmp(fct, "p3d_set_camera_pos") == 0) {
       if (!p3d_read_string_n_double(&pos, 10, &dtab, &size_max_dtab)) return(read_desc_error(fct));
       g3d_load_saved_camera_params(dtab);      
       continue;
     }
+#endif
 #ifdef LIGHT_PLANNER
     if (strcmp(fct, "p3d_set_object_base_and_arm_constraints") == 0) {
       p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
@@ -804,6 +806,7 @@ static void save_robot_data(FILE * fdest, pp3d_rob robotPt){
 #endif
 }
 
+#if defined(QT_GL) || defined(WITH_XFORMS)
 static void save_camera_position(FILE * fdest)
 {
   G3D_Window *win = g3d_get_win_by_name((char*)"Move3D");
@@ -811,6 +814,7 @@ static void save_camera_position(FILE * fdest)
   fprintf(fdest, "\n\np3d_set_camera_pos %f %f %f %f %f %f %f %f %f %f\n\n",win->vs.x,win->vs.y,win->vs.z,win->vs.zo,win->vs.az,
           win->vs.el,win->vs.sup[0],win->vs.sup[1],win->vs.sup[2],win->vs.sup[3]);
 }
+#endif
 
 /***************************************************************/
 /* Write some robot data in file */     
@@ -835,7 +839,9 @@ static int save_scenario(FILE * f){
     robotPt = (p3d_rob*)p3d_get_desc_curid(P3D_ROBOT);
     save_robot_data(f, robotPt);
   }
+#if defined(QT_GL) || defined(WITH_XFORMS)
   save_camera_position(f);
+#endif
   p3d_sel_desc_num(P3D_ROBOT, rcur);
   return(TRUE);
 }

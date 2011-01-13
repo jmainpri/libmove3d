@@ -79,7 +79,9 @@ extern p3d_plane p3d_plane_from_points(p3d_vector3 p1, p3d_vector3 p2, p3d_vecto
 extern int p3d_is_point_above_plane(p3d_vector3 point, p3d_plane plane);
 extern int p3d_set_collision_cloud(p3d_vector3* points, int nbPoints);
 
+#if defined(QT_GL) || defined(WITH_XFORMS)
 extern int p3d_make_body_deformable(char *name);
 extern int p3d_adjust_deformable_body(p3d_obj *body);
+#endif
 
 #endif /* __CEXTRACT__ */

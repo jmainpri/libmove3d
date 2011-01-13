@@ -699,7 +699,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			continue;
 		}
 #endif
-#if defined( PQP ) && defined( FK_CNTRT ) && defined( LIGHT_PLANNER ) 
+#if defined( FK_CNTRT ) && defined( LIGHT_PLANNER ) 
 		if ( strcmp ( fct, "p3d_set_fk_constraint" ) == 0 )
 		{
 			ENV.setBool(Env::startWithFKCntrt,true);
@@ -708,14 +708,14 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			continue;
 		}
 #endif
-		
+#if defined(QT_GL) || defined(WITH_XFORMS)
    if (strcmp(fct, "p3d_set_camera_pos") == 0) {
 			if ( !read_desc_double ( fd, 10, dtab ) ) return ( read_desc_error ( fct ) );
       //if (!p3d_read_string_n_double(&pos, 10, &dtab, &size_max_dtab)) return(read_desc_error(fct));
       g3d_load_saved_camera_params(dtab);      
       continue;
     }   
-
+#endif
 		if ( ( strcmp ( fct, "p3d_contact_surface" ) == 0 ) || ( strcmp ( fct, "M3D_contact_surface" ) == 0 ) )
 		{
 			XYZ_OBSTACLES->contact_surface= TRUE;
@@ -2248,7 +2248,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			}
 			continue;
 		}
-
+#if defined(QT_GL) || defined(WITH_XFORMS)
 		if (  strcmp ( fct, "p3d_make_body_deformable" ) == 0   )
 		{
 			if ( !read_desc_name ( fd, name ) )  return ( read_desc_error ( fct ) );
@@ -2265,7 +2265,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
                         p3d_make_body_deformable(namecompl);
 			continue;
 		}
-
+#endif
 		if ( ( strcmp ( fct, "p3d_set_prim_color" ) == 0 ) || ( strcmp ( fct, "M3D_set_prim_color" ) == 0 ) )
 		{
 			if ( !read_desc_name ( fd, name ) )  return ( read_desc_error ( fct ) );

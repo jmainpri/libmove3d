@@ -2962,6 +2962,7 @@ int p3d_is_point_above_plane(p3d_vector3 point, p3d_plane plane)
   return 0;
 }
 
+#if defined(QT_GL) || defined(WITH_XFORMS)
 //! Prepares a body to make it deformable i.e. a body that will be rescaled according to the DOF
 //! of a prismatic joint it is related to.
 //! \param name name of the body (as it will appear in the .macro file of the robot)
@@ -3058,4 +3059,5 @@ int p3d_adjust_deformable_body(p3d_obj *obj) {
 
   return 0;
 }
+#endif
 
