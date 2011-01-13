@@ -1836,9 +1836,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       case ARM_TAKE_TO_FREE: {
         printf("plan for ARM_PICK_TAKE_TO_FREE task\n");
         if(!ManipulationUtils::isValidVector(objGoto)){
-          status = armPickTakeToFree(armId, qi, qf, object, trajs);
+          status = armPickTakeToFree(armId, qi, qf, object, support, trajs);
         }else{
-          status = armPickTakeToFreePoint(armId, qi, objGoto, object, trajs);
+          status = armPickTakeToFreePoint(armId, qi, objGoto, object, support, trajs);
         }
         break;
       }
@@ -1925,7 +1925,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
 //     if(traj){
 //       p3d_destroy_traj_content(_robot, traj);
 //     }
-<<<<<<< HEAD
     return returnMessage;
 }
 
@@ -1965,8 +1964,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
 //     if(traj){
 //       p3d_destroy_traj_content(_robot, traj);
 //     }
-=======
->>>>>>> b186f74f064144d8c47b51f0098e2650264935d2
     return returnMessage;
 }
 

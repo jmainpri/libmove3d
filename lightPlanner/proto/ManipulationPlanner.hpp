@@ -140,7 +140,7 @@ class  ManipulationPlanner {
     /** Move the arm from a grasping configuration (of the object placed on a support) to a free configuration */
     MANIPULATION_TASK_MESSAGE armPickTakeToFreePoint(int armId, configPt qStart, std::vector<double> &objGoto, p3d_rob* object, p3d_rob* support, std::vector <p3d_traj*> &trajs);
     MANIPULATION_TASK_MESSAGE armPickTakeToFree(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* support, std::vector <p3d_traj*> &trajs);
-		MANIPULATION_TASK_MESSAGE armPickTakeToFree(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* support, configPt approachGraspConfig, gpGrasp &grasp, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armPickTakeToFree(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* support, configPt approachGraspConfig, gpGrasp &grasp, std::vector <p3d_traj*> &trajs);
 
     /** Move the arm from a grasping configuration to a configuration with the same grasp but a different object placement */
     MANIPULATION_TASK_MESSAGE armPickTakeToPlace(int armId, p3d_rob* object, p3d_rob* placement, std::vector <p3d_traj*> &trajs);
