@@ -472,7 +472,7 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   bitmapset->parameters->use_corridors = FALSE;
   bitmapset->parameters->corridor_Costs = 50;
   /** directional calculations are an experimenatl feature, default is FALSE */
-  bitmapset->parameters->static_calculations = FALSE;
+  bitmapset->parameters->static_calculations = TRUE;
 }
 
 
