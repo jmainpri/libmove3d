@@ -71,6 +71,7 @@ extern int find_candidate_points_on_plane_to_put_away_obj();
 extern int find_candidate_points_to_give_obj();
 extern int Create_and_init_Mightability_Maps();
 extern int get_set_of_points_to_put_object(char *object_name);
+extern int get_set_of_points_to_show_object(char *object_name);
 extern int JIDO_find_candidate_points_on_plane_to_put_obj();
 extern int find_symbolic_Mightability_Map();
 extern int show_symbolic_Mightability_Map_Relations();

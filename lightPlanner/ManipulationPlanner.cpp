@@ -423,12 +423,12 @@ configPt ManipulationPlanner::getFreeHoldingConf( p3d_rob* object, int armId, gp
 
   if(objGoto.at(3)==P3D_HUGE || objGoto.at(4)==P3D_HUGE || objGoto.at(5)==P3D_HUGE)
   {
-   // Sample a configuration for the robot
+   // Sample the object orientation
    q = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, false, TRUE , armId, true);
   }
   else
   {
-   //do not sample a configuration for the robot
+   //do not Sample the object orientation
    q = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, false, FALSE , armId, true);
   }
 
@@ -1915,7 +1915,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
         /* COMPUTE THE SOFTMOTION TRAJECTORY */
         MANPIPULATION_TRAJECTORY_CONF_STR conf;
         SM_TRAJ smTraj;
-        //computeSoftMotion(traj, conf, smTraj);
+        computeSoftMotion(traj, conf, smTraj);
         confs.push_back(conf);
         smTrajs.push_back(smTraj);
       } else {
@@ -1945,18 +1945,18 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     if ((returnMessage = armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, grasp, trajs)) == MANIPULATION_TASK_OK) {
       //concatene
       if (concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK) {
-//         if(getArmCartesian(0)){ //TODO Softmotion smoothing
-// //           if(traj){
-// //             p3d_destroy_traj_content(_robot, traj);
-// //           }
-//           return returnMessage; 
-//         }
-//         /* COMPUTE THE SOFTMOTION TRAJECTORY */
-//         MANPIPULATION_TRAJECTORY_CONF_STR conf;
-//         SM_TRAJ smTraj;
-//         //computeSoftMotion(traj, conf, smTraj);
-//         confs.push_back(conf);
-//         smTrajs.push_back(smTraj);
+        if(getArmCartesian(0)){ //TODO Softmotion smoothing
+//           if(traj){
+//             p3d_destroy_traj_content(_robot, traj);
+//           }
+          return returnMessage; 
+        }
+        /* COMPUTE THE SOFTMOTION TRAJECTORY */
+        MANPIPULATION_TRAJECTORY_CONF_STR conf;
+        SM_TRAJ smTraj;
+        computeSoftMotion(traj, conf, smTraj);
+        confs.push_back(conf);
+        smTrajs.push_back(smTraj);
       } else {
         returnMessage = MANIPULATION_TASK_NO_TRAJ_FOUND;
       }
