@@ -300,3 +300,244 @@ int hri_bt_keep_old_path(hri_bitmapset* bitmapset, hri_bitmap* bitmap_oldpath, h
      } // endif newpath starts differently
   return useOldPath;
 }
+
+/****************************************************************/
+/*!
+ * \brief Calculate safety cost of the given coordinate
+ *
+ * \param x x coordinate
+ * \param y y coordinate
+ *
+ * \return the cost
+ */
+/****************************************************************/
+double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
+{
+  int i;
+  double radius,height;
+  double val = 0, sigmoid = 0, quot = 0, res =0;
+  double realx, realy;
+  double humanx, humany;
+  double distance;
+
+  if(btset==NULL){
+    PrintError(("btset is null, cant get distance value\n"));
+    return -1;
+  }
+
+  for(i=0; i<btset->human_no; i++){
+    if(!btset->human[i]->exists)
+      continue;
+    height = btset->human[i]->state[btset->human[i]->actual_state].dheight;
+    radius = btset->human[i]->state[btset->human[i]->actual_state].dradius;
+
+    realx = (x*btset->pace)+btset->realx;
+    realy = (y*btset->pace)+btset->realy;
+    humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
+    humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
+
+    distance = DISTANCE2D(realx,realy,humanx,humany);
+
+    if(distance > radius) {
+      val = 0;
+    } else {
+      // sigmoid function up to radius
+      sigmoid = cos(distance / radius * M_PI_2) + 0;
+      quot = 1 / (0.6 + distance );
+      val = pow(height * (sigmoid * quot), 3);
+    }
+    if(res < val) {
+      res = val;
+    }
+  }
+
+  return res;
+
+}
+
+
+
+
+/****************************************************************/
+/*!
+ * \brief Calculate velocity cost of the given coordinate
+ *
+ * \param x x coordinate
+ * \param y y coordinate
+ *
+ * \return the cost
+ */
+/****************************************************************/
+double hri_bt_calc_vel_value(hri_bitmapset * btset,int x, int y, int z)
+{
+
+
+
+  return 0;
+}
+
+
+
+/****************************************************************/
+/*!
+ * \brief Calculate visibility cost of the given coordinate
+ *
+ * \param x x coordinate
+ * \param y y coordinate
+ *
+ * \return the cost
+ */
+/****************************************************************/
+double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
+{
+  int i;
+  double radius,height,stretch_back;
+  double val = 0,res =0;
+  double realx, realy;
+  double angle,angle_deviation,deltax,deltay, orient,distance_cosine;
+  double humanx, humany;
+  double distance;
+
+  if(btset==NULL){
+    PrintError(("btset is null, cant get visibility value\n"));
+    return -1;
+  }
+
+  for (i=0; i<btset->human_no; i++) {
+    if(!btset->human[i]->exists)
+      continue;
+    height = btset->human[i]->state[btset->human[i]->actual_state].vheight;
+    stretch_back = btset->human[i]->state[btset->human[i]->actual_state].vback;
+    radius = btset->human[i]->state[btset->human[i]->actual_state].vradius;
+
+
+    realx = (x*btset->pace)+btset->realx;
+    realy = (y*btset->pace)+btset->realy;
+    humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
+    humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
+    orient = btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v + btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v;
+
+    distance = DISTANCE2D(realx,realy,humanx,humany);
+
+    if(distance > radius ) {
+      val = 0;
+    } else {
+
+      deltax = realx-humanx;
+      deltay = realy-humany;
+      angle = atan2(deltay, deltax);
+      // orient goes from -PI to PI, angle goes from - PI to PI
+      // get the absolute angle deviation between 0 and PI
+      angle_deviation = ABS(getAngleDeviation(orient, angle));
+
+      if (btset->human[i]->actual_state != BT_MOVING) {
+        if ((angle_deviation < M_PI_4 )) {
+            // leave open area in front of human
+            val =0;
+        } else {
+            // cosine function is 0 at borders of radius
+            distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
+
+            // use stretch to increase / decrease weight more on more backward angles
+            val = distance_cosine * (height + (angle_deviation - M_PI_4) * stretch_back);
+        }
+      } else {
+        // if human is moving, visibility does not matter, however we predict
+        // space in front of the human, assuming that's the direction the human is moving to
+        if (angle_deviation < M_PI_4 ) {
+            // predictive costs
+            distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
+
+            // use stretch to increase / decrease weight more on more backward angles
+            val = distance_cosine * (height + (M_PI - angle_deviation) * stretch_back);
+        } else {
+            val = 0;
+        }
+      }
+    }
+    if(res < val) {
+      res = val;
+    }
+  }
+
+  return res;
+}
+
+/****************************************************************/
+/*!
+ * \brief Calculate the combined cost of the given coordinate
+ *
+ * \param x x coordinate
+ * \param y y coordinate
+ *
+ * \returns in case of a sure collision, else the cost combining hidden zones, visibility and distance regardless of collisions
+ */
+/****************************************************************/
+double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
+{
+  double dist, vis, hz;
+  int result;
+
+  if(btset==NULL || btset->bitmap==NULL){
+    PrintError(("Try to calculate an unexisting bitmap\n"));
+    return -2;
+  }
+
+  if (btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_SURE_COLLISION) {
+    return -2;
+  }
+
+
+  // if( btset->bitmap[BT_OBSTACLES]!= NULL &&  btset->bitmap[BT_OBSTACLES]->data != NULL)
+  //   if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val < 0)
+  //     return -1;      COMMENT TO CHECK OBSTACLES OUTSIDE OF THIS FUNCTION ACCORDING TO WHERE WE CAME FROM
+
+
+  /* res = p3d_col_test_robot(btset->robot,TRUE); */
+
+  /*   if(res){ */
+  /*     printf("Robot in colision!!!\n"); */
+  /*     return 0; */
+  /*   } */
+
+  hz =  btset->bitmap[BT_HIDZONES]->calculate_cell_value(btset,x,y,z);
+  // hri_bt_calc_hz_value(x,y,z,0,NULL);
+
+  // TK 2011: Why?
+//  if(hz > -1)
+//    return hz;
+
+  vis  =  btset->bitmap[BT_VISIBILITY]->calculate_cell_value(btset,x,y,z);
+  // hri_bt_calc_vis_value(x,y,z,0,NULL);
+  dist =  btset->bitmap[BT_DISTANCE]->calculate_cell_value(btset,x,y,z);
+  // dist = hri_bt_calc_dist_VALUE(x,y,z,0,NULL);
+  //printf("Values: %f %f\n",dist,vis);
+  if(btset->combine_type == BT_COMBINE_SUM) {
+    result = dist + vis + hz;
+  } else if(btset->combine_type == BT_COMBINE_MAX) {
+    result = MAX(dist, vis);
+    result = MAX(result, hz);
+  } else {
+    PrintError(("Can't combine bitmaps\n"));
+    result = 0;
+  }
+
+  // experimental feature to avoid robot moving in the middle of corridor, walk on left or right lane instead
+  // usually turned off, so val != BT_OBST_SURE_CORRIDOR_MARK unless feature turned on
+  if (btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_SURE_CORRIDOR_MARK) {
+    result += btset->parameters->corridor_Costs;
+  }
+
+  if(result > 0 && result < BT_NAVIG_THRESHOLD) {
+    // too little to matter for safety and comfort, but can still make the robot change ways,
+    //best to make robot ignore those to have a straight path
+    result = 0;
+  }
+
+  // add costs around objects for feeling of object and robot safety
+  if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val > 0) {
+    result +=btset->bitmap[BT_OBSTACLES]->data[x][y][z].val;
+  }
+
+  return result;
+}
