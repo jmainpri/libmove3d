@@ -347,15 +347,16 @@ double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
   }
 
   for(i=0; i<btset->human_no; i++){
-    if(!btset->human[i]->exists)
+    hri_human* cur_human =  btset->human[i];
+    if(!cur_human->exists)
       continue;
-    height = btset->human[i]->state[btset->human[i]->actual_state].dheight;
-    radius = btset->human[i]->state[btset->human[i]->actual_state].dradius;
+    height = cur_human->state[cur_human->actual_state].dheight;
+    radius = cur_human->state[cur_human->actual_state].dradius;
 
     realx = (x*btset->pace)+btset->realx;
     realy = (y*btset->pace)+btset->realy;
-    humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
-    humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
+    humanx = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
+    humany = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
 
     distance = DISTANCE2D(realx,realy,humanx,humany);
 
@@ -425,18 +426,19 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
   }
 
   for (i=0; i<btset->human_no; i++) {
-    if(!btset->human[i]->exists)
+    hri_human* cur_human =  btset->human[i];
+    if(!cur_human->exists)
       continue;
-    height = btset->human[i]->state[btset->human[i]->actual_state].vheight;
-    stretch_back = btset->human[i]->state[btset->human[i]->actual_state].vback;
-    radius = btset->human[i]->state[btset->human[i]->actual_state].vradius;
+    height = cur_human->state[cur_human->actual_state].vheight;
+    stretch_back = cur_human->state[cur_human->actual_state].vback;
+    radius = cur_human->state[cur_human->actual_state].vradius;
 
 
     realx = (x*btset->pace)+btset->realx;
     realy = (y*btset->pace)+btset->realy;
-    humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
-    humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
-    orient = btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v + btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v;
+    humanx = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
+    humany = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
+    orient = cur_human->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v + cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[5].v;
 
     distance = DISTANCE2D(realx,realy,humanx,humany);
 
@@ -451,7 +453,7 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
       // get the absolute angle deviation between 0 and PI
       angle_deviation = ABS(getAngleDeviation(orient, angle));
 
-      if (btset->human[i]->actual_state != BT_MOVING) {
+      if (cur_human->actual_state != BT_MOVING) {
         if ((angle_deviation < M_PI_4 )) {
             // leave open area in front of human
             val =0;
