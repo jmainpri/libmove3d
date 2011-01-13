@@ -1014,15 +1014,16 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
       return GP_ERROR;
    }
   #endif
-
+printf("---------%s: %d: gpDeactivate_object_fingertips_collisions().\n",__FILE__,__LINE__);
   static bool already_warned= false;
-  unsigned int i;
+  unsigned int i, n;
   std::string base_name, body_name;
   std::stringstream out;
   p3d_obj *fingertip;
 
   base_name = std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
 
+  n= 0;
   for(i=1; i<=hand.nb_fingers; i++)
   {
      body_name= base_name;
@@ -1045,7 +1046,15 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
      else
      { 
        p3d_col_deactivate_pair_of_objects(fingertip, object); 
+printf("deactivate %s vs %s\n",fingertip->name,object->name);
+       n++;
      }
+  }
+
+  if(n==0)
+  {
+    printf("%s: %d: gpDeactivate_object_fingertips_collisions(): there was no collision deactivation between robot \"%s\" and object \"%s\" .\n",__FILE__,__LINE__,robot->name,object->name);
+    printf("This might be an error in the robot model file (hand bodies do not have correct names).\n");
   }
 
   return GP_OK;
@@ -1074,13 +1083,14 @@ int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpH
    }
   #endif
 
-  unsigned int i;
+  unsigned int i, n;
   std::string base_name, body_name;
   std::stringstream out;
   p3d_obj *fingertip;
 
   base_name = std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
 
+  n= 0;
   for(i=1; i<=hand.nb_fingers; i++)
   {
      body_name= base_name;
@@ -1096,7 +1106,14 @@ int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpH
        printf("%s: %d: gpActivate_object_fingertips_collisions(): robot \"%s\" should have a body named \"%s\".\n",__FILE__,__LINE__, robot->name, body_name.c_str());
      }else{
        p3d_col_activate_pair_of_objects(fingertip, object);
+       n++;
      }
+  }
+
+  if(n==0)
+  {
+    printf("%s: %d: gpActivate_object_fingertips_collisions(): there was no collision activation between robot \"%s\" and object \"%s\" .\n",__FILE__,__LINE__,robot->name,object->name);
+    printf("This might be an error in the robot model file (hand bodies do not have correct names).\n");
   }
 
   return GP_OK;
@@ -1124,7 +1141,7 @@ int gpDeactivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_prope
    }
   #endif
 
-  int i;
+  int i, n;
   std::string base_name, body_name;
   std::stringstream out;
 
@@ -1133,13 +1150,21 @@ int gpDeactivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_prope
 
   std::string body1_name;
 
+  n= 0;
   for( i=0; i < robot->no; i++)
   {
     body1_name= robot->o[i]->name;
     if(body1_name.compare(0, base_name.length(), base_name)==0)
     {
       p3d_col_deactivate_pair_of_objects(robot->o[i], object);
+      n++;
     }
+  }
+
+  if(n==0)
+  {
+    printf("%s: %d: gpDeactivate_object_fingertips_collisions(): there was no collision deactivation between robot \"%s\" and object \"%s\" .\n",__FILE__,__LINE__,robot->name,object->name);
+    printf("This might be an error in the robot model file (hand bodies do not have correct names).\n");
   }
 
   return GP_OK;
@@ -1168,7 +1193,7 @@ int gpActivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_propert
    }
   #endif
 
-  int i;
+  int i, n;
   std::string base_name, body_name;
   std::stringstream out;
 
@@ -1176,13 +1201,21 @@ int gpActivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_propert
 
   std::string body1_name;
 
+  n= 0;
   for( i=0; i < robot->no; i++)
   {
     body1_name= robot->o[i]->name;
     if(body1_name.compare(0, base_name.length(), base_name)==0)
     {
       p3d_col_activate_pair_of_objects(robot->o[i], object);
+      n++;
     }
+  }
+
+  if(n==0)
+  {
+    printf("%s: %d: gpActivate_object_fingertips_collisions(): there was no collision activation between robot \"%s\" and object \"%s\" .\n",__FILE__,__LINE__,robot->name,object->name);
+    printf("This might be an error in the robot model file (hand bodies do not have correct names).\n");
   }
 
   return GP_OK;
