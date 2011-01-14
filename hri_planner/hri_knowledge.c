@@ -169,46 +169,16 @@ int hri_initialize_agent_knowledge(HRI_KNOWLEDGE * knowledge, HRI_ENTITIES * ent
   return TRUE;
 }
 
-// TODO: There is a serious problem on the bounding boxes of robot parts.
-// I think the reason is that in a macro the first body is takeninto account ghost <->real switch
-HRI_REACHABILITY hri_is_reachable(HRI_ENTITY * object, HRI_AGENT *agent)
+HRI_REACHABILITY hri_is_reachable_single_arm(HRI_ENTITY * object, HRI_AGENT *agent,HRI_GIK_TASK_TYPE task_type,p3d_vector3* Tcoord)
 {
   int reached = FALSE;
-  configPt qs, q;
-  p3d_vector3 Tcoord;
+  configPt q;
   HRI_REACHABILITY reachability;
 
-  // Target object
-  if((object->type == HRI_OBJECT_PART) || (object->type == HRI_AGENT_PART)) {
-    Tcoord[0] = (object->partPt->BB.xmax + object->partPt->BB.xmin)/2;
-    Tcoord[1] = (object->partPt->BB.ymax + object->partPt->BB.ymin)/2;
-    Tcoord[2] = (object->partPt->BB.zmax + object->partPt->BB.zmin)/2;
-  }
-  else {
-    Tcoord[0] = (object->robotPt->BB.xmax + object->robotPt->BB.xmin)/2;
-    Tcoord[1] = (object->robotPt->BB.ymax + object->robotPt->BB.ymin)/2;
-    Tcoord[2] = (object->robotPt->BB.zmax + object->robotPt->BB.zmin)/2;
-  }
-
-  if(DISTANCE3D(Tcoord[0],Tcoord[1],Tcoord[2],
-                (agent->robotPt->BB.xmax + agent->robotPt->BB.xmin)/2,
-                (agent->robotPt->BB.ymax + agent->robotPt->BB.ymin)/2,
-                (agent->robotPt->BB.zmax + agent->robotPt->BB.zmin)/2) > 1.5) {
-
-    reachability = HRI_UNREACHABLE;
-  }
-
-  qs = MY_ALLOC(double, agent->robotPt->nb_dof); /* ALLOC */
   q  = MY_ALLOC(double, agent->robotPt->nb_dof); /* ALLOC */
 
-  p3d_get_robot_config_into(agent->robotPt, &qs); /* Saving agent config */
+  reached = hri_agent_single_task_manip_move(agent, task_type , Tcoord, 0.02, &q);
 
-  reached = hri_agent_single_task_manip_move(agent, GIK_LATREACH , &Tcoord, 0.02, &q);
-
-  if(agent->manip->type == TWO_ARMED) {
-    p3d_set_and_update_this_robot_conf(agent->robotPt, qs);
-    reached = hri_agent_single_task_manip_move(agent, GIK_RATREACH , &Tcoord, 0.02, &q);
-  }
   p3d_set_and_update_this_robot_conf(agent->robotPt, q);
 
   p3d_col_activate_robot(agent->robotPt);
@@ -251,11 +221,63 @@ HRI_REACHABILITY hri_is_reachable(HRI_ENTITY * object, HRI_AGENT *agent)
     }
   }
 
-  p3d_set_and_update_this_robot_conf(agent->robotPt,qs);
+  MY_FREE(q, double , agent->robotPt->nb_dof); /* FREE */  
+ 
+  return reachability;
+}
 
-  MY_FREE(q, double , agent->robotPt->nb_dof); /* FREE */
-  MY_FREE(qs, double, agent->robotPt->nb_dof); /* FREE */
+// TODO: There is a serious problem on the bounding boxes of robot parts.
+// I think the reason is that in a macro the first body is takeninto account ghost <->real switch
+HRI_REACHABILITY hri_is_reachable(HRI_ENTITY * object, HRI_AGENT *agent)
+{
+  configPt qs,q;
+  p3d_vector3 Tcoord;
+  HRI_REACHABILITY reachability,reachabilitySecondArm;
 
+  // Target object
+  if((object->type == HRI_OBJECT_PART) || (object->type == HRI_AGENT_PART)) {
+    Tcoord[0] = (object->partPt->BB.xmax + object->partPt->BB.xmin)/2;
+    Tcoord[1] = (object->partPt->BB.ymax + object->partPt->BB.ymin)/2;
+    Tcoord[2] = (object->partPt->BB.zmax + object->partPt->BB.zmin)/2;
+  }
+  else {
+    Tcoord[0] = (object->robotPt->BB.xmax + object->robotPt->BB.xmin)/2;
+    Tcoord[1] = (object->robotPt->BB.ymax + object->robotPt->BB.ymin)/2;
+    Tcoord[2] = (object->robotPt->BB.zmax + object->robotPt->BB.zmin)/2;
+  }
+
+  if(DISTANCE3D(Tcoord[0],Tcoord[1],Tcoord[2],
+                (agent->robotPt->BB.xmax + agent->robotPt->BB.xmin)/2,
+                (agent->robotPt->BB.ymax + agent->robotPt->BB.ymin)/2,
+                (agent->robotPt->BB.zmax + agent->robotPt->BB.zmin)/2) > 1.5) {
+
+    reachability = HRI_UNREACHABLE;
+  }
+  else {
+
+    qs = MY_ALLOC(double, agent->robotPt->nb_dof); /* ALLOC */
+
+
+    p3d_get_robot_config_into(agent->robotPt, &qs); /* Saving agent config */
+
+    reachability = hri_is_reachable_single_arm(object,agent,GIK_LATREACH,&Tcoord);
+
+    // If agent has two arms and object not reachable with first hand we try with second
+    if(agent->manip->type == TWO_ARMED && (reachability != HRI_REACHABLE)) {
+      p3d_set_and_update_this_robot_conf(agent->robotPt, qs);
+      reachabilitySecondArm = hri_is_reachable_single_arm(object,agent,GIK_RATREACH,&Tcoord);
+      if(reachabilitySecondArm ==  HRI_REACHABLE) {
+	reachability =  HRI_REACHABLE;
+      }
+      else if(reachabilitySecondArm ==  HRI_HARDLY_REACHABLE){
+	reachability =  HRI_HARDLY_REACHABLE;
+      }
+    }
+
+    p3d_set_and_update_this_robot_conf(agent->robotPt,qs);
+
+    MY_FREE(qs, double, agent->robotPt->nb_dof); /* FREE */
+  }
   return reachability;
 }
 
@@ -666,7 +688,7 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
       ent = ents->entities[ge_i];
       kn_on_ent = &agent->knowledge->entities[ge_i];
       
-      printf("Testing: %s with %s\n", agent->robotPt->name, ent->robotPt->name);
+      //printf("Testing: %s with %s\n", agent->robotPt->name, ent->robotPt->name);
 
       // If the entity is a part of the current agent, we skip it since it doesn't make sense to compute it from his own point of view
       // TODO: Or does it?
@@ -682,8 +704,8 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
 
       // REACHABILITY - REACHABLE, UNREACHABLE, HARDLY REACHABLE
       // TODO: Fix this global variable use. It's ugly.
-      // GIK_VIS = 500;
-      // kn_on_ent->reachability = hri_is_reachable(ent, agent);
+      GIK_VIS = 500;
+      kn_on_ent->reachability = hri_is_reachable(ent, agent);
 
       // PLACEMENT RELATION
       kn_on_ent->is_located_from_agent = hri_spatial_relation(ent, agent);
