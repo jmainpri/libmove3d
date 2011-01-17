@@ -577,6 +577,19 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   return result;
 }
 
+/**
+ * returns the deviation of point from POV (e.g. it is 10 degrees to the left)
+ * as a value between -pi and pi
+ */
+static double fow_deviation(double xh, double yh, double xt, double yt, double orient) {
+  double angle2human = atan2(yt - yh, xt - xh);
+  // angle2human is a number between -pi and pi
+  // orient is a number between -pi and pi
+  // difference is a number between -2pi and 2 pi
+  // result is a number between -pi and pi.
+
+ return getAngleDeviation(angle2human, orient);
+  }
 
 /****************************************************************/
 /*!
@@ -594,23 +607,11 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
 /****************************************************************/
 static int is_in_fow(double xh, double yh, double xt, double yt, double orient, double fowangle)
 {
-  double angle2human = atan2(yt - yh, xt - xh);
+  double angleDiff = fow_deviation(xh, yh, xt, yt, orient);
 
   // check is different depending on orientation of human
-    if (fabs(angle2human - orient) < fowangle) {
+  if (fabs(angleDiff) < fowangle) {
     return TRUE;
-  } else {
-    if ((angle2human > M_PI_2) && (M_PI > angle2human) && (orient < -M_PI_2)
-        && (orient > -M_PI - EPS5))
-      if (orient + M_2PI - angle2human < fowangle) {
-        return TRUE;
-      }
-    if ((angle2human < -M_PI_2) && (-M_PI - EPS5 < angle2human) && (orient
-                                                                    > M_PI_2) && (orient < M_PI + EPS5)) {
-      if (angle2human - orient + M_2PI < fowangle) {
-        return TRUE;
-      }
-    }
   }
   return FALSE;
 
