@@ -3,6 +3,7 @@
 #include "Graphic-pkg.h"
 #include "Move3d-pkg.h"
 #include "Planner-pkg.h"
+#include "Hri_planner-pkg.h"
 
 #include <iostream>
 #include <string>
@@ -153,7 +154,7 @@ qtG3DWindow::qtG3DWindow()
   
 #if defined( QT_GL_WIDGET )
 	ext_add_traj_to_ui = dummy_add_traj_to_ui;
-  ext_add_config_to_ui = dummy_add_config_to_ui;
+	ext_add_config_to_ui = dummy_add_config_to_ui;
 #endif
   
   newG3dWindow();
@@ -167,6 +168,11 @@ void g3d_draw_allwin_active(void)
 void g3d_draw_allwin_active_back_buffer(void)
 {
   ext_g3d_draw_allwin_active();
+}
+
+void g3d_draw_win_back_buffer(G3D_Window *win) 
+{
+  ext_g3d_draw_allwin_active_backbuffer();
 }
 
 void g3d_add_traj ( char *name, int i )
@@ -551,36 +557,6 @@ g3d_resize_win(G3D_Window *win, float w, float h, float size) {
 	
 	g3d_set_win_camera(win->vs, .0,.0,.0,5*size, INIT_AZ, INIT_EL,.0,.0,1.0);
 	g3d_save_win_camera(win->vs);
-}
-
-void g3d_draw_win_back_buffer(G3D_Window *win) {
-  p3d_vector4 Xc,Xw;
-  p3d_vector4 up;
-  
-  calc_cam_param(win,Xc,Xw);
-  
-  p3d_matvec4Mult(*win->cam_frame,win->vs.up,up);
-  
-  glPushMatrix();
-  gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]);
-  
-  win->vs.cameraPosition[0]= Xc[0];
-  win->vs.cameraPosition[1]= Xc[1];
-  win->vs.cameraPosition[2]= Xc[2];  
-	//   if(G3D_MODIF_VIEW) {
-	//     glPushMatrix();
-  //     glTranslatef(win->vs.x,win->vs.y,win->vs.z);
-	//     g3d_draw_frame();
-	//     glPopMatrix();
-	//   }
-  
-  if(win->fct_draw) (*win->fct_draw)();
-  
-  
-  glPopMatrix();
-  
-  //  if (win->win_perspective)//G3D_REFRESH_PERSPECTIVE)
-  //  glXSwapBuffers(fl_display,fl_get_canvas_id(ob));
 }
 
 
