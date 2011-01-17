@@ -238,28 +238,7 @@ double getPathCost(hri_bitmapset* btset, hri_bitmap* oldpath_bitmap, hri_bitmap_
   return result;
 }
 
-/**
- * returns the nth cell after start, by going backwards from end
- */
-static hri_bitmap_cell* hri_bt_nth_from_start(hri_bitmap_cell* path_start, hri_bitmap_cell* path_end, int n) {
-  // make 2 cells run from end to start in distance n
-  hri_bitmap_cell* runner1 = path_end;
-  hri_bitmap_cell* runner2 = path_end;
-  int delay = n;
-  while (runner1 != NULL) {
-    runner1 = runner1->parent;
-    if (delay > 0) {
-      delay--;
-    } else {
-      runner2 = runner2->parent;
-    }
-  }
-  if (delay == 0) {
-    return runner2;
-  } else {
-    return NULL;
-  }
-}
+
 
 /**
  * returns 1 if path starts are different enough, 0 if not, or -1

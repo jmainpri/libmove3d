@@ -12,7 +12,7 @@
 
 int on_map(int x, int y, int z, hri_bitmap* bitmap);
 
-int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell);
+//int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell);
 
 int isHardEdge(hri_bitmap_cell *last_cell, hri_bitmap_cell *middle_cell);
 
@@ -51,6 +51,10 @@ int hri_bt_equalPath(hri_bitmap* bitmap1, hri_bitmap* bitmap2);
 int localPathCollides (hri_bitmapset * btset, hri_bitmap_cell* cell, hri_bitmap_cell* fromcell);
 
 double getCellDistance (hri_bitmap_cell* cell1, hri_bitmap_cell* cell2 );
+
+hri_bitmap_cell* hri_bt_nth_from_start(hri_bitmap_cell* path_start, hri_bitmap_cell* path_end, int n);
+
+double getPathGridLength(hri_bitmap_cell* path_end);
 
 double getAngleDeviation(double angle1, double angle2);
 

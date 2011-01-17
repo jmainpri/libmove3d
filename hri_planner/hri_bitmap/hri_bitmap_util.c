@@ -21,31 +21,31 @@ hri_bitmap* hri_bt_get_bitmap(int type, hri_bitmapset* bitmapset) {
 }
 
 
-
-/**
- * returns the direction the satellite cell is with respect to the center cell
- */
-int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell) {
-  int xdiff, ydiff;
-  xdiff = satellite_cell->x - center_cell->x;
-  ydiff = satellite_cell->y - center_cell->y;
-  if(xdiff==-1) {
-    if (ydiff==-1) return BT_DIRECTION_NORTHEAST;
-    if (ydiff== 0) return BT_DIRECTION_EAST;
-    if (ydiff== 1) return BT_DIRECTION_SOUTHEAST;
-  }
-  if(xdiff==0) {
-    if(ydiff==-1) return BT_DIRECTION_NORTH;
-    if(ydiff== 1) return BT_DIRECTION_SOUTH;
-  }
-  if(xdiff==1) {
-    if(ydiff==-1) return BT_DIRECTION_NORTHWEST;
-    if(ydiff== 0) return BT_DIRECTION_WEST;
-    if(ydiff== 1) return BT_DIRECTION_SOUTHWEST;
-  }
-  PrintError(("Bug: Invalid entries causing xdiff, ydiff = %i,%i", xdiff, ydiff));
-  return -1;
-}
+// useless once we used 16 directions
+///**
+// * returns the direction the satellite cell is with respect to the center cell
+// */
+//int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell) {
+//  int xdiff, ydiff;
+//  xdiff = satellite_cell->x - center_cell->x;
+//  ydiff = satellite_cell->y - center_cell->y;
+//  if(xdiff==-1) {
+//    if (ydiff==-1) return BT_DIRECTION_NORTHEAST;
+//    if (ydiff== 0) return BT_DIRECTION_EAST;
+//    if (ydiff== 1) return BT_DIRECTION_SOUTHEAST;
+//  }
+//  if(xdiff==0) {
+//    if(ydiff==-1) return BT_DIRECTION_NORTH;
+//    if(ydiff== 1) return BT_DIRECTION_SOUTH;
+//  }
+//  if(xdiff==1) {
+//    if(ydiff==-1) return BT_DIRECTION_NORTHWEST;
+//    if(ydiff== 0) return BT_DIRECTION_WEST;
+//    if(ydiff== 1) return BT_DIRECTION_SOUTHWEST;
+//  }
+//  PrintError(("Bug: Invalid entries causing xdiff, ydiff = %i,%i", xdiff, ydiff));
+//  return -1;
+//}
 
 
 /**
@@ -746,6 +746,44 @@ double getCellDistance (hri_bitmap_cell* cell1, hri_bitmap_cell* cell2 )
   return DISTANCE3D(cell1->x, cell1->y, cell1->z, cell2->x, cell2->y, cell2->z);
 }
 
+/**
+ * returns the nth cell after start, by going backwards from end
+ */
+hri_bitmap_cell* hri_bt_nth_from_start(hri_bitmap_cell* path_start, hri_bitmap_cell* path_end, int n) {
+  // make 2 cells run from end to start in distance n
+  hri_bitmap_cell* runner1 = path_end;
+  hri_bitmap_cell* runner2 = path_end;
+  int delay = n;
+  while (runner1 != NULL) {
+    runner1 = runner1->parent;
+    if (delay > 0) {
+      delay--;
+    } else {
+      runner2 = runner2->parent;
+    }
+  }
+  if (delay == 0) {
+    return runner2;
+  } else {
+    return NULL;
+  }
+}
+
+/**
+ * gets the length of a path from that cell to the origin (cell without parent)
+ * value is in terms of grid square side length, e.g. 1.5 means 1.5 cells away
+ */
+double getPathGridLength(hri_bitmap_cell* path_end) {
+  double length = 0;
+  // make 2 cells run from end to start in distance n
+  hri_bitmap_cell* runner = path_end;
+  while (runner != NULL) {
+    if (runner->parent != NULL) {
+      length += getCellDistance(runner, runner->parent);
+    }
+    runner = runner->parent;
+  }
+}
 
 /**
  * Checks for 3d collision for robot movement from one cell to next, return FALSE if none, TRUE if collision
