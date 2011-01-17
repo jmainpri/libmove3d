@@ -46,6 +46,7 @@ HRI_ENTITIES * hri_create_entities()
         entities->entities[ent_i]->can_disappear = TRUE;
         entities->entities[ent_i]->is_present = FALSE;
         entities->entities[ent_i]->disappeared = FALSE;
+	entities->entities[ent_i]->disappeared_isexported = FALSE;
         entities->entities[ent_i]->robotPt = env->robot[i];
         entities->entities[ent_i]->partPt = NULL;
         entities->entities[ent_i]->type = HRI_OBJECT;
@@ -151,18 +152,35 @@ int hri_initialize_agent_knowledge(HRI_KNOWLEDGE * knowledge, HRI_ENTITIES * ent
     knowledge->entities[i].entPt = entities->entities[i];
 
     knowledge->entities[i].motion = HRI_UK_MOTION;
+    knowledge->entities[i].motion_ischanged = FALSE;
+    knowledge->entities[i].motion_isexported = FALSE;
+
     knowledge->entities[i].is_placed_from_visibility = HRI_UK_VIS_PLACE;
+    knowledge->entities[i].visibility_placement_ischanged = FALSE;
+    knowledge->entities[i].visibility_placement_isexported = FALSE;
 
     knowledge->entities[i].visibility = HRI_UK_VIS;
+    knowledge->entities[i].visibility_ischanged = FALSE;
+    knowledge->entities[i].visibility_isexported = FALSE;
+
     knowledge->entities[i].reachability = HRI_UK_REACHABILITY;
+    knowledge->entities[i].reachability_ischanged = FALSE;
+    knowledge->entities[i].reachability_isexported = FALSE;
 
     knowledge->entities[i].is_located_from_agent = HRI_UK_RELATION;
+    knowledge->entities[i].spatial_relation_ischanged = FALSE;
+    knowledge->entities[i].spatial_relation_isexported = FALSE;
 
     knowledge->entities[i].is_placed = MY_ALLOC(HRI_PLACEMENT_RELATION, entities->entities_nb);
+    knowledge->entities[i].placement_relation_ischanged = MY_ALLOC(int, entities->entities_nb);
+    knowledge->entities[i].placement_relation_isexported = MY_ALLOC(int, entities->entities_nb);
+
     knowledge->entities[i].is_placed_nb = entities->entities_nb;
 
     for(j=0; j<knowledge->entities[i].is_placed_nb; j++) {
       knowledge->entities[i].is_placed[j] = HRI_UK_PLR;
+      knowledge->entities[i].placement_relation_ischanged[j] = FALSE;
+      knowledge->entities[i].placement_relation_isexported[j] = FALSE;
     }
   }
 
@@ -655,7 +673,9 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
   int res;
   int counter = 0;
   HRI_VISIBILITY * vis_result;
-
+  HRI_REACHABILITY reachability_result;
+  HRI_SPATIAL_RELATION spatial_relation_result; 
+  HRI_PLACEMENT_RELATION placement_relation_result;
 
   if(agents == NULL || ents == NULL) {
     printf("Not Initialized\n");
@@ -700,21 +720,59 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
       // VISIBILITY PLACEMENT - FOV,FOA,OOF
       // TODO: visibility placement for robot parts
       hri_entity_visibility_placement(agent, ent, &res, &elevation, &azimuth);
-      kn_on_ent->is_placed_from_visibility = (HRI_VISIBILITY_PLACEMENT) res;
+      if ( kn_on_ent->is_placed_from_visibility == (HRI_VISIBILITY_PLACEMENT) res) {
+	if (knowledge->entities[i].visibility_placement_ischanged)
+	  knowledge->entities[i].visibility_placement_ischanged = FALSE;
+      }
+      else {
+	knowledge->entities[i].visibility_placement_ischanged = TRUE;
+	knowledge->entities[i].visibility_placement_isexported = FALSE;
+	kn_on_ent->is_placed_from_visibility = (HRI_VISIBILITY_PLACEMENT) res;
+      }
+	
 
       // REACHABILITY - REACHABLE, UNREACHABLE, HARDLY REACHABLE
       // TODO: Fix this global variable use. It's ugly.
       GIK_VIS = 500;
-      kn_on_ent->reachability = hri_is_reachable(ent, agent);
-
-      // PLACEMENT RELATION
-      kn_on_ent->is_located_from_agent = hri_spatial_relation(ent, agent);
+      reachability_result = hri_is_reachable(ent, agent);
+      if ( kn_on_ent->reachability ==  reachability_result) {
+	if ( knowledge->entities[i].reachability_ischanged)
+	  knowledge->entities[i].reachability_ischanged = FALSE;
+      }
+      else {
+	kn_on_ent->reachability = reachability_result;
+	knowledge->entities[i].reachability_ischanged = TRUE;
+	knowledge->entities[i].reachability_isexported = FALSE;
+      }
 
       // SPATIAL RELATION
+      spatial_relation_result = hri_spatial_relation(ent, agent);
+      if ( kn_on_ent->is_located_from_agent ==  spatial_relation_result) {
+	if (knowledge->entities[i].spatial_relation_ischanged)
+	   knowledge->entities[i].spatial_relation_ischanged = FALSE;
+      }
+      else {
+	kn_on_ent->is_located_from_agent  = spatial_relation_result;
+	knowledge->entities[i].spatial_relation_ischanged = TRUE;
+	knowledge->entities[i].spatial_relation_isexported = FALSE;
+      }
+
+       
+      
+      // PLACEMENT RELATION
       for(e_j=0; e_j<present_ents_nb; e_j++) {
         ge_j = present_ents_global_idxs[e_j];
         if( e_j != e_i)
-          kn_on_ent->is_placed[ge_j] = hri_placement_relation(ent, ents->entities[ge_j]);
+          placement_relation_result = hri_placement_relation(ent, ents->entities[ge_j]);
+	if (  kn_on_ent->is_placed[ge_j] ==  placement_relation_result) {
+	  if ( knowledge->entities[i].placement_relation_ischanged[ge_j])
+	    knowledge->entities[i].placement_relation_ischanged[ge_j] = FALSE;
+	}
+	else {
+	  kn_on_ent->is_placed[ge_j] = placement_relation_result;
+	  knowledge->entities[i].placement_relation_ischanged[ge_j] = TRUE;
+	  knowledge->entities[i].placement_relation_isexported[ge_j] = FALSE;
+	}
       }
     }
 
@@ -724,8 +782,15 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
     for(e_j=0; e_j<present_ents_nb; e_j++) {
       ge_j = present_ents_global_idxs[e_j];
       kn_on_ent = &agent->knowledge->entities[ge_j];
-
-      kn_on_ent->visibility = vis_result[e_j];
+      if ( kn_on_ent->visibility  ==  vis_result[e_j]) {
+	if ( kn_on_ent->visibility_ischanged)
+	  kn_on_ent->visibility_ischanged  = FALSE;
+      }
+      else {
+	kn_on_ent->visibility = vis_result[e_j];
+	kn_on_ent->visibility_ischanged = TRUE;
+	kn_on_ent->visibility_isexported = TRUE;
+      }      
     }
   }
 

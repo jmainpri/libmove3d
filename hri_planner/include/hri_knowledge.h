@@ -17,7 +17,8 @@ typedef struct STRUCT_HRI_ENTITY {
   
   int is_present; /* Is present in the env, i.e. at least seen once by the robot */
   int disappeared; /* Is present but it is not at the place where it is supposed to be */
-  
+  int disappeared_isexported; /* bool to know wether disappear information was exported */  
+
   p3d_rob * robotPt;
   p3d_obj * partPt;
   int agent_idx; /* if it's a part of an agent, then its index */
@@ -96,16 +97,28 @@ typedef struct STRUCT_HRI_KNOWLEDGE_ON_ENTITY {
   long update_date;
 
   HRI_MOTION motion;
+  int motion_ischanged;
+  int motion_isexported;
 
   HRI_VISIBILITY visibility;
+  int visibility_ischanged;
+  int visibility_isexported;
 
   HRI_REACHABILITY reachability;
+  int reachability_ischanged;
+  int reachability_isexported;
 
   HRI_VISIBILITY_PLACEMENT is_placed_from_visibility; /* oof, fov, ... */
+  int visibility_placement_ischanged;
+  int visibility_placement_isexported;
 
   HRI_SPATIAL_RELATION is_located_from_agent; /* Front, right, .... */
+  int spatial_relation_ischanged;
+  int spatial_relation_isexported;
 
   HRI_PLACEMENT_RELATION * is_placed; /* on, in, ... */
+  int * placement_relation_ischanged;
+  int * placement_relation_isexported;
   int is_placed_nb;  /* length is HRI_ENTITIES->all_entities_nb */
 
 } HRI_KNOWLEDGE_ON_ENTITY;
