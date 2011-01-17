@@ -721,12 +721,12 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
       // TODO: visibility placement for robot parts
       hri_entity_visibility_placement(agent, ent, &res, &elevation, &azimuth);
       if ( kn_on_ent->is_placed_from_visibility == (HRI_VISIBILITY_PLACEMENT) res) {
-	if (knowledge->entities[i].visibility_placement_ischanged)
-	  knowledge->entities[i].visibility_placement_ischanged = FALSE;
+	if (kn_on_ent->visibility_placement_ischanged)
+	  kn_on_ent->visibility_placement_ischanged = FALSE;
       }
       else {
-	knowledge->entities[i].visibility_placement_ischanged = TRUE;
-	knowledge->entities[i].visibility_placement_isexported = FALSE;
+	kn_on_ent->visibility_placement_ischanged = TRUE;
+	kn_on_ent->visibility_placement_isexported = FALSE;
 	kn_on_ent->is_placed_from_visibility = (HRI_VISIBILITY_PLACEMENT) res;
       }
 	
@@ -736,25 +736,25 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
       GIK_VIS = 500;
       reachability_result = hri_is_reachable(ent, agent);
       if ( kn_on_ent->reachability ==  reachability_result) {
-	if ( knowledge->entities[i].reachability_ischanged)
-	  knowledge->entities[i].reachability_ischanged = FALSE;
+	if ( kn_on_ent->reachability_ischanged)
+	  kn_on_ent->reachability_ischanged = FALSE;
       }
       else {
 	kn_on_ent->reachability = reachability_result;
-	knowledge->entities[i].reachability_ischanged = TRUE;
-	knowledge->entities[i].reachability_isexported = FALSE;
+	kn_on_ent->reachability_ischanged = TRUE;
+	kn_on_ent->reachability_isexported = FALSE;
       }
 
       // SPATIAL RELATION
       spatial_relation_result = hri_spatial_relation(ent, agent);
       if ( kn_on_ent->is_located_from_agent ==  spatial_relation_result) {
-	if (knowledge->entities[i].spatial_relation_ischanged)
-	   knowledge->entities[i].spatial_relation_ischanged = FALSE;
+	if (kn_on_ent->spatial_relation_ischanged)
+	   kn_on_ent->spatial_relation_ischanged = FALSE;
       }
       else {
 	kn_on_ent->is_located_from_agent  = spatial_relation_result;
-	knowledge->entities[i].spatial_relation_ischanged = TRUE;
-	knowledge->entities[i].spatial_relation_isexported = FALSE;
+	kn_on_ent->spatial_relation_ischanged = TRUE;
+	kn_on_ent->spatial_relation_isexported = FALSE;
       }
 
        
@@ -765,13 +765,13 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
         if( e_j != e_i)
           placement_relation_result = hri_placement_relation(ent, ents->entities[ge_j]);
 	if (  kn_on_ent->is_placed[ge_j] ==  placement_relation_result) {
-	  if ( knowledge->entities[i].placement_relation_ischanged[ge_j])
-	    knowledge->entities[i].placement_relation_ischanged[ge_j] = FALSE;
+	  if ( kn_on_ent->placement_relation_ischanged[ge_j])
+	    kn_on_ent->placement_relation_ischanged[ge_j] = FALSE;
 	}
 	else {
 	  kn_on_ent->is_placed[ge_j] = placement_relation_result;
-	  knowledge->entities[i].placement_relation_ischanged[ge_j] = TRUE;
-	  knowledge->entities[i].placement_relation_isexported[ge_j] = FALSE;
+	  kn_on_ent->placement_relation_ischanged[ge_j] = TRUE;
+	  kn_on_ent->placement_relation_isexported[ge_j] = FALSE;
 	}
       }
     }
