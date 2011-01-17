@@ -1328,7 +1328,8 @@ void g3d_draw_env_custom()
   win = g3d_get_cur_win();
 	
   p3d_drawRobotMoveMeshs();
-#if defined( MOVE3D_CORE )
+//#if defined( MOVE3D_CORE ) 
+#if defined ( CXX_PLANNER )
   ext_g3d_draw_cost_features();
 #endif
 #ifdef DPG
@@ -1422,7 +1423,8 @@ void g3d_draw_env()
   if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win);
   /* Fin Modification Thibaut */
 
-#if defined( MOVE3D_CORE )
+// #if defined( MOVE3D_CORE )
+#if defined( CXX_PLANNER )
 	ext_g3d_export_cpp_graph();
 #endif
 	
