@@ -337,7 +337,7 @@ int execute_Mightability_Map_functions()
 
 
    /////Tmp for testing
-   show_axis_of_FOV_from_mocap_eye_glass_data();
+   /////////show_axis_of_FOV_from_mocap_eye_glass_data();
 
   ////////pqp_print_colliding_pair();
   
@@ -391,6 +391,7 @@ void AKP_rgb_from_hue2(double x, double color[4])
      color[2]= 1.0;
    }
 }
+
 
 int show_axis_of_FOV_from_mocap_eye_glass_data()
 {
@@ -788,7 +789,7 @@ int create_agents_for_Mightabilities()
 int Create_and_init_Mightability_Maps()
 {
  printf(" Inside Create_and_init_Mightability_Maps()\n");
- p3d_init_robot_parameters(); //To remove the dependency on Watch button
+ ////////p3d_init_robot_parameters(); //To remove the dependency on Watch button
  printf(" After p3d_init_robot_parameters()\n");
 
  assign_indices_of_robots();
@@ -2344,6 +2345,7 @@ double interval=grid_around_HRP2.GRID_SET->pace/1.0;
       //// g3d_drawDisc(sphere_pts[sp_ctr].x, sphere_pts[sp_ctr].y, sphere_pts[sp_ctr].z, grid_around_HRP2.GRID_SET->pace/4.0, Green, NULL);
       }
 */
+/*
     point_co_ordi JIDO_eye_pos;
     JIDO_eye_pos.x = ACBTSET->robot->joints[ACBTSET->robot->cam_body_index]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     JIDO_eye_pos.y = ACBTSET->robot->joints[ACBTSET->robot->cam_body_index]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
@@ -2352,6 +2354,7 @@ double interval=grid_around_HRP2.GRID_SET->pace/1.0;
 
 
 g3d_drawDisc(agent_eye_pos.x, agent_eye_pos.y,agent_eye_pos.z, 0.1, Red, NULL);
+*/
 double radius=grid_around_HRP2.GRID_SET->pace/3.0;
 
  int x=0;
@@ -8139,7 +8142,7 @@ if(HUMAN1_HAS_MOVED==1)
  #ifdef MM_FOR_VIRTUALLY_STANDING_HUMAN
  
  virtually_update_human_state_new(0);// Standing
-update_3d_grid_reachability_for_human_standing_new();
+ update_3d_grid_reachability_for_human_standing_new();
  virtually_update_human_state_new(1);
  #endif
 
@@ -8149,6 +8152,7 @@ update_3d_grid_reachability_for_human_standing_new();
 // ChronoPrint("Time for Update_Mightability_Maps_new()");
  ChronoOff();
 
+//Setting it to 0 to avoid any collision during planning
 p3d_set_freeflyer_pose2(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],0,0,0,0,0,0);
  return 1;
 
@@ -14716,6 +14720,7 @@ int is_object_visible_for_agent(HRI_AGENT * agent, p3d_rob *object, double thres
   win->vs.displayFloor   = FALSE;
   win->vs.displayTiles   = FALSE;
   win->vs.cullingEnabled =  1;
+  win->vs.enableLogo=0;//AKP:Logo red parts are (mis)considered as object parts in the core of visibility calculation
   //do not forget to set the backgroung to black:
   g3d_set_win_bgcolor(win->vs, 0, 0, 0);
   
@@ -14723,7 +14728,7 @@ int is_object_visible_for_agent(HRI_AGENT * agent, p3d_rob *object, double thres
   g3d_set_camera_parameters_from_frame(agent->perspective->camjoint->abs_pos, win->vs);
 
   //AKP: Not setting the projection mode for the time being, because then not getting the desired % of visibility in some cases
-//////g3d_set_projection_matrix(win->vs.projection_mode);
+  g3d_set_projection_matrix(win->vs.projection_mode);
 
 //AKP
   /////g3d_draw_win(win);
@@ -14748,7 +14753,7 @@ int is_object_visible_for_agent(HRI_AGENT * agent, p3d_rob *object, double thres
     g3d_draw_win(win);
   
 //AKP
-printf("  result = %lf, visibility = %lf \n",result, 100.0*result);
+////////printf("  >>>>>>> result = %lf, visibility = %lf \n",result, 100.0*result);
  g3d_draw_allwin_active();
 					fl_check_forms();
   if(100.0*result>=threshold)
