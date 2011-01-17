@@ -6,43 +6,7 @@
  *
  */
 
-/**
- * calculates directional path cost.
- * Going towards or away from a human may have different social costs.
- *
- * experimental code
- */
-double getDirectionalVal(hri_bitmapset * btset, hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell, double distance) {
-  // TODO: calculate val depending on direction
-  return current_cell->val;
-}
 
-/**
- * calculates the g cost of A*, the cost of a the path up to this cell,
- * considering it is reached from a certain parent cell.
- * This may return different values depending on from where we try to reach this cell.
- *
- * dimensions refers to the dimensions of the bitmap
- */
-double hri_bt_A_CalculateCellG(hri_bitmapset * btset, hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell, double distance ) {
-  double result ;
-  // fromcell is closed, meaning its cost from search start are known to be minimal.
-  if (fromcell->g < 0 || current_cell->val < 0){
-    return -1;
-  }
-  if (btset->parameters->static_calculations == TRUE) {
-    // add the costs of the path to the parent, the social costs in this cell, and the path length
-    result = fromcell->g +
-                                current_cell->val +
-                                (distance * btset->parameters->path_length_weight);
-  } else {
-    result = fromcell->g +
-                               getDirectionalVal(btset, current_cell, fromcell, distance) +
-                               (distance * btset->parameters->path_length_weight);
-  }
-
-  return result;
-}
 
 /****************************************************************/
 /*!
@@ -446,8 +410,8 @@ double hri_bt_calc_vis_value_human(hri_bitmapset * btset, hri_human* cur_human, 
 /*!
  * \brief Calculate visibility cost of the given coordinate
  *
- * \param x x coordinate
- * \param y y coordinate
+ * \param x x grid coordinate
+ * \param y y grid coordinate
  *
  * \return the cost
  */
@@ -517,9 +481,10 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   hz =  btset->bitmap[BT_HIDZONES]->calculate_cell_value(btset,x,y,z);
   // hri_bt_calc_hz_value(x,y,z,0,NULL);
 
-  // TK 2011: Why?
-//  if(hz > -1)
-//    return hz;
+  //
+  if (hz < 0) {
+    hz = 0;
+  }
 
   vis  =  btset->bitmap[BT_VISIBILITY]->calculate_cell_value(btset,x,y,z);
   // hri_bt_calc_vis_value(x,y,z,0,NULL);
@@ -596,7 +561,7 @@ static int is_in_fow(double xh, double yh, double xt, double yt, double orient, 
 
 }
 
-double hri_bt_calc_hz_value_human(hri_bitmapset * btset, hri_human* cur_human, double robotx, double  roboty)
+double hri_bt_calc_hz_value_human(hri_bitmapset * btset, hri_human* cur_human, int robotx, int roboty)
 {
     double humanx, humany;
     // the closest grid cells where the human stands (rounded down)
@@ -711,4 +676,158 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int rob_grid_x, int rob_grid_
   } // end for humans
 
   return res;
+}
+
+
+/**
+ * calculates directional path cost.
+ * Going towards or away from a human may have different social costs.
+ *
+ * experimental code
+ */
+double getDirectionalVal(hri_bitmapset * btset, hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell, double distance) {
+  int i;
+  double val = 0, result = 0;
+  double dist, vis, hz;
+
+  int x = current_cell->x;
+  int y = current_cell->y;
+  int z = current_cell->z;
+
+
+   if(btset==NULL || btset->bitmap==NULL){
+     PrintError(("Try to calculate an unexisting bitmap\n"));
+     return -2;
+   }
+
+   if (btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_SURE_COLLISION) {
+     return -2;
+   }
+
+   /**
+    * for each human, calculate the combination of costs, and weight those by the robot direction relative to that human.
+    */
+   for(i=0; i<btset->human_no; i++){
+     if(!btset->human[i]->exists)
+       continue;
+
+     // OLD
+//     hz =  btset->bitmap[BT_HIDZONES]->calculate_cell_value(btset,x,y,z);
+//     vis  =  btset->bitmap[BT_VISIBILITY]->calculate_cell_value(btset,x,y,z);
+//     dist =  btset->bitmap[BT_DISTANCE]->calculate_cell_value(btset,x,y,z);
+
+     // NEW
+     hz = hri_bt_calc_hz_value_human(btset, btset->human[i], current_cell->x, current_cell->y);
+     vis = hri_bt_calc_vis_value_human(btset, btset->human[i], current_cell->x, current_cell->y, current_cell->z); // z = 0?
+     dist = hri_bt_calc_dist_value_human(btset, btset->human[i], current_cell->x, current_cell->y, current_cell->z);
+
+     if(btset->combine_type == BT_COMBINE_SUM) {
+       val = dist + vis + hz;
+     } else if(btset->combine_type == BT_COMBINE_MAX) {
+       val = MAX(dist, vis);
+       val = MAX(result, hz);
+     } else {
+       PrintError(("Can't combine bitmaps\n"));
+       val = 0;
+     }
+
+     // TODO: Now modify these costs depending on the heading
+     // angle of the robot when going from from_cell to current_cell
+     // the more the human is outside the heading, the less the cost matter
+     // for moving humans, the cost may become zero, if the human is far
+     // away, or moving in the same direction as the robot.
+
+     // 3 values are required:
+     // the difference between robot heading and angle to human:  humanInDirection
+     // and the difference between robot heading and human heading: headingDiff
+     // the path length to this point, which means for moving humans they will not be where they are now: pathLength
+
+     // highest cost if humanInDirection close to 0 and headingDiff close to 180
+     double robotDirection = atan2(current_cell->y - fromcell->y, current_cell->x - fromcell->x);
+     double realx = (x*btset->pace)+btset->realx;
+     double realy = (y*btset->pace)+btset->realy;
+     double humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
+     double humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
+     double humanInDirection =  fow_deviation(realx, realy, humanx, humany, robotDirection);
+
+     // result will be multiplied with this value being between 0 and 1
+     double directionalSignificance = 1;
+
+     if (fabs(humanInDirection) > M_PI_2) {
+       directionalSignificance = 0;
+     } else {
+       // human is ahead of robot, but is human travellling in the same direction?
+       if (btset->human[i]->actual_state == BT_MOVING) {
+//         human more than 3 meters away, and moving, costs don't matter (?)
+         // TODO: parametrize the distance, justify with time and velocities
+         if  ( getPathGridLength(fromcell) * btset->pace > 3) {
+           directionalSignificance = directionalSignificance * 0.2; // magic number, TODO: parametrize, tweak
+         }
+
+         double headingDiff = getAngleDeviation(robotDirection, btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v);
+         // 45 degrees counts as same direction
+         if (fabs(headingDiff ) > M_PI_4) {
+           directionalSignificance = directionalSignificance * ((fabs(headingDiff ) - M_PI_4) / (M_PI - M_PI_4) );
+         } else {
+           directionalSignificance = 0;
+         }
+       } // endif moving
+       directionalSignificance = directionalSignificance * ((M_PI_2 - fabs(humanInDirection)) / M_PI_2);
+     }
+
+     printf("cost reduced by %f \n", directionalSignificance);
+     val = val * directionalSignificance;
+
+     if(result < val) {
+       result = val;
+     }
+   }
+
+   // experimental feature to avoid robot moving in the middle of corridor, walk on left or right lane instead
+   // usually turned off, so val != BT_OBST_SURE_CORRIDOR_MARK unless feature turned on
+   if (btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_SURE_CORRIDOR_MARK) {
+     result += btset->parameters->corridor_Costs;
+   }
+
+   if(result > 0 && result < BT_NAVIG_THRESHOLD) {
+     // too little to matter for safety and comfort, but can still make the robot change ways,
+     //best to make robot ignore those to have a straight path
+     result = 0;
+   }
+
+   // add costs around objects for feeling of object and robot safety
+   if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val > 0) {
+     result +=btset->bitmap[BT_OBSTACLES]->data[x][y][z].val;
+   }
+
+   return result;
+}
+
+
+/**
+ * calculates the g cost of A*, the cost of a the path up to this cell,
+ * considering it is reached from a certain parent cell.
+ * This may return different values depending on from where we try to reach this cell.
+ *
+ * dimensions refers to the dimensions of the bitmap
+ */
+double hri_bt_A_CalculateCellG(hri_bitmapset * btset, hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell, double distance ) {
+  double result ;
+  // fromcell is closed, meaning its cost from search start are known to be minimal.
+
+  if (fromcell->g < 0 || current_cell->val < 0){
+    return -1;
+  }
+  if (btset->parameters->static_calculations == FALSE) {
+    // add the costs of the path to the parent, the social costs in this cell, and the path length
+    result = fromcell->g +
+                                current_cell->val +
+                                (distance * btset->parameters->path_length_weight);
+  } else {
+    result = fromcell->g +
+                               getDirectionalVal(btset, current_cell, fromcell, distance) +
+                               (distance * btset->parameters->path_length_weight);
+  }
+
+  return result;
 }
