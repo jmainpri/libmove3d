@@ -691,9 +691,6 @@ int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
    }
   #endif
 
-  //reverse the abduction angle to fit the new model
-//   q[1]= -q[1];
-
   double l0, l1, l2, l3;
   double x, y, z;
   p3d_vector3 p_finger, fingerpad_normal_relative;
@@ -1014,7 +1011,7 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
       return GP_ERROR;
    }
   #endif
-printf("---------%s: %d: gpDeactivate_object_fingertips_collisions().\n",__FILE__,__LINE__);
+
   static bool already_warned= false;
   unsigned int i, n;
   std::string base_name, body_name;
@@ -1046,7 +1043,6 @@ printf("---------%s: %d: gpDeactivate_object_fingertips_collisions().\n",__FILE_
      else
      { 
        p3d_col_deactivate_pair_of_objects(fingertip, object); 
-printf("deactivate %s vs %s\n",fingertip->name,object->name);
        n++;
      }
   }
