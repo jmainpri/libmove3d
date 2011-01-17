@@ -692,7 +692,7 @@ int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
   #endif
 
   //reverse the abduction angle to fit the new model
-  q[1]= -q[1];
+//   q[1]= -q[1];
 
   double l0, l1, l2, l3;
   double x, y, z;

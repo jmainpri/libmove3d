@@ -122,136 +122,6 @@ int gpGrasps_from_grasp_frame_SAHand ( p3d_rob *robot, p3d_rob *object, int body
       return GP_ERROR;
     }
 
-
-//!/////////////////////////////////
-//     int status;
-//     p3d_vector3 newXaxis, newYaxis, newZaxis;
-//     p3d_vector3 pA, pB, pC, contactCentroids[4], midPoint;
-//     p3d_matrix4 newFrame;
-//     std::list<gpContact> fingerContacts[4];
-//     for(i=0; i<4; ++i) //for each finger:
-//     {
-//         q[i][0]= q_default[0];
-//         q[i][1]= q_default[1];
-//         q[i][2]= q_default[2];
-//         q[i][3]= q_default[3];
-//         gpSet_SAHfinger_joint_angles(robot, hand, q_default, i+1, 0);
-// 
-//         fingerContacts[i].clear();
-//         p3d_mat4Mult( Twrist, hand.Twrist_finger[i], T );
-// 
-//         for(j=0; j<hand.workspace.size(); ++j)
-//         {
-//           p3d_xformPoint(T, hand.workspace[j].center, center);
-//           kdtree.sphereIntersection(center, hand.workspace[j].radius, fingerContacts[i]);
-//           if(!fingerContacts[i].empty())
-//           {  break;  }
-//         }
-// // printf("fingerContacts[%d].size= %d\n",i, fingerContacts[i].size());
-//         if(fingerContacts[0].empty()) //thumb
-//         {  break; }
-// 
-//         if(!fingerContacts[i].empty())
-//         {
-//           contactCentroids[i][0]= 0.0;
-//           contactCentroids[i][1]= 0.0;
-//           contactCentroids[i][2]= 0.0;
-//           for(iter=fingerContacts[i].begin(); iter!=fingerContacts[i].end(); iter++)
-//           {
-//             contactCentroids[i][0]+= iter->position[0];
-//             contactCentroids[i][1]+= iter->position[1];
-//             contactCentroids[i][2]+= iter->position[2];
-//           }
-//           contactCentroids[i][0]/= (double) fingerContacts[i].size();
-//           contactCentroids[i][1]/= (double) fingerContacts[i].size();
-//           contactCentroids[i][2]/= (double) fingerContacts[i].size();
-//         }
-//     }
-//     if(fingerContacts[0].empty())
-//     {
-//       gpActivate_finger_collisions ( robot, 1, hand );
-//       gpActivate_finger_collisions ( robot, 2, hand );
-//       gpActivate_finger_collisions ( robot, 3, hand );
-//       gpActivate_finger_collisions ( robot, 4, hand );
-//       p3d_set_and_update_this_robot_conf ( robot, config0 );
-//       p3d_destroy_config ( robot, config0 );
-//       p3d_destroy_config ( robot, config );
-//       return GP_ERROR;
-//     }
-//     p3d_vectCopy(contactCentroids[0], pA);
-//     
-//     status= 0;
-//     if(!fingerContacts[1].empty())
-//     {
-//       p3d_vectCopy(contactCentroids[1], pB);
-//       if(!fingerContacts[3].empty())
-//       {
-//         p3d_vectCopy(contactCentroids[3], pC);
-//         status= 1;
-//       }
-//       else if(!fingerContacts[2].empty())
-//       {
-//         p3d_vectCopy(contactCentroids[2], pC);
-//         status= 1;
-//       }
-//     }
-//     else if(!fingerContacts[2].empty() && !fingerContacts[3].empty())
-//     {
-//       p3d_vectCopy(contactCentroids[2], pB);
-//       p3d_vectCopy(contactCentroids[3], pC);
-//       status= 1;
-//     }
-// 
-//     if(status==0)
-//     {
-//       gpActivate_finger_collisions ( robot, 1, hand );
-//       gpActivate_finger_collisions ( robot, 2, hand );
-//       gpActivate_finger_collisions ( robot, 3, hand );
-//       gpActivate_finger_collisions ( robot, 4, hand );
-//       p3d_set_and_update_this_robot_conf ( robot, config0 );
-//       p3d_destroy_config ( robot, config0 );
-//       p3d_destroy_config ( robot, config );
-//       return GP_ERROR;
-//     }
-// 
-//     for(i=0; i<3; ++i)
-//     {  midPoint[i]= 0.5*(pB[i]+pC[i]);  }
-// 
-// // printf("contactCentroids[0]= [%f %f %f]\n",contactCentroids[0][0],contactCentroids[0][1],contactCentroids[0][2]);
-// // printf("contactCentroids[1]= [%f %f %f]\n",contactCentroids[1][0],contactCentroids[1][1],contactCentroids[1][2]);
-// // printf("contactCentroids[2]= [%f %f %f]\n",contactCentroids[2][0],contactCentroids[2][1],contactCentroids[2][2]);
-// // printf("pA= [%f %f %f]\n",pA[0],pA[1],pA[2]);
-// // printf("pB= [%f %f %f]\n",pB[0],pB[1],pB[2]);
-// // printf("pC= [%f %f %f]\n",pC[0],pC[1],pC[2]);
-// 
-//     p3d_vectSub(pB, pC, newYaxis);
-//     p3d_vectNormalize(newYaxis, newYaxis);
-//     p3d_vectSub(pA, midPoint, newXaxis);
-//     p3d_vectNormalize(newXaxis, newXaxis);
-//     p3d_vectXprod(newXaxis, newYaxis, newZaxis);
-//     p3d_vectNormalize(newZaxis, newZaxis);
-//     p3d_vectXprod(newZaxis, newXaxis, newYaxis);
-//     
-//    p3d_mat4Copy(p3d_mat4IDENTITY, newFrame);
-//     for(i=0; i<3; ++i)
-//     {  
-//       newFrame[i][0]= newZaxis[i];
-//       newFrame[i][1]= newYaxis[i];
-//       newFrame[i][2]= -newXaxis[i];
-//       newFrame[i][3]= gFrame[i][3];
-//     }
-// // p3d_matrix4 Tgrasp_frame_hand_inv;
-// // p3d_matInvertXform(hand.Tgrasp_frame_hand, Tgrasp_frame_hand_inv);
-// // p3d_mat4Mult(newFrame, Tgrasp_frame_hand_inv, gFrame);
-// // g3d_draw_allwin_active();
-//  p3d_mat4Copy(newFrame, gFrame);
-//     gpInverse_geometric_model_freeflying_hand(robot, objectFrame, gFrame, hand, config);
-//     p3d_set_and_update_this_robot_conf(robot, config);
-//  
-// // g3d_draw_allwin_active();
-// 
-//     p3d_copy_config_into ( robot, config, &robot->ROBOT_POS );
-//!/////////////////////////////////
     for ( i=0; i<4; ++i ) //for each finger:
     {
         q[i][0]= q_default[0];
@@ -267,7 +137,8 @@ int gpGrasps_from_grasp_frame_SAHand ( p3d_rob *robot, p3d_rob *object, int body
         {
           p3d_xformPoint ( T, hand.workspace[j].center, center );
           points.clear();
-          kdtree.sphereIntersection ( center, hand.workspace[j].radius, points );
+          kdtree.sphereIntersection(center, hand.workspace[j].radius, points );
+
           for(iter=points.begin(); iter!=points.end(); iter++)
           {
               p3d_xformPoint ( objectFrame_inv, iter->position, p ); //object frame -> world frame
@@ -278,13 +149,13 @@ int gpGrasps_from_grasp_frame_SAHand ( p3d_rob *robot, p3d_rob *object, int body
 //                 printf("can reach point: finger %d (%f %f %f)\n", i, qik[1]*RADTODEG, qik[2]*RADTODEG, qik[3]*RADTODEG);
 
                 // contact normal and fingerpad normal must be in opposite directions:
-                if ( p3d_vectDotProd ( contact_normal, fingerpad_normal ) > -0.3 )
+                if (p3d_vectDotProd ( contact_normal, fingerpad_normal ) > -0.3 )
                 {  continue;  }
 
                 gpSet_SAHfinger_joint_angles ( robot, hand, qik, i+1, 0 );
 
                 // if collision, bring the finger back to its default configuration
-                if( p3d_col_test_self_collision ( robot, 0 ) || p3d_col_test_robot_other ( robot, object, 0 ) )
+                if(p3d_col_test_self_collision ( robot, 0 ) || p3d_col_test_robot_other ( robot, object, 0 ) )
                 {
                   gpSet_SAHfinger_joint_angles ( robot, hand, q_default, i+1, 0 );
                   continue;
@@ -3210,7 +3081,7 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
     tmpList= graspList;
  
     printf("Remove grasps close to edges (currently %d grasps).\n",graspList.size());
-//     gpRemove_edge_grasps(tmpList, graspList, 80*DEGTORAD, 0.025);
+    gpRemove_edge_grasps(tmpList, graspList, 80*DEGTORAD, 0.025);
 
     printf("Reduce grasp list size (currently %d grasps).\n",graspList.size());
     tmpList= graspList;
