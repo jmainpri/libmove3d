@@ -762,16 +762,17 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
       // PLACEMENT RELATION
       for(e_j=0; e_j<present_ents_nb; e_j++) {
         ge_j = present_ents_global_idxs[e_j];
-        if( e_j != e_i)
+        if( e_j != e_i) {
           placement_relation_result = hri_placement_relation(ent, ents->entities[ge_j]);
-	if (  kn_on_ent->is_placed[ge_j] ==  placement_relation_result) {
-	  if ( kn_on_ent->placement_relation_ischanged[ge_j])
-	    kn_on_ent->placement_relation_ischanged[ge_j] = FALSE;
-	}
-	else {
-	  kn_on_ent->is_placed[ge_j] = placement_relation_result;
-	  kn_on_ent->placement_relation_ischanged[ge_j] = TRUE;
-	  kn_on_ent->placement_relation_isexported[ge_j] = FALSE;
+	  if (  kn_on_ent->is_placed[ge_j] ==  placement_relation_result) {
+	    if ( kn_on_ent->placement_relation_ischanged[ge_j])
+	      kn_on_ent->placement_relation_ischanged[ge_j] = FALSE;
+	  }
+	  else {
+	    kn_on_ent->is_placed[ge_j] = placement_relation_result;
+	    kn_on_ent->placement_relation_ischanged[ge_j] = TRUE;
+	    kn_on_ent->placement_relation_isexported[ge_j] = FALSE;
+	  }
 	}
       }
     }
@@ -789,7 +790,7 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
       else {
 	kn_on_ent->visibility = vis_result[e_j];
 	kn_on_ent->visibility_ischanged = TRUE;
-	kn_on_ent->visibility_isexported = TRUE;
+	kn_on_ent->visibility_isexported = FALSE;
       }      
     }
   }
