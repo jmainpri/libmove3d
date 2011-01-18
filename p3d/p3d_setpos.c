@@ -428,13 +428,13 @@ void p3d_update_this_robot_pos_without_cntrt(p3d_rob *robotPt) {
 
 #if defined(QT_GL) || defined(WITH_XFORMS)
   // update deformable bodies:
-  for(int i=0; i<robotPt->no; ++i) {
-    if(robotPt->o[i]->isDeformable==true) {
-       p3d_adjust_deformable_body(robotPt->o[i]);
-     }
-  }
- #endif
-
+//  for(int i=0; i<robotPt->no; ++i) {
+//    if(robotPt->o[i]->isDeformable==true) {
+//       p3d_adjust_deformable_body(robotPt->o[i]);
+//     }
+//
+//  }
+#endif
 }
 
 
@@ -1029,14 +1029,22 @@ void p3d_update_robot_jnt_pos(p3d_jnt * jntPt) {
   int      i;
 
   if (jntPt->pos_obj_modified) {
-    if (jntPt->o != NULL) { update_robot_obj_pos(jntPt->o); }
+    if (jntPt->o != NULL) { 
+      update_robot_obj_pos(jntPt->o); 
+    }
     jntPt->pos_obj_modified = FALSE;
   }
-  for(i=0; i<jntPt->dof_equiv_nbr; i++) { p3d_jnt_set_dof_is_modified(jntPt, i, FALSE); }
+  for(i=0; i<jntPt->dof_equiv_nbr; i++) { 
+    p3d_jnt_set_dof_is_modified(jntPt, i, FALSE); 
+  }
 
   for(i=0;i<jntPt->n_link_jnt;i++) {
     if(p3d_jnt_calc_mat_pos(jntPt->link_jnt_arr[i])) {
-      if (jntPt == jntPt->link_jnt_arr[i]->prev_jnt) { p3d_update_robot_jnt_pos(jntPt->link_jnt_arr[i]->next_jnt); } else { p3d_update_robot_jnt_pos(jntPt->link_jnt_arr[i]->prev_jnt); }
+      if (jntPt == jntPt->link_jnt_arr[i]->prev_jnt) { 
+        p3d_update_robot_jnt_pos(jntPt->link_jnt_arr[i]->next_jnt); 
+      } else { 
+        p3d_update_robot_jnt_pos(jntPt->link_jnt_arr[i]->prev_jnt); 
+      }
     }
   }
 }
@@ -1057,7 +1065,12 @@ void p3d_update_jnt_pos(p3d_jnt * jntPt) {
 
   for(i=0;i<jntPt->n_link_jnt;i++) {
     if(p3d_jnt_calc_mat_pos(jntPt->link_jnt_arr[i])) {
-      if (jntPt == jntPt->link_jnt_arr[i]->prev_jnt) { p3d_update_jnt_pos(jntPt->link_jnt_arr[i]->next_jnt); } else { p3d_update_jnt_pos(jntPt->link_jnt_arr[i]->prev_jnt); }
+      if (jntPt == jntPt->link_jnt_arr[i]->prev_jnt) { 
+        p3d_update_jnt_pos(jntPt->link_jnt_arr[i]->next_jnt); 
+      } 
+      else { 
+        p3d_update_jnt_pos(jntPt->link_jnt_arr[i]->prev_jnt); 
+      }
     }
   }
 }
