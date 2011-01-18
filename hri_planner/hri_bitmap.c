@@ -479,7 +479,22 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   bitmapset->parameters->use_corridors = FALSE;
   bitmapset->parameters->corridor_Costs = 50;
   /** directional calculations are an experimental feature, default is FALSE */
-  bitmapset->parameters->directional_cost = TRUE;
+  bitmapset->parameters->directional_cost = FALSE;
+  /** Prevents sharp turns If the angle in the path is greater than this number, the edge won't be allowed.
+   * This is useful in particular when using directional costs.
+   * When value is > Pi, e.g. 4, all angles are allowed.
+   * Experimental feature, therefore Default = 4  */
+  bitmapset->parameters->angle2d_minimum = 4; //M_PI_2 - 0.1;
+  /** used if directional_cost == TRUE
+   * the angle at which a human is considered "behind" the robot and thus not relevant for costs
+   * default is M_PI_2 = 90 degrees**/
+  bitmapset->parameters->directional_freePassAngle = M_PI_2;
+  /** used if directional_cost == TRUE
+     * the inverse angle at which a moving human in front of the robot is considered "harmless",
+     * as he does not move towards the robot, but will go elsewhere
+     * 0 means the human goes in the opposite direction (conflict), Pi means he is going in same direction (nice)
+     * default is M_PI_4 = 45 degrees **/
+  bitmapset->parameters->directional_noConflictHeading = M_PI_4;
 }
 
 
@@ -1527,10 +1542,20 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
           return FALSE;
         }
 
-        if(btset->bitmap[BT_OBSTACLES]->data[x+i][y+j][z+k].val == BT_OBST_SURE_COLLISION) continue; /* Is the cell in obstacle? */
+        if(btset->bitmap[BT_OBSTACLES]->data[x+i][y+j][z+k].val == BT_OBST_SURE_COLLISION) {
+//          printf("collsion in (%d, %d)\n", x+i, y+j);
+          continue; /* Is the cell in obstacle? */
+        }
 
         /* closed cells already have a minimum path to start, and all neighbors opened */
         if(current_cell->closed) continue;
+
+        // prevent sharp turns
+        if (center_cell->parent != NULL
+            && get3CellAngle(center_cell->parent, center_cell, current_cell) >  btset->parameters->angle2d_minimum) {
+          continue;
+        }
+
         /* open cells might have less g cost for going through current node */
         int manhattan_distance = ABS(i) + ABS(j) + ABS(k);
         if (manhattan_distance == 1) {
@@ -1579,6 +1604,7 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
    * diagonals that would be reached by going 1 step horizontal or vertical, and one step diagonal.
    *
    * We use the value and open properties use for single grid steps calculated earlier.
+   * To be fair with costs, the cost in a cell are its own costs plus the average of the two "jumped" cells
    */
   if (bitmap->nz == 1) {
     k = 0;
@@ -1610,6 +1636,12 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
 
         /* closed cells already have a minimum path to start, and all neighbors opened */
         if(current_cell->closed) continue;
+
+        // prevent sharp turns
+        if (center_cell->parent != NULL
+            && get3CellAngle(center_cell->parent, center_cell, current_cell) >  btset->parameters->angle2d_minimum) {
+          continue;
+        }
 
         // 2D code, 2 reference points stepped over
         //ref1 is horizontal / vertical stepped over cell, ref2 diagonally stepped over cell

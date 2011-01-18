@@ -767,23 +767,25 @@ double getDirectionalVal(hri_bitmapset * btset, hri_bitmap_cell* current_cell, h
      // result will be multiplied with this value being between 0 and 1
      double directionalSignificance = 1;
 
-     if (fabs(humanInDirection) > M_PI_2) {
+     if (fabs(humanInDirection) > btset->parameters->directional_freePassAngle) {
        directionalSignificance = 0;
      } else {
+       // fabs(humanInDirection) == 0 is worst case, significance should be 1 then
+       directionalSignificance = directionalSignificance *  (1 - (fabs(humanInDirection) / btset->parameters->directional_freePassAngle));
+
        // human is ahead of robot, but is human travellling in the same direction?
        if (btset->human[i]->actual_state == BT_MOVING) {
-//         human more than 3 meters away, and moving, costs don't matter (?)
-
-
          double headingDiff = getAngleDeviation(robotDirection, btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v);
-         // 45 degrees counts as same direction
-         if (fabs(headingDiff ) > M_PI_4) {
-           directionalSignificance = directionalSignificance * ((fabs(headingDiff ) - M_PI_4) / (M_PI - M_PI_4) );
+         /** up to 135 degrees (45 degrees is inverse), human will move out of the way in a good way
+         * (e.g. crossing or one follows the other),  so robot locomotion can make that safely.*/
+         if (M_PI - fabs(headingDiff ) < btset->parameters->directional_noConflictHeading) {
+           // human direction is opposite to robot direction, so robot should avoid being in the way
+           // fabs(headingDiff ) == M_Pi is worst case, significance should be 1 then
+           directionalSignificance = directionalSignificance * ( 1 - (( M_PI - fabs(headingDiff ) ) / btset->parameters->directional_noConflictHeading ));
          } else {
            directionalSignificance = 0;
          }
        } // endif moving
-       directionalSignificance = directionalSignificance * ((M_PI_2 - fabs(humanInDirection)) / M_PI_2);
      }
 
      printf("cost reduced by %f \n", directionalSignificance);
