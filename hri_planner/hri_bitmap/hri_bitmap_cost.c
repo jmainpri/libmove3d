@@ -829,7 +829,7 @@ double hri_bt_A_CalculateCellG(hri_bitmapset * btset, hri_bitmap_cell* current_c
   if (fromcell->g < 0 || current_cell->val < 0){
     return -1;
   }
-  if (btset->parameters->static_calculations == FALSE) {
+  if (btset->parameters->directional_cost == FALSE) {
     // add the costs of the path to the parent, the social costs in this cell, and the path length
     result = fromcell->g +
                                 current_cell->val +

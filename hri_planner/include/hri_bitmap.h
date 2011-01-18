@@ -237,7 +237,7 @@ typedef struct astar_parameters{
   double corridor_Costs;
 
   /* whether grid cell costs are static or depend on where the motion moves to (in 2D)*/
-  int static_calculations;
+  int directional_cost;
 } hri_astar_parameters;
 
 

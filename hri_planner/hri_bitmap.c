@@ -478,8 +478,8 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   /** corridors is an experimental feature to increase costs in the middle of corridors, benefit was not proved yet. Default is FALSE*/
   bitmapset->parameters->use_corridors = FALSE;
   bitmapset->parameters->corridor_Costs = 50;
-  /** directional calculations are an experimenatl feature, default is FALSE */
-  bitmapset->parameters->static_calculations = TRUE;
+  /** directional calculations are an experimental feature, default is FALSE */
+  bitmapset->parameters->directional_cost = TRUE;
 }
 
 
