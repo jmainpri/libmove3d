@@ -1772,7 +1772,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     }
     unfixManipulationJoints(armId);
     p3d_sel_desc_id(P3D_ROBOT,cur_robot);
-    g3d_draw_allwin_active();
+    //g3d_draw_allwin_active();
     if (status == MANIPULATION_TASK_OK) {
       printf("BioMove3D: armPlanTask OK\n");
     } else {
@@ -1875,7 +1875,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     }
     unfixManipulationJoints(armId);
     p3d_sel_desc_id(P3D_ROBOT,cur_robot);
-    g3d_draw_allwin_active();
+    //g3d_draw_allwin_active();
     if (status == MANIPULATION_TASK_OK) {
       printf("BioMove3D: armPlanTask OK\n");
     } else {

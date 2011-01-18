@@ -424,6 +424,7 @@ MACRO(BM3D_INC_DIR_PROCESS directory)
   SOURCE_GROUP(${BM3D_MODULE_NAME} FILES ${incfiles})
 ENDMACRO(BM3D_INC_DIR_PROCESS)
 
+MESSAGE(cccccccccccccccccccccR : ${BM3D_inc})
 # -------------------------------------------------------------
 # --- QT4 SUBDIR PROCESS (same but for preprocessing qt4 files)
 # -------------------------------------------------------------
@@ -506,7 +507,8 @@ TARGET_LINK_LIBRARIES(BioMove3D ${LIBS} m)
 
 ADD_EXECUTABLE(move3d ${BioMove3D_SOURCE_DIR}/move3d/move3d.c ${BM3D_inc})
 TARGET_LINK_LIBRARIES(move3d BioMove3D ${LIBS} m)
-
+#MESSAGE(cccccccccccccccccccccR : ${BM3D_src})
+MESSAGE(cccccccccccccccccccccR : ${BM3D_src})
 ENDIF()
 
 IF(MOVE3D_CORE)

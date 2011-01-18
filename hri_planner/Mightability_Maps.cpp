@@ -52,43 +52,43 @@ struct env_surfaces curr_surfaces_in_env;
 double surf_grid_samp_rate=0.05;//0.05;//0.1;// Sampling rate of the surface for constructing the grid
 //int current_surface_index; // index i of the curr_surfaces_in_env.flat_surf[i] of env_surfaces
 
-extern int CALCULATE_AFFORDANCE;
+ int CALCULATE_AFFORDANCE=0;
 
-extern int SHOW_2D_COMMON_REACH_HRP2_HUMAN;
-extern int SHOW_3D_COMMON_REACH_HRP2_HUMAN;
-extern int SHOW_2D_COMMON_VISIBLE_HRP2_HUMAN;
-extern int SHOW_3D_COMMON_VISIBLE_HRP2_HUMAN;;
-extern int SHOW_HRP2_HUMAN_COMMON_REACHABLE_VISIBLE;
+ int SHOW_2D_COMMON_REACH_HRP2_HUMAN=0;
+ int SHOW_3D_COMMON_REACH_HRP2_HUMAN=0;
+ int SHOW_2D_COMMON_VISIBLE_HRP2_HUMAN=0;
+ int SHOW_3D_COMMON_VISIBLE_HRP2_HUMAN=0;
+ int SHOW_HRP2_HUMAN_COMMON_REACHABLE_VISIBLE=0;
 
 
-extern int SHOW_2D_BENDING_REACHABLE_HUM;
-extern int SHOW_3D_BENDING_REACHABLE_HUM;
-extern int SHOW_2D_DIRECT_REACHABLE_HUM;
-extern int SHOW_3D_DIRECT_REACHABLE_HUM;
-extern int SHOW_2D_DIRECT_REACHABLE_HRP2;
-extern int SHOW_3D_DIRECT_REACHABLE_HRP2;
-extern int SHOW_2D_VISIBLE_PLACES_FOR_HRP2;
-extern int SHOW_3D_VISIBLE_PLACES_FOR_HRP2;
-extern int SHOW_2D_VISIBLE_PLACE_HUM;
-extern int SHOW_2D_VISIBLE_PLACE_STANDING_HUM;
-extern int SHOW_3D_VISIBLE_PLACE_HUM;
-extern int SHOW_3D_VISIBLE_PLACE_STANDING_HUM;
-extern int SHOW_2D_TURNING_AROUND_REACHABLE_HUM;
-extern int SHOW_3D_TURNING_AROUND_REACHABLE_HUM;
-extern int SHOW_PUT_OBJ_CANDIDATES;
-extern int SHOW_WEIGHT_BY_COLOR_FOR_CANDIDATE_POINTS;
-extern int SHOW_WEIGHT_BY_LENGTH_FOR_CANDIDATE_POINTS;
-extern int SHOW_MM_BASED_OBJECT_REACHABLE;
-extern int SHOW_MM_BASED_OBJECT_VISIBLE;
+ int SHOW_2D_BENDING_REACHABLE_HUM=0;
+ int SHOW_3D_BENDING_REACHABLE_HUM=0;
+ int SHOW_2D_DIRECT_REACHABLE_HUM=0;
+ int SHOW_3D_DIRECT_REACHABLE_HUM=0;
+ int SHOW_2D_DIRECT_REACHABLE_HRP2=0;
+ int SHOW_3D_DIRECT_REACHABLE_HRP2=0;
+ int SHOW_2D_VISIBLE_PLACES_FOR_HRP2=0;
+ int SHOW_3D_VISIBLE_PLACES_FOR_HRP2=0;
+ int SHOW_2D_VISIBLE_PLACE_HUM=0;
+ int SHOW_2D_VISIBLE_PLACE_STANDING_HUM=0;
+ int SHOW_3D_VISIBLE_PLACE_HUM=0;
+ int SHOW_3D_VISIBLE_PLACE_STANDING_HUM=0;
+ int SHOW_2D_TURNING_AROUND_REACHABLE_HUM=0;
+ int SHOW_3D_TURNING_AROUND_REACHABLE_HUM=0;
+ int SHOW_PUT_OBJ_CANDIDATES=0;
+ int SHOW_WEIGHT_BY_COLOR_FOR_CANDIDATE_POINTS=0;
+ int SHOW_WEIGHT_BY_LENGTH_FOR_CANDIDATE_POINTS=0;
+ int SHOW_MM_BASED_OBJECT_REACHABLE=0;
+ int SHOW_MM_BASED_OBJECT_VISIBLE=0;
 #ifdef SECOND_HUMAN_EXISTS
-extern int SHOW_3D_VISIBLE_PLACE_HUM2;
-extern int SHOW_2D_VISIBLE_PLACE_HUM2;
-extern int SHOW_2D_BENDING_REACHABLE_HUM2;
-extern int SHOW_3D_BENDING_REACHABLE_HUM2;
-extern int SHOW_2D_DIRECT_REACHABLE_HUM2;
-extern int SHOW_3D_DIRECT_REACHABLE_HUM2;
-extern int SHOW_2D_TURNING_AROUND_REACHABLE_HUM2;
-extern int SHOW_3D_TURNING_AROUND_REACHABLE_HUM2;
+ int SHOW_3D_VISIBLE_PLACE_HUM2=0;
+ int SHOW_2D_VISIBLE_PLACE_HUM2=0;
+ int SHOW_2D_BENDING_REACHABLE_HUM2=0;
+ int SHOW_3D_BENDING_REACHABLE_HUM2=0;
+ int SHOW_2D_DIRECT_REACHABLE_HUM2=0;
+ int SHOW_3D_DIRECT_REACHABLE_HUM2=0;
+ int SHOW_2D_TURNING_AROUND_REACHABLE_HUM2=0;
+ int SHOW_3D_TURNING_AROUND_REACHABLE_HUM2=0;
 #endif
 //extern int HRP2_CURRENT_STATE;//1 for sitting, 2 for half sitting
 int HRP2_CURRENT_STATE=1;//1 for sitting, 2 for half sitting
@@ -111,6 +111,9 @@ extern candidate_poins_for_task current_candidate_points_to_putinto;
 
 extern candidate_poins_for_task candidate_points_to_displace_obj;
 
+int SHOW_OBSTACLE_CELLS=0;
+int Affordances_Found=0;
+int CANDIDATE_POINTS_FOR_TASK_FOUND=0;
 
 point_co_ordi CURRENT_POINT_FOR_SHOWING_HOW_TO_PLACEMENT;
 
@@ -162,8 +165,9 @@ int show_obstacle_cells_belonging_to(int object_index);
 point_co_ordi point_to_put;
 int MM_RECORD_MOVIE_FRAMES=0;
 int AKP_RECORD_WINDOW_MOVEMENT=0;
+#if !defined(COMPILE_FOR_GENOM)
 int AKP_record_movie_frames();
-
+#endif
 point_co_ordi human1_curr_eye_pos; //To store the eye pos used in calculating the 3D grid visibility from the current head orientation
 
 ////Tmp for testing
@@ -309,7 +313,7 @@ int execute_Mightability_Map_functions()
    g3d_drawDisc(hum_R_shoulder_pos[0], hum_R_shoulder_pos[1], hum_R_shoulder_pos[2], 0.05, 4, NULL);
   */ 
    ////g3d_drawDisc(point_to_look[0], point_to_look[1], point_to_look[2], 0.1, 4, NULL);
-
+#if !defined(COMPILE_FOR_GENOM)
     if(MM_RECORD_MOVIE_FRAMES==1)
     {
     AKP_record_movie_frames();
@@ -318,6 +322,7 @@ int execute_Mightability_Map_functions()
     {
      AKP_record_movie_frames();
     }
+ #endif
    }
    
     
@@ -337,7 +342,7 @@ int execute_Mightability_Map_functions()
 
 
    /////Tmp for testing
-   show_axis_of_FOV_from_mocap_eye_glass_data();
+   /////////show_axis_of_FOV_from_mocap_eye_glass_data();
 
   ////////pqp_print_colliding_pair();
   
@@ -391,6 +396,7 @@ void AKP_rgb_from_hue2(double x, double color[4])
      color[2]= 1.0;
    }
 }
+
 
 int show_axis_of_FOV_from_mocap_eye_glass_data()
 {
@@ -607,6 +613,8 @@ static int movie_count = 0;
 /* static int movie_count_real = 0; */
 static int image_rate = 1;
 static int image_compress = 100;
+
+#if !defined(COMPILE_FOR_GENOM)
 int AKP_record_movie_frames()
 {
   char str[512];
@@ -626,6 +634,7 @@ if((++movie_count)%image_rate == 0) {
 
  return 1;
 }
+#endif
 
 int move_object_on_a_path()
 {
@@ -668,8 +677,10 @@ int move_object_on_a_path()
   rob_cur_pos_2[6]=x2;
   p3d_set_and_update_this_robot_conf(envPt_MM->robot[obj_index_2], rob_cur_pos_2); 
   robots_status_for_Mightability_Maps[obj_index_2].has_moved=1;
-
+  
+  #if !defined(COMPILE_FOR_GENOM)  
   fl_check_forms();
+  #endif 
   g3d_draw_allwin_active();
  }
 
@@ -788,8 +799,9 @@ int create_agents_for_Mightabilities()
 int Create_and_init_Mightability_Maps()
 {
  printf(" Inside Create_and_init_Mightability_Maps()\n");
- p3d_init_robot_parameters(); //To remove the dependency on Watch button
- printf(" After p3d_init_robot_parameters()\n");
+
+ ////p3d_init_robot_parameters(); //To remove the dependency on Watch button
+ ////printf(" After p3d_init_robot_parameters()\n");
 
  assign_indices_of_robots();
  create_agents_for_Mightabilities();
@@ -1101,7 +1113,7 @@ point_co_ordi frustumVertices[8];
     no_FOV_end_point_vertices++;
     ////////printf(" no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
 }
-
+ #if !defined(COMPILE_FOR_GENOM)  
 int get_points_on_FOV_screen(p3d_rob *r)
 {
   printf(">>>> get_points_on_FOV_screen, r->cam_body_index =%d\n",r->cam_body_index);
@@ -1184,7 +1196,7 @@ int get_points_on_FOV_screen(p3d_rob *r)
   return 1;
 
 }
-
+#endif
 
 
 int check_inside_polygon(int no_vertices, point_co_ordi *vertices, point_co_ordi point)//the order of vertices should be clockwise or counter clockwise 
@@ -1213,7 +1225,7 @@ int check_inside_polygon(int no_vertices, point_co_ordi *vertices, point_co_ordi
 
 }
 
-
+#if !defined(COMPILE_FOR_GENOM)
 int is_point_in_fov(p3d_rob* robot, p3d_vector4 p)
 {
   
@@ -1228,7 +1240,9 @@ int is_point_in_fov(p3d_rob* robot, p3d_vector4 p)
   //robot->cam_v_angle = angleW;
   int plane;
   G3D_Window *win = g3d_get_win_by_name("Perspective");
+   #if !defined(COMPILE_FOR_GENOM)  
   g3d_refresh_win(win);
+   #endif
   int is_in_FOV=0;
   for(plane = 0; plane < 6; plane++ ) // for all perspective window frustum planes
     {
@@ -1249,7 +1263,7 @@ int is_point_in_fov(p3d_rob* robot, p3d_vector4 p)
   
   return is_in_FOV;
 }
-
+#endif
 
 int initialize_surfaces_in_env()
 {
@@ -1421,7 +1435,7 @@ int caculate_and_show_resultant_MM()
         {
         if((grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human_straight_head_orientation==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human_neck_turn==1)&&resultant_MM_after_set_operation[x][y][z]==1)
          {
-        //// printf(" Drawing disc\n"); 
+         printf(" Drawing disc\n"); 
         g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, radius, Green, NULL);
          }
         else
@@ -2344,6 +2358,9 @@ double interval=grid_around_HRP2.GRID_SET->pace/1.0;
       //// g3d_drawDisc(sphere_pts[sp_ctr].x, sphere_pts[sp_ctr].y, sphere_pts[sp_ctr].z, grid_around_HRP2.GRID_SET->pace/4.0, Green, NULL);
       }
 */
+  /*
+
+
     point_co_ordi JIDO_eye_pos;
     JIDO_eye_pos.x = ACBTSET->robot->joints[ACBTSET->robot->cam_body_index]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     JIDO_eye_pos.y = ACBTSET->robot->joints[ACBTSET->robot->cam_body_index]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
@@ -2352,8 +2369,9 @@ double interval=grid_around_HRP2.GRID_SET->pace/1.0;
 
 
 g3d_drawDisc(agent_eye_pos.x, agent_eye_pos.y,agent_eye_pos.z, 0.1, Red, NULL);
+*/
 double radius=grid_around_HRP2.GRID_SET->pace/3.0;
-
+////printf(" Inside show affordance, radious=%lf\n",radius);
  int x=0;
  for(x=0;x<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx;x++)
  {
@@ -2375,26 +2393,26 @@ double radius=grid_around_HRP2.GRID_SET->pace/3.0;
       
        int show_showing_points=0;
 
-       
+       ////printf("SHOW_3D_VISIBLE_PLACE_HUM=%d\n",SHOW_3D_VISIBLE_PLACE_HUM);
        if(SHOW_3D_VISIBLE_PLACE_HUM==1)
        {        
         
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human==1)
         {
-       //// printf(" Drawing disc\n"); 
+        //printf(" Drawing disc\n"); 
         g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, radius, Green, NULL);
         }
         ////else
         {
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human_neck_turn==1)
          {
-       //// printf(" Drawing disc\n"); 
+        //printf(" Drawing disc\n"); 
         g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, radius, Red, NULL);
          }
         }
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human_straight_head_orientation==1)
          {
-       //// printf(" Drawing disc\n"); 
+        //printf(" Drawing disc\n"); 
         g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, radius, Blue, NULL);
          } 
         /*
@@ -4311,11 +4329,11 @@ int find_reachable_sphere_surface(int for_hand, int for_agent)// for_agent 1 for
      {
       if(for_agent==3)//for JIDO
       {
-    shoulder_pos.x = ACBTSET->robot->joints[shoulder_indx]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
-    shoulder_pos.y = ACBTSET->robot->joints[shoulder_indx]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
-    shoulder_pos.z = ACBTSET->robot->joints[shoulder_indx]->abs_pos[2][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
+    shoulder_pos.x = envPt_MM->robot[rob_indx.JIDO_ROBOT]->joints[shoulder_indx]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
+    shoulder_pos.y = envPt_MM->robot[rob_indx.JIDO_ROBOT]->joints[shoulder_indx]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
+    shoulder_pos.z = envPt_MM->robot[rob_indx.JIDO_ROBOT]->joints[shoulder_indx]->abs_pos[2][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
      r=1.25;//Maximum reach boundary for JIDO
-     curr_yaw=ACBTSET->robot->ROBOT_POS[11];   
+     curr_yaw=envPt_MM->robot[rob_indx.JIDO_ROBOT]->ROBOT_POS[11];   
 
     shoulder_back_limit=5.0*M_PI/6.0;// The maxi possible angle away from the front axis of JIDO
     shoulder_front_limit=4.0*M_PI/6.0;// The maxi possible angle crossing the front axis of JIDO
@@ -4401,9 +4419,13 @@ int update_3d_grid_reachability_for_JIDO_new()
       ////point_co_ordi sphere_pt;
       
     // Reachability Test by left hand
-    shoulder_pos.x = ACBTSET->robot->joints[ROBOTj_RSHOULDER]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
-    shoulder_pos.y = ACBTSET->robot->joints[ROBOTj_RSHOULDER]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
-    shoulder_pos.z = ACBTSET->robot->joints[ROBOTj_RSHOULDER]->abs_pos[2][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
+    ////shoulder_pos.x = ACBTSET->robot->joints[ROBOTj_RSHOULDER]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
+    /////shoulder_pos.y = ACBTSET->robot->joints[ROBOTj_RSHOULDER]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
+    /////shoulder_pos.z = ACBTSET->robot->joints[ROBOTj_RSHOULDER]->abs_pos[2][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
+
+    shoulder_pos.x = envPt_MM->robot[rob_indx.JIDO_ROBOT]->joints[ROBOTj_RSHOULDER]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
+    shoulder_pos.y = envPt_MM->robot[rob_indx.JIDO_ROBOT]->joints[ROBOTj_RSHOULDER]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
+    shoulder_pos.z = envPt_MM->robot[rob_indx.JIDO_ROBOT]->joints[ROBOTj_RSHOULDER]->abs_pos[2][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     ////g3d_drawDisc(shoulder_pos.x, shoulder_pos.y, shoulder_pos.z, .1, Green, NULL);
  
     int for_hand=2;//Although JIDO has only one arm, but just to comply with find_reachable_sphere_surface() function, we should always pass 2
@@ -5039,7 +5061,7 @@ int cell_z;
       }//end if(cell_valid==1)
      }//End for(;t2<1;t2+=interval) 
  }
-
+printf(">>>>> visible_ctr=%d\n",visible_ctr);
 return 1;
 }
 
@@ -6644,7 +6666,9 @@ ACBTSET->changed = TRUE;
 		hri_bt_3drefresh_all(INTERPOINT);
 	}
  g3d_draw_env();
+  #if !defined(COMPILE_FOR_GENOM)  
  fl_check_forms();
+  #endif
  g3d_draw_allwin_active();
 	////g3d_draw_allwin_active();
   human_state_updated=0;
@@ -6926,7 +6950,8 @@ return 1;
 int create_workspace_3D_grid()
 {
  int HRP2_table_index;
- HRP2_table_index=get_index_of_robot_by_name("HRP2TABLE");
+ ////HRP2_table_index=get_index_of_robot_by_name("HRP2TABLE");
+ HRP2_table_index=get_index_of_robot_by_name("IKEA_SHELF");
  configPt HRP2_table_pos = MY_ALLOC(double,envPt_MM->robot[HRP2_table_index]->nb_dof); /* Allocation of temporary robot configuration */
 
  p3d_get_robot_config_into(envPt_MM->robot[HRP2_table_index],&HRP2_table_pos);
@@ -7111,6 +7136,7 @@ p3d_set_freeflyer_pose2(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],0,0,0,0,0
 return 1;
 }
 
+ #if !defined(COMPILE_FOR_GENOM)  
 int find_affordance_new()
 {
 
@@ -7904,7 +7930,7 @@ ChronoOff();
  
  //update_surface_grid(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[1]);
 }
-
+#endif
 int update_Mightability_Maps_new()
 {
 double total_time=0.0;
@@ -8139,7 +8165,7 @@ if(HUMAN1_HAS_MOVED==1)
  #ifdef MM_FOR_VIRTUALLY_STANDING_HUMAN
  
  virtually_update_human_state_new(0);// Standing
-update_3d_grid_reachability_for_human_standing_new();
+ update_3d_grid_reachability_for_human_standing_new();
  virtually_update_human_state_new(1);
  #endif
 
@@ -8149,12 +8175,13 @@ update_3d_grid_reachability_for_human_standing_new();
 // ChronoPrint("Time for Update_Mightability_Maps_new()");
  ChronoOff();
 
+//Setting it to 0 to avoid any collision during planning
 p3d_set_freeflyer_pose2(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],0,0,0,0,0,0);
  return 1;
 
 }
 
-
+ #if !defined(COMPILE_FOR_GENOM)  
 int update_Mightability_Maps()
 {
 double total_time=0.0;
@@ -9199,7 +9226,7 @@ ChronoPrint("Time before calculating affordance on surfaces ");
  
  //update_surface_grid(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[1]);
 }
-
+#endif
 
 
 // AKP: To draw a cylinder
@@ -12061,6 +12088,16 @@ int reverse_sort_weighted_candidate_points_to_hide_obj()
  return 1;
 }
 
+void Cartesian_to_Spherical(double x, double y, double z,
+                                 double originx, double originy, double originz,
+                                 double *phi, double *theta)
+{
+  double distance = DISTANCE3D(x,y,z,originx,originy,originz);
+
+  *phi = atan2( (y-originy),(x-originx) );
+  *theta = acos( (z-originz)/distance );
+
+}
 
 int assign_weights_on_candidte_points_to_put_obj(char *object_name)
 {
@@ -12090,8 +12127,9 @@ int obj_index=get_index_of_robot_by_name ( object_name );
   ////Assigning weight wrt human axis
   p3d_matvec4Mult(hum_pos_inverse, point_in_global_frame, point_in_human_frame);
   
-  p3d_psp_cartesian2spherical(point_in_human_frame[0],point_in_human_frame[1],point_in_human_frame[2],0,0,0,&relative_yaw,&relative_pitch);
-  
+  //////////p3d_psp_cartesian2spherical(point_in_human_frame[0],point_in_human_frame[1],point_in_human_frame[2],0,0,0,&relative_yaw,&relative_pitch);
+  Cartesian_to_Spherical(point_in_human_frame[0],point_in_human_frame[1],point_in_human_frame[2],0,0,0,&relative_yaw,&relative_pitch);
+
   
   ////////candidate_points_to_put.weight[i]+=(1.0-(fabs(relative_yaw))/M_PI);
 
@@ -12179,8 +12217,8 @@ int assign_weights_on_candidte_points_to_show_obj(char *object_name)
   ////Assigning weight wrt human axis
   p3d_matvec4Mult(hum_pos_inverse, point_in_global_frame, point_in_human_frame);
   
-  p3d_psp_cartesian2spherical(point_in_human_frame[0],point_in_human_frame[1],point_in_human_frame[2],0,0,0,&relative_yaw,&relative_pitch);
-  
+  ////p3d_psp_cartesian2spherical(point_in_human_frame[0],point_in_human_frame[1],point_in_human_frame[2],0,0,0,&relative_yaw,&relative_pitch);
+  (point_in_human_frame[0],point_in_human_frame[1],point_in_human_frame[2],0,0,0,&relative_yaw,&relative_pitch);
   
   ////////candidate_points_to_put.weight[i]+=(1.0-(fabs(relative_yaw))/M_PI);
 
@@ -12336,14 +12374,14 @@ int assign_weights_on_candidte_points_to_give_obj(char *object_name)
   p3d_matrix4 hum_pos, hum_pos_inverse;
   double relative_yaw, relative_pitch; 
   
-  p3d_mat4Copy(ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos, hum_pos);
+  p3d_mat4Copy(envPt_MM->robot[rob_indx.HUMAN]->joints[HUMANj_NECK_PAN]->abs_pos, hum_pos);
   p3d_matInvertXform(hum_pos, hum_pos_inverse);
-  configPt hum_cur_pos = MY_ALLOC(double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof); /* Allocation of temporary robot configuration */
+  configPt hum_cur_pos = MY_ALLOC(double,envPt_MM->robot[rob_indx.HUMAN]->nb_dof); /* Allocation of temporary robot configuration */
 
   for(i=0;i<3;++i)
   meanPoint[i]= hum_pos[i][3] + 0.5*hum_pos[i][0];
 //meanPoint[3]= 1.0;
- p3d_get_robot_config_into(ACBTSET->human[ACBTSET->actual_human]->HumanPt,&hum_cur_pos);
+ p3d_get_robot_config_into(envPt_MM->robot[rob_indx.HUMAN],&hum_cur_pos);
 
 
 ////double yaw=M_PI/3.0;
@@ -12372,7 +12410,8 @@ int assign_weights_on_candidte_points_to_give_obj(char *object_name)
   ////Assigning weight wrt human axis
   p3d_matvec4Mult(hum_pos_inverse, point_in_global_frame, point_in_human_frame);
   printf("%f %f %f\n", point_in_human_frame[0],point_in_human_frame[1],point_in_human_frame[2]);
-  p3d_psp_cartesian2spherical(point_in_human_frame[0],point_in_human_frame[1],point_in_human_frame[2],0,0,0,&relative_yaw,&relative_pitch);
+////  p3d_psp_cartesian2spherical(point_in_human_frame[0],point_in_human_frame[1],point_in_human_frame[2],0,0,0,&relative_yaw,&relative_pitch);
+Cartesian_to_Spherical(point_in_human_frame[0],point_in_human_frame[1],point_in_human_frame[2],0,0,0,&relative_yaw,&relative_pitch);
    printf("%f %f\n", relative_yaw,relative_pitch);
   
   ////////candidate_points_to_put.weight[i]+=(1.0-(fabs(relative_yaw))/M_PI);
@@ -12455,7 +12494,7 @@ candidate_points_to_give.weight[i]= 1.0/( 2.0 + sqrt( pow(point_in_global_frame[
   }
  */
   
-MY_FREE(hum_cur_pos,double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof);
+MY_FREE(hum_cur_pos,double,envPt_MM->robot[rob_indx.HUMAN]->nb_dof);
 
   return 1;
 }
@@ -14716,6 +14755,7 @@ int is_object_visible_for_agent(HRI_AGENT * agent, p3d_rob *object, double thres
   win->vs.displayFloor   = FALSE;
   win->vs.displayTiles   = FALSE;
   win->vs.cullingEnabled =  1;
+  win->vs.enableLogo=0;//AKP:Logo red parts are (mis)considered as object parts in the core of visibility calculation
   //do not forget to set the backgroung to black:
   g3d_set_win_bgcolor(win->vs, 0, 0, 0);
   
@@ -14723,13 +14763,15 @@ int is_object_visible_for_agent(HRI_AGENT * agent, p3d_rob *object, double thres
   g3d_set_camera_parameters_from_frame(agent->perspective->camjoint->abs_pos, win->vs);
 
   //AKP: Not setting the projection mode for the time being, because then not getting the desired % of visibility in some cases
-//////g3d_set_projection_matrix(win->vs.projection_mode);
+  g3d_set_projection_matrix(win->vs.projection_mode);
 
 //AKP
   /////g3d_draw_win(win);
   ////return 0;
  g3d_draw_allwin_active();
+ #if !defined(COMPILE_FOR_GENOM)
 					fl_check_forms();
+ #endif
   //everything is ready now.
   g3d_is_object_visible_from_current_viewpoint(win, object,&result,save,(char*)"");
   
@@ -14748,9 +14790,11 @@ int is_object_visible_for_agent(HRI_AGENT * agent, p3d_rob *object, double thres
     g3d_draw_win(win);
   
 //AKP
-printf("  result = %lf, visibility = %lf \n",result, 100.0*result);
+////////printf("  >>>>>>> result = %lf, visibility = %lf \n",result, 100.0*result);
  g3d_draw_allwin_active();
+ #if !defined(COMPILE_FOR_GENOM)
 					fl_check_forms();
+ #endif
   if(100.0*result>=threshold)
      return TRUE;
   else

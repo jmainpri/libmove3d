@@ -156,9 +156,9 @@ int ManipulationUtils::copyConfigToFORM(p3d_rob* robot, configPt q) {
 
 bool ManipulationUtils::isValidVector(std::vector<double> objectPos){
   for(unsigned int i = 0; i < objectPos.size(); i++){
-    if (objectPos[i] == P3D_HUGE){
-      return false;
+    if (objectPos[i] != P3D_HUGE){
+      return true;
     }
   }
-  return true;
+  return false;
 }
