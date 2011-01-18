@@ -25,7 +25,7 @@
 #include "include/hri_bitmap_cost.h"
 #include "include/hri_bitmap_bin_heap.h"
 #include "include/HRI_tasks.h"
-
+#include "../graspPlanning/include/gpPlacement.h"
 
 #include <list>
 #include <string>
@@ -211,21 +211,26 @@ p3d_vector4 FOV_left_up_abs, FOV_left_down_abs, FOV_right_up_abs, FOV_right_down
 p3d_vector3 points_on_FOV_screen[4000]; //To store all the points on the screen
 int no_points_on_FOV_screen=0;
 
+std::list<gpTriangle> global_htris;
+
 //TODO Put into proto file
 int get_current_FOV_vertices(HRI_AGENT *agent);
 int draw_current_FOV_vertices(); 
 int find_Mightability_Maps();
 int draw_all_current_points_on_FOV_screen();
 int update_Mightability_Maps_new();
+int get_horizontal_triangles(std::list<gpTriangle> &htris);
+int display_horizontal_triangles(std::list<gpTriangle> htris);
 //================================
 
 int execute_Mightability_Map_functions()
 {
   
-
+   //////////display_horizontal_triangles(global_htris);
 
    if(Affordances_Found==1)
    {
+  
   // // //Tmp for testing
   // // //   show_point_of_screen();
   // // //   HRI_AGENT * target_robot;
@@ -800,12 +805,14 @@ int Create_and_init_Mightability_Maps()
 {
  printf(" Inside Create_and_init_Mightability_Maps()\n");
 
+ 
  ////p3d_init_robot_parameters(); //To remove the dependency on Watch button
  ////printf(" After p3d_init_robot_parameters()\n");
 
  assign_indices_of_robots();
  create_agents_for_Mightabilities();
- 
+ ////////get_horizontal_triangles(global_htris);
+ ////////return 1;
 
  printf(" Calling find_affordance \n");
  //////////////find_affordance_new();
@@ -6950,8 +6957,8 @@ return 1;
 int create_workspace_3D_grid()
 {
  int HRP2_table_index;
- ////HRP2_table_index=get_index_of_robot_by_name("HRP2TABLE");
- HRP2_table_index=get_index_of_robot_by_name("IKEA_SHELF");
+ HRP2_table_index=get_index_of_robot_by_name("HRP2TABLE");
+ ////HRP2_table_index=get_index_of_robot_by_name("IKEA_SHELF");
  configPt HRP2_table_pos = MY_ALLOC(double,envPt_MM->robot[HRP2_table_index]->nb_dof); /* Allocation of temporary robot configuration */
 
  p3d_get_robot_config_into(envPt_MM->robot[HRP2_table_index],&HRP2_table_pos);
@@ -14821,5 +14828,72 @@ int show_point_of_screen()
  
      }
    }
+}
+
+int get_horizontal_triangles(std::list<gpTriangle> &htris)
+{
+  unsigned int i, j, k;
+  p3d_index *face_indices= NULL;
+  double angle;
+  p3d_vector3 normal;
+  p3d_vector3 *points= NULL;
+  p3d_matrix4 Tsupport;
+  p3d_polyhedre *polyh= NULL;
+  gpTriangle triangle;
+  gpPlacement placement;
+  std::list<gpTriangle>::iterator iterT1, iterT2;
+
+ int nr = envPt_MM->nr;
+for(k=0;k<nr;k++)
+ {
+ for(i=0; i<(unsigned int) envPt_MM->robot[k]->o[0]->np; ++i)
+  {
+    p3d_matMultXform(envPt_MM->robot[k]->o[0]->jnt->abs_pos, envPt_MM->robot[k]->o[0]->pol[i]->pos_rel_jnt, Tsupport);
+
+    polyh= envPt_MM->robot[k]->o[0]->pol[i]->poly;
+    poly_build_planes(polyh);
+    points= polyh->the_points;
+    for(j=0; j<polyh->nb_faces; j++)
+    {
+      p3d_xformVect(Tsupport, polyh->the_faces[j].plane->normale, normal);
+      p3d_vectNormalize(normal, normal);
+      face_indices= polyh->the_faces[j].the_indexs_points;
+
+      angle= fabs( (180.0/M_PI)*acos(normal[2]) );
+      if( (normal[2]<0) || angle>5 )
+      {  continue;  }
+      if(polyh->the_faces[j].nb_points==3)
+      {
+         p3d_xformPoint(Tsupport, points[face_indices[0] - 1], triangle.p1);
+         p3d_xformPoint(Tsupport, points[face_indices[1] - 1], triangle.p2);
+         p3d_xformPoint(Tsupport, points[face_indices[2] - 1], triangle.p3);
+         triangle.description= GP_DESCRIPTION_POINTS;
+         htris.push_back(triangle);
+      }
+      else
+      {
+        ////printf("%s: %d: gpFind_placements_on_object(): the faces of \"%s\" should all be triangles.\n", __FILE__,__LINE__,support->name);
+      }
+    }
+  }
+ }
+
+ return 0;
+}
+
+int display_horizontal_triangles(std::list<gpTriangle> htris)
+{
+  std::list<gpTriangle>::iterator iter;
+
+  for(iter=htris.begin(); iter!=htris.end(); ++iter)
+  {
+    glBegin(GL_TRIANGLES);
+    glVertex3dv(iter->p1);
+    glVertex3dv(iter->p2);
+    glVertex3dv(iter->p3);
+    glEnd();
+  }
+
+
 }
 

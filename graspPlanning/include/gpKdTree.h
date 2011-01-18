@@ -3,7 +3,6 @@
 #define GP_KDTREE_H
 
 
-
 //! @defgroup kdTree
 //! @ingroup graspPlanning 
 //! This module implements some classes to compute the Kd tree of a point set 
@@ -29,7 +28,7 @@ class gpAABB
     ~gpAABB();
     int divide();
     int draw(unsigned int level);
-    int sphereIntersection(p3d_vector3 center, double radius, std::list<gpContact> &points);
+    int sphereIntersection(p3d_vector3 center, double radius, std::list<class gpContact> &points);
 };
 
 //! @ingroup kdTree 
@@ -39,15 +38,15 @@ class gpKdTree
  friend class gpAABB; 
  private:
   class gpAABB *root_;
-  std::vector<gpContact> points;
+  std::vector<class gpContact> points;
   unsigned int depth_;
  public:
   gpKdTree();
-  gpKdTree(std::list<gpContact> &contactList);
+  gpKdTree(std::list<class gpContact> &contactList);
   ~gpKdTree();
-  int build(std::list<gpContact> &contactList);
+  int build(std::list<class gpContact> &contactList);
   int draw(unsigned int level);
-  int sphereIntersection(p3d_vector3 center, double radius, std::list<gpContact> &points);
+  int sphereIntersection(p3d_vector3 center, double radius, std::list<class gpContact> &points);
   unsigned int depth()
   {  return depth_;  }
 };

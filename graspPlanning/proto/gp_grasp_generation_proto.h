@@ -34,7 +34,7 @@ extern int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robo
 
 extern int gpCompute_grasp_open_configs(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object);
 
-extern int gpCompute_grasp_open_config(p3d_rob *robot, gpDoubleGrasp &doubleGrasp, p3d_rob *object, int hand_to_open);
+extern int gpCompute_grasp_open_config(p3d_rob *robot, class gpDoubleGrasp &doubleGrasp, p3d_rob *object, int hand_to_open);
 
 extern int gpGrasp_context_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &handProp);
 

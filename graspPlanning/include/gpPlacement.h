@@ -1,6 +1,7 @@
 #ifndef GP_PLACEMENT_H
 #define GP_PLACEMENT_H
 
+#include "../graspPlanning/include/gpGrasp.h"
 
 //! @defgroup stablePlacementComputation
 //! @ingroup graspPlanning 

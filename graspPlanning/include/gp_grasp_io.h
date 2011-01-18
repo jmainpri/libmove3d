@@ -42,11 +42,11 @@ typedef struct gpGraspParserData
 } gpGraspParserData;
 
 
-extern int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename);
+extern int gpSave_grasp_list(std::list<class gpGrasp> &graspList, std::string filename);
 
-extern int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList);
+extern int gpLoad_grasp_list(std::string filename, std::list<class gpGrasp> &graspList);
 
-extern int gpCheck_grasp_list_validity(std::list<gpGrasp> &graspList, std::string objectName);
+extern int gpCheck_grasp_list_validity(std::list<class gpGrasp> &graspList, std::string objectName);
 
 extern int gpInvert_axis(std::string inputFile, std::string outputFile, p3d_matrix4 T);
 

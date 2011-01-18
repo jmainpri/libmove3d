@@ -1750,7 +1750,7 @@ int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object, bool environment
   unsigned int i, j, k, nbSteps;
   int result, nbChanges, col_test;
   double qnew[4]; // SAHand finger joint parameters to set (the first one is only needed by the thumb)
-  p3d_matrix4 objectFrame, objectFrameInv;
+  p3d_matrix4 objectFrame;
   configPt config0, config;
   std::vector<bool> blocked, fingerBlocked;
   std::vector<double> q, qstart, qstop, delta;
