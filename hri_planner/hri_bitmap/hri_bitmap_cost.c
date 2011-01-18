@@ -92,7 +92,7 @@ int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_bitmap_c
   double saved[3];
 
   if(btset->manip == BT_MANIP_REACH) {
-    qc = p3d_get_robot_config(btset->robot); /* ALLOC */
+//    qc = p3d_get_robot_config(btset->robot); /* ALLOC */
     // for REACH type path finding, calculate collision
     q_o = p3d_get_robot_config(btset->object); /* ALLOC */
     saved[0] = q_o[6]; saved[1] = q_o[7]; saved[2] = q_o[8];
