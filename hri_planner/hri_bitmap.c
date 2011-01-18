@@ -1577,8 +1577,9 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
           }
 
         } else { // cell was neither open nor closed
-          if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == FALSE)
+          if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == FALSE) {
             continue;// leave untouched
+          }
           current_cell->h = hri_bt_dist_heuristic(btset, bitmap, current_cell->x, current_cell->y, current_cell->z);
           // TK:dead code never used because of if before
           //          if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == BT_OBST_POTENTIAL_COLLISION
