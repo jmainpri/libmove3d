@@ -52,6 +52,8 @@ int localPathCollides (hri_bitmapset * btset, hri_bitmap_cell* cell, hri_bitmap_
 
 double getCellDistance (hri_bitmap_cell* cell1, hri_bitmap_cell* cell2 );
 
+double get3CellAngle(hri_bitmap_cell* cell1, hri_bitmap_cell* cell2, hri_bitmap_cell* cell3);
+
 hri_bitmap_cell* hri_bt_nth_from_start(hri_bitmap_cell* path_start, hri_bitmap_cell* path_end, int n);
 
 double getPathGridLength(hri_bitmap_cell* path_end);

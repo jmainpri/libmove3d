@@ -602,6 +602,16 @@ double getAngleDeviation(double angle1, double angle2) {
   return angle_deviation;
 }
 
+/**
+ * returns the path angle in cell2 for going from cell1 over cell2 to cell3
+ */
+double get3CellAngle(hri_bitmap_cell* cell1, hri_bitmap_cell* cell2, hri_bitmap_cell* cell3) {
+  double angle1to2 = atan2(cell2->y - cell1->y, cell2->x - cell1->x);
+  double angle2to3 = atan2(cell3->y - cell2->y, cell3->x - cell2->x);
+  double result = getAngleDeviation(angle1to2, angle2to3);
+  printf ("angle1 :%f, angle2 :%f result :%f \n", angle1to2, angle2to3, result);
+  return result;
+}
 
 /**
  * returns the bitmap cell closest to x,y,z doubles of real world
