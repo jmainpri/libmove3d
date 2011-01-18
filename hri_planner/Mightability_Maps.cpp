@@ -195,7 +195,7 @@ int USE_RESULTANT_MIGHTABILITY_SET=0;
 int resultant_MM_after_set_operation[100][100][100];//To store 1 as a valid resultant cell after the set operation. The indices should be synchronized with the indices of the corresponding bitmap set
 
 int SHOW_CURRENT_TASK_CANDIDATE_POINTS=0;
-char CURRENT_OBJECT_TO_MANIPULATE[50]="GREY_TAPE";//"YELLOW_BOTTLE";//"HORSE";//"SMALL_YELLOW_BOTTLE";//"HORSE";
+char CURRENT_OBJECT_TO_MANIPULATE[50]="WOODEN_OBJECT";//"GREY_TAPE";//"YELLOW_BOTTLE";//"HORSE";//"SMALL_YELLOW_BOTTLE";//"HORSE";
 
 HRI_AGENT * primary_human_MM;
 HRI_AGENT * jido_robot_MM;
