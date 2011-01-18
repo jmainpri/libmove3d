@@ -33,7 +33,7 @@
 #include <string>
 #include <iostream>
 
-int CURRENT_HRI_MANIPULATION_TASK;
+int CURRENT_HRI_MANIPULATION_TASK=-1;
 candidate_poins_for_task candidate_points_to_put;
 candidate_poins_for_task candidate_points_to_show;
 candidate_poins_for_task candidate_points_to_hide;
@@ -807,7 +807,9 @@ p3d_get_robot_config_into(envPt_MM->robot[obj_index],&obj_tmp_pos);
      p3d_set_freeflyer_pose(object, T0);
     (*manipulation->robot()->armManipulationData)[armID].setManipState(handFree) ;
     
+   printf(" >>>>> before armPlanTask(ARM_PICK_GOTO \n");
     status = manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), m_objStart, m_objGoto, (char*)obj_to_manipulate, (char*)"", *iter, confs, smTrajs);
+    printf(" >>>>>**** after armPlanTask(ARM_PICK_GOTO \n");
 
     if(qcur!=NULL)
       p3d_destroy_config(manipulation->robot(), qcur);

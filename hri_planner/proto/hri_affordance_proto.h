@@ -149,5 +149,6 @@ extern int HRP2_take_object(char obj_to_manipulate[50]);
 extern int set_current_HRI_manipulation_task(int arg);
 extern int find_current_HRI_manip_task_solution();
 extern int find_Mightability_Maps();
+extern int JIDO_give_obj_to_human( char *obj_to_manipulate );
 #endif /* __CEXTRACT__ */
 

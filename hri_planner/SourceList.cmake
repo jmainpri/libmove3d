@@ -13,6 +13,12 @@ hri_manip.c
 hri_knowledge.c
 hri_kinect.c
 )
+IF(USE_MIGHTABILITY_MAPS)
+BM3D_SRC_SUBDIR_PROCESS(
+Mightability_Maps.cpp 
+HRI_tasks.cpp
+)
+ENDIF(USE_MIGHTABILITY_MAPS)
 include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/hri_bitmap/SourceList.cmake)
 ENDIF(HRI_PLANNER)
 
@@ -26,9 +32,7 @@ p3d_perspective.c
 )
 IF(USE_MIGHTABILITY_MAPS)
 BM3D_SRC_SUBDIR_PROCESS(
-Mightability_Maps.cpp 
 FORM_HRI_affordance.c
-HRI_tasks.cpp
 )
 ENDIF(USE_MIGHTABILITY_MAPS)
 IF(USE_HRP2_GIK)
