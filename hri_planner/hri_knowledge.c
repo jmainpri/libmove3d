@@ -732,36 +732,43 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
 	
 
       // REACHABILITY - REACHABLE, UNREACHABLE, HARDLY REACHABLE
-      // TODO: Fix this global variable use. It's ugly.
-      GIK_VIS = 500;
-      reachability_result = hri_is_reachable(ent, agent);
-      if ( kn_on_ent->reachability ==  reachability_result) {
-	if ( kn_on_ent->reachability_ischanged)
-	  kn_on_ent->reachability_ischanged = FALSE;
+      // TODO: Fix this global variable use. It's ugly.     
+      // To simplify we do not compute reachability on agent or agent parts
+      if ( (ent->type != HRI_AGENT_PART) && (ent->type != HRI_ISAGENT)) {
+	GIK_VIS = 500;
+	reachability_result = hri_is_reachable(ent, agent);
+	if ( kn_on_ent->reachability ==  reachability_result) {
+	  if ( kn_on_ent->reachability_ischanged)
+	    kn_on_ent->reachability_ischanged = FALSE;
+	}
+	else {
+	  kn_on_ent->reachability = reachability_result;
+	  kn_on_ent->reachability_ischanged = TRUE;
+	  kn_on_ent->reachability_isexported = FALSE;
+	}
       }
-      else {
-	kn_on_ent->reachability = reachability_result;
-	kn_on_ent->reachability_ischanged = TRUE;
-	kn_on_ent->reachability_isexported = FALSE;
+      // SPATIAL RELATION      
+      if( ent->type != HRI_AGENT_PART) {
+	spatial_relation_result = hri_spatial_relation(ent, agent);
+	if ( kn_on_ent->is_located_from_agent ==  spatial_relation_result) {
+	  if (kn_on_ent->spatial_relation_ischanged)
+	    kn_on_ent->spatial_relation_ischanged = FALSE;
+	}
+	else {
+	  kn_on_ent->is_located_from_agent  = spatial_relation_result;
+	  kn_on_ent->spatial_relation_ischanged = TRUE;
+	  kn_on_ent->spatial_relation_isexported = FALSE;
+	}
       }
-
-      // SPATIAL RELATION
-      spatial_relation_result = hri_spatial_relation(ent, agent);
-      if ( kn_on_ent->is_located_from_agent ==  spatial_relation_result) {
-	if (kn_on_ent->spatial_relation_ischanged)
-	   kn_on_ent->spatial_relation_ischanged = FALSE;
-      }
-      else {
-	kn_on_ent->is_located_from_agent  = spatial_relation_result;
-	kn_on_ent->spatial_relation_ischanged = TRUE;
-	kn_on_ent->spatial_relation_isexported = FALSE;
-      }
-
        
       
       // PLACEMENT RELATION
       for(e_j=0; e_j<present_ents_nb; e_j++) {
         ge_j = present_ents_global_idxs[e_j];
+	// do not compute placement relations that involve an agent or an agent part
+	if( ((ent->type == HRI_AGENT_PART) || (ent->type == HRI_ISAGENT)) || ((ents->entities[ge_j]->type == HRI_AGENT_PART) || (ents->entities[ge_j]->type == HRI_ISAGENT)) ) {
+	  continue;
+	}
         if( e_j != e_i) {
           placement_relation_result = hri_placement_relation(ent, ents->entities[ge_j]);
 	  if (  kn_on_ent->is_placed[ge_j] ==  placement_relation_result) {
