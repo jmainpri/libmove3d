@@ -789,11 +789,11 @@ p3d_get_robot_config_into(envPt_MM->robot[obj_index],&obj_tmp_pos);
   p3d_get_freeflyer_pose2(object, &x, &y, &z, &rx, &ry, &rz);
 
 //    ////gpReduce_grasp_list_size ( graspList, graspList, 30 );
-//    std::list<gpGrasp> graspList2;
-//    graspList2= graspList;
-//    gpGrasp_handover_filter(p3d_get_robot_by_name ( "SAHandRight" ), p3d_get_robot_by_name ( "SAHandRight2" ), object, graspList, graspList2);
-//    printf(" After gpGrasp_handover_filter()\n");
-//    printf(" graspList.size()=%d,graspList2.size()=%d\n",graspList.size(),graspList2.size());
+    std::list<gpGrasp> graspList2;
+    graspList2= graspList;
+    gpGrasp_handover_filter(p3d_get_robot_by_name ( "SAHandRight" ), p3d_get_robot_by_name ( "SAHandRight2" ), object, graspList, graspList2);
+    printf(" After gpGrasp_handover_filter()\n");
+    printf(" graspList.size()=%d,graspList2.size()=%d\n",graspList.size(),graspList2.size());
    ////return 0;
 //   status= manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), (char*)obj_to_manipulate, (char*)"", confs, smTrajs);
   for(std::list<gpGrasp>::iterator iter=graspList.begin(); iter!=graspList.end(); ++iter)
