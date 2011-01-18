@@ -462,6 +462,13 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   bitmapset->parameters->soft_collision_base_cost = 15;
   bitmapset->parameters->start_cell_tolerance = 2;
   bitmapset->parameters->goal_cell_tolerance = 8; // high tolerance for flawed grasp planning
+
+  /** distance beyond which we do not care about moving humans
+   * anymore, as by the time the robot gets there, the human will be
+   * somewhere else. If negative, moving humans will always be considered.
+   * if zero, moving humans will never be considered. Default is -1 **/
+  bitmapset->parameters->moving_human_deprecation = -1;
+
   /** reluctance is an experimental feature to prefer previously planned. Default is FALSE.
    * paths to new ones, that does not seem to change the robot behavior much (maybe in special cases?).
    * Also might be buggy as result path start is not request start */

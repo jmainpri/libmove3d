@@ -274,24 +274,32 @@ double hri_bt_calc_dist_value_human(hri_bitmapset * btset, hri_human* cur_human,
   double humanx, humany;
   double distance;
   height = cur_human->state[cur_human->actual_state].dheight;
-     radius = cur_human->state[cur_human->actual_state].dradius;
+  radius = cur_human->state[cur_human->actual_state].dradius;
 
-     realx = (x*btset->pace)+btset->realx;
-     realy = (y*btset->pace)+btset->realy;
-     humanx = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
-     humany = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
+  realx = (x*btset->pace)+btset->realx;
+  realy = (y*btset->pace)+btset->realy;
+  humanx = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
+  humany = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
 
-     distance = DISTANCE2D(realx,realy,humanx,humany);
+  distance = DISTANCE2D(realx,realy,humanx,humany);
 
-     if(distance > radius) {
-       val = 0;
-     } else {
-       // sigmoid function up to radius
-       sigmoid = cos(distance / radius * M_PI_2) + 0;
-       quot = 1 / (0.6 + distance );
-       val = pow(height * (sigmoid * quot), 3);
-     }
-     return val;
+  if(distance > radius) {
+    val = 0;
+  } else {
+    // discard moving humans if ousdie parametrized range
+    if (cur_human->actual_state == BT_MOVING
+        && ( btset->parameters->moving_human_deprecation < 0
+        ||  distance > btset->parameters->moving_human_deprecation)  ) {
+      // Knowledge that deprecates over space, but this favors longer paths
+      val = 0;
+    } else {
+      // sigmoid function up to radius
+      sigmoid = cos(distance / radius * M_PI_2) + 0;
+      quot = 1 / (0.6 + distance );
+      val = pow(height * (sigmoid * quot), 3);
+    }
+  }
+  return val;
 }
 
 /****************************************************************/
@@ -348,62 +356,68 @@ double hri_bt_calc_vel_value(hri_bitmapset * btset,int x, int y, int z)
 
 double hri_bt_calc_vis_value_human(hri_bitmapset * btset, hri_human* cur_human, int x, int y, int z)
 {
-    double radius,height,stretch_back;
-    double val;
-    double realx, realy;
-    double angle,angle_deviation,deltax,deltay, orient,distance_cosine;
-    double humanx, humany;
-    double distance;
-    height = cur_human->state[cur_human->actual_state].vheight;
-    stretch_back = cur_human->state[cur_human->actual_state].vback;
-      radius = cur_human->state[cur_human->actual_state].vradius;
+  double radius,height,stretch_back;
+  double val;
+  double realx, realy;
+  double angle,angle_deviation,deltax,deltay, orient,distance_cosine;
+  double humanx, humany;
+  double distance;
+  height = cur_human->state[cur_human->actual_state].vheight;
+  stretch_back = cur_human->state[cur_human->actual_state].vback;
+  radius = cur_human->state[cur_human->actual_state].vradius;
 
 
-      realx = (x*btset->pace)+btset->realx;
-      realy = (y*btset->pace)+btset->realy;
-      humanx = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
-      humany = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
-      orient = cur_human->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v + cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[5].v;
+  realx = (x*btset->pace)+btset->realx;
+  realy = (y*btset->pace)+btset->realy;
+  humanx = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
+  humany = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
+  orient = cur_human->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v + cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[5].v;
 
-      distance = DISTANCE2D(realx,realy,humanx,humany);
+  distance = DISTANCE2D(realx,realy,humanx,humany);
 
-      if(distance > radius ) {
+  if(distance > radius ) {
+    val = 0;
+  } else {
+
+    deltax = realx-humanx;
+    deltay = realy-humany;
+    angle = atan2(deltay, deltax);
+    // orient goes from -PI to PI, angle goes from - PI to PI
+    // get the absolute angle deviation between 0 and PI
+    angle_deviation = ABS(getAngleDeviation(orient, angle));
+
+    if (cur_human->actual_state != BT_MOVING) {
+      if ((angle_deviation < M_PI_4 )) {
+        // leave open area in front of human
+        val =0;
+      } else {
+        // cosine function is 0 at borders of radius
+        distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
+
+        // use stretch to increase / decrease weight more on more backward angles
+        val = distance_cosine * (height + (angle_deviation - M_PI_4) * stretch_back);
+      }
+    } else {
+      // Knowledge that deprecates over space, but this favors longer paths
+      if  (btset->parameters->moving_human_deprecation < 0
+          ||  distance > btset->parameters->moving_human_deprecation) {
         val = 0;
       } else {
+        // if human is moving, visibility does not matter, however we predict
+        // space in front of the human, assuming that's the direction the human is moving to
+        if (angle_deviation < M_PI_4 ) {
+          // predictive costs
+          distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
 
-        deltax = realx-humanx;
-        deltay = realy-humany;
-        angle = atan2(deltay, deltax);
-        // orient goes from -PI to PI, angle goes from - PI to PI
-        // get the absolute angle deviation between 0 and PI
-        angle_deviation = ABS(getAngleDeviation(orient, angle));
-
-        if (cur_human->actual_state != BT_MOVING) {
-          if ((angle_deviation < M_PI_4 )) {
-              // leave open area in front of human
-              val =0;
-          } else {
-              // cosine function is 0 at borders of radius
-              distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
-
-              // use stretch to increase / decrease weight more on more backward angles
-              val = distance_cosine * (height + (angle_deviation - M_PI_4) * stretch_back);
-          }
+          // use stretch to increase / decrease weight more on more backward angles
+          val = distance_cosine * (height + (M_PI - angle_deviation) * stretch_back);
         } else {
-          // if human is moving, visibility does not matter, however we predict
-          // space in front of the human, assuming that's the direction the human is moving to
-          if (angle_deviation < M_PI_4 ) {
-              // predictive costs
-              distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
-
-              // use stretch to increase / decrease weight more on more backward angles
-              val = distance_cosine * (height + (M_PI - angle_deviation) * stretch_back);
-          } else {
-              val = 0;
-          }
+          val = 0;
         }
-      }
-      return val;
+      } // end if moving human within significant range
+    } // end else human moving
+  } // endif distance > radius
+  return val;
 }
 
 /****************************************************************/
@@ -759,10 +773,7 @@ double getDirectionalVal(hri_bitmapset * btset, hri_bitmap_cell* current_cell, h
        // human is ahead of robot, but is human travellling in the same direction?
        if (btset->human[i]->actual_state == BT_MOVING) {
 //         human more than 3 meters away, and moving, costs don't matter (?)
-         // TODO: parametrize the distance, justify with time and velocities
-         if  ( getPathGridLength(fromcell) * btset->pace > 3) {
-           directionalSignificance = directionalSignificance * 0.2; // magic number, TODO: parametrize, tweak
-         }
+
 
          double headingDiff = getAngleDeviation(robotDirection, btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v);
          // 45 degrees counts as same direction

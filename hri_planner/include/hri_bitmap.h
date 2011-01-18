@@ -230,6 +230,8 @@ typedef struct astar_parameters{
   /* how many grid steps away a free goal cell may be found from the x,y,z of the search command */
   int goal_cell_tolerance;
 
+  double moving_human_deprecation;
+
   int use_corridors;
 
   double corridor_Costs;
