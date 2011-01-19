@@ -172,7 +172,8 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
   int firstLpSet = 0;
   int nlp = 0;
   
-  double timeLength;
+  double timeLength = 0.0;
+  int indexOfCVS = 0;
 
   p3d_softMotion_data *softMotion_data_lp1 = NULL;
   p3d_softMotion_data *softMotion_data_lp2 = NULL;
@@ -240,6 +241,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
   end_trajSmPt = trajSmPt->courbePt;
   
   timeLength = end_trajSmPt->length_lp;
+  indexOfCVS = 0;
 
   while (localpathMlp1Pt != NULL
          && localpathMlp1Pt->mlpLocalpath[IGRAPH_OUTPUT] != NULL) {
@@ -253,36 +255,43 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
 
 
 
-      if (nlp == 0) {
-        localpathTmp1Pt =
-          p3d_extract_softMotion_with_velocities (robotPt, localpath1Pt,
-                                                  (double)
-                                                  localpath1Pt->
-                                                  specific.
-                                                  softMotion_data->
-                                                  specific->motion[0].
-                                                  TimeCumul[3],
-                                                  (double)
-                                                  localpath1Pt->
-                                                  specific.
-                                                  softMotion_data->
-                                                  specific->motionTime);
-      } else {
-        localpathTmp1Pt =
-          p3d_extract_softMotion_with_velocities (robotPt, localpath1Pt,
-                                                  (double)
-                                                  localpath1Pt->
-                                                  specific.
-                                                  softMotion_data->
-                                                  specific->motion[0].
-                                                  TimeCumul[3],
-                                                  (double)
-                                                  localpath1Pt->
-                                                  specific.
-                                                  softMotion_data->
-                                                  specific->motionTime);
-      }
+      //if (nlp == 0) {
+      localpathTmp1Pt =
+	p3d_extract_softMotion_with_velocities (robotPt, localpath1Pt,
+						(double)
+						localpath1Pt->
+						specific.
+						softMotion_data->
+						specific->motion[0].
+						TimeCumul[3],
+						(double)
+						localpath1Pt->
+						specific.
+						softMotion_data->
+						specific->motionTime);
+      //}
+      //else {
+      //  localpathTmp1Pt =
+      //    p3d_extract_softMotion_with_velocities (robotPt, localpath1Pt,
+      //                                            (double)
+      //                                            localpath1Pt->
+      //                                            specific.
+      //                                            softMotion_data->
+      //                                            specific->motion[0].
+      //                                            TimeCumul[3],
+      //                                            (double)
+      //                                            localpath1Pt->
+      //                                            specific.
+      //                                            softMotion_data->
+      //                                            specific->motionTime);
+      //}
       end_trajSmPt = append_to_localpath (end_trajSmPt, localpathTmp1Pt);
+
+      /* Save the instant at the end of the tvc segment */
+      m_vectOfCVS[indexOfCVS].first = timeLength + localpath1Pt->specific.softMotion_data->specific->motion[0].Times.Tvc;
+      indexOfCVS++;
+      timeLength += localpathTmp1Pt->length_lp;
+
 
     } else {
       localpathTmp1Pt =
@@ -416,9 +425,16 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
         end_trajSmPt =
           append_to_localpath (end_trajSmPt, localpathTmp1Pt);
         nlp++;
+
+	/* Save the instant at the end of the tvc segment */
+	m_vectOfCVS[indexOfCVS].first = timeLength + localpath1Pt->specific.softMotion_data->specific->motion[0].Times.Tvc;
+	indexOfCVS++;
+	timeLength += localpathTmp1Pt->length_lp;
+
         end_trajSmPt =
           append_to_localpath (end_trajSmPt, localpathTmp2Pt);
         nlp++;
+	timeLength += localpathTmp2Pt->length_lp;
 
         collision = FALSE;
       } else {
@@ -442,9 +458,15 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
         end_trajSmPt =
           append_to_localpath (end_trajSmPt, localpathTmp1Pt);
         nlp++;
+	/* Save the instant at the end of the tvc segment */
+	m_vectOfCVS[indexOfCVS].first = timeLength + localpathTmp1Pt->length_lp;
+	indexOfCVS++;
+	timeLength += localpathTmp1Pt->length_lp;
+
         end_trajSmPt =
           append_to_localpath (end_trajSmPt, localpathTransPt);
         nlp++;
+	timeLength += localpathTransPt->length_lp;
       }
     }
 
@@ -608,13 +630,16 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
 //  printf("nlp = ");
   print_EndOfCVS();
 
+
+  ///////////////////////////////////////////////////////////////////////////
+  ////  COMPUTE THE SOFTMOTION SMOOTHED TRAJECTORY                        ///
+  ///////////////////////////////////////////////////////////////////////////
   /* Create the softMotion trajectory */
   trajSmPt = p3d_create_empty_trajectory (robotPt);
 
   p3d_convert_ptpTraj_to_smoothedTraj (&gain, &ntest, trajSmPTPPt, trajSmPt);
 
   robotPt->tcur = trajSmPt;
-
 
   /* Write curve into a file for BLTPLOT *///ENV.getBool(Env::plotSoftMotionCurve)
   if (param_write_file == true) {
