@@ -21,13 +21,19 @@ static configPt TRAJPTP_CONFIG[200];
 
 using namespace std;
 
-// Constant Velocity Segments;
+//! returns the vector of the end 
+//! of the Constant Velocity Segments
+//! The end of the CVS are stored as parameters
+//! first :   time for the smoothed softmotion trajectory
+//! second :  geometric param along traj (distance)
 std::vector< endOfCVS > m_vectOfCVS;
 std::vector< endOfCVS > getCVS()
 {
   return m_vectOfCVS;
 }
 
+//! prints the vector of paramteters
+//! of end the Constant Velocity Segments
 void print_EndOfCVS(void)
 {
   cout << " m_vectOfCVS( " << m_vectOfCVS.size() << " ) = " << endl;
@@ -38,6 +44,8 @@ void print_EndOfCVS(void)
   }
 }
 
+//! compute the End of The CSV for the 
+//! geometric path
 void p3d_computeEndOfCVSParam( p3d_localpath* smPath, p3d_localpath* linPath, double trajLength )
 {
   endOfCVS pairTmp;
@@ -56,6 +64,38 @@ void p3d_computeEndOfCVSParam( p3d_localpath* smPath, p3d_localpath* linPath, do
   }
   
   m_vectOfCVS.push_back( pairTmp );
+}
+
+//! Test the two trajs
+//! each configuration
+bool p3d_test_end_of_CVS( p3d_traj * trajPt,
+                          p3d_traj * trajSmPt)
+{
+  bool res = true;
+  p3d_rob* rob = trajPt->rob;
+  
+  for(unsigned int i=0;i<m_vectOfCVS.size();i++)
+  {
+    configPt q1 = p3d_config_at_distance_along_traj(trajSmPt, m_vectOfCVS[i].first) ;    
+    configPt q2 = p3d_config_at_distance_along_traj(trajPt,   m_vectOfCVS[i].second) ;
+    
+    if( !p3d_equal_config( rob, q1, q2) )
+    {
+      printf("config differ in p3d_test_end_of_CVS\n");
+      
+      printf("ith CVS : %d\n",i);
+      
+//      print_config(rob, q1);
+//      print_config(rob, q2);
+      res = false;
+    }
+    else {
+      printf("Ith (%d): OK \n",i);
+    }
+
+  }
+  
+  return res;
 }
 
 void
@@ -459,7 +499,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
           append_to_localpath (end_trajSmPt, localpathTmp1Pt);
         nlp++;
 	/* Save the instant at the end of the tvc segment */
-	m_vectOfCVS[indexOfCVS].first = timeLength + localpathTmp1Pt->length_lp;
+        m_vectOfCVS[indexOfCVS].first = timeLength + localpathTmp1Pt->specific.softMotion_data->specific->motion[0].Times.Tvc; //localpathTmp1Pt->length_lp;
 	indexOfCVS++;
 	timeLength += localpathTmp1Pt->length_lp;
 
@@ -638,7 +678,7 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
   trajSmPt = p3d_create_empty_trajectory (robotPt);
 
   p3d_convert_ptpTraj_to_smoothedTraj (&gain, &ntest, trajSmPTPPt, trajSmPt);
-
+  print_EndOfCVS();
   robotPt->tcur = trajSmPt;
 
   /* Write curve into a file for BLTPLOT *///ENV.getBool(Env::plotSoftMotionCurve)
@@ -654,14 +694,17 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
                                 (char *) "softMotion_Smoothed_Seg.traj",
                                 ENV.getBool (Env::plotSoftMotionCurve), lp,
                                 positions, smTraj);
-    //smTraj.print();
   }
-  //if (fct_draw){(*fct_draw)();}
+  
+// if (fct_draw){(*fct_draw)();}
+//  g3d_win *win= NULL;
+//  win= g3d_get_cur_win();
+//  win->fct_draw2 = &(draw_trajectory_ptp);
+//  g3d_draw_allwin_active();
 
-  g3d_win *win= NULL;
-  win= g3d_get_cur_win();
-  win->fct_draw2 = &(draw_trajectory_ptp);
-  g3d_draw_allwin_active();
+  smTraj.print();
+  print_EndOfCVS();
+  p3d_test_end_of_CVS( trajPt , trajSmPt );
 
   return FALSE;
 
