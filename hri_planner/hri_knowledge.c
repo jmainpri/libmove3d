@@ -39,7 +39,7 @@ HRI_ENTITIES * hri_create_entities()
   for(i=0; i<env->nr; i++) {
     if(!strcasestr(env->robot[i]->name,"GRIPPER") && !strcasestr(env->robot[i]->name,"VISBALL") && !strcasestr(env->robot[i]->name,"SAHandRight")) {
 
-      if(!strcasestr(env->robot[i]->name,"CHAIR") && !strcasestr(env->robot[i]->name,"TABLE") ) {
+      if(!strcasestr(env->robot[i]->name,"CHAIR")) {
         entities->entities = MY_REALLOC(entities->entities, HRI_ENTITY*, ent_i, ent_i+1);
         entities->entities[ent_i] = MY_ALLOC(HRI_ENTITY,1);
 	strcpy(entities->entities[ent_i]->name, env->robot[i]->name);
