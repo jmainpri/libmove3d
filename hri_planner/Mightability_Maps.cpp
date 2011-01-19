@@ -25,7 +25,7 @@
 #include "include/hri_bitmap_cost.h"
 #include "include/hri_bitmap_bin_heap.h"
 #include "include/HRI_tasks.h"
-
+#include "../graspPlanning/include/gpPlacement.h"
 
 #include <list>
 #include <string>
@@ -123,8 +123,8 @@ int grid_3d_affordance_calculated=0;
 
 p3d_env *envPt_MM;
 
-point_co_ordi FOV_end_point_vertices[1000][8];//For every set there will be 8 vertices in the order mentioned in the function gpsp_computeFrustumVertices() in the file g3d_draw_camera.c
-int no_FOV_end_point_vertices=0;
+////////point_co_ordi FOV_end_point_vertices[1000][8];//For every set there will be 8 vertices in the order mentioned in the function gpsp_computeFrustumVertices() in the file g3d_draw_camera.c
+////////int no_FOV_end_point_vertices=0;
 p3d_matrix4 frustum_transformation_mat;
 
 point_co_ordi sphere_surface_pts[25000];
@@ -211,21 +211,26 @@ p3d_vector4 FOV_left_up_abs, FOV_left_down_abs, FOV_right_up_abs, FOV_right_down
 p3d_vector3 points_on_FOV_screen[4000]; //To store all the points on the screen
 int no_points_on_FOV_screen=0;
 
+std::list<gpTriangle> global_htris;
+
 //TODO Put into proto file
 int get_current_FOV_vertices(HRI_AGENT *agent);
 int draw_current_FOV_vertices(); 
 int find_Mightability_Maps();
 int draw_all_current_points_on_FOV_screen();
 int update_Mightability_Maps_new();
+int get_horizontal_triangles(std::list<gpTriangle> &htris);
+int display_horizontal_triangles(std::list<gpTriangle> htris);
 //================================
 
 int execute_Mightability_Map_functions()
 {
   
-
+   //////////display_horizontal_triangles(global_htris);
 
    if(Affordances_Found==1)
    {
+  
   // // //Tmp for testing
   // // //   show_point_of_screen();
   // // //   HRI_AGENT * target_robot;
@@ -800,12 +805,14 @@ int Create_and_init_Mightability_Maps()
 {
  printf(" Inside Create_and_init_Mightability_Maps()\n");
 
+ 
  ////p3d_init_robot_parameters(); //To remove the dependency on Watch button
  ////printf(" After p3d_init_robot_parameters()\n");
 
  assign_indices_of_robots();
  create_agents_for_Mightabilities();
- 
+ ////////get_horizontal_triangles(global_htris);
+ ////////return 1;
 
  printf(" Calling find_affordance \n");
  //////////////find_affordance_new();
@@ -1027,7 +1034,7 @@ return 0;
 }
 
 
-
+/*
 void get_Frustum_Vertices(float l, float r, float b, float t, float n, float f)
 {
 point_co_ordi frustumVertices[8];
@@ -1113,6 +1120,8 @@ point_co_ordi frustumVertices[8];
     no_FOV_end_point_vertices++;
     ////////printf(" no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
 }
+*/
+/*
  #if !defined(COMPILE_FOR_GENOM)  
 int get_points_on_FOV_screen(p3d_rob *r)
 {
@@ -1196,8 +1205,9 @@ int get_points_on_FOV_screen(p3d_rob *r)
   return 1;
 
 }
-#endif
 
+#endif
+*/
 
 int check_inside_polygon(int no_vertices, point_co_ordi *vertices, point_co_ordi point)//the order of vertices should be clockwise or counter clockwise 
 {
@@ -5065,7 +5075,7 @@ printf(">>>>> visible_ctr=%d\n",visible_ctr);
 return 1;
 }
 
-
+/*
 int update_3d_grid_visibility(int type)//1 means human, 2 means HRP2, 3 means JIDO, 4 means second human
 {
 
@@ -5153,10 +5163,10 @@ int not_visible_ctr=0;
       double y2=(1-t2)*eye_pos.y+t2*y;
       double z2=(1-t2)*eye_pos.z+t2*z; 
       
-  /*  double x2=(1-t2)*x+t*eye_pos.x;
-      double y2=(1-t2)*y+t*eye_pos.y;
-      double z2=(1-t2)*z+t*eye_pos.z; 
-  */
+  ////  double x2=(1-t2)*x+t*eye_pos.x;
+  ////    double y2=(1-t2)*y+t*eye_pos.y;
+  ////    double z2=(1-t2)*z+t*eye_pos.z; 
+  
        //////////hri_bitmap_cell* curr_cell=NULL;
   
        ////curr_cell  =  hri_bt_get_closest_cell(grid_around_HRP2.GRID_SET, grid_around_HRP2.GRID_SET->bitmap[BT_AFFORDANCE_VISIBILITY], x2, y2, z2);
@@ -5195,26 +5205,26 @@ int not_visible_ctr=0;
        ////////if(curr_cell!=NULL)
         if(cell_valid==1)
         { 
-        /*
-        if(type==1)//means for human
-         {
-        grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_human=0;
-         }
-        else
-         {
-        if(type==2)//means for HRP2
-          {
-          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_HRP2=0;
-          }
-        else
-          {
-           if(type==3)//means for JIDO
-           {
-           grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_JIDO=0;
-           } 
-          }
-         }
-         */
+        
+        ////if(type==1)//means for human
+        //// {
+        ////grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_human=0;
+        //// }
+        ////else
+        //// {
+        ////if(type==2)//means for HRP2
+        ////  {
+        ////  grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_HRP2=0;
+        ////  }
+        ////else
+        ////  {
+        ////   if(type==3)//means for JIDO
+         ////  {
+         ////  grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_JIDO=0;
+         ////  } 
+         //// }
+        //// }
+         
 
         int is_visible=1; 
         ////grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.first_non_visible_by_human=0;
@@ -5228,45 +5238,45 @@ int not_visible_ctr=0;
  
 
           //******AKP NOTE :Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
-          /*
-         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[curr_cell->x][curr_cell->y][curr_cell->z].is_horizontal_surface==1)
-          {
-
-          point_to_look[6] = x2;
-          point_to_look[7] = y2;
-          point_to_look[8] = z2;
-          
-          //Using perspective taking function
-          if(type==1) //for human
-          {
-          p3d_rob * currRob=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
-          p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
-          is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
-          }
-          else
-          {
-           if(type==2) //for HRP2
-           {
-          p3d_rob * currRob=ACBTSET->robot;
-          p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
-          is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
-           } 
-          }
-          
-          //Using collison test by local path method  
-          //is_visible=is_point_visible_by_st_line(hum_head_pos, point_to_look, type); 
-          
-          if(is_visible==1)
-          {  
-          }
-          else
-          {
-          is_visible=0;
-          ////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
-          }
-          }
-          //****** END Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
-          else*/
+//           
+//          if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[curr_cell->x][curr_cell->y][curr_cell->z].is_horizontal_surface==1)
+//           {
+// 
+//           point_to_look[6] = x2;
+//           point_to_look[7] = y2;
+//           point_to_look[8] = z2;
+//           
+//           //Using perspective taking function
+//           if(type==1) //for human
+//           {
+//           p3d_rob * currRob=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
+//           p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
+//           is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
+//           }
+//           else
+//           {
+//            if(type==2) //for HRP2
+//            {
+//           p3d_rob * currRob=ACBTSET->robot;
+//           p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
+//           is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
+//            } 
+//           }
+//           
+//           //Using collison test by local path method  
+//           //is_visible=is_point_visible_by_st_line(hum_head_pos, point_to_look, type); 
+//           
+//           if(is_visible==1)
+//           {  
+//           }
+//           else
+//           {
+//           is_visible=0;
+//           ////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
+//           }
+//           }
+//           //****** END Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
+//           else
           ////////{
           is_visible=0;
           obs_found=1;
@@ -5304,19 +5314,19 @@ int not_visible_ctr=0;
           ////////}
 
            
-         /*
-         //, so assume that the object corresponding to this obstacle is visible
+         
+// //          //, so assume that the object corresponding to this obstacle is visible
+// //           
+// //           int i=0;
+// //           for(i=0;i<nr;i++)
+// //           {
+// //            
+// //        if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.belongs_to_objects_indx[i]==1)
+// //            {
+// //             object_MM.object[i].visible_by_human=1;
+// //            }
+// //           }
           
-          int i=0;
-          for(i=0;i<nr;i++)
-          {
-           
-       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.belongs_to_objects_indx[i]==1)
-           {
-            object_MM.object[i].visible_by_human=1;
-           }
-          }
-          */
 
          }
         //else
@@ -5368,7 +5378,8 @@ int not_visible_ctr=0;
     //////////printf(" Visible_ctr=%d, not_visible_ctr=%d\n",visible_ctr,not_visible_ctr); 
 return 1;
 }
-
+*/
+/*
 int update_3d_grid_straight_visibility(int type)//1 means human, 2 means HRP2, 3 means JIDO, 4 for human2
 {
 //////////printf(" Inside update_3d_grid_visibility(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
@@ -5451,10 +5462,10 @@ int not_visible_ctr=0;
       double y2=(1-t2)*eye_pos.y+t2*y;
       double z2=(1-t2)*eye_pos.z+t2*z; 
       
-  /*  double x2=(1-t2)*x+t*eye_pos.x;
-      double y2=(1-t2)*y+t*eye_pos.y;
-      double z2=(1-t2)*z+t*eye_pos.z; 
-  */
+//       double x2=(1-t2)*x+t*eye_pos.x;
+//       double y2=(1-t2)*y+t*eye_pos.y;
+//       double z2=(1-t2)*z+t*eye_pos.z;
+  
        //////////hri_bitmap_cell* curr_cell=NULL;
   
        ////curr_cell  =  hri_bt_get_closest_cell(grid_around_HRP2.GRID_SET, grid_around_HRP2.GRID_SET->bitmap[BT_AFFORDANCE_VISIBILITY], x2, y2, z2);
@@ -5493,26 +5504,26 @@ int not_visible_ctr=0;
        ////////if(curr_cell!=NULL)
         if(cell_valid==1)
         { 
-        /*
-        if(type==1)//means for human
-         {
-        grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_human_straight_head_orientation=0;
-         }
-        else
-         {
-        if(type==2)//means for HRP2
-          {
-          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_HRP2_straight_head_orientation=0;
-          }
-        else
-          {
-           if(type==3)//means for JIDO
-           {
-           grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_JIDO_straight_head_orientation=0;
-           } 
-          }
-         }
-         */
+        
+//         if(type==1)//means for human
+//          {
+//         grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_human_straight_head_orientation=0;
+//          }
+//         else
+//          {
+//         if(type==2)//means for HRP2
+//           {
+//           grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_HRP2_straight_head_orientation=0;
+//           }
+//         else
+//           {
+//            if(type==3)//means for JIDO
+//            {
+//            grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_JIDO_straight_head_orientation=0;
+//            } 
+//           }
+//          }
+         
 
         int is_visible=1; 
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].val==-1)//Exact obstacle cells
@@ -5524,45 +5535,46 @@ int not_visible_ctr=0;
  
 
           //******AKP NOTE :Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
-          /*
-         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[curr_cell->x][curr_cell->y][curr_cell->z].is_horizontal_surface==1)
-          {
+          
+//          if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[curr_cell->x][curr_cell->y][curr_cell->z].is_horizontal_surface==1)
+//           {
+// 
+//           point_to_look[6] = x2;
+//           point_to_look[7] = y2;
+//           point_to_look[8] = z2;
+//           
+//           Using perspective taking function
+//           if(type==1) //for human
+//           {
+//           p3d_rob * currRob=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
+//           p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
+//           is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
+//           }
+//           else
+//           {
+//            if(type==2) //for HRP2
+//            {
+//           p3d_rob * currRob=ACBTSET->robot;
+//           p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
+//           is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
+//            } 
+//           }
+//           
+//           Using collison test by local path method  
+//           is_visible=is_point_visible_by_st_line(hum_head_pos, point_to_look, type); 
+//           
+//           if(is_visible==1)
+//           {  
+//           }
+//           else
+//           {
+//           is_visible=0;
+//           t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
+//           }
+//           }
+//           ****** END Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
+//           else
 
-          point_to_look[6] = x2;
-          point_to_look[7] = y2;
-          point_to_look[8] = z2;
-          
-          //Using perspective taking function
-          if(type==1) //for human
-          {
-          p3d_rob * currRob=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
-          p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
-          is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
-          }
-          else
-          {
-           if(type==2) //for HRP2
-           {
-          p3d_rob * currRob=ACBTSET->robot;
-          p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
-          is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
-           } 
-          }
-          
-          //Using collison test by local path method  
-          //is_visible=is_point_visible_by_st_line(hum_head_pos, point_to_look, type); 
-          
-          if(is_visible==1)
-          {  
-          }
-          else
-          {
-          is_visible=0;
-          ////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
-          }
-          }
-          //****** END Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
-          else*/
           ////////{
           is_visible=0;
           obs_found=1;
@@ -5645,7 +5657,8 @@ int not_visible_ctr=0;
     //////////printf(" Visible_ctr=%d, not_visible_ctr=%d\n",visible_ctr,not_visible_ctr); 
  return 1;
 }
-
+*/
+/*
 int update_3d_grid_visibility_standing(int type)//1 means human, 2 means HRP2
 {
 //////////printf(" Inside update_3d_grid_visibility(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
@@ -5720,10 +5733,10 @@ int visible_ctr=0;
       double y2=(1-t2)*eye_pos.y+t2*y;
       double z2=(1-t2)*eye_pos.z+t2*z; 
       
-  /*  double x2=(1-t2)*x+t*eye_pos.x;
-      double y2=(1-t2)*y+t*eye_pos.y;
-      double z2=(1-t2)*z+t*eye_pos.z; 
-  */
+//     double x2=(1-t2)*x+t*eye_pos.x;
+//       double y2=(1-t2)*y+t*eye_pos.y;
+//       double z2=(1-t2)*z+t*eye_pos.z; 
+//   
        //////////hri_bitmap_cell* curr_cell=NULL;
   
        ////curr_cell  =  hri_bt_get_closest_cell(grid_around_HRP2.GRID_SET, grid_around_HRP2.GRID_SET->bitmap[BT_AFFORDANCE_VISIBILITY], x2, y2, z2);
@@ -5762,19 +5775,19 @@ int visible_ctr=0;
        ////////if(curr_cell!=NULL)
         if(cell_valid==1)
         { 
-        /*
-        if(type==1)//means for human
-         {
-        grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_standing_human=0;
-         }
-        else
-         {
-        if(type==2)//means for HRP2
-          {
-          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_standing_HRP2=0;
-          }
-         }
-        */
+        
+//         if(type==1)//means for human
+//          {
+//         grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_standing_human=0;
+//          }
+//         else
+//          {
+//         if(type==2)//means for HRP2
+//           {
+//           grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_standing_HRP2=0;
+//           }
+//          }
+        
         int is_visible=1; 
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].val==-1)//Exact obstacle cells
          {
@@ -5785,45 +5798,45 @@ int visible_ctr=0;
  
 
           //******AKP NOTE :Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
-          /*
-         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[curr_cell->x][curr_cell->y][curr_cell->z].is_horizontal_surface==1)
-          {
-
-          point_to_look[6] = x2;
-          point_to_look[7] = y2;
-          point_to_look[8] = z2;
           
-          //Using perspective taking function
-          if(type==1) //for human
-          {
-          p3d_rob * currRob=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
-          p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
-          is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
-          }
-          else
-          {
-           if(type==2) //for HRP2
-           {
-          p3d_rob * currRob=ACBTSET->robot;
-          p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
-          is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
-           } 
-          }
-          
-          //Using collison test by local path method  
-          //is_visible=is_point_visible_by_st_line(hum_head_pos, point_to_look, type); 
-          
-          if(is_visible==1)
-          {  
-          }
-          else
-          {
-          is_visible=0;
-          ////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
-          }
-          }
-          //****** END Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
-          else*/
+//          if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[curr_cell->x][curr_cell->y][curr_cell->z].is_horizontal_surface==1)
+//           {
+// 
+//           point_to_look[6] = x2;
+//           point_to_look[7] = y2;
+//           point_to_look[8] = z2;
+//           
+//           //Using perspective taking function
+//           if(type==1) //for human
+//           {
+//           p3d_rob * currRob=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
+//           p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
+//           is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
+//           }
+//           else
+//           {
+//            if(type==2) //for HRP2
+//            {
+//           p3d_rob * currRob=ACBTSET->robot;
+//           p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
+//           is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
+//            } 
+//           }
+//           
+//           //Using collison test by local path method  
+//           //is_visible=is_point_visible_by_st_line(hum_head_pos, point_to_look, type); 
+//           
+//           if(is_visible==1)
+//           {  
+//           }
+//           else
+//           {
+//           is_visible=0;
+//           ////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
+//           }
+//           }
+//           //****** END Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
+//           else
           ////////{
           obs_found=1;
           is_visible=0;
@@ -5878,9 +5891,9 @@ int visible_ctr=0;
     //////////printf(" Visible_ctr=%d\n",visible_ctr); 
   return 1;
 }
+*/
 
-
-
+/*
 int update_3d_grid_visibility_by_neck_turn(int type)//1 means human, 2 means HRP2, 3 means JIDO, 4 for human2
 {
 //////////printf(" **** Inside update_3d_grid_visibility_by_neck_turn() for %d,  no_FOV_end_point_vertices=%d\n",type,no_FOV_end_point_vertices);
@@ -5954,10 +5967,10 @@ int visible_ctr=0;
       double y2=(1-t2)*eye_pos.y+t2*y;
       double z2=(1-t2)*eye_pos.z+t2*z; 
       
-  /*  double x2=(1-t2)*x+t*eye_pos.x;
-      double y2=(1-t2)*y+t*eye_pos.y;
-      double z2=(1-t2)*z+t*eye_pos.z; 
-  */
+//     double x2=(1-t2)*x+t*eye_pos.x;
+//       double y2=(1-t2)*y+t*eye_pos.y;
+//       double z2=(1-t2)*z+t*eye_pos.z; 
+  
        //////////hri_bitmap_cell* curr_cell=NULL;
   
        ////curr_cell  =  hri_bt_get_closest_cell(grid_around_HRP2.GRID_SET, grid_around_HRP2.GRID_SET->bitmap[BT_AFFORDANCE_VISIBILITY], x2, y2, z2);
@@ -5997,25 +6010,25 @@ int visible_ctr=0;
        ////////if(curr_cell!=NULL)
         if(cell_valid==1)
         { 
-        /*
-        if(type==1)//means for human
-         {
-        grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_human_neck_turn=0;
-         }
-        else
-         {
-        if(type==2)//means for HRP2
-          {
-          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_HRP2_neck_turn=0;
-          }
-        else
-          //{
-           if(type==3)//means for JIDO
-           {
-          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_JIDO_neck_turn=0;
-           }
-          //}
-         }*/
+        
+//         if(type==1)//means for human
+//          {
+//         grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_human_neck_turn=0;
+//          }
+//         else
+//          {
+//         if(type==2)//means for HRP2
+//           {
+//           grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_HRP2_neck_turn=0;
+//           }
+//         else
+//           //{
+//            if(type==3)//means for JIDO
+//            {
+//           grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_JIDO_neck_turn=0;
+//            }
+//           //}
+//          }
 
         int is_visible=1; 
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].val==-1)//Exact obstacle cells
@@ -6026,46 +6039,46 @@ int visible_ctr=0;
           //////////is_visible=0;
  
 
-          //******AKP NOTE :Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
-          /*
-         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[curr_cell->x][curr_cell->y][curr_cell->z].is_horizontal_surface==1)
-          {
-
-          point_to_look[6] = x2;
-          point_to_look[7] = y2;
-          point_to_look[8] = z2;
+          //AKP NOTE :Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
           
-          //Using perspective taking function
-          if(type==1) //for human
-          {
-          p3d_rob * currRob=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
-          p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
-          is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
-          }
-          else
-          {
-           if(type==2) //for HRP2
-           {
-          p3d_rob * currRob=ACBTSET->robot;
-          p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
-          is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
-           } 
-          }
-          
-          //Using collison test by local path method  
-          //is_visible=is_point_visible_by_st_line(hum_head_pos, point_to_look, type); 
-          
-          if(is_visible==1)
-          {  
-          }
-          else
-          {
-          is_visible=0;
-          ////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
-          }
-          }
-          //****** END Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
-          else*/
+//          if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[curr_cell->x][curr_cell->y][curr_cell->z].is_horizontal_surface==1)
+//           {
+// 
+//           point_to_look[6] = x2;
+//           point_to_look[7] = y2;
+//           point_to_look[8] = z2;
+//           
+//           Using perspective taking function
+//           if(type==1) //for human
+//           {
+//           p3d_rob * currRob=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
+//           p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
+//           is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
+//           }
+//           else
+//           {
+//            if(type==2) //for HRP2
+//            {
+//           p3d_rob * currRob=ACBTSET->robot;
+//           p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
+//           is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
+//            } 
+//           }
+//           
+//           Using collison test by local path method  
+//           is_visible=is_point_visible_by_st_line(hum_head_pos, point_to_look, type); 
+//           
+//           if(is_visible==1)
+//           {  
+//           }
+//           else
+//           {
+//           is_visible=0;
+//           t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
+//           }
+//           }
+//           ****** END Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
+//           else
           ////////{
           is_visible=0;
           obs_found=1;
@@ -6135,6 +6148,7 @@ int visible_ctr=0;
          } 
         }
        }
+
       }
      //}
 
@@ -6146,8 +6160,9 @@ int visible_ctr=0;
  return 1;
   //////////printf(" Visible_ctr=%d\n",visible_ctr); 
 }
+*/
 
-
+/*
 int update_3d_grid_straight_visibility_standing(int type)//1 means human, 2 means HRP2
 {
 //////////printf(" Inside update_3d_grid_visibility(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
@@ -6221,10 +6236,10 @@ int visible_ctr=0;
       double y2=(1-t2)*eye_pos.y+t2*y;
       double z2=(1-t2)*eye_pos.z+t2*z; 
       
-  /*  double x2=(1-t2)*x+t*eye_pos.x;
-      double y2=(1-t2)*y+t*eye_pos.y;
-      double z2=(1-t2)*z+t*eye_pos.z; 
-  */
+//     double x2=(1-t2)*x+t*eye_pos.x;
+//       double y2=(1-t2)*y+t*eye_pos.y;
+//       double z2=(1-t2)*z+t*eye_pos.z; 
+  
        //////////hri_bitmap_cell* curr_cell=NULL;
   
        ////curr_cell  =  hri_bt_get_closest_cell(grid_around_HRP2.GRID_SET, grid_around_HRP2.GRID_SET->bitmap[BT_AFFORDANCE_VISIBILITY], x2, y2, z2);
@@ -6264,19 +6279,19 @@ int visible_ctr=0;
        ////////if(curr_cell!=NULL)
         if(cell_valid==1)
         { 
-        /*
-        if(type==1)//means for human
-         {
-        grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_human_straight_head_orientation_standing=0;
-         }
-        else
-         {
-        if(type==2)//means for HRP2
-          {
-          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_HRP2_straight_head_orientation_standing=0;
-          }
-         }
-        */
+        
+//         if(type==1)//means for human
+//          {
+//         grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_human_straight_head_orientation_standing=0;
+//          }
+//         else
+//          {
+//         if(type==2)//means for HRP2
+//           {
+//           grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_HRP2_straight_head_orientation_standing=0;
+//           }
+//          }
+        
         int is_visible=1; 
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].val==-1)//Exact obstacle cells
          {
@@ -6287,45 +6302,45 @@ int visible_ctr=0;
  
 
           //******AKP NOTE :Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
-          /*
-         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[curr_cell->x][curr_cell->y][curr_cell->z].is_horizontal_surface==1)
-          {
-
-          point_to_look[6] = x2;
-          point_to_look[7] = y2;
-          point_to_look[8] = z2;
           
-          //Using perspective taking function
-          if(type==1) //for human
-          {
-          p3d_rob * currRob=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
-          p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
-          is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
-          }
-          else
-          {
-           if(type==2) //for HRP2
-           {
-          p3d_rob * currRob=ACBTSET->robot;
-          p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
-          is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
-           } 
-          }
-          
-          //Using collison test by local path method  
-          //is_visible=is_point_visible_by_st_line(hum_head_pos, point_to_look, type); 
-          
-          if(is_visible==1)
-          {  
-          }
-          else
-          {
-          is_visible=0;
-          ////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
-          }
-          }
+//          if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[curr_cell->x][curr_cell->y][curr_cell->z].is_horizontal_surface==1)
+//           {
+// 
+//           point_to_look[6] = x2;
+//           point_to_look[7] = y2;
+//           point_to_look[8] = z2;
+//           
+//           //Using perspective taking function
+//           if(type==1) //for human
+//           {
+//           p3d_rob * currRob=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
+//           p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
+//           is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
+//           }
+//           else
+//           {
+//            if(type==2) //for HRP2
+//            {
+//           p3d_rob * currRob=ACBTSET->robot;
+//           p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
+//           is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
+//            } 
+//           }
+//           
+//           //Using collison test by local path method  
+//           //is_visible=is_point_visible_by_st_line(hum_head_pos, point_to_look, type); 
+//           
+//           if(is_visible==1)
+//           {  
+//           }
+//           else
+//           {
+//           is_visible=0;
+//           ////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
+//           }
+//           }
           //****** END Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
-          else*/
+        //  else
           ////////{
           obs_found=1;
           is_visible=0;
@@ -6379,8 +6394,8 @@ int visible_ctr=0;
   //////////printf(" Visible_ctr=%d\n",visible_ctr); 
    return 1;
 }
-
-
+*/
+/*
 int update_3d_grid_visibility_by_neck_turn_standing(int type)//1 means human, 2 means HRP2
 {
 //////////printf(" Inside update_3d_grid_visibility(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
@@ -6454,10 +6469,10 @@ int visible_ctr=0;
       double y2=(1-t2)*eye_pos.y+t2*y;
       double z2=(1-t2)*eye_pos.z+t2*z; 
       
-  /*  double x2=(1-t2)*x+t*eye_pos.x;
-      double y2=(1-t2)*y+t*eye_pos.y;
-      double z2=(1-t2)*z+t*eye_pos.z; 
-  */
+//     double x2=(1-t2)*x+t*eye_pos.x;
+//       double y2=(1-t2)*y+t*eye_pos.y;
+//       double z2=(1-t2)*z+t*eye_pos.z; 
+  
        //////////hri_bitmap_cell* curr_cell=NULL;
   
        ////curr_cell  =  hri_bt_get_closest_cell(grid_around_HRP2.GRID_SET, grid_around_HRP2.GRID_SET->bitmap[BT_AFFORDANCE_VISIBILITY], x2, y2, z2);
@@ -6497,19 +6512,19 @@ int visible_ctr=0;
        ////////if(curr_cell!=NULL)
         if(cell_valid==1)
         { 
-         /*
-        if(type==1)//means for human
-         {
-        grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_standing_human_neck_turn=0;
+         
+//         if(type==1)//means for human
+//          {
+//         grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_standing_human_neck_turn=0;
+//          }
+//         else
+//          {
+//         if(type==2)//means for HRP2
+//           {
+//           grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_standing_HRP2_neck_turn=0;
+//           }
          }
-        else
-         {
-        if(type==2)//means for HRP2
-          {
-          grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.visible_by_standing_HRP2_neck_turn=0;
-          }
-         }
-         */
+         
         int is_visible=1; 
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].val==-1)//Exact obstacle cells
          {
@@ -6520,45 +6535,45 @@ int visible_ctr=0;
  
 
           //******AKP NOTE :Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
-          /*
-         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[curr_cell->x][curr_cell->y][curr_cell->z].is_horizontal_surface==1)
-          {
-
-          point_to_look[6] = x2;
-          point_to_look[7] = y2;
-          point_to_look[8] = z2;
           
-          //Using perspective taking function
-          if(type==1) //for human
-          {
-          p3d_rob * currRob=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
-          p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
-          is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
-          }
-          else
-          {
-           if(type==2) //for HRP2
-           {
-          p3d_rob * currRob=ACBTSET->robot;
-          p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
-          is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
-           } 
-          }
-          
-          //Using collison test by local path method  
-          //is_visible=is_point_visible_by_st_line(hum_head_pos, point_to_look, type); 
-          
-          if(is_visible==1)
-          {  
-          }
-          else
-          {
-          is_visible=0;
-          ////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
-          }
-          }
+//          if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[curr_cell->x][curr_cell->y][curr_cell->z].is_horizontal_surface==1)
+//           {
+// 
+//           point_to_look[6] = x2;
+//           point_to_look[7] = y2;
+//           point_to_look[8] = z2;
+//           
+//           //Using perspective taking function
+//           if(type==1) //for human
+//           {
+//           p3d_rob * currRob=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
+//           p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
+//           is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
+//           }
+//           else
+//           {
+//            if(type==2) //for HRP2
+//            {
+//           p3d_rob * currRob=ACBTSET->robot;
+//           p3d_set_and_update_this_robot_conf(ACBTSET->visball, point_to_look);
+//           is_visible=psp_is_object_visible(currRob, ACBTSET->visball, 50);
+//            } 
+//           }
+//           
+//           //Using collison test by local path method  
+//           //is_visible=is_point_visible_by_st_line(hum_head_pos, point_to_look, type); 
+//           
+//           if(is_visible==1)
+//           {  
+//           }
+//           else
+//           {
+//           is_visible=0;
+//           ////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
+//           }
+//           }
           //****** END Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
-          else*/
+ //         else
           ////////{
           obs_found=1;
           is_visible=0;
@@ -6613,7 +6628,7 @@ int visible_ctr=0;
  return 1;
 }
 
-
+*/
 
 
 int human_state_updated=0;
@@ -6950,8 +6965,8 @@ return 1;
 int create_workspace_3D_grid()
 {
  int HRP2_table_index;
- ////HRP2_table_index=get_index_of_robot_by_name("HRP2TABLE");
- HRP2_table_index=get_index_of_robot_by_name("IKEA_SHELF");
+ HRP2_table_index=get_index_of_robot_by_name("HRP2TABLE");
+ ////HRP2_table_index=get_index_of_robot_by_name("IKEA_SHELF");
  configPt HRP2_table_pos = MY_ALLOC(double,envPt_MM->robot[HRP2_table_index]->nb_dof); /* Allocation of temporary robot configuration */
 
  p3d_get_robot_config_into(envPt_MM->robot[HRP2_table_index],&HRP2_table_pos);
@@ -7135,7 +7150,7 @@ grid_3d_affordance_calculated=1;
 p3d_set_freeflyer_pose2(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],0,0,0,0,0,0);
 return 1;
 }
-
+/*
  #if !defined(COMPILE_FOR_GENOM)  
 int find_affordance_new()
 {
@@ -7227,7 +7242,7 @@ kcd_with_report=0;
 ////////////ChronoPrint("***");
 int HRP2_table_index;
 HRP2_table_index=get_index_of_robot_by_name("HRP2TABLE");
-configPt HRP2_table_pos = MY_ALLOC(double,envPt_MM->robot[HRP2_table_index]->nb_dof); /* Allocation of temporary robot configuration */
+configPt HRP2_table_pos = MY_ALLOC(double,envPt_MM->robot[HRP2_table_index]->nb_dof); 
 
 p3d_get_robot_config_into(envPt_MM->robot[HRP2_table_index],&HRP2_table_pos);
 point_co_ordi grid_center;
@@ -7245,35 +7260,35 @@ printf(" **** 3D grid dimension is (%d x %d x %d), no. of cells =%d \n",grid_aro
 double cur_h_angle;
 double interval;
 
-/*
-//////////////////////tmp for jido
-ChronoOn();
-grid_3d_affordance_calculated=1; 
 
+// //////////////////////tmp for jido
+// ChronoOn();
+// grid_3d_affordance_calculated=1; 
+// 
+// 
+// ////p3d_rob *cur_rob=ACBTSET->robot;
+// cur_h_angle=cur_rob->cam_h_angle;
+// interval=grid_around_HRP2.GRID_SET->pace;
+// printf("cur_h_angle=%lf\n",cur_h_angle);
+// no_FOV_end_point_vertices=0;
+// while(cur_rob->cam_h_angle>0.001)
+// { 
+// cur_rob->cam_h_angle-=interval;
+//  
+// get_points_on_FOV_screen(cur_rob);
+// }
+// cur_rob->cam_h_angle=cur_h_angle;
+// ////ChronoOn();
+// update_3d_grid_visibility(3); //2 for JIDO
+// 
+// ChronoOff();
+// 
+// update_3d_grid_reachability_for_JIDO_new();
+// 
+// 
+// return 1;
+// ///////////////////////end tmp for jido
 
-////p3d_rob *cur_rob=ACBTSET->robot;
-cur_h_angle=cur_rob->cam_h_angle;
-interval=grid_around_HRP2.GRID_SET->pace;
-printf("cur_h_angle=%lf\n",cur_h_angle);
-no_FOV_end_point_vertices=0;
-while(cur_rob->cam_h_angle>0.001)
-{ 
-cur_rob->cam_h_angle-=interval;
- 
-get_points_on_FOV_screen(cur_rob);
-}
-cur_rob->cam_h_angle=cur_h_angle;
-////ChronoOn();
-update_3d_grid_visibility(3); //2 for JIDO
-
-ChronoOff();
-
-update_3d_grid_reachability_for_JIDO_new();
-
-
-return 1;
-///////////////////////end tmp for jido
-*/
 
 
 ChronoOn();
@@ -7307,7 +7322,7 @@ update_3d_grid_visibility(1); //1 for human
 ////////////ChronoPrint("TIME of 3D Visibility calculation for sitting Human from current position for current head orientation");
 
 //Now making the head straight along of axis of torso
-configPt hum_cur_pos = MY_ALLOC(double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof); /* Allocation of temporary robot configuration */
+configPt hum_cur_pos = MY_ALLOC(double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof);  
 
  p3d_get_robot_config_into(ACBTSET->human[ACBTSET->actual_human]->HumanPt,&hum_cur_pos);
 
@@ -7782,7 +7797,7 @@ update_3d_grid_visibility(4); //4 for human2
 ////////////ChronoPrint("TIME of 3D Visibility calculation for sitting Human from current position for current head orientation");
 
 //Now making the head straight along of axis of torso
-configPt hum2_cur_pos = MY_ALLOC(double,envPt_MM->robot[human_2_index]->nb_dof); /* Allocation of temporary robot configuration */
+configPt hum2_cur_pos = MY_ALLOC(double,envPt_MM->robot[human_2_index]->nb_dof); 
 
  p3d_get_robot_config_into(envPt_MM->robot[human_2_index],&hum2_cur_pos);
 
@@ -7892,36 +7907,36 @@ MY_FREE(hum2_cur_pos,double,envPt_MM->robot[human_2_index]->nb_dof);
 return 1;
 
 //return 1;
-/*
-ChronoPrint("Time before calculating affordance on surfaces ");
- //current_surface_index=0;
- int i=0;
- for(i=0;i<curr_surfaces_in_env.total_no_of_surfaces;i++)
- {
- printf(" For surface %d\n",i);
- ChronoPrint("Time Before update_surface_grid_based_on_curr_pos");
- update_surface_grid_based_on_curr_pos(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
 
- ChronoPrint("Time Before update_surface_grid_by_bending_human_at_curr_pos");
- update_surface_grid_by_bending_human_at_curr_pos(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
+// ChronoPrint("Time before calculating affordance on surfaces ");
+//  //current_surface_index=0;
+//  int i=0;
+//  for(i=0;i<curr_surfaces_in_env.total_no_of_surfaces;i++)
+//  {
+//  printf(" For surface %d\n",i);
+//  ChronoPrint("Time Before update_surface_grid_based_on_curr_pos");
+//  update_surface_grid_based_on_curr_pos(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
+// 
+//  ChronoPrint("Time Before update_surface_grid_by_bending_human_at_curr_pos");
+//  update_surface_grid_by_bending_human_at_curr_pos(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
+// 
+//  ChronoPrint("Time Before update_surface_grid_by_turning_human_at_curr_pos");
+//  update_surface_grid_by_turning_human_at_curr_pos(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
+//  
+//  
+// 
+//  
+//  
+//  HRP2_state=HRP2_CURRENT_STATE; //AKP : 1 is sitting, 2 is standing 
+//  //////ChronoPrint(" Time before create_HRP2_robot");
+//  //////create_HRP2_robot(HRP2_state);
+//  //////ChronoPrint(" Time after create_HRP2_robot and before update_surface_grid_for_HRP2_without_GIK");
+//  ////update_surface_grid_for_HRP2_with_GIK(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
+//  update_surface_grid_for_HRP2_without_GIK(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
+//  ChronoPrint(" Time after update_surface_grid_for_HRP2_without_GIK");
+// 
+//  }
 
- ChronoPrint("Time Before update_surface_grid_by_turning_human_at_curr_pos");
- update_surface_grid_by_turning_human_at_curr_pos(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
- 
- 
-
- 
- 
- HRP2_state=HRP2_CURRENT_STATE; //AKP : 1 is sitting, 2 is standing 
- //////ChronoPrint(" Time before create_HRP2_robot");
- //////create_HRP2_robot(HRP2_state);
- //////ChronoPrint(" Time after create_HRP2_robot and before update_surface_grid_for_HRP2_without_GIK");
- ////update_surface_grid_for_HRP2_with_GIK(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
- update_surface_grid_for_HRP2_without_GIK(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
- ChronoPrint(" Time after update_surface_grid_for_HRP2_without_GIK");
-
- }
-*/
 ////ChronoPrint("TIME for all affordance calculation");
 ChronoOff();
 ////create_3d_grid_for_HRP2_GIK();
@@ -7931,6 +7946,7 @@ ChronoOff();
  //update_surface_grid(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[1]);
 }
 #endif
+*/
 int update_Mightability_Maps_new()
 {
 double total_time=0.0;
@@ -8180,7 +8196,7 @@ p3d_set_freeflyer_pose2(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],0,0,0,0,0
  return 1;
 
 }
-
+/*
  #if !defined(COMPILE_FOR_GENOM)  
 int update_Mightability_Maps()
 {
@@ -8192,74 +8208,74 @@ ChronoOn();
 int kcd_with_report=0;
 p3d_rob *human=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
 
-/*
-int res = p3d_col_test_robot(human,kcd_with_report);
- if(res>0)
- {
-  printf(" There is collision with human, res=%d \n", res);
-  //return 0;
- }
-kcd_with_report=0;
- res = p3d_col_test_self_collision(human,kcd_with_report);
- if(res>0)
- {
-  printf(" There is self collision with human, res=%d \n", res);
-  //return 0;
- }
-*/
+
+// int res = p3d_col_test_robot(human,kcd_with_report);
+//  if(res>0)
+//  {
+//   printf(" There is collision with human, res=%d \n", res);
+//   //return 0;
+//  }
+// kcd_with_report=0;
+//  res = p3d_col_test_self_collision(human,kcd_with_report);
+//  if(res>0)
+//  {
+//   printf(" There is self collision with human, res=%d \n", res);
+//   //return 0;
+//  }
+
 int HRP2_state=HRP2_CURRENT_STATE; //AKP : 1 is sitting, 2 is standing 
 ///////create_HRP2_robot(HRP2_state);
 
 p3d_rob *cur_rob=ACBTSET->robot;
 
-	/*
-	for(int j=0;j<cur_rob->no;j++)
-	{
-	p3d_obj *o = cur_rob->o[j];
-	//if (strstr(o->name,"head") || strstr(o->name,"HEAD") || strstr(o->name,"hand") || strstr(o->name,"HAND"))
-	// {
-	////p3d_get_object_center(o,objCenter);
-        printf("%s\n",o->name);
-					// }	  
-	}
-	*/		
+	
+// // 	for(int j=0;j<cur_rob->no;j++)
+// // 	{
+// // 	p3d_obj *o = cur_rob->o[j];
+// // 	//if (strstr(o->name,"head") || strstr(o->name,"HEAD") || strstr(o->name,"hand") || strstr(o->name,"HAND"))
+// // 	// {
+// // 	////p3d_get_object_center(o,objCenter);
+// //         printf("%s\n",o->name);
+// // 					// }	  
+// // 	}
+			
 			//define if robot is near or not? here or in observation? od we need a different list
 			// if ((ContObjTmp/r->no)>.4)
 			// 
 			
 		
 
-/*
- kcd_with_report=0;
- //res = p3d_col_test_self_collision(cur_rob,kcd_with_report);
- res = p3d_col_test_self_collision(cur_rob,2);
- ////res = p3d_col_test_robot(cur_rob,2);
-		//printf("collision 2:   %i \n",res2);
-      set_kcd_which_test(P3D_KCD_ROB_ALL);
-      res = p3d_col_does_robot_collide(cur_rob->num, p3d_numcoll);
- //// res = p3d_col_test_self_collision(cur_rob->num, p3d_numcoll);
- if(res>0)
- {
-  printf(" There is self collision with robot, res=%d \n", res);
-  ////return 0;
- }
 
-kcd_with_report=0;
-  res = p3d_col_test_robot(cur_rob,2);
-		//printf("collision 2:   %i \n",res2);
-      set_kcd_which_test(P3D_KCD_ROB_ALL);
-      res = p3d_col_does_robot_collide(cur_rob->num, p3d_numcoll);
- //// res = p3d_col_test_self_collision(cur_rob->num, p3d_numcoll);
- if(res>0)
- {
-  printf(" There is collision with robot, res=%d \n", res);
-  ////return 0;
- }
- */
-/*
- if(ONLINE_TRACKING_FLAG==0)
- initialize_surfaces_in_env(); // AKP Note: Comment it if using motion capture button
-*/
+// //  kcd_with_report=0;
+// //  //res = p3d_col_test_self_collision(cur_rob,kcd_with_report);
+// //  res = p3d_col_test_self_collision(cur_rob,2);
+// //  ////res = p3d_col_test_robot(cur_rob,2);
+// // 		//printf("collision 2:   %i \n",res2);
+// //       set_kcd_which_test(P3D_KCD_ROB_ALL);
+// //       res = p3d_col_does_robot_collide(cur_rob->num, p3d_numcoll);
+// //  //// res = p3d_col_test_self_collision(cur_rob->num, p3d_numcoll);
+// //  if(res>0)
+// //  {
+// //   printf(" There is self collision with robot, res=%d \n", res);
+// //   ////return 0;
+// //  }
+// // 
+// // kcd_with_report=0;
+// //   res = p3d_col_test_robot(cur_rob,2);
+// // 		//printf("collision 2:   %i \n",res2);
+// //       set_kcd_which_test(P3D_KCD_ROB_ALL);
+// //       res = p3d_col_does_robot_collide(cur_rob->num, p3d_numcoll);
+// //  //// res = p3d_col_test_self_collision(cur_rob->num, p3d_numcoll);
+// //  if(res>0)
+// //  {
+// //   printf(" There is collision with robot, res=%d \n", res);
+// //   ////return 0;
+// //  }
+ 
+
+// //  if(ONLINE_TRACKING_FLAG==0)
+// //  initialize_surfaces_in_env(); // AKP Note: Comment it if using motion capture button
+
 
  
 ////int HRP2_state=HRP2_CURRENT_STATE; //AKP : 1 is sitting, 2 is standing 
@@ -8473,35 +8489,35 @@ double orig_tilt;
 double fixed_pitch=M_PI/8.0;
 
 //////////printf(" NEED_HUMAN_VISIBILITY_UPDATE=%d\n",NEED_HUMAN_VISIBILITY_UPDATE);
-/*
-//////////////////////tmp for jido
-ChronoOn();
-grid_3d_affordance_calculated=1; 
 
+// //////////////////////tmp for jido
+// ChronoOn();
+// grid_3d_affordance_calculated=1; 
+// 
+// 
+// ////p3d_rob *cur_rob=ACBTSET->robot;
+// cur_h_angle=cur_rob->cam_h_angle;
+// interval=grid_around_HRP2.GRID_SET->pace;
+// printf("cur_h_angle=%lf\n",cur_h_angle);
+// no_FOV_end_point_vertices=0;
+// while(cur_rob->cam_h_angle>0.001)
+// { 
+// cur_rob->cam_h_angle-=interval;
+//  
+// get_points_on_FOV_screen(cur_rob);
+// }
+// cur_rob->cam_h_angle=cur_h_angle;
+// ////ChronoOn();
+// update_3d_grid_visibility(3); //2 for JIDO
+// 
+// ChronoOff();
+// 
+// update_3d_grid_reachability_for_JIDO_new();
+// 
+// 
+// return 1;
+// ///////////////////////end tmp for jido
 
-////p3d_rob *cur_rob=ACBTSET->robot;
-cur_h_angle=cur_rob->cam_h_angle;
-interval=grid_around_HRP2.GRID_SET->pace;
-printf("cur_h_angle=%lf\n",cur_h_angle);
-no_FOV_end_point_vertices=0;
-while(cur_rob->cam_h_angle>0.001)
-{ 
-cur_rob->cam_h_angle-=interval;
- 
-get_points_on_FOV_screen(cur_rob);
-}
-cur_rob->cam_h_angle=cur_h_angle;
-////ChronoOn();
-update_3d_grid_visibility(3); //2 for JIDO
-
-ChronoOff();
-
-update_3d_grid_reachability_for_JIDO_new();
-
-
-return 1;
-///////////////////////end tmp for jido
-*/
 
 if(NEED_HUMAN1_VISIBILITY_UPDATE==1)
  {
@@ -8536,7 +8552,7 @@ update_3d_grid_visibility(1); //1 for human
 ////return 1;
 
 //Now making the head straight
-configPt hum_cur_pos = MY_ALLOC(double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof); /* Allocation of temporary robot configuration */
+configPt hum_cur_pos = MY_ALLOC(double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof); 
 
  p3d_get_robot_config_into(ACBTSET->human[ACBTSET->actual_human]->HumanPt,&hum_cur_pos);
 
@@ -8574,7 +8590,7 @@ ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TILT]=hum_cur_p
 
 
 //Now turning the head only
-//////configPt hum_cur_pos = MY_ALLOC(double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof); /* Allocation of temporary robot configuration */
+//////configPt hum_cur_pos = MY_ALLOC(double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof); 
 
  //////p3d_get_robot_config_into(ACBTSET->human[ACBTSET->actual_human]->HumanPt,&hum_cur_pos);
 
@@ -8818,7 +8834,7 @@ update_3d_grid_visibility(2); //2 for HRP2
 
 
 //Now making the head straight
-configPt rob_cur_pos = MY_ALLOC(double,ACBTSET->robot->nb_dof); /* Allocation of temporary robot configuration */
+configPt rob_cur_pos = MY_ALLOC(double,ACBTSET->robot->nb_dof); 
 
 p3d_get_robot_config_into(ACBTSET->robot,&rob_cur_pos);
 
@@ -8860,7 +8876,7 @@ ACBTSET->robot->ROBOT_POS[ROBOTq_TILT]=rob_cur_pos[ROBOTq_TILT];
 p3d_get_robot_config_into(ACBTSET->robot,&rob_cur_pos);
 
 //Now turning the head only
-////configPt rob_cur_pos = MY_ALLOC(double,ACBTSET->robot->nb_dof); /* Allocation of temporary robot configuration */
+////configPt rob_cur_pos = MY_ALLOC(double,ACBTSET->robot->nb_dof); 
 
  ////p3d_get_robot_config_into(ACBTSET->robot,&rob_cur_pos);
 
@@ -9004,16 +9020,16 @@ total_time+=tu;//In sec
 ChronoOff();
 
 //////////printf(" <<<<<<<<<< Total Time for updating all the Mightability Maps=%lf s >>>>>>>>>>\n",total_time);
-/*
-  configPt visq;
- visq= MY_ALLOC(double,ACBTSET->visball->nb_dof); 
- p3d_get_robot_config_into(ACBTSET->visball,&visq);
- visq[6]=0.0;
- visq[7]=0.0;
- visq[8]=0.0;
-  
- p3d_set_and_update_this_robot_conf(ACBTSET->visball, visq);
-*/
+
+//   configPt visq;
+//  visq= MY_ALLOC(double,ACBTSET->visball->nb_dof); 
+//  p3d_get_robot_config_into(ACBTSET->visball,&visq);
+//  visq[6]=0.0;
+//  visq[7]=0.0;
+//  visq[8]=0.0;
+//   
+//  p3d_set_and_update_this_robot_conf(ACBTSET->visball, visq);
+
 
 #ifdef SECOND_HUMAN_EXISTS
 if(NEED_HUMAN2_VISIBILITY_UPDATE==1)
@@ -9053,7 +9069,7 @@ update_3d_grid_visibility(4); //4 for human 2
 ////return 1;
 
 //Now making the head straight
-configPt hum2_cur_pos = MY_ALLOC(double,envPt_MM->robot[human_2_index]->nb_dof); /* Allocation of temporary robot configuration */
+configPt hum2_cur_pos = MY_ALLOC(double,envPt_MM->robot[human_2_index]->nb_dof); 
 
  p3d_get_robot_config_into(envPt_MM->robot[human_2_index],&hum2_cur_pos);
 
@@ -9090,7 +9106,7 @@ envPt_MM->robot[human_2_index]->ROBOT_POS[HUMANq_PAN]=hum2_cur_pos[HUMANq_PAN];
 envPt_MM->robot[human_2_index]->ROBOT_POS[HUMANq_TILT]=hum2_cur_pos[HUMANq_TILT];
 
 //Now turning the head only
-//////configPt hum_cur_pos = MY_ALLOC(double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof); /* Allocation of temporary robot configuration */
+//////configPt hum_cur_pos = MY_ALLOC(double,ACBTSET->human[ACBTSET->actual_human]->HumanPt->nb_dof);
 
  //////p3d_get_robot_config_into(ACBTSET->human[ACBTSET->actual_human]->HumanPt,&hum_cur_pos);
 
@@ -9164,14 +9180,14 @@ if(HUMAN2_HAS_MOVED==1)
  {
  update_3d_grid_reachability_for_human_new(4);//4 for human2
 
-/* 
- #ifdef MM_FOR_VIRTUALLY_STANDING_HUMAN
  
- virtually_update_human_state_new(0);// Standing
-update_3d_grid_reachability_for_human_standing_new();
- virtually_update_human_state_new(1);
- #endif
-*/
+//  #ifdef MM_FOR_VIRTUALLY_STANDING_HUMAN
+//  
+//  virtually_update_human_state_new(0);// Standing
+// update_3d_grid_reachability_for_human_standing_new();
+//  virtually_update_human_state_new(1);
+//  #endif
+
 
  HUMAN2_HAS_MOVED=0;
  }
@@ -9188,36 +9204,36 @@ update_3d_grid_reachability_for_human_standing_new();
 return 1;
 
 //return 1;
-/*
-ChronoPrint("Time before calculating affordance on surfaces ");
- //current_surface_index=0;
- int i=0;
- for(i=0;i<curr_surfaces_in_env.total_no_of_surfaces;i++)
- {
- printf(" For surface %d\n",i);
- ChronoPrint("Time Before update_surface_grid_based_on_curr_pos");
- update_surface_grid_based_on_curr_pos(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
 
- ChronoPrint("Time Before update_surface_grid_by_bending_human_at_curr_pos");
- update_surface_grid_by_bending_human_at_curr_pos(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
+// ChronoPrint("Time before calculating affordance on surfaces ");
+//  //current_surface_index=0;
+//  int i=0;
+//  for(i=0;i<curr_surfaces_in_env.total_no_of_surfaces;i++)
+//  {
+//  printf(" For surface %d\n",i);
+//  ChronoPrint("Time Before update_surface_grid_based_on_curr_pos");
+//  update_surface_grid_based_on_curr_pos(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
+// 
+//  ChronoPrint("Time Before update_surface_grid_by_bending_human_at_curr_pos");
+//  update_surface_grid_by_bending_human_at_curr_pos(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
+// 
+//  ChronoPrint("Time Before update_surface_grid_by_turning_human_at_curr_pos");
+//  update_surface_grid_by_turning_human_at_curr_pos(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
+//  
+//  
+// 
+//  
+//  
+//  HRP2_state=HRP2_CURRENT_STATE; //AKP : 1 is sitting, 2 is standing 
+//  //////ChronoPrint(" Time before create_HRP2_robot");
+//  //////create_HRP2_robot(HRP2_state);
+//  //////ChronoPrint(" Time after create_HRP2_robot and before update_surface_grid_for_HRP2_without_GIK");
+//  ////update_surface_grid_for_HRP2_with_GIK(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
+//  update_surface_grid_for_HRP2_without_GIK(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
+//  ChronoPrint(" Time after update_surface_grid_for_HRP2_without_GIK");
 
- ChronoPrint("Time Before update_surface_grid_by_turning_human_at_curr_pos");
- update_surface_grid_by_turning_human_at_curr_pos(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
- 
- 
+// }
 
- 
- 
- HRP2_state=HRP2_CURRENT_STATE; //AKP : 1 is sitting, 2 is standing 
- //////ChronoPrint(" Time before create_HRP2_robot");
- //////create_HRP2_robot(HRP2_state);
- //////ChronoPrint(" Time after create_HRP2_robot and before update_surface_grid_for_HRP2_without_GIK");
- ////update_surface_grid_for_HRP2_with_GIK(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
- update_surface_grid_for_HRP2_without_GIK(surf_grid_samp_rate, &curr_surfaces_in_env.flat_surf[i]);
- ChronoPrint(" Time after update_surface_grid_for_HRP2_without_GIK");
-
- }
-*/
 ////ChronoPrint("TIME for all affordance calculation");
 ////ChronoOff();
 ////create_3d_grid_for_HRP2_GIK();
@@ -9553,16 +9569,16 @@ g3d_drawOneLine(curr_surfaces_in_env.flat_surf[current_surface_index].vertices[n
   }
  }
 }//END for(;current_surface_index<curr_surfaces_in_env.total_no_of_surfaces;current_surface_index++)
-/*
-int no_path_pts=0;
-for(no_path_pts=0;no_path_pts<cur_manipulation_path.total_no_pts;no_path_pts++)
- {
- g3d_drawDisc(cur_manipulation_path.path_points[no_path_pts].x, cur_manipulation_path.path_points[no_path_pts].y, cur_manipulation_path.path_points[no_path_pts].z, 0.01, 4, NULL);
- }
-*/
+
+// int no_path_pts=0;
+// for(no_path_pts=0;no_path_pts<cur_manipulation_path.total_no_pts;no_path_pts++)
+//  {
+//  g3d_drawDisc(cur_manipulation_path.path_points[no_path_pts].x, cur_manipulation_path.path_points[no_path_pts].y, cur_manipulation_path.path_points[no_path_pts].z, 0.01, 4, NULL);
+//  }
+
 
 }
-
+*/
 
 
 double get_cell_value_3D_grid(hri_bitmapset * btset, int x, int y, int z)
@@ -14801,7 +14817,7 @@ int is_object_visible_for_agent(HRI_AGENT * agent, p3d_rob *object, double thres
     return FALSE;
   
 }
-
+/*
 int show_point_of_screen()
 {
  int j=0;
@@ -14821,5 +14837,72 @@ int show_point_of_screen()
  
      }
    }
+}
+*/
+int get_horizontal_triangles(std::list<gpTriangle> &htris)
+{
+  unsigned int i, j, k;
+  p3d_index *face_indices= NULL;
+  double angle;
+  p3d_vector3 normal;
+  p3d_vector3 *points= NULL;
+  p3d_matrix4 Tsupport;
+  p3d_polyhedre *polyh= NULL;
+  gpTriangle triangle;
+  gpPlacement placement;
+  std::list<gpTriangle>::iterator iterT1, iterT2;
+
+ int nr = envPt_MM->nr;
+for(k=0;k<nr;k++)
+ {
+ for(i=0; i<(unsigned int) envPt_MM->robot[k]->o[0]->np; ++i)
+  {
+    p3d_matMultXform(envPt_MM->robot[k]->o[0]->jnt->abs_pos, envPt_MM->robot[k]->o[0]->pol[i]->pos_rel_jnt, Tsupport);
+
+    polyh= envPt_MM->robot[k]->o[0]->pol[i]->poly;
+    poly_build_planes(polyh);
+    points= polyh->the_points;
+    for(j=0; j<polyh->nb_faces; j++)
+    {
+      p3d_xformVect(Tsupport, polyh->the_faces[j].plane->normale, normal);
+      p3d_vectNormalize(normal, normal);
+      face_indices= polyh->the_faces[j].the_indexs_points;
+
+      angle= fabs( (180.0/M_PI)*acos(normal[2]) );
+      if( (normal[2]<0) || angle>5 )
+      {  continue;  }
+      if(polyh->the_faces[j].nb_points==3)
+      {
+         p3d_xformPoint(Tsupport, points[face_indices[0] - 1], triangle.p1);
+         p3d_xformPoint(Tsupport, points[face_indices[1] - 1], triangle.p2);
+         p3d_xformPoint(Tsupport, points[face_indices[2] - 1], triangle.p3);
+         triangle.description= GP_DESCRIPTION_POINTS;
+         htris.push_back(triangle);
+      }
+      else
+      {
+        ////printf("%s: %d: gpFind_placements_on_object(): the faces of \"%s\" should all be triangles.\n", __FILE__,__LINE__,support->name);
+      }
+    }
+  }
+ }
+
+ return 0;
+}
+
+int display_horizontal_triangles(std::list<gpTriangle> htris)
+{
+  std::list<gpTriangle>::iterator iter;
+
+  for(iter=htris.begin(); iter!=htris.end(); ++iter)
+  {
+    glBegin(GL_TRIANGLES);
+    glVertex3dv(iter->p1);
+    glVertex3dv(iter->p2);
+    glVertex3dv(iter->p3);
+    glEnd();
+  }
+
+
 }
 
