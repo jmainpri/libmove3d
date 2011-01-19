@@ -849,6 +849,9 @@ static void CB_showbt_gnuplot_obj(FL_OBJECT *obj, long arg)
   }
 }
 
+/**
+ * Callback for choosing which bitmaps to visualize
+ */
 static void CB_showbt_obj(FL_OBJECT *obj, long arg)
 {
   if(SELECTED_BTSET == 1){

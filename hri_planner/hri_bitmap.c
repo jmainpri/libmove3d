@@ -136,14 +136,14 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
     return FALSE;
 
   if(bitmap->data == NULL) {
-    hri_bt_create_data(bitmap);
+    hri_bt_create_data(bitmap); /** ALLOC */
   }
   if (type== BT_COMBINED) { // need to initialize obstacles bitmap to activate combined.
     if(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset) == NULL) {
-      hri_bt_create_data(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset));
+      hri_bt_create_data(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset)); /** ALLOC */
     }
   }
-  if(type != BT_PATH ) { // oath bitmap is filled on findPath
+  if(type != BT_PATH ) { // path bitmap is filled on findPath
     if ( !hri_bt_fill_bitmap(bitmapset, type)) {
       PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
       return FALSE;
@@ -155,7 +155,7 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 
 /****************************************************************/
 /*!
- * \brief Fill the bitmap with right parameters as defined by the bitmaps own calculate function
+ * \brief Fill the bitmap of the given type with right values as defined by the bitmaps own calculate function
  *
  * \param type  type of the bitmap
  *
@@ -171,7 +171,7 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
     return FALSE;
   }
 
-  // TK human can change position and comeinto existence
+  // TK human can change position and come into existence
   if(type == BT_OBSTACLES){
     if(btset->bitmap[BT_OBSTACLES] != NULL) {
       hri_bt_create_obstacles(btset);
@@ -1840,7 +1840,7 @@ int hri_bt_update_hidzones(hri_bitmapset * btset,double radius)
 
 /****************************************************************/
 /*!
- * \brief reconstructs the distance bitmap
+ * \brief reconstructs the combined bitmap
  * assumes that BT_OBSTACLE bitmap has been updated first.
  * \param radius radius
  * \param heigth height
