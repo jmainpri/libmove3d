@@ -265,7 +265,45 @@ int hri_bt_keep_old_path(hri_bitmapset* bitmapset, hri_bitmap* bitmap_oldpath, h
   return useOldPath;
 }
 
+/**
+ * the significance of social costs around moving humans diminishes
+ * over time (as they won't be there anyway when the robot arrives)
+ * We reduce the values accordingly, depending on the search start (if any),
+ * or the robot position (if any).
+ * Using the path length during search is not a good idea as this
+ * dynamically changes the search space, making a* fail.
+ */
+double hri_bt_reduce_value_moving_human(hri_bitmapset * btset, double humanx, double humany, double originalVal) {
+  double val = originalVal;
+  double start_realx, start_realy, start_distance = -1;
+  // current search start position is in path bitmap
+  hri_bitmap* path_bitmap = btset->bitmap[BT_PATH];
+  if (path_bitmap->search_start != NULL) {
+    start_realx = ( path_bitmap->search_start->x * btset->pace)+btset->realx;
+    start_realy = ( path_bitmap->search_start->y * btset->pace)+btset->realy;
+    start_distance = DISTANCE2D(start_realx, start_realy, humanx, humany);
+  } else  if (btset->robot->ROBOT_POS != NULL) {
+    start_realx = btset->robot->ROBOT_POS[ROBOTq_X];
+    start_realy = btset->robot->ROBOT_POS[ROBOTq_Y];
+    start_distance = DISTANCE2D(start_realx, start_realy, humanx, humany);
+  }
+  if (start_distance != -1) {
+    if (( btset->parameters->moving_human_deprecation < 0
+        ||  start_distance > btset->parameters->moving_human_deprecation)  ) {
+      // Knowledge that deprecates over space, but this favors longer paths
+      val = 0;
+    } else {
+      // distance == 0 is worst case, keep full val
+      val = val * ( 1 - (start_distance / btset->parameters->moving_human_deprecation));
+    }
+  }
+  return val;
+}
 
+
+/**
+ * dist value function regarding one human
+ */
 double hri_bt_calc_dist_value_human(hri_bitmapset * btset, hri_human* cur_human, int x, int y, int z)
 {
   double radius,height;
@@ -286,17 +324,14 @@ double hri_bt_calc_dist_value_human(hri_bitmapset * btset, hri_human* cur_human,
   if(distance > radius) {
     val = 0;
   } else {
-    // discard moving humans if ousdie parametrized range
-    if (cur_human->actual_state == BT_MOVING
-        && ( btset->parameters->moving_human_deprecation < 0
-        ||  distance > btset->parameters->moving_human_deprecation)  ) {
-      // Knowledge that deprecates over space, but this favors longer paths
-      val = 0;
-    } else {
-      // sigmoid function up to radius
-      sigmoid = cos(distance / radius * M_PI_2) + 0;
-      quot = 1 / (0.6 + distance );
-      val = pow(height * (sigmoid * quot), 3);
+    // sigmoid function up to radius
+    sigmoid = cos(distance / radius * M_PI_2) + 0;
+    quot = 1 / (0.6 + distance );
+    val = pow(height * (sigmoid * quot), 3);
+
+    // discard moving humans if ouside parametrized range
+    if (cur_human->actual_state == BT_MOVING) {
+      val = hri_bt_reduce_value_moving_human(btset, humanx, humany, val);
     }
   }
   return val;
@@ -396,25 +431,25 @@ double hri_bt_calc_vis_value_human(hri_bitmapset * btset, hri_human* cur_human, 
 
         // use stretch to increase / decrease weight more on more backward angles
         val = distance_cosine * (height + (angle_deviation - M_PI_4) * stretch_back);
+
       }
     } else {
-      // Knowledge that deprecates over space, but this favors longer paths
-      if  (btset->parameters->moving_human_deprecation < 0
-          ||  distance > btset->parameters->moving_human_deprecation) {
-        val = 0;
-      } else {
-        // if human is moving, visibility does not matter, however we predict
-        // space in front of the human, assuming that's the direction the human is moving to
-        if (angle_deviation < M_PI_4 ) {
-          // predictive costs
-          distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
 
-          // use stretch to increase / decrease weight more on more backward angles
-          val = distance_cosine * (height + (M_PI - angle_deviation) * stretch_back);
-        } else {
-          val = 0;
-        }
-      } // end if moving human within significant range
+      // if human is moving, visibility does not matter, however we predict
+      // space in front of the human, assuming that's the direction the human is moving to
+      if (angle_deviation < M_PI_4 ) {
+        // predictive costs
+        distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
+
+        // use stretch to increase / decrease weight more on more backward angles
+        val = distance_cosine * (height + (M_PI - angle_deviation) * stretch_back);
+
+        val = hri_bt_reduce_value_moving_human(btset, humanx, humany, val);
+
+      } else {
+        val = 0;
+      }
+
     } // end else human moving
   } // endif distance > radius
   return val;
