@@ -788,7 +788,7 @@ double getDirectionalVal(hri_bitmapset * btset, hri_bitmap_cell* current_cell, h
        } // endif moving
      }
 
-     printf("cost reduced by %f \n", directionalSignificance);
+     //printf("cost reduced by %f \n", directionalSignificance);
      val = val * directionalSignificance;
 
      if(result < val) {
@@ -831,16 +831,17 @@ double hri_bt_A_CalculateCellG(hri_bitmapset * btset, hri_bitmap_cell* current_c
   if (fromcell->g < 0 || current_cell->val < 0){
     return -1;
   }
-  if (btset->parameters->directional_cost == FALSE) {
-    // add the costs of the path to the parent, the social costs in this cell, and the path length
+
+  /** if 2d search and parameter is set (not manip) */
+  if ( btset->bitmap[BT_OBSTACLES]->nz == 1 && btset->parameters->directional_cost == TRUE) {
+    // recalculate val from scratch, depending on human and robot pose in this search context
+    double val = getDirectionalVal(btset, current_cell, fromcell, distance);
+    current_cell->val = val;
+  }
+
+  // add the costs of the path to the parent, the social costs in this cell, and the path length
     result = fromcell->g +
                                 current_cell->val +
                                 (distance * btset->parameters->path_length_weight);
-  } else {
-    result = fromcell->g +
-                               getDirectionalVal(btset, current_cell, fromcell, distance) +
-                               (distance * btset->parameters->path_length_weight);
-  }
-
-  return result;
+    return result;
 }
