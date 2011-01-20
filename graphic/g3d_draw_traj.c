@@ -548,7 +548,7 @@ void g3d_draw_tcur(p3d_rob *robotPt, int NumBody, int NbKeyFrames) {
   qsave = p3d_get_robot_config(robotPt);
   color = Black;
   modulo = 0;
-
+  
   du = robotPt->tcur->range_param / NbKeyFrames;
   localpathPt = robotPt->tcur->courbePt;
 
@@ -557,6 +557,7 @@ void g3d_draw_tcur(p3d_rob *robotPt, int NumBody, int NbKeyFrames) {
 
   q = localpathPt->config_at_param(robotPt, localpathPt, 0);
   p3d_set_and_update_this_robot_conf(robotPt, q);
+  
   p3d_jnt_get_cur_vect_point(o->jnt, pi);
   p3d_destroy_config(robotPt, q);
   u += du;
@@ -584,21 +585,28 @@ void g3d_draw_tcur(p3d_rob *robotPt, int NumBody, int NbKeyFrames) {
       /* position of the robot corresponding to parameter u */
       q = localpathPt->config_at_param(robotPt, localpathPt, u);
       p3d_set_and_update_this_robot_conf(robotPt, q);
+      
 // draw frame xav
+      
 //  			for(int i=0; i<=robotPt->njoints; i++)
 //  			{
 //  				g3d_draw_frame(robotPt->joints[i]->abs_pos, 15);
 //  			}
 
-
-
-
       p3d_jnt_get_cur_vect_point(o->jnt, pf);
       p3d_destroy_config(robotPt, q);
+      
       if ((!ENV.getBool(Env::isCostSpace)) || (GroundCostObj == NULL)) {
         glLineWidth(3.);
-        //g3d_drawOneLine(pi[0],pi[1],pi[2],pf[0],pf[1],pf[2],color,NULL);
-        g3d_drawOneLine(pi[0], pi[1], pi[2], pf[0], pf[1], pf[2], Black, NULL);
+        
+        if( ENV.getBool(Env::drawMultiColorLocalpath) )
+        {
+          g3d_drawOneLine(pi[0],pi[1],pi[2],pf[0],pf[1],pf[2],color,NULL);
+        }
+        else {
+          g3d_drawOneLine(pi[0], pi[1], pi[2], pf[0], pf[1], pf[2], Black, NULL);
+        }
+
         glLineWidth(1.);
       } else {
         val1 = GHintersectionVerticalLineWithGround(GroundCostObj, pi[0], pi[1], &Cost1);
@@ -647,8 +655,8 @@ void g3d_draw_all_tcur(void) {
             robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
             if (robotPt)
             {
-              g3d_draw_tcur(robotPt, robotPt->no - 1, NB_KEY_FRAME);
-							//g3d_draw_tcur(robotPt, p3d_get_user_drawnjnt() - 1 , NB_KEY_FRAME);
+              //g3d_draw_tcur(robotPt, robotPt->no - 1, NB_KEY_FRAME);
+							g3d_draw_tcur(robotPt, p3d_get_user_drawnjnt() - 1 , NB_KEY_FRAME);
             }
         }
         p3d_sel_desc_num(P3D_ROBOT, r);
