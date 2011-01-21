@@ -937,10 +937,10 @@ static void CB_find_current_task_solution_obj(FL_OBJECT *ob, long arg)
 ////show_world_state_of_entire_plan ( 1 );
 
 ////// To disable the display of soft motion traj
-  g3d_win *win= NULL;
-
-  win= g3d_get_cur_win();
-  win->fct_draw2= NULL;
+//   g3d_win *win= NULL;
+// 
+//   win= g3d_get_cur_win();
+//   win->fct_draw2= NULL;
 
 return;
 
