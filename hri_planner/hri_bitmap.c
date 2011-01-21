@@ -463,11 +463,15 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   bitmapset->parameters->start_cell_tolerance = 2;
   bitmapset->parameters->goal_cell_tolerance = 8; // high tolerance for flawed grasp planning
 
-  /** distance beyond which we do not care about moving humans
+  /** distances between which the social costs of MOVING humans are reduced, up to zero.
+   * Beyond full we do not care about moving humans
    * anymore, as by the time the robot gets there, the human will be
-   * somewhere else. If negative, moving humans will always be considered.
-   * if zero, moving humans will never be considered. Default is -1 **/
-  bitmapset->parameters->moving_human_deprecation = -1;
+   * somewhere else. If start is negative, human will never be considered, not even when close
+   * if full is negative, social costs never deprectate.
+   * if start >= full, then humans are fully considered to full, then not considered at all.
+   * Default are start = 0, full =  -1 **/
+  bitmapset->parameters->moving_human_deprecation_start = 0; // 1;
+  bitmapset->parameters->moving_human_deprecation_full = -1; // 4;
 
   /** reluctance is an experimental feature to prefer previously planned. Default is FALSE.
    * paths to new ones, that does not seem to change the robot behavior much (maybe in special cases?).

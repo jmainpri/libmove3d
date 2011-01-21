@@ -288,14 +288,19 @@ double hri_bt_reduce_value_moving_human(hri_bitmapset * btset, double humanx, do
     start_distance = DISTANCE2D(start_realx, start_realy, humanx, humany);
   }
   if (start_distance != -1) {
-    if (( btset->parameters->moving_human_deprecation < 0
-        ||  start_distance > btset->parameters->moving_human_deprecation)  ) {
-      // Knowledge that deprecates over space, but this favors longer paths
+    if ( btset->parameters->moving_human_deprecation_start < 0) {
       val = 0;
-    } else {
-      // distance == 0 is worst case, keep full val
-      val = val * ( 1 - (start_distance / btset->parameters->moving_human_deprecation));
+    } else if (! btset->parameters->moving_human_deprecation_full < 0) {
+      if ( start_distance > btset->parameters->moving_human_deprecation_full) {
+        // Knowledge that deprecates over space, but this favors longer paths
+        val = 0;
+      } else if (start_distance > btset->parameters->moving_human_deprecation_start) {
+        // start_distance == moving_human_deprecation_start is "worst" case, keep full val
+        val = val * ( 1 - (start_distance - btset->parameters->moving_human_deprecation_start
+            / btset->parameters->moving_human_deprecation_full - btset->parameters->moving_human_deprecation_start));
+      }
     }
+
   }
   return val;
 }
