@@ -11,7 +11,7 @@
 /* ------- FUNCTION VARIABLES ------- */
 
 static int HUMAN_FORM_CREATED = FALSE;
-static int SELECTED_BTSET = 1;
+static int SELECTED_BTSET = 1; /**  1 = Navi, 2 = object handling, 3 = OBJECT REACH */
 static gnuplot_ctrl* gnuplots[] = {NULL,NULL,NULL,NULL,NULL};
 static int GNUPLOT_ACTIVE = FALSE;
 
@@ -531,7 +531,7 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
   int nb;
   p3d_rob* robotPt;
 
-  if(SELECTED_BTSET == 1){
+  if(SELECTED_BTSET == 1) { /** navigation */
 
     //    if(ACBTSET!=NULL){
     //      hri_bt_reset_path(ACBTSET);
@@ -541,13 +541,14 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
       BTGRAPH = NULL;
     }
 
-    qs = p3d_copy_config(ACBTSET->robot, ACBTSET->robot->ROBOT_POS);
-    qg = p3d_copy_config(ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO);
+    qs = p3d_copy_config(ACBTSET->robot, ACBTSET->robot->ROBOT_POS);    /** ALLOC */
+    qg = p3d_copy_config(ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO); /** ALLOC */
 
     MY_ALLOC_INFO("Avant la creation du graphe");
 
-    res = hri_bt_calculate_bitmap_path(ACBTSET,ACBTSET->robot,qs,qg,FALSE);
-    p3d_destroy_config(ACBTSET->robot, qs);
+    /** calculates path and sets robot->graph */
+    res = hri_bt_calculate_bitmap_path(ACBTSET, ACBTSET->robot, qs, qg, FALSE);
+    p3d_destroy_config(ACBTSET->robot, qs); /** FREE */
 
     if(!res){
       printf("p3d_hri_planner : FAIL : cannot find a path\n");
@@ -562,10 +563,16 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
 
       ENV.setBool(Env::drawTraj,true);
 
-      while( (qs=g3d_bt_dynamic_tshow(ACBTSET->robot,my_drawtraj_fct,&nb)) ){
+      /** loop that moves the robot along the planned path, replanning if the human is moved in move3d.
+       * Each loop iteration animates robot along one edge of the path
+       * This is a hack to use move3d as a simulator rather than a planner*/
+      while( (qs=g3d_bt_dynamic_tshow(ACBTSET->robot, my_drawtraj_fct, &nb)) ){
         qresult = hri_bt_set_TARGET();
-        if(qresult != NULL)
+        if(qresult != NULL) {
           qg = qresult;
+        }
+
+        // delete current graph and trajectory
         p3d_del_graph(BTGRAPH);
         p3d_del_graph(ACBTSET->robot->GRAPH);
         ACBTSET->robot->GRAPH = NULL;
@@ -575,7 +582,10 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
           p3d_del_traj(BTSET->robot->tcur);
         }
         ACBTSET->robot->tcur = NULL;
+
+        // replan
         hri_bt_calculate_bitmap_path(ACBTSET,ACBTSET->robot,qs,qg,FALSE);
+
         robotPt = (p3d_rob * )p3d_get_desc_curid(P3D_ROBOT);
         p3d_sel_desc_name(P3D_ROBOT,ACBTSET->robot->name);
         p3d_graph_to_traj(ACBTSET->robot);
@@ -585,8 +595,7 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
         //g3d_save_movie_image();
       }
     }
-  }
-  if(SELECTED_BTSET == 2){
+  } else if(SELECTED_BTSET == 2) { /* object manip */
 
     if(ACBTSET!=NULL){
       hri_bt_reset_path(ACBTSET);
@@ -607,8 +616,7 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
       ENV.setBool(Env::drawTraj,true);
 
     }
-  }
-  if(SELECTED_BTSET == 3){
+  } else if(SELECTED_BTSET == 3) {/* object reaching */
     if(ACBTSET!=NULL){
       hri_bt_reset_path(ACBTSET);
     }

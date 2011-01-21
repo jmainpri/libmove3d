@@ -23,8 +23,8 @@ hri_bitmapset* BTSET = NULL;
 hri_bitmapset * ACBTSET = NULL;
 pp3d_graph BTGRAPH = NULL;
 
-int PLACEMENT;
-int PLCMT_TYPE;
+int PLACEMENT = 0; // when plcmt_type is look, then 3, 4, 5, 6, 7 refer to possible placements
+int PLCMT_TYPE; /** Look, body, or approach */
 
 static int insert2table(double value, int cx, int cy, int cz, double * Table,	int * x, int * y, int * z, int l);
 
@@ -766,8 +766,8 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
   }
   /* c'est ici qu'on doit gerer le bras */
 
-  prev_orient = atan2(G->last_node->N->q[ROBOTq_Y]-bitmap->current_search_node->y,
-                      G->last_node->N->q[ROBOTq_X]-bitmap->current_search_node->x);
+  prev_orient = atan2(G->last_node->N->q[ROBOTq_Y] - bitmap->current_search_node->y,
+                      G->last_node->N->q[ROBOTq_X] - bitmap->current_search_node->x);
 
   prev_node =  G->last_node->N;
 
@@ -793,10 +793,10 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
 
     /*  q[ROBOTq_RZ] = (prev_orient + atan2((bitmap->current_search_node->y-bitmap->current_search_node->parent->y), */
     /* 					(bitmap->current_search_node->x-bitmap->current_search_node->parent->x)))/2; */
-    if(bitmap->current_search_node != bitmap->search_start) {
+    if (bitmap->current_search_node != bitmap->search_start) {
       q[ROBOTq_RZ] = atan2((bitmap->current_search_node->parent->y-bitmap->current_search_node->y),
                            (bitmap->current_search_node->parent->x-bitmap->current_search_node->x))+M_PI;
-    } else{
+    } else {
       q[ROBOTq_RZ] = G->search_start->q[ROBOTq_RZ];
     }
 
@@ -820,13 +820,12 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
 
   } // end while
     // destroy the last q as it was never used
-  p3d_destroy_config(G->rob,q);
-  dist = p3d_APInode_dist(G,prev_node,G->search_start);
-  p3d_create_edges(G,prev_node ,G->search_start ,dist);
+  p3d_destroy_config(G->rob, q);
+  dist = p3d_APInode_dist(G, prev_node, G->search_start);
+  p3d_create_edges(G, prev_node, G->search_start, dist);
   p3d_merge_comp(G, G->search_start->comp, &(prev_node->comp));
 
   return TRUE;
-
 }
 
 /****************************************************************/
@@ -1328,31 +1327,26 @@ configPt hri_bt_set_TARGET()
         /*       } */
         /*       break;  */
     }
-  }
-  if(PLCMT_TYPE == BT_TRG_LOOK){
+  } else  if(PLCMT_TYPE == BT_TRG_LOOK){
     q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-1*cos(orient);
     q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-1*sin(orient);
-  }
-  if(PLCMT_TYPE == BT_TRG_APPROACH){
+  } else if(PLCMT_TYPE == BT_TRG_APPROACH){
     q_f = p3d_copy_config(BTSET->robot, q);
-    while(places < 5){
+    // find the place with minmal costs
+    while(places < 5) {
       if(places == 0){
         q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-1*sin(orient);
         q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*cos(orient);
-      }
-      if(places == 1){
+      } else if(places == 1){
         q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)-0.7*sin(orient);
         q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)+0.7*cos(orient);
-      }
-      if(places == 2){
+      } else if(places == 2){
         q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*cos(orient);
         q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*sin(orient);
-      }
-      if(places == 3){
+      } else if(places == 3){
         q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)+0.7*sin(orient);
         q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)-0.7*cos(orient);
-      }
-      if(places == 4){
+      } else if(places == 4){
         q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*sin(orient);
         q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-1*cos(orient);
       }
@@ -1368,30 +1362,27 @@ configPt hri_bt_set_TARGET()
     if(min == 0){
       q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-1*sin(orient);
       q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*cos(orient);
-    }
-    if(min == 1){
+    } else if(min == 1){
       q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)-0.7*sin(orient);
       q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)+0.7*cos(orient);
-    }
-    if(min == 2){
+    } else if(min == 2){
       q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*cos(orient);
       q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*sin(orient);
-    }
-    if(min == 3){
+    } else if(min == 3){
       q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)+0.7*sin(orient);
       q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)-0.7*cos(orient);
-    }
-    if(min == 4){
+    } else if(min == 4){
       q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*sin(orient);
       q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-1*cos(orient);
     }
 
     q[ROBOTq_RZ] = atan2((BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-q[ROBOTq_Y]),
                          (BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-q[ROBOTq_X]));
-    if(q[ROBOTq_RZ]<0)
+    if(q[ROBOTq_RZ] < 0) {
       q[ROBOTq_RZ] = q[ROBOTq_RZ]+M_PI;
-    else
+    } else {
       q[ROBOTq_RZ] = q[ROBOTq_RZ]-M_PI;
+    }
     /*q[12] = M_PI;
      q[18] = 0; Only for blue humanoid robot */
 
@@ -2317,10 +2308,15 @@ int hri_bt_write_path2file()
 
 }
 
+/**
+ * calls hri_bt_start_search to  perform path search
+ * On success, also sets robot->graph to a new Graph with the path of the solution, for dynamic display in move3d
+ * returns TRUE on search success, false else
+ */
 int hri_bt_calculate_bitmap_path(hri_bitmapset * btset, p3d_rob *robotPt, configPt qs, configPt qg, int manip)
 {
   p3d_graph *G;
-  p3d_node  *Ns=NULL,*Ng=NULL;
+  p3d_node  *nodeStart=NULL,*nodeGoal=NULL;
   p3d_list_node *graph_node;
   configPt  q_s=NULL, q_g=NULL;
   double searchgoal[3], searchstart[3];
@@ -2365,25 +2361,25 @@ int hri_bt_calculate_bitmap_path(hri_bitmapset * btset, p3d_rob *robotPt, config
   robotPt->GRAPH = G;
   graph_node = G->nodes;
 
-  if(Ns == NULL) {
+  if(nodeStart == NULL) {
     q_s = p3d_copy_config(robotPt, qs);
-    Ns = p3d_APInode_make(G,q_s);
-    p3d_insert_node(G,Ns);
-    p3d_create_compco(G,Ns);
-    Ns->type = ISOLATED;
+    nodeStart = p3d_APInode_make(G,q_s);
+    p3d_insert_node(G,nodeStart);
+    p3d_create_compco(G,nodeStart);
+    nodeStart->type = ISOLATED;
   }
 
-  if(Ng == NULL) {
+  if(nodeGoal == NULL) {
     q_g = p3d_copy_config(robotPt, qg);
-    Ng = p3d_APInode_make(G,q_g);
-    p3d_insert_node(G,Ng);
-    p3d_create_compco(G,Ng);
-    Ng->type = ISOLATED;
+    nodeGoal = p3d_APInode_make(G,q_g);
+    p3d_insert_node(G,nodeGoal);
+    p3d_create_compco(G,nodeGoal);
+    nodeGoal->type = ISOLATED;
   }
 
   /* Initialize some data in the graph for the A* graph search */
-  G->search_start = Ns;
-  G->search_goal = Ng;
+  G->search_start = nodeStart;
+  G->search_goal = nodeGoal;
   G->search_done = FALSE;
 
   btset->changed = FALSE;
@@ -2392,7 +2388,7 @@ int hri_bt_calculate_bitmap_path(hri_bitmapset * btset, p3d_rob *robotPt, config
 
   //hri_bt_opt_path(BTSET->bitmap[BT_PATH]);
   //hri_bt_write_path2file();
-  hri_bt_bitmap_to_GRAPH(btset,G,btset->bitmap[BT_PATH]);
+  hri_bt_bitmap_to_GRAPH(btset, G, btset->bitmap[BT_PATH]);
 
   /* hri_print_info_graph(G);*/
   MY_ALLOC_INFO("After hri_hri_planner");
