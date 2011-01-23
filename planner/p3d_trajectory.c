@@ -401,31 +401,33 @@ int p3d_concat_traj(p3d_traj *traj1Pt, p3d_traj *traj2Pt)
   /* check that end of first trajectory and beginning of second are equal */
   
   q1_end = p3d_config_at_param_along_traj(traj1Pt, traj1Pt->range_param);
+  p3d_set_and_update_this_robot_conf_multisol(robotPt, q1_end, NULL, 0, traj1Pt->courbePt->ikSol);
+  p3d_get_robot_config_into(robotPt, &q1_end);
+  
   q2_start = p3d_config_at_param_along_traj(traj2Pt, 0);
+  p3d_set_and_update_this_robot_conf_multisol(robotPt, q2_start, NULL, 0, traj2Pt->courbePt->ikSol);
+  p3d_get_robot_config_into(robotPt, &q2_start);
+  
 #ifdef MULTILOCALPATH
   p3d_localplanner_type lpl_type = robotPt->lpl_type;
-  if (lpl_type == P3D_MULTILOCALPATH_PLANNER) 
-	{
-    for(int i = 0; i < robotPt->mlp->nblpGp; i++)
-		{
-      if (p3d_multiLocalPath_get_value_groupToPlan(robotPt, i))
-			{
-				if(strcmp(robotPt->mlp->mlpJoints[i]->gpName,"upBody")==0)
-				{
-					if(!p3d_equal_config_n_offset(robotPt->mlp->mlpJoints[i]->nbDofs, robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[0]]->index_dof, q1_end, q2_start)){
-        PrintError(("concat: end of first trajectory different from beginning of second one\n"));
-        printf("q1_end : \n");
-        print_config(robotPt, q1_end);
-        printf("q2_start : \n");
-        print_config(robotPt, q2_start);
-        p3d_destroy_config(robotPt, q1_end);
-        p3d_destroy_config(robotPt, q2_start);
-        return TRUE;
-					}
-				}
+  if (lpl_type == P3D_MULTILOCALPATH_PLANNER) {
+    for(int i = 0; i < robotPt->mlp->nblpGp; i++) {
+      if (p3d_multiLocalPath_get_value_groupToPlan(robotPt, i)) {
+	if(strcmp(robotPt->mlp->mlpJoints[i]->gpName,"upBody")==0) {
+	   if(!p3d_equal_config_n_offset(robotPt->mlp->mlpJoints[i]->nbDofs, robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[0]]->index_dof, q1_end, q2_start)){
+              PrintError(("concat: end of first trajectory different from beginning of second one\n"));
+              printf("q1_end : \n");
+	      print_config(robotPt, q1_end);
+	      printf("q2_start : \n");
+	      print_config(robotPt, q2_start);
+	      p3d_destroy_config(robotPt, q1_end);
+	      p3d_destroy_config(robotPt, q2_start);
+	      return TRUE;
+	   }
+	}
       }
     }
-	}
+  }
 #else
   if (! p3d_equal_config(robotPt, q1_end, q2_start)) {
     PrintError(("concat: end of first trajectory different from beginning of second one\n"));
