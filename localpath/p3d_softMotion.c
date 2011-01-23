@@ -10,14 +10,16 @@
 char * array_group_name[] = {
   (char*)"base",
   (char*)"freeflyer",
-  (char*)"joint"
+  (char*)"joint",
+  (char*)"upBodyCart",
 };
-int P3D_NB_GROUP = 3;
+int P3D_NB_GROUP = 4;
 
 ptr_to_softMotion_groupplanner array_softMotion_groupplanner[]= {
   (NULL),
   (int (*)(p3d_rob*, int, p3d_group_type, p3d_softMotion_data* , int*))(p3d_softMotion_localplanner_FREEFLYER),
-  (int (*)(p3d_rob*, int, p3d_group_type, p3d_softMotion_data* , int*))(p3d_softMotion_localplanner_JOINT)
+  (int (*)(p3d_rob*, int, p3d_group_type, p3d_softMotion_data* , int*))(p3d_softMotion_localplanner_JOINT),
+  (int (*)(p3d_rob*, int, p3d_group_type, p3d_softMotion_data* , int*))(p3d_softMotion_localplanner_UPBODY_CART)
 };
 
 p3d_group_type p3d_group_getid_group(const char * name) {
@@ -97,9 +99,36 @@ p3d_localpath *p3d_softMotion_localplanner(p3d_rob *robotPt, int multiLocalpathI
     PrintInfo((")\n"));
   }
 
-  softMotion_data->q_init  = p3d_copy_config(robotPt, qi);
-  softMotion_data->q_end   = p3d_copy_config(robotPt, qf);
-  softMotion_data->q_endp1 = p3d_copy_config(robotPt, qfp1);
+  if(robotPt->mlp->mlpJoints[multiLocalpathID]->gpType != UPBODY_CART) {
+     softMotion_data->q_init  = p3d_copy_config(robotPt, qi);
+     softMotion_data->q_end   = p3d_copy_config(robotPt, qf);
+     softMotion_data->q_endp1 = p3d_copy_config(robotPt, qfp1);
+  } else {
+    //printf("softMotion UPBODY_CART \n");
+    softMotion_data->q_init  = p3d_copy_config(robotPt, qi);
+    softMotion_data->q_end   = p3d_copy_config(robotPt, qf);
+    softMotion_data->q_endp1 = p3d_copy_config(robotPt, qfp1);
+
+//     p3d_convert_config_ypr_to_av(robotPt, qi , &(softMotion_data->q_init));
+//     p3d_convert_config_ypr_to_av(robotPt, qf , &(softMotion_data->q_end));
+//     p3d_convert_config_ypr_to_av(robotPt, qfp1 , &(softMotion_data->q_endp1));
+//     
+// 
+// 
+//    
+//     configPt qtest = NULL;
+//     qtest = p3d_copy_config(robotPt, qi);
+//     p3d_convert_config_va_to_ypr(robotPt,  softMotion_data->q_init, &qtest);
+//     if(p3d_equal_config_n_offset(6, robotPt->joints[34]->index_dof, qi, qtest) == FALSE) {
+//     printf("************** ERROR qinit ***************\n");
+//     }
+//     p3d_convert_config_va_to_ypr(robotPt,  softMotion_data->q_end, &qtest);
+//     if(p3d_equal_config_n_offset(6, robotPt->joints[34]->index_dof, qf, qtest) == FALSE) {
+//     printf("************** ERROR qend ***************\n");
+//     }
+//     p3d_destroy_config(robotPt, qtest);
+  }
+
   softMotion_data->isPlanned = FALSE;
 
   if (multiLocalpathID>=0 && multiLocalpathID<=robotPt->mlp->nblpGp) {
@@ -384,6 +413,196 @@ int p3d_softMotion_localplanner_JOINT(p3d_rob* robotPt, int mlpId, p3d_group_typ
   return TRUE;
 }
 
+int p3d_softMotion_localplanner_UPBODY_CART(p3d_rob* robotPt, int mlpId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data, int *iksol) {
+
+  int equal = 0;
+  int index_dof = robotPt->joints[robotPt->mlp->mlpJoints[mlpId]->joints[0]]->index_dof;
+  int nbDofs = 0;
+  int nbJoints = robotPt->mlp->mlpJoints[mlpId]->nbJoints;
+  // 	SM_POSELIMITS poseLimits;
+  int i=0, k=0;
+  configPt q_init, q_end;
+ p3d_jnt* jntPt = NULL;
+  Gb_th thInit, thEnd;
+  p3d_matrix4 freeflyerPose_init, freeflyerPose_end;
+  Gb_quat quatInit, quatEnd;
+  Gb_dep depDelta;
+ Gb_v3 poseAngInit, poseLinInit, poseAngEnd, poseLinEnd;
+ 
+  /* If initconfPt == goalconfPt, free initconfPt and goalconfPt and return NULL */
+  for(int v=0; v<nbJoints; v++) {
+    nbDofs += robotPt->joints[robotPt->mlp->mlpJoints[mlpId]->joints[v]]->user_dof_equiv_nbr;
+  }
+  equal = p3d_equal_config_n_offset(nbDofs, index_dof, softMotion_data->q_init, softMotion_data->q_end);
+
+  if(equal && softMotion_data->isPTP == TRUE) {
+    // 		PrintInfo((("MP: p3d_softMotion_localplanner JOINT: q_init = q_goal! \n")));
+    p3d_set_search_status(P3D_CONFIG_EQUAL);
+    return FALSE;
+  }
+
+  if(softMotion_data->isPTP == TRUE) {
+    // It's a point to point motion
+    /* Set initial and final conditions (SM_COND IC and SM_COND FC structures needed by the planner) in softMotion_data */
+	  q_init = p3d_copy_config(robotPt, softMotion_data->q_init);
+	  q_end = p3d_copy_config(robotPt, softMotion_data->q_end);
+   /* compute the relative displacement for the freeflyer joints */
+      for(int w=0; w<=robotPt->njoints; w++) {
+       jntPt = robotPt->joints[w];
+       k = robotPt->joints[w]->index_dof;
+       if(jntPt->type == P3D_FREEFLYER) {
+	 p3d_mat4PosReverseOrder(freeflyerPose_init, softMotion_data->q_init[k],
+			    softMotion_data->q_init[k+1],
+			    softMotion_data->q_init[k+2],
+			    softMotion_data->q_init[k+3],
+			    softMotion_data->q_init[k+4],
+			    softMotion_data->q_init[k+5]);
+	 p3d_mat4PosReverseOrder(freeflyerPose_end, softMotion_data->q_end[k],
+			    softMotion_data->q_end[k+1],
+			    softMotion_data->q_end[k+2],
+			    softMotion_data->q_end[k+3],
+			    softMotion_data->q_end[k+4],
+			    softMotion_data->q_end[k+5]);
+			    
+        lm_convert_p3dMatrix_To_GbTh(freeflyerPose_init ,&thInit);
+        lm_convert_p3dMatrix_To_GbTh(freeflyerPose_end,&thEnd);
+        //Same method as Gb_quat_interpole
+        Gb_th_quat(&thInit, &quatInit);
+        Gb_th_quat(&thEnd, &quatEnd);
+         //set translation to null to compute the rotation displacement
+	   quatInit.x = 0.0;
+	   quatInit.y = 0.0;
+	   quatInit.z = 0.0;
+	   quatEnd.x = 0.0;
+	   quatEnd.y = 0.0;
+	   quatEnd.z = 0.0;
+	   Gb_quat_compute_relativeDep_to_interpole(&quatInit, &quatEnd, &depDelta);
+
+	  depDelta.x = thEnd.vp.x - thInit.vp.x;
+	  depDelta.y = thEnd.vp.y - thInit.vp.y;
+	  depDelta.z = thEnd.vp.z - thInit.vp.z;
+	  Gb_v3_set(&poseAngInit, 0.0, 0.0, 0.0);
+	  Gb_v3_set(&poseLinInit, 0.0, 0.0, 0.0);
+	  Gb_v3_set(&poseLinEnd, depDelta.x, depDelta.y, depDelta.z);
+	  Gb_v3_set(&poseAngEnd, depDelta.rx*depDelta.a, depDelta.ry*depDelta.a, depDelta.rz*depDelta.a);
+
+	  for(int v=k; v<k + 6; v++ ) {
+	    q_init[v] = 0.0;
+	  }
+
+	  q_end[k]   = poseLinEnd.x;
+	  q_end[k+1] = poseLinEnd.y;
+	  q_end[k+2] = poseLinEnd.z;
+	  q_end[k+3] = poseAngEnd.x;
+	  q_end[k+4] = poseAngEnd.y;
+	  q_end[k+5] = poseAngEnd.z;
+       } else {
+	  for(int v=0; v<jntPt->dof_equiv_nbr; v++) {
+	    q_end[k +v] = q_end[k +v] - q_init[k +v];
+	    q_init[k +v] = 0.0;
+	  }
+       }
+      }
+    lm_set_cond_softMotion_data(index_dof, nbDofs, q_init, q_end, softMotion_data->specific->velInit, softMotion_data->specific->velEnd, softMotion_data->specific->accInit, softMotion_data->specific->accEnd, softMotion_data);
+    p3d_destroy_config(robotPt, q_init);
+    p3d_destroy_config(robotPt, q_end);
+
+    if(sm_ComputeSoftMotionPointToPoint_gen(softMotion_data->nbDofs, softMotion_data->specific->J_max, softMotion_data->specific->A_max, softMotion_data->specific->V_max, softMotion_data->specific->motion)!=0) {
+      PrintError(("p3d softMotion localpath CANNOT compute point to point motion on group JOINT\n"));
+      return FALSE;
+    }
+    /* Determine the motion duration */
+    softMotion_data->specific->motionTime = 0.0;
+    for(i=0;i<softMotion_data->nbDofs;i++) {
+      if(softMotion_data->specific->motion[i].MotionDuration > softMotion_data->specific->motionTime) {
+	softMotion_data->specific->motionTime = softMotion_data->specific->motion[i].MotionDuration;
+      }
+    }
+
+    return TRUE;
+  }
+  else {
+    /* PTP motion is already computed */
+
+	  q_init = p3d_copy_config(robotPt, softMotion_data->q_init);
+	  q_end = p3d_copy_config(robotPt, softMotion_data->q_end);
+   /* compute the relative displacement for the freeflyer joints */
+      for(int w=0; w<=robotPt->njoints; w++) {
+       jntPt = robotPt->joints[w];
+       k = robotPt->joints[w]->index_dof;
+       if(jntPt->type == P3D_FREEFLYER) {
+	 p3d_mat4PosReverseOrder(freeflyerPose_init, softMotion_data->q_init[k],
+			    softMotion_data->q_init[k+1],
+			    softMotion_data->q_init[k+2],
+			    softMotion_data->q_init[k+3],
+			    softMotion_data->q_init[k+4],
+			    softMotion_data->q_init[k+5]);
+	 p3d_mat4PosReverseOrder(freeflyerPose_end, softMotion_data->q_end[k],
+			    softMotion_data->q_end[k+1],
+			    softMotion_data->q_end[k+2],
+			    softMotion_data->q_end[k+3],
+			    softMotion_data->q_end[k+4],
+			    softMotion_data->q_end[k+5]);
+
+        lm_convert_p3dMatrix_To_GbTh(freeflyerPose_init ,&thInit);
+        lm_convert_p3dMatrix_To_GbTh(freeflyerPose_end,&thEnd);
+        //Same method as Gb_quat_interpole
+        Gb_th_quat(&thInit, &quatInit);
+        Gb_th_quat(&thEnd, &quatEnd);
+         //set translation to null to compute the rotation displacement
+	   quatInit.x = 0.0;
+	   quatInit.y = 0.0;
+	   quatInit.z = 0.0;
+	   quatEnd.x = 0.0;
+	   quatEnd.y = 0.0;
+	   quatEnd.z = 0.0;
+	   Gb_quat_compute_relativeDep_to_interpole(&quatInit, &quatEnd, &depDelta);
+
+	  depDelta.x = thEnd.vp.x - thInit.vp.x;
+	  depDelta.y = thEnd.vp.y - thInit.vp.y;
+	  depDelta.z = thEnd.vp.z - thInit.vp.z;
+	  Gb_v3_set(&poseAngInit, 0.0, 0.0, 0.0);
+	  Gb_v3_set(&poseLinInit, 0.0, 0.0, 0.0);
+	  Gb_v3_set(&poseLinEnd, depDelta.x, depDelta.y, depDelta.z);
+	  Gb_v3_set(&poseAngEnd, depDelta.rx*depDelta.a, depDelta.ry*depDelta.a, depDelta.rz*depDelta.a);
+
+	  for(int v=k; v<k + 6; v++ ) {
+	    q_init[v] = 0.0;
+	  }
+
+	  q_end[k]   = poseLinEnd.x;
+	  q_end[k+1] = poseLinEnd.y;
+	  q_end[k+2] = poseLinEnd.z;
+	  q_end[k+3] = poseAngEnd.x;
+	  q_end[k+4] = poseAngEnd.y;
+	  q_end[k+5] = poseAngEnd.z;
+       } else {
+	  for(int v=0; v<jntPt->dof_equiv_nbr; v++) {
+	    q_end[k +v] = q_end[k +v] - q_init[k +v];
+	    q_init[k +v] = 0.0;
+	  }
+       }
+      }
+    
+    lm_set_cond_softMotion_data(index_dof, nbDofs, q_init, q_end, softMotion_data->specific->velInit, softMotion_data->specific->velEnd, softMotion_data->specific->accInit, softMotion_data->specific->accEnd, softMotion_data);
+
+    if(lm_compute_softMotion(robotPt, mlpId, softMotion_data) == FALSE) {
+      return FALSE;
+    }
+    /* Determine the motion duration */
+    softMotion_data->specific->motionTime = 0.0;
+    for(i=0;i<softMotion_data->nbDofs;i++) {
+      if(softMotion_data->specific->motion[i].MotionDuration > softMotion_data->specific->motionTime) {
+	softMotion_data->specific->motionTime = softMotion_data->specific->motion[i].MotionDuration;
+      }
+    }
+    p3d_destroy_config(robotPt, q_init);
+    p3d_destroy_config(robotPt, q_end);
+    return TRUE;
+  }
+  return TRUE;
+}
+
 /*
  *   compute softMotion for the localpath
  *
@@ -568,6 +787,10 @@ configPt p3d_softMotion_config_at_param(p3d_rob *robotPt, p3d_localpath *localpa
   Gb_dep gbDep;
   Gb_v3 gbV3Rot, gbV3Rotn;
   double Tx, Ty, Tz, Rx, Ry, Rz;
+  configPt q_tmp = NULL;
+  int indexJntDof = 0;
+  int indexGroupDof = 0;
+  p3d_jnt* jntPt = NULL;
 
   if (localpathPt == NULL) {
     return NULL;
@@ -649,6 +872,41 @@ configPt p3d_softMotion_config_at_param(p3d_rob *robotPt, p3d_localpath *localpa
       q[index_dof+v]   = softMotion_specificPt->q_init[index_dof+v] + condEnd[v].x;
     }
     break;
+  case UPBODY_CART:
+    p3d_copy_config_into(robotPt, softMotion_specificPt->q_init, &q);
+    for(int v =0; v<softMotion_specificPt->nbDofs; v++) {
+     q[index_dof+v]   = softMotion_specificPt->q_init[index_dof+v] + condEnd[v].x;
+    }
+    /* Compute the right situation of the freeflyer joints */
+    for(int w=0; w<=robotPt->njoints; w++) {
+       jntPt = robotPt->joints[w];
+       indexJntDof = jntPt->index_dof;
+       indexGroupDof = indexJntDof-index_dof;
+       if((jntPt->type == P3D_FREEFLYER) && (indexJntDof >= index_dof)) {
+	 p3d_mat4PosReverseOrder(freeflyerPose_init, 0.0, 0.0, 0.0, q_init[indexGroupDof+3], q_init[indexGroupDof+4], q_init[indexGroupDof+5]);
+	 lm_convert_p3dMatrix_To_GbTh(freeflyerPose_init ,&thInit);
+	 Gb_v3_set(&gbV3Rot,condEnd[indexGroupDof+3].x, condEnd[indexGroupDof+4].x,condEnd[indexGroupDof+5].x);
+	 angle = Gb_v3_norme(&gbV3Rot, &gbV3Rotn);
+	 Gb_dep_set(&gbDep, 0.0, 0.0, 0.0, gbV3Rotn.x, gbV3Rotn.y, gbV3Rotn.z, angle);
+	 Gb_dep_th(&gbDep, &thMat);
+	 Gb_th_produit(&thInit, &thMat, &thMats);
+	 thMats.vp.x = q_init[indexGroupDof+0] + condEnd[indexGroupDof+0].x;
+	 thMats.vp.y = q_init[indexGroupDof+1] + condEnd[indexGroupDof+1].x;
+	 thMats.vp.z = q_init[indexGroupDof+2] + condEnd[indexGroupDof+2].x;
+	 lm_convert_GbTh_To_p3dMatrix(&thMats,p3dMat);
+	 p3d_mat4ExtractPosReverseOrder(p3dMat,&Tx, &Ty, &Tz, &Rx, &Ry, &Rz);
+	 q[indexJntDof]   = Tx;
+	 q[indexJntDof+1] = Ty;
+	 q[indexJntDof+2] = Tz;
+	 q[indexJntDof+3] = Rx;
+	 q[indexJntDof+4] = Ry;
+	 q[indexJntDof+5] = Rz;
+	 if(isnan(Rx)) { printf("isnan Rx\n");}
+	 if(isnan(Ry)) {printf("isnan Ry\n");}
+	 if(isnan(Rz)) {printf("isnan Rz\n");}
+       }
+    }
+    break;
   default:
     break;
   }
@@ -701,6 +959,7 @@ double p3d_softMotion_stay_within_dist(p3d_rob* robotPt, p3d_localpath* localpat
 
   case FREEFLYER:
   case JOINT:
+  case UPBODY_CART:
     /* store the data to compute the maximal velocities at the
        joint for each body of the robot */
     stay_within_dist_data = MY_ALLOC(p3d_stay_within_dist_data, njnt+2);
@@ -1633,6 +1892,9 @@ void p3d_destroy_softMotion_data(p3d_rob* robotPt, p3d_softMotion_data* softMoti
       p3d_destroy_config(robotPt, softMotion_dataPt->q_init);
       p3d_destroy_config(robotPt, softMotion_dataPt->q_end);
       p3d_destroy_config(robotPt, softMotion_dataPt->q_endp1);
+      //p3d_destroy_config(robotPt, softMotion_dataPt->q_initva);
+      //p3d_destroy_config(robotPt, softMotion_dataPt->q_endva);
+      //p3d_destroy_config(robotPt, softMotion_dataPt->q_endp1va);
     }
 
     if(softMotion_dataPt->specific != NULL){
@@ -1709,10 +1971,15 @@ p3d_softMotion_data * p3d_create_softMotion_data_multilocalpath(p3d_rob* robotPt
   softMotion_data->q_init  = NULL;
   softMotion_data->q_end   = NULL;
   softMotion_data->q_endp1 = NULL;
-
+  //softMotion_data->q_initva  = NULL;
+  //softMotion_data->q_endva   = NULL;
+  //softMotion_data->q_endp1va = NULL;
+  
   nbJoints = robotPt->mlp->mlpJoints[mlpId]->nbJoints;
   for(int v=0; v<nbJoints; v++) {
-    nbDofs += robotPt->joints[robotPt->mlp->mlpJoints[mlpId]->joints[v]]->user_dof_equiv_nbr;
+
+   // user
+    nbDofs += robotPt->joints[robotPt->mlp->mlpJoints[mlpId]->joints[v]]->dof_equiv_nbr;
   }
 
   if ((softMotion_data->specific = MY_ALLOC(p3d_softMotion_data_specific, 1)) == NULL) {
@@ -1831,6 +2098,7 @@ p3d_localpath * p3d_alloc_softMotion_localpath(p3d_rob *robotPt, p3d_softMotion_
   switch (sm_data->gpType) {
   case FREEFLYER:
   case JOINT:
+  case UPBODY_CART:
     localpathPt->length_lp = sm_data->specific->motionTime;
     localpathPt->range_param = sm_data->specific->motionTime;
     break;
@@ -2614,7 +2882,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
     }
     gnuplot_cmd(h,(char*)"set term wxt");
     gnuplot_cmd(h,(char*)"set xrange [%d:%d]",0,index-1);
-    gnuplot_cmd(h,(char*)"set yrange [-4.5:4.5]");  // maxi for Jido is 255�
+    gnuplot_cmd(h,(char*)"set yrange [-4.5:8]");  // maxi for Jido is 255�
     std::string gnuplotCmd;
     gnuplotCmd.clear();
     char text[255];
@@ -2643,250 +2911,6 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
   }
   return;
 }
-
-
-//void p3d_softMotion_write_single_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char *fileName, bool flagPlot,
-//						   std::vector <int> &lp, std::vector < std::vector <double> > &positions,
-//						   SM_TRAJ &smTraj) {
-//  	double SIMPLING_TIME = 0.01;
-//  	//int index_dof = 0;
-//  	int j=0;
-//  	int nb_dof = 0, nbGpJnt = 0;
-//  	p3d_localpath* localpathPt =  NULL;
-//  	configPt q = NULL;
-//  	int index;
-//  	FILE *filepTrajtr = NULL;
-//  	p3d_softMotion_data *specificPt = NULL;
-//  	double dq;
-//  	int end_localpath = 0;
-//  	double u = 0.0;
-//  	double du, umax;
-//  // 	std::vector <std::vector <double> > segment_q;
-//  // 	std::vector <SM_COND>  cond;
-//  // 	SM_COND cond_i;
-//  // 	SM_SEGMENT segment_i;
-//  	std::vector <double>  qplot_i;
-//  	std::vector <double>  q_arm;
-//  	std::vector <double>  q_armOld;
-//  	std::vector <double>  vqi;
-//  	std::vector <double>  min, max;
-//  	gnuplot_ctrl * h = NULL;
-//  	MANIPULATION_SEGMENT_STR manip_seg;
-//  	MANIPULATION_SEGMENT_AXIS_DATA_STR manip_seg_data;
-//  	int I_can = 0;
-//  	int lpId = 0;
-//  	int upBodySm_mlpID = -1;
-//  
-//  	if ((filepTrajtr = fopen("arm2.traj","w+"))==NULL) {
-//  		printf("cannot open File arm.traj");
-//  	}
-//  
-//  	index = 0;
-//  	for(int iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
-//  		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "upBodySm") == 0) {
-//  			upBodySm_mlpID = iGraph;
-//  			break;
-//  		}
-//  	}
-//  	if(upBodySm_mlpID == -1) {
-//  	  printf("ERROR p3d_softMotion_write_curve_for_bltplot unknow robot type \n");
-//  	  return;
-//  	}
-//  
-//  
-//  
-//  
-//  
-//  	nbGpJnt = robotPt->mlp->mlpJoints[upBodySm_mlpID]->nbJoints;
-//  	std::cout << "there are " << nbGpJnt << std::endl;
-//  	int nb_armDof =0;
-//  	q_armOld.clear();
-//  	vqi.clear();
-//  	min.clear();
-//  	max.clear();
-//  	segments.seg.clear();
-//  
-//  	double min_i=0.0, max_i=0.0;
-//  	for(int v=0; v<nbGpJnt; v++) {
-//  	  nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
-//  	  for(int k=0; k<nb_dof; k++) {
-//  		q_armOld.push_back(traj->courbePt->specific.softMotion_data->q_init[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof + k]);
-//  		vqi.push_back(0.0);
-//  		p3d_jnt_get_dof_bounds(robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]], k, &min_i, &max_i);
-//  		min.push_back(min_i);
-//  		max.push_back(max_i);
-//  		j++;
-//  		nb_armDof ++;
-//  	  }
-//  	}
-//  
-//  	positions.clear();
-//  	localpathPt = traj->courbePt;
-//  	lpId = 0;
-//  	while (localpathPt !=NULL) {
-//  	  if(localpathPt != NULL) {
-//  	  specificPt = localpathPt->specific.softMotion_data;
-//  	  for(int s=1; s<=7;s++) {
-//  	    manip_seg.time = 0.0;
-//  	    if(s==1) { manip_seg.time = specificPt->specific->motion[0].Times.Tjpa;}
-//  	    if(s==2) { manip_seg.time = specificPt->specific->motion[0].Times.Taca;}
-//  	    if(s==3) { manip_seg.time = specificPt->specific->motion[0].Times.Tjna;}
-//  	    if(s==4) { manip_seg.time = specificPt->specific->motion[0].Times.Tvc;}
-//  	    if(s==5) { manip_seg.time = specificPt->specific->motion[0].Times.Tjnb;}
-//  	    if(s==6) { manip_seg.time = specificPt->specific->motion[0].Times.Tacb;}
-//  	    if(s==7) { manip_seg.time = specificPt->specific->motion[0].Times.Tjpb;}
-//  
-//  	    if(manip_seg.time > EPS6) {
-//  	        manip_seg.lp = lpId;
-//  		manip_seg.data.clear();
-//  		for (int i=0;i<nb_armDof;i++) {
-//  		  manip_seg_data.ic_a = specificPt->specific->motion[i].IC.a;
-//  		  manip_seg_data.ic_a = specificPt->specific->motion[i].IC.v;
-//  		  manip_seg_data.ic_a = specificPt->specific->motion[i].IC.x;
-//  		  if(s==1) { manip_seg_data.jerk = specificPt->specific->motion[i].jerk.J1*specificPt->specific->motion[i].Dir;}
-//  		  if(s==2) { manip_seg_data.jerk = 0.0;}
-//  		  if(s==3) { manip_seg_data.jerk = -specificPt->specific->motion[i].jerk.J2*specificPt->specific->motion[i].Dir;}
-//  		  if(s==4) { manip_seg_data.jerk = 0.0;}
-//  		  if(s==5) { manip_seg_data.jerk = -specificPt->specific->motion[i].jerk.J3*specificPt->specific->motion[i].Dir;}
-//  		  if(s==6) { manip_seg_data.jerk = 0.0;}
-//  		  if(s==7) { manip_seg_data.jerk = specificPt->specific->motion[i].jerk.J4*specificPt->specific->motion[i].Dir;}
-//  		  manip_seg.data.push_back(manip_seg_data);
-//  		}
-//  		segments.seg.push_back(manip_seg);
-//  	    }
-//  	  }
-//  
-//  	  }
-//  	  lpId ++;
-//  
-//  	  localpathPt = localpathPt->next_lp;
-//  	}
-//  
-//  	localpathPt = traj->courbePt;
-//  	u = 0.0;
-//  	lpId = 0;
-//  	while (localpathPt != NULL) {
-//  		//specificPt = localpathPt->mlpLocalpath[upBodySm_mlpID]->specific.softMotion_data;
-//  		umax = localpathPt->range_param;
-//  		//activate the constraint for the local path
-//  		p3d_desactivateAllCntrts(robotPt);
-//  		for(int i = 0; i < localpathPt->nbActiveCntrts; i++){
-//  			p3d_activateCntrt(robotPt, robotPt->cntrt_manager->cntrts[localpathPt->activeCntrts[i]]);
-//  		}
-//  
-//  		while (end_localpath < 1) {
-//  			q_arm.clear();
-//  			qplot_i.clear();
-//  
-//  			/* position of the robot corresponding to parameter u */
-//  			q = localpathPt->config_at_param(robotPt, localpathPt, u);
-//  			I_can = p3d_set_and_update_this_robot_conf_multisol(robotPt, q, NULL, 0, localpathPt->ikSol);
-//  			if(I_can == FALSE) {
-//                                printf("error config %d in lp %d\n",index, lpId);
-//  			}
-//  
-//  			p3d_get_robot_config_into(robotPt, &q);
-//  			// Check for the bounds for the arm
-//  			j=0;
-//  			 for(int v=0; v<nbGpJnt; v++) {
-//  			    nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
-//  			      for(int k=0; k<nb_dof; k++) {
-//   				dq = fmod((q[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof +k] - q_armOld[j]), 2*M_PI);
-//   				q_arm.push_back(q_armOld[j] + dq);
-//  				qplot_i.push_back(q_arm[j]);
-//  				j++;
-//  			      }
-//  			 }
-//  
-//  			if(filepTrajtr != NULL) {
-//  
-//                           for(unsigned int w=0; w<qplot_i.size();w++){
-//                            fprintf(filepTrajtr,"%f ",qplot_i[w]);
-//  
-//                           }
-//  			 fprintf(filepTrajtr,"%d ", lpId);
-//                           fprintf(filepTrajtr,"\n");
-//  			}
-//  
-//  			positions.push_back(qplot_i);
-//  			lp.push_back(lpId);
-//  			index = index + 1;
-//  			q_armOld.clear();
-//  			for(int i=0; i<nb_armDof; i++) {
-//  			  q_armOld.push_back(q_arm[i]);
-//  			}
-//  			p3d_destroy_config(robotPt, q);
-//  			q = NULL;
-//  			du = SIMPLING_TIME;
-//  			u += du;
-//  
-//  			if (u > umax - EPS6) {
-//  				u -= umax;
-//  				end_localpath++;
-//  			}
-//  		}
-//  		localpathPt = localpathPt->next_lp;
-//  		lpId ++;
-//  		u=0;
-//  		end_localpath = 0;
-//  	}
-//  
-//          printf("lpId %d traj->nlp %d\n ",lpId, traj->nlp);
-//  
-//  	if(filepTrajtr != NULL) {
-//  	fclose(filepTrajtr);
-//  	printf("File arm2.traj created\n");
-//  	}
-//  
-//  	if(flagPlot == true) {
-//  		FILE * f = NULL;
-//  		f = fopen("temp2.dat","w");
-//  
-//  	        for(unsigned int i=0; i<positions.size(); i++){
-//  		  fprintf(f,"%d ",i);
-//  		  for(unsigned int v=0; v<positions[i].size(); v++){
-//  			fprintf(f,"%f ",positions[i][v]);
-//  		  }
-//  		  fprintf(f,"\n ");
-//  		}
-//  
-//  
-//  		fclose(f);
-//  		h = gnuplot_init();
-//  		if(h == NULL){
-//  			printf("Gnuplot Init problem");
-//  		}
-//  		gnuplot_cmd(h,(char*)"set term wxt");
-//  		gnuplot_cmd(h,(char*)"set xrange [%d:%d]",0,index-1);
-//  		gnuplot_cmd(h,(char*)"set yrange [-4.5:4.5]");  // maxi for Jido is 255�
-//  		std::string gnuplotCmd;
-//  		gnuplotCmd.clear();
-//  		char text[255];
-//  		char text2[255];
-//  		if(positions.size()>1){
-//  		  for(unsigned int i=0; i<positions.at(0).size(); i++){
-//  		    sprintf(text,"%d",i+1);
-//  		    sprintf(text2,"%d",i+2);
-//  		    if(i==0) {
-//  		      gnuplotCmd.append("plot ");
-//  		    }
-//  		    gnuplotCmd.append("\"temp2.dat\" using 1:");
-//  		    gnuplotCmd.append(text2);
-//  		    gnuplotCmd.append(" with lines lt ");
-//  		    gnuplotCmd.append(text);
-//  		    gnuplotCmd.append(" ti \"q");
-//  		    gnuplotCmd.append(text);
-//  		    if(i<qplot_i.size()-1){
-//  		      gnuplotCmd.append("\", ");
-//  		    } else {
-//  			gnuplotCmd.append("\" ");
-//  		    }
-//  		  }
-//  		}
-//  		gnuplot_cmd(h, (char*)gnuplotCmd.c_str());
-//  	}
-//  return;
-//}
 
 ///////////////////////////////////////////////
 //                      UTILS							 	 //
