@@ -60,8 +60,16 @@ bool p3d_test_middle_of_CVS( p3d_traj * trajPt,
   bool res = true;
   p3d_rob* rob = trajPt->rob;
   for(unsigned int i=0;i<m_vectOfCVS.size();i++){
-    configPt q1 = p3d_config_at_distance_along_traj(trajSmPt, m_vectOfCVS[i].first) ;    
+    configPt q1 = p3d_config_at_distance_along_traj(trajSmPt, m_vectOfCVS[i].first) ;   
+     p3d_set_and_update_this_robot_conf_multisol(rob, q1, NULL, 0, trajSmPt->courbePt->ikSol);
+     p3d_get_robot_config_into(rob, &q1);
+ 
     configPt q2 = p3d_config_at_distance_along_traj(trajPt,   m_vectOfCVS[i].second) ;  
+    p3d_set_and_update_this_robot_conf_multisol(rob, q2, NULL, 0, trajPt->courbePt->ikSol);
+    p3d_get_robot_config_into(rob, &q2);
+
+
+
     if( !p3d_equal_config( rob, q1, q2) ){
       printf("config differ in p3d_test_middle_of_CVS\n");    
       printf("ith CVS : %d\n",i);    
