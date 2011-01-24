@@ -687,10 +687,10 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
   present_ents = MY_ALLOC(HRI_ENTITY*, ents->entities_nb); // ALLOC
   present_ents_global_idxs = MY_ALLOC(int, ents->entities_nb); // ALLOC
 
-  // Pick entities that exist and not disappeared
+  // Pick entities that exist 
   present_ents_nb = 0;
   for(e_i=0; e_i<ents->entities_nb; e_i++) {
-    if(ents->entities[e_i]->is_present && !ents->entities[e_i]->disappeared) {
+    if(ents->entities[e_i]->is_present) {
       present_ents[present_ents_nb] = ents->entities[e_i];
       present_ents_global_idxs[present_ents_nb] = e_i;
       present_ents_nb++;
@@ -719,8 +719,11 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
       }
 
       // VISIBILITY PLACEMENT - FOV,FOA,OOF
-      // TODO: visibility placement for robot parts
-      hri_entity_visibility_placement(agent, ent, &res, &elevation, &azimuth);
+      // TODO: visibility placement for robot parts	
+      if(ent->disappeared)
+	hri_entity_visibility_placement(agent, ent, &res, &elevation, &azimuth);
+      else
+	res = HRI_UK_VIS_PLACE;
       if ( kn_on_ent->is_placed_from_visibility == (HRI_VISIBILITY_PLACEMENT) res) {
 	if (kn_on_ent->visibility_placement_ischanged)
 	  kn_on_ent->visibility_placement_ischanged = FALSE;
@@ -737,7 +740,10 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
       // To simplify we do not compute reachability on agent or agent parts
       if ( (ent->type != HRI_AGENT_PART) && (ent->type != HRI_ISAGENT)) {
 	GIK_VIS = 500;
-	reachability_result = hri_is_reachable(ent, agent);
+	if(ent->disappeared)
+	  reachability_result = HRI_UK_REACHABILITY;
+	else
+	  reachability_result = hri_is_reachable(ent, agent);
 	if ( kn_on_ent->reachability ==  reachability_result) {
 	  if ( kn_on_ent->reachability_ischanged)
 	    kn_on_ent->reachability_ischanged = FALSE;
@@ -750,7 +756,10 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
       }
       // SPATIAL RELATION      
       if( ent->type != HRI_AGENT_PART) {
-	spatial_relation_result = hri_spatial_relation(ent, agent);
+	if(ent->disappeared)
+	  spatial_relation_result = HRI_UK_RELATION;
+	else
+	  spatial_relation_result = hri_spatial_relation(ent, agent);
 	if ( kn_on_ent->is_located_from_agent ==  spatial_relation_result) {
 	  if (kn_on_ent->spatial_relation_ischanged)
 	    kn_on_ent->spatial_relation_ischanged = FALSE;
@@ -771,7 +780,10 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
 	  continue;
 	}
         if( e_j != e_i) {
-          placement_relation_result = hri_placement_relation(ent, ents->entities[ge_j]);
+	  if(ent->disappeared)
+	    placement_relation_result = HRI_UK_PLR;
+	  else
+	    placement_relation_result = hri_placement_relation(ent, ents->entities[ge_j]);
 	  if (  kn_on_ent->is_placed[ge_j] ==  placement_relation_result) {
 	    if ( kn_on_ent->placement_relation_ischanged[ge_j])
 	      kn_on_ent->placement_relation_ischanged[ge_j] = FALSE;

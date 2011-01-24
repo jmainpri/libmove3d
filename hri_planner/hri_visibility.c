@@ -325,7 +325,10 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
   q = p3d_get_robot_config(robot);
 
   for(i=0; i<ent_nb; i++) {
-    res[i] = HRI_INVISIBLE;
+    if(ents[i]->disappeared)
+      res[i] = HRI_UK_VIS;
+    else
+      res[i] = HRI_INVISIBLE;
   }
 
   // SAVE AGENT PARAMETERS
@@ -352,7 +355,10 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
     // SELECT IN FOV/FOA OBJECTS
     o_i=0;
     for(i=0; i<ent_nb; i++) {
-      hri_object_visibility_placement(agent, ents[i]->robotPt, &vis_pl, &elevation, &azimuth);
+      if(ents[i]->disappeared)
+	vis_pl= HRI_UK_VIS_PLACE;
+      else
+	hri_object_visibility_placement(agent, ents[i]->robotPt, &vis_pl, &elevation, &azimuth);
       
       // if the entitiy is in foa or fov, and invisible then we put it to the test list
       if( ((vis_pl == HRI_FOV) || (vis_pl == HRI_FOA)) && (res[i] !=  HRI_VISIBLE) ) {
@@ -383,8 +389,11 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
       
       // SELECT IN FOV/FOA OBJECTS
       for(o_i=0, i=0; i<ent_nb; i++) {
-	if(res[i] != HRI_VISIBLE) {
-	  hri_object_visibility_placement(agent, ents[i]->robotPt, &vis_pl, &elevation, &azimuth);
+	if(res[i] == HRI_INVISIBLE) {
+	  if(ents[i]->disappeared)
+	    vis_pl= HRI_UK_VIS_PLACE;
+	  else
+	    hri_object_visibility_placement(agent, ents[i]->robotPt, &vis_pl, &elevation, &azimuth);
 	  
 	  if( ((vis_pl == HRI_FOV) || (vis_pl == HRI_FOA)) && (res[i] !=  HRI_VISIBLE) ) {
 	    entities_to_test[o_i] = ents[i];
@@ -413,8 +422,11 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
     
     // SELECT IN FOV/FOA OBJECTS
     for(o_i=0, i=0; i<ent_nb; i++) {
-      if(res[i] != HRI_VISIBLE) {
-	hri_object_visibility_placement(agent, ents[i]->robotPt, &vis_pl, &elevation, &azimuth);
+      if(res[i] == HRI_INVISIBLE) {
+	if(ents[i]->disappeared)
+	  vis_pl= HRI_UK_VIS_PLACE;
+	else
+	  hri_object_visibility_placement(agent, ents[i]->robotPt, &vis_pl, &elevation, &azimuth);
 	
 	if( ((vis_pl == HRI_FOV) || (vis_pl == HRI_FOA)) && (res[i] !=  HRI_VISIBLE) ) {
 	  entities_to_test[o_i] = ents[i];
