@@ -47,6 +47,9 @@ void print_MiddleOfCVS(void)
 void p3d_computeMiddleOfCVSParam( p3d_localpath* smPath, p3d_localpath* linPath, double trajLength )
 {
   middleOfCVS pairTmp;
+  if(smPath==NULL || linPath==NULL) {
+    return;
+  }
   pairTmp.first = 0.5 * smPath->length_lp;
   pairTmp.second =  0.5 * linPath->length_lp + trajLength;
   m_vectOfCVS.push_back( pairTmp );
@@ -607,11 +610,7 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
                                 positions, smTraj);
     }
 
-    if (fct_draw){(*fct_draw)();}
- g3d_win *win= NULL;
- win= g3d_get_cur_win();
- win->fct_draw2 = &(draw_trajectory_ptp);
- g3d_draw_allwin_active();
+
 
   ///////////////////////////////////////////////////////////////////////////
   ////  COMPUTE THE SOFTMOTION SMOOTHED TRAJECTORY                        ///
@@ -633,6 +632,13 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
   // smTraj.print();
   print_MiddleOfCVS();
   p3d_test_middle_of_CVS( trajPt , trajSmPt );
+
+
+      if (fct_draw){(*fct_draw)();}
+ g3d_win *win= NULL;
+ win= g3d_get_cur_win();
+ win->fct_draw2 = &(draw_trajectory_ptp);
+ g3d_draw_allwin_active();
   return FALSE;
 }
 
