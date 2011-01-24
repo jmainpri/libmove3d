@@ -2557,16 +2557,17 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
   std::vector <double>  vqi;
   std::vector <double>  min, max;
   gnuplot_ctrl * h = NULL;
-
+ 
 
   SM_SEG seg;
 
   int I_can = 0;
   int lpId = 0;
   int upBodySm_mlpID = -1;
-
-  
-	
+  int jointsToExportGpID = -1;
+  configPt dofsToExport = NULL;
+int nb_armDof =0;
+  int w = 0;
   if ((filepTrajtr = fopen(fileName,"w+"))==NULL) {
     printf("cannot open File %s", fileName);
   }
@@ -2582,9 +2583,38 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
     printf("ERROR p3d_softMotion_write_curve_for_bltplot unknow robot type \n");
     return;
   }
+
+  dofsToExport =  p3d_alloc_config(robotPt);
+
+    
+  for(int iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
+    if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jointsToExport") == 0) {
+      jointsToExportGpID = iGraph;
+      break;
+    }
+  }
+  if(jointsToExportGpID == -1) {
+    printf("ERROR p3d_softMotion_write_curve_for_bltplot unknow jointsToExportGpID type \n");
+    for(int dof=0; dof<robotPt->nb_dof; dof++) {
+     dofsToExport[dof] = 1;
+    }
+  } else {
+   for(int dof=0; dof<robotPt->nb_dof; dof++) {
+     dofsToExport[dof] = 0;
+   }
+   for(int v=0; v<robotPt->mlp->mlpJoints[jointsToExportGpID]->nbJoints; v++) {
+     nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[jointsToExportGpID]->joints[v]]->dof_equiv_nbr;
+     w = robotPt->joints[robotPt->mlp->mlpJoints[jointsToExportGpID]->joints[v]]->index_dof;
+     for(int k=0; k<nb_dof; k++) {
+       dofsToExport[w + k] = 1;
+     }
+   }
+  }
+
+  
   nbGpJnt = robotPt->mlp->mlpJoints[upBodySm_mlpID]->nbJoints;
   //std::cout << "there are " << nbGpJnt << std::endl;
-  int nb_armDof =0;
+  
   q_armOld.clear();
   vqi.clear();
   min.clear();
@@ -2593,19 +2623,21 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
   double min_i=0.0, max_i=0.0;
 	
   for(int v=0; v<nbGpJnt; v++) {
-    nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
-    for(int k=0; k<nb_dof; k++) {
-      if(trajType == 0) {
-        q_armOld.push_back(traj->courbePt->mlpLocalpath[upBodySm_mlpID]->specific.softMotion_data->q_init[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof + k]);
-      } else {
-	q_armOld.push_back(traj->courbePt->specific.softMotion_data->q_init[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof + k]);
-      }
-      vqi.push_back(0.0);
-      p3d_jnt_get_dof_bounds(robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]], k, &min_i, &max_i);
-      min.push_back(min_i);
-      max.push_back(max_i);
-      j++;
-      nb_armDof ++;
+    if(dofsToExport[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof] == 1){
+     nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
+     for(int k=0; k<nb_dof; k++) {
+       if(trajType == 0) {
+	 q_armOld.push_back(traj->courbePt->mlpLocalpath[upBodySm_mlpID]->specific.softMotion_data->q_init[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof + k]);
+       } else {
+	 q_armOld.push_back(traj->courbePt->specific.softMotion_data->q_init[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof + k]);
+       }
+       vqi.push_back(0.0);
+       p3d_jnt_get_dof_bounds(robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]], k, &min_i, &max_i);
+       min.push_back(min_i);
+       max.push_back(max_i);
+       j++;
+       nb_armDof ++;
+     }
     }
   }
   positions.clear();
@@ -2625,6 +2657,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
       specificPt = localpathSMPt->specific.softMotion_data;	    
 
       for (int i=0;i<specificPt->nbDofs;i++) {
+       if(dofsToExport[(robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[0]]->index_dof) +i] == 1){
 	//niseg = 0;
 	 for(int s=1; s<=7;s++) {
 	  seg.lpId = lpId;
@@ -2741,7 +2774,9 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
 	}
 	 // printf("niseg %d\n",niseg);
 	 //niseg = 0;
-      } 
+
+      }
+      } // for specificPt->nbDofs
 
     }
     //niseg = 0;
@@ -2755,12 +2790,14 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
   smTraj.qStart.resize(nb_armDof);
   q = traj->courbePt->config_at_param(robotPt, traj->courbePt, 0.0);
   for(int v=0; v<nbGpJnt; v++) {
+   if(dofsToExport[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof] == 1){
    nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
     for(int k=0; k<nb_dof; k++) {
      smTraj.traj[j][0].IC.x = q[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof + k];
      smTraj.qStart[j] = smTraj.traj[j][0].IC.x;
      j++;
     }
+   }
   }
   /* Set the final condition (qGoal) of the trajectory */
   localpathPt = traj->courbePt;
@@ -2776,11 +2813,13 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
   smTraj.qGoal.resize(nb_armDof);
   q = localpathSMPt->config_at_param(robotPt, localpathSMPt, localpathSMPt->length_lp);
   for(int v=0; v<nbGpJnt; v++) {
-   nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
+   if(dofsToExport[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof] == 1){
+    nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
     for(int k=0; k<nb_dof; k++) {
      smTraj.qGoal[j] = q[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof + k];
      j++;
     }
+   }
   }
 
   smTraj.computeTimeOnTraj();
@@ -2816,6 +2855,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
       // Check for the bounds for the arm
       j=0;
       for(int v=0; v<nbGpJnt; v++) {
+       if(dofsToExport[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof] == 1) {
 	nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
 	for(int k=0; k<nb_dof; k++) {
 	  dq = fmod((q[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof +k] - q_armOld[j]), 2*M_PI);
@@ -2823,6 +2863,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
 	  qplot_i.push_back(q_arm[j]);
 	  j++;
 	}
+       }
       }
       if(filepTrajtr != NULL) {
 	for(unsigned int w=0; w<qplot_i.size();w++){
@@ -2855,6 +2896,8 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
     end_localpath = 0;
   }
 
+
+  p3d_destroy_config(robotPt, dofsToExport);
   //printf("lpId %d traj->nlp %d\n ",lpId, traj->nlp);
 
   if(filepTrajtr != NULL) {
