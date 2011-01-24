@@ -17,7 +17,6 @@ typedef struct STRUCT_HRI_ENTITY {
   
   int is_present; /* Is present in the env, i.e. at least seen once by the robot */
   int disappeared; /* Is present but it is not at the place where it is supposed to be */
-  int disappeared_isexported; /* bool to know wether disappear information was exported */  
 
   p3d_rob * robotPt;
   p3d_obj * partPt;
@@ -95,6 +94,8 @@ typedef struct STRUCT_HRI_KNOWLEDGE_ON_ENTITY {
   HRI_ENTITY * entPt;
 
   long update_date;
+
+  int disappeared_isexported; /* bool to know wether disappear information was exported for this agent */  
 
   HRI_MOTION motion;
   int motion_ischanged;

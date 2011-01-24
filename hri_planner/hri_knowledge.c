@@ -46,7 +46,6 @@ HRI_ENTITIES * hri_create_entities()
         entities->entities[ent_i]->can_disappear = TRUE;
         entities->entities[ent_i]->is_present = FALSE;
         entities->entities[ent_i]->disappeared = FALSE;
-	entities->entities[ent_i]->disappeared_isexported = FALSE;
         entities->entities[ent_i]->robotPt = env->robot[i];
         entities->entities[ent_i]->partPt = NULL;
         entities->entities[ent_i]->type = HRI_OBJECT;
@@ -150,6 +149,8 @@ int hri_initialize_agent_knowledge(HRI_KNOWLEDGE * knowledge, HRI_ENTITIES * ent
   for(i=0; i<knowledge->entities_nb; i++) {
 
     knowledge->entities[i].entPt = entities->entities[i];
+
+    knowledge->entities[i].disappeared_isexported = FALSE;
 
     knowledge->entities[i].motion = HRI_UK_MOTION;
     knowledge->entities[i].motion_ischanged = FALSE;
