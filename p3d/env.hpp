@@ -77,6 +77,7 @@ public:
 		drawBox,
 		drawOnlyOneLine,
 		drawVectorField,
+    drawMultiColorLocalpath,
 		// Variables Hri
 		useHriDis,
 		useHriPen,

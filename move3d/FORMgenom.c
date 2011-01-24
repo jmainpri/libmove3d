@@ -955,11 +955,11 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
   std::vector <double>  objStart, objGoto;
         manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)"", confs, smTrajs);
 
-        g3d_win *win= NULL;
-        win= g3d_get_cur_win();
-        win->fct_draw2= &(genomDraw);
-        win->fct_key1= &(genomKey);
-	g3d_draw_allwin_active();
+//         g3d_win *win= NULL;
+//         win= g3d_get_cur_win();
+//         win->fct_draw2= &(genomDraw);
+//         win->fct_key1= &(genomKey);
+// 	g3d_draw_allwin_active();
 	return;
 }
 

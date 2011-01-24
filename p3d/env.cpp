@@ -33,6 +33,7 @@ Env::Env()
 	mBoolMap.insert(boolMap_t(Env::drawBox, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawOnlyOneLine, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawVectorField, new boolContainer(false)));
+  mBoolMap.insert(boolMap_t(Env::drawMultiColorLocalpath, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::biDir, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::minimize, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::isCostSpace, new boolContainer(false)));

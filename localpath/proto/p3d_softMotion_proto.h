@@ -62,6 +62,7 @@ extern p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p
 extern int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int graphId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data, int* ikSol);
 extern int p3d_softMotion_localplanner_KUKA_ARM(p3d_rob* robotPt, int graphId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data, int* ikSol);
 extern int p3d_softMotion_localplanner_JOINT(p3d_rob* robotPt, int graphId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data, int* ikSol);
+extern int p3d_softMotion_localplanner_UPBODY_CART(p3d_rob* robotPt, int graphId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data, int* ikSol);
 extern void p3d_softMotion_set_stay_within_dist(int value);
 
 int lm_compute_softMotion(p3d_rob* robotPt, int mlpID, p3d_softMotion_data* softMotion_data);

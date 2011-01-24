@@ -839,11 +839,11 @@ void ManipulationPlanner::checkConfigForCartesianMode(configPt q, p3d_rob* objec
             p3d_update_virtual_object_config_for_arm_ik_constraint(_robot, i, q);
             activateCcCntrts(_robot, i, false);
             unfixManipulationJoints(i);
-            #ifdef MULTILOCALPATH
-            if(_robot->lpl_type == P3D_MULTILOCALPATH_PLANNER){
-              p3d_multiLocalPath_set_groupToPlan(_robot, armData.getCartesianGroup(), 1);
-            }
-            #endif
+//            #ifdef MULTILOCALPATH
+//             if(_robot->lpl_type == P3D_MULTILOCALPATH_PLANNER){
+//               p3d_multiLocalPath_set_groupToPlan(_robot, armData.getCartesianGroup(), 1);
+//             }
+//            #endif
             armData.getManipulationJnt()->dist = _robot->joints[_robot->mlp->mlpJoints[armData.getHandGroup()]->joints[0]]->dist;
         } else {
             deactivateCcCntrts(_robot, i);
@@ -865,20 +865,19 @@ void ManipulationPlanner::setArmCartesian(int armId, bool cartesian) {
     //activate the corresponding group, constraint and set the sampling bounds of the object to sample
     if (cartesian) {
         activateCcCntrts(_robot, armId, 0);
-        shootTheObjectArroundTheBase(_robot, _robot->baseJnt, armData.getManipulationJnt(), 2.0);
-        
-#ifdef MULTILOCALPATH
-        if(_robot->lpl_type == P3D_MULTILOCALPATH_PLANNER){
-          p3d_multiLocalPath_set_groupToPlan(_robot, armData.getCartesianGroup(), 1);
-        }
-#endif
+        shootTheObjectArroundTheBase(_robot, _robot->baseJnt, armData.getManipulationJnt(), 2.0);      
+//#ifdef MULTILOCALPATH
+//         if(_robot->lpl_type == P3D_MULTILOCALPATH_PLANNER){
+//           p3d_multiLocalPath_set_groupToPlan(_robot, armData.getCartesianGroup(), 1);
+//         }
+//#endif
     } else {
         deactivateCcCntrts(_robot, armId);
-#ifdef MULTILOCALPATH
-        if(_robot->lpl_type == P3D_MULTILOCALPATH_PLANNER){
-          p3d_multiLocalPath_set_groupToPlan(_robot, armData.getCartesianGroup(), 0);
-        }
-#endif
+//#ifdef MULTILOCALPATH
+//         if(_robot->lpl_type == P3D_MULTILOCALPATH_PLANNER){
+//           p3d_multiLocalPath_set_groupToPlan(_robot, armData.getCartesianGroup(), 0);
+//         }
+//#endif
         shootTheObjectInTheWorld(_robot, armData.getManipulationJnt());
     }
 }
@@ -1549,13 +1548,12 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     ArmManipulationData& armData = (*_robot->armManipulationData)[armId];
     fixAllHands( qStart, false );
     fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
-
-#ifdef MULTILOCALPATH
-    if (_robot->lpl_type == P3D_MULTILOCALPATH_PLANNER )
-    {
-        p3d_multiLocalPath_set_groupToPlan(_robot, armData.getCartesianGroup(), 1);
-    }
-#endif
+//#ifdef MULTILOCALPATH
+//     if (_robot->lpl_type == P3D_MULTILOCALPATH_PLANNER )
+//     {
+//         p3d_multiLocalPath_set_groupToPlan(_robot, armData.getCartesianGroup(), 1);
+//     }
+//#endif
 
     deactivateCcCntrts(_robot,armId);
 
@@ -1906,12 +1904,12 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     if ((returnMessage = armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, trajs)) == MANIPULATION_TASK_OK) {
       //concatene
       if (concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK) {
-        if(getArmCartesian(0)){ //TODO Softmotion smoothing
-//           if(traj){
-//             p3d_destroy_traj_content(_robot, traj);
-//           }
-          return returnMessage; 
-        }
+//         if(getArmCartesian(0)){ //TODO Softmotion smoothing
+// //           if(traj){
+// //             p3d_destroy_traj_content(_robot, traj);
+// //           }
+//           return returnMessage; 
+//         }
         /* COMPUTE THE SOFTMOTION TRAJECTORY */
         MANPIPULATION_TRAJECTORY_CONF_STR conf;
         SM_TRAJ smTraj;

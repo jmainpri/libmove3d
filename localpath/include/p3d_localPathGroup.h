@@ -15,7 +15,8 @@
 typedef enum {
  BASE,
  FREEFLYER,
- JOINT
+ JOINT,
+ UPBODY_CART
 } p3d_group_type;
 
 typedef struct gp_specific_params{

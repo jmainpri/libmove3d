@@ -5,7 +5,7 @@
 #include "Localpath-pkg.h"
 
 #include <utility>
-typedef std::pair<double,double> endOfCVS;
+typedef std::pair<double,double> middleOfCVS;
 
 extern int p3d_optim_traj_softMotion(p3d_traj *trajPt, bool param_write_file, double *gain, int *ntest, std::vector <int> &lp, std::vector < std::vector <double> > &positions, SM_TRAJ &smTraj);
 extern int p3d_convert_traj_to_softMotion(p3d_traj *trajPt, bool param_write_file, std::vector <int> &lp, std::vector < std::vector <double> > &positions, SM_TRAJ &smTraj);
