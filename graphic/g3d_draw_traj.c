@@ -655,8 +655,11 @@ void g3d_draw_all_tcur(void) {
             robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
             if (robotPt)
             {
-              //g3d_draw_tcur(robotPt, robotPt->no - 1, NB_KEY_FRAME);
-							g3d_draw_tcur(robotPt, p3d_get_user_drawnjnt() - 1 , NB_KEY_FRAME);
+	      int a = p3d_get_user_drawnjnt();
+	      if(a == -1) {
+	       a = robotPt->no;
+	      }
+	      g3d_draw_tcur(robotPt, a- 1 , NB_KEY_FRAME);
             }
         }
         p3d_sel_desc_num(P3D_ROBOT, r);
