@@ -338,10 +338,10 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
   // COMPUTE HOW MANY TIMES AGENTS NEEDS TO TURN HIS HEAD TO SEE ALL THE SCENE
   pan_max_head_turning = RTOD(panJnt->dof_data[0].vmax - panJnt->dof_data[0].vmin);
   pan_div_no = ceil(pan_max_head_turning/agent->perspective->fov);
-  pan_head_turning_iter = (pan_max_head_turning-0.1)/pan_div_no; // -1 to be sure not to reach panJnt->dof_data[0].vmax
+  pan_head_turning_iter = DTOR(pan_max_head_turning-0.1)/pan_div_no; // -1 to be sure not to reach panJnt->dof_data[0].vmax
   tilt_max_head_turning = RTOD(tiltJnt->dof_data[0].vmax - tiltJnt->dof_data[0].vmin);
   tilt_div_no = ceil(tilt_max_head_turning/(agent->perspective->fov*0.75));
-  tilt_head_turning_iter = (tilt_max_head_turning-0.1)/tilt_div_no; // -1 to be sure not to reach tiltJnt->dof_data[0].vmax
+  tilt_head_turning_iter = DTOR(tilt_max_head_turning-0.1)/tilt_div_no; // -1 to be sure not to reach tiltJnt->dof_data[0].vmax
 
   // FOR EACH TILT
   for(t=0; t<tilt_div_no+1; t++) {
