@@ -303,7 +303,7 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
   int * entities_to_test_indexes;
   double * results;
   int i, o_i, j, t;
-  double pan_max_head_turning, tilt_max_head_turning;
+  double pan_max_head_turning, tilt_max_head_turning, pan_head_turning_iter, tilt_head_turning_iter;
   double visible_pixel_treshold = 0.001;
   double elevation, azimuth;
   int pan_div_no, tilt_div_no;
@@ -337,54 +337,21 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
 
   // COMPUTE HOW MANY TIMES AGENTS NEEDS TO TURN HIS HEAD TO SEE ALL THE SCENE
   pan_max_head_turning = RTOD(panJnt->dof_data[0].vmax - panJnt->dof_data[0].vmin);
-  pan_div_no = ceil((pan_max_head_turning - agent->perspective->fov)/agent->perspective->fov);
+  pan_div_no = ceil(pan_max_head_turning/agent->perspective->fov);
+  pan_head_turning_iter = (pan_max_head_turning-1)/pan_div_no; // -1 to be sure not to reach panJnt->dof_data[0].vmax
   tilt_max_head_turning = RTOD(tiltJnt->dof_data[0].vmax - tiltJnt->dof_data[0].vmin);
-  tilt_div_no = ceil((tilt_max_head_turning - agent->perspective->fov*0.75)/(agent->perspective->fov*0.75));
-  
+  tilt_div_no = ceil(tilt_max_head_turning/(agent->perspective->fov*0.75));
+  tilt_head_turning_iter = (tilt_max_head_turning-1)/tilt_div_no; // -1 to be sure not to reach tiltJnt->dof_data[0].vmax
+
   // FOR EACH TILT
   for(t=0; t<tilt_div_no; t++) {
-    q[tiltJnt->index_dof] = tiltJnt->dof_data[0].vmin +  DTOR(agent->perspective->fov*0.75*t);
-    
-    if(q[tiltJnt->index_dof] > tiltJnt->dof_data[0].vmax)
-      q[tiltJnt->index_dof] = tiltJnt->dof_data[0].vmax;
-    
-    // 1- TURN HEAD TO MINIMUM LIMIT
-    q[panJnt->index_dof] = panJnt->dof_data[0].vmin;
-    p3d_set_and_update_this_robot_conf(robot, q);
-    
-    // SELECT IN FOV/FOA OBJECTS
-    o_i=0;
-    for(i=0; i<ent_nb; i++) {
-      if(ents[i]->disappeared)
-	vis_pl= HRI_UK_VIS_PLACE;
-      else
-	hri_object_visibility_placement(agent, ents[i]->robotPt, &vis_pl, &elevation, &azimuth);
-      
-      // if the entitiy is in foa or fov, and invisible then we put it to the test list
-      if( ((vis_pl == HRI_FOV) || (vis_pl == HRI_FOA)) && (res[i] !=  HRI_VISIBLE) ) {
-	entities_to_test[o_i] = ents[i];
-	entities_to_test_indexes[o_i] = i;
-	o_i++;
-      }
-    }
-    
-    // TEST THEIR VISIBILITY
-    g3d_get_given_entities_pixelpresence_from_viewpoint(agent->perspective->camjoint->abs_pos, agent->perspective->fov,
-							entities_to_test, o_i, results, save_images);
-    // printf("1. Number of tested Objects: %d\n", o_i);
-    
-    // EVALUATE AND WRITE THE RESULT
-    for(i=0; i<o_i; i++) {
-      if(visible_pixel_treshold < results[i]) {
-	res[entities_to_test_indexes[i]] = HRI_VISIBLE;
-      }
-    }
+    q[tiltJnt->index_dof] = tiltJnt->dof_data[0].vmin +  t*tilt_head_turning_iter;    
     
     // 2- TURN HEAD STEP BY STEP
     for(j=0; j<pan_div_no; j++) {
       
       // TURN HEAD
-      q[panJnt->index_dof] = panJnt->dof_data[0].vmin + DTOR( (pan_max_head_turning - agent->perspective->fov)/pan_div_no ) * (j+0.5);
+      q[panJnt->index_dof] = panJnt->dof_data[0].vmin + j*pan_head_turning_iter;
       p3d_set_and_update_this_robot_conf(robot, q);
       
       // SELECT IN FOV/FOA OBJECTS
@@ -413,38 +380,6 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
 	if(visible_pixel_treshold < results[i]) {
         res[entities_to_test_indexes[i]] = HRI_VISIBLE;
 	}
-      }
-    }
-    
-    // 3- TURN HEAD TO MAXIMUM LIMIT
-    q[panJnt->index_dof] = panJnt->dof_data[0].vmax;
-    p3d_set_and_update_this_robot_conf(robot, q);
-    
-    // SELECT IN FOV/FOA OBJECTS
-    for(o_i=0, i=0; i<ent_nb; i++) {
-      if(res[i] == HRI_INVISIBLE) {
-	if(ents[i]->disappeared)
-	  vis_pl= HRI_UK_VIS_PLACE;
-	else
-	  hri_object_visibility_placement(agent, ents[i]->robotPt, &vis_pl, &elevation, &azimuth);
-	
-	if( ((vis_pl == HRI_FOV) || (vis_pl == HRI_FOA)) && (res[i] !=  HRI_VISIBLE) ) {
-	  entities_to_test[o_i] = ents[i];
-	  entities_to_test_indexes[o_i] = i;
-	  o_i++;
-	}
-      }
-    }
-    
-    // TEST THEIR VISIBILITY
-    g3d_get_given_entities_pixelpresence_from_viewpoint(agent->perspective->camjoint->abs_pos, agent->perspective->fov,
-							entities_to_test, o_i, results, save_images);
-    //printf("%d. Number of tested entities: %d\n", j+2, o_i);
-    
-    // EVALUATE AND WRITE THE RESULT
-    for(i=0; i<o_i; i++) {
-      if(visible_pixel_treshold < results[i]) {
-	res[entities_to_test_indexes[i]] = HRI_VISIBLE;
       }
     }
   }
