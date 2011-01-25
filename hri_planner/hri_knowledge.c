@@ -780,7 +780,7 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
 	  continue;
 	}
         if( e_j != e_i) {
-	  if(ent->disappeared)
+	  if(ent->disappeared || ents->entities[ge_j]->disappeared)
 	    placement_relation_result = HRI_UK_PLR;
 	  else
 	    placement_relation_result = hri_placement_relation(ent, ents->entities[ge_j]);
