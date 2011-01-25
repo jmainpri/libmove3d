@@ -374,7 +374,10 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
       g3d_get_given_entities_pixelpresence_from_viewpoint(agent->perspective->camjoint->abs_pos, agent->perspective->fov,
 							  entities_to_test, o_i, results, save_images);
       //printf("%d. Number of tested entities: %d\n", j+2, o_i);
-      
+
+      //TODO : manage better this : Ack to manage big differences in field of view.
+      visible_pixel_treshold = visible_pixel_treshold*60*60/(agent->perspective->fov*agent->perspective->fov);
+
       // EVALUATE AND WRITE THE RESULT
       for(i=0; i<o_i; i++) {
 	if(visible_pixel_treshold < results[i]) {
