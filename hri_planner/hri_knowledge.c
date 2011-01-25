@@ -401,12 +401,12 @@ int hri_is_on(p3d_vector3 topObjC, p3d_BB *topObjBB, p3d_BB *bottomObjBB)
 
   /* Test if topObj is on bottomObj */
   /* Condition 1: The center of topObj BB should be in the x,y limits of bottomObj BB and higher than bottomObj maximum z limit */
-  /* Condition 2: The lower part of topObj BB souldn not be higher than 5 cm from the higher part of bottomObj BB */
+  /* Condition 2: The lower part of topObj BB souldn not be (higher than 5 cm) and (lower than 5 cm) from the higher part of bottomObj BB */
 
   if((topObjC[0] >= bottomObjBB->xmin) && (topObjC[0] <= bottomObjBB->xmax) &&
      (topObjC[1] >= bottomObjBB->ymin) && (topObjC[1] <= bottomObjBB->ymax) &&
      (topObjC[2] >= bottomObjBB->zmax))
-    if((topObjBB->zmin > bottomObjBB->zmax) && (topObjBB->zmin-bottomObjBB->zmax < 0.05))
+    if((topObjBB->zmin - bottomObjBB->zmax > -0.05) && (topObjBB->zmin-bottomObjBB->zmax < 0.05))
       return TRUE;
 
   return FALSE;
