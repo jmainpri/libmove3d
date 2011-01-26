@@ -44,6 +44,5 @@ typedef struct pqp_collision_grid
   p3d_obj *colliding_body1, *colliding_body2;  /*!< pointer to the last two bodies that were found to be colliding */
 } pqp_collision_grid;
 
-
 #endif
 

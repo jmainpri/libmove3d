@@ -7,6 +7,10 @@
 
 extern void pqp_set_collision_message(unsigned int set);
 
+extern void pqp_set_tolerance_value(double value);
+
+extern void pqp_set_tolerance_flag(bool value);
+
 extern int pqp_update_BB(p3d_obj* obj);
 
 extern int pqp_get_obj_pos(p3d_obj *o, p3d_matrix4 pose);

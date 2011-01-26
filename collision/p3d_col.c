@@ -925,10 +925,16 @@ int p3d_col_set_tolerance(double value)
     }
 #endif /*GJK_DEBUG*/
 
-   case p3d_col_mode_pqp:
+  case p3d_col_mode_pqp:{
+    if(value == 0.0){
+      pqp_set_tolerance_flag(false);
+    }else{
+      pqp_set_tolerance_flag(true);
+      pqp_set_tolerance_value(value);
+    }
       success = TRUE;
-   break;
-
+    break;
+  }
     default:{ 
       PrintInfo(("\n Erreur p3d_set_tolerance, collision checker=none\n"));
       success = FALSE;

@@ -11,6 +11,14 @@
 // Define to enable/disable some debug checkings
 #define PQP_DEBUG
 
+
+
+//! NB: the following is used only by the pqp_robot_all_collision_test() function via pqp_robot_robot_collision_test() and pqp_robot_environment_collision_test():
+static bool pqp_tolerance_flag; /*!< choose standard (exact) collision test or consider that bodies are colliding if their distance to each other is below a threshold  */
+static double pqp_tolerance_value; /*!< the distance threshold (used only if pqp_tolerance_flag==true) */
+
+
+
 //! Boolean to know if the module has been initialized:
 static unsigned int pqp_INITIALIZED= 0;
 
@@ -18,6 +26,20 @@ static unsigned int pqp_INITIALIZED= 0;
 static unsigned int pqp_COLLISION_MESSAGE= 0;
 
 static pqp_collision_grid pqp_COLLISION_PAIRS= { 0, 0, 0, NULL, NULL, NULL, NULL}; 
+
+//! @ingroup pqp
+//! Sets the value of the tolerance flag.
+void pqp_set_tolerance_flag(bool value)
+{
+  pqp_tolerance_flag= value;
+}
+
+//! @ingroup pqp
+//! Sets the value of the tolerance.
+void pqp_set_tolerance_value(double value)
+{
+  pqp_tolerance_value= value;
+}
 
 //! @ingroup pqp
 //! Enables/disables the display of messages about collisions.
@@ -475,6 +497,9 @@ void p3d_start_pqp()
   unsigned int nb_pqpModels= 1;
   p3d_obj *object= NULL;
   p3d_rob *robot= NULL;
+
+  pqp_tolerance_flag= false;
+  pqp_tolerance_value= 0.0;
 
   //First, the obstacles:
   for(i=0; i<(unsigned int) XYZ_ENV->no; i++)
@@ -3194,7 +3219,16 @@ int pqp_robot_environment_collision_test(p3d_rob *robot)
        if(!pqp_is_collision_pair_activated(XYZ_ENV->o[i], robot->o[j]))
        { continue; }
 
-       nb_cols= pqp_collision_test(XYZ_ENV->o[i], robot->o[j]);
+       if(pqp_tolerance_flag==false)
+       {
+         nb_cols= pqp_collision_test(XYZ_ENV->o[i], robot->o[j]);
+       }
+       else
+       {
+         nb_cols= pqp_tolerance(XYZ_ENV->o[i], robot->o[j], pqp_tolerance_value);
+       }
+
+
        if(nb_cols!=0)
        {
          if(pqp_COLLISION_MESSAGE)
@@ -3245,7 +3279,14 @@ int pqp_robot_robot_collision_test(p3d_rob *robot1, p3d_rob *robot2)
        if(!pqp_is_collision_pair_activated(robot1->o[i], robot2->o[j]))
        { continue; }
 
-       nb_cols= pqp_collision_test(robot1->o[i], robot2->o[j]);
+       if(pqp_tolerance_flag==false)
+       {
+         nb_cols= pqp_collision_test(robot1->o[i], robot2->o[j]);
+       }
+       else
+       {
+         nb_cols= pqp_tolerance(robot1->o[i], robot2->o[j], pqp_tolerance_value);
+       }
 
        if(nb_cols!=0)
        {
@@ -3762,6 +3803,12 @@ int pqp_tolerance(p3d_obj *o1, p3d_obj *o2, double tolerance)
 
 
     PQP_Tolerance(&tres, R1, T1, o1->pqpModel, R2, T2, o2->pqpModel, tol);
+
+    if(tres.CloserThanTolerance()!=0)
+    {
+      pqp_COLLISION_PAIRS.colliding_body1= o1;
+      pqp_COLLISION_PAIRS.colliding_body2= o2;
+    }
 
     return tres.CloserThanTolerance();
 }
