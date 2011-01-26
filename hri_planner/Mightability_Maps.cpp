@@ -221,12 +221,14 @@ int draw_all_current_points_on_FOV_screen();
 int update_Mightability_Maps_new();
 int get_horizontal_triangles(std::list<gpTriangle> &htris);
 int display_horizontal_triangles(std::list<gpTriangle> htris);
+int display_horizontal_triangles_samples(std::list<gpTriangle> htris);
+int get_horizontal_surfaces();
+int update_horizontal_surfaces();
 //================================
 
 int execute_Mightability_Map_functions()
 {
-  
-   //////////display_horizontal_triangles(global_htris);
+   
 
    if(Affordances_Found==1)
    {
@@ -247,6 +249,10 @@ int execute_Mightability_Map_functions()
   /////draw_all_current_points_on_FOV_screen();
   /////return 1;
 
+   ////get_horizontal_triangles(global_htris);
+   ////display_horizontal_triangles(global_htris);
+   ////display_horizontal_triangles_samples(global_htris);
+
    MM_RECORD_MOVIE_FRAMES=0;
    // printf(" Inside Affordances_Found==1\n");
    if(UPDATE_MIGHTABILITY_MAP_INFO==1)
@@ -254,7 +260,7 @@ int execute_Mightability_Map_functions()
    ////printf(" Inside UPDATE_MIGHTABILITY_MAP_INFO \n");
  
    update_robots_and_objects_status();
-  
+   update_horizontal_surfaces();
    //////////update_Mightability_Maps();
 
    update_Mightability_Maps_new();
@@ -7119,7 +7125,7 @@ int find_Mightability_Maps()
 
  printf(" **** 3D grid dimension is (%d x %d x %d), no. of cells =%d \n",grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx,grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny,grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz,grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx*grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny*grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz);
 
- 
+   get_horizontal_surfaces();
  //////////virtually_update_human_state_new(1);// Sitting
  find_human_all_visibilities_in_3D();
  update_3d_grid_reachability_for_human_new(1);//for human1
@@ -10247,7 +10253,8 @@ int update_3D_grid_for_Mightability_Maps(hri_bitmapset * bitmapset, int expansio
   ////robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[6]=r->ROBOT_POS[6];
   ////robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[7]=r->ROBOT_POS[7];
   ////robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[8]=r->ROBOT_POS[8];
-  p3d_copy_config_into(r,r->ROBOT_POS, &(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config));
+  p3d_copy_config_into(r,cur_rob_pos, &(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config));
+  
   ////////robots_status_for_Mightability_Maps[r_ctr].prev_BB=r->BB;
    }
    
@@ -10652,6 +10659,266 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
   
 
   return 1;
+}
+
+int create_exact_obstacles_for_HRP2_GIK_manip_fast_new2 ( hri_bitmapset * bitmapset, int expansion, int bt_type )
+{
+ChronoOff();
+ChronoOn();
+
+	if ( bt_type==HRP2_GIK_MANIP )
+	{
+//                  configPt visq = MY_ALLOC(double,ACBTSET->visball->nb_dof); /* Allocation of temporary robot configuration */
+//                  p3d_get_robot_config_into(ACBTSET->robot,&visq); 
+// 		
+// 		hri_bitmap * bitmap;
+// 		double increment=3.0/4.0*bitmapset->pace;
+		 	configPt visq;
+  			hri_bitmap * bitmap;
+  			double increment=3.0/4.0*bitmapset->pace;
+  			visq = p3d_get_robot_config(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY]);
+
+		////visq = p3d_get_robot_config(bitmapset->visball);
+
+		bitmap = bitmapset->bitmap[bt_type];
+		envPt_MM= ( p3d_env * ) p3d_get_desc_curid ( P3D_ENV );
+		int no = envPt_MM->no;
+		int nr = envPt_MM->nr;
+
+		int x,y,z;
+		for ( x=0; x<bitmap->nx; x++ )
+		{
+			for ( y=0; y<bitmap->ny; y++ )
+			{
+				for ( z=0; z<bitmap->nz; z++ )
+				{
+					bitmapset->bitmap[bt_type]->data[x][y][z].val = 0;
+					int nr_ctr=0;
+					for ( ;nr_ctr<nr;nr_ctr++ )
+					{
+						bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[nr_ctr]=0;//Initially does not belong to any cell
+
+						bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.close_to_objects_indx[nr_ctr]=0;//Initially does not belong to any cell
+					}
+					bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.is_horizontal_surface=0;
+					bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.horizontal_surface_of=nr_ctr;//horizontal surface belongs to this robot index
+					bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.near_horizontal_surface=0;
+
+
+					bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects=0;
+					bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects=0;
+				}
+			}
+		}
+
+
+		p3d_obj *o;
+		p3d_rob *r;
+		int r_ctr=0;
+		for ( r_ctr=0;r_ctr<nr;r_ctr++ )
+		{
+			
+			r = envPt_MM->robot[r_ctr];
+                        if ( strcasestr ( r->name,"visball" ) )
+			{
+                        continue;
+			}
+				robots_status_for_Mightability_Maps[r_ctr].rob_prev_config=MY_ALLOC ( double,r->nb_dof );
+				p3d_get_robot_config_into ( r,&robots_status_for_Mightability_Maps[r_ctr].rob_prev_config );
+				////robots_status_for_Mightability_Maps[r_ctr].prev_BB=r->BB;
+				robots_status_for_Mightability_Maps[r_ctr].has_moved=0;
+
+				//////////printf(" Robot name = %s \n",r->name);
+				
+				////printf(" r->name = %s ,r->no=%d \n",r->name,r->no);
+				int r_o_ctr=0;
+				for ( r_o_ctr=0;r_o_ctr<r->no;r_o_ctr++ )
+				{
+					o = r->o[r_o_ctr];
+					////printf(" o->name = %s \n",o->name);
+					double BBx;
+					for ( BBx=o->BB.xmin;BBx<o->BB.xmax;BBx+=increment )
+					{
+						visq[6]  = BBx;
+						x= ( BBx- bitmapset->realx ) /bitmapset->pace;
+						double BBy;
+						for ( BBy=o->BB.ymin;BBy<o->BB.ymax&&x>0&&x<bitmap->nx;BBy+=increment )
+						{
+							visq[7]  = BBy;
+							y= ( BBy- bitmapset->realy ) /bitmapset->pace;
+							double BBz;
+							for ( BBz=o->BB.zmin;BBz<o->BB.zmax&&y>0&&y<bitmap->ny;BBz+=increment )
+							{
+								visq[8]  = BBz;
+								z= ( BBz - bitmapset->realz ) /bitmapset->pace;
+
+								if ( x>0&&x<bitmap->nx&&y>0&&y<bitmap->ny&&z>0&&z<bitmap->nz )
+								{
+									p3d_set_and_update_this_robot_conf ( envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY], visq );
+									int kcd_with_report=0;
+									int res = p3d_col_test_robot ( envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],kcd_with_report );
+									if ( res>0 ) ////if(p3d_col_test_robot(bitmapset->visball,FALSE))
+									{
+										//////// printf(" Populating ACTUAL obstacle for x, y, z = %d %d %d\n",x, y, z);
+
+										bitmapset->bitmap[bt_type]->data[x][y][z].val = -1;  //Exact obstacle
+
+										if ( bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]==0 ) //the cell does not already belong to this robot index
+										{
+											bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=1;//cell belong to this robot index
+											bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.objects_belonging_to[bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects]=r_ctr;
+
+											bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects++;
+										}
+
+										////////////bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=1;//cell belong to this robot index
+
+
+										
+										
+										//else
+										//{
+										//bitmapset->bitmap[bt_type]->data[x][y][surf_z].is_horizontal_surface=0;//Does not belong to a horizontal surface of table
+										// }
+
+										int i=0;
+										for ( i=x-expansion;i<=x+expansion;i++ )
+										{
+											//printf(" for i = %d\n",i);
+											if ( i>=0&&i<bitmap->nx )
+											{
+												int j=0;
+												for ( j=y-expansion;j<=y+expansion;j++ )
+												{
+													//printf(" for i, j = %d %d\n",i, j);
+													if ( j>=0&&j<bitmap->ny )
+													{
+														int k=0;
+														for ( k=z-expansion;k<=z+expansion;k++ )
+														{
+															//printf(" for i, j, k = %d %d %\n",i, j, k);
+															if ( k>=0&&k<bitmap->nz )
+															{
+																// printf(" Populating %d, %d, %d \n",i,j,k);
+																if ( bitmapset->bitmap[bt_type]->data[i][j][k].val == -1 ) //Already exact obstacle
+																{
+
+																	if ( bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]==0 ) //the cell does not already close to this robot index
+																	{
+																		bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=1;//cell close to this robot index
+																		bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.no_close_to_objects++;
+																	}
+																	bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=1;//cell close to this robot index
+																}
+																else
+																{
+																	bitmapset->bitmap[bt_type]->data[i][j][k].val = -2;  //Near to the obstacle
+
+																	if ( bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]==0 ) //the cell does not already close to this robot index
+																	{
+																		bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=1;//cell close to this robot index
+																		bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.no_close_to_objects++;
+																	}
+																	bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=1;//cell close to this robot index
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+									////else
+									////{
+									////printf("Inside BB but no collison\n");
+									////exit(0);
+									////}
+								}
+							}
+						}
+					}
+				}
+			
+		}//End for ( r_ctr=0;r_ctr<nr;r_ctr++ )
+
+
+////Now same thing for objects (non robots)
+		int o_ctr=0;
+		for ( o_ctr=0;o_ctr<no;o_ctr++ )
+		{
+
+			o = envPt_MM->o[r_ctr];
+			//// printf(" o->name = %s, \n",o->name);
+			double BBx;
+			for ( BBx=o->BB.xmin;BBx<o->BB.xmax;BBx+=increment )
+			{
+				visq[6]  = BBx;
+				x= ( BBx- bitmapset->realx ) /bitmapset->pace;
+				double BBy;
+				for ( BBy=o->BB.ymin;BBy<o->BB.ymax&&x>0&&x<bitmap->nx;BBy+=increment )
+				{
+					visq[7]  = BBy;
+					y= ( BBy- bitmapset->realy ) /bitmapset->pace;
+					double BBz;
+					for ( BBz=o->BB.zmin;BBz<o->BB.zmax&&y>0&&y<bitmap->ny;BBz+=increment )
+					{
+						visq[8]  = BBz;
+						z= ( BBz- bitmapset->realz ) /bitmapset->pace;
+
+
+						if ( z>0&&z<bitmap->nz )
+						{
+							p3d_set_and_update_this_robot_conf ( envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY], visq );
+							int kcd_with_report=0;
+							int res = p3d_col_test_robot ( envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],kcd_with_report );
+							if ( res>0 ) ////if(p3d_col_test_robot(bitmapset->visball,FALSE))
+							{
+								//printf(" Populating ACTUAL obstacle for x, y, z = %d %d %d\n",x, y, z);
+
+								bitmapset->bitmap[bt_type]->data[x][y][z].val = -2;
+
+								int i=0;
+								for ( i=x-expansion;i<=x+expansion;i++ )
+								{
+									//printf(" for i = %d\n",i);
+									if ( i>=0&&i<bitmap->nx )
+									{
+										int j=0;
+										for ( j=y-expansion;j<=y+expansion;j++ )
+										{
+											//printf(" for i, j = %d %d\n",i, j);
+											if ( j>=0&&j<bitmap->ny )
+											{
+												int k=0;
+												for ( k=z-expansion;k<=z+expansion;k++ )
+												{
+													//printf(" for i, j, k = %d %d %\n",i, j, k);
+													if ( k>=0&&k<bitmap->nz )
+													{
+														// printf(" Populating %d, %d, %d \n",i,j,k);
+
+														bitmapset->bitmap[bt_type]->data[i][j][k].val = -2;
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+
+			}
+		}
+		p3d_destroy_config ( envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY], visq );
+//         MY_FREE ( visq,double,bitmapset->visball->nb_dof );
+	}
+
+ChronoPrint(" Time for create obstacle cell fast ");
+ChronoOff();
+	
+	return 1;
 }
 
 
@@ -11507,7 +11774,7 @@ int create_3d_grid_for_HRP2_GIK(point_co_ordi grid_center)
  ////////////ChronoPrint("<<<<<<<<Calling create_exact_obstacles_for_HRP2_GIK_manip");
 //// create_exact_obstacles_for_HRP2_GIK_manip(grid_around_HRP2.GRID_SET,expansion,HRP2_GIK_MANIP); //-1 is for populating every bitmap type 
  ////create_exact_obstacles_for_HRP2_GIK_manip_fast(grid_around_HRP2.GRID_SET,expansion,HRP2_GIK_MANIP); //-1 is for populating every bitmap type 
- create_exact_obstacles_for_HRP2_GIK_manip_fast_new(grid_around_HRP2.GRID_SET,expansion,HRP2_GIK_MANIP); //-1 is for populating every bitmap type 
+ create_exact_obstacles_for_HRP2_GIK_manip_fast_new2(grid_around_HRP2.GRID_SET,expansion,HRP2_GIK_MANIP); //-1 is for populating every bitmap type 
  ////////////ChronoPrint("<<<<<<<<Returned from create_exact_obstacles_for_HRP2_GIK_manip");
 
  //////////MY_FREE(rob_cur_pos, double,ACBTSET->robot->nb_dof); 
@@ -14841,6 +15108,10 @@ int show_point_of_screen()
 */
 int get_horizontal_triangles(std::list<gpTriangle> &htris)
 {
+  ChronoOff();
+  ChronoOn();
+
+  htris.clear();
   unsigned int i, j, k;
   p3d_index *face_indices= NULL;
   double angle;
@@ -14851,10 +15122,22 @@ int get_horizontal_triangles(std::list<gpTriangle> &htris)
   gpTriangle triangle;
   gpPlacement placement;
   std::list<gpTriangle>::iterator iterT1, iterT2;
+  double translationStep=grid_around_HRP2.GRID_SET->pace-0.005;
+  ////std::list<gpTriangle>::iterator iter;
+  p3d_vector3 *trisamples= NULL;
+  unsigned int nb_samples;
 
- int nr = envPt_MM->nr;
+  int cell_x;
+  int cell_y;
+  int cell_z;
+  unsigned int tmp_ctr=0;
+
+  int nr = envPt_MM->nr;
+
 for(k=0;k<nr;k++)
  {
+ if (strcasestr(envPt_MM->robot[k]->name,"HUMAN")||strcasestr(envPt_MM->robot[k]->name,"ROBOT")||strcasestr(envPt_MM->robot[k]->name,"VISBALL")||strcasestr(envPt_MM->robot[k]->name,"GHOST"))
+ continue;
  for(i=0; i<(unsigned int) envPt_MM->robot[k]->o[0]->np; ++i)
   {
     p3d_matMultXform(envPt_MM->robot[k]->o[0]->jnt->abs_pos, envPt_MM->robot[k]->o[0]->pol[i]->pos_rel_jnt, Tsupport);
@@ -14878,6 +15161,40 @@ for(k=0;k<nr;k++)
          p3d_xformPoint(Tsupport, points[face_indices[2] - 1], triangle.p3);
          triangle.description= GP_DESCRIPTION_POINTS;
          htris.push_back(triangle);
+
+         trisamples= gpSample_triangle_surface(triangle.p1,triangle.p2,triangle.p3, translationStep, &nb_samples);
+
+         if(trisamples==NULL)
+        {   continue;   
+        }
+
+        for(int i=0; i<nb_samples; i++)
+        {
+         cell_x=(trisamples[i][0]- grid_around_HRP2.GRID_SET->realx)/grid_around_HRP2.GRID_SET->pace;  
+     
+         if(cell_x>=0&&cell_x<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx)
+         {
+          cell_y=(trisamples[i][1]- grid_around_HRP2.GRID_SET->realy)/grid_around_HRP2.GRID_SET->pace; 
+      
+          if(cell_y>=0&&cell_y<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny)
+          {
+           cell_z=(trisamples[i][2]+0.05- grid_around_HRP2.GRID_SET->realz)/grid_around_HRP2.GRID_SET->pace; 
+ 
+           if(cell_z>=0&&cell_z<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz)
+           {
+            grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.is_horizontal_surface=1;
+            grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.horizontal_surface_of=k;//horizontal surface belongs to this robot index
+            ////g3d_drawDisc(trisamples[i][0], trisamples[i][1], trisamples[i][2]+0.01, 0.02, 4, NULL);
+            ////tmp_ctr++;
+           } 
+          }
+         }
+        ////g3d_drawDisc(trisamples[i][0], trisamples[i][1], trisamples[i][2]+0.01, 0.02, 4, NULL);
+        }
+
+       free(trisamples);
+       trisamples= NULL; 
+       nb_samples=0;
       }
       else
       {
@@ -14886,9 +15203,193 @@ for(k=0;k<nr;k++)
     }
   }
  }
-
+ printf(" tmp_ctr=%d\n",tmp_ctr);
+ ChronoPrint(" Time for finding triangles");
  return 0;
 }
+
+int update_horizontal_triangles(std::list<gpTriangle> &htris)
+{
+  ChronoOff();
+  ChronoOn();
+
+  htris.clear();
+  unsigned int i, j, k;
+  p3d_index *face_indices= NULL;
+  double angle;
+  p3d_vector3 normal;
+  p3d_vector3 *points= NULL;
+  p3d_matrix4 Tsupport;
+  p3d_polyhedre *polyh= NULL;
+  gpTriangle triangle;
+  gpPlacement placement;
+  std::list<gpTriangle>::iterator iterT1, iterT2;
+  double translationStep=grid_around_HRP2.GRID_SET->pace-0.005;
+  ////std::list<gpTriangle>::iterator iter;
+  p3d_vector3 *trisamples= NULL;
+  unsigned int nb_samples;
+
+  int cell_x;
+  int cell_y;
+  int cell_z;
+  unsigned int tmp_ctr=0;
+
+  int nr = envPt_MM->nr;
+configPt cur_rob_pos;
+
+for(k=0;k<nr;k++)
+ {
+ if (strcasestr(envPt_MM->robot[k]->name,"HUMAN")||strcasestr(envPt_MM->robot[k]->name,"ROBOT")||strcasestr(envPt_MM->robot[k]->name,"VISBALL")||strcasestr(envPt_MM->robot[k]->name,"GHOST"))
+  {
+   continue;
+  }
+
+ if(robots_status_for_Mightability_Maps[k].has_moved==1)
+  {
+ 
+  cur_rob_pos=MY_ALLOC(double,envPt_MM->robot[k]->nb_dof); 
+  p3d_get_robot_config_into(envPt_MM->robot[k],&cur_rob_pos);
+  p3d_set_and_update_this_robot_conf(envPt_MM->robot[k], robots_status_for_Mightability_Maps[k].rob_prev_config);
+
+ for(i=0; i<(unsigned int) envPt_MM->robot[k]->o[0]->np; ++i)
+   {
+    p3d_matMultXform(envPt_MM->robot[k]->o[0]->jnt->abs_pos, envPt_MM->robot[k]->o[0]->pol[i]->pos_rel_jnt, Tsupport);
+
+    polyh= envPt_MM->robot[k]->o[0]->pol[i]->poly;
+    poly_build_planes(polyh);
+    points= polyh->the_points;
+    for(j=0; j<polyh->nb_faces; j++)
+    {
+      p3d_xformVect(Tsupport, polyh->the_faces[j].plane->normale, normal);
+      p3d_vectNormalize(normal, normal);
+      face_indices= polyh->the_faces[j].the_indexs_points;
+
+      angle= fabs( (180.0/M_PI)*acos(normal[2]) );
+      if( (normal[2]<0) || angle>5 )
+      {  continue;  }
+      if(polyh->the_faces[j].nb_points==3)
+      {
+         p3d_xformPoint(Tsupport, points[face_indices[0] - 1], triangle.p1);
+         p3d_xformPoint(Tsupport, points[face_indices[1] - 1], triangle.p2);
+         p3d_xformPoint(Tsupport, points[face_indices[2] - 1], triangle.p3);
+         triangle.description= GP_DESCRIPTION_POINTS;
+         htris.push_back(triangle);
+
+         trisamples= gpSample_triangle_surface(triangle.p1,triangle.p2,triangle.p3, translationStep, &nb_samples);
+
+         if(trisamples==NULL)
+        {   continue;   
+        }
+
+        for(int i=0; i<nb_samples; i++)
+        {
+         cell_x=(trisamples[i][0]- grid_around_HRP2.GRID_SET->realx)/grid_around_HRP2.GRID_SET->pace;  
+     
+         if(cell_x>=0&&cell_x<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx)
+         {
+          cell_y=(trisamples[i][1]- grid_around_HRP2.GRID_SET->realy)/grid_around_HRP2.GRID_SET->pace; 
+      
+          if(cell_y>=0&&cell_y<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny)
+          {
+           cell_z=(trisamples[i][2]+0.05- grid_around_HRP2.GRID_SET->realz)/grid_around_HRP2.GRID_SET->pace; 
+ 
+           if(cell_z>=0&&cell_z<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz)
+           {
+            grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.is_horizontal_surface=0;
+            grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.horizontal_surface_of=-1;//horizontal surface belongs to this robot index
+            ////g3d_drawDisc(trisamples[i][0], trisamples[i][1], trisamples[i][2]+0.01, 0.02, 4, NULL);
+            ////tmp_ctr++;
+           } 
+          }
+         }
+        ////g3d_drawDisc(trisamples[i][0], trisamples[i][1], trisamples[i][2]+0.01, 0.02, 4, NULL);
+        }
+
+       free(trisamples);
+       trisamples= NULL; 
+       nb_samples=0;
+      }
+      else
+      {
+        ////printf("%s: %d: gpFind_placements_on_object(): the faces of \"%s\" should all be triangles.\n", __FILE__,__LINE__,support->name);
+      }
+    }
+   }
+  p3d_set_and_update_this_robot_conf(envPt_MM->robot[k],cur_rob_pos);
+
+ 
+ for(i=0; i<(unsigned int) envPt_MM->robot[k]->o[0]->np; ++i)
+   {
+    p3d_matMultXform(envPt_MM->robot[k]->o[0]->jnt->abs_pos, envPt_MM->robot[k]->o[0]->pol[i]->pos_rel_jnt, Tsupport);
+
+    polyh= envPt_MM->robot[k]->o[0]->pol[i]->poly;
+    poly_build_planes(polyh);
+    points= polyh->the_points;
+    for(j=0; j<polyh->nb_faces; j++)
+    {
+      p3d_xformVect(Tsupport, polyh->the_faces[j].plane->normale, normal);
+      p3d_vectNormalize(normal, normal);
+      face_indices= polyh->the_faces[j].the_indexs_points;
+
+      angle= fabs( (180.0/M_PI)*acos(normal[2]) );
+      if( (normal[2]<0) || angle>5 )
+      {  continue;  }
+      if(polyh->the_faces[j].nb_points==3)
+      {
+         p3d_xformPoint(Tsupport, points[face_indices[0] - 1], triangle.p1);
+         p3d_xformPoint(Tsupport, points[face_indices[1] - 1], triangle.p2);
+         p3d_xformPoint(Tsupport, points[face_indices[2] - 1], triangle.p3);
+         triangle.description= GP_DESCRIPTION_POINTS;
+         htris.push_back(triangle);
+
+         trisamples= gpSample_triangle_surface(triangle.p1,triangle.p2,triangle.p3, translationStep, &nb_samples);
+
+         if(trisamples==NULL)
+        {   continue;   
+        }
+
+        for(int i=0; i<nb_samples; i++)
+        {
+         cell_x=(trisamples[i][0]- grid_around_HRP2.GRID_SET->realx)/grid_around_HRP2.GRID_SET->pace;  
+     
+         if(cell_x>=0&&cell_x<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx)
+         {
+          cell_y=(trisamples[i][1]- grid_around_HRP2.GRID_SET->realy)/grid_around_HRP2.GRID_SET->pace; 
+      
+          if(cell_y>=0&&cell_y<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny)
+          {
+           cell_z=(trisamples[i][2]+0.05- grid_around_HRP2.GRID_SET->realz)/grid_around_HRP2.GRID_SET->pace; 
+ 
+           if(cell_z>=0&&cell_z<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz)
+           {
+            grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.is_horizontal_surface=1;
+            grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.horizontal_surface_of=k;//horizontal surface belongs to this robot index
+            ////g3d_drawDisc(trisamples[i][0], trisamples[i][1], trisamples[i][2]+0.01, 0.02, 4, NULL);
+            ////tmp_ctr++;
+           } 
+          }
+         }
+        ////g3d_drawDisc(trisamples[i][0], trisamples[i][1], trisamples[i][2]+0.01, 0.02, 4, NULL);
+        }
+
+       free(trisamples);
+       trisamples= NULL; 
+       nb_samples=0;
+      }
+      else
+      {
+        ////printf("%s: %d: gpFind_placements_on_object(): the faces of \"%s\" should all be triangles.\n", __FILE__,__LINE__,support->name);
+      }
+    }
+   }
+ 
+  }
+ }
+ printf(" tmp_ctr=%d\n",tmp_ctr);
+ ChronoPrint(" Time for finding triangles");
+ return 0;
+}
+
 
 int display_horizontal_triangles(std::list<gpTriangle> htris)
 {
@@ -14901,8 +15402,47 @@ int display_horizontal_triangles(std::list<gpTriangle> htris)
     glVertex3dv(iter->p2);
     glVertex3dv(iter->p3);
     glEnd();
+
+   
   }
 
 
 }
 
+int display_horizontal_triangles_samples(std::list<gpTriangle> htris)
+{
+  double translationStep=grid_around_HRP2.GRID_SET->pace-0.005;
+  std::list<gpTriangle>::iterator iter;
+  p3d_vector3 *trisamples= NULL;
+  unsigned int nb_samples;
+
+  for(iter=htris.begin(); iter!=htris.end(); ++iter)
+  {
+    
+
+    trisamples= gpSample_triangle_surface_with_edges((*iter).p1,(*iter).p2,(*iter).p3, translationStep, &nb_samples);
+
+    if(trisamples==NULL)
+    {   continue;   
+    }
+
+    for(int i=0; i<nb_samples; i++)
+    {
+     g3d_drawDisc(trisamples[i][0], trisamples[i][1], trisamples[i][2]+0.01, 0.02, 4, NULL);
+    }
+
+   free(trisamples);
+   trisamples= NULL; 
+   nb_samples=0;
+  }
+}
+
+int get_horizontal_surfaces()
+{
+ get_horizontal_triangles(global_htris);
+}
+
+int update_horizontal_surfaces()
+{
+ update_horizontal_triangles(global_htris);
+}

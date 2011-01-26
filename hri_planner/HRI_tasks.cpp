@@ -733,7 +733,9 @@ p3d_get_robot_config_into(envPt_MM->robot[obj_index],&obj_tmp_pos);
 
 void fct_draw_loop()
 {
+#if !defined(COMPILE_FOR_GENOM)
   g3d_screenshot((char *)"Move3D");
+#endif
 }
 
 int JIDO_give_obj_to_human ( char *obj_to_manipulate )

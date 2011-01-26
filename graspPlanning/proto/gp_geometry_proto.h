@@ -67,6 +67,8 @@ extern int gpSample_sphere_surface(double radius, unsigned int nb_samples, std::
 
 extern p3d_vector3 * gpSample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double step, unsigned int *nb_samples)
 ;
+extern p3d_vector3 *gpSample_triangle_surface_with_edges(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double step, unsigned int *nb_samples)
+;
 
 extern int gpIs_point_in_triangle(p3d_vector3 point, p3d_vector3 a, p3d_vector3 b, p3d_vector3 c);
 
