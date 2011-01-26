@@ -364,7 +364,7 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
         }
         
       } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && nbTry < MaxNumberOfTry);
-//        g3d_draw_allwin_active();
+       g3d_draw_allwin_active();
       nbTryColliding++;
       collision = p3d_col_test();
       
@@ -631,11 +631,11 @@ configPt setRobotCloseToConfGraspApproachOrExtract(p3d_rob* robot, configPt refC
   
   int  shootObjectPos = false, shootObjectRot = false;
   
-#ifndef GRASP_PLANNING4
+#ifndef GRASP_PLANNING
   deactivateHandsVsObjectCol(robot);
 #endif
   p3d_set_and_update_this_robot_conf(robot, refConf);
-  
+  g3d_draw_allwin_active();
   // Fix all the robot for sampling
   fixAllJointsExceptBaseAndObject(robot, refConf);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->abs_pos);

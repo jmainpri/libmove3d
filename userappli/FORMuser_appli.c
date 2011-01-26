@@ -398,10 +398,10 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 16 :{
-      p3d_rob* object = p3d_get_robot_by_name("GREY_TAPE");
-      gpHand_properties prop = (*XYZ_ROBOT->armManipulationData)[0].getHandProperties();
-    gpDeactivate_object_collisions(XYZ_ROBOT, object->joints[1]->o, prop, 0);
-
+//       p3d_rob* object = p3d_get_robot_by_name("GREY_TAPE");
+//       gpHand_properties prop = (*XYZ_ROBOT->armManipulationData)[0].getHandProperties();
+//     gpDeactivate_object_collisions(XYZ_ROBOT, object->joints[1]->o, prop, 0);
+    setSafetyDistance(XYZ_ROBOT, 0.05);
       
 //       double x, y, z, rx, ry, rz;
 //       p3d_rob* object = (p3d_rob*) p3d_get_robot_by_name((char*)"GREY_TAPE");
