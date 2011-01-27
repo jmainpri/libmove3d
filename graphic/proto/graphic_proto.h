@@ -17,5 +17,9 @@
 #ifdef WITH_XFORMS
 #include "../graphic/proto/g3d_draw_ui_proto.h"
 #else
-#include "../graphic/proto/qtG3DWindow.hpp"
+#include "../graphic/proto/g3d_newWindow.hpp"
+#endif
+
+#ifdef USE_GLUT
+#include "../graphic/proto/g3d_glut.hpp"
 #endif

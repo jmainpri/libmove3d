@@ -15,25 +15,35 @@ g3d_extensions.c
 )
 ENDIF(USE_SHADERS)
 
-IF(WITH_XFORMS)
+#-------------------------------------------------
+IF(WITH_XFORMS) #---------------------------------
 BM3D_SRC_SUBDIR_PROCESS(
 g3d_draw_ui.c 
 g3d_window.c
 )
-ELSE(WITH_XFORMS)
-BM3D_SRC_SUBDIR_PROCESS(
-qtG3DWindow.cpp
-)
 
-IF(QT_GL_WIDGET)
+#-------------------------------------------------
+ELSE(WITH_XFORMS) #-------------------------------
+
 BM3D_SRC_SUBDIR_PROCESS(
-glwidget.cpp 
+g3d_newWindow.cpp
 )
-include(${BioMove3D_SOURCE_DIR}/${BM3D_MODULE_NAME}/cppDev/SourceList.cmake)
-BM3D_QT_GENERATE_MOC(proto/glwidget.hpp)
+IF(QT_GL_WIDGET)
+  BM3D_SRC_SUBDIR_PROCESS(
+  glwidget.cpp 
+  )
+  include(${BioMove3D_SOURCE_DIR}/${BM3D_MODULE_NAME}/cppDev/SourceList.cmake)
+  BM3D_QT_GENERATE_MOC(proto/glwidget.hpp)
 ENDIF()
 
-ENDIF(WITH_XFORMS)
+IF(USE_GLUT AND NOT QT_GL_WIDGET)
+  BM3D_SRC_SUBDIR_PROCESS(
+  g3d_glut.cpp 
+  )
+ENDIF()
+
+#-------------------------------------------------
+ENDIF(WITH_XFORMS) #------------------------------
 
 IF(P3D_COLLISION_CHECKING)
 BM3D_SRC_SUBDIR_PROCESS(

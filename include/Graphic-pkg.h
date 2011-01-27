@@ -31,7 +31,7 @@
 #endif
 
 #if !defined (WITH_XFORMS) && ( defined( QT_LIBRARY ) )
-#include "../graphic/proto/qtG3DWindow.hpp"
+#include "../graphic/proto/g3d_newWindow.hpp"
 #include <iostream>
 #endif
 

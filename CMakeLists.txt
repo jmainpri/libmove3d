@@ -142,6 +142,8 @@ BM3D_flag(QT_LIBRARY "Sets QtLibrary compiling mode" OFF)
 BM3D_flag(QT_GL "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
 BM3D_flag(QT_GL_WIDGET "Compile with the OpenGl widget" OFF QT_GL)
 
+BM3D_flag(USE_GLUT "Compilation with a glut window" OFF)
+
 BM3D_flag(USE_GSL "Mathematic Library" OFF)
 BM3D_flag(USE_CLAPACK "Mathematic Library" OFF)
 
@@ -159,7 +161,8 @@ BM3D_flag(MOVE3D_CORE "Enables compilation of Move3D-core" OFF)
 
 # META flags ------
 BM3D_flag(COMPILE_ON_JIDO "Check this flag to activate all dependencies for Jido" OFF WITH_XFORMS USE_GBM  MULTIGRAPH LIGHT_PLANNER HRI_PLANNER HRI_PLANNER_GUI MULTILOCALPATH GRASP_PLANNING USE_GSL )# USE_MIGHTABILITY_MAPS )
-BM3D_flag(COMPILE_FOR_GENOM "Check this flag to activate all dependencies for spark&mhp modules" OFF USE_GBM  MULTIGRAPH LIGHT_PLANNER HRI_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GSL QT_LIBRARY QT_GL QT_GL_WIDGET )# USE_MIGHTABILITY_MAPS )
+BM3D_flag(COMPILE_FOR_GENOM "Check this flag to activate all dependencies for spark&mhp modules" OFF USE_GBM  MULTIGRAPH LIGHT_PLANNER HRI_PLANNER MULTILOCALPATH GRASP_PLANNING QT_LIBRARY QT_GL QT_GL_WIDGET )# USE_MIGHTABILITY_MAPS )
+BM3D_flag(COMPILE_GENOM_WITH_GLUT "Check this flag to activate all dependencies for spark&mhp modules (with glut)" OFF USE_GBM  MULTIGRAPH LIGHT_PLANNER HRI_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GLUT )
 BM3D_flag(COMPILE_MANIPULATION_PLANNER_TESTING "Check this flag to activate the module without interface to test the manipulation planner" OFF LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GBM)
 BM3D_flag(COMPILE_MOVE3DCORE "Check this flag to activate the module without interface to test the manipulation planner" OFF MOVE3D_CORE QT_LIBRARY QT_GL  MULTIGRAPH LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING HRI_PLANNER USE_GBM USE_GSL)
 BM3D_CheckCompilationFlags()
@@ -176,6 +179,12 @@ INCLUDE("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
 
 #-------------- Qt Library --------------------------------
 #----------------------------------------------------------
+SET(GL_NATIVE FALSE)
+
+IF((QT_LIBRARY AND QT_GL) OR USE_GLUT)
+SET(GL_NATIVE TRUE)
+ENDIF()
+
 IF(QT_LIBRARY)
   FIND_PACKAGE(Qt4 REQUIRED)
   INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR})
@@ -187,6 +196,7 @@ IF(QT_LIBRARY)
   INCLUDE(${QT_USE_FILE})
   SET(LIBS ${LIBS} ${QT_LIBRARIES})
 ENDIF(QT_LIBRARY)
+
 FIND_PACKAGE(X11 REQUIRED)
 INCLUDE_directories(${X11_INCLUDE_DIR})
 SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${X11_INCLUDE_DIR})
@@ -200,7 +210,7 @@ IF(APPLE)
 #  INCLUDE_directories(${GLU_INCLUDE_DIR})
 #  SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${GLU_INCLUDE_DIR})
 #  SET(LIBS ${LIBS} ${GLU_LIBRARIES})
-	IF(QT_LIBRARY AND QT_GL)
+	IF(GL_NATIVE)
   		FIND_PACKAGE(OpenGL REQUIRED)
   		INCLUDE_directories("${OPENGL_INCLUDE_DIR}/Headers")
   		SET(INCLUDE_DIRS ${INCLUDE_DIRS} "${OPENGL_INCLUDE_DIR}/Headers")
@@ -217,7 +227,7 @@ IF(APPLE)
   			SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${GL_INCLUDE_DIR})
   			SET(LIBS ${LIBS} ${GL_LIBRARIES})
   		ENDIF(WITH_XFORMS)
-	ELSE(QT_LIBRARY AND QT_GL)
+	ELSE(GL_NATIVE)
 		FIND_PACKAGE(GLU REQUIRED)
   		INCLUDE_directories(${GLU_INCLUDE_DIR})
   		SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${GLU_INCLUDE_DIR})
@@ -226,7 +236,7 @@ IF(APPLE)
   		INCLUDE_directories(${GL_INCLUDE_DIR})
   		SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${GL_INCLUDE_DIR})
   		SET(LIBS ${LIBS} ${GL_LIBRARIES})
-	ENDIF(QT_LIBRARY AND QT_GL)
+	ENDIF(GL_NATIVE)
 ELSE(APPLE)
   FIND_PACKAGE(OpenGL REQUIRED)
   INCLUDE_directories(${OPENGL_INCLUDE_DIR})
@@ -353,9 +363,15 @@ IF(USE_HRP2_GIK)
   SET(LIBS ${LIBS} ${HRP2_GIK_LIBRARIES})
 ENDIF(USE_HRP2_GIK)
 
+#-------------- Glut --------------------------------------
 
+IF(USE_GLUT)
+FIND_PACKAGE (GLUT REQUIRED glut)
+INCLUDE_directories (${GLUT_INCLUDE_DIR})
+SET (LIBS ${LIBS} ${GLUT_glut_LIBRARY})
+ENDIF()
 
-#-------------- HATP LIBRARY --------------------------------------
+#-------------- HATP LIBRARY ------------------------------
 #----------------------------------------------------------
 IF(USE_HATP_LIBS)
   FIND_PACKAGE(HATP_LIB REQUIRED)

@@ -22,7 +22,7 @@
 #include <QtOpenGL/QGLWidget>
 #include <QtCore/QObject>
 
-#include "../../graphic/proto/qtG3DWindow.hpp"
+#include "../../graphic/proto/g3d_newWindow.hpp"
 
 class Move3D2OpenGl;
 

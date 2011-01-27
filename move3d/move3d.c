@@ -371,6 +371,11 @@ int main(int argc, char ** argv) {
   fl_initialize(&argc, argv, "FormDemo", 0, 0);
   fl_set_border_width(1);
 #endif
+  
+#if defined( USE_GLUT ) && !defined( QT_GL_WIDGET ) 
+  GlutWindowDisplay glut_win(argc,argv);
+#endif
+  
   // init English C
   if (! setlocale(LC_ALL, "C"))
     fprintf(stderr, "There was an error while setting the locale to \"C\"\n");
@@ -616,6 +621,12 @@ int main(int argc, char ** argv) {
 
   g3d_loop();
 #endif
+  
+#if defined( USE_GLUT ) && !defined( QT_GL_WIDGET ) 
+  glut_win.initDisplay();
+  glutMainLoop ();
+#endif
+  
 #if defined( LIGHT_PLANNER ) && defined( MULTILOCALPATH ) && defined( GRASP_PLANNING ) && !defined( WITH_XFORMS ) && !defined( QT_GL )
 	printf("Test functions : ManipulationTestFunctions\n");
 	if (manip_test_run) 

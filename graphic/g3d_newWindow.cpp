@@ -135,7 +135,7 @@ qtG3DWindow::qtG3DWindow()
 	ext_g3d_export_cpp_graph = (void (*)())(g3d_export_cpp_graph);
 	ext_get_win_mouse = /*(void (*) (int*,int*))*/qt_get_win_mouse;
 	ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
-	ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;+
+	ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
 	ext_add_traj_to_ui = dummy_add_traj_to_ui;
 	ext_add_config_to_ui = dummy_add_config_to_ui;
 #else
@@ -154,6 +154,11 @@ qtG3DWindow::qtG3DWindow()
   
 #if defined( QT_GL_WIDGET )
 	ext_add_traj_to_ui = dummy_add_traj_to_ui;
+	ext_add_config_to_ui = dummy_add_config_to_ui;
+#endif
+  
+#if defined( USE_GLUT )
+  ext_add_traj_to_ui = dummy_add_traj_to_ui;
 	ext_add_config_to_ui = dummy_add_config_to_ui;
 #endif
   

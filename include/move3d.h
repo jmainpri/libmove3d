@@ -8,7 +8,7 @@
 #include "g3d_states.h"
 #include "g3d_window.h"
 #else
-#include "../graphic/proto/qtG3DWindow.hpp"
+#include "../graphic/proto/g3d_newWindow.hpp"
 #endif
 #endif
 
