@@ -95,7 +95,7 @@ bool p3d_test_middle_of_CVS( p3d_traj * trajPt,
       res = false;
     }
     else {
-      printf("Ith (%d): OK \n",i);
+      //printf("Ith (%d): OK \n",i);
     }
   }
   return res;
@@ -578,13 +578,13 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
   printf ("BioMove3D: softMotion point-to-point trajectory OK\n");
   printf("ltot = %f\n",ltot);
   //  printf("nlp = ");
-  if (param_write_file == true) {
-    p3d_softMotion_export_traj (robotPt, trajSmPTPPt, 0,
-                                (char *) "softMotion_PTP_Q.traj",
-                                (char *) "softMotion_PTP_Seg.traj",
-                                ENV.getBool (Env::plotSoftMotionCurve), lp,
-                                positions, smTraj);
-    }
+//  if (param_write_file == true) {
+//    p3d_softMotion_export_traj (robotPt, trajSmPTPPt, 0,
+//                                (char *) "softMotion_PTP_Q.traj",
+//                                (char *) "softMotion_PTP_Seg.traj",
+//                                ENV.getBool (Env::plotSoftMotionCurve), lp,
+//                                positions, smTraj);
+//    }
 
 
 
@@ -606,7 +606,7 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
   
 
   // smTraj.print();
-  print_MiddleOfCVS();
+//  print_MiddleOfCVS();
   p3d_test_middle_of_CVS( trajPt , trajSmPt );
 
 
