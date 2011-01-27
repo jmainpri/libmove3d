@@ -42,6 +42,20 @@ void pqp_set_tolerance_value(double value)
 }
 
 //! @ingroup pqp
+//! Gets the value of the tolerance flag.
+bool pqp_get_tolerance_flag(void)
+{
+  return pqp_tolerance_flag;
+}
+
+//! @ingroup pqp
+//! Gets the value of the tolerance.
+void pqp_get_tolerance_value(double* value)
+{
+  *value = pqp_tolerance_value;
+}
+
+//! @ingroup pqp
 //! Enables/disables the display of messages about collisions.
 //! \param set messages about collision will be displayed if set > 0, they will not if set = 0
 void pqp_set_collision_message(unsigned int set)
@@ -3522,32 +3536,32 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
   {  return 1;  }
 
 
-  #ifdef LIGHT_PLANNER
-  //carried object vs environment:
-  if(robot->isCarryingObject==TRUE && robot->carriedObject!=NULL)
-  {
-    nb_cols= pqp_robot_environment_collision_test(robot->carriedObject);
-    if(nb_cols!=0)
-    {  return 1; }
-
-  }
-
-  //carried object vs other robots:
-  if(robot->isCarryingObject==TRUE && robot->carriedObject!=NULL)
-  {
-    for(i=0; i<XYZ_ENV->nr; i++)
-    {
-
-      if(XYZ_ENV->robot[i]==robot || XYZ_ENV->robot[i]==robot->carriedObject)
-      {  continue;  }
-
-      nb_cols= pqp_robot_robot_collision_test(XYZ_ENV->robot[i], robot->carriedObject);
-
-      if(nb_cols!=0)
-      {  return 1;  }
-    }
-  }
-  #endif
+//  #ifdef LIGHT_PLANNER
+//  //carried object vs environment:
+//  if(robot->isCarryingObject==TRUE && robot->carriedObject!=NULL)
+//  {
+//    nb_cols= pqp_robot_environment_collision_test(robot->carriedObject);
+//    if(nb_cols!=0)
+//    {  return 1; }
+//
+//  }
+//
+//  //carried object vs other robots:
+//  if(robot->isCarryingObject==TRUE && robot->carriedObject!=NULL)
+//  {
+//    for(i=0; i<XYZ_ENV->nr; i++)
+//    {
+//
+//      if(XYZ_ENV->robot[i]==robot || XYZ_ENV->robot[i]==robot->carriedObject)
+//      {  continue;  }
+//
+//      nb_cols= pqp_robot_robot_collision_test(XYZ_ENV->robot[i], robot->carriedObject);
+//
+//      if(nb_cols!=0)
+//      {  return 1;  }
+//    }
+//  }
+//  #endif
   
   return 0;
 }

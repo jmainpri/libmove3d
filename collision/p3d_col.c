@@ -981,7 +981,16 @@ int p3d_col_get_tolerance(double *val)
       break;
     }
 #endif /*GJK_DEBUG*/
-
+    case p3d_col_mode_pqp:{
+      if (pqp_get_tolerance_flag()) {
+        pqp_get_tolerance_value(val);
+        success = TRUE;
+      }else {
+        *val = 0.0;
+        success = FALSE;
+      }
+      break;
+    }
     default:{
        *val = 0.0;
        success = FALSE;
@@ -1098,11 +1107,11 @@ int p3d_col_test(void)
       //only the current robot is tested
 // 		  p3d_report_num=p3d_kcd_collision_test_and_distance_estimate(&p3d_kcd_dist);
       p3d_report_num = kcd_robot_collides_something(XYZ_ENV->cur_robot->num, DISTANCE_ESTIMATE, &p3d_kcd_dist);
-#if defined(LIGHT_PLANNER)
-      if (!p3d_report_num && XYZ_ENV->cur_robot->carriedObject){
-        p3d_report_num = kcd_robot_collides_something_except_specified_robot(XYZ_ENV->cur_robot->carriedObject->num, XYZ_ENV->cur_robot->num, DISTANCE_ESTIMATE, &p3d_kcd_dist);
-      }
-#endif
+//#if defined(LIGHT_PLANNER)
+//      if (!p3d_report_num && XYZ_ENV->cur_robot->carriedObject){
+//        p3d_report_num = kcd_robot_collides_something_except_specified_robot(XYZ_ENV->cur_robot->carriedObject->num, XYZ_ENV->cur_robot->num, DISTANCE_ESTIMATE, &p3d_kcd_dist);
+//      }
+//#endif
 			/* PrintInfo(("test distance estimate: %f\n",p3d_kcd_dist))); */
 		}
 		else

@@ -9,7 +9,11 @@ extern void pqp_set_collision_message(unsigned int set);
 
 extern void pqp_set_tolerance_value(double value);
 
+extern void pqp_get_tolerance_value(double* value);
+
 extern void pqp_set_tolerance_flag(bool value);
+
+extern bool pqp_get_tolerance_flag(void);
 
 extern int pqp_update_BB(p3d_obj* obj);
 

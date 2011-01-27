@@ -759,7 +759,7 @@ typedef struct rob
 #endif
 #if  defined(LIGHT_PLANNER)
   int isCarryingObject;
-  struct rob *carriedObject; /*!< pointer to the carried object (a freeflyer robot) */
+//  struct rob *carriedObject; /*!< pointer to the carried object (a freeflyer robot) */
   std::vector<class ArmManipulationData> *armManipulationData;
 #endif
 #ifdef DPG
