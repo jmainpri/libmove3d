@@ -15,6 +15,10 @@
 #include "Collision-pkg.h"
 #endif
 
+#ifdef LIGHT_PLANNER
+#include "ManipulationUtils.hpp"
+#endif
+
 #include "GroundHeight-pkg.h"
 #include <iostream>
 #include <string>
@@ -336,11 +340,13 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
     }
 #endif
 
-//#if defined(LIGHT_PLANNER)
-//		robotPt->isCarryingObject = localpathPt->isCarryingObject;
-//		robotPt->carriedObject = localpathPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
-//		p3d_mat4Copy(localpathPt->Tgrasp, robotPt->Tgrasp);
-//#endif
+#if defined(LIGHT_PLANNER)
+		robotPt->isCarryingObject = localpathPt->isCarryingObject;
+    for(unsigned int i = 0; i < robotPt->armManipulationData->size(); i++){
+      (*robotPt->armManipulationData)[i].setCarriedObject(localpathPt->carriedObject[i]); /*!< pointer to the carried object (obstacle environment or robot body) */
+    }
+		//p3d_mat4Copy(localpathPt->Tgrasp, robotPt->Tgrasp);
+#endif
 
 //deb modif xav
 		if (u > umax - EPS6) {
