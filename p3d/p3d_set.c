@@ -719,38 +719,38 @@ int p3d_set_robot_display_mode(p3d_rob *robotPt, p3d_rob_display_mode new_mode, 
 #include "Collision-pkg.h"
 //! Sets the object that will possibly carried by the robot.
 //! This object is a freeflyer robot.
-int p3d_set_object_to_carry(p3d_rob *robotPt, const char *object_name)
-{
-  if(robotPt==NULL)
-  {
-    printf("%s: %d: p3d_set_object_to_carry(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
-    return 1;
-  }
-
-  int i;
-  p3d_rob *carriedObject = NULL;
-
-  for(i=0; i<XYZ_ENV->nr; i++) {
-    if(strcmp(XYZ_ENV->robot[i]->name, object_name)==0) {
-      carriedObject= XYZ_ENV->robot[i];
-      break;
-    }
-  }
-  if(i==XYZ_ENV->nr) {
-    printf("%s: %d: p3d_set_object_to_carry(): There is no robot with name \"%s\".\n", __FILE__, __LINE__, object_name);
-    return 1;
-  }
-  
-  robotPt->carriedObject = carriedObject;
-    
-	if(robotPt->curObjectJnt==NULL)
-  {
-    printf("%s: %d: p3d_set_object_to_carry(): the robot has no virtual object.\n",__FILE__,__LINE__);
-    return 1;
-  }
-  robotPt->isCarryingObject = TRUE;
-  return 0;
-}
+//int p3d_set_object_to_carry(p3d_rob *robotPt, const char *object_name)
+//{
+//  if(robotPt==NULL)
+//  {
+//    printf("%s: %d: p3d_set_object_to_carry(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+//    return 1;
+//  }
+//
+//  int i;
+//  p3d_rob *carriedObject = NULL;
+//
+//  for(i=0; i<XYZ_ENV->nr; i++) {
+//    if(strcmp(XYZ_ENV->robot[i]->name, object_name)==0) {
+//      carriedObject= XYZ_ENV->robot[i];
+//      break;
+//    }
+//  }
+//  if(i==XYZ_ENV->nr) {
+//    printf("%s: %d: p3d_set_object_to_carry(): There is no robot with name \"%s\".\n", __FILE__, __LINE__, object_name);
+//    return 1;
+//  }
+//  
+//  robotPt->carriedObject = carriedObject;
+//    
+//	if(robotPt->curObjectJnt==NULL)
+//  {
+//    printf("%s: %d: p3d_set_object_to_carry(): the robot has no virtual object.\n",__FILE__,__LINE__);
+//    return 1;
+//  }
+//  robotPt->isCarryingObject = TRUE;
+//  return 0;
+//}
 
 //! Sets the object that will possibly carried by the robot.
 //! This object is a freeflyer robot.
@@ -761,8 +761,6 @@ int p3d_set_object_to_carry_to_arm(p3d_rob *MyRobot, int arm_id,const char *obje
     printf("%s: %d: p3d_set_object_to_carry(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
     return 1;
   }
-	
-  int i;
   p3d_rob *carriedObject= NULL;
 	
 	// Set carried object
@@ -778,200 +776,157 @@ int p3d_set_object_to_carry_to_arm(p3d_rob *MyRobot, int arm_id,const char *obje
 	// the size of the manipulated object (See if this should not take the biggest or a compound)
 	(*MyRobot->armManipulationData)[arm_id].getManipulationJnt()->dist = carriedObject->joints[1]->dist;
 	
-  MyRobot->carriedObject= carriedObject;
+//  MyRobot->carriedObject= carriedObject;
   MyRobot->isCarryingObject = TRUE;
   return 0;
 }
 
-//Activate the IK or the FK cntrt with the right att frame
-//armCntrt correspond to the number of the inv and fk constraint in device->ccCntrts and device->fkCntrts By default , the fk is activated if the module is compiled
-int p3d_grab_object0(p3d_rob *robotPt, int armCntrt)
-{
-  if(robotPt==NULL)
-  {
-    printf("%s: %d: p3d_grab_object(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
-    return 1;
-  }
-  if(robotPt->carriedObject==NULL || robotPt->curObjectJnt==NULL)
-  {
-    printf("%s: %d: p3d_grab_object(): the robot has no object to grab.\n",__FILE__,__LINE__);
-    return 1;
-  }
-  if(robotPt->nbCcCntrts < 1)
-  {
-    printf("%s: %d: p3d_grab_object(): the robot has no inverse Kinematic constraints.\n",__FILE__,__LINE__);
-    return 1;
-  }
-#ifdef FK_CNTRT
-  if(robotPt->nbFkCntrts < 1)
-  {
-    printf("%s: %d: p3d_grab_object(): the robot has no Forward Kinematic constraints.\n",__FILE__,__LINE__);
-    return 1;
-  }
-#endif
-  p3d_matrix4 Tpose;
-  p3d_cntrt* ikCntrt = robotPt->ccCntrts[armCntrt];
-  p3d_matInvertXform(robotPt->curObjectJnt->abs_pos, Tpose);
-  p3d_mat4Mult(Tpose, ikCntrt->pasjnts[ikCntrt->npasjnts - 1]->abs_pos, ikCntrt->Tatt);
-#ifdef FK_CNTRT
-  p3d_cntrt* fkCntrt = robotPt->fkCntrts[armCntrt];
-//  p3d_matInvertXform(robotPt->curObjectJnt->abs_pos, Tpose);
-  p3d_mat4Mult(Tpose, fkCntrt->pasjnts[fkCntrt->npasjnts - 1]->abs_pos, fkCntrt->Tatt);
-  p3d_activateCntrt(robotPt, robotPt->fkCntrts[armCntrt]);
-  p3d_desactivateCntrt(robotPt, robotPt->ccCntrts[armCntrt]);
-#else
-  p3d_activateCntrt(robotPt, robotPt->ccCntrts[armCntrt]);
-#endif
-  return 0;
-}
+//int p3d_grab_object(p3d_rob *robotPt, int armCntrt)
+//{
+//  if(robotPt==NULL)
+//  {
+//    printf("%s: %d: p3d_grab_object(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+//    return 1;
+//  }
+//  if(robotPt->carriedObject==NULL || robotPt->curObjectJnt==NULL)
+//  {
+//    printf("%s: %d: p3d_grab_object(): the robot has no object to grab.\n",__FILE__,__LINE__);
+//    return 1;
+//  }
+//  if(robotPt->nbCcCntrts < 1)
+//  {
+//    printf("%s: %d: p3d_grab_object(): the robot has no inverse Kinematic constraints.\n",__FILE__,__LINE__);
+//    return 1;
+//  }
+//  configPt qgrab= NULL, q2_conf=NULL;
+//  p3d_matrix4 Ttt;
+//  double x, y, z, alpha, beta, gamma;
+//	
+//  p3d_get_body_pose(robotPt->carriedObject, 0, Ttt );
+//
+//  q2_conf = p3d_get_robot_config(robotPt);
+//	
+//  qgrab= p3d_alloc_config(robotPt);
+//  p3d_copy_config_into(robotPt, q2_conf, &qgrab);
+//
+//  p3d_mat4ExtractPosReverseOrder2(Ttt, &x, &y, &z, &alpha, &beta, &gamma);
+//
+//  p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
+//
+//  qgrab[robotPt->curObjectJnt->index_dof ]    = x;
+//  qgrab[robotPt->curObjectJnt->index_dof + 1] = y;
+//  qgrab[robotPt->curObjectJnt->index_dof + 2] = z;
+//  qgrab[robotPt->curObjectJnt->index_dof + 3] = alpha;
+//  qgrab[robotPt->curObjectJnt->index_dof + 4] = beta;
+//  qgrab[robotPt->curObjectJnt->index_dof + 5] = gamma;
+//
+//  p3d_set_and_update_this_robot_conf(robotPt, qgrab);
+//
+//  p3d_copy_config_into(robotPt, qgrab, &robotPt->ROBOT_POS);
+//
+//
+//  setAndActivateTwoJointsFixCntrt(robotPt, robotPt->curObjectJnt, robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1]);
+//
+//  p3d_destroy_config(robotPt, qgrab);
+//
+//  return 0;
+//}
 
-
-int p3d_grab_object(p3d_rob *robotPt, int armCntrt)
-{
-  if(robotPt==NULL)
-  {
-    printf("%s: %d: p3d_grab_object(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
-    return 1;
-  }
-  if(robotPt->carriedObject==NULL || robotPt->curObjectJnt==NULL)
-  {
-    printf("%s: %d: p3d_grab_object(): the robot has no object to grab.\n",__FILE__,__LINE__);
-    return 1;
-  }
-  if(robotPt->nbCcCntrts < 1)
-  {
-    printf("%s: %d: p3d_grab_object(): the robot has no inverse Kinematic constraints.\n",__FILE__,__LINE__);
-    return 1;
-  }
-  configPt qgrab= NULL, q2_conf=NULL;
-  p3d_matrix4 Ttt;
-  double x, y, z, alpha, beta, gamma;
-	
-  p3d_get_body_pose(robotPt->carriedObject, 0, Ttt );
-
-  q2_conf = p3d_get_robot_config(robotPt);
-	
-  qgrab= p3d_alloc_config(robotPt);
-  p3d_copy_config_into(robotPt, q2_conf, &qgrab);
-
-  p3d_mat4ExtractPosReverseOrder2(Ttt, &x, &y, &z, &alpha, &beta, &gamma);
-
-  p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
-
-  qgrab[robotPt->curObjectJnt->index_dof ]    = x;
-  qgrab[robotPt->curObjectJnt->index_dof + 1] = y;
-  qgrab[robotPt->curObjectJnt->index_dof + 2] = z;
-  qgrab[robotPt->curObjectJnt->index_dof + 3] = alpha;
-  qgrab[robotPt->curObjectJnt->index_dof + 4] = beta;
-  qgrab[robotPt->curObjectJnt->index_dof + 5] = gamma;
-
-  p3d_set_and_update_this_robot_conf(robotPt, qgrab);
-
-  p3d_copy_config_into(robotPt, qgrab, &robotPt->ROBOT_POS);
-
-
-  setAndActivateTwoJointsFixCntrt(robotPt, robotPt->curObjectJnt, robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1]);
-
-  p3d_destroy_config(robotPt, qgrab);
-
-  return 0;
-}
-
-int p3d_grab_object2(p3d_rob *robotPt, int armCntrt)
-{
-  if(robotPt==NULL)
-  {
-    printf("%s: %d: p3d_grab_object(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
-    return 1;
-  }
-  if(robotPt->carriedObject==NULL || robotPt->curObjectJnt==NULL)
-  {
-    printf("%s: %d: p3d_grab_object(): the robot has no object to grab.\n",__FILE__,__LINE__);
-    return 1;
-  }
-  if(robotPt->nbCcCntrts < 1)
-  {
-    printf("%s: %d: p3d_grab_object(): the robot has no inverse Kinematic constraints.\n",__FILE__,__LINE__);
-    return 1;
-  }
-  configPt qgrab= NULL, q2_conf=NULL;
-  p3d_matrix4 Ttt;
-  double x, y, z, alpha, beta, gamma;
-
-  p3d_get_body_pose(robotPt->carriedObject, 0, Ttt);
-
-  p3d_jnt* passiveJnt = robotPt->curObjectJnt;
-  p3d_jnt* activeJnt = robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1];
-
-  int passiveJntId[1] = {passiveJnt->num}, activeJntId[1] = {activeJnt->num};
-  p3d_cntrt * cntrt = findTwoJointsFixCntrt(robotPt, passiveJnt, activeJnt);
-  //If the constraint is already created
-  if (cntrt != NULL) {
-    //deactivate constraints
-     p3d_activateCntrt(robotPt, cntrt);
-     deactivateCcCntrts(robotPt, -1);
-  } else if (!p3d_constraint("p3d_fix_jnts_relpos", -1, passiveJntId, -1, activeJntId, -1, NULL, -1, NULL, -1, 1)) {
-    printf("Error in creating the p3d_fix_jnts_relpos\n");
-  } else {
-    cntrt = findTwoJointsFixCntrt(robotPt, passiveJnt, activeJnt);
-    //reinitialize iksols
-    p3d_realloc_iksol(robotPt->cntrt_manager);
-  }
-
-    q2_conf = p3d_get_robot_config(robotPt);
-
-  qgrab= p3d_alloc_config(robotPt);
-  p3d_copy_config_into(robotPt, q2_conf, &qgrab);
-
-  p3d_mat4ExtractPosReverseOrder2(Ttt, &x, &y, &z, &alpha, &beta, &gamma);
-
-  //p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
-
-  qgrab[robotPt->curObjectJnt->index_dof ]    = x;
-  qgrab[robotPt->curObjectJnt->index_dof + 1] = y;
-  qgrab[robotPt->curObjectJnt->index_dof + 2] = z;
-  qgrab[robotPt->curObjectJnt->index_dof + 3] = alpha;
-  qgrab[robotPt->curObjectJnt->index_dof + 4] = beta;
-  qgrab[robotPt->curObjectJnt->index_dof + 5] = gamma;
-  p3d_set_and_update_this_robot_conf(robotPt, qgrab);
-  p3d_copy_config_into(robotPt, qgrab, &robotPt->ROBOT_POS);
-  p3d_destroy_config(robotPt, qgrab);
-
-   //set the attach Matrix
-   getObjectBaseAttachMatrix(Ttt, robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1]->abs_pos, robotPt->ccCntrts[0]->Tatt);
-   p3d_matInvertXform(robotPt->ccCntrts[0]->Tatt,cntrt->Tatt);
-
-  return 0;
-}
-
-int p3d_release_object(p3d_rob *robotPt)
-{
-  if(robotPt==NULL)
-  {
-    printf("%s: %d: p3d_release_object(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
-    return 1;
-  }
-  if(robotPt->carriedObject==NULL)
-  {
-    printf("%s: %d: p3d_release_object(): the robot has no object to release.\n",__FILE__,__LINE__);
-    return 1;
-  }
-
-  robotPt->isCarryingObject= FALSE;
-
-  if(robotPt->ccCntrts[0] != NULL) {
-    p3d_jnt* passiveJnt = robotPt->curObjectJnt;
-    p3d_jnt* activeJnt = robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1];
-    
-    p3d_mat4Copy(robotPt->ccCntrts[0]->Tatt_default,robotPt->ccCntrts[0]->Tatt);
-
-    p3d_cntrt * cntrt = findTwoJointsFixCntrt(robotPt, passiveJnt, activeJnt);
-    if (cntrt != NULL) {
-      p3d_matInvertXform(robotPt->ccCntrts[0]->Tatt,cntrt->Tatt);
-    }
-  }
-  return 0;
-}
+//int p3d_grab_object2(p3d_rob *robotPt, int armCntrt)
+//{
+//  if(robotPt==NULL)
+//  {
+//    printf("%s: %d: p3d_grab_object(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+//    return 1;
+//  }
+//  if(robotPt->carriedObject==NULL || robotPt->curObjectJnt==NULL)
+//  {
+//    printf("%s: %d: p3d_grab_object(): the robot has no object to grab.\n",__FILE__,__LINE__);
+//    return 1;
+//  }
+//  if(robotPt->nbCcCntrts < 1)
+//  {
+//    printf("%s: %d: p3d_grab_object(): the robot has no inverse Kinematic constraints.\n",__FILE__,__LINE__);
+//    return 1;
+//  }
+//  configPt qgrab= NULL, q2_conf=NULL;
+//  p3d_matrix4 Ttt;
+//  double x, y, z, alpha, beta, gamma;
+//
+//  p3d_get_body_pose(robotPt->carriedObject, 0, Ttt);
+//
+//  p3d_jnt* passiveJnt = robotPt->curObjectJnt;
+//  p3d_jnt* activeJnt = robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1];
+//
+//  int passiveJntId[1] = {passiveJnt->num}, activeJntId[1] = {activeJnt->num};
+//  p3d_cntrt * cntrt = findTwoJointsFixCntrt(robotPt, passiveJnt, activeJnt);
+//  //If the constraint is already created
+//  if (cntrt != NULL) {
+//    //deactivate constraints
+//     p3d_activateCntrt(robotPt, cntrt);
+//     deactivateCcCntrts(robotPt, -1);
+//  } else if (!p3d_constraint("p3d_fix_jnts_relpos", -1, passiveJntId, -1, activeJntId, -1, NULL, -1, NULL, -1, 1)) {
+//    printf("Error in creating the p3d_fix_jnts_relpos\n");
+//  } else {
+//    cntrt = findTwoJointsFixCntrt(robotPt, passiveJnt, activeJnt);
+//    //reinitialize iksols
+//    p3d_realloc_iksol(robotPt->cntrt_manager);
+//  }
+//
+//    q2_conf = p3d_get_robot_config(robotPt);
+//
+//  qgrab= p3d_alloc_config(robotPt);
+//  p3d_copy_config_into(robotPt, q2_conf, &qgrab);
+//
+//  p3d_mat4ExtractPosReverseOrder2(Ttt, &x, &y, &z, &alpha, &beta, &gamma);
+//
+//  //p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
+//
+//  qgrab[robotPt->curObjectJnt->index_dof ]    = x;
+//  qgrab[robotPt->curObjectJnt->index_dof + 1] = y;
+//  qgrab[robotPt->curObjectJnt->index_dof + 2] = z;
+//  qgrab[robotPt->curObjectJnt->index_dof + 3] = alpha;
+//  qgrab[robotPt->curObjectJnt->index_dof + 4] = beta;
+//  qgrab[robotPt->curObjectJnt->index_dof + 5] = gamma;
+//  p3d_set_and_update_this_robot_conf(robotPt, qgrab);
+//  p3d_copy_config_into(robotPt, qgrab, &robotPt->ROBOT_POS);
+//  p3d_destroy_config(robotPt, qgrab);
+//
+//   //set the attach Matrix
+//   getObjectBaseAttachMatrix(Ttt, robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1]->abs_pos, robotPt->ccCntrts[0]->Tatt);
+//   p3d_matInvertXform(robotPt->ccCntrts[0]->Tatt,cntrt->Tatt);
+//
+//  return 0;
+//}
+//
+//int p3d_release_object(p3d_rob *robotPt)
+//{
+//  if(robotPt==NULL)
+//  {
+//    printf("%s: %d: p3d_release_object(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+//    return 1;
+//  }
+//  if(robotPt->carriedObject==NULL)
+//  {
+//    printf("%s: %d: p3d_release_object(): the robot has no object to release.\n",__FILE__,__LINE__);
+//    return 1;
+//  }
+//
+//  robotPt->isCarryingObject= FALSE;
+//
+//  if(robotPt->ccCntrts[0] != NULL) {
+//    p3d_jnt* passiveJnt = robotPt->curObjectJnt;
+//    p3d_jnt* activeJnt = robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1];
+//    
+//    p3d_mat4Copy(robotPt->ccCntrts[0]->Tatt_default,robotPt->ccCntrts[0]->Tatt);
+//
+//    p3d_cntrt * cntrt = findTwoJointsFixCntrt(robotPt, passiveJnt, activeJnt);
+//    if (cntrt != NULL) {
+//      p3d_matInvertXform(robotPt->ccCntrts[0]->Tatt,cntrt->Tatt);
+//    }
+//  }
+//  return 0;
+//}
 #endif
 
 
