@@ -466,7 +466,7 @@ configPt ManipulationPlanner::getGraspConf(p3d_rob* object, int armId, gpGrasp& 
   std::pair<double,configPt> costAndConf;
   std::vector< std::pair<double,configPt> > graspConfigs;
   
-  const unsigned int NbTry=1;
+  const unsigned int NbTry=30;
   
   gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);
   
@@ -615,7 +615,7 @@ configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gp
     std::pair<double,configPt> distToGraspQ;
     std::vector< std::pair<double,configPt> > allQ;
     
-    const unsigned int NbTry=1;
+    const unsigned int NbTry=30;
     gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);
     for (unsigned int i=0; i<NbTry; i++) 
     {
