@@ -56,11 +56,12 @@ extern p3d_env *envPt_MM;
 extern HRI_AGENT * primary_human_MM;
 extern HRI_AGENT * jido_robot_MM;
 extern HRI_AGENT * hrp2_robot_MM;
-
+extern struct robots_indices rob_indx;
 static ManipulationPlanner *manipulation= NULL;
 
 //TODO : Put in HRI_Proto.h
 int get_placements_in_3D(p3d_rob *object,  std::list<gpPlacement> &placementListOut);
+int get_ranking_based_on_view_point(p3d_matrix4 view_frame,point_co_ordi point,p3d_rob *object, p3d_rob *human, std::list<gpPlacement> &placementList);
 
 void fct_draw_loop();
 
@@ -878,10 +879,13 @@ std::list<gpPlacement> curr_placementListOut;
 	obj_tmp_pos[7]=point_to_give.y;
 	obj_tmp_pos[8]=point_to_give.z;
 
-        
+        get_ranking_based_on_view_point(primary_human_MM->perspective->camjoint->abs_pos,goal_pos, object, envPt_MM->robot[rob_indx.HUMAN], curr_placementListOut);
+
         for(std::list<gpPlacement>::iterator iter=curr_placementListOut.begin(); iter!=curr_placementListOut.end(); ++iter)
         {
   ////iter->draw(0.05); 
+         if(iter->stability<=0)//As the placement list is sorted
+         break;
                 p3d_mat4Copy(T0, T);
 	
         iter->position[0]= point_to_give.x;
@@ -980,9 +984,9 @@ std::list<gpPlacement> curr_placementListOut;
  p3d_set_freeflyer_pose(object, T0);
 
 
-  g3d_win *win= NULL;
-  win= g3d_get_win_by_name((char *)"Move3D");
-  win->fct_draw2= & ( fct_draw_loop);
+ // g3d_win *win= NULL;
+//  win= g3d_get_win_by_name((char *)"Move3D");
+ // win->fct_draw2= & ( fct_draw_loop);
 
  return result;
  
@@ -1237,5 +1241,241 @@ int get_placements_in_3D(p3d_rob *object,  std::list<gpPlacement> &placementList
 
  
 
+  return 0;
+}
+
+//! This function is used to know how much a robot (visually) sees an object from a specific viewpoint.
+//! \param camera_frame the frame of the viewpoint (the looking direction is X, Y points downward and Z to the left)
+//! \param camera_fov the field of view angle of the robot's camera (in degrees)
+//! \param robot pointer to the robot
+//! \param object pointer to the object
+//! \param result return the ratio between the number of object's pixels that are visible
+//! and the overall size (in pixels) of the image. So the value is between 0 (invisible object) and 1 (the object
+//! occupies all the image).
+//! \return 0 in case of success, 1 otherwise
+int g3d_is_object_visible_from_robot(p3d_matrix4 camera_frame, double camera_fov, p3d_rob *robot, p3d_rob *object, double *result)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: g3d_is_object_visible_from_robot(): input robot is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+  if(object==NULL)
+  {
+    printf("%s: %d: g3d_is_object_visible_from_robot(): input object is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+ 
+  int i, width, height;
+  GLint viewport[4];
+  int displayFrame, displayJoints, displayShadows, displayWalls, displayFloor, displayTiles, cullingEnabled;
+  double fov;
+  int count;
+  unsigned char *image= NULL;
+  float red, green, blue;
+  g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
+
+  for(i=0; i<XYZ_ENV->no; ++i) {
+    p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_UNLIT_GREEN_DISPLAY);
+  }
+  for(i=0; i<XYZ_ENV->nr; ++i) {
+    if(XYZ_ENV->robot[i]==robot) {
+      p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_NO_DISPLAY);
+    }
+    else
+     p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_UNLIT_GREEN_DISPLAY);
+  }
+  // display our robot and object with specific colors:
+  p3d_set_robot_display_mode(object, P3D_ROB_UNLIT_RED_DISPLAY);
+
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  width = viewport[2];
+  height= viewport[3];
+ 
+  // save the current display options:
+  g3d_save_win_camera(win->vs);
+  fov            =  win->vs.fov;
+  displayFrame   =  win->vs.displayFrame;
+  displayJoints  =  win->vs.displayJoints;
+  displayShadows =  win->vs.displayShadows;
+  displayWalls   =  win->vs.displayWalls;
+  displayFloor   =  win->vs.displayFloor;
+  displayTiles   =  win->vs.displayTiles;
+  cullingEnabled =  win->vs.cullingEnabled;
+  red            =  win->vs.bg[0]; 
+  green          =  win->vs.bg[1]; 
+  blue           =  win->vs.bg[2]; 
+
+  // only keep what is necessary:
+  win->vs.fov            = camera_fov;
+  win->vs.displayFrame   = FALSE;
+  win->vs.displayJoints  = FALSE;
+  win->vs.displayShadows = FALSE;
+  win->vs.displayWalls   = FALSE;
+  win->vs.displayFloor   = FALSE;
+  win->vs.displayTiles   = FALSE;
+  win->vs.cullingEnabled=  1;
+  //do not forget to set the backgroung to black:
+  g3d_set_win_bgcolor(win->vs, 0, 0, 0);
+
+
+  // move the camera to the desired pose and apply the new projection matrix:
+  g3d_set_camera_parameters_from_frame(camera_frame, win->vs);
+  g3d_set_projection_matrix(win->vs.projection_mode);
+
+
+  g3d_draw_win(win);
+
+  // restore the display options:
+  g3d_restore_win_camera(win->vs);
+  win->vs.fov            = fov;
+  win->vs.displayFrame   = displayFrame;
+  win->vs.displayJoints  = displayJoints;
+  win->vs.displayShadows = displayShadows;
+  win->vs.displayWalls   = displayWalls;
+  win->vs.displayFloor   = displayFloor;
+  win->vs.displayTiles   = displayTiles;
+  win->vs.cullingEnabled =  cullingEnabled;
+  g3d_set_win_bgcolor(win->vs, red, green, blue);
+  g3d_set_projection_matrix(win->vs.projection_mode); // do this after restoring the camera fov
+
+  // reset the display modes of everything
+  for(i=0; i<XYZ_ENV->no; ++i) {
+    p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_DEFAULT_DISPLAY);
+  }
+  for(i=0; i<XYZ_ENV->nr; ++i) {
+    p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_DEFAULT_DISPLAY);
+  }
+
+//   static int cnt= 0;
+//   char name[256];
+//   sprintf(name, "/home/jpsaut/BioMove3Dgit/BioMove3D/screenshots/image%i.ppm", cnt++);
+//   g3d_export_OpenGL_display(name);
+
+
+  // get the OpenGL image buffer:
+  image = (unsigned char*) malloc(3*width*height*sizeof(unsigned char));
+  glReadBuffer(GL_BACK);  // use back buffer as we are in a double-buffered configuration
+
+  // choose 1-byte alignment:
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
+  // get the image pixels (from (0,0) position):
+  glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image);
+
+  // count the pixels corresponding to the object's color:
+  count= 0;
+  for(i=0; i<width*height; i++)
+  {
+    if(image[3*i] > 200) {
+      count++;
+    }
+  }
+
+  *result= ((double) count)/((double) width*height);
+
+  free(image);
+
+  return 0;
+}
+
+int get_ranking_based_on_view_point(p3d_matrix4 view_frame,point_co_ordi point,p3d_rob *object, p3d_rob *human, std::list<gpPlacement> &placementList)
+{
+  
+  double dotX, dotZ, alphaX, alphaZ, visibility;
+  p3d_vector3 dir, xAxis, yAxis, zAxis= {0,0,1}, zAxis_view;
+  p3d_matrix4 Tcur, T, Topt;
+  std::list<gpPlacement>::iterator iplacement;
+  GLfloat mat[16];
+
+  dir[0]= view_frame[0][3] - point.x;
+  dir[1]= view_frame[1][3] - point.y;
+  dir[2]= view_frame[2][3] - point.z;
+  p3d_vectNormalize(dir, dir);
+
+  p3d_mat4ExtractColumnZ(view_frame, zAxis_view);
+
+  
+  p3d_vectXprod(dir, zAxis, yAxis);
+  p3d_vectNormalize(yAxis, yAxis);
+  p3d_vectXprod(dir, yAxis, zAxis);
+
+  p3d_mat4Copy(p3d_mat4IDENTITY, Topt);
+
+  Topt[0][0]= dir[0];
+  Topt[1][0]= dir[1];
+  Topt[2][0]= dir[2];
+
+  Topt[0][1]= -yAxis[0];
+  Topt[1][1]= -yAxis[1];
+  Topt[2][1]= -yAxis[2];
+
+  Topt[0][2]= -zAxis[0];
+  Topt[1][2]= -zAxis[1];
+  Topt[2][2]= -zAxis[2];
+
+  p3d_get_freeflyer_pose(object, Tcur);
+
+  for(iplacement=placementList.begin(); iplacement!=placementList.end(); ++iplacement)
+  {
+    iplacement->position[0]= point.x;
+    iplacement->position[1]= point.y;
+    iplacement->position[2]= point.z;
+
+    iplacement->polyhedron= object->o[0]->pol[0]->poly;
+    iplacement->computePoseMatrix(T);
+    p3d_set_freeflyer_pose(object, T);
+
+    if( p3d_col_test_robot(object , 0) )
+    {
+       iplacement->stability= 0;
+    }
+    else
+    {
+       p3d_mat4ExtractColumnX(T, xAxis);
+       p3d_mat4ExtractColumnZ(T, zAxis);
+//        iplacement->stability= -p3d_vectDotProd(dir, xAxis);
+       dotX= -p3d_vectDotProd(dir, xAxis);
+//        dotZ= zAxis[2];
+       dotZ= p3d_vectDotProd(zAxis, zAxis_view);
+
+       alphaX= fabs(acos(dotX));
+       alphaZ= fabs(acos(dotZ));
+
+       if( dotX<0  || alphaX > 75*M_PI/180.0 || dotZ<0 || alphaZ > 60*M_PI/180.0 )
+       { 
+          iplacement->stability= 0;
+       }
+       else
+       {
+         ////set_object_at_placement ( object, *iplacement );
+         g3d_is_object_visible_from_robot(view_frame, 120, human, object, &visibility);
+         
+         iplacement->stability= visibility;
+         ////////iplacement->stability=0.5;
+	 p3d_polyhedre *poly= NULL;
+////p3d_rob *horse= p3d_get_robot_by_name("Horse");
+
+
+// printf(" Drawing object\n");
+// 
+//  p3d_to_gl_matrix(T, mat);
+//  glPushMatrix();
+//   glMultMatrixf(mat);
+//   g3d_draw_p3d_polyhedre(poly);
+//  glPopMatrix();
+
+
+        }
+    }
+  }
+  ////fl_check_forms();
+  ////g3d_draw_allwin_active();
+  placementList.sort();
+  placementList.reverse();
+
+
+  p3d_set_freeflyer_pose(object, Tcur);
+////////exit(0);
   return 0;
 }
