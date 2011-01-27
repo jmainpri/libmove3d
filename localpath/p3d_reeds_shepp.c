@@ -162,6 +162,12 @@ p3d_localpath *p3d_alloc_rs_localpath(p3d_rob *robotPt,
   localpathPt->ikSol = NULL;
     //save the active constraints
   localpathPt->activeCntrts = p3d_getActiveCntrts(robotPt,&(localpathPt->nbActiveCntrts));
+#ifdef LIGHT_PLANNER
+  localpathPt->isCarryingObject = FALSE;
+  for (int i = 0; i < MAX_CARRIED_OBJECTS; i++) {
+    localpathPt->carriedObject[i] = NULL;
+  }
+#endif
   return localpathPt;
 }
 

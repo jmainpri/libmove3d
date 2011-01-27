@@ -39,6 +39,10 @@ for linear and angular motion*/
 #define MAX_MULTILOCALPATH_NB 10
 #endif
 
+#ifdef LIGHT_PLANNER
+#define MAX_CARRIED_OBJECTS 10
+#endif
+
 typedef enum {
  REEDS_SHEPP,
  LINEAR,
@@ -284,8 +288,7 @@ typedef struct localpath{
 
 #if defined(LIGHT_PLANNER)
 	int isCarryingObject;
-	struct rob *carriedObject; /*!< if the carried object is a freeflying robot */
-	p3d_matrix4 Tgrasp;
+	struct rob* carriedObject[MAX_CARRIED_OBJECTS]; /*!< if the carried object is a freeflying robot */
 #endif
 
   /*

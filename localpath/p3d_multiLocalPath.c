@@ -3,6 +3,9 @@
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
 #include "Planner-pkg.h"
+#ifdef LIGHT_PLANNER
+#include "ManipulationUtils.hpp"
+#endif
 
 #define VELOCITY_BASE_JIDO 200
 
@@ -172,7 +175,10 @@ p3d_localpath * p3d_alloc_multiLocalPath_localpath(p3d_rob *robotPt, p3d_localpa
   }
 #if defined(LIGHT_PLANNER)
 	localpathPt->isCarryingObject = FALSE;
-	localpathPt->carriedObject = NULL;
+  for (int i = 0; i < MAX_CARRIED_OBJECTS; i++) {
+    localpathPt->carriedObject[i] = NULL;
+  }
+//	localpathPt->carriedObject = NULL;
 	//	p3d_mat4Copy(p3d_mat4IDENTITY, localpathPt->Tgrasp);
 #endif
 
@@ -456,7 +462,9 @@ p3d_localpath *p3d_copy_multiLocalPath_localpath(p3d_rob* robotPt,
 
 #if defined(LIGHT_PLANNER)
 	localpathPtMg->isCarryingObject = localpathPt->isCarryingObject;
-	localpathPtMg->carriedObject = localpathPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
+  for (int i = 0; i < MAX_CARRIED_OBJECTS; i++) {
+    localpathPtMg->carriedObject[i] = localpathPt->carriedObject[i];/*!< pointer to the carried object (obstacle environment or robot body) */
+  }
 	//	p3d_mat4Copy(localpathPt->Tgrasp, localpathPtMg->Tgrasp);
 #endif
 
@@ -557,7 +565,9 @@ p3d_localpath *p3d_extract_multiLocalPath(p3d_rob *robotPt,
 
 #if defined(LIGHT_PLANNER)
 	sub_localpathPt->isCarryingObject = localpathPt->isCarryingObject;
-	sub_localpathPt->carriedObject = localpathPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
+  for (int i = 0; i < MAX_CARRIED_OBJECTS; i++){
+    sub_localpathPt->carriedObject[i] = localpathPt->carriedObject[i]; /*!< pointer to the carried object (obstacle environment or robot body) */
+  }
 	//	p3d_mat4Copy(localpathPt->Tgrasp, sub_localpathPt->Tgrasp);
 #endif
 
@@ -654,7 +664,10 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
 			if (localpathPt[i] != NULL) {
 				#if defined(LIGHT_PLANNER)
 				localpathPt[i]->isCarryingObject = robotPt->isCarryingObject;
-				localpathPt[i]->carriedObject = robotPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
+        for(unsigned int j = 0; j < robotPt->armManipulationData->size(); j++){
+          localpathPt[i]->carriedObject[j] = ((*robotPt->armManipulationData)[j]).getCarriedObject();
+        }
+//				localpathPt[i]->carriedObject = robotPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
 				//				p3d_mat4Copy(robotPt->Tgrasp, localpathPt[i]->Tgrasp);
 
 				localpathPt[i]->activeCntrts = p3d_getActiveCntrts(robotPt,&(localpathPt[i]->nbActiveCntrts));
@@ -685,7 +698,9 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
 
 #if defined(LIGHT_PLANNER)
 	localpathMg->isCarryingObject = robotPt->isCarryingObject;
-	localpathMg->carriedObject = robotPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
+  for (int i = 0; i < MAX_CARRIED_OBJECTS; i++){
+    localpathMg->carriedObject[i] = (*robotPt->armManipulationData)[i].getCarriedObject(); /*!< pointer to the carried object (obstacle environment or robot body) */
+  }
 	//p3d_mat4Copy(robotPt->Tgrasp, localpathMg->Tgrasp);
 #endif
 

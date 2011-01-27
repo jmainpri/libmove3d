@@ -2111,6 +2111,12 @@ p3d_localpath * p3d_alloc_softMotion_localpath(p3d_rob *robotPt, p3d_softMotion_
   localpathPt->nbActiveCntrts = 0;
   localpathPt->activeCntrts = NULL;
   localpathPt->q_init = NULL;
+#ifdef LIGHT_PLANNER
+  localpathPt->isCarryingObject = FALSE;
+  for (int i = 0; i < MAX_CARRIED_OBJECTS; i++) {
+    localpathPt->carriedObject[i] = NULL;
+  }
+#endif
   return localpathPt;
 }
 
