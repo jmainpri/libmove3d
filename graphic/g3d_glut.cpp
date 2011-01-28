@@ -7,7 +7,11 @@
  *
  */
 
-#include "glut.h"
+#if defined(MACOSX) 
+  #include <glut.h>
+#else
+  #include <GL/freeglut.h>
+#endif
 
 #include "Graphic-pkg.h"
 #include "Move3d-pkg.h"
@@ -154,7 +158,9 @@ GlutWindowDisplay::GlutWindowDisplay(int argc, char *argv[])
 	
 	/* création d'une fenêtre OpenGL RVBA avec en simple mémoire tampon
 	 avec un tampon de profondeur */
-	glutInitDisplayMode (GLUT_RGB | GLUT_SINGLE | GLUT_ALPHA | GLUT_DEPTH | GLUT_STENCIL | GLUT_STEREO);
+	//glutInitDisplayMode (GLUT_RGB | GLUT_SINGLE | GLUT_ALPHA | GLUT_DEPTH | GLUT_STENCIL | GLUT_STEREO);
+	//glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+	glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH | GLUT_STENCIL | GLUT_ALPHA );
 	glutInitWindowSize (800, 600);
 	glutCreateWindow ("Move3D Glut"); 
 }
@@ -165,8 +171,8 @@ void GlutWindowDisplay::initDisplay()
   cout << __func__ << " in " << __FILE__  << endl;
   
 	// Initializes Draw Functions
-  draw_opengl = g3d_draw_allwin_active;
-  ext_g3d_draw_allwin_active = g3d_draw_allwin_active;
+        draw_opengl = g3d_draw_allwin_active;
+        ext_g3d_draw_allwin_active = g3d_draw_allwin_active;
 	ext_get_win_mouse = g3d_glut_get_win_mouse;
 	ext_calc_cam_param = g3d_glut_ui_calc_param;
 	

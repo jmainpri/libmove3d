@@ -16,6 +16,12 @@
 #include "locale.h"
 #include "molecule.xpm"
 
+#if defined(MACOSX) && defined(USE_GLUT)
+  #include <glut.h>
+#else
+  #include <GL/glut.h>
+#endif
+
 #if defined( QT_GL ) && defined( CXX_PLANNER )
 #include "project.hpp"
 #include "cppToQt.hpp"
