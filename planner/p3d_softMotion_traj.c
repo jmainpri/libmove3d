@@ -119,23 +119,24 @@ draw_trajectory_ptp () {
   
   p3d_jnt *armJoint = NULL;
   armJoint = p3d_get_robot_jnt_by_name (robot, (char *) "virtual_object");
-
-  glPushAttrib (GL_LIGHTING_BIT);
-  glDisable (GL_LIGHTING);
-  glColor3f (0, 1, 0);
-
-  for (i = 1; i < NB_TRAJPTP_CONFIG; i++) {
-    for (int j = 0; j < 3; j++) {
-      p1[j] = TRAJPTP_CONFIG[i - 1][armJoint->index_dof + j];
-      p2[j] = TRAJPTP_CONFIG[i][armJoint->index_dof + j];
-    }
+  if(armJoint){
+    glPushAttrib (GL_LIGHTING_BIT);
+    glDisable (GL_LIGHTING);
     glColor3f (0, 1, 0);
-    g3d_draw_cylinder (p1, p2, 0.001, 16);
-    glColor3f (0, 0, 1);
-    g3d_draw_solid_sphere(p1[0], p1[1], p1[2], 0.005, 16);
-    g3d_draw_solid_sphere(p2[0], p2[1], p2[2], 0.005, 16);
+
+    for (i = 1; i < NB_TRAJPTP_CONFIG; i++) {
+      for (int j = 0; j < 3; j++) {
+        p1[j] = TRAJPTP_CONFIG[i - 1][armJoint->index_dof + j];
+        p2[j] = TRAJPTP_CONFIG[i][armJoint->index_dof + j];
+      }
+      glColor3f (0, 1, 0);
+      g3d_draw_cylinder (p1, p2, 0.001, 16);
+      glColor3f (0, 0, 1);
+      g3d_draw_solid_sphere(p1[0], p1[1], p1[2], 0.005, 16);
+      g3d_draw_solid_sphere(p2[0], p2[1], p2[2], 0.005, 16);
+    }
+    glPopAttrib ();
   }
-  glPopAttrib ();
 }
 
 int
