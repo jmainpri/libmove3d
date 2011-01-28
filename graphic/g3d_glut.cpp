@@ -10,7 +10,7 @@
 #if defined(MACOSX) 
   #include <glut.h>
 #else
-  #include <GL/freeglut.h>
+  #include <GL/glut.h>
 #endif
 
 #include "Graphic-pkg.h"
@@ -130,9 +130,9 @@ void paintGL()
 						p.Xw[0], p.Xw[1], p.Xw[2], 
 						p.up[0], p.up[1], p.up[2]);
   
-//  cout << " Xc = " << p.Xc[0] << " , " << p.Xc[1] << " , " << p.Xc[2] << endl; 
-//  cout << " Xw = " << p.Xw[0] << " , " << p.Xw[1] << " , " << p.Xw[2] << endl; 
-//  cout << " up = " << p.up[0] << " , " << p.up[1] << " , " << p.up[2] << endl;
+  cout << " Xc = " << p.Xc[0] << " , " << p.Xc[1] << " , " << p.Xc[2] << endl; 
+  cout << " Xw = " << p.Xw[0] << " , " << p.Xw[1] << " , " << p.Xw[2] << endl; 
+  cout << " up = " << p.up[0] << " , " << p.up[1] << " , " << p.up[2] << endl;
 	
 	G3D_WIN->vs.cameraPosition[0]= p.Xc[0];
 	G3D_WIN->vs.cameraPosition[1]= p.Xc[1];
@@ -147,7 +147,7 @@ void paintGL()
 //! Creates a Glut window
 GlutWindowDisplay::GlutWindowDisplay(int argc, char *argv[])
 {
-  int argc2 = 0;
+        int argc2 = 0;
 	char* argv2 = "";
 	
 	/* initialisation de GLUT */
@@ -172,8 +172,8 @@ void GlutWindowDisplay::initDisplay()
 	new qtG3DWindow;
 	
   // Initializes Draw Functions
-  draw_opengl = g3d_draw_allwin_active;
-  ext_g3d_draw_allwin_active = g3d_draw_allwin_active;
+	draw_opengl = g3d_draw_allwin_active;
+	ext_g3d_draw_allwin_active = g3d_draw_allwin_active;
 	ext_g3d_get_win_mouse = g3d_glut_get_win_mouse;
 	ext_g3d_calc_cam_param = g3d_glut_ui_calc_param;
   
