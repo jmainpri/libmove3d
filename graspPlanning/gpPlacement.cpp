@@ -1020,3 +1020,139 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
 
   return GP_ERROR;
 }
+
+int gpPlacement_on_support_filter(p3d_rob *object, p3d_rob *support, std::list<gpPlacement> placementListIn, std::list<gpPlacement> &placementListOut)
+{
+  #ifdef GP_DEBUG
+  if(object==NULL)
+  {
+    printf("%s: %d: gpPlacement_on_support_filter: input object is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  if(support==NULL)
+  {
+    printf("%s: %d: gpPlacement_on_support_filter: input support is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  #endif
+
+  bool outside;
+  unsigned int i, j, k;
+  int result;
+  p3d_index *face_indices= NULL;
+  double angle, max;
+  p3d_vector3 normal;
+  p3d_vector3 *points= NULL;
+  p3d_matrix4 Tsupport;
+  p3d_polyhedre *polyh= NULL;
+  gpTriangle triangle;
+  gpPlacement placement;
+  std::list<gpTriangle> htris;
+  std::list<gpTriangle>::iterator iterT;
+  std::list<gpPlacement>::iterator iterP;
+  p3d_vector3 contact;
+  p3d_matrix4 T;
+
+  placementListOut.clear();
+ 
+  //first eliminate all the faces of the support that are not horizontal and triangulate the non-triangular ones
+  //and store the other ones in world coordinates:
+  for(i=0; i<(unsigned int) support->o[0]->np; ++i)
+  {
+    p3d_matMultXform(support->o[0]->jnt->abs_pos, support->o[0]->pol[i]->pos_rel_jnt, Tsupport);
+
+    polyh= support->o[0]->pol[i]->poly;
+    poly_build_planes(polyh);
+    points= polyh->the_points;
+    for(j=0; j<polyh->nb_faces; j++)
+    {
+      p3d_xformVect(Tsupport, polyh->the_faces[j].plane->normale, normal);
+      p3d_vectNormalize(normal, normal);
+      face_indices= polyh->the_faces[j].the_indexs_points;
+
+      angle= fabs( (180.0/M_PI)*acos(normal[2]) );
+      if( (normal[2]<0) || angle>5 )
+      {  continue;  }
+      if(polyh->the_faces[j].nb_points==3)
+      {
+         p3d_xformPoint(Tsupport, points[face_indices[0] - 1], triangle.p1);
+         p3d_xformPoint(Tsupport, points[face_indices[1] - 1], triangle.p2);
+         p3d_xformPoint(Tsupport, points[face_indices[2] - 1], triangle.p3);
+         triangle.description= GP_DESCRIPTION_POINTS;
+         htris.push_back(triangle);
+      }
+      else
+      {
+        printf("%s: %d: gpPlacement_on_support_filter(): the faces of \"%s\" should all be triangles.\n", __FILE__,__LINE__,support->name);
+      }
+    }
+  }
+
+ //display the horizontal triangles:
+//   glBegin(GL_TRIANGLES);
+//     for(iterT1=htris.begin(); iterT1!=htris.end(); iterT1++)
+//     {
+//       glVertex3f( (*iterT1).p1[0], (*iterT1).p1[1], (*iterT1).p1[2] );
+//       glVertex3f( (*iterT1).p2[0], (*iterT1).p2[1], (*iterT1).p2[2] );
+//       glVertex3f( (*iterT1).p3[0], (*iterT1).p3[1], (*iterT1).p3[2] );
+//     }
+//   glEnd();
+
+
+  placementListIn.sort();
+  placementListIn.reverse();
+
+
+        //for each initial placement:
+	for(iterP=placementListIn.begin(); iterP!=placementListIn.end(); iterP++)
+	{
+		//place at the current position and orientation:
+		iterP->computePoseMatrix(T);
+	
+		//compute the positions of each contact point in world frame coordinates: 
+		for(k=0; k<(*iterP).contacts.size(); k++)
+		{ 
+		p3d_xformPoint(T, (*iterP).contacts[k].position, contact);
+		outside= false;
+		// test if the contact is included in one of the horizontal triangles:
+		for(iterT=htris.begin(); iterT!=htris.end(); iterT++)
+		{
+		result= gpIs_point_in_triangle(contact, (*iterT).p1, (*iterT).p2, (*iterT).p3) ;
+	
+		if(result==1)
+		{  break;  }
+		}
+		if(iterT==htris.end()) // contact point is outside all the triangles
+		{
+		outside= true;
+		break;
+		}
+		}
+		if(outside==true) // a contact was outside the support triangles
+		{  continue;  }
+		
+	
+		placement= (*iterP);
+		placementListOut.push_back(placement);
+	}
+  
+
+  placementListOut.sort(gpCompareClearance); //sort from the smallest to the biggest stability
+  placementListOut.reverse(); //reverse the order of the elements in the list
+  max= placementListOut.front().stability;
+
+  // normalize the clearance score:
+  i=1;
+  for(iterP= placementListOut.begin(); iterP!=placementListOut.end(); iterP++)
+  {  
+    (*iterP).ID= i++;
+    (*iterP).clearance/= max;
+  }
+
+  // sort with global comparison operator
+  placementListOut.sort(); 
+  placementListOut.reverse();
+
+  return GP_OK;
+}
+

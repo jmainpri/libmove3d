@@ -91,6 +91,8 @@ extern int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *obj
 
 extern int gpCompute_placement_clearances(p3d_rob *object, std::list<p3d_rob*> robotList, std::list<gpPlacement> &placementList);
 
+extern int gpPlacement_on_support_filter(p3d_rob *object, p3d_rob *support, std::list<gpPlacement> placementListIn, std::list<gpPlacement> &placementListOut);
+
 #endif
 
 
