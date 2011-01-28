@@ -37,10 +37,10 @@ G3D_Window * qt_get_cur_g3d_win();
 // to external functionalities
 extern void (*ext_g3d_export_cpp_graph)();
 extern void (*ext_g3d_draw_allwin_active)();
-extern void (*ext_calc_cam_param)(g3d_cam_param& p);
-extern void (*ext_get_win_mouse)(int* x, int* y);
+extern void (*ext_g3d_calc_cam_param)(g3d_cam_param& p);
+extern void (*ext_g3d_get_win_mouse)(int* x, int* y);
 extern void (*ext_g3d_draw_cost_features)();
-extern void (*ext_add_traj_to_ui)(char* name,int i);
-extern void (*ext_add_config_to_ui)(char* name,p3d_rob* rob,double* q);
+extern void (*ext_g3d_add_traj_to_ui)(char* name,int i);
+extern void (*ext_g3d_add_config_to_ui)(char* name,p3d_rob* rob,double* q);
 
 #endif // QTG3DWINDOW_HPP

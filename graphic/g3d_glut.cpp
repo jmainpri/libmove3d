@@ -50,11 +50,8 @@ void initializeGL(int w,int h)
 	//   glMatrixMode(GL_PROJECTION);
 	//   glLoadIdentity();
 	g3d_set_projection_matrix(G3D_WIN->vs.projection_mode);
-	
 	glMatrixMode(GL_MODELVIEW);
-	
 	glLoadIdentity();
-	
 	
 	/** on desactive tout mode OpenGL inutile ***/
 	glDisable(GL_STENCIL_TEST);
@@ -127,7 +124,7 @@ void paintGL()
 	
 	//	computeNewVectors(Xc,Xw,up);
 	g3d_cam_param p;
-	g3d_glut_ui_calc_param(p);
+	ext_g3d_calc_cam_param(p);
 	
 	gluLookAt(p.Xc[0], p.Xc[1], p.Xc[2], 
 						p.Xw[0], p.Xw[1], p.Xw[2], 
@@ -169,17 +166,17 @@ GlutWindowDisplay::GlutWindowDisplay(int argc, char *argv[])
 void GlutWindowDisplay::initDisplay()
 {
   cout << __func__ << " in " << __FILE__  << endl;
-  
-	// Initializes Draw Functions
-        draw_opengl = g3d_draw_allwin_active;
-        ext_g3d_draw_allwin_active = g3d_draw_allwin_active;
-	ext_get_win_mouse = g3d_glut_get_win_mouse;
-	ext_calc_cam_param = g3d_glut_ui_calc_param;
 	
 	//Graphic::initDrawFunctions();
 	// Initializes the G3D Window
 	new qtG3DWindow;
 	
+  // Initializes Draw Functions
+  draw_opengl = g3d_draw_allwin_active;
+  ext_g3d_draw_allwin_active = g3d_draw_allwin_active;
+	ext_g3d_get_win_mouse = g3d_glut_get_win_mouse;
+	ext_g3d_calc_cam_param = g3d_glut_ui_calc_param;
+  
 	G3D_WIN->vs.displayFloor = true;
 	G3D_WIN->vs.displayTiles = true;
 	G3D_WIN->vs.GOURAUD = true;

@@ -437,6 +437,9 @@ void g3d_draw_floor(GLdouble color[3], int tiles) {
   }
   size = pow(10,nbDigit);
 
+  // draw tiles of 0.5 m
+  size = 0.5;
+  
   g3d_draw_tiled_floor(color, size, size, xmin, xmax, ymin, ymax, zmin, zmax);
 }
 
@@ -1423,8 +1426,8 @@ void g3d_draw_env()
   if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win);
   /* Fin Modification Thibaut */
 
-// #if defined( MOVE3D_CORE )
-#if defined( CXX_PLANNER )
+#if defined( MOVE3D_CORE )
+//#if defined( CXX_PLANNER )
 	ext_g3d_export_cpp_graph();
 #endif
 	

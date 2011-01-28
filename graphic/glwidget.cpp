@@ -188,9 +188,9 @@ void GLWidget::initG3DFunctions()
 	
 	draw_opengl = g3d_draw_allwin_active;
 	
-	ext_get_win_mouse = (void (*) (int*,int*))(qt_get_win_mouse);
+	ext_g3d_get_win_mouse = (void (*) (int*,int*))(qt_get_win_mouse);
 	ext_g3d_draw_allwin_active = draw_opengl;
-	ext_calc_cam_param = (void (*) (g3d_cam_param&) )(qt_ui_calc_param);
+	ext_g3d_calc_cam_param = (void (*) (g3d_cam_param&) )(qt_ui_calc_param);
 	
 	Graphic::initDrawFunctions();
 }

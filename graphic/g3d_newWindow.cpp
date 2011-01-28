@@ -34,13 +34,14 @@ XformError("Error: Xform is not compiled, check your flags or make changes to th
 
 // --------------------------------------------------------------------
 // Function pointers to external graphics
-void (*ext_g3d_draw_cost_features)();
+
 void (*ext_g3d_export_cpp_graph)();
 void (*ext_g3d_draw_allwin_active)();
-void (*ext_calc_cam_param)(g3d_cam_param& p);
-void (*ext_get_win_mouse)(int* x, int* y);
-void (*ext_add_traj_to_ui)(char* name,int i);
-void (*ext_add_config_to_ui)(char* name,p3d_rob* rob,double* q);
+void (*ext_g3d_calc_cam_param)(g3d_cam_param& p);
+void (*ext_g3d_get_win_mouse)(int* x, int* y);
+void (*ext_g3d_draw_cost_features)();
+void (*ext_g3d_add_traj_to_ui)(char* name,int i);
+void (*ext_g3d_add_config_to_ui)(char* name,p3d_rob* rob,double* q);
 
 // --------------------------------------------------------------------
 // External functions
@@ -133,18 +134,18 @@ qtG3DWindow::qtG3DWindow()
 #if defined( QT_GL ) && defined ( CXX_PLANNER )
 	ext_g3d_draw_cost_features = (void (*)())(g3d_draw_cost_features);
 	ext_g3d_export_cpp_graph = (void (*)())(g3d_export_cpp_graph);
-	ext_get_win_mouse = /*(void (*) (int*,int*))*/qt_get_win_mouse;
+	ext_g3d_get_win_mouse = /*(void (*) (int*,int*))*/qt_get_win_mouse;
 	ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
-	ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
-	ext_add_traj_to_ui = dummy_add_traj_to_ui;
-	ext_add_config_to_ui = dummy_add_config_to_ui;
+	ext_g3d_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
+	ext_g3d_add_traj_to_ui = dummy_add_traj_to_ui;
+	ext_g3d_add_config_to_ui = dummy_add_config_to_ui;
 #else
 #ifndef QT_GL
 	ext_g3d_draw_allwin_active = (void (*)())(qt_draw_allwin_active);
-	ext_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
-	ext_get_win_mouse = /*(void (*) (int*,int*))*/get_win_mouse;
-	ext_add_traj_to_ui = dummy_add_traj_to_ui;
-	ext_add_config_to_ui = dummy_add_config_to_ui;
+	ext_g3d_calc_cam_param = /*(void (*) () )*/ qt_calc_cam_param ;
+	ext_g3d_get_win_mouse = /*(void (*) (int*,int*))*/get_win_mouse;
+	ext_g3d_add_traj_to_ui = dummy_add_traj_to_ui;
+	ext_g3d_add_config_to_ui = dummy_add_config_to_ui;
 #endif
 #endif
 
@@ -153,13 +154,13 @@ qtG3DWindow::qtG3DWindow()
 #endif
   
 #if defined( QT_GL_WIDGET )
-	ext_add_traj_to_ui = dummy_add_traj_to_ui;
-	ext_add_config_to_ui = dummy_add_config_to_ui;
+	ext_g3d_add_traj_to_ui = dummy_add_traj_to_ui;
+	ext_g3d_add_config_to_ui = dummy_add_config_to_ui;
 #endif
   
 #if defined( USE_GLUT )
-  ext_add_traj_to_ui = dummy_add_traj_to_ui;
-	ext_add_config_to_ui = dummy_add_config_to_ui;
+  ext_g3d_add_traj_to_ui = dummy_add_traj_to_ui;
+	ext_g3d_add_config_to_ui = dummy_add_config_to_ui;
 #endif
   
   newG3dWindow();
@@ -183,13 +184,13 @@ void g3d_draw_win_back_buffer(G3D_Window *win)
 void g3d_add_traj ( char *name, int i )
 {
 	cout << "g3d_add_traj ( char *name, int i )" << endl;
-	ext_add_traj_to_ui(name,i);
+	ext_g3d_add_traj_to_ui(name,i);
 }
 
 void g3d_add_config_to_ui(char* name,p3d_rob* rob,double* q)
 {
   cout << "add_configuration_to_ui" << endl;
-  ext_add_config_to_ui(name,rob,q);
+  ext_g3d_add_config_to_ui(name,rob,q);
 }
 
 void qt_canvas_viewing(int mouse_press, int button)
@@ -213,7 +214,7 @@ void qt_canvas_viewing(int mouse_press, int button)
 //#if defined( QT_GL ) && defined( CXX_PLANNER )
 //    qt_get_win_mouse(&i0, &j0);
 //#endif
-		ext_get_win_mouse(&i0, &j0);
+		ext_g3d_get_win_mouse(&i0, &j0);
 		
 		/*printf("----------------------------------\n", (double) i0);
 		 printf("i0 = %d\n", i0);
@@ -231,7 +232,7 @@ void qt_canvas_viewing(int mouse_press, int button)
 //#if defined( QT_GL ) && defined( CXX_PLANNER )
 //    qt_get_win_mouse(&i, &j);
 //#endif
-		ext_get_win_mouse(&i,&j);
+		ext_g3d_get_win_mouse(&i,&j);
 		
 		switch (button) 
 		{

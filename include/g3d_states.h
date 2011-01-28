@@ -13,7 +13,7 @@
         #include "gl.h"
         #include "glu.h"
 #else
-        #include <GLUT/freeglut.h>
+        #include <glu.h>
 #endif
 #else
 		#include "GL/gl.h"
