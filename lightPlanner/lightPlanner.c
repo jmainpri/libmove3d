@@ -891,7 +891,7 @@ p3d_traj* graspTheObject(p3d_rob * robot, p3d_matrix4 objectStartPos, int* which
 
 p3d_traj* carryTheObject(p3d_rob * robot, p3d_matrix4 objectGotoPos, gpGrasp grasp, int whichArm, bool cartesian){
   //Stick the robotObject to the virtual object
-  p3d_set_object_to_carry(robot, (char*)GP_OBJECT_NAME_DEFAULT);
+  p3d_set_object_to_carry_to_arm(robot, whichArm, (char*)GP_OBJECT_NAME_DEFAULT);
   p3d_matrix4 tAtt;
   configPt graspConfig = p3d_alloc_config(robot);
 //  configPt approachConfig = p3d_alloc_config(robot);

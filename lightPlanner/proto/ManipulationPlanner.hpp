@@ -50,6 +50,9 @@ class  ManipulationPlanner {
     void setOptimizeTime(double time);
     double getOptimizeTime(void) const;
 
+    void setOptimizeRedundentSteps(int nbSteps);
+    int getOptimizeRedundentSteps(void) const;
+    
     void setApproachFreeOffset(double offset);
     double getApproachFreeOffset(void) const;
 
@@ -204,6 +207,8 @@ class  ManipulationPlanner {
     int _optimizeSteps;
     /** Time limit for the optimisation*/
     double _optimizeTime;
+    /** Number of steps when optimizing the redundent joint*/
+    int _optimizeRedundentSteps;
     /** Offset to generate the approach configuration of a grasp (not carrying an object)*/
     double _approachFreeOffset;
     /** Offset to generate the approach configuration of a grasp (carrying an object)*/

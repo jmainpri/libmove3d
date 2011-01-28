@@ -381,6 +381,7 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
       }
       p3d_destroy_config(robot, qInit);
       p3d_destroy_config(robot, q);
+      deactivateCcCntrts(robot, cntrtToActivate);
       return NULL;
     }
     
@@ -395,6 +396,7 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
     }
     p3d_get_robot_config_into( robot, &q );
     p3d_destroy_config(robot, qInit);
+    deactivateCcCntrts(robot, cntrtToActivate);
   }
   return q;
 }
@@ -666,7 +668,6 @@ configPt setRobotCloseToConfGraspApproachOrExtract(p3d_rob* robot, configPt refC
   }
   
   configPt q = getRobotGraspConf(robot, objectPos, att, false, shootObjectPos, shootObjectRot, armId, nonUsedCntrtDesactivation,true);
-
 #ifndef GRASP_PLANNING
   activateHandsVsObjectCol(robot);
 #endif
@@ -679,6 +680,109 @@ configPt setRobotCloseToConfGraspApproachOrExtract(p3d_rob* robot, configPt refC
   return q;
 }
 
+#ifdef GRASP_PLANNING
+/**
+ * @brief Optimize the given robot configuration using the redundent joint to get smarter configurations
+ * @param robot the robot
+ * @param redJntId the redundent joint
+ * @param q the configuration to optimize
+ * @param objectPos the object position matrix
+ * @param tAtt the attach matrix
+ * @param grasp the used grasp 
+ * @param armId the arm grasping the object
+ * @param nbTests the number of iterations
+ * @return the better configuration cost
+ */
+double optimizeRedundentJointConfigCost(p3d_rob* robot, int redJntId, configPt q, p3d_matrix4 objectPos, p3d_matrix4 tAtt, gpGrasp& grasp, int armId, int nbTests){
+  if(q){
+    double refCost = computeRobotGraspArmCost(robot, armId, grasp, q , robot->openChainConf, objectPos)/270;
+    double cost = P3D_HUGE, vmin = -P3D_HUGE, vmax = P3D_HUGE;
+    p3d_jnt* redJnt = robot->joints[redJntId];
+    p3d_jnt_get_dof_bounds(redJnt, 0, &vmin, &vmax);
+    int qId = redJnt->index_dof; //The index of the redundent joint in the configPt
+    double refValue = q[qId], value = P3D_HUGE;
+    p3d_matrix4 bak;
+
+    activateCcCntrts(robot, armId, false);
+    p3d_mat4Copy((*robot->armManipulationData)[armId].getCcCntrt()->Tatt, bak);
+    p3d_mat4Copy(tAtt, (*robot->armManipulationData)[armId].getCcCntrt()->Tatt);
+
+    for(int i = 0; i < nbTests; i++){
+      q[qId] = p3d_random(vmin, vmax);
+      if(p3d_set_and_update_this_robot_conf(robot, q) && p3d_is_collision_free(robot, q)){
+        double tmpCost = computeRobotGraspArmCost(robot, armId, grasp, q , robot->openChainConf, objectPos)/270;
+        if(tmpCost < cost){
+          cost = tmpCost;
+          value = q[qId];
+        }
+      }
+    }
+    if(refCost < cost){
+      q[qId] = refValue;
+      cost = refCost;
+    }else{
+      q[qId] = value;
+    }
+    p3d_set_and_update_this_robot_conf(robot, q);
+    p3d_get_robot_config_into(robot, &q);
+    deactivateCcCntrts(robot, armId);
+    p3d_mat4Copy(bak, (*robot->armManipulationData)[armId].getCcCntrt()->Tatt);
+    return cost;
+  }
+  return -1;
+}
+#endif
+/**
+ * @brief Optimize the given robot configuration using the redundent joint to get closer configuration to refConf
+ * @param robot the robot
+ * @param redJntId the redundent joint
+ * @param q the configuration to optimize
+ * @param objectPos the object position matrix
+ * @param tAtt the attach matrix
+ * @param refConf the reference config
+ * @param armId the arm grasping the object
+ * @param nbTests the number of iterations
+ * @return the better configuration cost
+ */
+double optimizeRedundentJointConfigDist(p3d_rob* robot, int redJntId, configPt q, p3d_matrix4 objectPos, p3d_matrix4 tAtt, configPt refConf, int armId, int nbTests){
+  if(q){
+    double refDist = p3d_dist_config(robot, q, refConf);
+    double dist = P3D_HUGE, vmin = -P3D_HUGE, vmax = P3D_HUGE;
+    p3d_jnt* redJnt = robot->joints[redJntId];
+    p3d_jnt_get_dof_bounds(redJnt, 0, &vmin, &vmax);
+    int qId = redJnt->index_dof; //The index of the redundent joint in the configPt
+    double refValue = q[qId], value = P3D_HUGE;
+    p3d_matrix4 bak;
+
+    activateCcCntrts(robot, armId, false);
+    p3d_mat4Copy((*robot->armManipulationData)[armId].getCcCntrt()->Tatt, bak);
+    p3d_mat4Copy(tAtt, (*robot->armManipulationData)[armId].getCcCntrt()->Tatt);
+    for(int i = 0; i < nbTests; i++){
+      q[qId] = p3d_random(vmin, vmax);
+      if(p3d_set_and_update_this_robot_conf(robot, q) && p3d_is_collision_free(robot, q)){
+        double tmpDist = p3d_dist_config_2(robot, q, refConf);
+        if(tmpDist < dist){
+          printf("Dist = %f\n", dist);
+          dist = tmpDist;
+          value = q[qId];
+        }
+      }
+    }
+    if(refDist < dist){
+      q[qId] = refValue;
+      dist = refDist;
+    }else{
+      q[qId] = value;
+    }
+    printf("Selected Dist = %f\n", dist);
+    p3d_set_and_update_this_robot_conf(robot, q);
+    p3d_get_robot_config_into(robot, &q);
+    deactivateCcCntrts(robot, armId);
+    p3d_mat4Copy(bak, (*robot->armManipulationData)[armId].getCcCntrt()->Tatt);
+    return dist;
+  }
+  return -1;
+}
 
 /**
  * @brief Get the robot grasp configuration given the attach matrix
@@ -864,17 +968,20 @@ double computeRobotGraspArmCost(p3d_rob* robot, int whichArm, gpGrasp grasp, con
   int weight = 1;
   p3d_set_and_update_this_robot_conf(robot, q);
   //MediumJointCost
-  for(int j = 0; j < ct->npasjnts; j++){
-    if((!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")) && j >= 2){
-      weight = (ct->npasjnts - j);
-    }else{
-      weight = (ct->npasjnts - j + 1);
-    }
-    armMediumJointCost += weight * SQR(q[ct->pasjnts[j]->index_dof] - refConfig[ct->pasjnts[j]->index_dof]);
-  }
-  if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")){
-    armMediumJointCost += 5 * SQR(q[robot->joints[ct->argu_i[0]]->index_dof] - refConfig[robot->joints[ct->argu_i[0]]->index_dof]);
-  }
+//   for(int j = 0; j < ct->npasjnts; j++){
+//     if((!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")) && j >= 2){
+//       weight = (ct->npasjnts - j);
+//     }else{
+//       weight = (ct->npasjnts - j + 1);
+//     }
+//     armMediumJointCost += weight * SQR(q[ct->pasjnts[j]->index_dof] - refConfig[ct->pasjnts[j]->index_dof]);
+//   }
+//   if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")){
+//     armMediumJointCost += 5 * SQR(q[robot->joints[ct->argu_i[0]]->index_dof] - refConfig[robot->joints[ct->argu_i[0]]->index_dof]);
+//   }
+
+  
+  /* Base orientation cost (Better is on the refConf base/obj line)*/
   p3d_set_and_update_this_robot_conf(robot, refConfig);
   p3d_vector3 obj, current, ref, objCurrent, refCurrent;
   p3d_mat4ExtractColumnX(robot->baseJnt->abs_pos, ref);
@@ -895,6 +1002,31 @@ double computeRobotGraspArmCost(p3d_rob* robot, int whichArm, gpGrasp grasp, con
     weight = 10;
   }
   armMediumJointCost += weight* SQR(q[baseJnt->index_dof] - refConfig[baseJnt->index_dof]);
+
+
+  if((!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")) ){
+    p3d_matrix4 wristPose;
+    p3d_mat4Copy(ct->pasjnts[ct->npasjnts -1]->abs_pos , wristPose);
+    p3d_vector3 thumbDirection, mediusDirection;
+
+    p3d_mat4ExtractColumnX(wristPose, thumbDirection);
+    if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") ){
+      p3d_mat4ExtractColumnY(wristPose, mediusDirection);
+    }else if(!strcmp(ct->namecntrt, "p3d_lwr_arm_ik")){
+      p3d_mat4ExtractColumnZ(wristPose, mediusDirection);
+    }
+    double product = 0.0;
+    p3d_vectNormalize(obj, obj);
+    if( (product = p3d_vectDotProd(obj, thumbDirection)) > 0 ){
+      armMediumJointCost += ABS(product);
+    }
+
+    if( (product = p3d_vectDotProd(obj, mediusDirection)) < 0 ){
+      armMediumJointCost += ABS(product);
+    }
+
+  }
+  
 //   p3d_vector3 robotObjectDir, base, object;
 // 
 //   if (baseJnt || (baseJnt && baseJnt->num == 0)) {

@@ -18,7 +18,8 @@ Manipulation::Manipulation(p3d_rob * robot){
   }
   _robot = robot;
   _offlineGraph = NULL;
-  p3d_set_object_to_carry(_robot, (char*)GP_OBJECT_NAME_DEFAULT);
+  p3d_set_object_to_carry_to_arm(_robot, 0, (char*)GP_OBJECT_NAME_DEFAULT);
+  p3d_set_object_to_carry_to_arm(_robot, 1, (char*)GP_OBJECT_NAME_DEFAULT);
   for(int i = 0; i < (int) _robot->armManipulationData->size(); i++){
     (*_robot->armManipulationData)[i].setCarriedObject((char*)GP_OBJECT_NAME_DEFAULT);
     cout << GP_OBJECT_NAME_DEFAULT << endl;
