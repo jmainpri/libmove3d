@@ -19,7 +19,7 @@
 #if defined(MACOSX) && defined(USE_GLUT)
   #include <glut.h>
 #else
-  #include <GL/glut.h>
+  #include <GL/freeglut.h>
 #endif
 
 #if defined( QT_GL ) && defined( CXX_PLANNER )
