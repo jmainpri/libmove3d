@@ -413,6 +413,7 @@ int show_axis_of_FOV_from_mocap_eye_glass_data()
 {
   g3d_drawDisc(forehead_pos_from_eye_glass.x, forehead_pos_from_eye_glass.y, forehead_pos_from_eye_glass.z+0.2, 0.1, Green, NULL);
   g3d_drawDisc(brain_pos_from_eye_glass.x, brain_pos_from_eye_glass.y, brain_pos_from_eye_glass.z+0.2, 0.1, Red, NULL);
+  return 0;
 }
 
 g3d_states prev_state;
@@ -440,7 +441,7 @@ int show_humans_perspective(HRI_AGENT * agent, int save)//AKP WARNING: FOV is no
   g3d_save_state(curr_win_to_restore, &prev_state);
   
   // only keep what is necessary:
-  curr_win_to_restore->vs.fov            = 120;//agent->perspective->fov;
+  curr_win_to_restore->vs.fov            = 80;//agent->perspective->fov;
   curr_win_to_restore->vs.displayFrame   = FALSE;
   curr_win_to_restore->vs.displayJoints  = FALSE;
   curr_win_to_restore->vs.displayShadows = FALSE;
@@ -455,7 +456,8 @@ int show_humans_perspective(HRI_AGENT * agent, int save)//AKP WARNING: FOV is no
   g3d_set_camera_parameters_from_frame(agent->perspective->camjoint->abs_pos,curr_win_to_restore->vs);
 
   /////**** AKP: Uncomment below to set the projection mode as perspective projection
-  ////////g3d_set_projection_matrix(curr_win_to_restore->vs.projection_mode);
+ g3d_set_projection_matrix(curr_win_to_restore->vs.projection_mode);
+////g3d_set_projection_matrix(G3D_ORTHOGRAPHIC);
 
   //AKP
   /////g3d_draw_win(win);
@@ -5243,7 +5245,7 @@ int find_3D_grid_visibility(HRI_AGENT *agent,int type)//1 means human, 2 means H
   ////////is_visible=0;
  
 
-  //******AKP NOTE :Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
+  //AKP NOTE :Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
   //           
   //          if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[curr_cell->x][curr_cell->y][curr_cell->z].is_horizontal_surface==1)
   //           {
@@ -5281,7 +5283,7 @@ int find_3D_grid_visibility(HRI_AGENT *agent,int type)//1 means human, 2 means H
   //           ////t2=1000;// Break the ray beyond this, because the first obstacle has been found, so human can't see beyond this point.
 //           }
 //           }
-//           //****** END Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
+//           //END Check for more expensive test, because we are not using directed BB so many cell unnecessary becomes obstacle cell
 //           else
 ////////{
 is_visible=0;
@@ -13422,8 +13424,8 @@ int JIDO_find_candidate_points_on_plane_to_put_obj()
 
 		  double cell_x_world = grid_around_HRP2.GRID_SET->realx + (x * grid_around_HRP2.GRID_SET->pace);
 		  double cell_y_world = grid_around_HRP2.GRID_SET->realy + (y * grid_around_HRP2.GRID_SET->pace);
-		  double cell_z_world = grid_around_HRP2.GRID_SET->realz + (z * grid_around_HRP2.GRID_SET->pace);
-     
+		  ////double cell_z_world = grid_around_HRP2.GRID_SET->realz + (z * grid_around_HRP2.GRID_SET->pace);
+                  double cell_z_world=grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_map_cell_obj_info.exact_z_val;
     
 		  if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human_straight_head_orientation==1)
 		    {
@@ -14946,6 +14948,8 @@ int MM_is_object_visible(HRI_AGENT *agent, p3d_rob *object)
 	    }	
 	}
     }
+
+return 0;
 }
 
 int MM_is_object_reachable(HRI_AGENT *agent, p3d_rob *object)
@@ -15184,6 +15188,8 @@ int get_horizontal_triangles(std::list<gpTriangle> &htris)
 				{
 				  grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.is_horizontal_surface=1;
 				  grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.horizontal_surface_of=k;//horizontal surface belongs to this robot index
+                                  grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.is_horizontal_surface=1;
+				  grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.exact_z_val=trisamples[i][2];
 				  ////g3d_drawDisc(trisamples[i][0], trisamples[i][1], trisamples[i][2]+0.01, 0.02, 4, NULL);
 				  ////tmp_ctr++;
 				} 
@@ -15203,8 +15209,8 @@ int get_horizontal_triangles(std::list<gpTriangle> &htris)
 	    }
 	}
     }
-  printf(" tmp_ctr=%d\n",tmp_ctr);
-  ChronoPrint(" Time for finding triangles");
+  //printf(" tmp_ctr=%d\n",tmp_ctr);
+  //ChronoPrint(" Time for finding triangles");
   return 0;
 }
 
@@ -15297,6 +15303,7 @@ int update_horizontal_triangles(std::list<gpTriangle> &htris)
 				    {
 				      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.is_horizontal_surface=0;
 				      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.horizontal_surface_of=-1;//horizontal surface belongs to this robot index
+                                      
 				      ////g3d_drawDisc(trisamples[i][0], trisamples[i][1], trisamples[i][2]+0.01, 0.02, 4, NULL);
 				      ////tmp_ctr++;
 				    } 
@@ -15364,6 +15371,8 @@ int update_horizontal_triangles(std::list<gpTriangle> &htris)
 				    {
 				      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.is_horizontal_surface=1;
 				      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.horizontal_surface_of=k;//horizontal surface belongs to this robot index
+                                      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.is_horizontal_surface=1;
+				  grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_map_cell_obj_info.exact_z_val=trisamples[i][2];
 				      ////g3d_drawDisc(trisamples[i][0], trisamples[i][1], trisamples[i][2]+0.01, 0.02, 4, NULL);
 				      ////tmp_ctr++;
 				    } 
@@ -15385,8 +15394,8 @@ int update_horizontal_triangles(std::list<gpTriangle> &htris)
  
 	}
     }
-  printf(" tmp_ctr=%d\n",tmp_ctr);
-  ChronoPrint(" Time for finding triangles");
+  ///printf(" tmp_ctr=%d\n",tmp_ctr);
+  //ChronoPrint(" Time for finding triangles");
   return 0;
 }
 

@@ -260,6 +260,7 @@ int is_horizontal_surface;
 int near_horizontal_surface;
 int surface_id;
 int horizontal_surface_of;
+double exact_z_val;
 
 //For belonging to the first non visible cell of different type for human
 int first_non_visible_by_human_straight_head_orientation;
