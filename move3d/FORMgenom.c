@@ -1006,8 +1006,8 @@ static void CB_genomPickUp_takeObjectToXYZ(FL_OBJECT *obj, long arg) {
     objStart.push_back(P3D_HUGE);
     objStart.push_back(P3D_HUGE);
     objGoto.push_back(4.4);
-    objGoto.push_back(-2.4931226131619717);
-    objGoto.push_back(1.123060646334923);
+    objGoto.push_back(-2.3931226131619717);
+    objGoto.push_back(1.023060646334923);
     objGoto.push_back(0.0);
     objGoto.push_back(0.0);
     objGoto.push_back(0.0);

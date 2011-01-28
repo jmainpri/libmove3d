@@ -32,6 +32,20 @@ std::vector< middleOfCVS > getCVS()
   return m_vectOfCVS;
 }
 
+void p3d_addConfigToArrayToDraw(p3d_rob* r, configPt q) {
+  TRAJPTP_CONFIG[NB_TRAJPTP_CONFIG] = p3d_copy_config (r, q);
+  NB_TRAJPTP_CONFIG++;
+  return;
+}
+
+void p3d_clearConfigArrayToDraw(p3d_rob* r) {
+ for(int i=0; i<NB_TRAJPTP_CONFIG; i++) {
+   p3d_destroy_config(r, TRAJPTP_CONFIG[i]);
+ }
+ NB_TRAJPTP_CONFIG = 0;
+ return;
+}
+
 //! prints the vector of paramteters
 //! of middle the Constant Velocity Segments
 void print_MiddleOfCVS(void)
@@ -95,7 +109,14 @@ draw_trajectory_ptp () {
   if (TRAJPTP_CONFIG[0] == NULL || NB_TRAJPTP_CONFIG <= 0) {
     return;
   }
-  p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid (P3D_ROBOT);;
+  p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid (P3D_ROBOT);
+  
+   if(strcmp(robot->name, "JIDOKUKA_ROBOT")) {
+   return;
+   }
+
+
+  
   p3d_jnt *armJoint = NULL;
   armJoint = p3d_get_robot_jnt_by_name (robot, (char *) "virtual_object");
 
@@ -139,6 +160,26 @@ p3d_multilocalpath_switch_to_linear_groups (p3d_rob * robotPt) {
   return 0;
 }
 
+void p3d_copy_localpath_constraints_into(p3d_localpath * lpIn,  p3d_localpath *lpOut) {
+      if(lpIn==NULL || lpOut==NULL) {
+       return;
+      }
+      
+      if (lpOut->activeCntrts != NULL) {
+        MY_FREE (lpOut->activeCntrts, int, lpOut->nbActiveCntrts);
+      }
+      lpOut->nbActiveCntrts = lpIn->nbActiveCntrts;
+      lpOut->activeCntrts = MY_ALLOC (int, lpOut->nbActiveCntrts);
+      for (int v = 0; v < lpIn->nbActiveCntrts; v++) {
+        lpOut->activeCntrts[v] = lpIn->activeCntrts[v];
+      }
+#if defined(LIGHT_PLANNER)
+	lpOut->isCarryingObject = lpIn->isCarryingObject;
+	lpOut->carriedObject = lpIn->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
+#endif
+      
+      return;
+}
 
 int
 p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
@@ -217,6 +258,8 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
                                             localpath1Pt->specific.
                                             softMotion_data->specific->
                                             motion[0].TimeCumul[3]);
+					    
+  p3d_copy_localpath_constraints_into(localpathMlp1Pt, trajSmPt->courbePt);
   end_trajSmPt = trajSmPt->courbePt;
   
   timeLength = end_trajSmPt->length_lp;
@@ -245,7 +288,10 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
 						specific.
 						softMotion_data->
 						specific->motionTime);
-      
+
+       p3d_copy_localpath_constraints_into(localpathMlp1Pt, localpathTmp1Pt);
+
+
       end_trajSmPt = append_to_localpath (end_trajSmPt, localpathTmp1Pt);
       
       /* Save the instant at the middle of the tvc segment */
@@ -255,8 +301,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
 
 
     } else {
-      localpathTmp1Pt =
-        p3d_extract_softMotion_with_velocities (robotPt, localpath1Pt,
+      localpathTmp1Pt = p3d_extract_softMotion_with_velocities (robotPt, localpath1Pt,
                                                 (double) localpath1Pt->
                                                 specific.softMotion_data->
                                                 specific->motion[0].
@@ -265,6 +310,8 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
                                                 specific.softMotion_data->
                                                 specific->motion[0].
                                                 TimeCumul[4]);
+
+      p3d_copy_localpath_constraints_into(localpathMlp1Pt, localpathTmp1Pt);
 
       softMotion_data_copy_into (robotPt,
                                  localpathTmp1Pt->specific.
@@ -282,6 +329,8 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
                                                 specific.softMotion_data->
                                                 specific->motion[0].
                                                 TimeCumul[4]);
+
+      p3d_copy_localpath_constraints_into(localpathMlp2Pt, localpathTmp2Pt);
 
       softMotion_data_copy_into (robotPt,
                                  localpathTmp2Pt->specific.
@@ -341,8 +390,10 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
 
 
       if (localpathTransPt != NULL) {
+        p3d_copy_localpath_constraints_into(localpathMlp1Pt, localpathTransPt);
         collision = p3d_unvalid_localpath_test (robotPt, localpathTransPt, ntest);
       }
+      
       if (localpathTransPt == NULL || collision == TRUE) {
 
         printf("localpathTransPt : stop motion localpath = %p , collision = %d\n", localpathTransPt, collision);
@@ -362,6 +413,9 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
                                                   specific.
                                                   softMotion_data->
                                                   specific->motionTime);
+
+         p3d_copy_localpath_constraints_into(localpathMlp1Pt, localpathTmp1Pt);
+	 
         localpathTmp2Pt = p3d_extract_softMotion_with_velocities (robotPt, localpath2Pt,
                                                   0.0,
                                                   (double)
@@ -370,6 +424,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
                                                   softMotion_data->
                                                   specific->motion[0].
                                                   TimeCumul[3]);
+         p3d_copy_localpath_constraints_into(localpathMlp2Pt, localpathTmp2Pt);
 
         end_trajSmPt = append_to_localpath (end_trajSmPt, localpathTmp1Pt);
         nlp++;
@@ -386,22 +441,6 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
 
         collision = FALSE;
       } else {
-        if (localpathTransPt->activeCntrts != NULL) {
-          MY_FREE (localpathTransPt->activeCntrts, int,
-                   localpathTransPt->nbActiveCntrts);
-        }
-        localpathTransPt->nbActiveCntrts = localpath1Pt->nbActiveCntrts;
-        localpathTransPt->activeCntrts =
-          MY_ALLOC (int, localpathTransPt->nbActiveCntrts);
-        for (int v = 0; v < localpath1Pt->nbActiveCntrts; v++) {
-          localpathTransPt->activeCntrts[v] =
-            localpath1Pt->activeCntrts[v];
-          localpathTransPt->activeCntrts[v] =
-            localpath1Pt->activeCntrts[v];
-          //                                        if (localpathMlp1Pt->nbActiveCntrts > localpath1Pt->nbActiveCntrts) {
-          //                                                printf("Error");
-          //                                        }
-        }
         /* Transition motion is OK */
         end_trajSmPt =
           append_to_localpath (end_trajSmPt, localpathTmp1Pt);
@@ -468,6 +507,7 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
     }
   }
 
+  p3d_clearConfigArrayToDraw(robotPt);
   ///////////////////////////////////////////////////////////////////////////
   ////  CONVERT LINEAR TRAJECTORY TO SOFTMOTION POINT TO POINT TRAJECTORY ///
   ///////////////////////////////////////////////////////////////////////////
@@ -479,48 +519,16 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
   q_end = localpathMlp1Pt->config_at_param (robotPt, localpathMlp1Pt, localpathMlp1Pt->length_lp);
   p3d_set_and_update_this_robot_conf_multisol(robotPt, q_end, NULL, 0, localpathMlp1Pt->ikSol);
   p3d_get_robot_config_into(robotPt, &q_end);
-//         printf("**********************************************\n");
-//       jntPt = robotPt->joints[34];
-//       int k = jntPt->index_dof;
-//       printf("Linear\n");
-//       printf("q_init: ");
-//       printf("%f %f %f  %f %f %f \n",q_init[k],q_init[k+1],q_init[k+2],q_init[k+3],q_init[k+4],q_init[k+5]);
-//       printf("q_end: ");
-//       printf("%f %f %f  %f %f %f \n",q_end[k],q_end[k+1],q_end[k+2],q_end[k+3],q_end[k+4],q_end[k+5]);
 
   p3d_multilocalpath_switch_to_softMotion_groups (robotPt);
   trajSmPTPPt->courbePt = p3d_local_planner_multisol (robotPt, q_init, q_end, localpathMlp1Pt->ikSol);
 
-  if (trajSmPTPPt->courbePt->activeCntrts != NULL) {
-    MY_FREE (trajSmPTPPt->courbePt->activeCntrts, int, trajSmPTPPt->courbePt->nbActiveCntrts);
-  }
-  trajSmPTPPt->courbePt->nbActiveCntrts = localpathMlp1Pt->nbActiveCntrts;
-  trajSmPTPPt->courbePt->activeCntrts = MY_ALLOC (int, trajSmPTPPt->courbePt->nbActiveCntrts);
-  for (int v = 0; v < localpathMlp1Pt->nbActiveCntrts; v++) {
-    trajSmPTPPt->courbePt->activeCntrts[v] = localpathMlp1Pt->activeCntrts[v];
-  }
-
-// Check if init and end are OK after the softMotion convertion
-//       p3d_destroy_config (robotPt, q_init);
-//       p3d_destroy_config (robotPt, q_end);
-//       q_init = trajSmPTPPt->courbePt->config_at_param (robotPt, trajSmPTPPt->courbePt, 0.0);
-//       p3d_set_and_update_this_robot_conf_multisol(robotPt, q_init, NULL, 0, trajSmPTPPt->courbePt->ikSol);
-//       p3d_get_robot_config_into(robotPt, &q_init);
-// 
-//       q_end = trajSmPTPPt->courbePt->config_at_param (robotPt, trajSmPTPPt->courbePt, trajSmPTPPt->courbePt->length_lp);
-//       p3d_set_and_update_this_robot_conf_multisol(robotPt, q_end, NULL, 0, trajSmPTPPt->courbePt->ikSol);
-//       p3d_get_robot_config_into(robotPt, &q_end);
-//       printf("SoftMotion\n");
-//       printf("q_init: ");
-//       printf("%f %f %f  %f %f %f \n",q_init[k],q_init[k+1],q_init[k+2],q_init[k+3],q_init[k+4],q_init[k+5]);
-//       printf("q_end: ");
-//       printf("%f %f %f  %f %f %f \n",q_end[k],q_end[k+1],q_end[k+2],q_end[k+3],q_end[k+4],q_end[k+5]);
+  p3d_copy_localpath_constraints_into(localpathMlp1Pt, trajSmPTPPt->courbePt);
 
   end_trajSmPt = trajSmPTPPt->courbePt;
-  TRAJPTP_CONFIG[NB_TRAJPTP_CONFIG] = p3d_copy_config (robotPt, q_init);
-  NB_TRAJPTP_CONFIG++;
-  TRAJPTP_CONFIG[NB_TRAJPTP_CONFIG] = p3d_copy_config (robotPt, q_end);
-  NB_TRAJPTP_CONFIG++;
+  p3d_addConfigToArrayToDraw(robotPt, q_init);
+  p3d_addConfigToArrayToDraw(robotPt, q_end);
+
   p3d_destroy_config (robotPt, q_init);
   p3d_destroy_config (robotPt, q_end);
   
@@ -542,48 +550,16 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
       q_end = localpathMlp1Pt->config_at_param (robotPt, localpathMlp1Pt, localpathMlp1Pt->length_lp);
       p3d_set_and_update_this_robot_conf_multisol(robotPt, q_end, NULL, 0, localpathMlp1Pt->ikSol);
       p3d_get_robot_config_into(robotPt, &q_end);
-//       printf("**********************************************\n");
-//       jntPt = robotPt->joints[34];
-//       int k = jntPt->index_dof;
-//            printf("Linear\n");
-//       printf("q_init: ");
-//       printf("%f %f %f  %f %f %f \n",q_init[k],q_init[k+1],q_init[k+2],q_init[k+3],q_init[k+4],q_init[k+5]);
-//       printf("q_end: ");
-//       printf("%f %f %f  %f %f %f \n",q_end[k],q_end[k+1],q_end[k+2],q_end[k+3],q_end[k+4],q_end[k+5]);
-
 
       p3d_multilocalpath_switch_to_softMotion_groups (robotPt);
       localpathTmp1Pt = p3d_local_planner_multisol (robotPt, q_init, q_end, localpathMlp1Pt->ikSol);
+      
+      p3d_copy_localpath_constraints_into(localpathMlp1Pt, localpathTmp1Pt);
+      p3d_addConfigToArrayToDraw(robotPt, q_end);
 
-      if (localpathTmp1Pt->activeCntrts != NULL) {
-        MY_FREE (localpathTmp1Pt->activeCntrts, int, localpathTmp1Pt->nbActiveCntrts);
-      }
-      localpathTmp1Pt->nbActiveCntrts = localpathMlp1Pt->nbActiveCntrts;
-      localpathTmp1Pt->activeCntrts = MY_ALLOC (int, localpathTmp1Pt->nbActiveCntrts);
-      for (int v = 0; v < localpathMlp1Pt->nbActiveCntrts; v++) {
-        localpathTmp1Pt->activeCntrts[v] = localpathMlp1Pt->activeCntrts[v];
-      }
-
-//       p3d_destroy_config (robotPt, q_init);
-//       p3d_destroy_config (robotPt, q_end);
-//       q_init = localpathTmp1Pt->config_at_param (robotPt, localpathTmp1Pt, 0.0);
-//       p3d_set_and_update_this_robot_conf_multisol(robotPt, q_init, NULL, 0, localpathTmp1Pt->ikSol);
-//       p3d_get_robot_config_into(robotPt, &q_init);
-// 
-//       q_end = localpathTmp1Pt->config_at_param (robotPt, localpathTmp1Pt,  localpathTmp1Pt->length_lp);
-//       p3d_set_and_update_this_robot_conf_multisol(robotPt, q_end, NULL, 0, localpathTmp1Pt->ikSol);
-//       p3d_get_robot_config_into(robotPt, &q_end);
-//       printf("SoftMotion\n");
-//       printf("q_init: ");
-//       printf("%f %f %f  %f %f %f \n",q_init[k],q_init[k+1],q_init[k+2],q_init[k+3],q_init[k+4],q_init[k+5]);
-//       printf("q_end: ");
-//       printf("%f %f %f  %f %f %f \n",q_end[k],q_end[k+1],q_end[k+2],q_end[k+3],q_end[k+4],q_end[k+5]);
-
-      TRAJPTP_CONFIG[NB_TRAJPTP_CONFIG] = p3d_copy_config (robotPt, q_end);
       p3d_destroy_config (robotPt, q_init);
       p3d_destroy_config (robotPt, q_end);
-      NB_TRAJPTP_CONFIG++;
-      
+
       end_trajSmPt = append_to_localpath (end_trajSmPt, localpathTmp1Pt);
       
       p3d_computeMiddleOfCVSParam(localpathTmp1Pt->mlpLocalpath[IGRAPH_OUTPUT], 

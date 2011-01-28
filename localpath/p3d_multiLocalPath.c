@@ -656,6 +656,9 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
 				localpathPt[i]->isCarryingObject = robotPt->isCarryingObject;
 				localpathPt[i]->carriedObject = robotPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
 				//				p3d_mat4Copy(robotPt->Tgrasp, localpathPt[i]->Tgrasp);
+
+				localpathPt[i]->activeCntrts = p3d_getActiveCntrts(robotPt,&(localpathPt[i]->nbActiveCntrts));
+				
 				#endif
 			}
 
@@ -676,7 +679,7 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
   localpathMg = p3d_alloc_multiLocalPath_localpath(robotPt, localpathPt, 0, TRUE);
   int * ikSolSub = NULL;
   p3d_copy_iksol(robotPt->cntrt_manager, ikSol, &ikSolSub);
-	localpathMg->q_init = p3d_copy_config(robotPt, qi);
+  localpathMg->q_init = p3d_copy_config(robotPt, qi);
   localpathMg->ikSol = ikSolSub;
   localpathMg->activeCntrts = p3d_getActiveCntrts(robotPt,&(localpathMg->nbActiveCntrts));
 
