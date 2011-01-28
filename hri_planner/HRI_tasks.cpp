@@ -62,6 +62,7 @@ static ManipulationPlanner *manipulation= NULL;
 //TODO : Put in HRI_Proto.h
 int get_placements_in_3D(p3d_rob *object,  std::list<gpPlacement> &placementListOut);
 int get_ranking_based_on_view_point(p3d_matrix4 view_frame,point_co_ordi point,p3d_rob *object, p3d_rob *human, std::list<gpPlacement> &placementList);
+int get_placements_at_position(p3d_rob *object, point_co_ordi point, std::list<gpPlacement> placementList, int no_rot, std::list<gpPlacement> &placementListOut);
 
 void fct_draw_loop();
 
@@ -963,9 +964,9 @@ std::list<gpPlacement> curr_placementListOut;
 //                   rename("softMotion_Smoothed_Q.traj", "softMotion_Smoothed_Q_place.traj");
 //                   rename("softMotion_Smoothed_Seg.traj", "softMotion_Smoothed_Seg_place.traj");
 //               }
-          manipulation->robot()->isCarryingObject = true;
-           manipulation->robot()->carriedObject = object;
-           (*manipulation->robot()->armManipulationData)[0].setCarriedObject(object);
+//           manipulation->robot()->isCarryingObject = true;
+//            manipulation->robot()->carriedObject = object;
+//            (*manipulation->robot()->armManipulationData)[0].setCarriedObject(object);
            break;
         }
      
@@ -1006,6 +1007,7 @@ int JIDO_make_obj_accessible_to_human ( char *obj_to_manipulate )
  reverse_sort_weighted_candidate_points_to_put_obj();
 
  printf ( " <<<<<< candidate_points_to_put.no_points = %d >>>>>>>>\n", candidate_points_to_put.no_points );
+ return 0;
  if ( candidate_points_to_put.no_points<=0 )
  {
 	printf ( " AKP ERROR : No Candidate points\n" );
@@ -1061,15 +1063,17 @@ p3d_get_robot_config_into(envPt_MM->robot[obj_index],&obj_tmp_pos);
   p3d_get_freeflyer_pose2(object, &x, &y, &z, &rx, &ry, &rz);
 
 //    ////gpReduce_grasp_list_size ( graspList, graspList, 30 );
-    std::list<gpGrasp> graspList2;
-    graspList2= graspList;
-    gpGrasp_handover_filter(p3d_get_robot_by_name ( "SAHandRight" ), p3d_get_robot_by_name ( "SAHandRight2" ), object, graspList, graspList2);
-    printf(" After gpGrasp_handover_filter()\n");
-    printf(" graspList.size()=%d,graspList2.size()=%d\n",graspList.size(),graspList2.size());
+//    std::list<gpGrasp> graspList2;
+//    graspList2= graspList;
+//    gpGrasp_handover_filter(p3d_get_robot_by_name ( "SAHandRight" ), p3d_get_robot_by_name ( "SAHandRight2" ), object, graspList, graspList2);
+//    printf(" After gpGrasp_handover_filter()\n");
+//    printf(" graspList.size()=%d,graspList2.size()=%d\n",graspList.size(),graspList2.size());
    ////return 0;
 //   status= manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), (char*)obj_to_manipulate, (char*)"", confs, smTrajs);
 std::list<gpPlacement> curr_placementListOut;
-  get_placements_in_3D(object,  curr_placementListOut);
+std::list<gpPlacement> stable_placements_list;
+  ////////get_placements_in_3D(object,  curr_placementListOut);
+  gpCompute_stable_placements (object, stable_placements_list );
 
   for(std::list<gpGrasp>::iterator iter=graspList.begin(); iter!=graspList.end(); ++iter)
   {
@@ -1091,11 +1095,12 @@ std::list<gpPlacement> curr_placementListOut;
 
     qcur= p3d_get_robot_config(manipulation->robot());
     p3d_copy_config_into(manipulation->robot(), manipulation->robot()->ROBOT_GOTO, &qcur);
-
+    printf(" >>>>>>> Status of manipulation->armPlanTask(ARM_PICK_GOTO) = %d\n",status);
     if(status==MANIPULATION_TASK_OK)
     { //grasp= manipulation->getCurrentGrasp();
     // grasp= *( manipulation->getManipulationData().getGrasp() );
      //return 0;
+     
      remove("softMotion_Smoothed_Q_goto.traj");
      remove("softMotion_Smoothed_Seg_goto.traj");
      rename("softMotion_Smoothed_Q.traj", "softMotion_Smoothed_Q_goto.traj");
@@ -1138,7 +1143,10 @@ std::list<gpPlacement> curr_placementListOut;
 	obj_tmp_pos[7]=point_to_put.y;
 	obj_tmp_pos[8]=point_to_put.z;
 
-        get_ranking_based_on_view_point(primary_human_MM->perspective->camjoint->abs_pos,goal_pos, object, envPt_MM->robot[rob_indx.HUMAN], curr_placementListOut);
+        get_placements_at_position(  object, goal_pos, stable_placements_list, 2, curr_placementListOut );
+        printf("stable_placements_list.size()=%d, curr_placementListOut.size = %d \n", stable_placements_list.size(), curr_placementListOut.size());
+        return 0;
+        ////get_ranking_based_on_view_point(primary_human_MM->perspective->camjoint->abs_pos,goal_pos, object, envPt_MM->robot[rob_indx.HUMAN], curr_placementListOut);
 
         for(std::list<gpPlacement>::iterator iter=curr_placementListOut.begin(); iter!=curr_placementListOut.end(); ++iter)
         {
@@ -1468,6 +1476,74 @@ p3d_get_robot_config_into(envPt_MM->robot[obj_index],&obj_tmp_pos);
  p3d_set_freeflyer_pose(object, T0);
  return result;
  
+}
+
+int get_placements_at_position(p3d_rob *object, point_co_ordi point, std::list<gpPlacement> placementList, int no_rot, std::list<gpPlacement> &placementListOut)
+{
+  int i, count;
+  p3d_vector3 zAxis={0.0,0.0,1.0};
+  p3d_matrix4 Tcur, T1, T2, Tplacement;
+  gpPlacement placement;
+  std::vector<double> thetas;
+  double verticalOffset= -0.01;
+
+  placementList.sort();
+  placementList.reverse();
+
+  placementListOut.clear();
+
+
+  p3d_get_freeflyer_pose(object, Tcur);
+
+  if(no_rot==0)
+  {
+    thetas.push_back(0);
+  }
+  else
+  {
+    for(i=0; i<no_rot; ++i)
+    {
+     thetas.push_back( i*2*M_PI/((double) no_rot) );
+    }
+    
+  }
+
+  count= 0;
+  for(std::list<gpPlacement>::iterator iterP=placementList.begin(); iterP!=placementList.end(); iterP++)
+  { 
+     if(count > 10)
+     { break; }
+     count++;
+
+
+     for(i=0; i<thetas.size(); ++i)
+     {
+        placement= (*iterP);
+        placement.theta= thetas[i];
+	placement.position[0]= point.x;
+	placement.position[1]= point.y;
+	placement.position[2]= point.z + verticalOffset;
+
+        placement.computePoseMatrix(Tplacement);
+
+        p3d_set_freeflyer_pose(object, Tplacement);
+	
+	if(p3d_col_test_robot(object, 0))
+	{ continue; }
+
+	placementListOut.push_back(placement);
+     }
+  }
+
+//   placementListOut.sort();
+//   placementListOut.reverse();
+
+  for(std::list<gpPlacement>::iterator iterP=placementListOut.begin(); iterP!=placementListOut.end(); iterP++)
+  { 
+    std::cout << "stability " << iterP->stability << std::endl;
+  }
+
+  return 0;
 }
 
 int get_placements_in_3D(p3d_rob *object,  std::list<gpPlacement> &placementListOut)
