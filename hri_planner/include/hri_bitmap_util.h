@@ -58,7 +58,14 @@ hri_bitmap_cell* hri_bt_nth_from_start(hri_bitmap_cell* path_start, hri_bitmap_c
 
 double getPathGridLength(hri_bitmap_cell* path_end);
 
+double normalizeAngleDeviation(double angle_deviation);
+
 double getAngleDeviation(double angle1, double angle2);
+
+void distanceFromLine(double cx, double cy, double ax, double ay ,
+                                          double bx, double by,
+                                          double * distanceSegment, double * distanceLine,
+                                          double * proPointx, double * proPointy);
 
 double getRotationBoundingCircleRadius(p3d_rob *robot);
 

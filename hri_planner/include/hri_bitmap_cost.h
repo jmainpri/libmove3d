@@ -20,6 +20,7 @@ double getPathCost(hri_bitmapset* btset, hri_bitmap* oldpath_bitmap, hri_bitmap_
 double hri_bt_A_CalculateCellG(hri_bitmapset * btset, hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell, double step_distance);
 double hri_bt_dist_heuristic(hri_bitmapset * btset, hri_bitmap* bitmap, int x_s, int y_s, int z_s);
 int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_bitmap_cell* cell, hri_bitmap_cell* fromcell );
+int getClosestPoseOnProjection(hri_bitmapset * btset, hri_human* cur_human, double realx, double realy, double projectionTime, double * projectionx, double  * projectiony, double  * projectionth);
 double hri_bt_calc_hz_value_human ( hri_bitmapset * btset, hri_human* cur_human, int x, int y );
 double hri_bt_calc_dist_value_human ( hri_bitmapset * btset, hri_human* cur_human, int x, int y, int z );
 double hri_bt_calc_vis_value_human ( hri_bitmapset * btset, hri_human* cur_human, int x, int y, int z );
