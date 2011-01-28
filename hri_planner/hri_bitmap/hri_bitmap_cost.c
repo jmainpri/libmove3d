@@ -586,8 +586,8 @@ static double fow_deviation(double xh, double yh, double xt, double yt, double o
   // difference is a number between -2pi and 2 pi
   // result is a number between -pi and pi.
 
- return getAngleDeviation(angle2human, orient);
-  }
+  return getAngleDeviation(angle2human, orient);
+}
 
 /****************************************************************/
 /*!
@@ -732,6 +732,100 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int rob_grid_x, int rob_grid_
   return res;
 }
 
+
+
+/**
+ * projects the human path into the future for projectionTime, and then calculates the X, Y, TH pose on that path in minimum distance to the x,y coordinates
+ *
+ */
+int getClosestPoseOnProjection(hri_bitmapset * btset, hri_human* cur_human,
+    double x, double y,
+    double projectionTime,
+    double * projectionx, double * projectiony, double * projectionth) {
+
+    // As a first step linear motion projection with tolerance over time will be used, maybe hire a new PhD to do the fancy stuff.
+
+   // theta does not change in linear projection
+   *projectionth =  cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[5].v;
+
+   double humanx = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
+   double humany = cur_human->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
+
+   // assume vlocity of 1 m/s for now TODO parametrize and such
+   double humanVelocity = 1; // m/s
+
+   if (humanVelocity == 0) {
+     // following calculations only work for moving humans
+     return -1;
+   }
+   double distanceToSpot = humanVelocity * projectionTime; // m
+
+   // trigonometric solution for travelled x and y
+   double dx = cos(*projectionth) * distanceToSpot;
+   double dy = sin(*projectionth) * distanceToSpot;
+
+   double distanceLine;
+   double distanceLineSegment;
+
+   // projection onto line
+   double px, py;
+
+   // now all we need is the closest point on |(humanx, humany)(dx, dy)| to point (x, y)
+   distanceFromLine(x, y, humanx, humany,
+                                             dx, dy,
+                                             &distanceLineSegment,
+                                             &distanceLine,
+                                             &px, &py);
+
+   if ((distanceLine < distanceLineSegment) &&
+      (DISTANCE2D(px, py, humanx, humany) < DISTANCE2D(px, py, dx, dy)) ) {
+       // behind human, won't get closer
+       *projectionx = humanx;
+       *projectiony = humany;
+   } else {
+     // we now have the projection onto the line (humx, humy) -> (dx, dy), meaning the most likely position of linear path projection
+     // Now we need to deal with growing uncertainty. For now, represent this as angles to the left and right of most likely path.
+     // TODO: Uncertainty increases polynomially over time?
+     // 0.75 = ~45 degrees
+     double toleranceAngle = 0.2; // TODO: depends on velocity
+
+     double distanceProjectionBounds = DISTANCE2D(px, py, humanx, humany) / cos (toleranceAngle);
+
+     // two candidate points on either side of most likely path
+     double projectionBoundx1 = cos(*projectionth - toleranceAngle) * distanceProjectionBounds;
+     double projectionBoundy1 = sin(*projectionth - toleranceAngle) * distanceProjectionBounds;
+
+     double projectionBoundx2 = cos(*projectionth + toleranceAngle) * distanceProjectionBounds;
+     double projectionBoundy2 = sin(*projectionth  + toleranceAngle) * distanceProjectionBounds;
+
+     // robot can be within the path or outside, if within, the robot position itself is the closest projection
+     if (DISTANCE2D(x,y, projectionBoundx1, projectionBoundy1) < DISTANCE2D(x,y, projectionBoundx2, projectionBoundy2)) {
+       if ( DISTANCE2D(x,y, projectionBoundx2, projectionBoundy2) < DISTANCE2D(projectionBoundx1, projectionBoundy1, projectionBoundx2, projectionBoundy2) ){
+         // robot is within uncertainty region, therefore it is where it should not be
+         *projectionx = x;
+         *projectiony = y;
+         // leave projectionth as is
+       } else {
+         *projectionx = projectionBoundx1;
+         *projectiony = projectionBoundy1;
+         *projectionth = *projectionth - toleranceAngle;
+       }
+     } else {
+       if ( DISTANCE2D(x,y, projectionBoundx1, projectionBoundy1) < DISTANCE2D(projectionBoundx1, projectionBoundy1, projectionBoundx2, projectionBoundy2) ){
+         // robot is within uncertainty region, therefore it is where it should not be
+         *projectionx = x;
+         *projectiony = y;
+         // leave projectionth as is
+       } else {
+         *projectionx = projectionBoundx2;
+         *projectiony = projectionBoundy2;
+         *projectionth = *projectionth + toleranceAngle;
+       }
+     }
+   }
+
+    return 0;
+}
 
 /**
  * calculates directional path cost.
