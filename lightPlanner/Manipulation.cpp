@@ -746,8 +746,8 @@ int Manipulation::findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectP
   gpDeactivate_hand_selfcollisions(_robot, 2);
   list<gpGrasp> graspList;
 //   gpGet_grasp_list_SAHand(GP_OBJECT_NAME_DEFAULT, armId + 1, graspList);
-  if(armId==0) gpGet_grasp_list(GP_OBJECT_NAME_DEFAULT, GP_SAHAND_RIGHT, graspList);
-  else  gpGet_grasp_list(GP_OBJECT_NAME_DEFAULT, GP_SAHAND_LEFT, graspList);
+  /*if(armId==0)*/ gpGet_grasp_list(GP_OBJECT_NAME_DEFAULT,  handProp[armId].type, graspList);
+//   else  gpGet_grasp_list(GP_OBJECT_NAME_DEFAULT, GP_SAHAND_LEFT, graspList);
 
   std::map<int, ManipulationData*, std::less<int> > configMap; // vecteur de configuration du robot le map classe automatique en fonction du cout de JP <int>
   
@@ -755,6 +755,14 @@ int Manipulation::findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectP
   for(list<gpGrasp>::iterator iter = graspList.begin(); iter != graspList.end(); iter++){
     ManipulationData* data = new ManipulationData(_robot);
     configPt graspConfig = data->getGraspConfig(), approachConfig = data->getApproachFreeConfig(); // recupere les pointeurs
+    if(!graspConfig){
+      graspConfig = p3d_alloc_config(_robot);
+      data->setGraspConfig(graspConfig);
+    }
+    if(!approachConfig){
+      approachConfig = p3d_alloc_config(_robot);
+      data->setApproachFreeConfig(approachConfig);
+    }
     p3d_matrix4 tAtt;
     //( *iter) le grasp de jp courant du for
     double configCost = getCollisionFreeGraspAndApproach(objectPos, handProp[armId], (*iter), armId + 1, tAtt, &graspConfig, &approachConfig);
@@ -770,6 +778,10 @@ int Manipulation::findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectP
 //      }while (p3d_set_and_update_this_robot_conf_without_cntrt(_robot, tmpConf) && !p3d_col_test());
       data->setAttachFrame(tAtt);
       configPt openConfig = data->getOpenConfig();
+      if(!openConfig){
+        openConfig = p3d_alloc_config(_robot);
+        data->setOpenConfig(openConfig);
+      }
       p3d_copy_config_into(_robot, graspConfig, &openConfig);
       gpSet_grasp_open_configuration(_robot, (*iter), openConfig, armId + 1);
       (*iter).IKscore = 1 - configCost;
@@ -795,6 +807,10 @@ double Manipulation::getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpH
   configPt q = NULL;
   gpSet_grasp_configuration(_robot, grasp, whichArm);
   gpFix_hand_configuration(_robot, handProp, whichArm);
+//   p3d_rob* hand = p3d_get_robot_by_name("PR2_GRIPPER");
+//   p3d_rob* object = p3d_get_robot_by_name("Horse");
+//   gpSet_robot_hand_grasp_configuration(hand, object, grasp);
+//   g3d_draw_allwin_active();
   if(whichArm == 1){
     q = setTwoArmsRobotGraspPosWithoutBase(_robot, objectPos, tAtt, fictive, FALSE, whichArm - 1, true);
   }else if(whichArm == 2){
@@ -977,12 +993,12 @@ int Manipulation::getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, 
 vector<gpHand_properties> Manipulation::InitHandProp(int armId){
   vector<gpHand_properties> handProp;
   if(_robot->nbCcCntrts == 2){
-    gpHand_properties prop1;
-    prop1.initialize(GP_SAHAND_RIGHT);
-    handProp.push_back(prop1);
-    gpHand_properties prop2;
-    prop2.initialize(GP_SAHAND_LEFT);
-    handProp.push_back(prop2);
+//     gpHand_properties prop1 = (*_robot->armManipulationData)[0].getHandProperties();
+//     prop1.initialize(GP_SAHAND_RIGHT);
+    handProp.push_back((*_robot->armManipulationData)[0].getHandProperties());
+//     gpHand_properties prop2;
+//     prop2.initialize(GP_SAHAND_LEFT);
+    handProp.push_back((*_robot->armManipulationData)[1].getHandProperties());
     
     switch (armId){
       case -1:{

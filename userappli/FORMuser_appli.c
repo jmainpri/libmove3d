@@ -520,7 +520,11 @@ static void callbacks(FL_OBJECT *ob, long arg){
       configPt startConfig = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS), gotoConfig = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
       char graphFile[1024];
 //      sprintf(graphFile, "%s/video/regrasp19.graph", getenv("HOME_MOVE3D"));
-      
+      if(!manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConfig), p3d_copy_config(XYZ_ROBOT, gotoConfig), "",0)){
+        p3d_destroy_config(XYZ_ROBOT, startConfig);
+        p3d_destroy_config(XYZ_ROBOT, gotoConfig);
+        break;
+      }/*
       if(!manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConfig), p3d_copy_config(XYZ_ROBOT, gotoConfig), "",1)){
         p3d_destroy_config(XYZ_ROBOT, startConfig);
         p3d_destroy_config(XYZ_ROBOT, gotoConfig);
@@ -540,7 +544,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
         p3d_destroy_config(XYZ_ROBOT, startConfig);
         p3d_destroy_config(XYZ_ROBOT, gotoConfig);
         break;
-      }
+      }*/
       manip.printStatDatas();
       p3d_destroy_config(XYZ_ROBOT, startConfig);
       p3d_destroy_config(XYZ_ROBOT, gotoConfig);

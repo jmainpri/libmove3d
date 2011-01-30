@@ -69,32 +69,32 @@ int ikPr2ArmSolverUnique(double fixedAngle, double min[7], double max[7] , doubl
   th07.vp.y = posArray[1][3];
   th07.vp.z = posArray[2][3];
 
-  printf("pr2_mgi_q3_8\n");
+//   printf("pr2_mgi_q3_8\n");
   status = pr2_mgi_q3_8(&th07, &q, a1, r3, r5, &qMin, &qMax, epsilon, qsol, &nbsolution) ;
   
   switch(status)
   {
     case MGI_OK: 
-      printf("MGI_OK\n");
+//       printf("MGI_OK\n");
     	result= 0;
     break;
     case MGI_ERROR: 
-    	printf("MGI_ERROR\n");
+//     	printf("MGI_ERROR\n");
     	result= 1;
     break;
     case MGI_APPROXIMATE: 
-    	printf("MGI_APPROXIMATE\n");
+//     	printf("MGI_APPROXIMATE\n");
     	result= 2;
     break;
     case MGI_SINGULAR:
-    	printf("MGI_SINGULAR\n"); 
+//     	printf("MGI_SINGULAR\n"); 
     	result= 3;
     break;
   } 
   
   if (nbsolution == 0) 
   {
-   printf("MGI_ERROR = No solution\n");
+//    printf("MGI_ERROR = No solution\n");
    return 1;
   }
   
@@ -110,14 +110,14 @@ int ikPr2ArmSolverUnique(double fixedAngle, double min[7], double max[7] , doubl
   phiArray[5]= qsol[0].q6;
   phiArray[6]= qsol[0].q7;
   
-  cout << "------------------" << endl;
-  cout << "phiArray[0] = " << (180/M_PI)*phiArray[0] << endl;
-  cout << "phiArray[1] = " << (180/M_PI)*phiArray[1] << endl;
-  cout << "phiArray[2] = " << (180/M_PI)*phiArray[2] << endl;
-  cout << "phiArray[3] = " << (180/M_PI)*phiArray[3] << endl;
-  cout << "phiArray[4] = " << (180/M_PI)*phiArray[4] << endl;
-  cout << "phiArray[5] = " << (180/M_PI)*phiArray[5] << endl;
-  cout << "phiArray[6] = " << (180/M_PI)*phiArray[6] << endl;
+//   cout << "------------------" << endl;
+//   cout << "phiArray[0] = " << (180/M_PI)*phiArray[0] << endl;
+//   cout << "phiArray[1] = " << (180/M_PI)*phiArray[1] << endl;
+//   cout << "phiArray[2] = " << (180/M_PI)*phiArray[2] << endl;
+//   cout << "phiArray[3] = " << (180/M_PI)*phiArray[3] << endl;
+//   cout << "phiArray[4] = " << (180/M_PI)*phiArray[4] << endl;
+//   cout << "phiArray[5] = " << (180/M_PI)*phiArray[5] << endl;
+//   cout << "phiArray[6] = " << (180/M_PI)*phiArray[6] << endl;
 
   return result;
 }

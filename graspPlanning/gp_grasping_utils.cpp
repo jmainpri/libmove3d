@@ -2154,7 +2154,7 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
 }
 
 //! Sets the configuration of a robot hand from a grasp.
-//! \param robot pointer to the robot hand_type
+//! \param robot pointer to the robot hand
 //! \param object pointer to the object (freeflyer robot)
 //! \param grasp the grasp to set
 //! \return GP_OK in case of success, GP_ERROR otherwise

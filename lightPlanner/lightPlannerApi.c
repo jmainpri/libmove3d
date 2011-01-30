@@ -440,23 +440,6 @@ int getClosestWristToTheObject(p3d_rob* robot){
     return -2;
   }
   return getClosestWristToTheObject(robot, robot->curObjectJnt->abs_pos);
-//   int closestArmId = -1;
-//   double minDist = P3D_HUGE;
-//   for(int i = 0; i < robot->nbCcCntrts; i++){
-//     p3d_matrix4 wristPos;
-//     p3d_mat4Copy(robot->ccCntrts[i]->pasjnts[robot->ccCntrts[i]->npasjnts -1]->abs_pos, wristPos);
-// //     double dist = p3d_mat4Distance(wristPos, robot->curObjectJnt->abs_pos, 0, 1); //euclidian distance
-//     p3d_vector3 d;
-//     d[0]= wristPos[0][3] - robot->curObjectJnt->abs_pos[0][3];
-//     d[1]= wristPos[1][3] - robot->curObjectJnt->abs_pos[1][3];
-//     d[2]= wristPos[2][3] - robot->curObjectJnt->abs_pos[2][3];
-//     double dist = p3d_vectNorm(d);
-//     if(dist < minDist){
-//       minDist = dist;
-//       closestArmId = i;
-//     }
-//   }
-//   return closestArmId;
 }
 
 int getClosestWristToTheObject(p3d_rob* robot, p3d_rob* object){
