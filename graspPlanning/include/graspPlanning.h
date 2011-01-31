@@ -93,7 +93,8 @@ template<class T> std::string convertToString(const T& t)
 //! Symbolic name of the object to grasp:
 // #define GP_OBJECT_NAME "DuploObject"
 // #define GP_OBJECT_NAME_DEFAULT "DuploObject"
-#define GP_OBJECT_NAME_DEFAULT "Horse"
+// #define GP_OBJECT_NAME_DEFAULT "Horse"
+#define GP_OBJECT_NAME_DEFAULT "PaperDog"
 // #define GP_OBJECT_NAME_DEFAULT "Mug"
 
 //! Symbolic name of the robot (mobile base + arm + gripper/hand)

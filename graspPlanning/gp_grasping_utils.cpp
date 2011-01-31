@@ -1018,7 +1018,10 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
   std::stringstream out;
   p3d_obj *fingertip;
 
-  base_name = std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
+  if(handID<0)
+    base_name = std::string(GP_HAND_BODY_PREFIX) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
+  else
+    base_name = std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
 
   n= 0;
   for(i=1; i<=hand.nb_fingers; i++)
@@ -1084,7 +1087,11 @@ int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpH
   std::stringstream out;
   p3d_obj *fingertip;
 
-  base_name = std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
+
+  if(handID<0)
+    base_name = std::string(GP_HAND_BODY_PREFIX) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
+  else
+    base_name = std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".") + std::string(GP_FINGER_BODY_PREFIX);
 
   n= 0;
   for(i=1; i<=hand.nb_fingers; i++)
@@ -1141,8 +1148,10 @@ int gpDeactivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_prope
   std::string base_name, body_name;
   std::stringstream out;
 
-
-  base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID);
+  if(handID<0)
+    base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX);
+  else
+    base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID);
 
   std::string body1_name;
 
@@ -1193,7 +1202,10 @@ int gpActivate_object_collisions(p3d_rob *robot, p3d_obj *object, gpHand_propert
   std::string base_name, body_name;
   std::stringstream out;
 
-  base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID);
+  if(handID<0)
+    base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX);
+  else
+    base_name = std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID);
 
   std::string body1_name;
 

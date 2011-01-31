@@ -1104,7 +1104,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        qrest.resize(1);
        qopen.resize(1);
        qmin[0]= 0.0;
-       qmax[0]= 0.0325;
+       qmax[0]= max_opening_jnt_value;
        qrest[0]= qmax[0];
        qopen[0]= qmax[0];
 
@@ -1747,7 +1747,7 @@ int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object, bool environment
   }
   #endif
 
-  unsigned int i, j, k, nbSteps;
+  unsigned int i, j,k, nbSteps;
   int result, nbChanges, col_test;
   double qnew[4]; // SAHand finger joint parameters to set (the first one is only needed by the thumb)
   p3d_matrix4 objectFrame;
@@ -1773,8 +1773,59 @@ int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object, bool environment
 
   switch(this->hand_type)
   {
-    case GP_GRIPPER: case GP_PR2_GRIPPER:
+    case GP_GRIPPER:
       this->openConfig.at(0)= handProp.qopen.at(0);
+    break;
+    case GP_PR2_GRIPPER:
+      if(this->config.size() !=1 || this->openConfig.size() !=1)
+      {
+        printf("%s: %d: gpGrasp::computeOpenConfig(): config vector has a bad size.\n",__FILE__,__LINE__ );
+        break;
+      }
+      q.resize(1);
+      qstart.resize(1);
+      qstop.resize(1);
+      delta.resize(1);
+      qstart= this->config;
+      qstop= handProp.qopen;
+      for(i=0; i<delta.size(); ++i)
+      {   delta[i]= ( qstop[i] - qstart[i] ) / ( ( double ) ( nbSteps ) );      }
+
+      q= qstart;
+
+      result= gpSet_hand_configuration(robot, handProp, q, true, 0);
+
+      if(result==GP_ERROR)
+      { printf("initial cfg is invalid\n"); break;  }
+
+      for(j=1; j<=nbSteps; ++j)
+      {
+            q[0]+=  delta[0];
+            result= gpSet_hand_configuration(robot, handProp, q, true, 0);
+
+            if(result==GP_OK)
+            {
+              if(environment)
+              { col_test= p3d_col_test_robot(robot, 0);  }
+              else
+              { col_test= p3d_col_test_robot_other(robot, object, 0) + p3d_col_test_self_collision(robot, 0); }
+            }
+            
+            if( result==GP_ERROR || col_test )
+            {
+              if(result==GP_OK)
+              {
+                 q[0]= 0.5* ( qstart[0] + q[0] );
+              }
+              else
+              {
+                 q[0]-= delta[0];
+              }  
+              gpSet_hand_configuration(robot, handProp, q, true, 0);
+            }
+      }
+
+      this->openConfig= q;
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
       if(this->config.size() !=13 || this->openConfig.size() !=13)
@@ -2098,7 +2149,8 @@ int gpDoubleGrasp::computeBestObjectOrientation(p3d_matrix4 torsoPose, p3d_matri
   handProp2.initialize(grasp2.hand_type);
 
   if( ! ( (grasp1.hand_type==GP_SAHAND_RIGHT && grasp2.hand_type==GP_SAHAND_LEFT) ||
-        (grasp1.hand_type==GP_SAHAND_LEFT && grasp2.hand_type==GP_SAHAND_RIGHT) ) ) 
+        (grasp1.hand_type==GP_SAHAND_LEFT && grasp2.hand_type==GP_SAHAND_RIGHT) ||
+        (grasp1.hand_type==GP_PR2_GRIPPER && grasp2.hand_type==GP_PR2_GRIPPER) ) )
   {
     printf("%s: %d: gpDoubleGrasp::computeBestObjectOrientation(): the hand types should have been %s and %s.\n",__FILE__,__LINE__,gpHand_type_to_string(GP_SAHAND_RIGHT).c_str(),gpHand_type_to_string(GP_SAHAND_LEFT).c_str());
     return GP_ERROR;

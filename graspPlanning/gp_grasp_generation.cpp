@@ -2956,6 +2956,7 @@ int gpFind_grasp_and_pregrasp_from_base_configuration ( p3d_rob *robot, p3d_rob 
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, std::list<gpGrasp> &graspList)
 {
+  int i=0;
   float clock0, elapsedTime;
   gpHand_properties handProp;
   p3d_rob *hand_robot= NULL;
@@ -3020,7 +3021,7 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
 
   if(object==NULL)
   {
-    printf("%s: %d: gpGet_grasp_list_SAHand(): there is no robot (the object to grasp) named \"%s\".\n", __FILE__, __LINE__, object_to_grasp.c_str() );
+    printf("%s: %d: gpGet_grasp_list(): there is no robot (the object to grasp) named \"%s\".\n", __FILE__, __LINE__, object_to_grasp.c_str() );
     return GP_ERROR;
   }
 
@@ -3057,7 +3058,7 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
     printf("A new grasp list will be computed.\n" );
     if ( p3d_col_get_mode() !=p3d_col_mode_pqp )
     {
-      printf("%s: %d: gpGet_grasp_list_SAHand(): The collision detector must be PQP to use compute a grasp list with the graspPlanning module.\n",__FILE__,__LINE__ );
+      printf("%s: %d: gpGet_grasp_list(): The collision detector must be PQP to use compute a grasp list with the graspPlanning module.\n",__FILE__,__LINE__ );
       printf("The graspPlanning module will not work.\n" );
       return GP_ERROR;
     }
@@ -3104,13 +3105,16 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
   {
     if ( gpCheck_grasp_list_validity ( graspList, object_to_grasp ) ==GP_ERROR )
     {
-      printf("%s: %d: gpGet_grasp_list_SAHand(): file \"%s\" has been loaded successfully but its content does not look to be valid.\n", __FILE__, __LINE__,graspListFile.c_str() );
+      printf("%s: %d: gpGet_grasp_list(): file \"%s\" has been loaded successfully but its content does not look to be valid.\n", __FILE__, __LINE__,graspListFile.c_str() );
       printf("Recompute the grasp list.\n" );
     }
     else
     {
-      printf("%s: %d: gpGet_grasp_list_SAHand(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str() );
+      printf("%s: %d: gpGet_grasp_list(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str() );
       printf("It contains %d grasps.\n",graspList.size() );
+    }
+    for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
+      igrasp->computeOpenConfig(hand_robot, object, true);
     }
   }
 
@@ -3127,11 +3131,15 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
   if(graspList.empty())
   {  return GP_ERROR;   }
 
-  gpDeactivate_object_fingertips_collisions(hand_robot, object->o[0], handProp);
+  gpDeactivate_object_fingertips_collisions(hand_robot, object->o[0], handProp, -1);
 
   graspList.sort();
   graspList.reverse();
- 
+
+  i=0;
+  for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
+    igrasp->ID= i++;
+  }
 
   return GP_OK;
 }

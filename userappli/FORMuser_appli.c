@@ -6,6 +6,7 @@
 #include "P3d-pkg.h"
 #include "Util-pkg.h"
 #include "Move3d-pkg.h"
+#include <list>
 #ifdef LIGHT_PLANNER
   #include "../lightPlanner/proto/DlrPlanner.h"
   #include "../lightPlanner/proto/DlrParser.h"
@@ -398,121 +399,10 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 16 :{
-//       p3d_rob* object = p3d_get_robot_by_name("GREY_TAPE");
-//       gpHand_properties prop = (*XYZ_ROBOT->armManipulationData)[0].getHandProperties();
-//     gpDeactivate_object_collisions(XYZ_ROBOT, object->joints[1]->o, prop, 0);
-    setSafetyDistance(XYZ_ROBOT, 0.05);
-      
-//       double x, y, z, rx, ry, rz;
-//       p3d_rob* object = (p3d_rob*) p3d_get_robot_by_name((char*)"GREY_TAPE");
-//       p3d_get_freeflyer_pose2(object, &x, &y, &z, &rx, &ry, &rz);
-//       double zValue = p3d_random(-M_PI,M_PI);
-//       p3d_set_freeflyer_pose2(object, x, y, z, 0, 0, zValue);
-//       printf("Z value = %f\n", zValue*180/M_PI);
-//#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-//      configPt startConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
-//      configPt endConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
-//      for (int i = 0; i < 1; i++) {
-////        manip.computeOfflineRoadmap();
-//        char file[255];
-//        sprintf(file, "%s/video/graphs/simple/mg50x50_%d.graph", getenv("HOME_MOVE3D"), i);
-////        p3d_writeGraph(XYZ_ROBOT->mg, (char *)file, MGGRAPH);
-////        XYZ_ROBOT->preComputedGraphs[1] = NULL;
-//        manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), file);
-//        manip.clear();
-//      }
-//      manip.printStatDatas();
-//      manip.clear();
-//#else
-//      configPt config = p3d_alloc_config(XYZ_ROBOT), rootConfig = p3d_get_robot_config(XYZ_ROBOT);
-//      int singularity = -1, cntrt = -1;
-//      
-////      cntrt = p3d_isCloseToSingularityConfig(XYZ_ROBOT, XYZ_ROBOT->cntrt_manager, rootConfig , &singularity);
-////      if (cntrt != -1) {
-////        
-//        p3d_APInode_shoot_singularity(XYZ_ROBOT, &config, &singularity, &cntrt, rootConfig, XYZ_ROBOT->ikSol);
-//        g3d_draw_allwin_active();
-//        p3d_unmark_for_singularity(XYZ_ROBOT->cntrt_manager, cntrt);
-//        
-//        p3d_destroy_config(XYZ_ROBOT, config);
-//        p3d_destroy_config(XYZ_ROBOT, rootConfig);
-////      }
-//      
-//
-////      ENV.setBool(Env::UseDPGGrids, true);
-//
-//#endif
-      
-      
-//Test Multigraph      
-// #ifdef MULTI_GRAPH      
-//       int maxNodes = p3d_get_NB_NODES();
-//       int i =0;
-//         printf("##########  TEST N %d  ############\n", i+1);
-//  //       deleteAllGraphs();
-//  //       p3d_set_NB_NODES(maxNodes);
-//  //       p3d_set_multiGraph(1);
-//  //       CB_global_search_obj(NULL,0);
-//  //       p3d_globalSuperGraphLearn();
-//         p3d_set_NB_NODES(10000);
-//         p3d_set_multiGraph(0);
-//         p3d_specificSuperGraphLearn();
-//         setTotalCountVar(XYZ_GRAPH);
-//         mergeStat(XYZ_GRAPH->stat, XYZ_ENV->stat);
-//         printStatsGraph(XYZ_GRAPH->stat, 1);
-//       printStatsEnv(XYZ_ENV->stat, 1);
-// #endif
-//        p3d_APInode_shoot_singularity(XYZ_ROBOT, &config, &singularity, &cntrt, rootConfig, XYZ_ROBOT->ikSol);
-//        g3d_draw_allwin_active();
-//        p3d_unmark_for_singularity(XYZ_ROBOT->cntrt_manager, cntrt);
-//        
-//        p3d_destroy_config(XYZ_ROBOT, config);
-//        p3d_destroy_config(XYZ_ROBOT, rootConfig);
-////      }
-//      
-//
-////      ENV.setBool(Env::UseDPGGrids, true);
-//
-//#endif
-      
-//Test Closed Chain Hard Exemple
-//      static int i = 0;
-//      unFixAllJointsExceptBaseAndObject(XYZ_ROBOT);
-//      if (!i){
-//        p3d_mat4Print(XYZ_ROBOT->baseJnt->jnt_mat, "baseJntMat");
-//        fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
-//        shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->curObjectJnt, 1);
-//        i = 1;
-//      }else{
-//        unFixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt);
-//        shootTheObjectInTheWorld(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt);
-//        i = 0;
-      
-//      unFixAllJointsExceptBaseAndObject(XYZ_ROBOT);
-//      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-//      fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
-//      shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->curObjectJnt, 1);
-//      CB_global_search_obj(NULL,0);
-//      unFixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt);
-//      shootTheObjectInTheWorld(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt);
-//      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
-//      fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
-//      shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->curObjectJnt, 1);
-//      CB_global_search_obj(NULL,0);
-//      unFixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt);
-//      shootTheObjectInTheWorld(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt);
-//      removeAloneNodesInGraph(XYZ_ROBOT, XYZ_GRAPH);
-//        setTotalCountVar(XYZ_GRAPH);
-//        mergeStat(XYZ_GRAPH->stat, XYZ_ENV->stat);
-//        printStatsGraph(XYZ_GRAPH->stat, 1);
-//      }
-//      printStatsEnv(XYZ_ENV->stat, 1);
-//      unFixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt);
-//      shootTheObjectInTheWorld(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt);
-//      removeAloneNodesInGraph(XYZ_ROBOT, XYZ_GRAPH);
-// #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)      
-//       manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS), p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO), "",0);
-// #endif
+#if defined(LIGHT_PLANNER)
+      (*XYZ_ROBOT->armManipulationData)[0].setCarriedObject("Horse");
+      XYZ_ROBOT->isCarryingObject = TRUE;
+#endif
       break;
     }
     case 17:{
