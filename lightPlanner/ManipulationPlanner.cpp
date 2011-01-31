@@ -25,7 +25,7 @@
 #include <list>
 #include <algorithm>
 
-static bool MPDEBUG=false;
+static bool MPDEBUG=true;
 
 using namespace std;
 
@@ -39,9 +39,9 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robotPt) :
     _optimizeSteps = 100;
     _optimizeTime = 2.0; // 4 secondes
     _optimizeRedundentSteps = 100;
-    _approachFreeOffset = 0.15; //0.1 meters
+    _approachFreeOffset = 0.10; //0.1 meters
     _approachGraspOffset = 0.10; //0.1 meters
-
+    _safetyDistanceValue = 0.02;
 
     // Warning : Not very efficient
     // Should only allocate this once
@@ -175,6 +175,13 @@ void ManipulationPlanner::setApproachGraspOffset(double offset) {
 }
 double ManipulationPlanner::getApproachGraspOffset(void) const {
     return _approachGraspOffset;
+}
+
+void ManipulationPlanner::setSafetyDistanceValue(double value){
+  _safetyDistanceValue = value;
+}
+double ManipulationPlanner::getSafetyDistanceValue(void) const{
+  return _safetyDistanceValue;
 }
 
 /* ******************************* */
@@ -475,7 +482,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(
           cout << "-----------------------------------------------------" << endl;
           cout << " getApproachFreeConf() " << endl;
         }
-        setSafetyDistance(_robot, 0.05);
+        setSafetyDistance(_robot, getSafetyDistanceValue());
         q = getApproachFreeConf(object, armId, grasp, configs.getGraspConfig(), tAtt);
         setSafetyDistance(_robot, 0);
         if (q ) {
@@ -486,7 +493,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(
           configs.setApproachFreeConfig(q);
           p3d_destroy_config(_robot, q);
           q = NULL;
-          setSafetyDistance(_robot, 0.05);
+          setSafetyDistance(_robot, getSafetyDistanceValue());
           q = getApproachGraspConf(object, armId, grasp, configs.getGraspConfig(), tAtt);
           setSafetyDistance(_robot, 0);
           if (q) {
@@ -1319,7 +1326,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
     }
   
     // Compute to Approach config
-    setSafetyDistance(_robot, 0.05);
+    setSafetyDistance(_robot, getSafetyDistanceValue());
     //the fingertip desactivation is necessary only when a safety distance is setted
     gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
     gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);

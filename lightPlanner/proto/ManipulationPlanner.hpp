@@ -59,6 +59,9 @@ class  ManipulationPlanner {
     void setApproachGraspOffset(double offset);
     double getApproachGraspOffset(void) const;
 
+    void setSafetyDistanceValue(double value);
+    double getSafetyDistanceValue(void) const;
+  
     inline p3d_rob* robot()  const{return _robot;}
 
     inline configPt robotStart() const{if (_robot != NULL) {return _robot->ROBOT_POS;} else {return NULL;}}
@@ -213,6 +216,8 @@ class  ManipulationPlanner {
     double _approachFreeOffset;
     /** Offset to generate the approach configuration of a grasp (carrying an object)*/
     double _approachGraspOffset;
+    /** Offset to generate the approach configuration of a grasp (carrying an object)*/
+    double _safetyDistanceValue;
 	
   /* ******************************* */
   /* *******  Manipulation Data **** */
