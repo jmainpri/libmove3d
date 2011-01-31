@@ -1331,10 +1331,11 @@ void g3d_draw_env_custom()
   win = g3d_get_cur_win();
 	
   p3d_drawRobotMoveMeshs();
-//#if defined( MOVE3D_CORE ) 
-#if defined ( CXX_PLANNER )
+  
+#if defined( MOVE3D_CORE ) 
   ext_g3d_draw_cost_features();
 #endif
+  
 #ifdef DPG
   if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
     XYZ_GRAPH->dpgGrid->draw();
