@@ -161,7 +161,7 @@ p3d_multilocalpath_switch_to_linear_groups (p3d_rob * robotPt) {
   return 0;
 }
 
-void p3d_copy_localpath_constraints_into(p3d_localpath * lpIn,  p3d_localpath *lpOut) {
+void p3d_copy_localpath_constraints_into(p3d_rob* robot, p3d_localpath * lpIn,  p3d_localpath *lpOut) {
       if(lpIn==NULL || lpOut==NULL) {
        return;
       }
@@ -176,7 +176,9 @@ void p3d_copy_localpath_constraints_into(p3d_localpath * lpIn,  p3d_localpath *l
       }
 #if defined(LIGHT_PLANNER)
 	lpOut->isCarryingObject = lpIn->isCarryingObject;
-	lpOut->carriedObject = lpIn->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
+  for(unsigned int i = 0; i < robot->armManipulationData->size(); i++ ){
+    lpOut->carriedObject[i] = lpIn->carriedObject[i]; /*!< pointer to the carried object (obstacle environment or robot body) */
+  }
 #endif
       
       return;
@@ -260,7 +262,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
                                             softMotion_data->specific->
                                             motion[0].TimeCumul[3]);
 					    
-  p3d_copy_localpath_constraints_into(localpathMlp1Pt, trajSmPt->courbePt);
+  p3d_copy_localpath_constraints_into(robotPt,localpathMlp1Pt, trajSmPt->courbePt);
   end_trajSmPt = trajSmPt->courbePt;
   
   timeLength = end_trajSmPt->length_lp;
@@ -290,7 +292,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
 						softMotion_data->
 						specific->motionTime);
 
-       p3d_copy_localpath_constraints_into(localpathMlp1Pt, localpathTmp1Pt);
+       p3d_copy_localpath_constraints_into(robotPt, localpathMlp1Pt, localpathTmp1Pt);
 
 
       end_trajSmPt = append_to_localpath (end_trajSmPt, localpathTmp1Pt);
@@ -312,7 +314,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
                                                 specific->motion[0].
                                                 TimeCumul[4]);
 
-      p3d_copy_localpath_constraints_into(localpathMlp1Pt, localpathTmp1Pt);
+      p3d_copy_localpath_constraints_into(robotPt, localpathMlp1Pt, localpathTmp1Pt);
 
       softMotion_data_copy_into (robotPt,
                                  localpathTmp1Pt->specific.
@@ -331,7 +333,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
                                                 specific->motion[0].
                                                 TimeCumul[4]);
 
-      p3d_copy_localpath_constraints_into(localpathMlp2Pt, localpathTmp2Pt);
+      p3d_copy_localpath_constraints_into(robotPt, localpathMlp2Pt, localpathTmp2Pt);
 
       softMotion_data_copy_into (robotPt,
                                  localpathTmp2Pt->specific.
@@ -391,7 +393,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
 
 
       if (localpathTransPt != NULL) {
-        p3d_copy_localpath_constraints_into(localpathMlp1Pt, localpathTransPt);
+        p3d_copy_localpath_constraints_into(robotPt, localpathMlp1Pt, localpathTransPt);
         collision = p3d_unvalid_localpath_test (robotPt, localpathTransPt, ntest);
       }
       
@@ -415,7 +417,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
                                                   softMotion_data->
                                                   specific->motionTime);
 
-         p3d_copy_localpath_constraints_into(localpathMlp1Pt, localpathTmp1Pt);
+         p3d_copy_localpath_constraints_into(robotPt, localpathMlp1Pt, localpathTmp1Pt);
 	 
         localpathTmp2Pt = p3d_extract_softMotion_with_velocities (robotPt, localpath2Pt,
                                                   0.0,
@@ -425,7 +427,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
                                                   softMotion_data->
                                                   specific->motion[0].
                                                   TimeCumul[3]);
-         p3d_copy_localpath_constraints_into(localpathMlp2Pt, localpathTmp2Pt);
+         p3d_copy_localpath_constraints_into(robotPt, localpathMlp2Pt, localpathTmp2Pt);
 
         end_trajSmPt = append_to_localpath (end_trajSmPt, localpathTmp1Pt);
         nlp++;
@@ -524,7 +526,7 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
   p3d_multilocalpath_switch_to_softMotion_groups (robotPt);
   trajSmPTPPt->courbePt = p3d_local_planner_multisol (robotPt, q_init, q_end, localpathMlp1Pt->ikSol);
 
-  p3d_copy_localpath_constraints_into(localpathMlp1Pt, trajSmPTPPt->courbePt);
+  p3d_copy_localpath_constraints_into(robotPt, localpathMlp1Pt, trajSmPTPPt->courbePt);
 
   end_trajSmPt = trajSmPTPPt->courbePt;
   p3d_addConfigToArrayToDraw(robotPt, q_init);
@@ -555,7 +557,7 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
       p3d_multilocalpath_switch_to_softMotion_groups (robotPt);
       localpathTmp1Pt = p3d_local_planner_multisol (robotPt, q_init, q_end, localpathMlp1Pt->ikSol);
       
-      p3d_copy_localpath_constraints_into(localpathMlp1Pt, localpathTmp1Pt);
+      p3d_copy_localpath_constraints_into(robotPt, localpathMlp1Pt, localpathTmp1Pt);
       p3d_addConfigToArrayToDraw(robotPt, q_end);
 
       p3d_destroy_config (robotPt, q_init);
