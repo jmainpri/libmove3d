@@ -501,7 +501,9 @@ int p3d_update_robot_pos(void) {
 
 int p3d_set_and_update_this_robot_conf(p3d_rob * rob, configPt q) {
   int I_can;
-
+  if(q == NULL){
+    return FALSE;
+  }
   p3d_set_robot_config(rob, q);
   I_can = p3d_update_this_robot_pos(rob);
   return I_can;
