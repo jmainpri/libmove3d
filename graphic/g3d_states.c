@@ -595,7 +595,6 @@ int g3d_export_OpenGL_display(char *filename)
   if(file==NULL)
   {
     printf("%s: %d: can not open \"%s\".\n",__FILE__,__LINE__,filename2);
-    fclose(file);
     return 0;
   }
 
