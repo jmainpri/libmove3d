@@ -16,8 +16,10 @@
 #include "locale.h"
 #include "molecule.xpm"
 
-#if defined(MACOSX) && defined(USE_GLUT)
-  #include <glut.h>
+#if defined(MACOSX)
+  #if defined(USE_GLUT)
+    #include <glut.h>
+  #endif
 #else
   #include <GL/freeglut.h>
 #endif
