@@ -6,7 +6,9 @@
 
 #include <../collision/PQP/include/PQP.h>
 #include <../collision/PQP/include/p3d_pqp.h>
-
+#ifdef LIGHT_PLANNER
+#include "ManipulationUtils.hpp"
+#endif
 
 // Define to enable/disable some debug checkings
 #define PQP_DEBUG
@@ -3536,32 +3538,31 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
   {  return 1;  }
 
 
-//  #ifdef LIGHT_PLANNER
-//  //carried object vs environment:
-//  if(robot->isCarryingObject==TRUE && robot->carriedObject!=NULL)
-//  {
-//    nb_cols= pqp_robot_environment_collision_test(robot->carriedObject);
-//    if(nb_cols!=0)
-//    {  return 1; }
-//
-//  }
-//
-//  //carried object vs other robots:
-//  if(robot->isCarryingObject==TRUE && robot->carriedObject!=NULL)
-//  {
-//    for(i=0; i<XYZ_ENV->nr; i++)
-//    {
-//
-//      if(XYZ_ENV->robot[i]==robot || XYZ_ENV->robot[i]==robot->carriedObject)
-//      {  continue;  }
-//
-//      nb_cols= pqp_robot_robot_collision_test(XYZ_ENV->robot[i], robot->carriedObject);
-//
-//      if(nb_cols!=0)
-//      {  return 1;  }
-//    }
-//  }
-//  #endif
+ #ifdef LIGHT_PLANNER
+ 
+  if(robot->isCarryingObject==TRUE)
+  {
+    for(unsigned int i = 0; i < robot->armManipulationData->size(); i++){
+      p3d_rob* carriedObject = (*robot->armManipulationData)[i].getCarriedObject();
+      if(carriedObject != NULL){
+        //carried object vs environment:
+        nb_cols= pqp_robot_environment_collision_test(carriedObject);
+        if(nb_cols!=0){  return 1; }
+        //carried object vs other robots:
+        for(i=0; i<XYZ_ENV->nr; i++)
+        {
+          if(XYZ_ENV->robot[i]==robot || XYZ_ENV->robot[i]==carriedObject){  continue;  }
+          for(unsigned int j = 0; j < i; j++){
+            if(carriedObject == (*robot->armManipulationData)[j].getCarriedObject()){ continue; }
+          }
+
+          nb_cols= pqp_robot_robot_collision_test(XYZ_ENV->robot[i], carriedObject);
+          if(nb_cols!=0){  return 1;  }
+        }
+      }
+    }
+  }
+ #endif
   
   return 0;
 }
