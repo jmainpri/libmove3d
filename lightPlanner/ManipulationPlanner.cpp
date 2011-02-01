@@ -25,7 +25,7 @@
 #include <list>
 #include <algorithm>
 
-static bool MPDEBUG=true;
+static bool MPDEBUG=false;
 
 using namespace std;
 
@@ -483,6 +483,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(
           cout << " getApproachFreeConf() " << endl;
         }
         setSafetyDistance(_robot, getSafetyDistanceValue());
+        //the fingertip desactivation is necessary only when a safety distance is setted
+        gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
+        gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);
         q = getApproachFreeConf(object, armId, grasp, configs.getGraspConfig(), tAtt);
         setSafetyDistance(_robot, 0);
         if (q ) {
@@ -543,10 +546,11 @@ configPt ManipulationPlanner::getGraspConf(p3d_rob* object, int armId, gpGrasp& 
     }
 
     gpSet_grasp_configuration(_robot, grasp, qGrasp, armId);
+  }else {
+    confCost = -1;
   }
   deactivateCcCntrts(_robot, armId);
   gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
-  confCost = -1;
   return qGrasp;
 }
 
@@ -603,14 +607,14 @@ configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gp
     gpUnFix_hand_configuration(_robot, handProp, armId);
     gpSet_grasp_open_configuration(_robot, grasp, q, armId);
     gpFix_hand_configuration(_robot, handProp, armId);
-
-    gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
+    
+//    gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
 
     configPt qApproachFree = setRobotCloseToConfGraspApproachOrExtract(_robot, q, objTmp, tAtt, false, armId, true);
     if ( qApproachFree ){
       optimizeRedundentJointConfigDist(_robot, mData.getCcCntrt()->argu_i[0], qApproachFree, object->joints[1]->abs_pos, tAtt, q, armId, getOptimizeRedundentSteps());
     }
-    gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
+//    gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
     p3d_destroy_config(_robot, q);
     q = NULL;
     
@@ -971,7 +975,7 @@ int ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, boo
     ChronoPrint("");
     ChronoOff();
 #else
-result = p3d_specific_search((char *)"");
+    result = p3d_specific_search((char *)"");
     if(result){
       p3d_traj* traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
       if(traj){
