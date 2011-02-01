@@ -588,6 +588,10 @@ double p3d_dist_config(p3d_rob * robotPt, configPt q_i, configPt q_f)
     for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
       if (robotPt->cntrt_manager->in_cntrt[jntPt->index_dof + j] != DOF_PASSIF) {
 				double dist = SQR(p3d_jnt_calc_dof_dist(jntPt, j, q_i, q_f));
+        if (isnan(dist)) {
+          printf("Distance computation error !!!\n");
+          return P3D_HUGE;
+        }
 				//printf(" dist[%d] = %f\n",jntPt->index_dof + j,dist);
         ljnt += dist;
       }
@@ -919,6 +923,7 @@ double p3d_stay_within_sphere(p3d_rob* robotPt, double *distances)
   MY_FREE(stay_within_dist_data, p3d_stay_within_dist_data, njnt + 2);
   return min_param;
 }
+//end path deform
 
 /*  p3d_is_collision_free
  *
@@ -936,7 +941,6 @@ double p3d_stay_within_sphere(p3d_rob* robotPt, double *distances)
 int p3d_is_collision_free(p3d_rob* robotPt, configPt q)
 {
 #ifdef P3D_COLLISION_CHECKING
-	int nCol = TRUE;
 	
 	p3d_set_and_update_this_robot_conf(robotPt, q);
 	
@@ -954,4 +958,29 @@ int p3d_is_collision_free(p3d_rob* robotPt, configPt q)
 	return TRUE;
 #endif
 }
-//end path deform
+
+/*  p3d_is_config_inside_joints_bounds
+ *
+ *  Input:  the robot,
+ *          the configuration
+ *
+ *  Output: False if the configuration is inside the joint bounds
+ *
+ *
+ *  Description:
+ *          This function returns false if the configuration
+ *					is valid regarding the joints bounds */
+int p3d_isOutOfBounds(p3d_rob* robot, configPt q){
+  for(int i = 0; i < robot->njoints; i++){
+    p3d_jnt* joint = robot->joints[i];
+    for(int j = 0; j < joint->dof_equiv_nbr; j++){
+      double vmin = -P3D_HUGE, vmax = P3D_HUGE;
+      p3d_jnt_get_dof_bounds(joint, j, &vmin, &vmax);
+      if ((q[joint->index_dof + j] < vmin) || (q[joint->index_dof + j] > vmax)) {
+        printf("The joint %s is outside the joint bounds. Vmin : %f, Value : %f, Vmax = %f\n", joint->name, vmin, q[joint->index_dof + j], vmax);
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}

@@ -656,52 +656,6 @@ int p3d_RandNShpereDirShoot(p3d_rob* robotPt, configPt q, int sample_passive)
 }
 
 /**
- * isOutOfBands
- */
-
-bool p3d_isOutOfBounds(p3d_rob* robotPt, configPt q, int sample_passive)
-{
-	int njnt = robotPt->njoints, i, j, k;
-	double vmin, vmax;
-	p3d_jnt * jntPt;
-
-	for (i = 0; i <= njnt; i++)
-	{
-		jntPt = robotPt->joints[i];
-		for (j = 0; j < jntPt->dof_equiv_nbr; j++)
-		{
-			k = jntPt->index_dof + j;
-
-			if (p3d_jnt_get_dof_is_user(jntPt, j) && (
-					sample_passive ||
-					((p3d_jnt_get_dof_is_active_for_planner(jntPt,j)) &&
-					(robotPt->cntrt_manager->in_cntrt[k] != 2))) ) 
-			{
-				/*if (p3d_jnt_is_dof_angular(jntPt, j))
-				{
-					if( q[k]<(-M_PI) || q[k]>M_PI)
-					{
-						return true;
-					}
-				}
-				else
-				{*/
-					p3d_jnt_get_dof_bounds(jntPt, j, &vmin, &vmax);
-
-					if( q[k]<vmin || q[k]>vmax)
-					{
-						return true;
-					}
-//				}
-			}
-		}
-	}
-
-	return false;
-}
-
-
-/**
   * Sample the freeFlyerOnly inside a box
   * box = xmin,xmax,ymin,ymax,zmin,zmax
   */

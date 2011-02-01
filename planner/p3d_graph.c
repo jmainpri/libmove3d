@@ -938,12 +938,21 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
   /* If not, create them */
   if (Ns == NULL) {
     p3d_set_robot_config(robotPt, qs);
-    p3d_set_and_update_robot_conf_multisol(qs, robotPt->ikSolPos);
-    if(p3d_col_test()){//collision
-      PrintInfo(("qs en collision\n"));
-      p3d_print_col_pair();
+    if (p3d_isOutOfBounds(robotPt, qs)) {
+      PrintInfo(("qs not Valid. Check joint bounds\n"));
       return NULL;
     }
+    if(p3d_set_and_update_robot_conf_multisol(qs, robotPt->ikSolPos)){
+      if(p3d_col_test()){//collision
+        PrintInfo(("qs en collision\n"));
+        p3d_print_col_pair();
+        return NULL;
+      }
+    }else {
+      PrintInfo(("qs not Valid. Check the constraints\n"));
+      return NULL;
+    }
+
     p3d_get_robot_config_into(robotPt, &qs);
     p3d_copy_iksol(robotPt->cntrt_manager, robotPt->ikSolPos, &iksols);
     Ns  = p3d_APInode_make_multisol(G, qs, iksols);
@@ -971,10 +980,18 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
   }
   if ((ENV.getBool(Env::expandToGoal) == true) && (Ng == NULL)) {
     p3d_set_robot_config(robotPt, qg);
-    p3d_set_and_update_robot_conf_multisol(qg, robotPt->ikSolGoto);
-    if(p3d_col_test()){//collision
-      PrintInfo(("qg en collision\n"));
-      p3d_print_col_pair();
+    if (p3d_isOutOfBounds(robotPt, qg)) {
+      PrintInfo(("qg not Valid. Check joint bounds\n"));
+      return NULL;
+    }
+    if(p3d_set_and_update_robot_conf_multisol(qg, robotPt->ikSolGoto)){
+      if(p3d_col_test()){//collision
+        PrintInfo(("qg en collision\n"));
+        p3d_print_col_pair();
+        return NULL;
+      }
+    }else {
+      PrintInfo(("qg not Valid. Check the constraints\n"));
       return NULL;
     }
     p3d_get_robot_config_into(robotPt, &qg);
