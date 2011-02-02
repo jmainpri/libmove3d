@@ -482,13 +482,22 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   /** corridors is an experimental feature to increase costs in the middle of corridors, benefit was not proved yet. Default is FALSE*/
   bitmapset->parameters->use_corridors = FALSE;
   bitmapset->parameters->corridor_Costs = 50;
-  /** directional calculations are an experimental feature, default is FALSE */
+  /*
+   * directional calculations are an experimental feature, false means costs are stable as described in Sisbot'07
+   * TRUE means going toward human is more expensive than going away from human
+   * default is FALSE */
   bitmapset->parameters->directional_cost = FALSE;
+  /*
+   * When TRUE, moving humans only have costs where robot moves towards them on their predicted path, not it
+   * crosses the path or goes in the same direction
+   * default is FALSE
+   */
+  bitmapset->parameters->motion_congruence = FALSE;
   /** Prevents sharp turns If the angle in the path is greater than this number, the edge won't be allowed.
    * This is useful in particular when using directional costs.
    * When value is > Pi, e.g. 4, all angles are allowed.
    * Experimental feature, therefore Default = 4  */
-  bitmapset->parameters->angle2d_minimum = 4; //M_PI_2 - 0.1;
+  bitmapset->parameters->angle2d_minimum = M_PI_2 - 0.1;
   /** used if directional_cost == TRUE
    * the angle at which a human is considered "behind" the robot and thus not relevant for costs
    * default is M_PI_2 = 90 degrees**/

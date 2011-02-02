@@ -239,6 +239,7 @@ typedef struct astar_parameters{
 
   /* whether grid cell costs are static or depend on where the motion moves to (in 2D)*/
   int directional_cost;
+  int motion_congruence;
 
   double directional_freePassAngle;
   double directional_noConflictHeading;
