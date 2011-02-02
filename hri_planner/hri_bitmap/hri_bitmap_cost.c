@@ -981,7 +981,7 @@ double getDirectionalVal(hri_bitmapset * btset, hri_bitmap_cell* current_cell, h
 
                /** up to 135 degrees (45 degrees is inverse), human will move out of the way in a good way
                 * (e.g. crossing or one follows the other),  so robot locomotion can make that safely.*/
-               if (M_PI - fabs(headingDiff ) < btset->parameters->directional_noConflictHeading) {
+               if (normalizeAngleDeviation(M_PI - fabs(headingDiff )) < btset->parameters->directional_noConflictHeading) {
                  // human direction is opposite to robot direction, so robot should avoid being in the way
                  // fabs(headingDiff ) == M_Pi is worst case, significance should be 1 then
                  directionalSignificance = directionalSignificance * ( 1 - (( M_PI - fabs(headingDiff ) ) / btset->parameters->directional_noConflictHeading ));
