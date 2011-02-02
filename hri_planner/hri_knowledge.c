@@ -776,7 +776,7 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	if( ents->entities[e_i]->undetection_status != HRI_NEVER_DETECTED){
 	  agent=agents->all_agents[robotMyselfIndex];
 	  kn_on_ent = &agent->knowledge->entities[e_i];	  
-	  if(!ents->entities[e_i]->disappeared && (kn_on_ent->is_placed_from_visibility == HRI_FOV) && (kn_on_ent->visibility == HRI_VISIBLE)){
+	  if(!ents->entities[e_i]->disappeared && ((kn_on_ent->is_placed_from_visibility == HRI_FOV) || (kn_on_ent->is_placed_from_visibility == HRI_FOA)) && (kn_on_ent->visibility == HRI_VISIBLE)){
 	    // iter on unexplained detection
 	    if((ents->entities[e_i]->undetection_status == HRI_UNEXPLAINED_UNDETECTION_ITER) && (ents->entities[e_i]->undetection_iter < hasDisappearFilterLength))
 	      ents->entities[e_i]->undetection_iter++;
@@ -880,6 +880,7 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
 	    kn_on_ent->disappeared_isexported = FALSE;
 	  }
 	  else if(((ent->pl_state_transition == HRI_START_MOVING) || (ent->pl_state_transition == HRI_STOP_MOVING)) && (a_i == robotMyselfIndex)){
+	    kn_on_ent->motion = ents->entities[e_i]->filtered_motion;
 	    kn_on_ent->motion_ischanged = TRUE;
 	    kn_on_ent->motion_isexported = FALSE;
 	  }
