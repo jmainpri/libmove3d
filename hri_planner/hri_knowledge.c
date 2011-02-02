@@ -880,7 +880,7 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
 	    kn_on_ent->disappeared_isexported = FALSE;
 	  }
 	  else if(((ent->pl_state_transition == HRI_START_MOVING) || (ent->pl_state_transition == HRI_STOP_MOVING)) && (a_i == robotMyselfIndex)){
-	    kn_on_ent->motion = ents->entities[e_i]->filtered_motion;
+	    kn_on_ent->motion = ent->filtered_motion;
 	    kn_on_ent->motion_ischanged = TRUE;
 	    kn_on_ent->motion_isexported = FALSE;
 	  }
