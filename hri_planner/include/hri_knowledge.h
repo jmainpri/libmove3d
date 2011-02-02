@@ -9,14 +9,62 @@ typedef enum ENUM_HRI_ENTITY_TYPE {
   HRI_VIRTUAL_OBJECT = 4
 } HRI_ENTITY_TYPE;
 
+// We had some more sementic to adapt the level of processing and reasoning to the
+// 
+typedef enum ENUM_HRI_ENTITY_SUBTYPE {
+  HRI_MOVABLE_OBJECT = 0, // Tape, Bottles
+  HRI_OBJECT_SUPPORT = 1,  // Tables, Shelf , ...
+  HRI_OBJECT_CONTAINER = 2, // Dust bin, Box
+  HRI_AGENT_HEAD = 3,
+  HRI_AGENT_HAND = 4,
+  HRI_AGENT_AGENT = 5, 
+  HRI_UK_ENTITY_SUBTYPE = 6
+} HRI_ENTITY_SUBTYPE;
+
+typedef enum ENUM_HRI_MOTION {
+  HRI_STATIC = 1,
+  HRI_MOVING = 2,
+  HRI_UK_MOTION = 0 /* Unknown motion. meaning we don't know */
+} HRI_MOTION;
+
+typedef enum ENUM_HRI_DETECTION { 
+  HRI_NEVER_DETECTED = 0,
+  HRI_DETECTED = 1,
+  HRI_EXPLAINED_UNDETECTION = 2,
+  HRI_UNEXPLAINED_UNDETECTION_ITER = 3, 
+  HRI_UNEXPLAINED_UNDETECTION_MAX = 4
+} HRI_DETECTION;
+
+typedef enum ENUM_HRI_PLACEMENT_STATE_TRANSITION { 
+  HRI_DISAPPEAR = 0,
+  HRI_APPEAR = 1,
+  HRI_START_MOVING = 2,
+  HRI_STOP_MOVING = 3, 
+  HRI_UK_PL_STATE_TRANSITION = 4
+} HRI_PLACEMENT_STATE_TRANSITION;
+
 typedef struct STRUCT_HRI_ENTITY {
   char name[64];
   
   HRI_ENTITY_TYPE type;
-  int can_disappear; /* Can this entity disappear? For example a furniture can be considered a not movable */
-  
+  ENUM_HRI_ENTITY_SUBTYPE subtype;
   int is_present; /* Is present in the env, i.e. at least seen once by the robot */
+  
+  int is_detected; // has robot just perceived the object
+  unsigned long detection_time;
+  unsigned long last_detection_time;
+  int undetection_iter;
+  HRI_DETECTION undetection_status; /* why and how much was the object undetected */
+
+  int can_disappear_and_move; /* Can this entity disappear? For example a furniture can be considered a not movable */
   int disappeared; /* Is present but it is not at the place where it is supposed to be */
+
+  int last_ismoving_iter; /* how many*/
+  HRI_MOTION filtered_motion; /* */
+
+  int is_pl_state_transition_new;
+  HRI_PLACEMENT_STATE_TRANSITION pl_state_transition;
+  
 
   p3d_rob * robotPt;
   p3d_obj * partPt;
@@ -27,6 +75,7 @@ typedef struct STRUCT_HRI_ENTITY {
 typedef struct STRUCT_HRI_ENTITIES {
   HRI_ENTITY ** entities;
   int entities_nb;
+  int changesInTheWorld;
 } HRI_ENTITIES;
 
 typedef enum ENUM_HRI_VISIBILITY {
@@ -54,12 +103,6 @@ typedef enum ENUM_HRI_REACHABILITY {
   HRI_HARDLY_REACHABLE = 2,
   HRI_UK_REACHABILITY = 3 /* Unknown reachability. meaning we don't know */
 } HRI_REACHABILITY;
-
-typedef enum ENUM_HRI_MOTION {
-  HRI_STATIC = 1,
-  HRI_MOVING = 2,
-  HRI_UK_MOTION = 0 /* Unknown motion. meaning we don't know */
-} HRI_MOTION;
 
 typedef enum ENUM_HRI_PLACEMENT_RELATION {
   HRI_ISIN     = 0,
@@ -118,6 +161,7 @@ typedef struct STRUCT_HRI_KNOWLEDGE_ON_ENTITY {
   int spatial_relation_isexported;
 
   HRI_PLACEMENT_RELATION * is_placed; /* on, in, ... */
+  HRI_PLACEMENT_RELATION * is_placed_old; /* To limit number of messages send to ontology */
   int * placement_relation_ischanged;
   int * placement_relation_isexported;
   int is_placed_nb;  /* length is HRI_ENTITIES->all_entities_nb */

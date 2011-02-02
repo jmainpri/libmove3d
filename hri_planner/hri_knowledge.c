@@ -35,6 +35,7 @@ HRI_ENTITIES * hri_create_entities()
   entities = MY_ALLOC(HRI_ENTITIES, 1);
   entities->entities = NULL;
   ent_i = 0;
+  entities->changesInTheWorld = FALSE;
 
   for(i=0; i<env->nr; i++) {
     if(!strcasestr(env->robot[i]->name,"GRIPPER") && !strcasestr(env->robot[i]->name,"VISBALL") && !strcasestr(env->robot[i]->name,"SAHandRight")) {
@@ -43,12 +44,33 @@ HRI_ENTITIES * hri_create_entities()
         entities->entities = MY_REALLOC(entities->entities, HRI_ENTITY*, ent_i, ent_i+1);
         entities->entities[ent_i] = MY_ALLOC(HRI_ENTITY,1);
 	strcpy(entities->entities[ent_i]->name, env->robot[i]->name);
-        entities->entities[ent_i]->can_disappear = TRUE;
+
         entities->entities[ent_i]->is_present = FALSE;
+        entities->entities[ent_i]->is_detected = FALSE;
+	entities->entities[ent_i]->detection_time = 0;
+	entities->entities[ent_i]->last_detection_time = 0;
+	entities->entities[ent_i]->undetection_iter = 0;
+	entities->entities[ent_i]->undetection_status = HRI_NEVER_DETECTED;
+        entities->entities[ent_i]->can_disappear_and_move = FALSE;
         entities->entities[ent_i]->disappeared = FALSE;
+	entities->entities[ent_i]->last_ismoving_iter = 0;
+	entities->entities[ent_i]->filtered_motion = HRI_UK_MOTION;
+	entities->entities[ent_i]->is_pl_state_transition_new = FALSE;
+	entities->entities[ent_i]->pl_state_transition = HRI_UK_PL_STATE_TRANSITION;
+
         entities->entities[ent_i]->robotPt = env->robot[i];
         entities->entities[ent_i]->partPt = NULL;
         entities->entities[ent_i]->type = HRI_OBJECT;
+	if(strcasestr(env->robot[i]->name,"TABLE")||strcasestr(env->robot[i]->name,"SHELF"))
+	  entities->entities[ent_i]->subtype = HRI_OBJECT_SUPPORT;
+	else if(strcasestr(env->robot[i]->name,"TAPE")||strcasestr(env->robot[i]->name,"BOTTLE")||strcasestr(env->robot[i]->name,"BOX")){
+	  entities->entities[ent_i]->subtype = HRI_MOVABLE_OBJECT;
+	  entities->entities[ent_i]->can_disappear_and_move = TRUE;
+	}
+	else if(strcasestr(env->robot[i]->name,"TRASHBIN"))
+	  entities->entities[ent_i]->subtype = HRI_OBJECT_CONTAINER;
+	else
+	  entities->entities[ent_i]->subtype = HRI_UK_ENTITY_SUBTYPE;
         ent_i++;
       }
 
@@ -60,12 +82,18 @@ HRI_ENTITIES * hri_create_entities()
              entities->entities = MY_REALLOC(entities->entities, HRI_ENTITY*, ent_i, ent_i+1);
              entities->entities[ent_i] = MY_ALLOC(HRI_ENTITY,1);
 	     strcpy(entities->entities[ent_i]->name, objectrealname);
-             entities->entities[ent_i]->can_disappear = TRUE;
+             entities->entities[ent_i]->can_disappear_and_move = FALSE;
              entities->entities[ent_i]->is_present = FALSE;
              entities->entities[ent_i]->disappeared = FALSE;
              entities->entities[ent_i]->robotPt = env->robot[i];
              entities->entities[ent_i]->partPt = env->robot[i]->o[j];
              entities->entities[ent_i]->type = HRI_OBJECT_PART;
+	     if(strcasestr(env->robot[i]->name,"HEAD")||strcasestr(env->robot[i]->name,"CAMERA"))
+	       entities->entities[ent_i]->subtype = HRI_AGENT_HEAD;
+	     else if(strcasestr(env->robot[i]->name,"HAND"))
+	       entities->entities[ent_i]->subtype = HRI_AGENT_HAND;
+	     else
+	       entities->entities[ent_i]->subtype = HRI_UK_ENTITY_SUBTYPE;
              ent_i++;
            }
       }
@@ -173,6 +201,7 @@ int hri_initialize_agent_knowledge(HRI_KNOWLEDGE * knowledge, HRI_ENTITIES * ent
     knowledge->entities[i].spatial_relation_isexported = FALSE;
 
     knowledge->entities[i].is_placed = MY_ALLOC(HRI_PLACEMENT_RELATION, entities->entities_nb);
+    knowledge->entities[i].is_placed_old = MY_ALLOC(HRI_PLACEMENT_RELATION, entities->entities_nb);
     knowledge->entities[i].placement_relation_ischanged = MY_ALLOC(int, entities->entities_nb);
     knowledge->entities[i].placement_relation_isexported = MY_ALLOC(int, entities->entities_nb);
 
@@ -180,6 +209,7 @@ int hri_initialize_agent_knowledge(HRI_KNOWLEDGE * knowledge, HRI_ENTITIES * ent
 
     for(j=0; j<knowledge->entities[i].is_placed_nb; j++) {
       knowledge->entities[i].is_placed[j] = HRI_UK_PLR;
+      knowledge->entities[i].is_placed_old[j] = HRI_UK_PLR;
       knowledge->entities[i].placement_relation_ischanged[j] = FALSE;
       knowledge->entities[i].placement_relation_isexported[j] = FALSE;
     }
@@ -658,11 +688,130 @@ void hri_display_agent_knowledge(HRI_AGENT * agent)
   }
 }
 
+// Function to init motion history array. Matthieu Warnier 01022011 
+// 
+
+/* int hri_init_motion_history(HRI_ENTITIES * ents, int ent_index) */
+/* { */
+/*   int i; */
+/*   if(ent_index > -1 && ent_index < entities_nb) { */
+/*     if(!ents->entities[ent_index]->can_move){ */
+/*       ents->entities[ent_index]->motion_history = MY_ALLOC(HRI_MOTION, 3); */
+/*       for(i=0;i<3;i++) */
+/* 	ents->entities[ent_index]->motion_history[i]=HRI_UK_MOTION; */
+/*       ents->entities[ent_index]->can_move = TRUE; */
+/*     } */
+/*     return TRUE; */
+/*   }      */
+/*   else */
+/*     return FALSE; */
+/* } */
+
+
+// Function that decide and wethre an object should be 
+// 
+void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES * ents,int robotMyselfIndex , int hasDisappearFilterLength)
+{ 
+  int e_i;  
+  HRI_AGENT * agent;
+  HRI_KNOWLEDGE_ON_ENTITY * kn_on_ent;
+  configPt objectQ;
+
+  //Object moving and disappearance management.
+
+  for(e_i=0; e_i<ents->entities_nb; e_i++) {
+    if(ents->entities[e_i]->can_disappear_and_move){
+      // Is object detected?
+      if(ents->entities[e_i]->is_detected){
+	if(ents->entities[e_i]->detection_time != ents->entities[e_i]->last_detection_time){
+	  if(!ents->entities[e_i]->is_present)
+	    ents->entities[e_i]->is_present = TRUE;
+	  if(ents->entities[e_i]->undetection_status != HRI_DETECTED){
+	    ents->entities[e_i]->undetection_status = HRI_DETECTED;
+	    ents->entities[e_i]->undetection_iter = 0;
+	  }
+
+	  if(ents->entities[e_i]->disappeared){
+	    //APPEAR we put object has static.	      
+	    ents->entities[e_i]->disappeared = FALSE;	      
+	    ents->entities[e_i]->filtered_motion = HRI_STATIC;
+	    ents->entities[e_i]->last_ismoving_iter = 0;
+	    ents->changesInTheWorld = TRUE;
+	    ents->entities[e_i]->is_pl_state_transition_new = TRUE;
+	    ents->entities[e_i]->pl_state_transition = HRI_APPEAR;
+	    printf("%s APPEARED\n",ents->entities[e_i]->name);
+	  }
+	  else {
+	    if((ents->entities[e_i]->last_ismoving_iter>0) && (ents->entities[e_i]->filtered_motion != HRI_MOVING)){
+	      //BEGIN MOVING
+	      ents->entities[e_i]->filtered_motion = HRI_MOVING;
+	      ents->changesInTheWorld = TRUE;
+	      ents->entities[e_i]->is_pl_state_transition_new = TRUE;
+	      ents->entities[e_i]->pl_state_transition = HRI_START_MOVING;
+	      printf("%s BEGIN MOVING\n",ents->entities[e_i]->name); 
+	    }
+	    else if ((ents->entities[e_i]->last_ismoving_iter == 0 ) && (ents->entities[e_i]->filtered_motion != HRI_STATIC)){
+	      //STOP MOVING
+	      ents->entities[e_i]->filtered_motion = HRI_STATIC;
+	      ents->changesInTheWorld = TRUE;
+	      ents->entities[e_i]->is_pl_state_transition_new = TRUE;
+	      ents->entities[e_i]->pl_state_transition = HRI_STOP_MOVING;
+	      printf("%s STOP-MOVING\n",ents->entities[e_i]->name); 
+	    }
+	    else
+	      printf("%s IS MOVING\n",ents->entities[e_i]->name);  
+	  }
+	  // increment last is moving seen
+	  if(ents->entities[e_i]->last_ismoving_iter>0)
+	    ents->entities[e_i]->last_ismoving_iter--;	    
+	}
+      }	
+      else{
+	if( ents->entities[e_i]->undetection_status != HRI_NEVER_DETECTED){
+	  agent=agents->all_agents[robotMyselfIndex];
+	  kn_on_ent = &agent->knowledge->entities[e_i];	  
+	  if(!ents->entities[e_i]->disappeared && (kn_on_ent->is_placed_from_visibility == HRI_FOV) && (kn_on_ent->visibility == HRI_VISIBLE)){
+	    // iter on unexplained detection
+	    if((ents->entities[e_i]->undetection_status == HRI_UNEXPLAINED_UNDETECTION_ITER) && (ents->entities[e_i]->undetection_iter < hasDisappearFilterLength))
+	      ents->entities[e_i]->undetection_iter++;
+	    //  reach maximum number of unexplained detection
+	    else if((ents->entities[e_i]->undetection_status == HRI_UNEXPLAINED_UNDETECTION_ITER) && (ents->entities[e_i]->undetection_iter == hasDisappearFilterLength))
+	      ents->entities[e_i]->undetection_status = HRI_UNEXPLAINED_UNDETECTION_MAX;
+	    //  initialize iteration on maximum unexplained detection
+	    else if((ents->entities[e_i]->undetection_status != HRI_UNEXPLAINED_UNDETECTION_ITER) && (ents->entities[e_i]->undetection_status != HRI_UNEXPLAINED_UNDETECTION_MAX)){
+	      ents->entities[e_i]->undetection_status = HRI_UNEXPLAINED_UNDETECTION_ITER;
+	      ents->entities[e_i]->undetection_iter = 0;
+	    }
+	    // Object has disappeared
+	    else if((ents->entities[e_i]->undetection_status == HRI_UNEXPLAINED_UNDETECTION_MAX)){
+	      ents->entities[e_i]->disappeared = TRUE;
+	      ents->changesInTheWorld = TRUE;
+	      ents->entities[e_i]->is_pl_state_transition_new = TRUE;
+	      ents->entities[e_i]->pl_state_transition = HRI_DISAPPEAR;
+	      // put object in 0,0,0 if disappear. 	
+	      objectQ = MY_ALLOC(double, ents->entities[e_i]->robotPt->nb_dof); /* ALLOC */
+	      p3d_get_robot_config_into(ents->entities[e_i]->robotPt, &objectQ);
+	      objectQ[6] = objectQ[7] = objectQ[8] = 0;      
+	      p3d_set_and_update_this_robot_conf(ents->entities[e_i]->robotPt, objectQ);
+	      MY_FREE(objectQ, double, ents->entities[e_i]->robotPt->nb_dof); /* FREE */
+	    }
+	    else
+	      printf("Unmanaged state for undetected objects in  hri_manage_object_disappearance_and_move function\n");
+	  }
+	  else
+	    if(!ents->entities[e_i]->disappeared)
+	      ents->entities[e_i]->undetection_status = HRI_EXPLAINED_UNDETECTION;
+	}
+      }
+    }
+  }
+}
+
 
 // Function computing geometric facts between agents and objects
 // Each agent has its own view of the environment.
 
-int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
+int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int robotMyselfIndex)
 {
   int a_i, e_i, e_j, ge_i, ge_j;
   double elevation, azimuth;
@@ -683,143 +832,172 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents)
     return FALSE;
   }
 
-  vis_result = MY_ALLOC(HRI_VISIBILITY, ents->entities_nb); // ALLOC
-  present_ents = MY_ALLOC(HRI_ENTITY*, ents->entities_nb); // ALLOC
-  present_ents_global_idxs = MY_ALLOC(int, ents->entities_nb); // ALLOC
+  if(ents->changesInTheWorld){
+    vis_result = MY_ALLOC(HRI_VISIBILITY, ents->entities_nb); // ALLOC
+    present_ents = MY_ALLOC(HRI_ENTITY*, ents->entities_nb); // ALLOC
+    present_ents_global_idxs = MY_ALLOC(int, ents->entities_nb); // ALLOC
 
-  // Pick entities that exist 
-  present_ents_nb = 0;
-  for(e_i=0; e_i<ents->entities_nb; e_i++) {
-    if(ents->entities[e_i]->is_present) {
-      present_ents[present_ents_nb] = ents->entities[e_i];
-      present_ents_global_idxs[present_ents_nb] = e_i;
-      present_ents_nb++;
+    // Pick entities that exist 
+    present_ents_nb = 0;
+    for(e_i=0; e_i<ents->entities_nb; e_i++) {
+      if(ents->entities[e_i]->is_present) {
+	present_ents[present_ents_nb] = ents->entities[e_i];
+	present_ents_global_idxs[present_ents_nb] = e_i;
+	present_ents_nb++;
+      }
     }
-  }
   
-  for(a_i=0; a_i<agents->all_agents_no; a_i++) {
-    agent = agents->all_agents[a_i];
+    for(a_i=0; a_i<agents->all_agents_no; a_i++) {
+      agent = agents->all_agents[a_i];
     
-    if(agent->is_present == FALSE)
-      continue;
+      if(agent->is_present == FALSE)
+	continue;
     
-    for(e_i=0; e_i<present_ents_nb; e_i++) {
-      ge_i = present_ents_global_idxs[e_i];
+      for(e_i=0; e_i<present_ents_nb; e_i++) {
+	ge_i = present_ents_global_idxs[e_i];
       
-      ent = ents->entities[ge_i];
-      kn_on_ent = &agent->knowledge->entities[ge_i];
+	ent = ents->entities[ge_i];
+	kn_on_ent = &agent->knowledge->entities[ge_i];
       
-      //printf("Testing: %s with %s\n", agent->robotPt->name, ent->robotPt->name);
+	//printf("Testing: %s with %s\n", agent->robotPt->name, ent->robotPt->name);
 
-      // If the entity is a part of the current agent, we skip it since it doesn't make sense to compute it from his own point of view
-      // TODO: Or does it?
-      if( (ent->type == HRI_AGENT_PART) || (ent->type == HRI_ISAGENT) ) {
-        if( agent == agents->all_agents[ent->agent_idx] )
-          continue;
-      }
+	// If the entity is a part of the current agent, we skip it since it doesn't make sense to compute it from his own point of view
+	// TODO: Or does it?
+	if( (ent->type == HRI_AGENT_PART) || (ent->type == HRI_ISAGENT) ) {
+	  if( agent == agents->all_agents[ent->agent_idx] )
+	    continue;
+	}
 
-      // VISIBILITY PLACEMENT - FOV,FOA,OOF
-      // TODO: visibility placement for robot parts	
-      if(ent->disappeared)
-	hri_entity_visibility_placement(agent, ent, &res, &elevation, &azimuth);
-      else
-	res = HRI_UK_VIS_PLACE;
-      if ( kn_on_ent->is_placed_from_visibility == (HRI_VISIBILITY_PLACEMENT) res) {
-	if (kn_on_ent->visibility_placement_ischanged)
-	  kn_on_ent->visibility_placement_ischanged = FALSE;
-      }
-      else {
-	kn_on_ent->visibility_placement_ischanged = TRUE;
-	kn_on_ent->visibility_placement_isexported = FALSE;
-	kn_on_ent->is_placed_from_visibility = (HRI_VISIBILITY_PLACEMENT) res;
-      }
+	// 
+	if(ent->is_pl_state_transition_new){
+	  if((ent->pl_state_transition == HRI_APPEAR) || (ent->pl_state_transition == HRI_DISAPPEAR)){
+	    kn_on_ent->disappeared_isexported = FALSE;
+	  }
+	  else if(((ent->pl_state_transition == HRI_START_MOVING) || (ent->pl_state_transition == HRI_STOP_MOVING)) && (a_i == robotMyselfIndex)){
+	    kn_on_ent->motion_ischanged = TRUE;
+	    kn_on_ent->motion_isexported = FALSE;
+	  }
+	    
+	}
+
 	
 
-      // REACHABILITY - REACHABLE, UNREACHABLE, HARDLY REACHABLE
-      // TODO: Fix this global variable use. It's ugly.     
-      // To simplify we do not compute reachability on agent or agent parts
-      if ( (ent->type != HRI_AGENT_PART) && (ent->type != HRI_ISAGENT)) {
-	GIK_VIS = 500;
+	// VISIBILITY PLACEMENT - FOV,FOA,OOF
+	// TODO: visibility placement for robot parts	
 	if(ent->disappeared)
-	  reachability_result = HRI_UK_REACHABILITY;
+	  res = HRI_UK_VIS_PLACE;
 	else
-	  reachability_result = hri_is_reachable(ent, agent);
-	if ( kn_on_ent->reachability ==  reachability_result) {
-	  if ( kn_on_ent->reachability_ischanged)
-	    kn_on_ent->reachability_ischanged = FALSE;
-	}
-	else {
-	  kn_on_ent->reachability = reachability_result;
-	  kn_on_ent->reachability_ischanged = TRUE;
-	  kn_on_ent->reachability_isexported = FALSE;
-	}
-      }
-      // SPATIAL RELATION      
-      if( ent->type != HRI_AGENT_PART) {
-	if(ent->disappeared)
-	  spatial_relation_result = HRI_UK_RELATION;
-	else
-	  spatial_relation_result = hri_spatial_relation(ent, agent);
-	if ( kn_on_ent->is_located_from_agent ==  spatial_relation_result) {
-	  if (kn_on_ent->spatial_relation_ischanged)
-	    kn_on_ent->spatial_relation_ischanged = FALSE;
-	}
-	else {
-	  kn_on_ent->is_located_from_agent  = spatial_relation_result;
-	  kn_on_ent->spatial_relation_ischanged = TRUE;
-	  kn_on_ent->spatial_relation_isexported = FALSE;
-	}
-      }
-       
+	  hri_entity_visibility_placement(agent, ent, &res, &elevation, &azimuth);
       
-      // PLACEMENT RELATION
-      for(e_j=0; e_j<present_ents_nb; e_j++) {
-        ge_j = present_ents_global_idxs[e_j];
-	// do not compute placement relations that involve an agent or an agent part
-	if( ((ent->type == HRI_AGENT_PART) || (ent->type == HRI_ISAGENT)) || ((ents->entities[ge_j]->type == HRI_AGENT_PART) || (ents->entities[ge_j]->type == HRI_ISAGENT)) ) {
-	  continue;
+	if ( kn_on_ent->is_placed_from_visibility == (HRI_VISIBILITY_PLACEMENT) res) {
+	  if (kn_on_ent->visibility_placement_ischanged)
+	    kn_on_ent->visibility_placement_ischanged = FALSE;
 	}
-        if( e_j != e_i) {
-	  if(ent->disappeared || ents->entities[ge_j]->disappeared)
-	    placement_relation_result = HRI_UK_PLR;
+	else {
+	  kn_on_ent->visibility_placement_ischanged = TRUE;
+	  kn_on_ent->visibility_placement_isexported = FALSE;
+	  kn_on_ent->is_placed_from_visibility = (HRI_VISIBILITY_PLACEMENT) res;
+	}
+	
+
+	// REACHABILITY - REACHABLE, UNREACHABLE, HARDLY REACHABLE
+	// TODO: Fix this global variable use. It's ugly.     
+	// To simplify we do not compute reachability on agent or agent parts
+	if ( (ent->type != HRI_AGENT_PART) && (ent->type != HRI_ISAGENT) && ent->can_disappear_and_move) {
+	  GIK_VIS = 500;
+	  if(ent->disappeared)
+	    reachability_result = HRI_UK_REACHABILITY;
 	  else
-	    placement_relation_result = hri_placement_relation(ent, ents->entities[ge_j]);
-	  if (  kn_on_ent->is_placed[ge_j] ==  placement_relation_result) {
-	    if ( kn_on_ent->placement_relation_ischanged[ge_j])
-	      kn_on_ent->placement_relation_ischanged[ge_j] = FALSE;
+	    reachability_result = hri_is_reachable(ent, agent);
+	  if ( kn_on_ent->reachability ==  reachability_result) {
+	    if ( kn_on_ent->reachability_ischanged)
+	      kn_on_ent->reachability_ischanged = FALSE;
 	  }
 	  else {
-	    kn_on_ent->is_placed[ge_j] = placement_relation_result;
-	    kn_on_ent->placement_relation_ischanged[ge_j] = TRUE;
-	    kn_on_ent->placement_relation_isexported[ge_j] = FALSE;
+	    kn_on_ent->reachability = reachability_result;
+	    kn_on_ent->reachability_ischanged = TRUE;
+	    kn_on_ent->reachability_isexported = FALSE;
+	  }
+	}
+	// SPATIAL RELATION      
+	if( ent->type != HRI_AGENT_PART) {
+	  if(ent->disappeared)
+	    spatial_relation_result = HRI_UK_RELATION;
+	  else
+	    spatial_relation_result = hri_spatial_relation(ent, agent);
+	  if ( kn_on_ent->is_located_from_agent ==  spatial_relation_result) {
+	    if (kn_on_ent->spatial_relation_ischanged)
+	      kn_on_ent->spatial_relation_ischanged = FALSE;
+	  }
+	  else {
+	    kn_on_ent->is_located_from_agent  = spatial_relation_result;
+	    kn_on_ent->spatial_relation_ischanged = TRUE;
+	    kn_on_ent->spatial_relation_isexported = FALSE;
+	  }
+	}
+       
+      
+	// PLACEMENT RELATION
+	for(e_j=0; e_j<present_ents_nb; e_j++) {
+	  ge_j = present_ents_global_idxs[e_j];
+	  // do not compute placement relations that involve an agent or an agent part
+	  if( ((ent->type == HRI_AGENT_PART) || (ent->type == HRI_ISAGENT)) || !ent->can_disappear_and_move || ((ents->entities[ge_j]->type == HRI_AGENT_PART) || (ents->entities[ge_j]->type == HRI_ISAGENT)) ) {
+	    continue;
+	  }
+	  if( e_j != e_i) {
+	    if(ent->disappeared || ents->entities[ge_j]->disappeared)
+	      placement_relation_result = HRI_UK_PLR;
+	    else
+	      placement_relation_result = hri_placement_relation(ent, ents->entities[ge_j]);
+	    if (  kn_on_ent->is_placed[ge_j] ==  placement_relation_result) {
+	      if ( kn_on_ent->placement_relation_ischanged[ge_j])
+		kn_on_ent->placement_relation_ischanged[ge_j] = FALSE;
+	    }
+	    else {
+	      kn_on_ent->is_placed_old [ge_j] = kn_on_ent->is_placed[ge_j];
+	      kn_on_ent->is_placed[ge_j] = placement_relation_result;
+	      kn_on_ent->placement_relation_ischanged[ge_j] = TRUE;
+	      kn_on_ent->placement_relation_isexported[ge_j] = FALSE;
+	    }
 	  }
 	}
       }
-    }
 
-    // VISIBLITY
-    g3d_compute_visibility_for_given_entities(present_ents, agent, vis_result, present_ents_nb);
+      // VISIBLITY
+      g3d_compute_visibility_for_given_entities(present_ents, agent, vis_result, present_ents_nb);
 
-    for(e_j=0; e_j<present_ents_nb; e_j++) {
-      ge_j = present_ents_global_idxs[e_j];
-      kn_on_ent = &agent->knowledge->entities[ge_j];
-      if ( kn_on_ent->visibility  ==  vis_result[e_j]) {
-	if ( kn_on_ent->visibility_ischanged)
-	  kn_on_ent->visibility_ischanged  = FALSE;
+      for(e_j=0; e_j<present_ents_nb; e_j++) {
+	ge_j = present_ents_global_idxs[e_j];
+	kn_on_ent = &agent->knowledge->entities[ge_j];
+	if ( kn_on_ent->visibility  ==  vis_result[e_j]) {
+	  if ( kn_on_ent->visibility_ischanged)
+	    kn_on_ent->visibility_ischanged  = FALSE;
+	}
+	else {
+	  kn_on_ent->visibility = vis_result[e_j];
+	  kn_on_ent->visibility_ischanged = TRUE;
+	  kn_on_ent->visibility_isexported = FALSE;
+	}      
       }
-      else {
-	kn_on_ent->visibility = vis_result[e_j];
-	kn_on_ent->visibility_ischanged = TRUE;
-	kn_on_ent->visibility_isexported = FALSE;
-      }      
     }
+
+
+    MY_FREE(vis_result, HRI_VISIBILITY, ents->entities_nb); // FREE
+    MY_FREE(present_ents, HRI_ENTITY*, ents->entities_nb); // FREE
+    MY_FREE(present_ents_global_idxs, int, ents->entities_nb); // FREE
+    
+    // all placement state transition events have been managed
+    for(e_i=0; e_i<present_ents_nb; e_i++) {
+      ge_i = present_ents_global_idxs[e_i];      
+      ent = ents->entities[ge_i];
+      if(ent->is_pl_state_transition_new)
+	ent->is_pl_state_transition_new = FALSE;
+    }
+
   }
-
-
-  MY_FREE(vis_result, HRI_VISIBILITY, ents->entities_nb); // FREE
-  MY_FREE(present_ents, HRI_ENTITY*, ents->entities_nb); // FREE
-  MY_FREE(present_ents_global_idxs, int, ents->entities_nb); // FREE
-
+  // Changes in the Wolrd have been managed.
+  if(ents->changesInTheWorld)
+    ents->changesInTheWorld = FALSE;
 
   return counter;
 }
