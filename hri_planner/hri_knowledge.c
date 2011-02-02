@@ -981,11 +981,6 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
       }
     }
 
-
-    MY_FREE(vis_result, HRI_VISIBILITY, ents->entities_nb); // FREE
-    MY_FREE(present_ents, HRI_ENTITY*, ents->entities_nb); // FREE
-    MY_FREE(present_ents_global_idxs, int, ents->entities_nb); // FREE
-    
     // all placement state transition events have been managed
     for(e_i=0; e_i<present_ents_nb; e_i++) {
       ge_i = present_ents_global_idxs[e_i];      
@@ -993,6 +988,10 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
       if(ent->is_pl_state_transition_new)
 	ent->is_pl_state_transition_new = FALSE;
     }
+
+    MY_FREE(vis_result, HRI_VISIBILITY, ents->entities_nb); // FREE
+    MY_FREE(present_ents, HRI_ENTITY*, ents->entities_nb); // FREE
+    MY_FREE(present_ents_global_idxs, int, ents->entities_nb); // FREE
 
   }
   // Changes in the Wolrd have been managed.
