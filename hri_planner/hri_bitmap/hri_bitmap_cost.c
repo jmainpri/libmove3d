@@ -912,11 +912,11 @@ double getDirectionalVal(hri_bitmapset * btset, hri_bitmap_cell* current_cell, h
      if (path_bitmap->search_goal != NULL) {
        double start_realx = ( path_bitmap->search_goal->x * btset->pace)+btset->realx;
        double start_realy = ( path_bitmap->search_goal->y * btset->pace)+btset->realy;
-       goal_distance = DISTANCE2D(start_realx, start_realy, humanx, humany);
+       goal_distance = DISTANCE2D(start_realx, start_realy, realx, realy);
      } else  if (btset->robot->ROBOT_GOTO != NULL) {
        double start_realx = btset->robot->ROBOT_GOTO[ROBOTq_X];
        double start_realy = btset->robot->ROBOT_GOTO[ROBOTq_Y];
-       goal_distance = DISTANCE2D(start_realx, start_realy, humanx, humany);
+       goal_distance = DISTANCE2D(start_realx, start_realy, realx, realy);
      }
 
      double final_sprint = 0.6;
