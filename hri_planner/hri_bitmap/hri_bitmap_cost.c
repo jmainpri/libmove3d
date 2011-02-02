@@ -783,45 +783,48 @@ int getClosestPoseOnProjection(hri_bitmapset * btset, hri_human* cur_human,
        *projectionx = humanx;
        *projectiony = humany;
    } else {
-     // we now have the projection onto the line (humx, humy) -> (dx, dy), meaning the most likely position of linear path projection
-     // Now we need to deal with growing uncertainty. For now, represent this as angles to the left and right of most likely path.
-     // TODO: Uncertainty increases polynomially over time?
-     // 0.75 = ~45 degrees
-     double toleranceAngle = 0.2; // TODO: depends on velocity
+     *projectionx = px;
+     *projectiony = py;
 
-     double distanceProjectionBounds = DISTANCE2D(px, py, humanx, humany) / cos (toleranceAngle);
-
-     // two candidate points on either side of most likely path
-     double projectionBoundx1 = cos(*projectionth - toleranceAngle) * distanceProjectionBounds;
-     double projectionBoundy1 = sin(*projectionth - toleranceAngle) * distanceProjectionBounds;
-
-     double projectionBoundx2 = cos(*projectionth + toleranceAngle) * distanceProjectionBounds;
-     double projectionBoundy2 = sin(*projectionth  + toleranceAngle) * distanceProjectionBounds;
-
-     // robot can be within the path or outside, if within, the robot position itself is the closest projection
-     if (DISTANCE2D(x,y, projectionBoundx1, projectionBoundy1) < DISTANCE2D(x,y, projectionBoundx2, projectionBoundy2)) {
-       if ( DISTANCE2D(x,y, projectionBoundx2, projectionBoundy2) < DISTANCE2D(projectionBoundx1, projectionBoundy1, projectionBoundx2, projectionBoundy2) ){
-         // robot is within uncertainty region, therefore it is where it should not be
-         *projectionx = x;
-         *projectiony = y;
-         // leave projectionth as is
-       } else {
-         *projectionx = projectionBoundx1;
-         *projectiony = projectionBoundy1;
-         *projectionth = *projectionth - toleranceAngle;
-       }
-     } else {
-       if ( DISTANCE2D(x,y, projectionBoundx1, projectionBoundy1) < DISTANCE2D(projectionBoundx1, projectionBoundy1, projectionBoundx2, projectionBoundy2) ){
-         // robot is within uncertainty region, therefore it is where it should not be
-         *projectionx = x;
-         *projectiony = y;
-         // leave projectionth as is
-       } else {
-         *projectionx = projectionBoundx2;
-         *projectiony = projectionBoundy2;
-         *projectionth = *projectionth + toleranceAngle;
-       }
-     }
+//     // we now have the projection onto the line (humx, humy) -> (dx, dy), meaning the most likely position of linear path projection
+//     // Now we need to deal with growing uncertainty. For now, represent this as angles to the left and right of most likely path.
+//     // TODO: Uncertainty increases polynomially over time?
+//     // 0.75 = ~45 degrees
+//     double toleranceAngle = 0.2; // TODO: depends on velocity
+//
+//     double distanceProjectionBounds = DISTANCE2D(px, py, humanx, humany) / cos (toleranceAngle);
+//
+//     // two candidate points on either side of most likely path
+//     double projectionBoundx1 = cos(*projectionth - toleranceAngle) * distanceProjectionBounds;
+//     double projectionBoundy1 = sin(*projectionth - toleranceAngle) * distanceProjectionBounds;
+//
+//     double projectionBoundx2 = cos(*projectionth + toleranceAngle) * distanceProjectionBounds;
+//     double projectionBoundy2 = sin(*projectionth  + toleranceAngle) * distanceProjectionBounds;
+//
+//     // robot can be within the path or outside, if within, the robot position itself is the closest projection
+//     if (DISTANCE2D(x,y, projectionBoundx1, projectionBoundy1) < DISTANCE2D(x,y, projectionBoundx2, projectionBoundy2)) {
+//       if ( DISTANCE2D(x,y, projectionBoundx2, projectionBoundy2) < DISTANCE2D(projectionBoundx1, projectionBoundy1, projectionBoundx2, projectionBoundy2) ){
+//         // robot is within uncertainty region, therefore it is where it should not be
+//         *projectionx = x;
+//         *projectiony = y;
+//         // leave projectionth as is
+//       } else {
+//         *projectionx = projectionBoundx1;
+//         *projectiony = projectionBoundy1;
+//         *projectionth = *projectionth - toleranceAngle;
+//       }
+//     } else {
+//       if ( DISTANCE2D(x,y, projectionBoundx1, projectionBoundy1) < DISTANCE2D(projectionBoundx1, projectionBoundy1, projectionBoundx2, projectionBoundy2) ){
+//         // robot is within uncertainty region, therefore it is where it should not be
+//         *projectionx = x;
+//         *projectiony = y;
+//         // leave projectionth as is
+//       } else {
+//         *projectionx = projectionBoundx2;
+//         *projectiony = projectionBoundy2;
+//         *projectionth = *projectionth + toleranceAngle;
+//       }
+//     }
    }
 
     return 0;
