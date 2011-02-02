@@ -28,6 +28,7 @@ int PLCMT_TYPE; /** Look, body, or approach */
 
 static int insert2table(double value, int cx, int cy, int cz, double * Table,	int * x, int * y, int * z, int l);
 
+static int is_in_fow(double xh, double yh, double xt, double yt, double orient, double fowangle);
 
 /* similar to M_SQRT2 in math.h*/
 #ifndef M_SQRT3

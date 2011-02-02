@@ -742,7 +742,6 @@ double get3CellAngle(hri_bitmap_cell* cell1, hri_bitmap_cell* cell2, hri_bitmap_
   double angle1to2 = atan2(cell2->y - cell1->y, cell2->x - cell1->x);
   double angle2to3 = atan2(cell3->y - cell2->y, cell3->x - cell2->x);
   double result = getAngleDeviation(angle1to2, angle2to3);
-  printf ("angle1 :%f, angle2 :%f result :%f \n", angle1to2, angle2to3, result);
   return result;
 }
 
