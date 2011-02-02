@@ -757,9 +757,15 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	      ents->entities[e_i]->is_pl_state_transition_new = TRUE;
 	      ents->entities[e_i]->pl_state_transition = HRI_STOP_MOVING;
 	      printf("%s STOP-MOVING\n",ents->entities[e_i]->name); 
+	    }	    
+	    else if ((ents->entities[e_i]->last_ismoving_iter == 0 ) && (ents->entities[e_i]->filtered_motion == HRI_STATIC)){
+	      //Static, Nothing to do
+	    }
+	    else if ((ents->entities[e_i]->last_ismoving_iter > 0 ) && (ents->entities[e_i]->filtered_motion == HRI_MOVING)){
+	      printf("%s IS MOVING\n",ents->entities[e_i]->name);  
 	    }
 	    else
-	      printf("%s IS MOVING\n",ents->entities[e_i]->name);  
+	      printf("Impossible motion state %s for entity %s\n",ents->entities[e_i]->name,ents->entities[e_i]->filtered_motion);  
 	  }
 	  // increment last is moving seen
 	  if(ents->entities[e_i]->last_ismoving_iter>0)
