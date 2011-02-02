@@ -944,15 +944,16 @@ double getDirectionalVal(hri_bitmapset * btset, hri_bitmap_cell* current_cell, h
 
              // how far from each other the human and robot would pass each other
              double passingDistance = DISTANCE2D(realx, realy, projectionx, projectiony);
+
              double comfortPassingDistance = 0.2;
              // robot radius + human radius + context-dependant-comfort-zone
-             double passingThreshold = 0.6 + 0.4 + comfortPassingDistance; // TODO: use real values, put into parameters
+             double passingThreshold = 0.4  + 0.4 + comfortPassingDistance; // TODO: use real values, put into parameters
 
-             // area ouside prediction where robot can do whatever he wants. Inside, he should not move towards the predicted path of human in small angles
+             // area outside prediction where robot can do whatever he wants. Inside, he should not move towards the predicted path of human in small angles
              double passingThreshold2 = passingThreshold + 1; // TODO: use real values, put into parameters
 
 
-             // if distance > threashold, all angles that maintain the distance are good, others are bad for a certain region
+             // if distance > threshold, all angles that maintain the distance are good, others are bad for a certain region
              if (passingDistance > passingThreshold) {
                if (passingDistance > passingThreshold2) {
                  directionalSignificance = 0;
@@ -972,7 +973,7 @@ double getDirectionalVal(hri_bitmapset * btset, hri_bitmap_cell* current_cell, h
                    }
                  }
                }
-             }
+             } // endif check passing threshold
 
              // if we passed all the above without reducing significance to 0, check heading.
              if (directionalSignificance > 0 ) {
