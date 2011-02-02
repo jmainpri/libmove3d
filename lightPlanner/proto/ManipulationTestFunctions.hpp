@@ -34,13 +34,23 @@ public:
   //! if it doesnot exists, if it does eares it
   void initManipulationGenom();
 
-  //!Getters
+  //! Getters
   inline ManipulationPlanner* getManipulationPlanner(){return m_manipulation;}
+  
+  //! Draws the workspace
+  void drawEvalutedWorkspace();
+  
   //! Generic function to test the genom requests
 	bool manipTest(MANIPULATION_TASK_TYPE_STR type);
-	bool manipTestGraspingWithDifferentObjectOrientations(bool rotate_only_around_z);
-	
+  
 private:
+  //! evaluates the number of grasp succes over 
+  //! a series of gradomly selected targets
+	bool manipTestGraspingWithDifferentObjectOrientations(bool rotate_only_around_z, double& successRate);
+  
+  //! Compute workspace of with partiular 
+  //! manipulation planner parameters
+  bool evaluateWorkspace();
 	
 	p3d_rob* m_Robot;
 	
@@ -50,6 +60,10 @@ private:
 	std::string m_OBJECT_NAME;
   
   std::vector<double> m_objStart, m_objGoto;
+  
+  unsigned int m_nbOrientations;
+  
+  std::vector< std::pair<double, std::vector<double> > > m_workspacePoints;
 	
 	ManipulationPlanner* m_manipulation;
 };

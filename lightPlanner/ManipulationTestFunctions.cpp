@@ -17,6 +17,8 @@
 
 using namespace std;
 
+ManipulationTestFunctions* global_manipPlanTest = NULL;
+
 //! Constructor
 ManipulationTestFunctions::ManipulationTestFunctions()
 {
@@ -28,6 +30,8 @@ ManipulationTestFunctions::ManipulationTestFunctions()
 	m_qGoal = NULL;
 	
 	m_manipulation = NULL;
+  
+  m_nbOrientations = 100;
 }
 
 //! Constructor
@@ -39,6 +43,8 @@ ManipulationTestFunctions::ManipulationTestFunctions(std::string RobotNameContai
 	m_qGoal = NULL;
 	
 	m_manipulation = NULL;
+  
+  m_nbOrientations = 100;
 }
 
 //! Destructor
@@ -81,20 +87,19 @@ void ManipulationTestFunctions::initManipulationGenom()
 		m_qInit = p3d_copy_config(m_Robot,m_Robot->ROBOT_POS);
 		//m_qInit = p3d_get_robot_config(m_Robot);
 		m_qGoal = p3d_copy_config(m_Robot,m_Robot->ROBOT_GOTO);
-
+    
     // Warning SCENARIO dependant part, gsJidoKukaSAHand.p3d
     m_OBJECT_NAME = "GREY_TAPE";
     
     m_objGoto.resize(3);
     
-//    m_objGoto[0] = 3.90;  // X
-//    m_objGoto[1] = -2.85; // Y
-//    m_objGoto[2] = 1.30;  // Z
+    //    m_objGoto[0] = 3.90;  // X
+    //    m_objGoto[1] = -2.85; // Y
+    //    m_objGoto[2] = 1.30;  // Z
     
     m_objGoto[0] = 4.23;
     m_objGoto[1] = -2.22;
     m_objGoto[2] = 1.00;
-
   }
 	
   return;
@@ -108,11 +113,11 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 	std::vector <SM_TRAJ> smTrajs;
 	std::vector <p3d_traj*> trajs;
 	
-//	if (p3d_equal_config(m_Robot, m_qInit, m_qGoal)) 
-//	{
-//		cout << "ManipulationTestFunctions::p3d_equal_config(m_Robot, m_qInit, m_qGoal)" << endl;
-//		return succeed;
-//	}
+  //	if (p3d_equal_config(m_Robot, m_qInit, m_qGoal)) 
+  //	{
+  //		cout << "ManipulationTestFunctions::p3d_equal_config(m_Robot, m_qInit, m_qGoal)" << endl;
+  //		return succeed;
+  //	}
   
   cout << "Manipulation planning for " << m_OBJECT_NAME << endl;
 	
@@ -155,7 +160,7 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 	{
 		succeed = true;
 	}
-
+  
 	return succeed;
 }
 
@@ -163,15 +168,16 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 //! Tests the ARM_PICK_GOTO task for different orientations of the object (but keeping its current position).
 //! \param rotate_only_around_z if true the orientations are obtained from the object's current orientation by random rotations around the vertical axis,
 //! if false the rotations are fully randomly generated.
-bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations(bool rotate_only_around_z)
+//! returns a successRate between 0 and 1
+bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations(bool rotate_only_around_z,double& successRate)
 {
   MANIPULATION_TASK_MESSAGE status;
   
   bool result =false;
-  int n, nbOrientations;
+  int n;
   p3d_rob *object;
   double x, y, z, rx, ry, rz;
-
+  
   object= (p3d_rob*) p3d_get_robot_by_name((char*) m_OBJECT_NAME.c_str());
   if(object==NULL)
   { 
@@ -183,17 +189,16 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
   m_manipulation->setDebugMode(false);
   
   n= 0;
-  nbOrientations= 100;
-  for(int i=1; i<=nbOrientations; ++i)
+  for(int i=1; i<=m_nbOrientations; ++i)
   {
-    printf("****************test %d/%d************************\n",i,nbOrientations);
+    printf("****************test %d/%d************************\n",i,m_nbOrientations);
     p3d_set_and_update_this_robot_conf(m_manipulation->robot(), m_qInit);
-
+    
     if(rotate_only_around_z)
     {  p3d_set_freeflyer_pose2(object, x, y, z, 0, 0, p3d_random(-M_PI,M_PI));  }
     else
     {  p3d_set_freeflyer_pose2(object, x, y, z, p3d_random(-M_PI,M_PI), p3d_random(-M_PI,M_PI), p3d_random(-M_PI,M_PI));  } 
- 
+    
     //result = manipTest(ARM_PICK_GOTO);
     //if( result )
     //{  n++; }   
@@ -216,11 +221,14 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
     g3d_draw_allwin_active();
   }  
   
+  successRate = ((double)n)/m_nbOrientations;
+  
   printf("---------------------------------------------------\n");
   printf("---------------------------------------------------\n");
   printf("---------------------------------------------------\n");
   printf("---------------------------------------------------\n");
-  printf("%s: %d: ARM_PICK_GOTO succeeded for %d/%d different orientations of the object.\n",__FILE__,__LINE__,n,nbOrientations);
+  printf("%s: %d: ARM_PICK_GOTO succeeded for %d/%d different orientations of the object.\n",__FILE__,__LINE__,n,m_nbOrientations);
+  printf(" equivalent to a success rate of %f\n",successRate);
   printf("---------------------------------------------------\n");
   printf("---------------------------------------------------\n");
   printf("---------------------------------------------------\n");
@@ -228,6 +236,82 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
   
   return (n!=0 ? true : false);
 }
+
+//! Stores the success rate 
+//! of the workspace point
+void ManipulationTestFunctions::drawEvalutedWorkspace()
+{
+  double colorvector[4];
+	
+  colorvector[0] = 0.0;       //red
+  colorvector[1] = 0.0;       //green
+  colorvector[2] = 0.0;       //blue
+  colorvector[3] = 0.01;      //transparency
+  
+  for ( unsigned int i=0;i<m_workspacePoints.size();i++ ) 
+  {
+    double x,y,z;
+    
+    double successRate = m_workspacePoints[i].first;
+    
+    GroundColorMixGreenToRed(colorvector,1-successRate);
+		g3d_set_color(Any,colorvector);
+    
+    x = m_workspacePoints[i].second[0];
+    y = m_workspacePoints[i].second[1];
+    z = m_workspacePoints[i].second[2];
+    
+    g3d_drawSphere(x,y,z,0.025);
+  }
+}
+
+//! Stores the success rate of the workspace point
+bool ManipulationTestFunctions::evaluateWorkspace()
+{
+  p3d_rob* object= (p3d_rob*) p3d_get_robot_by_name((char*) m_OBJECT_NAME.c_str());
+  if(object==NULL)
+  { 
+    printf("%s: %d: there is no robot named \"%s\".\n",__FILE__,__LINE__,m_OBJECT_NAME.c_str());
+    return false;
+  }
+  
+  m_workspacePoints.clear();
+  
+  double successRate;
+  double x, y, z, rx, ry, rz;
+  
+  p3d_get_freeflyer_pose2(object, &x, &y, &z, &rx, &ry, &rz);
+  
+  double xref = x;
+  double yref = y;
+  
+  m_nbOrientations = 10;
+  
+  const double SizeInX = 0.30; // Taille du decallage selon X
+  const double SizeInY = 0.30; // Taille du decallage selon Y
+  
+  for (double dx=-SizeInX; dx<SizeInX; dx=dx+0.05 ) 
+  {
+    for (double dy=-SizeInY; dy<SizeInY; dy=dy+0.05 ) 
+    {
+      vector<double> pos(3);
+      
+      x = xref + dx;
+      y = yref + dy;
+      
+      p3d_set_freeflyer_pose2(object, x, y, z, rx, ry, rz);
+      
+      manipTestGraspingWithDifferentObjectOrientations(true,successRate);
+      
+      pos[0] = x;
+      pos[1] = y;
+      pos[2] = z;
+      
+      m_workspacePoints.push_back( make_pair( successRate , pos ) );
+    }
+  }
+}
+
 
 //! Main function that 
 //!
@@ -250,21 +334,28 @@ bool ManipulationTestFunctions::runTest(int id)
     manipTest(ARM_PICK_GOTO);
     return manipTest(ARM_TAKE_TO_FREE);
   }
-
+  
   if (id == 6) 
   {
-    return this->manipTestGraspingWithDifferentObjectOrientations(false);
+    double succesRate=0;
+    return this->manipTestGraspingWithDifferentObjectOrientations(false,succesRate);
   }
-
+  
   if (id == 7) 
   {
-    return this->manipTestGraspingWithDifferentObjectOrientations(true);
+    double succesRate=0;
+    return this->manipTestGraspingWithDifferentObjectOrientations(true,succesRate);
+  }
+  
+  if (id == 8) 
+  {
+    global_manipPlanTest = this;
+    return this->evaluateWorkspace();
   }
   else {
     cout << "Test : " << id << " not defined " << endl;
   }
-
+  
 	
   return false;
 }
-

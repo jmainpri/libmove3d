@@ -20,6 +20,11 @@
 #include "../planner/dpg/proto/DpgGrid.h"
 #endif
 
+#if defined( LIGHT_PLANNER ) && defined( MULTILOCALPATH ) && defined( GRASP_PLANNING )
+#include "LightPlanner-pkg.h"
+extern ManipulationTestFunctions* global_manipPlanTest;
+#endif
+
 #ifdef HRI_PLANNER
 
 #include "Hri_planner-pkg.h"
@@ -1339,6 +1344,13 @@ void g3d_draw_env_custom()
 #ifdef DPG
   if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
     XYZ_GRAPH->dpgGrid->draw();
+  }
+#endif
+  
+#if defined( LIGHT_PLANNER ) && defined( MULTILOCALPATH ) && defined( GRASP_PLANNING )
+  if(global_manipPlanTest)
+  {
+    global_manipPlanTest->drawEvalutedWorkspace();
   }
 #endif
   
