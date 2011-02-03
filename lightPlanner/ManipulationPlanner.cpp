@@ -41,7 +41,7 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robotPt) :
     _optimizeRedundentSteps = 100;
     _approachFreeOffset = 0.10; //0.1 meters
     _approachGraspOffset = 0.10; //0.1 meters
-    _safetyDistanceValue = 0.02;
+    _safetyDistanceValue = 0.05;
 
     // Warning : Not very efficient
     // Should only allocate this once
@@ -1642,6 +1642,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     fixAllHands(qi, false);
     fixAllHands(qf, false);
     p3d_set_and_update_this_robot_conf(_robot, qi);
+    //Remove collision tolerence for the object
+    p3d_set_collision_tolerance_inhibition(object, TRUE);
     switch (task) {
       case ARM_FREE: {
         printf("plan for ARM_FREE task\n");
@@ -1711,6 +1713,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       printf("BioMove3D: armPlanTask Fail\n");
     }
   }
+  p3d_set_collision_tolerance_inhibition(object, FALSE);
   p3d_destroy_config(_robot, qi);
   p3d_destroy_config(_robot, qf);
   return status;
