@@ -304,7 +304,8 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
   double * results;
   int i, o_i, j, t;
   double pan_max_head_turning, tilt_max_head_turning, pan_head_turning_iter, tilt_head_turning_iter;
-  double visible_pixel_treshold = 0.001;
+  double visible_pixel_treshold_init = 0.002;
+  double visible_pixel_treshold = 0.002;
   double elevation, azimuth;
   int pan_div_no, tilt_div_no;
   int vis_pl;
@@ -356,27 +357,25 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
       
       // SELECT IN FOV/FOA OBJECTS
       for(o_i=0, i=0; i<ent_nb; i++) {
-	if(res[i] == HRI_INVISIBLE) {
-	  if(ents[i]->disappeared)
-	    vis_pl= HRI_UK_VIS_PLACE;
-	  else
-	    hri_object_visibility_placement(agent, ents[i]->robotPt, &vis_pl, &elevation, &azimuth);
+	if(ents[i]->disappeared)
+	  vis_pl= HRI_UK_VIS_PLACE;
+	else
+	  hri_object_visibility_placement(agent, ents[i]->robotPt, &vis_pl, &elevation, &azimuth);
 	  
-	  if( ((vis_pl == HRI_FOV) || (vis_pl == HRI_FOA)) && (res[i] !=  HRI_VISIBLE) ) {
-	    entities_to_test[o_i] = ents[i];
-	    entities_to_test_indexes[o_i] = i;
-	    o_i++;
-	  }
+	if( (vis_pl == HRI_FOV) || (vis_pl == HRI_FOA)) {
+	  entities_to_test[o_i] = ents[i];
+	  entities_to_test_indexes[o_i] = i;
+	  o_i++;
 	}
       }
-      
+            
       // TEST THEIR VISIBILITY
       g3d_get_given_entities_pixelpresence_from_viewpoint(agent->perspective->camjoint->abs_pos, agent->perspective->fov,
 							  entities_to_test, o_i, results, save_images);
       //printf("%d. Number of tested entities: %d\n", j+2, o_i);
 
       //TODO : manage better this : Ack to manage big differences in field of view.
-      visible_pixel_treshold = visible_pixel_treshold*60*60/(agent->perspective->fov*agent->perspective->fov);
+      visible_pixel_treshold = visible_pixel_treshold_init*60*60/(agent->perspective->fov*agent->perspective->fov);
 
       // EVALUATE AND WRITE THE RESULT
       for(i=0; i<o_i; i++) {
