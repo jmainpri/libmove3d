@@ -25,7 +25,7 @@ ManipulationTestFunctions* global_manipPlanTest = NULL;
 //! Constructor
 ManipulationTestFunctions::ManipulationTestFunctions()
 {
-	m_Robot = p3d_get_robot_by_name_containing("ROBOT");
+	m_Robot = p3d_get_robot_by_name_containing("JIDOKUKA_ROBOT");
 	
 	cout << "Manipulation planner robot is : " << m_Robot->name << endl;
 	
@@ -210,7 +210,7 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
     
     m_manipulation->checkConfigForCartesianMode(m_qInit, object);
     m_manipulation->fixAllHands(m_qInit, false);
-    
+    p3d_set_collision_tolerance_inhibition(object, TRUE);
     ManipulationData data(m_Robot);
     if ( m_manipulation->findArmGraspsConfigs(0, object, data) == MANIPULATION_TASK_OK) 
     {
@@ -222,6 +222,7 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
       p3d_set_and_update_this_robot_conf(m_manipulation->robot(), m_qInit);
     }
     g3d_draw_allwin_active();
+    p3d_set_collision_tolerance_inhibition(object, FALSE);
   }  
   
   successRate = ((double)n)/m_nbOrientations;
@@ -254,7 +255,7 @@ void ManipulationTestFunctions::saveToFileEvalutedWorkspace()
   s << "success" << ",";
   s << "X" << ",";
 	s << "Y" << ",";
-	s << "Z" << ",";
+	s << "Z";
   s << endl;
   
   for ( unsigned int i=0;i<m_workspacePoints.size();i++ ) 
@@ -262,7 +263,7 @@ void ManipulationTestFunctions::saveToFileEvalutedWorkspace()
     s << m_workspacePoints[i].first << "," ;
     s << m_workspacePoints[i].second[0] << "," ;
     s << m_workspacePoints[i].second[1] << "," ;
-    s << m_workspacePoints[i].second[2] << "," ;
+    s << m_workspacePoints[i].second[2];
     s << endl;
   }
   
@@ -301,6 +302,7 @@ void ManipulationTestFunctions::drawEvalutedWorkspace()
 bool ManipulationTestFunctions::evaluateWorkspace()
 {
   p3d_rob* object= (p3d_rob*) p3d_get_robot_by_name((char*) m_OBJECT_NAME.c_str());
+  p3d_rob* plate= (p3d_rob*) p3d_get_robot_by_name((char*) "PLATE");
   if(object==NULL)
   { 
     printf("%s: %d: there is no robot named \"%s\".\n",__FILE__,__LINE__,m_OBJECT_NAME.c_str());
@@ -319,12 +321,14 @@ bool ManipulationTestFunctions::evaluateWorkspace()
   
   m_nbOrientations = 10;
   
-  const double SizeInX = 0.30; // Taille du decallage selon X
-  const double SizeInY = 0.30; // Taille du decallage selon Y
+  const double SizeInXPos = 1.5; // Taille du decallage selon X
+  const double SizeInYPos = 1; // Taille du decallage selon Y
+  const double SizeInXNeg = -1; // Taille du decallage selon X
+  const double SizeInYNeg = -1.5 ; // Taille du decallage selon Y
   
-  for (double dx=-SizeInX; dx<SizeInX; dx=dx+0.05 ) 
+  for (double dx=SizeInXNeg; dx<=SizeInXPos; dx=dx+0.1)
   {
-    for (double dy=-SizeInY; dy<SizeInY; dy=dy+0.05 ) 
+    for (double dy=SizeInYNeg; dy<=SizeInYPos; dy=dy+0.1)
     {
       vector<double> pos(3);
       
@@ -332,7 +336,7 @@ bool ManipulationTestFunctions::evaluateWorkspace()
       y = yref + dy;
       
       p3d_set_freeflyer_pose2(object, x, y, z, rx, ry, rz);
-      
+      p3d_set_freeflyer_pose2(plate, x, y, z, 0, 0, 0);
       manipTestGraspingWithDifferentObjectOrientations(true,successRate);
       
       pos[0] = x;
@@ -340,8 +344,10 @@ bool ManipulationTestFunctions::evaluateWorkspace()
       pos[2] = z;
       
       m_workspacePoints.push_back( make_pair( successRate , pos ) );
+      saveToFileEvalutedWorkspace();
     }
   }
+  return true;
 }
 
 
@@ -381,7 +387,7 @@ bool ManipulationTestFunctions::runTest(int id)
   
   if (id == 8) 
   {
-    global_manipPlanTest = this;
+//     global_manipPlanTest = this;
     return this->evaluateWorkspace();
   }
   else {

@@ -12,6 +12,7 @@
   #include "../lightPlanner/proto/DlrParser.h"
   #include "../lightPlanner/proto/lightPlanner.h"
   #include "../lightPlanner/proto/lightPlannerApi.h"
+  #include "ManipulationTestFunctions.hpp"
 #include "../lightPlanner/proto/robotPos.h"
 #endif
 #ifdef DPG
@@ -400,8 +401,18 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 16 :{
 #if defined(LIGHT_PLANNER)
-      (*XYZ_ROBOT->armManipulationData)[0].setCarriedObject("Horse");
-      XYZ_ROBOT->isCarryingObject = TRUE;
+extern ManipulationTestFunctions* global_manipPlanTest;
+
+//       (*XYZ_ROBOT->armManipulationData)[0].setCarriedObject("Horse");
+//       XYZ_ROBOT->isCarryingObject = TRUE;
+ManipulationTestFunctions* tests = new ManipulationTestFunctions();
+global_manipPlanTest = tests;
+
+if(!tests->runTest(8))
+{
+   std::cout << "ManipulationTestFunctions::Fail" << std::endl;
+}
+
 #endif
       break;
     }
