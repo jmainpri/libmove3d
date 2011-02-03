@@ -842,22 +842,29 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
     vis_result = MY_ALLOC(HRI_VISIBILITY, ents->entities_nb); // ALLOC
     present_ents = MY_ALLOC(HRI_ENTITY*, ents->entities_nb); // ALLOC
     present_ents_global_idxs = MY_ALLOC(int, ents->entities_nb); // ALLOC
-
-    // Pick entities that exist 
-    present_ents_nb = 0;
-    for(e_i=0; e_i<ents->entities_nb; e_i++) {
-      if(ents->entities[e_i]->is_present) {
-	present_ents[present_ents_nb] = ents->entities[e_i];
-	present_ents_global_idxs[present_ents_nb] = e_i;
-	present_ents_nb++;
-      }
-    }
   
     for(a_i=0; a_i<agents->all_agents_no; a_i++) {
       agent = agents->all_agents[a_i];
     
       if(agent->is_present == FALSE)
 	continue;
+
+      // Pick entities that exist 
+      present_ents_nb = 0;
+      for(e_i=0; e_i<ents->entities_nb; e_i++) {
+	// If the entity is a part of the current agent, we skip it since it doesn't make sense to compute it from his own point of view
+	// TODO: Or does it?
+	if( (ents->entities[e_i]->type == HRI_AGENT_PART) || (ents->entities[e_i]->type == HRI_ISAGENT) ) {
+	  if( agent == agents->all_agents[ents->entities[e_i]->agent_idx] )
+	    continue;
+	}
+	if(ents->entities[e_i]->is_present) {
+	  present_ents[present_ents_nb] = ents->entities[e_i];
+	  present_ents_global_idxs[present_ents_nb] = e_i;
+	  present_ents_nb++;
+	}
+      }
+
     
       for(e_i=0; e_i<present_ents_nb; e_i++) {
 	ge_i = present_ents_global_idxs[e_i];
@@ -866,13 +873,6 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
 	kn_on_ent = &agent->knowledge->entities[ge_i];
       
 	//printf("Testing: %s with %s\n", agent->robotPt->name, ent->robotPt->name);
-
-	// If the entity is a part of the current agent, we skip it since it doesn't make sense to compute it from his own point of view
-	// TODO: Or does it?
-	if( (ent->type == HRI_AGENT_PART) || (ent->type == HRI_ISAGENT) ) {
-	  if( agent == agents->all_agents[ent->agent_idx] )
-	    continue;
-	}
 
 	// 
 	if(ent->is_pl_state_transition_new){
