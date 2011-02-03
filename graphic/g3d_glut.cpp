@@ -141,6 +141,7 @@ void g3d_glut_paintGL()
   g3d_draw();
 	
   glPopMatrix();
+  glutSwapBuffers();
 }
 
 
