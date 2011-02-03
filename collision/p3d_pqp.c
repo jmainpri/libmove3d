@@ -3295,7 +3295,7 @@ int pqp_robot_robot_collision_test(p3d_rob *robot1, p3d_rob *robot2)
        if(!pqp_is_collision_pair_activated(robot1->o[i], robot2->o[j]))
        { continue; }
 
-       if(pqp_tolerance_flag==false)
+       if(pqp_tolerance_flag==false || robot1->inhibitCollisionTolerance==TRUE || robot2->inhibitCollisionTolerance==TRUE)
        {
          nb_cols= pqp_collision_test(robot1->o[i], robot2->o[j]);
        }

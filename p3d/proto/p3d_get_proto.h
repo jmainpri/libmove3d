@@ -71,4 +71,5 @@ extern int p3d_get_first_joint_pose(p3d_rob *robotPt, p3d_matrix4 pose);
 extern int p3d_get_body_pose(p3d_rob *robotPt, int index, p3d_matrix4 pose);
 extern int p3d_get_freeflyer_pose(p3d_rob *robotPt, p3d_matrix4 pose);
 extern int p3d_get_freeflyer_pose2(p3d_rob *robotPt, double *x, double *y, double *z, double *rx, double *ry, double *rz);
+extern int p3d_get_collision_tolerance_inhibition(p3d_rob *robotPt);
 #endif /* __CEXTRACT__ */

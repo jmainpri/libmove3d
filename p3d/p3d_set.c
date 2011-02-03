@@ -986,5 +986,19 @@ int p3d_set_distance_weight(p3d_rob *robotPt, char *name, double weight)
   return 0;
 }
 
+//! Sets the flag used to authorize collision test with a distance threshold or not for the given robot.
+//! \param robotPt pointer to the robot the body belongs to
+//! \param value TRUE or FALSE
+//! \return 0 in case of success, 1 otherwise
+int p3d_set_collision_tolerance_inhibition(p3d_rob *robotPt, int value)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_inhibit_collision_tolerance(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
 
+  robotPt->inhibitCollisionTolerance= value;
 
+  return 0;
+}

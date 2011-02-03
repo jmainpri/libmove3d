@@ -1301,3 +1301,18 @@ int p3d_get_freeflyer_pose2(p3d_rob *robotPt, double *x, double *y, double *z, d
 
   return 0;
 }
+
+//! Gets the flag used to authorize collision test with a distance threshold or not for the given robot.
+//! \param robotPt pointer to the robot the body belongs to
+//! \return the value of the flag (TRUE if error)
+int p3d_get_collision_tolerance_inhibition(p3d_rob *robotPt)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_inhibit_collision_tolerance(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return TRUE;
+  }
+
+
+  return robotPt->inhibitCollisionTolerance;
+}
