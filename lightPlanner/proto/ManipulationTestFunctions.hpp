@@ -40,6 +40,9 @@ public:
   //! Draws the workspace
   void drawEvalutedWorkspace();
   
+  //! Save evaluated workspace to file
+  void saveToFileEvalutedWorkspace();
+  
   //! Generic function to test the genom requests
 	bool manipTest(MANIPULATION_TASK_TYPE_STR type);
   

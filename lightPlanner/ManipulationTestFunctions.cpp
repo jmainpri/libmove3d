@@ -15,6 +15,9 @@
 #include "../p3d/proto/p3d_setpos_proto.h"
 #include "../p3d/proto/p3d_get_proto.h"
 
+#include <fstream>
+#include <sstream>
+
 using namespace std;
 
 ManipulationTestFunctions* global_manipPlanTest = NULL;
@@ -235,6 +238,35 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
   printf("---------------------------------------------------\n");
   
   return (n!=0 ? true : false);
+}
+
+//! Stores the success rate 
+//! of the workspace point
+void ManipulationTestFunctions::saveToFileEvalutedWorkspace()
+{
+  std::ostringstream oss;
+	oss << "workspace" << ".csv";
+  
+  std::ofstream s;
+  const char *res = oss.str().c_str();
+	s.open(res);
+  
+  s << "success" << ",";
+  s << "X" << ",";
+	s << "Y" << ",";
+	s << "Z" << ",";
+  s << endl;
+  
+  for ( unsigned int i=0;i<m_workspacePoints.size();i++ ) 
+  {
+    s << m_workspacePoints[i].first << "," ;
+    s << m_workspacePoints[i].second[0] << "," ;
+    s << m_workspacePoints[i].second[1] << "," ;
+    s << m_workspacePoints[i].second[2] << "," ;
+    s << endl;
+  }
+  
+  s.close();
 }
 
 //! Stores the success rate 
