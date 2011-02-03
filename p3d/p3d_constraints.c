@@ -4893,10 +4893,10 @@ static int p3d_set_lwr_arm_ik(p3d_cntrt_management * cntrt_manager,
 	ct->argu_i[0] = iVal[0]; //the fixed joint
 	ct->argu_i[1] = iVal[1]; // Ik solution
   
-	if (iVal[1] > ct->nbSol) { //if the user don't put a valid solution number
+	if (iVal[1] > ct->nbSol || iVal[1] < 1) { //if the user don't put a valid solution number
+    printf("LWR IK : Invalid ik solution : %d, must be 1 <= iksol <= 8\n", iVal[1]);
 		return FALSE;
 	}
-  
 	//Transformation between torso and the arm
 	p3d_matInvertXform(ct->pasjnts[0]->prev_jnt->prev_jnt->pos0, r0Base); //inverse matrix R0->base
 	p3d_mat4Mult(r0Base, ct->pasjnts[0]->prev_jnt->pos0, ct->Tbase); //store the transform matrix betweeen torso and the arm base
@@ -5344,8 +5344,9 @@ static int p3d_fct_lwr_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
 		if (ikChoice == IK_UNIQUE) {
 			iksol = p3d_get_random_ikSol(ct->cntrt_manager, ct->num);
 		} else if (ikChoice == IK_NORMAL) {
-			iksol = iksol != -1 ? iksol : ct->argu_i[2];
+			iksol = iksol != -1 ? iksol : ct->argu_i[1];
 		}
+		iksol -= 1; //1-8 for the user and 0-7 for the algorithm
 		switch (ikLWRArmSolverUnique(fixed->dof_data[0].v, armGrip, q, iksol)) {		
       case 1: {
         if (DEBUG_CNTRTS)
