@@ -63,6 +63,7 @@ static FL_OBJECT * BT_SET_X_OBJ = NULL;
 
 
 static FL_OBJECT * BT_ARM_GOTO_Q_OBJ = NULL;
+static FL_OBJECT * BT_ARM_GOTO_X_OBJ = NULL;
 static FL_OBJECT * BT_SIMPLE_GRASP_PLANNER_OBJ = NULL;
 static FL_OBJECT * BT_FIND_GRASP_CONFIG_AND_COMP_TRAJ_OBJ = NULL;
 static FL_OBJECT * BT_COMP_TRAJ_CONFIGS_OBJ = NULL;
@@ -90,6 +91,7 @@ static void genomKey();
 static void CB_genomSetQ_obj(FL_OBJECT *obj, long arg);
 static void CB_genomSetX_obj(FL_OBJECT *obj, long arg);
 static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg);
+static void CB_genomArmGotoX_obj(FL_OBJECT *obj, long arg);
 static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg);
 
 static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg);
@@ -143,7 +145,7 @@ static void g3d_create_genom_group(void) {
 	int x, y, dy, w, h;
 	FL_OBJECT *obj;
 
-	obj = fl_add_labelframe(FL_ENGRAVED_FRAME, 5, 15, 140, 760, "Genom Requests");
+	obj = fl_add_labelframe(FL_ENGRAVED_FRAME, 5, 15, 140, 810, "Genom Requests");
 
 	GENOMGROUP = fl_bgn_group();
 
@@ -188,6 +190,11 @@ static void g3d_create_genom_group(void) {
 //	BT_PLOT_Q_WRITE_FILE_OBJ= fl_add_button(FL_RADIO_BUTTON, x, y + 1*dy, w, h, "Write file and plot qi");
 	fl_set_call_back(BT_ARM_GOTO_Q_OBJ, CB_genomArmGotoQ_obj, 1);
 
+        y+= dy;
+  BT_ARM_GOTO_X_OBJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Arm Goto X");
+//  BT_PLOT_Q_WRITE_FILE_OBJ= fl_add_button(FL_RADIO_BUTTON, x, y + 1*dy, w, h, "Write file and plot qi");
+  fl_set_call_back(BT_ARM_GOTO_X_OBJ, CB_genomArmGotoX_obj, 1);
+  
 	y+= dy;
         BT_FIND_GRASP_CONFIG_AND_COMP_TRAJ_OBJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Pick Up (goto)");
         fl_set_call_back(BT_FIND_GRASP_CONFIG_AND_COMP_TRAJ_OBJ, CB_genomPickUp_gotoObject, 1);
@@ -464,37 +471,6 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	std::vector <SM_TRAJ> smTrajs;
   std::vector <double>  objStart, objGoto;
 	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", confs, smTrajs);
- 
-//   std::vector <p3d_traj*> trajs;
-//   std::vector <double>  objStart, objGoto;
-//   manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", trajs);
-// 	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
-
-//   std::cout << "Positions (nb conf = "<< confs[0].second.size() << "): " << std::endl;
- 
-//   for(unsigned int i = 0; i < manipulation->positions.size(); i++){
-//     for(unsigned int j = 0; j < manipulation->positions[i].size(); j++){
-//       std::cout << manipulation->positions[i][j]<< " ";
-//     }
-//     std::cout << manipulation->lp[i] << std::endl;
-//   }
-
-
-
-//
-//std::cout << "nb segments in array " << segments[0].seg.size() << std::endl;
-//if(segments[0].seg.size()>0){
-//std::cout << "nb axis " << segments[0].seg[0].data.size() << std::endl;
-//
-//  for(unsigned int i = 0; i < segments[0].seg.size(); i++){
-//    std::cout << "lp "<< segments[0].seg[i].lp<< " time " << segments[0].seg[i].time << " ";
-//    for(unsigned int j = 0; j < segments[0].seg[i].data.size(); j++){
-//     std::cout << "J" << j << " " << segments[0].seg[i].data[j].jerk << " ";
-//    }
-//    std::cout << std::endl;
-//  }
-//}
-
         return;
 }
 
@@ -504,30 +480,40 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 //! Plans a path to go from the currently defined ROBOT_POS config to the specified end effector pose defined for the arm only.
 //! End effector pose is given in world coordinates (lenghts in meters, angles in radians).
 //! \return 0 in case of success, !=0 otherwise
-int genomArmGotoX(p3d_rob* robotPt, int cartesian, double x, double y, double z, double rx, double ry, double rz, std::vector <int> lp, std::vector < std::vector <double> > positions, int *nbPositions)
+static void CB_genomArmGotoX_obj(FL_OBJECT *obj, long arg)
 {
-  if(robotPt==NULL)
-  {
-    printf("%s: %d: genomArmGotoX(): robot is NULL.\n",__FILE__,__LINE__);
-    return 1;
-  }
   if (manipulation== NULL) {
 	  initManipulationGenom();
   }
 
-  
-//   manipulation->setArmX( x, y, z, rx, ry, rz);
-  p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_GOTO);
+  if(FORMGENOM_CARTESIAN == 1) {
+    for(int i=0; i<manipulation->robot()->armManipulationData->size(); i++) {
+      manipulation->setArmCartesian(i,true);
+    }
+  } else {
+    for(int i=0; i<manipulation->robot()->armManipulationData->size(); i++) {
+      manipulation->setArmCartesian(i,false);
+    }
+  }
 
-  	if(FORMGENOM_CARTESIAN == 1) {
-// 	  manipulation->setArmCartesian(true);
-	} else {
-// 	  manipulation->setArmCartesian(false);
-	}
   std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
   std::vector <SM_TRAJ> smTrajs;
-  std::vector <double> objStart, objGoto;
-  return manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", confs, smTrajs);
+  std::vector <double>  objStart, objGoto;
+  objStart.push_back(P3D_HUGE);
+  objStart.push_back(P3D_HUGE);
+  objStart.push_back(P3D_HUGE);
+  objStart.push_back(P3D_HUGE);
+  objStart.push_back(P3D_HUGE);
+  objStart.push_back(P3D_HUGE);
+  objGoto.push_back(4.4);
+  objGoto.push_back(-2.3931226131619717);
+  objGoto.push_back(1.023060646334923);
+  objGoto.push_back(0.0);
+  objGoto.push_back(0.0);
+  objGoto.push_back(0.0);
+  
+  manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", confs, smTrajs);
+        return;
 }
 
 static void CB_genomCleanRoadmap_obj(FL_OBJECT *obj, long arg){

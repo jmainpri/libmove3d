@@ -697,9 +697,12 @@ double optimizeRedundentJointConfigCost(p3d_rob* robot, int redJntId, configPt q
   if(q){
     double refCost = computeRobotGraspArmCost(robot, armId, grasp, q , robot->openChainConf, objectPos)/270;
     double cost = P3D_HUGE, vmin = -P3D_HUGE, vmax = P3D_HUGE;
+    //get the redundent joint from the id
     p3d_jnt* redJnt = robot->joints[redJntId];
+    //Get the redundent joint bounds
     p3d_jnt_get_dof_bounds(redJnt, 0, &vmin, &vmax);
-    int qId = redJnt->index_dof; //The index of the redundent joint in the configPt
+    //The index of the redundent joint in the configPt
+    int qId = redJnt->index_dof;
     double refValue = q[qId], value = P3D_HUGE;
     p3d_matrix4 bak;
 

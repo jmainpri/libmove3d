@@ -139,6 +139,10 @@ class  ManipulationPlanner {
     int computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECTORY_CONF_STR &confs, SM_TRAJ &smTraj);
 #endif
     /** Move the arm from a free configuration to a grasping configuration of the object placed on a support */
+    MANIPULATION_TASK_MESSAGE armToFreePoint(int armId, configPt qStart, std::vector<double> &objGoto, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armToFree(int armId, configPt qStart, configPt qGoal, std::vector <p3d_traj*> &trajs);
+    
+    /** Move the arm from a free configuration to a grasping configuration of the object placed on a support */
     MANIPULATION_TASK_MESSAGE armPickGoto(int armId, configPt qStart, p3d_rob* object, std::vector <p3d_traj*> &trajs);
     MANIPULATION_TASK_MESSAGE armPickGoto(int armId, configPt qStart, p3d_rob* object, configPt graspConfig, configPt openConfig, configPt approachFreeConfig, std::vector <p3d_traj*> &trajs);
     MANIPULATION_TASK_MESSAGE armPickGoto(int armId, configPt qStart, p3d_rob* object, gpGrasp grasp, std::vector <p3d_traj*> &trajs);
