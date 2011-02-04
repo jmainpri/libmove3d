@@ -1419,7 +1419,7 @@ void CB_test_button4_obj(FL_OBJECT *obj, long arg)
   //g3d_compute_visibility_for_all_entities(GLOBAL_ENTITIES, GLOBAL_AGENTS->all_agents[0], results, GLOBAL_ENTITIES->entities_nb );
   //g3d_compute_visibility_for_all_entities(GLOBAL_ENTITIES, GLOBAL_AGENTS->all_agents[1], results, GLOBAL_ENTITIES->entities_nb );
   for(i=0; i<100; i++)
-    hri_compute_geometric_facts(GLOBAL_AGENTS, GLOBAL_ENTITIES);
+    hri_compute_geometric_facts(GLOBAL_AGENTS, GLOBAL_ENTITIES,0);
 
   elapsed_time = (clock() - clock_val)/CLOCKS_PER_SEC + elapsed_time;
   printf("TIME passed for:%d tests, %f overall, per entity: %f\n",GLOBAL_AGENTS->all_agents_no*GLOBAL_ENTITIES->entities_nb, elapsed_time, elapsed_time/(GLOBAL_ENTITIES->entities_nb * GLOBAL_AGENTS->all_agents_no));
