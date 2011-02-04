@@ -3,7 +3,9 @@
 #include "Graphic-pkg.h"
 #include "Move3d-pkg.h"
 #include "Planner-pkg.h"
+#ifdef HRI_PLANNER
 #include "Hri_planner-pkg.h"
+#endif
 
 #include <iostream>
 #include <string>
@@ -176,10 +178,12 @@ void g3d_draw_allwin_active_back_buffer(void)
   ext_g3d_draw_allwin_active();
 }
 
+#ifdef HRI_PLANNER
 void g3d_draw_win_back_buffer(G3D_Window *win) 
 {
   ext_g3d_draw_allwin_active_backbuffer();
 }
+#endif
 
 void g3d_add_traj ( char *name, int i )
 {

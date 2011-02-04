@@ -1,5 +1,6 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
+#include "Graphic-pkg.h"
 
 #ifdef P3D_LOCALPATH
 #include "Localpath-pkg.h"
