@@ -318,33 +318,39 @@ bool ManipulationTestFunctions::evaluateWorkspace()
   
   double xref = x;
   double yref = y;
+  double zref = z;
   
-  m_nbOrientations = 10;
+  m_nbOrientations = 5;
   
-  const double SizeInXPos = 1.5; // Taille du decallage selon X
-  const double SizeInYPos = 1; // Taille du decallage selon Y
-  const double SizeInXNeg = -1; // Taille du decallage selon X
-  const double SizeInYNeg = -1.5 ; // Taille du decallage selon Y
-  
-  for (double dx=SizeInXNeg; dx<=SizeInXPos; dx=dx+0.1)
-  {
-    for (double dy=SizeInYNeg; dy<=SizeInYPos; dy=dy+0.1)
+  const double SizeInXPos = 1.4; // Taille du decallage selon X
+  const double SizeInYPos = 0.9; // Taille du decallage selon Y
+  const double SizeInZPos = 1.5; // Taille du decallage selon Z
+  const double SizeInXNeg = -0.9; // Taille du decallage selon X
+  const double SizeInYNeg = -1.4 ; // Taille du decallage selon Y
+  const double SizeInZNeg = 0; // Taille du decallage selon Z
+
+  for (double dz=SizeInXNeg; dz<=SizeInXPos; dz=dz+0.1){
+    for (double dx=SizeInXNeg; dx<=SizeInXPos; dx=dx+0.1)
     {
-      vector<double> pos(3);
-      
-      x = xref + dx;
-      y = yref + dy;
-      
-      p3d_set_freeflyer_pose2(object, x, y, z, rx, ry, rz);
-      p3d_set_freeflyer_pose2(plate, x, y, z, 0, 0, 0);
-      manipTestGraspingWithDifferentObjectOrientations(true,successRate);
-      
-      pos[0] = x;
-      pos[1] = y;
-      pos[2] = z;
-      
-      m_workspacePoints.push_back( make_pair( successRate , pos ) );
-      saveToFileEvalutedWorkspace();
+      for (double dy=SizeInYNeg; dy<=SizeInYPos; dy=dy+0.1)
+      {
+        vector<double> pos(3);
+
+        x = xref + dx;
+        y = yref + dy;
+        z = zref + dz;
+        
+        p3d_set_freeflyer_pose2(object, x, y, z, rx, ry, rz);
+        p3d_set_freeflyer_pose2(plate, x, y, z, 0, 0, 0);
+        manipTestGraspingWithDifferentObjectOrientations(true,successRate);
+
+        pos[0] = x;
+        pos[1] = y;
+        pos[2] = z;
+
+        m_workspacePoints.push_back( make_pair( successRate , pos ) );
+        saveToFileEvalutedWorkspace();
+      }
     }
   }
   return true;
