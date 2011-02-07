@@ -794,6 +794,7 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	      ents->changesInTheWorld = TRUE;
 	      ents->entities[e_i]->is_pl_state_transition_new = TRUE;
 	      ents->entities[e_i]->pl_state_transition = HRI_DISAPPEAR;
+	      printf("%s HAS DISAPPEAR\n",ents->entities[e_i]->name);  
 	      // put object in 0,0,0 if disappear. 	
 	      objectQ = MY_ALLOC(double, ents->entities[e_i]->robotPt->nb_dof); /* ALLOC */
 	      p3d_get_robot_config_into(ents->entities[e_i]->robotPt, &objectQ);
