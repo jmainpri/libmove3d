@@ -735,7 +735,7 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	    //APPEAR we put object has static.	      
 	    ents->entities[e_i]->disappeared = FALSE;	      
 	    ents->entities[e_i]->filtered_motion = HRI_STATIC;
-	    ents->entities[e_i]->last_ismoving_iter = 0;
+	    ents->entities[e_i]->last_ismoving_iter = 0; // Filter first VIMAN isMoving to avoid HRI_START_MOVING and direct HRI_STOP_MOVING
 	    ents->changesInTheWorld = TRUE;
 	    ents->entities[e_i]->is_pl_state_transition_new = TRUE;
 	    ents->entities[e_i]->pl_state_transition = HRI_APPEAR;
@@ -743,12 +743,12 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	  }
 	  else {
 	    if((ents->entities[e_i]->last_ismoving_iter>0) && (ents->entities[e_i]->filtered_motion != HRI_MOVING)){
-	      //BEGIN MOVING
+	      //START MOVING
 	      ents->entities[e_i]->filtered_motion = HRI_MOVING;
 	      ents->changesInTheWorld = TRUE;
 	      ents->entities[e_i]->is_pl_state_transition_new = TRUE;
 	      ents->entities[e_i]->pl_state_transition = HRI_START_MOVING;
-	      printf("%s BEGIN MOVING\n",ents->entities[e_i]->name); 
+	      printf("%s START MOVING\n",ents->entities[e_i]->name); 
 	    }
 	    else if ((ents->entities[e_i]->last_ismoving_iter == 0 ) && (ents->entities[e_i]->filtered_motion != HRI_STATIC)){
 	      //STOP MOVING
@@ -756,7 +756,7 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	      ents->changesInTheWorld = TRUE;
 	      ents->entities[e_i]->is_pl_state_transition_new = TRUE;
 	      ents->entities[e_i]->pl_state_transition = HRI_STOP_MOVING;
-	      printf("%s STOP-MOVING\n",ents->entities[e_i]->name); 
+	      printf("%s STOP MOVING\n",ents->entities[e_i]->name); 
 	    }	    
 	    else if ((ents->entities[e_i]->last_ismoving_iter == 0 ) && (ents->entities[e_i]->filtered_motion == HRI_STATIC)){
 	      //Static, Nothing to do
@@ -880,7 +880,7 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
 	  if((ent->pl_state_transition == HRI_APPEAR) || (ent->pl_state_transition == HRI_DISAPPEAR)){
 	    kn_on_ent->disappeared_isexported = FALSE;
 	  }
-	  else if(((ent->pl_state_transition == HRI_START_MOVING) || (ent->pl_state_transition == HRI_STOP_MOVING)) && (a_i == robotMyselfIndex)){
+	  else if(((ent->pl_state_transition == HRI_START_MOVING) || (ent->pl_state_transition == HRI_STOP_MOVING) || (ent->pl_state_transition == HRI_APPEAR)) && (a_i == robotMyselfIndex)){
 	    kn_on_ent->motion = ent->filtered_motion;
 	    kn_on_ent->motion_ischanged = TRUE;
 	    kn_on_ent->motion_isexported = FALSE;
