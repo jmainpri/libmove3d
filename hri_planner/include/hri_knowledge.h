@@ -75,7 +75,10 @@ typedef struct STRUCT_HRI_ENTITY {
 typedef struct STRUCT_HRI_ENTITIES {
   HRI_ENTITY ** entities;
   int entities_nb;
-  int changesInTheWorld;
+  int eventsInTheWorld;
+  int lastEventsInTheWorldStep;
+  int isWorldStatic;
+  int needSituationAssessmentUpdate;
 } HRI_ENTITIES;
 
 typedef enum ENUM_HRI_VISIBILITY {

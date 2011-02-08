@@ -736,7 +736,7 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	    ents->entities[e_i]->disappeared = FALSE;	      
 	    ents->entities[e_i]->filtered_motion = HRI_STATIC;
 	    ents->entities[e_i]->last_ismoving_iter = 0; // Filter first VIMAN isMoving to avoid HRI_START_MOVING and direct HRI_STOP_MOVING
-	    ents->changesInTheWorld = TRUE;
+	    ents->eventsInTheWorld = TRUE;
 	    ents->entities[e_i]->is_pl_state_transition_new = TRUE;
 	    ents->entities[e_i]->pl_state_transition = HRI_APPEAR;
 	    printf("%s APPEARED\n",ents->entities[e_i]->name);
@@ -745,7 +745,7 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	    if((ents->entities[e_i]->last_ismoving_iter>0) && (ents->entities[e_i]->filtered_motion != HRI_MOVING)){
 	      //START MOVING
 	      ents->entities[e_i]->filtered_motion = HRI_MOVING;
-	      ents->changesInTheWorld = TRUE;
+	      ents->eventsInTheWorld = TRUE;
 	      ents->entities[e_i]->is_pl_state_transition_new = TRUE;
 	      ents->entities[e_i]->pl_state_transition = HRI_START_MOVING;
 	      printf("%s START MOVING\n",ents->entities[e_i]->name); 
@@ -753,7 +753,7 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	    else if ((ents->entities[e_i]->last_ismoving_iter == 0 ) && (ents->entities[e_i]->filtered_motion != HRI_STATIC)){
 	      //STOP MOVING
 	      ents->entities[e_i]->filtered_motion = HRI_STATIC;
-	      ents->changesInTheWorld = TRUE;
+	      ents->eventsInTheWorld = TRUE;
 	      ents->entities[e_i]->is_pl_state_transition_new = TRUE;
 	      ents->entities[e_i]->pl_state_transition = HRI_STOP_MOVING;
 	      printf("%s STOP MOVING\n",ents->entities[e_i]->name); 
@@ -791,7 +791,7 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	    // Object has disappeared
 	    else if((ents->entities[e_i]->undetection_status == HRI_UNEXPLAINED_UNDETECTION_MAX)){
 	      ents->entities[e_i]->disappeared = TRUE;
-	      ents->changesInTheWorld = TRUE;
+	      ents->eventsInTheWorld = TRUE;
 	      ents->entities[e_i]->is_pl_state_transition_new = TRUE;
 	      ents->entities[e_i]->pl_state_transition = HRI_DISAPPEAR;
 	      printf("%s HAS DISAPPEAR\n",ents->entities[e_i]->name);  
@@ -812,6 +812,22 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
       }
     }
   }
+  
+  // Computing all Situation assessment after each event Appear, Start Moving, Stop Moving and disappear can be costly and delay reading the state of the world ( object, human, robot ) as these events can be quite often folowed shortly one by another. Heavy computations should be done only once the world is detected as "static". We wait four step without an event. This Four should be replaced by a constant.
+
+  if(ents->eventsInTheWorld){
+    ents->lastEventsInTheWorldStep = 0;
+    ents->isWorldStatic = FALSE;
+    ents->needSituationAssessmentUpdate = TRUE;
+  }
+  else {
+    if(ents->lastEventsInTheWorldStep == 4)
+      ents->isWorldStatic = TRUE;
+    else
+      ents->lastEventsInTheWorldStep ++;
+  }
+  
+  
 }
 
 
@@ -839,7 +855,7 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
     return FALSE;
   }
 
-  if(ents->changesInTheWorld){
+  if(ents->eventsInTheWorld || (ents->needSituationAssessmentUpdate && ents->isWorldStatic) ){
     vis_result = MY_ALLOC(HRI_VISIBILITY, ents->entities_nb); // ALLOC
     present_ents = MY_ALLOC(HRI_ENTITY*, ents->entities_nb); // ALLOC
     present_ents_global_idxs = MY_ALLOC(int, ents->entities_nb); // ALLOC
@@ -888,105 +904,109 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
 	    
 	}
 
-	
+	if(ents->needSituationAssessmentUpdate && ents->isWorldStatic){
 
-	// VISIBILITY PLACEMENT - FOV,FOA,OOF
-	// TODO: visibility placement for robot parts	
-	if(ent->disappeared)
-	  res = HRI_UK_VIS_PLACE;
-	else
-	  hri_entity_visibility_placement(agent, ent, &res, &elevation, &azimuth);
-      
-	if ( kn_on_ent->is_placed_from_visibility == (HRI_VISIBILITY_PLACEMENT) res) {
-	  if (kn_on_ent->visibility_placement_ischanged)
-	    kn_on_ent->visibility_placement_ischanged = FALSE;
-	}
-	else {
-	  kn_on_ent->visibility_placement_ischanged = TRUE;
-	  kn_on_ent->visibility_placement_isexported = FALSE;
-	  kn_on_ent->is_placed_from_visibility = (HRI_VISIBILITY_PLACEMENT) res;
-	}
-	
-
-	// REACHABILITY - REACHABLE, UNREACHABLE, HARDLY REACHABLE
-	// TODO: Fix this global variable use. It's ugly.     
-	// To simplify we do not compute reachability on agent or agent parts
-	if ( (ent->type != HRI_AGENT_PART) && (ent->type != HRI_ISAGENT) && ent->can_disappear_and_move) {
-	  GIK_VIS = 500;
+	  // VISIBILITY PLACEMENT - FOV,FOA,OOF
+	  // TODO: visibility placement for robot parts	
 	  if(ent->disappeared)
-	    reachability_result = HRI_UK_REACHABILITY;
+	    res = HRI_UK_VIS_PLACE;
 	  else
-	    reachability_result = hri_is_reachable(ent, agent);
-	  if ( kn_on_ent->reachability ==  reachability_result) {
-	    if ( kn_on_ent->reachability_ischanged)
-	      kn_on_ent->reachability_ischanged = FALSE;
+	    hri_entity_visibility_placement(agent, ent, &res, &elevation, &azimuth);
+      
+	  if ( kn_on_ent->is_placed_from_visibility == (HRI_VISIBILITY_PLACEMENT) res) {
+	    if (kn_on_ent->visibility_placement_ischanged)
+	      kn_on_ent->visibility_placement_ischanged = FALSE;
 	  }
 	  else {
-	    kn_on_ent->reachability = reachability_result;
-	    kn_on_ent->reachability_ischanged = TRUE;
-	    kn_on_ent->reachability_isexported = FALSE;
+	    kn_on_ent->visibility_placement_ischanged = TRUE;
+	    kn_on_ent->visibility_placement_isexported = FALSE;
+	    kn_on_ent->is_placed_from_visibility = (HRI_VISIBILITY_PLACEMENT) res;
 	  }
-	}
-	// SPATIAL RELATION      
-	if( ent->type != HRI_AGENT_PART) {
-	  if(ent->disappeared)
-	    spatial_relation_result = HRI_UK_RELATION;
-	  else
-	    spatial_relation_result = hri_spatial_relation(ent, agent);
-	  if ( kn_on_ent->is_located_from_agent ==  spatial_relation_result) {
-	    if (kn_on_ent->spatial_relation_ischanged)
-	      kn_on_ent->spatial_relation_ischanged = FALSE;
-	  }
-	  else {
-	    kn_on_ent->is_located_from_agent  = spatial_relation_result;
-	    kn_on_ent->spatial_relation_ischanged = TRUE;
-	    kn_on_ent->spatial_relation_isexported = FALSE;
-	  }
-	}
-       
-      
-	// PLACEMENT RELATION
-	for(e_j=0; e_j<present_ents_nb; e_j++) {
-	  ge_j = present_ents_global_idxs[e_j];
-	  // do not compute placement relations that involve an agent or an agent part
-	  if( ((ent->type == HRI_AGENT_PART) || (ent->type == HRI_ISAGENT)) || !ent->can_disappear_and_move || ((ents->entities[ge_j]->type == HRI_AGENT_PART) || (ents->entities[ge_j]->type == HRI_ISAGENT)) ) {
-	    continue;
-	  }
-	  if( e_j != e_i) {
-	    if(ent->disappeared || ents->entities[ge_j]->disappeared)
-	      placement_relation_result = HRI_UK_PLR;
+	
+
+	  // REACHABILITY - REACHABLE, UNREACHABLE, HARDLY REACHABLE
+	  // TODO: Fix this global variable use. It's ugly.     
+	  // To simplify we do not compute reachability on agent or agent parts
+	  if ( (ent->type != HRI_AGENT_PART) && (ent->type != HRI_ISAGENT) && ent->can_disappear_and_move) {
+	    GIK_VIS = 500;
+	    if(ent->disappeared)
+	      reachability_result = HRI_UK_REACHABILITY;
 	    else
-	      placement_relation_result = hri_placement_relation(ent, ents->entities[ge_j]);
-	    if (  kn_on_ent->is_placed[ge_j] ==  placement_relation_result) {
-	      if ( kn_on_ent->placement_relation_ischanged[ge_j])
-		kn_on_ent->placement_relation_ischanged[ge_j] = FALSE;
+	      reachability_result = hri_is_reachable(ent, agent);
+	    if ( kn_on_ent->reachability ==  reachability_result) {
+	      if ( kn_on_ent->reachability_ischanged)
+		kn_on_ent->reachability_ischanged = FALSE;
 	    }
 	    else {
-	      kn_on_ent->is_placed_old [ge_j] = kn_on_ent->is_placed[ge_j];
-	      kn_on_ent->is_placed[ge_j] = placement_relation_result;
-	      kn_on_ent->placement_relation_ischanged[ge_j] = TRUE;
-	      kn_on_ent->placement_relation_isexported[ge_j] = FALSE;
+	      kn_on_ent->reachability = reachability_result;
+	      kn_on_ent->reachability_ischanged = TRUE;
+	      kn_on_ent->reachability_isexported = FALSE;
+	    }
+	  }
+	  // SPATIAL RELATION      
+	  if( ent->type != HRI_AGENT_PART) {
+	    if(ent->disappeared)
+	      spatial_relation_result = HRI_UK_RELATION;
+	    else
+	      spatial_relation_result = hri_spatial_relation(ent, agent);
+	    if ( kn_on_ent->is_located_from_agent ==  spatial_relation_result) {
+	      if (kn_on_ent->spatial_relation_ischanged)
+		kn_on_ent->spatial_relation_ischanged = FALSE;
+	    }
+	    else {
+	      kn_on_ent->is_located_from_agent  = spatial_relation_result;
+	      kn_on_ent->spatial_relation_ischanged = TRUE;
+	      kn_on_ent->spatial_relation_isexported = FALSE;
+	    }
+	  }
+       
+      
+	  // PLACEMENT RELATION
+	  for(e_j=0; e_j<present_ents_nb; e_j++) {
+	    ge_j = present_ents_global_idxs[e_j];
+	    // do not compute placement relations that involve an agent or an agent part
+	    if( ((ent->type == HRI_AGENT_PART) || (ent->type == HRI_ISAGENT)) || !ent->can_disappear_and_move || ((ents->entities[ge_j]->type == HRI_AGENT_PART) || (ents->entities[ge_j]->type == HRI_ISAGENT)) ) {
+	      continue;
+	    }
+	    if( e_j != e_i) {
+	      if(ent->disappeared || ents->entities[ge_j]->disappeared)
+		placement_relation_result = HRI_UK_PLR;
+	      else
+		placement_relation_result = hri_placement_relation(ent, ents->entities[ge_j]);
+	      if (  kn_on_ent->is_placed[ge_j] ==  placement_relation_result) {
+		if ( kn_on_ent->placement_relation_ischanged[ge_j])
+		  kn_on_ent->placement_relation_ischanged[ge_j] = FALSE;
+	      }
+	      else {
+		kn_on_ent->is_placed_old [ge_j] = kn_on_ent->is_placed[ge_j];
+		kn_on_ent->is_placed[ge_j] = placement_relation_result;
+		kn_on_ent->placement_relation_ischanged[ge_j] = TRUE;
+		kn_on_ent->placement_relation_isexported[ge_j] = FALSE;
+	      }
 	    }
 	  }
 	}
       }
 
-      // VISIBLITY
-      g3d_compute_visibility_for_given_entities(present_ents, agent, vis_result, present_ents_nb);
+      if(ents->needSituationAssessmentUpdate && ents->isWorldStatic){
+	// VISIBLITY
+	g3d_compute_visibility_for_given_entities(present_ents, agent, vis_result, present_ents_nb);
 
-      for(e_j=0; e_j<present_ents_nb; e_j++) {
-	ge_j = present_ents_global_idxs[e_j];
-	kn_on_ent = &agent->knowledge->entities[ge_j];
-	if ( kn_on_ent->visibility  ==  vis_result[e_j]) {
-	  if ( kn_on_ent->visibility_ischanged)
-	    kn_on_ent->visibility_ischanged  = FALSE;
+	for(e_j=0; e_j<present_ents_nb; e_j++) {
+	  ge_j = present_ents_global_idxs[e_j];
+	  kn_on_ent = &agent->knowledge->entities[ge_j];
+	  if ( kn_on_ent->visibility  ==  vis_result[e_j]) {
+	    if ( kn_on_ent->visibility_ischanged)
+	      kn_on_ent->visibility_ischanged  = FALSE;
+	  }
+	  else {
+	    kn_on_ent->visibility = vis_result[e_j];
+	    kn_on_ent->visibility_ischanged = TRUE;
+	    kn_on_ent->visibility_isexported = FALSE;
+	  }      
 	}
-	else {
-	  kn_on_ent->visibility = vis_result[e_j];
-	  kn_on_ent->visibility_ischanged = TRUE;
-	  kn_on_ent->visibility_isexported = FALSE;
-	}      
       }
+      
     }
 
     // all placement state transition events have been managed
@@ -1002,9 +1022,11 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
     MY_FREE(present_ents_global_idxs, int, ents->entities_nb); // FREE
 
   }
-  // Changes in the Wolrd have been managed.
-  if(ents->changesInTheWorld)
-    ents->changesInTheWorld = FALSE;
+  // Events in the Wolrd have been managed.
+  if(ents->eventsInTheWorld)
+    ents->eventsInTheWorld = FALSE;
 
+  if(ents->needSituationAssessmentUpdate && ents->isWorldStatic)
+    ents->needSituationAssessmentUpdate = FALSE;
   return counter;
 }
