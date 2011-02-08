@@ -1725,7 +1725,7 @@ p3d_jnt * p3d_jnt_create(p3d_type_joint type, p3d_matrix4 pos, double * v,
                                       vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, param);
     case P3D_PLAN:
       return p3d_jnt_plan_create(pos, v, vmin, vmax,
-                                 vmin_rand, vmax_rand, param);
+                                 vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, param);
     case P3D_KNEE:
       return p3d_jnt_knee_create(pos, v, vmin, vmax,
                                  vmin_rand, vmax_rand, param);
@@ -1774,7 +1774,7 @@ p3d_jnt * p3d_jnt_create_deg(int type, p3d_matrix4 pos, double * v,
                                           vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, param);
     case P3D_PLAN:
       return p3d_jnt_plan_create_deg(pos, v, vmin, vmax,
-                                     vmin_rand, vmax_rand, param);
+                                     vmin_rand, vmax_rand, velocity_max, acceleration_max, jerk_max, param);
     case P3D_KNEE:
       return p3d_jnt_knee_create_deg(pos, v, vmin, vmax,
                                      vmin_rand, vmax_rand, param);
