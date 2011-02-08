@@ -837,7 +837,10 @@ configPt p3d_softMotion_config_at_param(p3d_rob *robotPt, p3d_localpath *localpa
       paramLocal = param;
     }
     lm_get_paramDiff_for_param( softMotion_specificPt, &segment[i], segId, i, paramLocal, &paramDiff);
-    sm_CalculOfAccVelPosAtTimeSecond(paramDiff, &segment[i], &condEnd[i]);
+    
+    if(sm_CalculOfAccVelPosAtTimeSecond(paramDiff, &segment[i], &condEnd[i]) != 0){
+      printf("Aie!!\n");
+    }
   }
 
   /* SWITCH WRT group */
@@ -882,7 +885,7 @@ configPt p3d_softMotion_config_at_param(p3d_rob *robotPt, p3d_localpath *localpa
        jntPt = robotPt->joints[w];
        indexJntDof = jntPt->index_dof;
        indexGroupDof = indexJntDof-index_dof;
-       if((jntPt->type == P3D_FREEFLYER) && (indexJntDof >= index_dof)) {
+       if((jntPt->type == P3D_FREEFLYER) && (indexJntDof >= index_dof) && (indexJntDof < (index_dof+softMotion_specificPt->nbDofs))) {
 	 p3d_mat4PosReverseOrder(freeflyerPose_init, 0.0, 0.0, 0.0, q_init[indexGroupDof+3], q_init[indexGroupDof+4], q_init[indexGroupDof+5]);
 	 lm_convert_p3dMatrix_To_GbTh(freeflyerPose_init ,&thInit);
 	 Gb_v3_set(&gbV3Rot,condEnd[indexGroupDof+3].x, condEnd[indexGroupDof+4].x,condEnd[indexGroupDof+5].x);
@@ -1179,7 +1182,9 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
       paramLocal = l1;
     }
     lm_get_paramDiff_for_param( softMotion_data_In, &segmentl1[i], segIdl1, i, paramLocal, &paramDiffl1);
-    sm_CalculOfAccVelPosAtTimeSecond(paramDiffl1, &segmentl1[i], &condl1[i]);
+    if(sm_CalculOfAccVelPosAtTimeSecond(paramDiffl1, &segmentl1[i], &condl1[i]) != 0){
+      printf("Aie!!\n");
+    }
   }
 
   for (i=0;i<softMotion_data_In->nbDofs;i++) {
@@ -1190,7 +1195,9 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
       paramLocal = l2;
     }
     lm_get_paramDiff_for_param( softMotion_data_In, &segmentl2[i], segIdl2, i, paramLocal, &paramDiffl2);
-    sm_CalculOfAccVelPosAtTimeSecond(paramDiffl2, &segmentl2[i], &condl2[i]);
+    if(sm_CalculOfAccVelPosAtTimeSecond(paramDiffl2, &segmentl2[i], &condl2[i]) != 0){
+      printf("Aie!!\n");
+    }
   }
 
   /* Set sub Motion */
@@ -2840,6 +2847,18 @@ int nb_armDof =0;
   while (localpathPt != NULL) {
     //specificPt = localpathPt->mlpLocalpath[upBodySm_mlpID]->specific.softMotion_data;
     umax = localpathPt->range_param;
+    if(umax < SIMPLING_TIME) {
+      //printf("localpath tooooooo smallll %f\n", umax);
+      localpathPt = localpathPt->next_lp;
+      if(localpathPt == NULL) {
+       break;
+      } else {
+        u += umax;
+	umax = localpathPt->range_param;
+      }
+    }
+
+
     //activate the constraint for the local path
     p3d_desactivateAllCntrts(robotPt);
     for(int i = 0; i < localpathPt->nbActiveCntrts; i++){
@@ -2878,8 +2897,8 @@ int nb_armDof =0;
 	fprintf(filepTrajtr,"%d ", lpId);
 	fprintf(filepTrajtr,"\n");
       }
-  
       positions.push_back(qplot_i);
+      
       lp.push_back(lpId);
       index = index + 1;
       q_armOld.clear();
@@ -2891,14 +2910,15 @@ int nb_armDof =0;
       du = SIMPLING_TIME;
       u += du;
 			
-      if (u > umax - EPS6) {
+      if (u > (umax - EPS6)) {
 	u -= umax;
 	end_localpath++;
       }
     }
+    //printf("switch localpath %d\n", (int)positions.size());
     localpathPt = localpathPt->next_lp;
     lpId ++;
-    u=0;
+    //u=0;
     end_localpath = 0;
   }
 

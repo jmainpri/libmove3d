@@ -111,7 +111,7 @@ draw_trajectory_ptp () {
   }
   p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid (P3D_ROBOT);
   
-   if(strcmp(robot->name, "JIDOKUKA_ROBOT")) {
+   if(strcmp(robot->name, "JIDOKUKA_ROBOT") ) {
    return;
    }
 
@@ -135,7 +135,16 @@ draw_trajectory_ptp () {
       g3d_draw_solid_sphere(p1[0], p1[1], p1[2], 0.005, 16);
       g3d_draw_solid_sphere(p2[0], p2[1], p2[2], 0.005, 16);
     }
+
     glPopAttrib ();
+//=======
+//    glColor3f (0, 1, 0);
+//    g3d_draw_cylinder (p1, p2, 0.01, 16);
+//    glColor3f (0, 0, 1);
+//    //g3d_draw_solid_sphere(p1[0], p1[1], p1[2], 0.05, 16);
+//    //g3d_draw_solid_sphere(p2[0], p2[1], p2[2], 0.05, 16);
+//     //g3d_draw_solid_sphere(0, 0, 1.5, 0.05, 16);
+//>>>>>>> fix some discontinuities when exporting the softMotion trajectory in the array of Q format
   }
 }
 
