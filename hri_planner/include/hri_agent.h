@@ -122,8 +122,9 @@ typedef struct STRUCT_HRI_AGENT {
   HRI_ENTITY ** hand;
   int hand_nb;
 
-  int is_carrying_object;
   char * object_name;
+  int is_grasping_object;
+  int grasped_object_arm_id;  
 
 } HRI_AGENT;
 
