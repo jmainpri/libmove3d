@@ -41,11 +41,7 @@
 #include "cost_space.hpp"
 #include <boost/bind.hpp>
 #endif
-//#ifdef MOVE3D_CORE
-//#include "API/planningAPI.hpp"
-//#include "planner/cost_space.hpp"
-//#include <boost/bind.hpp>
-//#endif
+
 #ifdef BIO_BALL
 #include "ball_energy.hpp"
 #endif

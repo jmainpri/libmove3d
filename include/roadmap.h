@@ -217,14 +217,14 @@ typedef struct graph {
 #ifdef DPG
   class DpgGrid * dpgGrid;
 #endif
-#if defined( CXX_PLANNER ) || defined( MOVE3D_CORE )
+
 	// Planning on graph stat
 	double totTime;
 	double optTime;
   double rrtTime;
   double rrtCost1;
   double rrtCost2;
-#endif
+
   int nb_test_BB;
   int nb_test_coll;
   int nb_test_energy;  //mod noureddine
