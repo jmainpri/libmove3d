@@ -9,6 +9,9 @@
 #include "proto/hri_agent_proto.h"
 #include "proto/hri_gik_proto.h"
 
+#include "lightPlanner/proto/lightPlannerApi.h"
+#include "lightPlanner/proto/ManipulationUtils.hpp"
+
 HRI_AGENTS * GLOBAL_AGENTS = NULL;
 
 
@@ -1306,6 +1309,34 @@ int hri_agent_load_default_arm_posture(HRI_AGENT * agent, configPt q)
     printf("In %s:%d, Trying to load default arm posture to a unsupported robot\n",__FILE__,__LINE__);
     return FALSE;
   }
+}
+
+int hri_agent_is_grasping_obj(HRI_AGENT* agent, bool released , const char* OBJECT , int armId)
+{
+  if (agent->is_human) 
+  {
+    return released;
+  }
+  
+  p3d_rob* rob = agent->robotPt;
+  
+  ArmManipulationData& armData = (*rob->armManipulationData)[armId];
+  
+  if( !released )
+  {
+    deactivateCcCntrts(rob,armId);
+    p3d_set_object_to_carry_to_arm(rob, armId, OBJECT );
+    setAndActivateTwoJointsFixCntrt(rob,armData.getManipulationJnt(),
+                                armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
+  }
+  else {
+    rob->isCarryingObject = false;
+    armData.setCarriedObject((p3d_rob*)NULL);
+    desactivateTwoJointsFixCntrt(rob,armData.getManipulationJnt(),
+                                 armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
+  }
+  
+  return !released;
 }
 
 int hri_is_robot_an_agent(p3d_rob * robot, HRI_AGENTS * agents, int * is_human, int * agent_idx)

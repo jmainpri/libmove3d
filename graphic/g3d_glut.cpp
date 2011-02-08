@@ -144,7 +144,7 @@ void g3d_glut_paintGL()
   G3D_WIN->vs.cameraPosition[1]= p.Xc[1];
   G3D_WIN->vs.cameraPosition[2]= p.Xc[2];  
   
-  cout << "g3d_draw" << endl;
+  //cout << "g3d_draw" << endl;
   g3d_draw();
 	
   glPopMatrix();
