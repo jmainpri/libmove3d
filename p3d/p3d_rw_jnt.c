@@ -314,16 +314,16 @@ static int s_p3d_check_data(p3d_read_jnt_data * data, int num_line)
       return FALSE;
     }
     
-    if ( data->flag_velocity_max && !(data->type==P3D_ROTATE ||data->type==P3D_FREEFLYER || data->type==P3D_BASE || data->type == P3D_TRANSLATE) )  {
+    if ( data->flag_velocity_max && !(data->type==P3D_ROTATE ||data->type==P3D_FREEFLYER || data->type==P3D_BASE || data->type==P3D_PLAN || data->type == P3D_TRANSLATE) )  {
       printf("!!! WARNING (line %i) p3d_set_dof_velocity_max only works with P3D_ROTATE, P3D_FREEFLYER and P3D_BASE joints !!!\n",
 		    num_line);
     }
 
-    if ( data->flag_acceleration_max && !(data->type==P3D_ROTATE ||data->type==P3D_FREEFLYER || data->type==P3D_BASE || data->type == P3D_TRANSLATE) )  {
+    if ( data->flag_acceleration_max && !(data->type==P3D_ROTATE ||data->type==P3D_FREEFLYER || data->type==P3D_BASE || data->type==P3D_PLAN || data->type == P3D_TRANSLATE) )  {
       printf("!!! WARNING (line %i) p3d_set_dof_acceleration_max only works with P3D_ROTATE, P3D_FREEFLYER and P3D_BASE joints !!!\n",
 		    num_line);
     }
-    if ( data->flag_jerk_max && !(data->type==P3D_ROTATE ||data->type==P3D_FREEFLYER || data->type==P3D_BASE || data->type == P3D_TRANSLATE) )  {
+    if ( data->flag_jerk_max && !(data->type==P3D_ROTATE ||data->type==P3D_FREEFLYER || data->type==P3D_BASE || data->type==P3D_PLAN || data->type == P3D_TRANSLATE) )  {
       printf("!!! WARNING (line %i) p3d_set_dof_jerk_max only works with P3D_ROTATE, P3D_FREEFLYER and P3D_BASE joints !!!\n",
 		    num_line);
     }
