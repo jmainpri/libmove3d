@@ -35,7 +35,10 @@ HRI_ENTITIES * hri_create_entities()
   entities = MY_ALLOC(HRI_ENTITIES, 1);
   entities->entities = NULL;
   ent_i = 0;
-  entities->changesInTheWorld = FALSE;
+  entities->eventsInTheWorld = FALSE;
+  entities->lastEventsInTheWorldStep = 4; //TODO use a constant
+  entities->isWorldStatic = TRUE;
+  entities->needSituationAssessmentUpdate = FALSE;
 
   for(i=0; i<env->nr; i++) {
     if(!strcasestr(env->robot[i]->name,"GRIPPER") && !strcasestr(env->robot[i]->name,"VISBALL") && !strcasestr(env->robot[i]->name,"SAHandRight")) {
@@ -765,7 +768,7 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	      printf("%s IS MOVING\n",ents->entities[e_i]->name);  
 	    }
 	    else
-	      printf("Impossible motion state %s for entity %s\n",ents->entities[e_i]->name,ents->entities[e_i]->filtered_motion);  
+	      printf("Impossible motion state %s for entity %d\n",ents->entities[e_i]->name,ents->entities[e_i]->filtered_motion);  
 	  }
 	  // increment last is moving seen
 	  if(ents->entities[e_i]->last_ismoving_iter>0)
