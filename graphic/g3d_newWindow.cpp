@@ -158,13 +158,15 @@ qtG3DWindow::qtG3DWindow()
 #if defined( QT_GL_WIDGET )
 	ext_g3d_add_traj_to_ui = dummy_add_traj_to_ui;
 	ext_g3d_add_config_to_ui = dummy_add_config_to_ui;
-  ext_g3d_draw_cost_features = dummy_g3d_draw_all_win_active;
+	ext_g3d_draw_cost_features = dummy_g3d_draw_all_win_active;
 	ext_g3d_export_cpp_graph = dummy_g3d_draw_all_win_active;
 #endif
   
 #if defined( USE_GLUT )
-  ext_g3d_add_traj_to_ui = dummy_add_traj_to_ui;
+	ext_g3d_add_traj_to_ui = dummy_add_traj_to_ui;
 	ext_g3d_add_config_to_ui = dummy_add_config_to_ui;
+	ext_g3d_draw_cost_features = dummy_g3d_draw_all_win_active;
+	ext_g3d_export_cpp_graph = dummy_g3d_draw_all_win_active;
 #endif
   
   newG3dWindow();
