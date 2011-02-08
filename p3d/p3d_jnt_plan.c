@@ -286,7 +286,7 @@ void p3d_jnt_plan_calc_mat_jac(p3d_jnt * jntPt)
  */
 p3d_jnt * p3d_jnt_plan_create(p3d_matrix4 pos, double * v, 
 		double * vmin, double * vmax, 
-		double * vmin_rand, double * vmax_rand, double * param)
+		double * vmin_rand, double * vmax_rand, double *velocity_max, double *acceleration_max, double *jerk_max, double * param)
 {
   p3d_jnt * jntPt;
   int i;
@@ -332,6 +332,9 @@ p3d_jnt * p3d_jnt_plan_create(p3d_matrix4 pos, double * v,
       jntPt->dof_data[i].is_user = TRUE;
       jntPt->user_dof_equiv_nbr ++;
     }
+    jntPt->dof_data[i].velocity_max = velocity_max[i];
+    jntPt->dof_data[i].acceleration_max = acceleration_max[i];
+    jntPt->dof_data[i].jerk_max = jerk_max[i];
   }
   p3d_jnt_plan_calc_jnt_mat(jntPt);
   p3d_matMultXform(jntPt->abs_pos_before_jnt, jntPt->jnt_mat, jntPt->abs_pos);
@@ -361,7 +364,7 @@ p3d_jnt * p3d_jnt_plan_create(p3d_matrix4 pos, double * v,
  */
 p3d_jnt * p3d_jnt_plan_create_deg(p3d_matrix4 pos, double * v, 
 		double * vmin, double * vmax, 
-		double * vmin_rand, double * vmax_rand, double * param)
+		double * vmin_rand, double * vmax_rand, double *velocity_max, double *acceleration_max, double *jerk_max, double * param)
 {
   v[2] = DTOR(v[2]);
   vmin[2] = DTOR(vmin[2]);
@@ -370,7 +373,7 @@ p3d_jnt * p3d_jnt_plan_create_deg(p3d_matrix4 pos, double * v,
   vmax_rand[2] = DTOR(vmax_rand[2]); 
 
   return p3d_jnt_plan_create(pos, v, vmin, vmax,  
-			     vmin_rand, vmax_rand, param);
+			     vmin_rand, vmax_rand,  velocity_max, acceleration_max, jerk_max, param);
 }
 
 //start path deform
