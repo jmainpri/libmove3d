@@ -111,6 +111,12 @@ void g3d_glut_ui_calc_param(g3d_cam_param& p)
   p.up[2] = up[2];
 }
 
+bool m_swap = true;
+
+void g3d_glut_set_swap(bool swap)
+{
+  m_swap = swap;
+}
 
 void g3d_glut_paintGL()
 {
@@ -137,11 +143,21 @@ void g3d_glut_paintGL()
   G3D_WIN->vs.cameraPosition[0]= p.Xc[0];
   G3D_WIN->vs.cameraPosition[1]= p.Xc[1];
   G3D_WIN->vs.cameraPosition[2]= p.Xc[2];  
-	
+  
+  cout << "g3d_draw" << endl;
   g3d_draw();
 	
   glPopMatrix();
-  glutSwapBuffers();
+
+  if(m_swap)
+    {
+      //cout << "draw in normal buffer\n" << endl;
+      glutSwapBuffers();
+    }
+  else
+    {
+      //cout << "draw in back buffer\n" << endl;
+    }
 }
 
 
@@ -151,6 +167,8 @@ GlutWindowDisplay::GlutWindowDisplay(int argc, char *argv[])
   int argc2 = 0;
   char* argv2 = "";
 	
+  m_swap = true;
+
   /* initialisation de GLUT */
   glutInit (&argc2, &argv2);
 	
@@ -158,7 +176,7 @@ GlutWindowDisplay::GlutWindowDisplay(int argc, char *argv[])
      avec un tampon de profondeur */
   //glutInitDisplayMode (GLUT_RGB | GLUT_SINGLE | GLUT_ALPHA | GLUT_DEPTH | GLUT_STENCIL | GLUT_STEREO);
   //glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-  glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH | GLUT_STENCIL | GLUT_ALPHA );
+  glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_STENCIL | GLUT_ALPHA );
   glutInitWindowSize (800, 600);
   glutCreateWindow ("Move3D Glut"); 
 }

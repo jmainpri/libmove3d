@@ -10,6 +10,7 @@
 #ifndef GLUT_DISPLAY_WIN_HPP
 #define GLUT_DISPLAY_WIN_HPP
 
+void g3d_glut_set_swap(bool swap);
 void g3d_glut_paintGL();
 
 //! Class that displays a Glut window
