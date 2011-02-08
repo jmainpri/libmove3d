@@ -212,9 +212,10 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
   hri_agent->hand = NULL;
   hri_agent->hand_nb = 0;
 
-  // Link between objects and hand
-  hri_agent->is_grasping_object = FALSE;
+  // Link between objects and hand  
   hri_agent->object_name = NULL;
+  hri_agent->is_grasping_object = FALSE;
+  hri_agent->grasped_object_arm_id = 0;
 
   return hri_agent;
 }
