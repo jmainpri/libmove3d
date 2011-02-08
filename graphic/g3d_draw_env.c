@@ -26,7 +26,6 @@ extern ManipulationTestFunctions* global_manipPlanTest;
 #endif
 
 #ifdef HRI_PLANNER
-
 #include "Hri_planner-pkg.h"
 int HRI_DRAW_TRAJ;
 // Hri distance draw
@@ -34,6 +33,15 @@ extern double hri_cost_to_display;
 extern bool hri_draw_distance;
 extern std::vector<double> hri_disp_dist;
 #endif
+
+// --------------------------------------------------------
+// External function pointers used by linked libraries
+// to define draw functions outside of Move3D 
+
+void (*ext_g3d_export_cpp_graph)();
+void (*ext_g3d_draw_cost_features)();
+
+// --------------------------------------------------------
 
 int G3D_DRAW_TRACE = FALSE;
 int G3D_DRAW_OCUR_SPECIAL;
@@ -1336,7 +1344,7 @@ void g3d_draw_env_custom()
   win = g3d_get_cur_win();
 	
   p3d_drawRobotMoveMeshs();
-  
+
   ext_g3d_draw_cost_features();
   
 #ifdef DPG
@@ -1438,7 +1446,7 @@ void g3d_draw_env()
   /* Fin Modification Thibaut */
 
 	ext_g3d_export_cpp_graph();
-	
+  
 #ifdef P3D_PLANNER
 	//std::cout << "XYZ_GRAPH : " << XYZ_GRAPH << std::endl;
   if(XYZ_GRAPH && ENV.getBool(Env::drawGraph))

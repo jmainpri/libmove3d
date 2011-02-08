@@ -79,6 +79,9 @@ static void startPicking(int cursorX, int cursorY);
 static int stopPicking();
 static int processHits (GLint hits, GLuint buffer[]);
 
+//funtion when not drawing
+void dummy_void() {}
+
 
 #ifndef NOFORMS
 /*   Defined for UNIX (XForms & GLX)
@@ -348,6 +351,9 @@ g3d_del_win(G3D_Window *win)
   win->form = NULL;
 
   g3d_free_viewer_state(win->vs);
+  
+  ext_g3d_export_cpp_graph = dummy_void;
+  ext_g3d_draw_cost_features = dummy_void;
 
   free(win);
 }

@@ -37,11 +37,9 @@ XformError("Error: Xform is not compiled, check your flags or make changes to th
 // --------------------------------------------------------------------
 // Function pointers to external graphics
 
-void (*ext_g3d_export_cpp_graph)();
 void (*ext_g3d_draw_allwin_active)();
 void (*ext_g3d_calc_cam_param)(g3d_cam_param& p);
 void (*ext_g3d_get_win_mouse)(int* x, int* y);
-void (*ext_g3d_draw_cost_features)();
 void (*ext_g3d_add_traj_to_ui)(char* name,int i);
 void (*ext_g3d_add_config_to_ui)(char* name,p3d_rob* rob,double* q);
 
@@ -156,6 +154,7 @@ qtG3DWindow::qtG3DWindow()
 #endif
   
 #if defined( QT_GL_WIDGET )
+  ext_g3d_draw_cost_features = dummy_g3d_draw_all_win_active;
 	ext_g3d_add_traj_to_ui = dummy_add_traj_to_ui;
 	ext_g3d_add_config_to_ui = dummy_add_config_to_ui;
 	ext_g3d_draw_cost_features = dummy_g3d_draw_all_win_active;
