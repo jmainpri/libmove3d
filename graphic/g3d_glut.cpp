@@ -209,10 +209,6 @@ void GlutWindowDisplay::initDisplay()
   ext_g3d_get_win_mouse = g3d_glut_get_win_mouse;
   ext_g3d_calc_cam_param = g3d_glut_ui_calc_param;
   
-  G3D_WIN->vs.displayFloor = true;
-  G3D_WIN->vs.displayTiles = true;
-  G3D_WIN->vs.GOURAUD = true;
-	
   /* initialisation des fonctions callback appelées par glut 
      pour respectivement le redimensionnement de la fenêtre
      et le rendu de la scène */
