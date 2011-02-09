@@ -1232,8 +1232,13 @@ int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECT
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFreePoint(int armId, configPt qStart, std::vector<double> &objGoto, std::vector <p3d_traj*> &trajs){
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   gpGrasp grasp;
+
+  /*save the cartesian activation */
+  bool cartesian = (*_robot->armManipulationData)[armId].getCartesian();
   configPt qGoal = getFreeHoldingConf(NULL, armId, grasp, (*_robot->armManipulationData)[armId].getCcCntrt()->Tatt, objGoto);
-  
+  /* set the cartesian */
+  setArmCartesian(armId,cartesian);
+
   if(qGoal){
     status = armToFree(armId, qStart, qGoal, trajs);
   }else{
