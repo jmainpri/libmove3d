@@ -20,7 +20,28 @@ using namespace std;
 
 extern void* GroundCostObj;
 
+// Function to fraw the 
+// openGL scene
 void (*draw_opengl)();
+
+// Is window initialized
+bool m_init = true;
+
+// Place on the screen
+int m_i = 0; 
+int m_j = 0 ;
+
+// Window ID
+int m_WindowId = NULL;
+
+// Swap buffer between front 
+// and back when true
+bool m_swap = true;
+
+void g3d_glut_set_swap(bool swap)
+{
+  m_swap = swap;
+}
 
 //! reshape the OPenGL display
 //! changes the matrix when the window changes sizes
@@ -76,16 +97,11 @@ void g3d_glut_initializeGL(int w,int h)
     }
 }
 
-bool init = true;
-
-// place on the screen
-int _i; int _j;
-
 void g3d_glut_get_win_mouse(int* i, int* j)
 {
   //cout << "qt_get_win_mouse" <<  endl;
-  *i = _i;
-  *j = _j;
+  *i = m_i;
+  *j = m_j;
 }
 
 void g3d_glut_ui_calc_param(g3d_cam_param& p)
@@ -111,19 +127,12 @@ void g3d_glut_ui_calc_param(g3d_cam_param& p)
   p.up[2] = up[2];
 }
 
-bool m_swap = true;
-
-void g3d_glut_set_swap(bool swap)
-{
-  m_swap = swap;
-}
-
 void g3d_glut_paintGL()
 {
-  if(init)
+  if(m_init)
     {
       g3d_glut_initializeGL(800,600);
-      init = false;
+      m_init = false;
     }
 	
   glPushMatrix();
@@ -160,7 +169,6 @@ void g3d_glut_paintGL()
     }
 }
 
-
 //! Creates a Glut window
 GlutWindowDisplay::GlutWindowDisplay(int argc, char *argv[])
 {
@@ -174,11 +182,16 @@ GlutWindowDisplay::GlutWindowDisplay(int argc, char *argv[])
 	
   /* création d'une fenêtre OpenGL RVBA avec en simple mémoire tampon
      avec un tampon de profondeur */
-  //glutInitDisplayMode (GLUT_RGB | GLUT_SINGLE | GLUT_ALPHA | GLUT_DEPTH | GLUT_STENCIL | GLUT_STEREO);
-  //glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
   glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_STENCIL | GLUT_ALPHA );
   glutInitWindowSize (800, 600);
-  glutCreateWindow ("Move3D Glut"); 
+
+  // initialise le nom de la fenetre
+  char winName[255]; 
+  strcpy(winName,"Move3D Glut ");
+  strcat(winName,argv[0]);
+  printf("%s\n",winName);
+  m_WindowId = glutCreateWindow (winName); 
+  printf( "glutCreateWindow (%d)\n" , m_WindowId );
 }
 
 
@@ -202,7 +215,8 @@ void GlutWindowDisplay::initDisplay()
 	
   /* initialisation des fonctions callback appelées par glut 
      pour respectivement le redimensionnement de la fenêtre
-     et le rendu }de la scène */
+     et le rendu de la scène */
+  glutSetWindow (m_WindowId);
   glutReshapeFunc (g3d_glut_reshapeGL);
   glutDisplayFunc (g3d_glut_paintGL);
 }
