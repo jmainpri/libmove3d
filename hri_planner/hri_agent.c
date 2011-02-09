@@ -1320,15 +1320,39 @@ int hri_agent_is_grasping_obj(HRI_AGENT* agent, bool released , const char* OBJE
   }
   
   p3d_rob* rob = agent->robotPt;
-  
+  p3d_rob* obj = p3d_get_robot_by_name(OBJECT);
+    
+  if(obj == NULL)
+  {
+     return  !released;
+  }
+
   ArmManipulationData& armData = (*rob->armManipulationData)[armId];
   
   if( !released )
   {
+    // Set manipulation joint
+    // to be at the object pose
+    configPt q = p3d_get_robot_config(rob);
+    configPt objQ =  p3d_get_robot_config(obj);
+
+    p3d_jnt* jnt = armData.getManipulationJnt();
+
+    for(int i=0;i< jnt->dof_equiv_nbr;i++)
+    {
+	q[jnt->index_dof+i] = objQ[obj->joints[1]->index_dof+i];
+     }
+
+    p3d_set_and_update_this_robot_conf(rob,q);
+
+    // Fix manipulation constraint
     deactivateCcCntrts(rob,armId);
     p3d_set_object_to_carry_to_arm(rob, armId, OBJECT );
     setAndActivateTwoJointsFixCntrt(rob,armData.getManipulationJnt(),
                                 armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
+
+    p3d_destroy_config(rob,q);
+    p3d_destroy_config(obj,objQ);
   }
   else {
     rob->isCarryingObject = false;
