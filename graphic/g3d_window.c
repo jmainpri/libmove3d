@@ -84,7 +84,7 @@ void dummy_void() {}
 
 
 #ifndef NOFORMS
-/*   Defined for UNIX (XForms & GLX)
+/*   Defined for UNIX (s & GLX)
 
  repris du gl.c de forms pour pouvoir utiliser des display lists
  identiques sur les fenetres copiees */

@@ -1344,9 +1344,9 @@ void g3d_draw_env_custom()
   win = g3d_get_cur_win();
 	
   p3d_drawRobotMoveMeshs();
-
-  ext_g3d_draw_cost_features();
-  
+  if(ext_g3d_draw_cost_features!=NULL){
+   ext_g3d_draw_cost_features();
+  } 
 #ifdef DPG
   if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
     XYZ_GRAPH->dpgGrid->draw();
@@ -1444,9 +1444,9 @@ void g3d_draw_env()
   /* Debut Modification Thibaut */
   if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win);
   /* Fin Modification Thibaut */
-
+if(ext_g3d_export_cpp_graph!=NULL){
 	ext_g3d_export_cpp_graph();
-  
+}
 #ifdef P3D_PLANNER
 	//std::cout << "XYZ_GRAPH : " << XYZ_GRAPH << std::endl;
   if(XYZ_GRAPH && ENV.getBool(Env::drawGraph))

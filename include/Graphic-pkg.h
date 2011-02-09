@@ -50,7 +50,7 @@ extern int p3d_numcoll;	/* Variables externes pour le CC */
 
 #if defined( QT_GL ) && defined( CXX_PLANNER )
 #include "../qtWindow/qtOpenGL/Widget.hpp"
-#endif
+#endif
 
 /* proto */
 #include "../graphic/proto/graphic_proto.h"
