@@ -1233,11 +1233,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFreePoint(int armId, configP
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   gpGrasp grasp;
 
-  /*save the cartesian activation */
-  bool cartesian = (*_robot->armManipulationData)[armId].getCartesian();
   configPt qGoal = getFreeHoldingConf(NULL, armId, grasp, (*_robot->armManipulationData)[armId].getCcCntrt()->Tatt, objGoto);
-  /* set the cartesian */
-  setArmCartesian(armId,cartesian);
 
   if(qGoal){
     status = armToFree(armId, qStart, qGoal, trajs);
@@ -1257,6 +1253,12 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFreePoint(int armId, configP
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qStart, configPt qGoal, std::vector <p3d_traj*> &trajs){
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   p3d_traj* traj = NULL;
+
+  fixAllHands(qStart, false);
+  fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
+  checkConfigForCartesianMode(qStart, NULL);
+  checkConfigForCartesianMode(qGoal, NULL);
+
   if (MPDEBUG) {
       ManipulationUtils::copyConfigToFORM(_robot, qStart);
       ManipulationUtils::copyConfigToFORM(_robot, qGoal);
