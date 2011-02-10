@@ -36,5 +36,6 @@ struct g3d_win {
 // to external drawing functionalities
 extern void (*ext_g3d_export_cpp_graph)();
 extern void (*ext_g3d_draw_cost_features)();
+extern void (*ext_g3d_draw_allwin_active)();
 
 #endif

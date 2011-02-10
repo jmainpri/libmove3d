@@ -87,6 +87,13 @@ typedef enum ENUM_HRI_VISIBILITY {
   HRI_UK_VIS = 2 /* Unknown visibility. meaning we don't know */
 } HRI_VISIBILITY;
 
+/* For the boolean facts we always have possible values : true, false and unknown */
+typedef enum ENUM_HRI_TRUE_FALSE_UK_V {
+  HRI_FALSE_V = 0,
+  HRI_TRUE_V = 1,
+  HRI_UK_V = 2 
+} HRI_TRUE_FALSE_UK_V;
+
 typedef enum ENUM_HRI_VISIBILITY_PLACEMENT {
   HRI_FOA = 1,
   HRI_FOV = 2,
@@ -155,6 +162,14 @@ typedef struct STRUCT_HRI_KNOWLEDGE_ON_ENTITY {
   int reachability_ischanged;
   int reachability_isexported;
 
+  HRI_TRUE_FALSE_UK_V is_looked_at;
+  int is_looked_at_ischanged;
+  int is_looked_at_isexported;
+
+  HRI_TRUE_FALSE_UK_V is_pointed_at;
+  int is_pointed_at_ischanged;
+  int is_pointed_at_isexported;
+
   HRI_VISIBILITY_PLACEMENT is_placed_from_visibility; /* oof, fov, ... */
   int visibility_placement_ischanged;
   int visibility_placement_isexported;
@@ -177,10 +192,10 @@ typedef struct STRUCT_HRI_KNOWLEDGE {
   /* The spatial knowledge on the state of things from the perspective of the agent */
   /* Normally all indexes should be synchronized with entities structure */
 
-  int * looks_at; /* indexes of entities in entity structure */
-  int looks_at_nb;
-  int * points_at; /* indexes of entities in entity structure */
-  int points_at_nb;
+  /* int * looks_at; /\* indexes of entities in entity structure *\/ */
+  /* int looks_at_nb; */
+  /* int * points_at; /\* indexes of entities in entity structure *\/ */
+  /* int points_at_nb; */
 
   HRI_KNOWLEDGE_ON_ENTITY * entities;
   int entities_nb;

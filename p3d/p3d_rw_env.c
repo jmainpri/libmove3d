@@ -2250,7 +2250,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			}
 			continue;
 		}
-#if defined(QT_GL) || defined(WITH_XFORMS)
+
 		if (  strcmp ( fct, "p3d_make_body_deformable" ) == 0   )
 		{
 			if ( !read_desc_name ( fd, name ) )  return ( read_desc_error ( fct ) );
@@ -2264,10 +2264,10 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			{
 				strcpy ( namecompl, name );
 			}
-                        p3d_make_body_deformable(namecompl);
+      p3d_make_body_deformable(namecompl);
 			continue;
 		}
-#endif
+
 		if ( ( strcmp ( fct, "p3d_set_prim_color" ) == 0 ) || ( strcmp ( fct, "M3D_set_prim_color" ) == 0 ) )
 		{
 			if ( !read_desc_name ( fd, name ) )  return ( read_desc_error ( fct ) );
