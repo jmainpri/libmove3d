@@ -686,6 +686,34 @@ int hri_object_visibility_placement(HRI_AGENT *agent, p3d_rob *object, int *resu
   return TRUE;
 }
 
+int hri_entity_pointing_placement(HRI_AGENT *agent,  HRI_ENTITY *ent, int *result, double *elevation, double *azimuth)
+{
+  p3d_vector4 entCenter;
+  p3d_BB * entBB;
+  
+  if(ent==NULL || agent==NULL){
+    printf("%s: %d: hri_entity_visibility_placement(): input object is NULL.\n",__FILE__,__LINE__);
+    return FALSE;
+  }
+
+  if((ent->type == HRI_OBJECT_PART) || (ent->type == HRI_AGENT_PART) )
+    entBB = &ent->partPt->BB;
+  else
+    entBB = &ent->robotPt->BB;
+
+  entCenter[0] = (((entBB->xmax - entBB->xmin)/2) + entBB->xmin);
+  entCenter[1] = (((entBB->ymax - entBB->ymin)/2) + entBB->ymin);
+  entCenter[2] = (((entBB->zmax - entBB->zmin)/2) + entBB->zmin);
+  entCenter[3] = 1.0;
+  
+  g3d_object_visibility_placement(agent->perspective->pointjoint->abs_pos, entCenter,
+                                  DTOR(agent->perspective->point_tolerance),DTOR(agent->perspective->point_tolerance),
+                                  DTOR(agent->perspective->point_tolerance),DTOR(agent->perspective->point_tolerance),
+                                  result, elevation, azimuth);
+  return TRUE;
+}
+
+
 int hri_object_pointing_placement(HRI_AGENT *agent, p3d_rob *object, int *result, double *elevation, double *azimuth)
 {
   p3d_vector4 objectCenter;
