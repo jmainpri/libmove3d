@@ -43,20 +43,6 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robotPt) :
     _approachGraspOffset = 0.10; //0.1 meters
     _safetyDistanceValue = 0.05;
 
-    // Warning : Not very efficient
-    // Should only allocate this once
-    _ErrorMap[MANIPULATION_TASK_OK] = "everything was fine";
-    _ErrorMap[MANIPULATION_TASK_NOT_INITIALIZED] = "a variable was not properly initialized";
-    _ErrorMap[MANIPULATION_TASK_NO_TRAJ_FOUND] = "failed to compute a trajectory for the desired task";
-    _ErrorMap[MANIPULATION_TASK_INVALID_QSTART] = "";
-    _ErrorMap[MANIPULATION_TASK_INVALID_QGOAL] = "";
-    _ErrorMap[MANIPULATION_TASK_INVALID_TRAJ_ID] = "";
-    _ErrorMap[MANIPULATION_TASK_INVALID_TASK] = "the desired task is undefined";
-    _ErrorMap[MANIPULATION_TASK_UNKNOWN_OBJECT] = "there is no object with the specified name";
-    _ErrorMap[MANIPULATION_TASK_NO_GRASP] = "no grasp or arm grasping configuration can be found for the current context (mobile base and obstacles configurations)";
-    _ErrorMap[MANIPULATION_TASK_NO_PLACE] = "no placement or arm placement configuration can be found for the current context (mobile base and obstacles configurations, current grasp)";
-    _ErrorMap[MANIPULATION_TASK_ERROR_UNKNOWN] = "something undefined was wrong";
-
 #ifdef MULTILOCALPATH
     _BaseMLP = -1;
     _HeadMLP = -1;
@@ -263,7 +249,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::computeManipulationData(int armId
       break;
     }
     else {
-      cout << "ManipulationPlanner::status => " << _ErrorMap[status] << endl;
+      ManipulationUtils::printManipulationMessage(status);
     }
   }
   return status;
@@ -282,7 +268,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::computeManipulationData(int armId
 
   if (status != MANIPULATION_TASK_OK)
   {
-    cout << "ManipulationPlanner::status => " << _ErrorMap[status] << endl;
+      ManipulationUtils::printManipulationMessage(status);
   }
 
   return status;
@@ -941,8 +927,8 @@ void ManipulationPlanner::fitConfigurationToRobotBounds(configPt q){
 //! @param smoothingSteps : number of smoothing steps
 //! @param smootingTime : maximum smoothing Time
 //! @param biDir : is the RRT bidirectional
-int ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, bool biDir) {
-
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, bool biDir) {
+    MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
     int result;
 
     p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
@@ -992,11 +978,25 @@ int ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, boo
     }
 #endif
     if (!result) {
-      printf("ArmGotoQ: could not find a path.\n");
-      ManipulationUtils::printConstraintInfo(_robot);
-      return 1;
+      //Check the possible errors of planning
+      //Check the start and goal configuration
+      if(!p3d_is_collision_free(_robot, _robot->ROBOT_POS)){
+        status = MANIPULATION_TASK_INVALID_QSTART;
+        ManipulationUtils::printManipulationMessage(status);
+        ManipulationUtils::printConstraintInfo(_robot);
+        p3d_print_col_pair();
+      }else if(!p3d_is_collision_free(_robot, _robot->ROBOT_GOTO)){
+        status = MANIPULATION_TASK_INVALID_QGOAL;
+        ManipulationUtils::printManipulationMessage(status);
+        ManipulationUtils::printConstraintInfo(_robot);
+        p3d_print_col_pair();
+      }else{
+        status = MANIPULATION_TASK_NO_TRAJ_FOUND;
+        ManipulationUtils::printManipulationMessage(status);
+      }
+      return status;
     }
-    return 0;
+    return status;
 }
 
 
@@ -1038,25 +1038,26 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armComputePRM(double ComputeTime)
 //! Computes a trajectory between two configurations
 //! It first moves the qi and qf configuration to the ROBOT_POS and ROBOT_GOTO
 //! This method calls the compute RRT method from this class
-p3d_traj* ManipulationPlanner::computeTrajBetweenTwoConfigs(configPt qi, configPt qf) {
+p3d_traj* ManipulationPlanner::computeTrajBetweenTwoConfigs(configPt qi, configPt qf, MANIPULATION_TASK_MESSAGE* status) {
 
   
-    if( p3d_equal_config(_robot, qi, qf) )
-    {
-       print_config(_robot, qi);
-       print_config(_robot, qf);
-       showConfig_2(qi);
-       showConfig_2(qf);
-       cout << "ManipulationPlanner::computeTrajBetweenTwoConfigs::p3d_equal_config(_robot, qi, qf)" << endl;
+    if( p3d_equal_config(_robot, qi, qf) ){
+//        print_config(_robot, qi);
+//        print_config(_robot, qf);
+//        showConfig_2(qi);
+//        showConfig_2(qf);
+//        cout << "ManipulationPlanner::computeTrajBetweenTwoConfigs::p3d_equal_config(_robot, qi, qf)" << endl;
+      *status = MANIPULATION_TASK_EQUAL_QSTART_QGOAL;
+      ManipulationUtils::printManipulationMessage(*status);
+      return NULL;
     }
-       
     ManipulationUtils::forbidWindowEvents();
     p3d_copy_config_into(_robot, qi, &_robot->ROBOT_POS);
     p3d_copy_config_into(_robot, qf, &_robot->ROBOT_GOTO);
 
     /* RRT */
 
-    if (this->computeRRT(_optimizeSteps, _optimizeTime, 1) != 0) {
+    if (( *status = this->computeRRT(_optimizeSteps, _optimizeTime, 1)) != MANIPULATION_TASK_OK) {
         ManipulationUtils::allowWindowEvents();
         return NULL;
     }
@@ -1267,12 +1268,10 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qSt
       ManipulationUtils::copyConfigToFORM(_robot, qGoal);
   }
   setSafetyDistance(_robot, getSafetyDistanceValue());
-  if ((traj = computeTrajBetweenTwoConfigs(qStart, qGoal)) == NULL){
-    printf("ERROR armPlanTask(ARM_FREE) on traj\n");
-    status = MANIPULATION_TASK_NO_TRAJ_FOUND;
+  if((traj = computeTrajBetweenTwoConfigs(qStart, qGoal, &status))){
+    trajs.push_back(traj);
   }
   setSafetyDistance(_robot, 0);
-  trajs.push_back(traj);
   return status;
 }
 
@@ -1358,7 +1357,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt qStart, p3d_rob* object, configPt graspConfig, configPt openConfig, configPt approachFreeConfig, std::vector <p3d_traj*> &trajs) {
 
     p3d_traj* traj = NULL;
-
+    MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
     fixAllHands(qStart, false);
     fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
 
@@ -1380,34 +1379,26 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
     }
     //fixJoint(_robot, armData.getManipulationJnt() , armData.getManipulationJnt()->abs_pos);
 
-    if (!p3d_is_collision_free(_robot,qStart)){
-        cout << "Warning::ManipulationPlanner::armPickGoto => qStart is not collision free" << endl;
-    }
-
-    if (!p3d_is_collision_free(_robot,approachFreeConfig)){
-        cout << "Warning::ManipulationPlanner::armPickGoto => approachFreeConfig is not collision free" << endl;
-    }
-  
     // Compute to Approach config
     setSafetyDistance(_robot, getSafetyDistanceValue());
-    if ((traj = computeTrajBetweenTwoConfigs(qStart, approachFreeConfig)))
+    if ((traj = computeTrajBetweenTwoConfigs(qStart, approachFreeConfig, &status)) || (status == MANIPULATION_TASK_EQUAL_QSTART_QGOAL))
     {
       trajs.push_back(traj);
       setSafetyDistance(_robot, 0);
       // Compute to Open config
-      if ((traj = computeTrajBetweenTwoConfigs(approachFreeConfig, openConfig)))
+      if ((traj = computeTrajBetweenTwoConfigs(approachFreeConfig, openConfig, &status)) || (status == MANIPULATION_TASK_EQUAL_QSTART_QGOAL))
       {
         trajs.push_back(traj);
-        
+
         // Set the hand as group to plan
         (*_robot->armManipulationData)[armId].unFixHand(_robot);
-        
+
         p3d_multiLocalPath_disable_all_groupToPlan(_robot);
         p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1);
         // Compute to Grasp Config
         gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
         gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);
-        if ((traj = computeTrajBetweenTwoConfigs(openConfig, graspConfig)))
+        if ((traj = computeTrajBetweenTwoConfigs(openConfig, graspConfig, &status)) || (status == MANIPULATION_TASK_EQUAL_QSTART_QGOAL))
         {
             trajs.push_back(traj);
 
@@ -1415,7 +1406,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
             // After acknolegment by another module
             (*_robot->armManipulationData)[armId].getManipState() = holdingObjectInStablePose;
             gpActivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);
-            return MANIPULATION_TASK_OK;
+            status = MANIPULATION_TASK_OK;
         }
         else {
           cout << "Warning::ManipulationPlanner::armPickGoto computeTraj failed between openConfig and graspConfig" << endl;
@@ -1430,7 +1421,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
       cout << "Warning::ManipulationPlanner::armPickGoto computeTraj failed between qStart and approachFreeConfig" << endl;
     }
     setSafetyDistance(_robot, 0);
-    return MANIPULATION_TASK_NO_TRAJ_FOUND;
+    return status;
 }
 
 //! The Arm Pick Take To Free method takes in an object in a goal configuration
@@ -1569,14 +1560,14 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
       p3d_col_deactivate_pair_of_objects(object->joints[1]->o, support->joints[1]->o);
     }
     //Compute to Approach config
-    if ((traj = computeTrajBetweenTwoConfigs(qStart, approachGraspConfig)))
+    if ((traj = computeTrajBetweenTwoConfigs(qStart, approachGraspConfig, &status)) || (status == MANIPULATION_TASK_EQUAL_QSTART_QGOAL))
     {
         trajs.push_back(traj);
         if(support){
           p3d_col_activate_pair_of_objects(object->joints[1]->o, support->joints[1]->o);
         }
         // Compute to Open config
-        if ((traj = computeTrajBetweenTwoConfigs(approachGraspConfig, qGoal)))
+        if ((traj = computeTrajBetweenTwoConfigs(approachGraspConfig, qGoal, &status)) || (status == MANIPULATION_TASK_EQUAL_QSTART_QGOAL))
         {
             trajs.push_back(traj);
             cout << "Manipulation : traj found" << endl;
@@ -1685,7 +1676,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
   }
   p3d_rob* support = p3d_get_robot_by_name(supportName);
   p3d_sel_desc_id(P3D_ROBOT, _robot);
-  p3d_traj *traj = NULL;
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   if (armId < 0 || armId >= (int)_robot->armManipulationData->size()) {
     status = MANIPULATION_TASK_INVALID_TASK;
@@ -1790,7 +1780,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
   }
   p3d_rob* support = p3d_get_robot_by_name(supportName);
   p3d_sel_desc_id(P3D_ROBOT, _robot);
-  p3d_traj *traj = NULL;
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   if (armId < 0 || armId >= (int)_robot->armManipulationData->size()) {
     status = MANIPULATION_TASK_INVALID_TASK;

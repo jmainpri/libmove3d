@@ -33,7 +33,6 @@ class  ManipulationUtils {
     static void undefinedSupportMessage();
     static void undefinedCameraMessage();
     static void printManipulationMessage(MANIPULATION_TASK_MESSAGE message);
-    static void printManipulationError(MANIPULATION_TASK_MESSAGE message);
     static int printConstraintInfo(p3d_rob* robot);
     
     /* UI gestion */

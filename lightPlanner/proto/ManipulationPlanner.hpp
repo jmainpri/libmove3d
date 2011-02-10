@@ -128,12 +128,12 @@ class  ManipulationPlanner {
     /** Correct the given configuration to be inside of the joints bounds. and print Warning */
     void fitConfigurationToRobotBounds(configPt q);
     /** Set the parameters to compute an RRT */
-    int computeRRT(int smoothingSteps, double smootingTime, bool biDir);
+    MANIPULATION_TASK_MESSAGE computeRRT(int smoothingSteps, double smootingTime, bool biDir);
     /** Set the parameters to compute a PRM the input is the maximal computation time*/
     /* TODO Add CXX PLanner computation*/
     MANIPULATION_TASK_MESSAGE armComputePRM(double ComputeTime);
     /** Compute a trajectory between the two given configurations. The constraints, the planning modes and the dof to plan have to be setted before */
-    p3d_traj* computeTrajBetweenTwoConfigs(configPt qi, configPt qf);
+    p3d_traj* computeTrajBetweenTwoConfigs(configPt qi, configPt qf, MANIPULATION_TASK_MESSAGE* status);
 #ifdef MULTILOCALPATH
     /** Given a trajectory, compute the corrsponding softMotion path */
     int computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECTORY_CONF_STR &confs, SM_TRAJ &smTraj);
@@ -227,8 +227,6 @@ class  ManipulationPlanner {
   /* *******  Manipulation Data **** */
   /* ******************************* */
 	ManipulationData _configs;
-	
-	std::map<MANIPULATION_TASK_MESSAGE,std::string> _ErrorMap;
 };
 
 #endif

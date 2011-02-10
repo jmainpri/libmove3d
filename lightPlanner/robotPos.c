@@ -712,7 +712,7 @@ double optimizeRedundentJointConfigCost(p3d_rob* robot, int redJntId, configPt q
 
     for(int i = 0; i < nbTests; i++){
       q[qId] = p3d_random(vmin, vmax);
-      if(p3d_set_and_update_this_robot_conf(robot, q) && p3d_is_collision_free(robot, q)){
+      if(p3d_is_collision_free(robot, q)){
         double tmpCost = computeRobotGraspArmCost(robot, armId, grasp, q , robot->openChainConf, objectPos)/270;
         if(tmpCost < cost){
           cost = tmpCost;
@@ -760,12 +760,12 @@ double optimizeRedundentJointConfigDist(p3d_rob* robot, int redJntId, configPt q
     p3d_mat4Copy((*robot->armManipulationData)[armId].getCcCntrt()->Tatt, bak);
     p3d_mat4Copy(tAtt, (*robot->armManipulationData)[armId].getCcCntrt()->Tatt);
     q[qId] = refConf[qId];
-    if(p3d_set_and_update_this_robot_conf(robot, q) && p3d_is_collision_free(robot, q)){
+    if(p3d_is_collision_free(robot, q)){
       dist = p3d_dist_config_2(robot, q, refConf);
     }else{
       for(int i = 0; i < nbTests; i++){
         q[qId] = p3d_random(vmin, vmax);
-        if(p3d_set_and_update_this_robot_conf(robot, q) && p3d_is_collision_free(robot, q)){
+        if(p3d_is_collision_free(robot, q)){
           double tmpDist = p3d_dist_config_2(robot, q, refConf);
           if(tmpDist < dist){
   //           printf("Dist = %f\n", dist);

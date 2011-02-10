@@ -31,7 +31,8 @@ typedef enum MANIPULATION_TASK_MESSAGE {
   MANIPULATION_TASK_UNKNOWN_OBJECT, /*!< there is no object with the specified name */
   MANIPULATION_TASK_NO_GRASP, /*!< no grasp or arm grasping configuration can be found for the current context (mobile base and obstacles configurations) */
   MANIPULATION_TASK_NO_PLACE,  /*!< no placement or arm placement configuration can be found for the current context (mobile base and obstacles configurations, current grasp) */
-  MANIPULATION_TASK_ERROR_UNKNOWN /*!< something undefined was wrong */
+  MANIPULATION_TASK_ERROR_UNKNOWN, /*!< something undefined was wrong */
+  MANIPULATION_TASK_EQUAL_QSTART_QGOAL
 } MANIPULATION_TASK_MESSAGE;
 
 //! @ingroup manipulation 

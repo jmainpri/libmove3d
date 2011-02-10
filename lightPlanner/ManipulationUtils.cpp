@@ -21,80 +21,61 @@ void ManipulationUtils::undefinedCameraMessage() {
   printf("The joint of the pan/tilt unit has not been defined in ManipulationPlanner. Set it with setCameraJnt().\n");
 }
 
-void ManipulationUtils::printManipulationError(MANIPULATION_TASK_MESSAGE message) {
-  switch (message) {
-    case MANIPULATION_TASK_OK:
-      printf("MANIPULATION_TASK_OK\n");
-      break;
-    case MANIPULATION_TASK_NOT_INITIALIZED:
-      printf("MANIPULATION_TASK_NOT_INITIALIZED\n");
-      break;
-    case MANIPULATION_TASK_NO_TRAJ_FOUND:
-      printf("MANIPULATION_TASK_NO_TRAJ_FOUND\n");
-      break;
-    case MANIPULATION_TASK_INVALID_QSTART:
-      printf("MANIPULATION_TASK_INVALID_QSTART \n");
-      break;
-    case MANIPULATION_TASK_INVALID_QGOAL:
-      printf("MANIPULATION_TASK_INVALID_QGOAL\n");
-      break;
-    case MANIPULATION_TASK_INVALID_TRAJ_ID:
-      printf("MANIPULATION_TASK_INVALID_TRAJ_ID\n");
-      break;
-    case MANIPULATION_TASK_INVALID_TASK:
-      printf("MANIPULATION_TASK_INVALID_TASK\n");
-      break;
-    case MANIPULATION_TASK_UNKNOWN_OBJECT:
-      printf("MANIPULATION_TASK_UNKNOWN_OBJECT\n");
-      break;
-    case MANIPULATION_TASK_NO_GRASP:
-      printf("MANIPULATION_TASK_NO_GRASP\n");
-      break;
-    case MANIPULATION_TASK_NO_PLACE:
-      printf("MANIPULATION_TASK_NO_PLACE\n");
-      break;
-    case MANIPULATION_TASK_ERROR_UNKNOWN:
-      printf("MANIPULATION_TASK_ERROR_UNKNOWN\n");
-      break;
-  }
-}
-
-
 void ManipulationUtils::printManipulationMessage(MANIPULATION_TASK_MESSAGE message) {
-  switch (message) {
-    case MANIPULATION_TASK_OK:
-      printf("MANIPULATION_TASK_OK\n");
+  std::cout << "ManipulationPlanner::status => ";
+  switch(message){
+    case MANIPULATION_TASK_OK:{
+      std::cout << "everything was fine" << std::endl;
       break;
-    case MANIPULATION_TASK_NOT_INITIALIZED:
-      printf("MANIPULATION_TASK_NOT_INITIALIZED\n");
+    }
+    case MANIPULATION_TASK_NOT_INITIALIZED:{
+    std::cout << "a variable was not properly initialized" << std::endl;
       break;
-    case MANIPULATION_TASK_NO_TRAJ_FOUND:
-      printf("MANIPULATION_TASK_NO_TRAJ_FOUND\n");
+    }
+    case MANIPULATION_TASK_NO_TRAJ_FOUND:{
+    std::cout << "failed to compute a trajectory for the desired task" << std::endl;
       break;
-    case MANIPULATION_TASK_INVALID_QSTART:
-      printf("MANIPULATION_TASK_INVALID_QSTART\n");
+    }
+    case MANIPULATION_TASK_INVALID_QSTART:{
+    std::cout << "Check the constraint and the collision for the Start Configuration" << std::endl;
       break;
-    case MANIPULATION_TASK_INVALID_QGOAL:
-      printf("MANIPULATION_TASK_INVALID_QGOAL\n");
+    }
+    case MANIPULATION_TASK_INVALID_QGOAL:{
+    std::cout << "Check the constraint and the collision for the Goal Configuration" << std::endl;
       break;
-    case MANIPULATION_TASK_INVALID_TRAJ_ID:
-      printf("MANIPULATION_TASK_INVALID_TRAJ_ID\n");
+    }
+    case MANIPULATION_TASK_INVALID_TRAJ_ID:{
+    std::cout << "An invalid trajectory ID is specified : Trajectory not found" << std::endl;
       break;
-    case MANIPULATION_TASK_INVALID_TASK:
-      printf("MANIPULATION_TASK_INVALID_TASK\n");
+    }
+    case MANIPULATION_TASK_INVALID_TASK:{
+    std::cout << "the desired task is undefined" << std::endl;
       break;
-    case MANIPULATION_TASK_UNKNOWN_OBJECT:
-      printf("MANIPULATION_TASK_UNKNOWN_OBJECT\n");
+    }
+    case MANIPULATION_TASK_UNKNOWN_OBJECT:{
+    std::cout << "there is no object with the specified name" << std::endl;
       break;
-    case MANIPULATION_TASK_NO_GRASP:
-      printf("MANIPULATION_TASK_NO_GRASP\n");
+    }
+    case MANIPULATION_TASK_NO_GRASP:{
+    std::cout << "no grasp or arm grasping configuration can be found for the current context (mobile base and obstacles configurations)" << std::endl;
       break;
-    case MANIPULATION_TASK_NO_PLACE:
-      printf("MANIPULATION_TASK_NO_PLACE\n");
+    }
+    case MANIPULATION_TASK_NO_PLACE:{
+    std::cout << "no placement or arm placement configuration can be found for the current context (mobile base and obstacles configurations, current grasp)" << std::endl;
       break;
-    case MANIPULATION_TASK_ERROR_UNKNOWN:
-      printf("MANIPULATION_TASK_ERROR_UNKNOWN\n");
+    }
+    case MANIPULATION_TASK_ERROR_UNKNOWN:{
+    std::cout << "something undefined was wrong" << std::endl;
       break;
+    }
+    case MANIPULATION_TASK_EQUAL_QSTART_QGOAL:{
+      std::cout << "The start and goal configuration are the same." << std::endl;
+      break;
+    }
+    default:{
+      std::cout << "Unknown Error." << std::endl;
+      break;
+    }
   }
 }
 
