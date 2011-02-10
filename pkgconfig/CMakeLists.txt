@@ -28,7 +28,7 @@ IF(GENERATE_LIBMOVE3D)
 
 ELSEIF(GENERATE_VIEWER_LIB)
 
-	configure_file (${CMAKE_SOURCE_DIR}/pkgconfig/Move3D-core.pc.cmake ${CMAKE_BINARY_DIR}/pkgconfig/Move3D-core.pc @ONLY)
-	INSTALL (FILES ${CMAKE_BINARY_DIR}/pkgconfig/Move3D-core.pc DESTINATION lib/pkgconfig)
+	configure_file (${CMAKE_SOURCE_DIR}/pkgconfig/libmove3d-viewer.pc.cmake ${CMAKE_BINARY_DIR}/pkgconfig/libmove3d-viewer.pc @ONLY)
+	INSTALL (FILES ${CMAKE_BINARY_DIR}/pkgconfig/libmove3d-viewer.pc DESTINATION lib/pkgconfig)
 
 ENDIF()
