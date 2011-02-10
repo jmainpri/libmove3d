@@ -36,6 +36,11 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robotPt) :
         _robot(robotPt),
         _configs(robotPt)
 {
+    // Set planner funtions
+    _plannerMethod = rrtQuerry;
+    _smoothingMethod = optimiseTrajectory;
+  
+    // Manipulation planner
     _optimizeSteps = 100;
     _optimizeTime = 4.0; // 4 secondes
     _optimizeRedundentSteps = 100;

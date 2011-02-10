@@ -204,6 +204,37 @@ static int findPath(void) {
 }
 
 /**
+ * @brief Computes an RRT trahjectory between two configuration
+ * @param robot the robot for which to plan
+ * @param qs the start configuration
+ * @param qg the goal configuration
+ */
+p3d_traj* rrtQuerry(p3d_rob* robot, configPt qs, configPt qg)
+{
+  p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+  
+#ifdef MULTIGRAPH
+  p3d_set_multiGraph(FALSE);
+#endif
+  ENV.setBool(Env::biDir, true);
+  ENV.setInt(Env::NbTry, 10000);
+  ENV.setInt(Env::MaxExpandNodeFail, 10000);
+  ENV.setInt(Env::maxNodeCompco, 10000);
+  ENV.setExpansionMethod(Env::Extend);
+  ENV.setDouble(Env::extensionStep, 6.0);
+  
+  if(robot->GRAPH)
+  {
+    p3d_del_graph(robot->GRAPH);
+  }
+  
+  if( p3d_specific_search((char*)"") )
+    return robot->tcur;
+  else 
+    return NULL;
+}
+
+/**
  * @brief Set the number of optimisations steps and optimise the current trajectory of the robot
  * @param nbSteps number of steps for random smoothing
  * @param maxTime The maximum time that the planner have to spend to smooth the trajectory

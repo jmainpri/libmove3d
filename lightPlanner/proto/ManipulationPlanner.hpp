@@ -227,6 +227,15 @@ class  ManipulationPlanner {
   /* *******  Manipulation Data **** */
   /* ******************************* */
 	ManipulationData _configs;
+	
+  /* ******************************* */
+  /* ** Motion Planning funtions *** */
+  /* ******************************* */
+  p3d_traj* (*_plannerMethod)(p3d_rob* robot, configPt qs, configPt qg);
+  void (*_smoothingMethod)(p3d_rob* robot, p3d_traj* traj, int nbSteps, double maxTime);
+  
+	std::map<MANIPULATION_TASK_MESSAGE,std::string> _ErrorMap;
+  
 };
 
 #endif
