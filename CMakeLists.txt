@@ -38,6 +38,7 @@ endif( NOT NON_NATIVE_TARGET)
 # -------------------------------------------------------------
 SET(BM3D_CompilationFlags "")
 SET(BM3D_LinkedCompilationFlags "")
+SET(BM3D_ActiveFlags "")
 
 MACRO(BM3D_flag flagName description status)
   SET(flagName "${flagName}")
@@ -51,55 +52,66 @@ MACRO(BM3D_flag flagName description status)
 #  set_property(CACHE ANIMATION PROPERTY VALUE ON)
 ENDMACRO(BM3D_flag)
 
-MACRO(BM3D_CheckCompilationFlags)
-  SET(BM3D_ActiveFlags "")
-  MESSAGE ("Active Flags :")
-#  FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "#Generated File Do not modify!!!\n" )
-#  FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "MOVE3D_COMPILATION_FLAGS = ")
+MACRO(BM3D_ProcessCompilationFlags)
+
   FOREACH(flag ${BM3D_CompilationFlags})
-    IF(${flag})
-      SET(MOVE3D_COMPILATION_FLAGS ${MOVE3D_COMPILATION_FLAGS} ${flag})
-#      FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags " -D${flag} ")
-      MESSAGE("${flag}")
-	IF( QT_LIBRARY )
-		ADD_DEFINITIONS("-D${flag}")
-	ELSE( QT_LIBRARY )
-		ADD_DEFINITIONS(" -D${flag}")
-	ENDIF( QT_LIBRARY )
-      LIST(APPEND BM3D_ActiveFlags ${flag})
+	IF(${flag})
+		LIST(APPEND BM3D_ActiveFlags ${flag})
     ENDIF()
   ENDFOREACH(flag)
   
-  MESSAGE ("\nLinked Flags :")
+  SET(goToNextLevel FALSE) # when TRUE, means that we must recursively call BM3D_ProcessFlags to process flags dependencies 
   FOREACH(activeFlag ${BM3D_ActiveFlags})
     FOREACH(linkFlag ${BM3D_LinkedCompilationFlags})
-      IF(${linkFlag} MATCHES "${activeFlag}:(.*)")
-        STRING(LENGTH "${activeFlag}:" prefixLength)
-	STRING(LENGTH ${linkFlag} linkLength)
-	MATH(EXPR linkLength "${linkLength} - ${prefixLength}")
-	STRING(SUBSTRING ${linkFlag} ${prefixLength} ${linkLength} linkFlagToActivate)
-        SET(isAlreadyActive 0)
-        FOREACH(activeFlag2 ${BM3D_ActiveFlags})
-	  IF(${activeFlag2} STREQUAL ${linkFlagToActivate})
-	    SET(isAlreadyActive 1)
-	  ENDIF(${activeFlag2} STREQUAL ${linkFlagToActivate})
-	ENDFOREACH(activeFlag2)
-	IF(${isAlreadyActive} EQUAL 0)
-	  SET(${linkFlagToActivate} ON)
-	  SET(MOVE3D_COMPILATION_FLAGS ${MOVE3D_COMPILATION_FLAGS} ${linkFlagToActivate})
-#          FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "-D${linkFlagToActivate}")
-          MESSAGE("${activeFlag} -> ${linkFlagToActivate}")
-		IF( QT_LIBRARY )
-			ADD_DEFINITIONS("-D${linkFlagToActivate}")
-		ELSE( QT_LIBRARY )
-			ADD_DEFINITIONS(" -D${linkFlagToActivate}")
-		ENDIF( QT_LIBRARY )
-	ENDIF(${isAlreadyActive} EQUAL 0)
+      
+		IF(${linkFlag} MATCHES "${activeFlag}:(.*)")
+			STRING(LENGTH "${activeFlag}:" prefixLength)
+			STRING(LENGTH ${linkFlag} linkLength)
+			MATH(EXPR linkLength "${linkLength} - ${prefixLength}")
+			STRING(SUBSTRING ${linkFlag} ${prefixLength} ${linkLength} linkFlagToActivate)
+
+			SET(isNewFlag TRUE)
+
+			FOREACH(activeFlag2 ${BM3D_ActiveFlags})
+				IF(${activeFlag2} STREQUAL ${linkFlagToActivate})
+					SET(isNewFlag FALSE)
+				ENDIF(${activeFlag2} STREQUAL ${linkFlagToActivate})
+			ENDFOREACH(activeFlag2)
+
+			IF(isNewFlag)
+				SET(goToNextLevel TRUE)
+				SET(${linkFlagToActivate} ON CACHE BOOL "${linkFlagToActivate} value" FORCE) #Need to force cache update
+				LIST(APPEND BM3D_ActiveFlags ${flagName})
+				#MESSAGE("Enabled ${activeFlag} dependency: ${linkFlagToActivate}")
+			ENDIF(isNewFlag)
       ENDIF(${linkFlag} MATCHES "${activeFlag}:(.*)")
+
     ENDFOREACH(linkFlag)
   ENDFOREACH(activeFlag)
-  MESSAGE("\n")
-ENDMACRO(BM3D_CheckCompilationFlags)
+
+  IF(goToNextLevel)
+	  BM3D_ProcessCompilationFlags()
+  ENDIF(goToNextLevel)
+
+ENDMACRO(BM3D_ProcessCompilationFlags)
+
+MACRO(BM3D_SetCompilationFlags)
+
+  MESSAGE ("Active Flags :")
+
+  LIST(REMOVE_DUPLICATES BM3D_ActiveFlags)
+
+  FOREACH(flag ${BM3D_ActiveFlags})
+		SET(MOVE3D_COMPILATION_FLAGS ${MOVE3D_COMPILATION_FLAGS} ${flag})
+		MESSAGE("${flag}")
+		IF( QT_LIBRARY )
+			ADD_DEFINITIONS("-D${flag}")
+		ELSE( QT_LIBRARY )
+			ADD_DEFINITIONS(" -D${flag}")
+		ENDIF( QT_LIBRARY )
+  ENDFOREACH(flag)
+ 
+ENDMACRO(BM3D_SetCompilationFlags)
 
 # P3D core ---
 BM3D_flag(P3D_CONSTRAINTS "Compilation with module Constraints" ON)
@@ -173,7 +185,9 @@ BM3D_flag(FLAGS_FOR_STUDIO "Set required options to compile mov3d-studio, the st
 BM3D_flag(FLAGS_FOR_VIEWER "Set the required options to compile the stand-alone move3d viewer (requires SPARK at run-time)" OFF MOVE3D_ROBOTICS MOVE3D_CORE QT_LIBRARY QT_GL)
 
 BM3D_flag(MOVE3D_ROBOTICS "Set all the standard options related to robotics" OFF HRI_PLANNER GRASP_PLANNING LIGHT_PLANNER MULTIGRAPH MULTILOCALPATH USE_GSL )
-BM3D_CheckCompilationFlags()
+
+BM3D_ProcessCompilationFlags()
+BM3D_SetCompilationFlags()
 
 #################################################################
 #### Add here a library to include (custom FindPackage.cmake ####
