@@ -641,7 +641,10 @@ configPt ManipulationPlanner::getApproachGraspConf(p3d_rob* object, int armId, g
     // Sample a configuration for the robot
     configPt approachConfig = setRobotCloseToConfGraspApproachOrExtract(_robot, q, object->joints[1]->abs_pos, tAtt, false, armId, true);
     if ( approachConfig ){
-      optimizeRedundentJointConfigDist(_robot, mData.getCcCntrt()->argu_i[0], approachConfig, object->joints[1]->abs_pos, tAtt, q, armId, getOptimizeRedundentSteps());
+      if (optimizeRedundentJointConfigDist(_robot, mData.getCcCntrt()->argu_i[0], approachConfig, object->joints[1]->abs_pos, tAtt, q, armId, getOptimizeRedundentSteps()) == -1){
+        p3d_destroy_config(_robot, approachConfig);
+        approachConfig = NULL;
+      }
     }
     gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
     deactivateCcCntrts(_robot, armId);
