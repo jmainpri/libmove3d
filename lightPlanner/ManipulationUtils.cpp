@@ -130,7 +130,10 @@ int ManipulationUtils::copyConfigToFORM(p3d_rob* robot, configPt q) {
   robot->confcur = robot->conf[0];
 #ifdef WITH_XFORMS
   FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+#else
+ g3d_add_config_to_ui(name,robot,q);
 #endif
+
   p3d_set_and_update_this_robot_conf_multisol(robot, robot->confcur->q, NULL, 0, robot->ikSol);
   return 0;
 }

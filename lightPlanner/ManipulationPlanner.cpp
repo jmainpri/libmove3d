@@ -123,6 +123,26 @@ void ManipulationPlanner::setDebugMode(bool value){
   MPDEBUG = value;
 }
 
+void ManipulationPlanner::setPlanningMethod(p3d_traj* (*funct)(p3d_rob* robot, configPt qs, configPt qg))
+{
+  _plannerMethod = funct;
+}
+
+void ManipulationPlanner::resetPlanningMethod()
+{
+  _plannerMethod = rrtQuerry;
+}
+
+void ManipulationPlanner::setSmoothingMethod(void (*funct)(p3d_rob* robot, p3d_traj* traj, int nbSteps, double maxTime))
+{
+  _smoothingMethod = funct;
+}
+
+void ManipulationPlanner::resetSmoothingMethod()
+{
+  _smoothingMethod = optimiseTrajectory;
+}
+
 void ManipulationPlanner::setOptimizeSteps(int nbSteps) {
     if (nbSteps > 0) {
         _optimizeSteps = nbSteps;
@@ -934,55 +954,44 @@ void ManipulationPlanner::fitConfigurationToRobotBounds(configPt q){
 //! @param biDir : is the RRT bidirectional
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, bool biDir) {
     MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
-    int result;
 
-    p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+//    if(_robot->GRAPH)
+//    {
+//      p3d_del_graph(_robot->GRAPH);
+//    }
 
-#ifdef MULTIGRAPH
-    p3d_set_multiGraph(FALSE);
-#endif
-    ENV.setBool(Env::biDir, true);
-    ENV.setInt(Env::NbTry, 10000);
-    ENV.setInt(Env::MaxExpandNodeFail, 10000);
-    ENV.setInt(Env::maxNodeCompco, 10000);
-    ENV.setExpansionMethod(Env::Extend);
-    ENV.setDouble(Env::extensionStep, 6.0);
+//#if ( ( 1 || defined(USE_CXX_PLANNER) ) && defined(MOVE3D_CORE) )
+//  
+//    //ENV.setBool(Env::drawGraph, false);
+//    ENV.setBool(Env::withSmoothing, true);
+//    ENV.setBool(Env::withShortCut, true);
+//    ENV.setBool(Env::withDeformation, false);
+//    ENV.setInt(Env::nbCostOptimize, smoothingSteps);
+//    ENV.setDouble(Env::timeOptimize, smootingTime);
+//
+//    ChronoOn();
+//  
+//    if(_robot->GRAPH)
+//    {
+//      p3d_del_graph(_robot->GRAPH);
+//    }
+//  
+//    result = ext_p3d_run_rrt( _robot->GRAPH, fct_stop, fct_draw );
+//
+//    ChronoPrint("");
+//    ChronoOff();
+//#else
+    
+    configPt qs = _robot->ROBOT_POS;
+    configPt qg = _robot->ROBOT_GOTO;
   
-    if(_robot->GRAPH)
-    {
-      p3d_del_graph(_robot->GRAPH);
+    p3d_traj* traj = _plannerMethod(_robot,qs,qg);
+
+    if(traj){
+      _smoothingMethod(_robot, traj, smoothingSteps, smootingTime);
     }
 
-#if ( ( 0 || defined(USE_CXX_PLANNER) ) && defined(MOVE3D_CORE) )
-  
-    //ENV.setBool(Env::drawGraph, false);
-    ENV.setBool(Env::withSmoothing, true);
-    ENV.setBool(Env::withShortCut, true);
-    ENV.setBool(Env::withDeformation, false);
-    ENV.setInt(Env::nbCostOptimize, smoothingSteps);
-    ENV.setDouble(Env::timeOptimize, smootingTime);
-
-    ChronoOn();
-  
-    if(_robot->GRAPH)
-    {
-      p3d_del_graph(_robot->GRAPH);
-    }
-  
-    result = ext_p3d_run_rrt( _robot->GRAPH, fct_stop, fct_draw );
-
-    ChronoPrint("");
-    ChronoOff();
-#else
-    result = p3d_specific_search((char *)"");
-    if(result){
-      p3d_traj* traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
-      if(traj){
-        optimiseTrajectory(_robot, traj, smoothingSteps, smootingTime);
-      }
-    }
-#endif
-    if (!result) {
+    if (!traj) {
       //Check the possible errors of planning
       //Check the start and goal configuration
       if(!p3d_is_collision_free(_robot, _robot->ROBOT_POS)){

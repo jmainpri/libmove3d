@@ -44,6 +44,14 @@ class  ManipulationPlanner {
   int getUpBodysmMLP() { return _UpBodySmMLP; }
 #endif
   
+  // Set and reset the planning and smoothing
+  // Functions used by the Manipulation planner
+  void setPlanningMethod(p3d_traj* (*funct)(p3d_rob* robot, configPt qs, configPt qg));
+  void resetPlanningMethod();
+  void setSmoothingMethod(void (*funct)(p3d_rob* robot, p3d_traj* traj, int nbSteps, double maxTime));
+  void resetSmoothingMethod();
+  
+  
     void setOptimizeSteps(int nbSteps);
     int getOptimizeSteps(void) const;
 
@@ -233,8 +241,6 @@ class  ManipulationPlanner {
   /* ******************************* */
   p3d_traj* (*_plannerMethod)(p3d_rob* robot, configPt qs, configPt qg);
   void (*_smoothingMethod)(p3d_rob* robot, p3d_traj* traj, int nbSteps, double maxTime);
-  
-	std::map<MANIPULATION_TASK_MESSAGE,std::string> _ErrorMap;
   
 };
 

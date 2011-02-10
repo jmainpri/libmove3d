@@ -223,11 +223,6 @@ p3d_traj* rrtQuerry(p3d_rob* robot, configPt qs, configPt qg)
   ENV.setExpansionMethod(Env::Extend);
   ENV.setDouble(Env::extensionStep, 6.0);
   
-  if(robot->GRAPH)
-  {
-    p3d_del_graph(robot->GRAPH);
-  }
-  
   if( p3d_specific_search((char*)"") )
     return robot->tcur;
   else 
