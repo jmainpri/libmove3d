@@ -10,10 +10,10 @@ HRI_KNOWLEDGE * hri_create_empty_agent_knowledge(HRI_AGENT * hri_agent)
 
   kn = MY_ALLOC(HRI_KNOWLEDGE, 1);
 
-  kn->points_at = 0;
-  kn->points_at_nb = 0;
-  kn->looks_at = NULL;
-  kn->looks_at_nb = 0;
+  /* kn->points_at = 0; */
+  /* kn->points_at_nb = 0; */
+  /* kn->looks_at = NULL; */
+  /* kn->looks_at_nb = 0; */
   kn->entities = NULL;
   kn->entities_nb = 0;
 
@@ -55,7 +55,7 @@ HRI_ENTITIES * hri_create_entities()
 	entities->entities[ent_i]->undetection_iter = 0;
 	entities->entities[ent_i]->undetection_status = HRI_NEVER_DETECTED;
         entities->entities[ent_i]->can_disappear_and_move = FALSE;
-        entities->entities[ent_i]->disappeared = FALSE;
+        entities->entities[ent_i]->disappeared = TRUE;
 	entities->entities[ent_i]->last_ismoving_iter = 0;
 	entities->entities[ent_i]->filtered_motion = HRI_UK_MOTION;
 	entities->entities[ent_i]->is_pl_state_transition_new = FALSE;
@@ -181,7 +181,7 @@ int hri_initialize_agent_knowledge(HRI_KNOWLEDGE * knowledge, HRI_ENTITIES * ent
 
     knowledge->entities[i].entPt = entities->entities[i];
 
-    knowledge->entities[i].disappeared_isexported = FALSE;
+    knowledge->entities[i].disappeared_isexported = TRUE;
 
     knowledge->entities[i].motion = HRI_UK_MOTION;
     knowledge->entities[i].motion_ischanged = FALSE;
@@ -198,6 +198,14 @@ int hri_initialize_agent_knowledge(HRI_KNOWLEDGE * knowledge, HRI_ENTITIES * ent
     knowledge->entities[i].reachability = HRI_UK_REACHABILITY;
     knowledge->entities[i].reachability_ischanged = FALSE;
     knowledge->entities[i].reachability_isexported = FALSE;
+
+    knowledge->entities[i].is_looked_at = HRI_UK_V;
+    knowledge->entities[i].is_looked_at_ischanged = FALSE;
+    knowledge->entities[i].is_looked_at_isexported = FALSE;
+
+    knowledge->entities[i].is_pointed_at = HRI_UK_V;
+    knowledge->entities[i].is_pointed_at_ischanged = FALSE;
+    knowledge->entities[i].is_pointed_at_isexported = FALSE;
 
     knowledge->entities[i].is_located_from_agent = HRI_UK_RELATION;
     knowledge->entities[i].spatial_relation_ischanged = FALSE;
@@ -869,6 +877,9 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
       if(agent->is_present == FALSE)
 	continue;
 
+
+
+
       // Pick entities that exist 
       present_ents_nb = 0;
       for(e_i=0; e_i<ents->entities_nb; e_i++) {
@@ -882,6 +893,25 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
 	  present_ents[present_ents_nb] = ents->entities[e_i];
 	  present_ents_global_idxs[present_ents_nb] = e_i;
 	  present_ents_nb++;
+	}
+      }
+
+      if(ents->needSituationAssessmentUpdate && ents->isWorldStatic){
+	// VISIBLITY
+	g3d_compute_visibility_for_given_entities(present_ents, agent, vis_result, present_ents_nb);
+	
+	for(e_j=0; e_j<present_ents_nb; e_j++) {
+	  ge_j = present_ents_global_idxs[e_j];
+	  kn_on_ent = &agent->knowledge->entities[ge_j];
+	  if ( kn_on_ent->visibility  ==  vis_result[e_j]) {
+	    if ( kn_on_ent->visibility_ischanged)
+	      kn_on_ent->visibility_ischanged  = FALSE;
+	  }
+	  else {
+	    kn_on_ent->visibility = vis_result[e_j];
+	    kn_on_ent->visibility_ischanged = TRUE;
+	    kn_on_ent->visibility_isexported = FALSE;
+	  }      
 	}
       }
 
@@ -909,23 +939,58 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
 
 	if(ents->needSituationAssessmentUpdate && ents->isWorldStatic){
 
-	  // VISIBILITY PLACEMENT - FOV,FOA,OOF
+	  // LOOKS AT / VISIBILITY PLACEMENT - FOV,FOA,OOF
 	  // TODO: visibility placement for robot parts	
 	  if(ent->disappeared)
 	    res = HRI_UK_VIS_PLACE;
 	  else
 	    hri_entity_visibility_placement(agent, ent, &res, &elevation, &azimuth);
+
+	  // need to update is_exported , is_changed?
+	  kn_on_ent->is_placed_from_visibility = (HRI_VISIBILITY_PLACEMENT) res;
       
-	  if ( kn_on_ent->is_placed_from_visibility == (HRI_VISIBILITY_PLACEMENT) res) {
-	    if (kn_on_ent->visibility_placement_ischanged)
-	      kn_on_ent->visibility_placement_ischanged = FALSE;
+	  if ( (((HRI_VISIBILITY_PLACEMENT) res) == HRI_FOA) && (kn_on_ent->visibility  == HRI_VISIBLE)) {
+	    if (kn_on_ent->is_looked_at != HRI_TRUE_V){
+	      kn_on_ent->is_looked_at = HRI_TRUE_V;
+	      kn_on_ent->is_looked_at_ischanged = TRUE;
+	      kn_on_ent->is_looked_at_isexported = FALSE;
+	    }	      	      
 	  }
 	  else {
-	    kn_on_ent->visibility_placement_ischanged = TRUE;
-	    kn_on_ent->visibility_placement_isexported = FALSE;
-	    kn_on_ent->is_placed_from_visibility = (HRI_VISIBILITY_PLACEMENT) res;
+	    if (kn_on_ent->is_looked_at == HRI_TRUE_V){
+	      kn_on_ent->is_looked_at_ischanged = TRUE;
+	      kn_on_ent->is_looked_at_isexported = FALSE;
+	    }	 
+	    if( (res == HRI_UK_VIS_PLACE) || (kn_on_ent->visibility  == HRI_UK_VIS))
+	      kn_on_ent->is_looked_at = HRI_UK_V;
+	    else
+	      kn_on_ent->is_looked_at = HRI_FALSE_V;
 	  }
-	
+
+	  // POINTS AT / POINTING PLACEMENT - FOV,FOA,OOF
+	  // TODO: visibility placement for robot parts	
+	  if(ent->disappeared)
+	    res = HRI_UK_VIS_PLACE;
+	  else
+	    hri_entity_pointing_placement(agent, ent, &res, &elevation, &azimuth);
+      
+	  if ( (((HRI_VISIBILITY_PLACEMENT) res) == HRI_FOA) && (kn_on_ent->visibility  == HRI_VISIBLE)) {
+	    if (kn_on_ent->is_pointed_at != HRI_TRUE_V){
+	      kn_on_ent->is_pointed_at = HRI_TRUE_V;
+	      kn_on_ent->is_pointed_at_ischanged = TRUE;
+	      kn_on_ent->is_pointed_at_isexported = FALSE;
+	    }	      	      
+	  }
+	  else {
+	    if (kn_on_ent->is_pointed_at == HRI_TRUE_V){
+	      kn_on_ent->is_pointed_at_ischanged = TRUE;
+	      kn_on_ent->is_pointed_at_isexported = FALSE;
+	    }	 
+	    if( (res == HRI_UK_VIS_PLACE) || (kn_on_ent->visibility  == HRI_UK_VIS))
+	      kn_on_ent->is_pointed_at = HRI_UK_V;
+	    else
+	      kn_on_ent->is_pointed_at = HRI_FALSE_V;
+	  }
 
 	  // REACHABILITY - REACHABLE, UNREACHABLE, HARDLY REACHABLE
 	  // TODO: Fix this global variable use. It's ugly.     
@@ -988,25 +1053,6 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
 	      }
 	    }
 	  }
-	}
-      }
-
-      if(ents->needSituationAssessmentUpdate && ents->isWorldStatic){
-	// VISIBLITY
-	g3d_compute_visibility_for_given_entities(present_ents, agent, vis_result, present_ents_nb);
-
-	for(e_j=0; e_j<present_ents_nb; e_j++) {
-	  ge_j = present_ents_global_idxs[e_j];
-	  kn_on_ent = &agent->knowledge->entities[ge_j];
-	  if ( kn_on_ent->visibility  ==  vis_result[e_j]) {
-	    if ( kn_on_ent->visibility_ischanged)
-	      kn_on_ent->visibility_ischanged  = FALSE;
-	  }
-	  else {
-	    kn_on_ent->visibility = vis_result[e_j];
-	    kn_on_ent->visibility_ischanged = TRUE;
-	    kn_on_ent->visibility_isexported = FALSE;
-	  }      
 	}
       }
       
