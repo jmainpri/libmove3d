@@ -101,71 +101,78 @@ MACRO(BM3D_CheckCompilationFlags)
   MESSAGE("\n")
 ENDMACRO(BM3D_CheckCompilationFlags)
 
-
-
-BM3D_flag(ENABLE_ANTIALIASING "Enables antialiasing to draw smooth lines" OFF)
-
-BM3D_flag(ANIMATION "Compilation with the module character" OFF)
-
-BM3D_flag(WITH_XFORMS "Compile the Xform interface" OFF)
+# P3D core ---
 BM3D_flag(P3D_CONSTRAINTS "Compilation with module Constraints" ON)
 BM3D_flag(P3D_COLLISION_CHECKING "Compilation with module Collision Checking" ON)
 BM3D_flag(P3D_LOCALPATH "Compilation with module Localpath" ON)
 BM3D_flag(P3D_PLANNER "Compilation with module Planner" ON)
-BM3D_flag(BIO "Compilation with module Bio" OFF)
-BM3D_flag(ENERGY "Compilation with module Bio-Energy" OFF)
 
+# Collision checking --
 BM3D_flag(KCD_CP_IS_SOLID "Convex polyhedron as a solid instead of as a collection of convex facets in KCD" OFF P3D_COLLISION_CHECKING)
 BM3D_flag(USE_P3D_BODY_AABB "test with AABB around body of robot" ON P3D_COLLISION_CHECKING)
 BM3D_flag(KCD_APPROX_ROBOT "KCD with volume" OFF P3D_COLLISION_CHECKING)
-BM3D_flag(GJK "Use gjk (just for debugging" OFF P3D_COLLISION_CHECKING)
-BM3D_flag(OBB_EVAL "write a file with OBB tree information (just for debugging" OFF P3D_COLLISION_CHECKING)
+BM3D_flag(GJK "Use gjk (just for debugging)" OFF P3D_COLLISION_CHECKING)
+BM3D_flag(OBB_EVAL "write a file with OBB tree information (just for debugging)" OFF P3D_COLLISION_CHECKING)
 BM3D_flag(VCOLLIDE "Use vCollide Collision detector" OFF)
 
+# Bio-related ---
+BM3D_flag(BIO "Compilation with module Bio" OFF)
+BM3D_flag(ENERGY "Compilation with module Bio-Energy" OFF)
+
+BM3D_flag(BIO_BALL "Sets Ball compiling mode" OFF)
+
+# Path planning --
 BM3D_flag(MULTIGRAPH "Compilation with module Multi-Graph" OFF P3D_PLANNER)
-BM3D_flag(LIGHT_PLANNER "Extern Mode (Use this mode to have a scriped functions for planning pick and place tasks)" OFF P3D_PLANNER)
+BM3D_flag(LIGHT_PLANNER "Extern Mode (Use this mode to have a scriped functions for planning pick and place tasks)"  OFF P3D_PLANNER)
 BM3D_flag(DPG "Dynamic planning using grids" OFF CXX_PLANNER)
 
-BM3D_flag(HRI_PLANNER_GUI "Xforms user interface OFF Human Robot Interaction planner module" OFF HRI_PLANNER WITH_XFORMS)
 BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module" OFF USE_GSL)
+BM3D_flag(USE_MIGHTABILITY_MAPS "Mightability Map Calculation and Planning" OFF)
 
 
 BM3D_flag(MULTILOCALPATH "Compilation avec le module Multi-Localpath" OFF USE_GBM)
-BM3D_flag(GRASP_PLANNING "Module de planification de prises" OFF)
+BM3D_flag(GRASP_PLANNING "Grasp planning module" OFF)
 
 BM3D_flag(FK_CNTRT "to use the automatic generation of forward kinematics constraints (reciprocal of the closed chained constraints)" OFF LIGHT_PLANNER)
 
 BM3D_flag(USE_CXX_PLANNER "Sets the planning API to be default in Move3D" OFF)
 BM3D_flag(LIST_OF_PLANNERS "Sets the planning API to be default in Move3D" OFF)
 
+## User Interfaces ---
 BM3D_flag(QT_LIBRARY "Sets QtLibrary compiling mode" OFF)
 BM3D_flag(QT_GL "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
 BM3D_flag(QT_GL_WIDGET "Compile with the OpenGl widget" OFF QT_GL QT_LIBRARY)
 
 BM3D_flag(USE_GLUT "Compilation with a glut window" OFF)
 
-BM3D_flag(USE_GSL "Mathematic Library" OFF)
-BM3D_flag(USE_CLAPACK "Mathematic Library" OFF)
+BM3D_flag(WITH_XFORMS "Compile the Xform interface" OFF)
 
-BM3D_flag(BIO_BALL "Sets Ball compiling mode" OFF)
-
-BM3D_flag(USE_HRP2_GIK "HRP2 GIK Library" OFF)
-BM3D_flag(USE_MIGHTABILITY_MAPS "Mightability Map Calculation and Planning" OFF)
-BM3D_flag(USE_HATP_LIBS "For including HATP libraries" OFF)
-
-BM3D_flag(USE_GBM "Compilation with the gbM package" OFF)
-
+BM3D_flag(ENABLE_ANTIALIASING "Enables antialiasing to draw smooth lines" OFF)
 BM3D_flag(USE_SHADERS "Enables use of OpenGL shaders" OFF)
 
 BM3D_flag(MOVE3D_CORE "Enables compilation of Move3D-core" OFF)
+BM3D_flag(HRI_PLANNER_GUI "Xforms user interface OFF Human Robot Interaction planner module" OFF HRI_PLANNER WITH_XFORMS)
+
+# Utility libraries ---
+BM3D_flag(USE_GSL "Mathematic Library" OFF)
+BM3D_flag(USE_CLAPACK "Mathematic Library" OFF)
+
+# Other ---
+BM3D_flag(ANIMATION "Compilation with the module character" OFF)
+BM3D_flag(USE_HRP2_GIK "HRP2 GIK Library" OFF)
+BM3D_flag(USE_HATP_LIBS "For including HATP libraries" OFF)
+BM3D_flag(USE_GBM "Compilation with the gbM package" OFF)
+
 
 # META flags ------
 #------------------
-BM3D_flag(COMPILE_FOR_GENOM "Check this flag to activate all dependencies for spark&mhp modules" OFF USE_GBM USE_GSL MULTIGRAPH LIGHT_PLANNER HRI_PLANNER MULTILOCALPATH GRASP_PLANNING  )
+BM3D_flag(FLAGS_FOR_LIBMOVE3D "Set required options to compile the core libmove3d, without user interface" OFF MOVE3D_ROBOTICS USE_GLUT)
 
-BM3D_flag(COMPILE_ON_JIDO "Check this flag to activate all dependencies for Jido" OFF WITH_XFORMS USE_GBM  MULTIGRAPH LIGHT_PLANNER HRI_PLANNER HRI_PLANNER_GUI MULTILOCALPATH GRASP_PLANNING USE_GSL )# USE_MIGHTABILITY_MAPS )
-BM3D_flag(COMPILE_MANIPULATION_PLANNER_TESTING "Check this flag to activate the module without interface to test the manipulation planner" OFF LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GBM)
-BM3D_flag(COMPILE_MOVE3DCORE "Check this flag to activate the module without interface to test the manipulation planner" OFF MOVE3D_CORE QT_LIBRARY QT_GL  MULTIGRAPH LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING HRI_PLANNER USE_GBM USE_GSL)
+BM3D_flag(FLAGS_FOR_STUDIO "Set required options to compile mov3d-studio, the stand-alone, xforms-based, dev environment" OFF MOVE3D_ROBOTICS HRI_PLANNER_GUI USE_MIGHTABILITY_MAPS )
+
+BM3D_flag(FLAGS_FOR_VIEWER "Set the required options to compile the stand-alone move3d viewer (requires SPARK at run-time)" OFF MOVE3D_ROBOTICS MOVE3D_CORE QT_LIBRARY QT_GL)
+
+BM3D_flag(MOVE3D_ROBOTICS "Set all the standard options related to robotics" OFF HRI_PLANNER GRASP_PLANNING LIGHT_PLANNER MULTIGRAPH MULTILOCALPATH USE_GSL )
 BM3D_CheckCompilationFlags()
 
 #################################################################
