@@ -185,12 +185,7 @@ GlutWindowDisplay::GlutWindowDisplay(int argc, char *argv[])
   glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_STENCIL | GLUT_ALPHA );
   glutInitWindowSize (800, 600);
 
-  // initialise le nom de la fenetre
-  char winName[255]; 
-  strcpy(winName,"Move3D Glut ");
-  strcat(winName,argv[0]);
-  printf("%s\n",winName);
-  m_WindowId = glutCreateWindow (winName); 
+  m_WindowId = glutCreateWindow (argv[0]); 
   printf( "glutCreateWindow (%d)\n" , m_WindowId );
 }
 
