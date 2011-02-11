@@ -204,14 +204,25 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
     // until a configuration is found collision free for the carried object
 //    g3d_draw_allwin_active();
     p3d_gaussian_config2_specific(carriedObject, carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, true);
-    if(!shootObjectPos){
+//Bit computation to get the positions and rotations to sample.
+//When the Bit = 1 the corresponding position or rotation has to be sampled
+    if(~shootObjectPos & 1){
       carriedObjectConf[6]  = objPos._x;
+    }
+    if(~shootObjectPos & 2){
       carriedObjectConf[7]  = objPos._y;
+    }
+    if(~shootObjectPos & 4){
       carriedObjectConf[8]  = objPos._z;
     }
-    if(!shootObjectRot){
+    
+    if(~shootObjectRot & 1){
       carriedObjectConf[9]  = objPos._rx;
+    }
+    if(~shootObjectRot & 2){
       carriedObjectConf[10] = objPos._ry;
+    }
+    if(~shootObjectRot & 4){
       carriedObjectConf[11] = objPos._rz;
     }
   }while(!p3d_set_and_update_this_robot_conf_with_partial_reshoot(carriedObject, carriedObjectConf) && p3d_col_test());

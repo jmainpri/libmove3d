@@ -996,7 +996,7 @@ static void CB_genomPickUp_takeObjectToXYZ(FL_OBJECT *obj, long arg) {
     objGoto.push_back(1.023060646334923);
     objGoto.push_back(0.0);
     objGoto.push_back(0.0);
-    objGoto.push_back(0.0);
+    objGoto.push_back(P3D_HUGE);
     manipulation->armPlanTask(ARM_TAKE_TO_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)"SHELF", confs, smTrajs);
 
   g3d_draw_allwin_active();

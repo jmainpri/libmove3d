@@ -161,17 +161,14 @@ class  ManipulationPlanner {
     MANIPULATION_TASK_MESSAGE armPickTakeToFree(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* support, configPt approachGraspConfig, gpGrasp &grasp, std::vector <p3d_traj*> &trajs);
 
     /** Move the arm from a grasping configuration to a configuration with the same grasp but a different object placement */
-    MANIPULATION_TASK_MESSAGE armPickTakeToPlace(int armId, p3d_rob* object, p3d_rob* placement, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armPickTakeToPlace(int armId, configPt qStart, p3d_rob* object, p3d_rob* placement, p3d_rob* support, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armPickTakeToPlace(int armId, configPt qStart, p3d_rob* object, std::vector<double> &objGoto, p3d_rob* support, std::vector <p3d_traj*> &trajs);
+    
 
     /**  Move the arm from a free configuration to a placement configuration */
-    MANIPULATION_TASK_MESSAGE armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, p3d_rob* placement, std::vector <p3d_traj*> &trajs);
-
-    /** Move the arm from a free configuration to a grasping configuration of the object placed on a support then to a placement configuration */
-    MANIPULATION_TASK_MESSAGE armPickAndPlace(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* placement, std::vector <p3d_traj*> &trajs);
-	
-		/** Move the arm to a stable object position then move the object to a free configuration with the object freeflying **/
-		MANIPULATION_TASK_MESSAGE armPickGotoAndTakeToFree(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* placement, std::vector <p3d_traj*> &trajs);
-		 
+    MANIPULATION_TASK_MESSAGE armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, p3d_rob* placement, p3d_rob* support, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, std::vector<double> &objGoto, p3d_rob* support, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, p3d_rob* support, configPt approachGraspConfig, configPt depositConfig, gpGrasp &grasp, std::vector <p3d_traj*> &trajs);
 
 #ifdef DPG
     /** \brief Check if the current path is in collision or not. Start from the begining of the trajectory

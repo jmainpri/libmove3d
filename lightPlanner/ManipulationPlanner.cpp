@@ -10,9 +10,6 @@
 
 #ifdef CXX_PLANNER
 #include "planner_cxx/plannerFunctions.hpp"
-#if defined (USE_CXX_PLANNER)
-// #include "planEnvironment.hpp"
-#endif
 #endif
 
 #include "robotPos.h"
@@ -691,11 +688,20 @@ configPt ManipulationPlanner::getFreeHoldingConf( p3d_rob* object, int armId, gp
   q[ idManipIndexDof + 1 ] = objGoto.at(1);
   q[ idManipIndexDof + 2 ] = objGoto.at(2);
 
-  if(objGoto.at(3)!=P3D_HUGE && objGoto.at(4)!=P3D_HUGE && objGoto.at(5)!=P3D_HUGE)
-  {
-     q[ idManipIndexDof + 3 ] = objGoto.at(3);
-     q[ idManipIndexDof + 4 ] = objGoto.at(4);
-     q[ idManipIndexDof + 5 ] = objGoto.at(5);
+//Bit computation to get the rotation to sample.
+//When the Bit = 1 the corresponding rotation has to be sampled
+  int sampleObjectRotation = 7;
+  if(objGoto.at(3)!=P3D_HUGE){
+    q[ idManipIndexDof + 3 ] = objGoto.at(3);
+    sampleObjectRotation ^= 1;
+  }
+  if(objGoto.at(4)!=P3D_HUGE){
+    q[ idManipIndexDof + 4 ] = objGoto.at(4);
+    sampleObjectRotation ^= 2;
+  }
+  if(objGoto.at(5)!=P3D_HUGE){
+    q[ idManipIndexDof + 5 ] = objGoto.at(5);
+    sampleObjectRotation ^= 4;
   }
 
   p3d_set_and_update_this_robot_conf(_robot, q);
@@ -718,16 +724,7 @@ configPt ManipulationPlanner::getFreeHoldingConf( p3d_rob* object, int armId, gp
     p3d_mat4Copy(mData.getManipulationJnt()->abs_pos , objPos);
   }
 
-  if(objGoto.at(3)==P3D_HUGE || objGoto.at(4)==P3D_HUGE || objGoto.at(5)==P3D_HUGE)
-  {
-   // Sample the object orientation
-   q = setRobotGraspPosWithoutBase(_robot, objPos, tAtt, false, TRUE , armId, true);
-  }
-  else
-  {
-   //do not Sample the object orientation
-   q = setRobotGraspPosWithoutBase(_robot, objPos, tAtt, false, FALSE , armId, true);
-  }
+  q = setRobotGraspPosWithoutBase(_robot, objPos, tAtt, false, sampleObjectRotation , armId, true);
 
   if(q){
     optimizeRedundentJointConfigCost(_robot, mData.getCcCntrt()->argu_i[0], q, objPos, tAtt, grasp, armId, getOptimizeRedundentSteps());
@@ -1602,74 +1599,43 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
 //! the armPickTakeToPlace on the manipulation data
 //
 //! @param armId : which arm is used to grasp the object
-//! @param qGoal : the configuration to bring the object to
 //! @param object : pointer to the p3d_rob that represent the moving object
+//! @param placement : pointer to the p3d_rob that represent the placement object
 //! @param trajs : the vector of trajector optained
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToPlace(int armId, p3d_rob* object, p3d_rob* placement, std::vector <p3d_traj*> &trajs) {
-    MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
-    return status;
-}
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, p3d_rob* placement, std::vector <p3d_traj*> &trajs) {
-    MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
-    return status;
-}
 
-//! The Arm Pick And Place method takes in an object in a goal configuration
+
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToPlace(int armId, configPt qStart, p3d_rob* object, p3d_rob* placement, p3d_rob* support, std::vector <p3d_traj*> &trajs) {
+  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+    return status;
+}
+//! The Arm Pick Take To Place method takes an object in a goal configuration
 //! and then computes a vector of trajectories by calling
 //! the armPickTakeToPlace on the manipulation data
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickAndPlace(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* placement, std::vector <p3d_traj*> &trajs) {
-    MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+//
+//! @param armId : which arm is used to grasp the object
+//! @param qStart : the start configuration
+//! @param object : pointer to the p3d_rob that represent the moving object
+//! @param objGoto : the position and orientation where to deposit the object
+//! @param trajs : the vector of trajector optained
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToPlace(int armId, configPt qStart, p3d_rob* object, std::vector<double> &objGoto, p3d_rob* support, std::vector <p3d_traj*> &trajs) {
+  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
     return status;
 }
 
-//! The Arm Pick And Place method computes movtion to a grasping position
-//! and takes the object to a free configuration
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGotoAndTakeToFree(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* placement, std::vector <p3d_traj*> &trajs)
-{
-  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
-  
-  ArmManipulationData& armData = (*_robot->armManipulationData)[armId];
-  
-  if (armData.getManipState() != handFree ) 
-  {
-    cout << "Manipulation planner : the robot is not in a hand free state" << endl;
-    //return MANIPULATION_TASK_INVALID_QSTART;
-  }
-  
-  // Generate new manip configs
-  status = computeManipulationData(armId,object);
-  
-  if (status == MANIPULATION_TASK_OK)
-  {
-    // Compute the path between Start configuration
-    // and the GraspConfig
-    status = armPickGoto(armId, qStart, object, 
-                         _configs.getGraspConfig(), 
-                         _configs.getOpenConfig(), 
-                         _configs.getApproachFreeConfig(), trajs);
-  }
-  else 
-  {
-    return MANIPULATION_TASK_NO_TRAJ_FOUND;
-  }
-  
-  
-  if (armData.getManipState() != holdingObjectInStablePose) 
-  {
-    cout << "Manipulation planner : the robot is not holding object in a stable pose" << endl;
-    return MANIPULATION_TASK_INVALID_QSTART;
-  }
-  
-  //Compute the path between theses configurations
-  p3d_rob* support = NULL;
-  status = armPickTakeToFree(armId, _configs.getGraspConfig(), qGoal, object, support, 
-                             _configs.getApproachGraspConfig(),
-                             *_configs.getGrasp(),
-                             trajs);
-  
-  return status;
-}
 
+    /**  Move the arm from a free configuration to a placement configuration */
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, p3d_rob* placement, p3d_rob* support, std::vector <p3d_traj*> &trajs) {
+  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+    return status;
+}
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, std::vector<double> &objGoto, p3d_rob* support, std::vector <p3d_traj*> &trajs) {
+  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+    return status;
+}
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, p3d_rob* support, configPt approachGraspConfig, configPt depositConfig, gpGrasp &grasp, std::vector <p3d_traj*> &trajs) {
+  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+    return status;
+}
 
 /* ******************************* */
 /* ******** Task Planning ******** */
@@ -1732,12 +1698,12 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       }
       case ARM_TAKE_TO_PLACE: {
         printf("plan for ARM_PICK_TAKE_TO_PLACE task\n");
-        status = armPickTakeToPlace(armId, object, support, trajs);
+//         status = armPickTakeToPlace(armId, object, support, trajs);
         break;
       }
       case ARM_PLACE_FROM_FREE: {
         printf("plan for ARM_PLACE_FROM_FREE task\n");
-        status = armPlaceFromFree(armId, qi, object, support, trajs);
+//         status = armPlaceFromFree(armId, qi, object, support, trajs);
         break;
       }
         //       case ARM_TAKE_TO_FREE_POINT:{
@@ -1832,12 +1798,12 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       }
       case ARM_TAKE_TO_PLACE: {
         printf("plan for ARM_PICK_TAKE_TO_PLACE task\n");
-        status = armPickTakeToPlace(armId, object, support, trajs);
+//         status = armPickTakeToPlace(armId, object, support, trajs);
         break;
       }
       case ARM_PLACE_FROM_FREE: {
         printf("plan for ARM_PLACE_FROM_FREE task\n");
-        status = armPlaceFromFree(armId, qi, object, support, trajs);
+//         status = armPlaceFromFree(armId, qi, object, support, trajs);
         break;
       }
         //       case ARM_TAKE_TO_FREE_POINT:{
