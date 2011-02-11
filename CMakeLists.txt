@@ -11,11 +11,11 @@ set( CPACK_PACKAGE_VERSION_MAJOR 3)
 endif( NOT CPACK_PACKAGE_VERSION_MAJOR)
 
 if( NOT CPACK_PACKAGE_VERSION_MINOR)
-set( CPACK_PACKAGE_VERSION_MINOR 7)
+set( CPACK_PACKAGE_VERSION_MINOR 8)
 endif( NOT CPACK_PACKAGE_VERSION_MINOR)
 
 if( NOT CPACK_PACKAGE_VERSION_PATCH)
-set( CPACK_PACKAGE_VERSION_PATCH 15)
+set( CPACK_PACKAGE_VERSION_PATCH 2)
 endif( NOT CPACK_PACKAGE_VERSION_PATCH)
 
 set( BIOMOVE3D_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
@@ -38,6 +38,7 @@ endif( NOT NON_NATIVE_TARGET)
 # -------------------------------------------------------------
 SET(BM3D_CompilationFlags "")
 SET(BM3D_LinkedCompilationFlags "")
+SET(BM3D_ActiveFlags "")
 
 MACRO(BM3D_flag flagName description status)
   SET(flagName "${flagName}")
@@ -51,122 +52,152 @@ MACRO(BM3D_flag flagName description status)
 #  set_property(CACHE ANIMATION PROPERTY VALUE ON)
 ENDMACRO(BM3D_flag)
 
-MACRO(BM3D_CheckCompilationFlags)
-  SET(BM3D_ActiveFlags "")
-  MESSAGE ("Active Flags :")
-#  FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "#Generated File Do not modify!!!\n" )
-#  FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "MOVE3D_COMPILATION_FLAGS = ")
+MACRO(BM3D_ProcessCompilationFlags)
+
   FOREACH(flag ${BM3D_CompilationFlags})
-    IF(${flag})
-      SET(MOVE3D_COMPILATION_FLAGS ${MOVE3D_COMPILATION_FLAGS} ${flag})
-#      FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags " -D${flag} ")
-      MESSAGE("${flag}")
-	IF( QT_LIBRARY )
-		ADD_DEFINITIONS("-D${flag}")
-	ELSE( QT_LIBRARY )
-		ADD_DEFINITIONS(" -D${flag}")
-	ENDIF( QT_LIBRARY )
-      LIST(APPEND BM3D_ActiveFlags ${flag})
+	IF(${flag})
+		LIST(APPEND BM3D_ActiveFlags ${flag})
     ENDIF()
   ENDFOREACH(flag)
   
-  MESSAGE ("\nLinked Flags :")
+  SET(goToNextLevel FALSE) # when TRUE, means that we must recursively call BM3D_ProcessFlags to process flags dependencies 
   FOREACH(activeFlag ${BM3D_ActiveFlags})
     FOREACH(linkFlag ${BM3D_LinkedCompilationFlags})
-      IF(${linkFlag} MATCHES "${activeFlag}:(.*)")
-        STRING(LENGTH "${activeFlag}:" prefixLength)
-	STRING(LENGTH ${linkFlag} linkLength)
-	MATH(EXPR linkLength "${linkLength} - ${prefixLength}")
-	STRING(SUBSTRING ${linkFlag} ${prefixLength} ${linkLength} linkFlagToActivate)
-        SET(isAlreadyActive 0)
-        FOREACH(activeFlag2 ${BM3D_ActiveFlags})
-	  IF(${activeFlag2} STREQUAL ${linkFlagToActivate})
-	    SET(isAlreadyActive 1)
-	  ENDIF(${activeFlag2} STREQUAL ${linkFlagToActivate})
-	ENDFOREACH(activeFlag2)
-	IF(${isAlreadyActive} EQUAL 0)
-	  SET(${linkFlagToActivate} ON)
-	  SET(MOVE3D_COMPILATION_FLAGS ${MOVE3D_COMPILATION_FLAGS} ${linkFlagToActivate})
-#          FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "-D${linkFlagToActivate}")
-          MESSAGE("${activeFlag} -> ${linkFlagToActivate}")
-		IF( QT_LIBRARY )
-			ADD_DEFINITIONS("-D${linkFlagToActivate}")
-		ELSE( QT_LIBRARY )
-			ADD_DEFINITIONS(" -D${linkFlagToActivate}")
-		ENDIF( QT_LIBRARY )
-	ENDIF(${isAlreadyActive} EQUAL 0)
-      ENDIF(${linkFlag} MATCHES "${activeFlag}:(.*)")
+      
+		IF(${linkFlag} MATCHES "${activeFlag}:(.*)")
+			STRING(LENGTH "${activeFlag}:" prefixLength)
+			STRING(LENGTH ${linkFlag} linkLength)
+			MATH(EXPR linkLength "${linkLength} - ${prefixLength}")
+			STRING(SUBSTRING ${linkFlag} ${prefixLength} ${linkLength} linkFlagToActivate)
+
+			SET(isNewFlag TRUE)
+
+			FOREACH(activeFlag2 ${BM3D_ActiveFlags})
+				IF(${activeFlag2} STREQUAL ${linkFlagToActivate})
+					SET(isNewFlag FALSE)
+				ENDIF()
+			ENDFOREACH(activeFlag2)
+
+			IF(isNewFlag)
+				SET(goToNextLevel TRUE)
+				SET(${linkFlagToActivate} ON CACHE BOOL "${linkFlagToActivate} value" FORCE) #Need to force cache update
+				LIST(APPEND BM3D_ActiveFlags ${flagName})
+				MESSAGE("Enabled ${activeFlag} dependency: ${linkFlagToActivate}")
+			ENDIF()
+        ENDIF()
+
     ENDFOREACH(linkFlag)
   ENDFOREACH(activeFlag)
-  MESSAGE("\n")
-ENDMACRO(BM3D_CheckCompilationFlags)
 
+  IF(goToNextLevel)
+	  BM3D_ProcessCompilationFlags()
+  ENDIF()
 
+ENDMACRO(BM3D_ProcessCompilationFlags)
 
-BM3D_flag(ENABLE_ANTIALIASING "Enables antialiasing to draw smooth lines" OFF)
+MACRO(BM3D_SetCompilationFlags)
 
-BM3D_flag(ANIMATION "Compilation with the module character" OFF)
+  IF( GENERATE_LIBMOVE3D )
+	  MESSAGE("You are building the libmove3d library.")
+  ELSEIF( GENERATE_STUDIO )
+	  MESSAGE("You are building the stand-alone move3d-studio application.")
+  ELSEIF( GENERATE_VIEWER_LIB )
+	  MESSAGE("You are building the libmove3d library for stand-alone move3d viewer.")
+  ELSE ()
+	  MESSAGE("You did not select any target.")
+  ENDIF()
 
-BM3D_flag(WITH_XFORMS "Compile the Xform interface" OFF)
+  MESSAGE ("Active Flags :")
+
+  LIST(REMOVE_DUPLICATES BM3D_ActiveFlags)
+
+  FOREACH(flag ${BM3D_ActiveFlags})
+		SET(MOVE3D_COMPILATION_FLAGS ${MOVE3D_COMPILATION_FLAGS} ${flag})
+		MESSAGE("${flag}")
+		IF( QT_LIBRARY )
+			ADD_DEFINITIONS("-D${flag}")
+		ELSE( QT_LIBRARY )
+			ADD_DEFINITIONS(" -D${flag}")
+		ENDIF( QT_LIBRARY )
+  ENDFOREACH(flag)
+ 
+ENDMACRO(BM3D_SetCompilationFlags)
+
+# P3D core ---
 BM3D_flag(P3D_CONSTRAINTS "Compilation with module Constraints" ON)
 BM3D_flag(P3D_COLLISION_CHECKING "Compilation with module Collision Checking" ON)
 BM3D_flag(P3D_LOCALPATH "Compilation with module Localpath" ON)
 BM3D_flag(P3D_PLANNER "Compilation with module Planner" ON)
-BM3D_flag(BIO "Compilation with module Bio" OFF)
-BM3D_flag(ENERGY "Compilation with module Bio-Energy" OFF)
 
+# Collision checking --
 BM3D_flag(KCD_CP_IS_SOLID "Convex polyhedron as a solid instead of as a collection of convex facets in KCD" OFF P3D_COLLISION_CHECKING)
 BM3D_flag(USE_P3D_BODY_AABB "test with AABB around body of robot" ON P3D_COLLISION_CHECKING)
 BM3D_flag(KCD_APPROX_ROBOT "KCD with volume" OFF P3D_COLLISION_CHECKING)
-BM3D_flag(GJK "Use gjk (just for debugging" OFF P3D_COLLISION_CHECKING)
-BM3D_flag(OBB_EVAL "write a file with OBB tree information (just for debugging" OFF P3D_COLLISION_CHECKING)
+BM3D_flag(GJK "Use gjk (just for debugging)" OFF P3D_COLLISION_CHECKING)
+BM3D_flag(OBB_EVAL "write a file with OBB tree information (just for debugging)" OFF P3D_COLLISION_CHECKING)
 BM3D_flag(VCOLLIDE "Use vCollide Collision detector" OFF)
 
+# Bio-related ---
+BM3D_flag(BIO "Compilation with module Bio" OFF)
+BM3D_flag(ENERGY "Compilation with module Bio-Energy" OFF)
+
+BM3D_flag(BIO_BALL "Sets Ball compiling mode" OFF)
+
+# Path planning --
 BM3D_flag(MULTIGRAPH "Compilation with module Multi-Graph" OFF P3D_PLANNER)
-BM3D_flag(LIGHT_PLANNER "Extern Mode (Use this mode to have a scriped functions for planning pick and place tasks)" OFF P3D_PLANNER)
+BM3D_flag(LIGHT_PLANNER "Extern Mode (Use this mode to have a scriped functions for planning pick and place tasks)"  OFF P3D_PLANNER)
 BM3D_flag(DPG "Dynamic planning using grids" OFF CXX_PLANNER)
 
-BM3D_flag(HRI_PLANNER_GUI "Xforms user interface OFF Human Robot Interaction planner module" OFF HRI_PLANNER WITH_XFORMS)
 BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module" OFF USE_GSL)
+BM3D_flag(USE_MIGHTABILITY_MAPS "Mightability Map Calculation and Planning" OFF)
 
 
 BM3D_flag(MULTILOCALPATH "Compilation avec le module Multi-Localpath" OFF USE_GBM)
-BM3D_flag(GRASP_PLANNING "Module de planification de prises" OFF)
+BM3D_flag(GRASP_PLANNING "Grasp planning module" OFF)
 
 BM3D_flag(FK_CNTRT "to use the automatic generation of forward kinematics constraints (reciprocal of the closed chained constraints)" OFF LIGHT_PLANNER)
 
 BM3D_flag(USE_CXX_PLANNER "Sets the planning API to be default in Move3D" OFF)
 BM3D_flag(LIST_OF_PLANNERS "Sets the planning API to be default in Move3D" OFF)
 
+## User Interfaces ---
 BM3D_flag(QT_LIBRARY "Sets QtLibrary compiling mode" OFF)
 BM3D_flag(QT_GL "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
 BM3D_flag(QT_GL_WIDGET "Compile with the OpenGl widget" OFF QT_GL QT_LIBRARY)
 
 BM3D_flag(USE_GLUT "Compilation with a glut window" OFF)
 
-BM3D_flag(USE_GSL "Mathematic Library" OFF)
-BM3D_flag(USE_CLAPACK "Mathematic Library" OFF)
+BM3D_flag(WITH_XFORMS "Compile the Xform interface" OFF)
 
-BM3D_flag(BIO_BALL "Sets Ball compiling mode" OFF)
-
-BM3D_flag(USE_HRP2_GIK "HRP2 GIK Library" OFF)
-BM3D_flag(USE_MIGHTABILITY_MAPS "Mightability Map Calculation and Planning" OFF)
-BM3D_flag(USE_HATP_LIBS "For including HATP libraries" OFF)
-
-BM3D_flag(USE_GBM "Compilation with the gbM package" OFF)
-
+BM3D_flag(ENABLE_ANTIALIASING "Enables antialiasing to draw smooth lines" OFF)
 BM3D_flag(USE_SHADERS "Enables use of OpenGL shaders" OFF)
 
 BM3D_flag(MOVE3D_CORE "Enables compilation of Move3D-core" OFF)
+BM3D_flag(HRI_PLANNER_GUI "Xforms user interface OFF Human Robot Interaction planner module" OFF HRI_PLANNER WITH_XFORMS)
+
+# Utility libraries ---
+BM3D_flag(USE_GSL "Mathematic Library" OFF)
+BM3D_flag(USE_CLAPACK "Mathematic Library" OFF)
+
+# Other ---
+BM3D_flag(ANIMATION "Compilation with the module character" OFF)
+BM3D_flag(USE_HRP2_GIK "HRP2 GIK Library" OFF)
+BM3D_flag(USE_HATP_LIBS "For including HATP libraries" OFF)
+BM3D_flag(USE_GBM "Compilation with the gbM package" OFF)
+
 
 # META flags ------
 #------------------
-BM3D_flag(COMPILE_FOR_GENOM "Check this flag to activate all dependencies for spark&mhp modules" OFF USE_GBM USE_GSL MULTIGRAPH LIGHT_PLANNER HRI_PLANNER MULTILOCALPATH GRASP_PLANNING  )
+BM3D_flag(GENERATE_LIBMOVE3D "Set required options to compile the core libmove3d, without user interface" OFF MOVE3D_ROBOTICS USE_GLUT)
 
-BM3D_flag(COMPILE_ON_JIDO "Check this flag to activate all dependencies for Jido" OFF WITH_XFORMS USE_GBM  MULTIGRAPH LIGHT_PLANNER HRI_PLANNER HRI_PLANNER_GUI MULTILOCALPATH GRASP_PLANNING USE_GSL )# USE_MIGHTABILITY_MAPS )
-BM3D_flag(COMPILE_MANIPULATION_PLANNER_TESTING "Check this flag to activate the module without interface to test the manipulation planner" OFF LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING USE_GBM)
-BM3D_flag(COMPILE_MOVE3DCORE "Check this flag to activate the module without interface to test the manipulation planner" OFF MOVE3D_CORE QT_LIBRARY QT_GL  MULTIGRAPH LIGHT_PLANNER MULTILOCALPATH GRASP_PLANNING HRI_PLANNER USE_GBM USE_GSL)
-BM3D_CheckCompilationFlags()
+BM3D_flag(GENERATE_STUDIO "Set required options to compile mov3d-studio, the stand-alone, xforms-based, dev environment" OFF MOVE3D_ROBOTICS HRI_PLANNER_GUI)
+
+BM3D_flag(GENERATE_VIEWER_LIB "Set the required options to compile the stand-alone move3d viewer (requires SPARK at run-time)" OFF MOVE3D_ROBOTICS MOVE3D_CORE QT_LIBRARY QT_GL)
+
+BM3D_flag(MOVE3D_ROBOTICS "Set all the standard options related to robotics" OFF HRI_PLANNER GRASP_PLANNING LIGHT_PLANNER MULTIGRAPH MULTILOCALPATH USE_GSL )
+
+BM3D_ProcessCompilationFlags()
+BM3D_SetCompilationFlags()
 
 #################################################################
 #### Add here a library to include (custom FindPackage.cmake ####
@@ -441,7 +472,7 @@ MACRO(BM3D_INC_DIR_PROCESS directory)
   SOURCE_GROUP(${BM3D_MODULE_NAME} FILES ${incfiles})
 ENDMACRO(BM3D_INC_DIR_PROCESS)
 
-MESSAGE(cccccccccccccccccccccR : ${BM3D_inc})
+#MESSAGE("Debug: source path : ${BM3D_inc}")
 # -------------------------------------------------------------
 # --- QT4 SUBDIR PROCESS (same but for preprocessing qt4 files)
 # -------------------------------------------------------------
@@ -517,60 +548,56 @@ ELSEIF(${CMAKE_BUILD_TYPE} MATCHES "Release")
   ADD_DEFINITIONS(-O2 -Wall -Wno-unknown-pragmas)
 ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 
-IF(NOT MOVE3D_CORE)
-
-ADD_LIBRARY(BioMove3D SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
-TARGET_LINK_LIBRARIES(BioMove3D ${LIBS} m)
-
-ADD_EXECUTABLE(move3d ${BioMove3D_SOURCE_DIR}/move3d/move3d.c ${BM3D_inc})
-TARGET_LINK_LIBRARIES(move3d BioMove3D ${LIBS} m)
-#MESSAGE(cccccccccccccccccccccR : ${BM3D_src})
-MESSAGE(cccccccccccccccccccccR : ${BM3D_src})
-ENDIF()
-
-IF(MOVE3D_CORE)
-
-ADD_LIBRARY(Move3D-core SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
-TARGET_LINK_LIBRARIES(Move3D-core ${LIBS} m)
-
-ENDIF()
 
 # -------------------------------------------------------------
-# --- Installation --------------------------------------------
+# --- Compilation and Installation ----------------------------
 # -------------------------------------------------------------
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   SET(CMAKE_INSTALL_PREFIX "${BioMove3D_BINARY_DIR}/install" CACHE PATH "BioMove3D install prefix" FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
-IF(NOT MOVE3D_CORE)
-INSTALL(TARGETS move3d
-        RUNTIME DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE CONFIGURATIONS ${CMAKE_BUILD_TYPE}
-        LIBRARY DESTINATION lib PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ CONFIGURATIONS ${CMAKE_BUILD_TYPE})
+IF(GENERATE_VIEWER_LIB) #Install the move3d-viewer library + the headers
+		
+	ADD_LIBRARY(move3d-viewer SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
+	TARGET_LINK_LIBRARIES(move3d-viewer ${LIBS} m)
 
-INSTALL(TARGETS BioMove3D
-        RUNTIME DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE CONFIGURATIONS ${CMAKE_BUILD_TYPE}
-        LIBRARY DESTINATION lib PERMISSIONS OWNER_READ OWNER_WRITE
-        GROUP_READ GROUP_WRITE WORLD_READ CONFIGURATIONS
-        ${CMAKE_BUILD_TYPE})
+	INSTALL(TARGETS move3d-viewer
+        LIBRARY DESTINATION lib
+		CONFIGURATIONS ${CMAKE_BUILD_TYPE})
 	
-INSTALL(DIRECTORY ${BM3D_SOURCE_DIRECTORIES} ${BioMove3D_SOURCE_DIR}/include DESTINATION include/BioMove3D FILES_MATCHING REGEX "\\.[h|hpp]")
+	INSTALL(DIRECTORY ${BM3D_SOURCE_DIRECTORIES} ${BioMove3D_SOURCE_DIR}/include 
+			DESTINATION include/libmove3d 
+			FILES_MATCHING REGEX "\\.[h|hpp]")
+
+ELSEIF(GENERATE_LIBMOVE3D) # Only install the library and the headers
 	
+	ADD_LIBRARY(move3d SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
+	TARGET_LINK_LIBRARIES(move3d ${LIBS} m)
+
+	INSTALL(TARGETS move3d 
+        LIBRARY DESTINATION lib
+		CONFIGURATIONS ${CMAKE_BUILD_TYPE})
+	
+	INSTALL(DIRECTORY ${BM3D_SOURCE_DIRECTORIES} ${BioMove3D_SOURCE_DIR}/include 
+			DESTINATION include/libmove3d 
+			FILES_MATCHING REGEX "\\.[h|hpp]")
+
+
+ELSE() # move3d-studio: Compiles a static libmove3d and only install the binary.
+
+	#MESSAGE("Debug: sources files:  ${BM3D_src}")
+
+	ADD_LIBRARY(move3d STATIC ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
+	TARGET_LINK_LIBRARIES(move3d ${LIBS} m)
+
+	ADD_EXECUTABLE(move3d-studio ${BioMove3D_SOURCE_DIR}/move3d/move3d.c ${BM3D_inc})
+	TARGET_LINK_LIBRARIES(move3d-studio move3d ${LIBS} m)
+
+	INSTALL(TARGETS move3d-studio
+        RUNTIME DESTINATION bin 
+		CONFIGURATIONS ${CMAKE_BUILD_TYPE})
+
 ENDIF()
-
-IF(MOVE3D_CORE)
-INSTALL(TARGETS Move3D-core
-        RUNTIME DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE CONFIGURATIONS ${CMAKE_BUILD_TYPE}
-        LIBRARY DESTINATION lib PERMISSIONS OWNER_READ OWNER_WRITE
-        GROUP_READ GROUP_WRITE WORLD_READ CONFIGURATIONS
-        ${CMAKE_BUILD_TYPE})
-	
-INSTALL(DIRECTORY ${BM3D_SOURCE_DIRECTORIES} ${BioMove3D_SOURCE_DIR}/include DESTINATION include/Move3D-core FILES_MATCHING REGEX "\\.[h|hpp]")
-
-ENDIF()
-
-#ENDIF(NOT MAKELIB)
-
-#INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags DESTINATION include/BioMove3D)
 
 
 # -------------------------------------------------------------

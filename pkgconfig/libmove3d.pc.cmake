@@ -6,8 +6,8 @@ BioMove3DFlags= @MOVE3D_COMPILATION_FLAGS@
 BioMove3DIncludes=@MOVE3D_COMPILATION_INCLUDES@
 BioMove3DLibs=@MOVE3D_COMPILATION_LIBS@
  
-Name: BioMove3D
-Description: Motion Planning Platform
+Name: libmove3d
+Description: Motion Planning Platform - Headless library
 Version: @BIOMOVE3D_VERSION@
-Libs: ${BioMove3DLibs} -L${libdir} -lMove3D-core
-Cflags: -I${includedir}/Move3D-core/include ${BioMove3DIncludes} ${BioMove3DFlags} 
+Libs: ${BioMove3DLibs} -L${libdir} -lmove3d
+Cflags: -I${includedir}/libmove3d/include ${BioMove3DIncludes} ${BioMove3DFlags} 
