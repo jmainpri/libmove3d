@@ -542,13 +542,6 @@ SET(LIBRARY_OUTPUT_PATH "${BioMove3D_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib/$ENV{HO
 #Default Flags
 ADD_DEFINITIONS(-DKCD_MOVE3D -DPRINT_ERROR -DPRINT_INFO)
 
-IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-  ADD_DEFINITIONS(-g -Wall -Wno-unknown-pragmas)
-ELSEIF(${CMAKE_BUILD_TYPE} MATCHES "Release")
-  ADD_DEFINITIONS(-O2 -Wall -Wno-unknown-pragmas)
-ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-
-
 # -------------------------------------------------------------
 # --- Compilation and Installation ----------------------------
 # -------------------------------------------------------------
