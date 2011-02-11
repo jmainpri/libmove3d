@@ -1312,25 +1312,24 @@ int hri_agent_load_default_arm_posture(HRI_AGENT * agent, configPt q)
   }
 }
 
-int hri_agent_is_grasping_obj(HRI_AGENT* agent, bool released , const char* OBJECT , int armId)
+int hri_agent_is_grasping_obj(HRI_AGENT* agent, bool is_grasping , const char* OBJECT , int armId)
 {
   if (agent->is_human) 
-  {
-    return released;
-  }
+    {
+      printf("human is not yet managed by hri_agent_is_grasping_obj");
+      return is_grasping;
+    }
   
   p3d_rob* rob = agent->robotPt;
   p3d_rob* obj = p3d_get_robot_by_name(OBJECT);
     
-  if(obj == NULL)
-  {
-     return  !released;
+  if(obj == NULL){ 
+    return  !is_grasping;
   }
 
   ArmManipulationData& armData = (*rob->armManipulationData)[armId];
   
-  if( !released )
-  {
+  if( is_grasping ){
     // Set manipulation joint
     // to be at the object pose
     configPt q = p3d_get_robot_config(rob);
@@ -1361,7 +1360,7 @@ int hri_agent_is_grasping_obj(HRI_AGENT* agent, bool released , const char* OBJE
                                  armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
   }
   
-  return !released;
+  return is_grasping;
 }
 
 int hri_is_robot_an_agent(p3d_rob * robot, HRI_AGENTS * agents, int * is_human, int * agent_idx)
