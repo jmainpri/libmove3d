@@ -55,7 +55,7 @@ HRI_ENTITIES * hri_create_entities()
 	entities->entities[ent_i]->undetection_iter = 0;
 	entities->entities[ent_i]->undetection_status = HRI_NEVER_DETECTED;
         entities->entities[ent_i]->can_disappear_and_move = FALSE;
-        entities->entities[ent_i]->disappeared = TRUE;
+        entities->entities[ent_i]->disappeared = FALSE;
 	entities->entities[ent_i]->last_ismoving_iter = 0;
 	entities->entities[ent_i]->filtered_motion = HRI_UK_MOTION;
 	entities->entities[ent_i]->is_pl_state_transition_new = FALSE;
@@ -787,7 +787,7 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	if( ents->entities[e_i]->undetection_status != HRI_NEVER_DETECTED){
 	  agent=agents->all_agents[robotMyselfIndex];
 	  kn_on_ent = &agent->knowledge->entities[e_i];	  
-	  if(!ents->entities[e_i]->disappeared && ((kn_on_ent->is_placed_from_visibility == HRI_FOV) || (kn_on_ent->is_placed_from_visibility == HRI_FOA)) && (kn_on_ent->visibility == HRI_VISIBLE)){
+	  if(!ents->entities[e_i]->disappeared && ((kn_on_ent->is_placed_from_visibility == HRI_FOV) || (kn_on_ent->is_placed_from_visibility == HRI_FOA)) && (kn_on_ent->visibility == HRI_VISIBLE) && ents->isWorldStatic){
 	    // iter on unexplained detection
 	    if((ents->entities[e_i]->undetection_status == HRI_UNEXPLAINED_UNDETECTION_ITER) && (ents->entities[e_i]->undetection_iter < hasDisappearFilterLength))
 	      ents->entities[e_i]->undetection_iter++;
