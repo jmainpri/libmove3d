@@ -2039,9 +2039,9 @@ int p3d_end_obj(void) {
   pp3d_obj  *newo = NULL, *oldo = NULL;
   int       num = 0, i, np;
   p3d_matrix4 pos;
-  double dist = 0, x, y, z;
-  int ip, iv, nvert;
-  p3d_poly *p;
+//   double dist = 0, x, y, z;
+//   int ip, iv, nvert;
+//   p3d_poly *p;
   p3d_jnt * jntPt;
   //int newbody = 1;   // modif Juan
 
