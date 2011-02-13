@@ -942,16 +942,14 @@ int p3d_is_collision_free(p3d_rob* robotPt, configPt q)
 {
 #ifdef P3D_COLLISION_CHECKING
 	
-	p3d_set_and_update_this_robot_conf(robotPt, q);
-	
-	if(!p3d_col_test())
+	if(p3d_set_and_update_this_robot_conf(robotPt, q) && !p3d_col_test())
 	{
 		// No collision
 		return TRUE;
 	}
 	else 
 	{
-		// collisions exist
+		// collisions exist or can not set the configuration
 		return FALSE;
 	}
 #else

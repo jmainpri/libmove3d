@@ -505,9 +505,9 @@ static void CB_genomArmGotoX_obj(FL_OBJECT *obj, long arg)
   objStart.push_back(P3D_HUGE);
   objStart.push_back(P3D_HUGE);
   objStart.push_back(P3D_HUGE);
-  objGoto.push_back(4.4);
-  objGoto.push_back(-2.3931226131619717);
-  objGoto.push_back(1.023060646334923);
+  objGoto.push_back(3.738);
+  objGoto.push_back(-4.446);
+  objGoto.push_back(0.91);
   objGoto.push_back(0.0);
   objGoto.push_back(0.0);
   objGoto.push_back(0.0);
