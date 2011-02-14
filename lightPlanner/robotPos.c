@@ -245,6 +245,18 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
 /** @brief The maximal number of shoot to try before returning false*/
 static int MaxNumberOfTry = 10000;
 
+
+void setMaxNumberOfTryForIK(int value)
+{
+  MaxNumberOfTry = value;
+}
+
+int getMaxNumberOfTryForIK()
+{
+  return  MaxNumberOfTry;
+}
+
+
 /**
  * @brief Function for sampling a valid robot configuration given an object position. We assume that the center of the object is the center of object Joint.
  * @param robot the robot
