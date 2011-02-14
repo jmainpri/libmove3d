@@ -270,10 +270,58 @@ void ManipulationTestFunctions::saveToFileEvalutedWorkspace()
   s.close();
 }
 
+bool ManipulationTestFunctions::readWorkspaceFromFile(std::string fileName)
+{
+  std::ifstream file;
+  std::string line, tmp;
+
+  m_workspacePoints.clear();
+  
+  file.open (fileName.c_str());
+  
+  if (file.is_open())
+  {
+    while ( file.good())
+    {
+      std::getline (file, line);
+      std::stringstream iss(line);
+      std::istringstream sstmp;
+      std::string tmp;
+      
+      double successRate;
+      vector<double> pos(3);
+      
+      std::getline(iss, tmp, ',');
+      sstmp.str(tmp);
+      successRate = atof(tmp.c_str());
+      
+      std::getline(iss, tmp, ',');
+      pos[0] = atof(tmp.c_str());
+      std::getline(iss, tmp, ',');
+      pos[1] = atof(tmp.c_str());
+      std::getline(iss, tmp, ',');
+      pos[2] = atof(tmp.c_str());
+      
+      m_workspacePoints.push_back( make_pair( successRate , pos ) );
+    }
+  }
+  else
+  {
+    std::cout << "Unable to open file " << fileName << std::endl;
+    return false;
+  }
+  
+  file.close();
+  return true;
+}
+
 //! Stores the success rate 
 //! of the workspace point
 void ManipulationTestFunctions::drawEvalutedWorkspace()
 {
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  
   double colorvector[4];
 	
   colorvector[0] = 0.0;       //red
@@ -288,14 +336,24 @@ void ManipulationTestFunctions::drawEvalutedWorkspace()
     double successRate = m_workspacePoints[i].first;
     
     GroundColorMixGreenToRed(colorvector,1-successRate);
-		g3d_set_color(Any,colorvector);
     
     x = m_workspacePoints[i].second[0];
     y = m_workspacePoints[i].second[1];
     z = m_workspacePoints[i].second[2];
     
-    g3d_drawSphere(x,y,z,0.025);
+    //if(successRate == 0.0)
+    {
+      colorvector[3] = successRate+0.2;
+    }
+       
+    glColor4dv(colorvector);
+    //g3d_set_color(Any,colorvector);
+    
+    g3d_draw_solid_sphere(x,y,z,0.025,10);
+    //g3d_drawSphere(x,y,z,0.025);
   }
+  
+  glDisable(GL_BLEND);
 }
 
 //! Stores the success rate of the workspace point

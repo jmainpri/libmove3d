@@ -43,6 +43,8 @@ public:
   //! Save evaluated workspace to file
   void saveToFileEvalutedWorkspace();
   
+  bool readWorkspaceFromFile(std::string fileName);
+  
   //! Generic function to test the genom requests
 	bool manipTest(MANIPULATION_TASK_TYPE_STR type);
   
