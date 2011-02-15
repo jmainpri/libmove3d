@@ -3218,9 +3218,6 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
 
   gpDeactivate_object_fingertips_collisions(hand_robot, object->o[0], handProp, -1);
 
-  graspList.sort();
-  graspList.reverse();
-
   i=0;
   for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
     igrasp->ID= i++;
