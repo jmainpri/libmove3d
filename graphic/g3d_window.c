@@ -144,7 +144,7 @@ static void button_walls(FL_OBJECT *ob, long data);
 static void button_shadows(FL_OBJECT *ob, long data);
 static void button_antialiasing(FL_OBJECT *ob, long data);
 static void button_shaders(FL_OBJECT *ob, long data);
-
+static void button_logo(FL_OBJECT *ob, long data);
 
 static G3D_Window *g3d_copy_win(G3D_Window *win);
 
@@ -194,16 +194,18 @@ G3D_Window
   //it is often nicer without it:
   //fl_add_labelframe(FL_BORDER_FRAME,w+15,510,68,90,"Options");
 
-  FL_OBJECT *displayJoints = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,460,60,20,"Joints");
-  FL_OBJECT *oplight= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,480,60,20,"Light");
+  FL_OBJECT *displayJoints = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,430,60,20,"Joints");
+  FL_OBJECT *oplight= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,450,60,20,"Light");
   fl_set_button(oplight, 1);
-  FL_OBJECT *opfloor = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,500,60,20,"Floor");
-  FL_OBJECT *optiles = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,520,60,20,"Tiles");
-  FL_OBJECT *walls= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,540,60,20,"Walls");
-  FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,560,60,20,"Shadows");
-  FL_OBJECT *antialiasing= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,580,60,20,"Antialiasing"); 
-  FL_OBJECT *shaders= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,600,60,20,"Shaders"); 
+  FL_OBJECT *opfloor = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,470,60,20,"Floor");
+  FL_OBJECT *optiles = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,490,60,20,"Tiles");
+  FL_OBJECT *walls= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,510,60,20,"Walls");
+  FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,530,60,20,"Shadows");
+  FL_OBJECT *antialiasing= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,550,60,20,"Antialiasing"); 
+  FL_OBJECT *shaders= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,570,60,20,"Shaders"); 
+  FL_OBJECT *logo= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,590,60,20,"Logo"); 
   fl_set_button(shaders, 1);
+  fl_set_button(logo, 1);
   fl_end_form();
 
 #else
@@ -286,6 +288,7 @@ G3D_Window
   fl_set_object_gravity(shadows,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(antialiasing,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(shaders,FL_NorthEast,FL_NorthEast);
+  fl_set_object_gravity(logo,FL_NorthEast,FL_NorthEast);
 
   fl_set_object_callback(done,button_done,(long)win);
   fl_set_object_callback(unselect,button_unselect,(long)win);
@@ -313,6 +316,7 @@ G3D_Window
   fl_set_object_callback(shadows,button_shadows,(long)win);
   fl_set_object_callback(antialiasing,button_antialiasing,(long)win);
   fl_set_object_callback(shaders,button_shaders,(long)win);
+  fl_set_object_callback(logo,button_logo,(long)win);
 
   /* fl_show_form(form,FL_PLACE_FREE,FL_FULLLBORDER,name);*/
   fl_show_form(form,FL_PLACE_MOUSE|FL_FREE_SIZE,FL_FULLBORDER,name);
@@ -1645,6 +1649,14 @@ button_shaders(FL_OBJECT *ob, long data) {
   #else
   printf("USE_SHADERS flag is OFF. Enable it in cmake\n");
   #endif
+}
+
+static void
+button_logo(FL_OBJECT *ob, long data) {
+  G3D_Window *win = (G3D_Window *)data;
+  win->vs.enableLogo = !win->vs.enableLogo;
+
+  g3d_draw_win(win);
 }
 
 static void

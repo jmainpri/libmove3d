@@ -472,7 +472,7 @@ void g3d_init_OpenGL()
 
    G3D_CURRENT_PROGRAM= 0;
 
-   glUseProgram( G3D_PROGRAMS[G3D_CURRENT_PROGRAM] );
+   glUseProgram(G3D_PROGRAMS[G3D_CURRENT_PROGRAM]);
   }
   glEnable(GL_MULTISAMPLE_ARB);
 
@@ -975,9 +975,11 @@ int g3d_display_logo(g3d_states &vs, float offsetX, float offsetY, float widthRa
 
   scale= widthRatio*width/( (float) LOGO_WIDTH);
 
- #ifdef USE_SHADERS
-  g3d_no_shader();
- #endif
+  #ifdef USE_SHADERS
+  if(vs.enableShaders==TRUE)
+  { g3d_no_shader(); }
+  #endif
+
   glPushAttrib(GL_ENABLE_BIT | GL_TRANSFORM_BIT);
    glMatrixMode(GL_PROJECTION);
    glPushMatrix();
@@ -1007,7 +1009,8 @@ int g3d_display_logo(g3d_states &vs, float offsetX, float offsetY, float widthRa
  glPopAttrib();
 
  #ifdef USE_SHADERS
-  g3d_use_shader();
+  if(vs.enableShaders==TRUE)
+  { g3d_use_shader(); }
  #endif
 
  return 0;
