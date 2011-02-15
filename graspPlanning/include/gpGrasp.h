@@ -1,35 +1,11 @@
 #ifndef GP_GRASP_H
 #define GP_GRASP_H
 
-#include "GraspPlanning-pkg.h"
+#include "../graspPlanning/include/graspPlanning.h"
+#include "../graspPlanning/include/gpContact.h"
+#include "../graspPlanning/include/gpPlacement.h"
 
-//! @ingroup graspPlanning 
-//! This class is used to describe the characteristics of the contact points of a grasp.
-//! It is also used to describe the contact points of an object pose (class gpPose).
-class gpContact
-{
- public:
-  unsigned int ID; /*!< ID of the contact */
-  p3d_polyhedre *surface; /*!<  surface (object) of the contact */
-  unsigned int face;    /*!< index of the face (that must be a triangle), in the structure p3d_polyhedre, where the contact is located (starts from 0) */
-  unsigned int fingerID;  /*!< ID (starting from 1) of the finger that realizes the contact (finger 1, finger 2, etc.)*/
-  p3d_vector3 position; /*!<  contact position given in the object's frame */
-  p3d_vector3 normal; /*!< surface normal at the contact point (directed outside the object) */
-  double mu;         /*!<  friction coefficient of the contact */
-  p3d_vector3 baryCoords; /*!< barycentric coordinates (defined by the vertices of the triangle) of the contact */
-  double curvature; /*!<  curvature of the object surface at the contact point */
-  double score; /*!< a score that can be used for any ordering need */
- 
-  gpContact();
-  ~gpContact();
-  gpContact(const gpContact &contact);
-  gpContact & operator=(const gpContact &contact);
-  int draw(double cone_length, int cone_nb_slices= 10);
-  int computeBarycentricCoordinates();
-  int computeCurvature();
-};
-
-bool gpCompareContactScore(const gpContact &contact1, const gpContact &contact2); 
+// #include "GraspPlanning-pkg.h"
 
 
 //! @ingroup graspPlanning 
@@ -37,8 +13,14 @@ bool gpCompareContactScore(const gpContact &contact1, const gpContact &contact2)
 class gpGrasp
 {
  public:
+  bool autoGen; /*!< tells if the grasp was generated automatically or by a user */
   int ID;  /*!< ID number */
   double stability;   /*!< stability score of the grasp (unstable if < 0) */
+  
+  //!different scores that are used to compute the grasp quality:
+  double curvatureScore; /*!< score based on object's surface curvature at contact points */
+  double centroidScore; /*!< inverse of the distance from the contact centroid to object's center of mass */
+
   double IKscore; /*!< IK score of the grasp (optional) */
   double visibility; /*!< visibility score of the grasp (optional) */
   double quality;   /*!< overall quality score of the grasp */
@@ -46,7 +28,6 @@ class gpGrasp
   std::vector<gpContact> contacts; /*!< vector of contacts of the grasp */
   int handID; /*!< in case there are several hand, this stores the hand used by the grasp. If there is one hand= 0, two hands= 0 and 1 */
   p3d_rob *object;  /*!< the grasped object */
-  int body_index;  /*!< index of the grasped body in the p3d_obj array of the robot */
   std::string object_name;  /*!< name of the grasped object */
   double finger_opening;  /*!< gripper opening (distance between the jaws)
                           corresponding to the grasp (for GP_GRIPPER hand) */
@@ -55,22 +36,20 @@ class gpGrasp
   std::vector<double> openConfig; /*!< configuration vector of the hand slightly open from its grasp configuration (is used for the hand approach phase) */
   bool tested; /*!< used to mark the grasps that have been tested in some path planning function  */
   
-  p3d_vector3 closestPointHand, closestPointObject;
+  gpPlacement recomPlacement; /*!< the best way to place the object on a plane support for the current grasp: recommended placement */
 
   gpGrasp();
   gpGrasp(const gpGrasp &grasp);
   ~gpGrasp();
   gpGrasp & operator = (const gpGrasp &grasp);
   bool operator == (const gpGrasp &grasp);
-  bool operator < (const gpGrasp &grasp);
-  bool operator > (const gpGrasp &grasp);
   int print();
   int printInFile(const char *filename);
   int draw(double cone_length, int cone_nb_slices= 10);
   int computeStability();
   int computeQuality();
   double configCost();
-  bool areContactsTooCloseToEdge(double angleThreshold, double distancethreshold);
+  int removeContactsTooCloseToEdge(double angleThreshold, double distancethreshold);
   friend double gpGraspDistance(const gpGrasp &grasp1, const gpGrasp &grasp2);
   int contactCentroid(p3d_vector3 centroid);
   int direction(p3d_vector3 direction) const;
@@ -78,7 +57,10 @@ class gpGrasp
   int computeOpenConfig(p3d_rob *robot, p3d_rob *object, bool environment);
 };
 
-bool gpCompareVisibility(const gpGrasp &grasp1, const gpGrasp &grasp2); 
+bool gpCompareGraspQuality(const gpGrasp &grasp1, const gpGrasp &grasp2); 
+bool gpReversedCompareGraspQuality(const gpGrasp &grasp1, const gpGrasp &grasp2); 
+bool gpCompareGraspVisibility(const gpGrasp &grasp1, const gpGrasp &grasp2); 
+bool gpCompareGraspNumberOfContacts(const gpGrasp &grasp1, const gpGrasp &grasp2); 
 
 //! @ingroup graspPlanning
 //! This class is used to describe all the characteristics of a double grasp
@@ -100,7 +82,6 @@ class gpDoubleGrasp
   int setFromSingleGrasps(const gpGrasp &graspA, const gpGrasp &graspB);
   gpDoubleGrasp & operator = (const gpDoubleGrasp &dgrasp);
   bool operator < (const gpDoubleGrasp &grasp);
-  bool operator > (const gpDoubleGrasp &grasp);
   int print();
   int draw(double cone_length, int cone_nb_slices= 10);
   int computeStability();

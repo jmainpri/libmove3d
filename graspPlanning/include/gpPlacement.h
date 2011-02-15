@@ -1,7 +1,9 @@
 #ifndef GP_PLACEMENT_H
 #define GP_PLACEMENT_H
 
-#include "../graspPlanning/include/gpGrasp.h"
+
+#include "../graspPlanning/include/graspPlanning.h"
+#include "../graspPlanning/include/gpContact.h"
 
 //! @defgroup stablePlacementComputation
 //! @ingroup graspPlanning 
@@ -51,7 +53,7 @@ class gpPlacement
 {
  public:
   int ID;  /*!< ID number */
-  p3d_plane plane; /*!< plane of the contact points of the placement */
+  p3d_plane plane; /*!< plane of the contact points of the placement (its normal points toward the object interior)*/
   p3d_vector3 center; /*!< center of the orthogonal projection of the object's center of mass onto the placement plane */
   double stability; /*!< stability score of the placement (this value is supposed to have been normalized) */
   double clearance; /*!< clearance score of the placement (this value is supposed to have been normalized) */
@@ -63,7 +65,6 @@ class gpPlacement
   p3d_vector3 position;
   //! rotation angle around the support plane normal 
   double theta; 
-
 
   p3d_polyhedre *polyhedron;  /*!< surface of the grasped object (must be consistent with the field  "surface" of the contacts)*/
   p3d_rob *object;  /*!< the object (a freeflyer robot) */
@@ -87,7 +88,7 @@ extern int gpCompute_stable_placements(p3d_rob *object, std::list<gpPlacement> &
 
 extern int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<p3d_rob*> robotList, std::list<gpPlacement> placementListIn, double translationStep, unsigned int nbOrientations, double verticalOffset, std::list<gpPlacement> &placementListOut);
 
-extern int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpPlacement> &placementList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand, double distance, configPt qpreplacement, configPt qplacement, gpPlacement &placement);
+extern int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpPlacement> &placementList, gpArm_type arm_type, configPt qbase, class gpGrasp &grasp, gpHand_properties &hand, double distance, configPt qpreplacement, configPt qplacement, gpPlacement &placement);
 
 extern int gpCompute_placement_clearances(p3d_rob *object, std::list<p3d_rob*> robotList, std::list<gpPlacement> &placementList);
 

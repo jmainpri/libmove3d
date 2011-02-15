@@ -75,9 +75,16 @@ int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename)
   for(grasp=graspList.begin(); grasp!=graspList.end(); grasp++)
   {
     fprintf(file, "  <grasp ID=\"%d\" nb_contacts=\"%d\" nb_dofs=\"%d\"> \n", grasp->ID, (int)grasp->contacts.size(), (int)grasp->config.size());
+    if(grasp->autoGen==true)
+    {
+      fprintf(file, "    <autoGen> true </autoGen>\n");
+    }
+    else
+    {
+      fprintf(file, "    <autoGen> false </autoGen>\n");
+    }
     fprintf(file, "    <ID> %d </ID>\n", grasp->ID);
     fprintf(file, "    <object_name> %s </object_name> \n", grasp->object_name.c_str());
-    fprintf(file, "    <body_index> %d </body_index> \n", grasp->body_index);
     fprintf(file, "    <hand_type> %s </hand_type> \n", gpHand_type_to_string(grasp->hand_type).c_str());
     fprintf(file, "    <handID> %d </handID>\n", grasp->handID);
     fprintf(file, "    <stability> %f </stability> \n", grasp->stability);
@@ -93,12 +100,14 @@ int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename)
       fprintf(file, "    <contact> \n");
       fprintf(file, "      <position> %f %f %f </position> \n", grasp->contacts[i].position[0], grasp->contacts[i].position[1], grasp->contacts[i].position[2]);
       fprintf(file, "      <normal> %f %f %f </normal> \n", grasp->contacts[i].normal[0], grasp->contacts[i].normal[1], grasp->contacts[i].normal[2]);
+      fprintf(file, "      <force_direction> %f %f %f </force_direction> \n", grasp->contacts[i].forceDirection[0], grasp->contacts[i].forceDirection[1], grasp->contacts[i].forceDirection[2]);
       fprintf(file, "      <barycentric_cordinates> %f %f %f </barycentric_cordinates> \n", grasp->contacts[i].baryCoords[0], grasp->contacts[i].baryCoords[1], grasp->contacts[i].baryCoords[2]);
       fprintf(file, "      <fingerID> %d </fingerID> \n", grasp->contacts[i].fingerID);
       if(grasp->contacts[i].surface!=NULL)
       {  fprintf(file, "      <surface> %s </surface> \n", grasp->contacts[i].surface->name);  }
       fprintf(file, "      <face> %d </face> \n", grasp->contacts[i].face);
       fprintf(file, "      <friction_coefficient> %f </friction_coefficient> \n", grasp->contacts[i].mu);
+      fprintf(file, "      <curvature> %f </curvature> \n", grasp->contacts[i].curvature);
       fprintf(file, "    </contact> \n");
     }
 
@@ -217,7 +226,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="version")
        { 
-         result= (iss >> data.version );
+         result= (iss >> data.version);
          if( !result || !iss.eof() )
          {
            message= "Usage: <version> version of the grasp planner </version>.";
@@ -227,9 +236,21 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
          return true;
        }
 
+       if(element=="autoGen")
+       { 
+         result= (iss >> data.autoGen);
+         if( !result || !iss.eof() )
+         {
+           message= "Usage: <autoGen> wether or not the grasp was generated automatically (true or false) </autoGen>.";
+           formatErrorMessage((int) xmlGetLineNo(cur), doc->URL, cur->name, message);
+           return false;
+         } 
+         return true;
+       }
+
        if(element=="object_name")
        { 
-         result= (iss >> data.object_name );
+         result= (iss >> data.object_name);
          if( !result || !iss.eof() )
          {
            message= "Usage: <object_name> object name </object_name>.";
@@ -243,7 +264,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
        { 
          result= (iss >> data.frame[0][0] >> data.frame[0][1] >> data.frame[0][2] >> data.frame[0][3] >> data.frame[1][0] >> data.frame[1][1] >> data.frame[1][2] >> data.frame[1][3] >>
          data.frame[2][0] >> data.frame[2][1] >> data.frame[2][2] >> data.frame[2][3] >> 
-         data.frame[3][0] >> data.frame[3][1] >> data.frame[3][2] >> data.frame[3][3]  );
+         data.frame[3][0] >> data.frame[3][1] >> data.frame[3][2] >> data.frame[3][3] );
 
          if( !result || !iss.eof() )
          {
@@ -286,6 +307,18 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
          if( !result || !iss.eof() )
          {
            message= "Usage: <normal> x y z </normal>.";
+           formatErrorMessage((int) xmlGetLineNo(cur), doc->URL, cur->name, message);
+           return false;
+         } 
+         return true;
+       }
+
+       if(element=="force_direction")
+       {
+         result= (iss >> data.force_direction[0] >> data.force_direction[1] >> data.force_direction[2] );
+         if( !result || !iss.eof() )
+         {
+           message= "Usage: <force_direction> x y z </force_direction>.";
            formatErrorMessage((int) xmlGetLineNo(cur), doc->URL, cur->name, message);
            return false;
          } 
@@ -339,6 +372,19 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
          } 
          return true;
        }
+
+       if(element=="curvature")
+       {
+         result= (iss >> data.curvature );
+         if( !result || !iss.eof() )
+         {
+           message= "Usage: <curvature> surface curvature at the contact </curvature>.";
+           formatErrorMessage((int) xmlGetLineNo(cur), doc->URL, cur->name, message);
+           return false;
+         } 
+         return true;
+       }
+
 
        if(element=="ID")
        {
@@ -442,7 +488,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
     }   
   }
 
-  printf("%s: %d: There is no element called %s\n",__FILE__,__LINE__,element.c_str());
+//   printf("%s: %d: There is no element called %s\n",__FILE__,__LINE__,element.c_str());
 
   return false;
 }
@@ -480,6 +526,17 @@ bool gpParseContact(xmlDocPtr doc, xmlNodePtr entry_node, gpContactParserData &d
   else
   {
     p3d_vectCopy(elementData.normal, data.normal);
+  }
+
+  if(!gpParseElement(doc, entry_node, "force_direction", elementData)) 
+  {  
+    message= "Element <force_direction> should have an element <force_direction>.";
+    elementMissingMessage((int) xmlGetLineNo(cur), doc->URL, entry_node->name, message);
+    return false;
+  }  
+  else
+  {
+    p3d_vectCopy(elementData.force_direction, data.force_direction);
   }
 
   if(!gpParseElement(doc, entry_node, "barycentric_cordinates", elementData)) 
@@ -525,6 +582,18 @@ bool gpParseContact(xmlDocPtr doc, xmlNodePtr entry_node, gpContactParserData &d
   {
     data.friction_coefficient= elementData.friction_coefficient;
   }
+
+  if(!gpParseElement(doc, entry_node, "curvature", elementData)) 
+  {  
+    message= "Element <curvature> should have an element <curvature>.";
+    elementMissingMessage((int) xmlGetLineNo(cur), doc->URL, entry_node->name, message);
+    return false;
+  }  
+  else
+  {
+    data.curvature= elementData.curvature;
+  }
+
 
   return true;
 }
@@ -585,6 +654,24 @@ bool gpParseGrasp(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserData &data)
   else
   {
     data.ID= 0;
+  }
+
+  if(gpParseElement(doc, entry_node, "autoGen", elementData)) 
+  {
+    if(elementData.autoGen=="true")
+    { data.autoGen= true; }
+    else if(elementData.autoGen=="false")
+    {  data.autoGen= false;  }
+    else
+    {
+      message= "Usage: <autoGen> wether or not the grasp was generated automatically (true or false) </autoGen>.";
+      formatErrorMessage((int) xmlGetLineNo(entry_node), doc->URL, entry_node->name, message);
+      return false;
+    }
+  }
+  else
+  {
+    data.autoGen= true;
   }
 
   if(gpParseElement(doc, entry_node, "handID", elementData)) 
@@ -672,8 +759,10 @@ bool gpParseGrasp(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserData &data)
          contact.face= contactData.face;
          p3d_vectCopy(contactData.position, contact.position);
          p3d_vectCopy(contactData.normal, contact.normal);
+         p3d_vectCopy(contactData.force_direction, contact.forceDirection);
          p3d_vectCopy(contactData.baryCoords, contact.baryCoords);
          contact.mu= contactData.friction_coefficient;
+         contact.curvature= contactData.curvature;
          data.contacts.push_back(contact);
       }
     }
@@ -751,7 +840,6 @@ int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList)
          grasp.hand_type= graspData.hand_type;
          grasp.ID= graspData.ID;
          grasp.handID= graspData.handID;
-         grasp.body_index= graspData.body_index;
          grasp.stability= graspData.stability;
          grasp.quality= graspData.quality;
          p3d_mat4Copy(graspData.frame, grasp.frame);
@@ -766,7 +854,7 @@ int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList)
          for(contact_iter=graspData.contacts.begin(); contact_iter!=graspData.contacts.end(); contact_iter++)
          {
            if(object!=NULL) 
-           { contact_iter->surface= object->o[grasp.body_index]->pol[0]->poly; }
+           { contact_iter->surface= object->o[0]->pol[0]->poly; }
            grasp.contacts.push_back(*contact_iter);
          }
          grasp.config.clear();
@@ -800,7 +888,6 @@ int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList)
 int gpCheck_grasp_list_validity(std::list<gpGrasp> &graspList,  std::string objectName)
 {
   unsigned int i;
-  int body_index;
   p3d_rob *object= NULL;
   p3d_rob *list_object= NULL;
   std::string object_name;
@@ -818,9 +905,8 @@ int gpCheck_grasp_list_validity(std::list<gpGrasp> &graspList,  std::string obje
     printf("%s: %d: gpCheck_grasp_list_validity(): there is no robot named \"%s\".\n",__FILE__,__LINE__,objectName.c_str());
     return GP_ERROR;
   }
-  
+
   list_object= graspList.front().object;
-  body_index= graspList.front().body_index;
 
   if(list_object==NULL)
   { 
@@ -835,11 +921,6 @@ int gpCheck_grasp_list_validity(std::list<gpGrasp> &graspList,  std::string obje
        printf("%s: %d: gpCheck_grasp_list_validity(): the grasps of the list were not all computed for the same object.\n",__FILE__,__LINE__);
        return GP_ERROR;
     }
-    if(igrasp->body_index!=body_index)
-    {
-       printf("%s: %d: gpCheck_grasp_list_validity(): the grasps of the list were not all computed for the same body of the object.\n",__FILE__,__LINE__);
-       return GP_ERROR;
-    }
   } 
 
   for(igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++)
@@ -849,16 +930,12 @@ int gpCheck_grasp_list_validity(std::list<gpGrasp> &graspList,  std::string obje
        printf("%s: %d: gpCheck_grasp_list_validity(): some grasps of the list have not been computed for the input object.\n",__FILE__,__LINE__);
        return GP_ERROR;
     }
-    if(igrasp->body_index > object->no)
-    {
-       printf("%s: %d: gpCheck_grasp_list_validity(): the body_index field of a grasp is greater than the body number of the object.\n",__FILE__,__LINE__);
-       return GP_ERROR;
-    }
 
     for(i=0; i<igrasp->contacts.size(); ++i)
     {
-      if(igrasp->contacts[i].face > object->o[body_index]->pol[0]->poly->nb_faces)
-      {printf("face %d\n",igrasp->contacts[i].face);
+      if(igrasp->contacts[i].face > object->o[0]->pol[0]->poly->nb_faces)
+      {
+        printf("face %d\n",igrasp->contacts[i].face);
         printf("%s: %d: gpCheck_grasp_list_validity(): a contact of an element of the grasp list has an inconsistent face index.\n",__FILE__,__LINE__);
        return GP_ERROR;
       }

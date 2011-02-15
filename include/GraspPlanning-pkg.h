@@ -14,6 +14,7 @@
 
 
 #include "../graspPlanning/include/graspPlanning.h"
+#include "../graspPlanning/include/gpContact.h"
 #include "../graspPlanning/include/gpGrasp.h"
 #include "../graspPlanning/include/gp_volInt.h"
 #include "../graspPlanning/include/gpKdTree.h"

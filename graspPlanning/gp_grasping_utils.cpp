@@ -84,6 +84,7 @@ std::string gpHand_suffix_from_ID(int id)
 //   {  return suffix;  }
 
   suffix= std::string("_") + convertToString(id);
+
   return suffix;
 }
 
@@ -287,22 +288,50 @@ int gpGrasp_frame_from_end_effector_frame(p3d_matrix4 end_effector_frame, p3d_ma
 void gpDraw_friction_cone(p3d_vector3 c, p3d_vector3 normal, double mu, int nb_slices, double length)
 {
   int i;
+  double d;
   p3d_matrix3 R, Ri, Rtmp;
   p3d_vector3 axis, u;
   gpOrthogonal_vector(normal, axis);
 
   p3d_mat3Rot(R, axis, atan(mu));
   p3d_vec3Mat3Mult(R, normal, u);
+  p3d_vectNormalize(u, u);
   p3d_mat3Rot(Ri, normal, 2*M_PI/nb_slices);
 
-  glPushAttrib(GL_LIGHTING_BIT | GL_LINE_BIT);
+  d= length/(cos(atan(mu)));
+
+  glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT);
   glDisable(GL_LIGHTING);
   glLineWidth(1.5);
+
+//   glEnable(GL_BLEND);
+//   glColor4f(0,1,0,0.5);
+// 
+//   glBegin(GL_TRIANGLE_FAN);
+//    glVertex3d(c[0] + d*u[0], c[1] + d*u[1], c[2] + d*u[2]);
+//    for(i=0; i<nb_slices;i++)
+//    {
+//      glVertex3d(c[0] + d*u[0], c[1] + d*u[1], c[2] + d*u[2]);
+//      p3d_mat3Mult( Ri, R, Rtmp );
+//      p3d_mat3Copy ( Rtmp, R );
+//      p3d_vec3Mat3Mult(R, normal, u);
+//    }
+//   glEnd();
+//   glBegin(GL_TRIANGLE_FAN);
+//    glVertex3d(c[0],c[1],c[2]);
+//    for(i=0; i<=nb_slices;i++)
+//    {
+//      glVertex3d(c[0] + d*u[0], c[1] + d*u[1], c[2] + d*u[2]);
+//      p3d_mat3Mult( Ri, R, Rtmp );
+//      p3d_mat3Copy ( Rtmp, R );
+//      p3d_vec3Mat3Mult(R, normal, u);
+//    }
+//   glEnd();
 
   glBegin(GL_LINE_LOOP);
    for(i=0; i<nb_slices;i++)
    {
-     glVertex3d(c[0] + length*u[0], c[1] + length*u[1], c[2] + length*u[2]);
+     glVertex3d(c[0] + d*u[0], c[1] + d*u[1], c[2] + d*u[2]);
      p3d_mat3Mult( Ri, R, Rtmp );
      p3d_mat3Copy ( Rtmp, R );
      p3d_vec3Mat3Mult(R, normal, u);
@@ -314,7 +343,7 @@ void gpDraw_friction_cone(p3d_vector3 c, p3d_vector3 normal, double mu, int nb_s
    for(i=0; i<nb_slices;i++)
    {
      glVertex3d(c[0],c[1],c[2]);
-     glVertex3d(c[0] + length*u[0], c[1] + length*u[1], c[2] + length*u[2]);
+     glVertex3d(c[0] + d*u[0], c[1] + d*u[1], c[2] + d*u[2]);
      p3d_mat3Mult( Ri, R, Rtmp );
      p3d_mat3Copy ( Rtmp, R );
      p3d_vec3Mat3Mult(R, normal, u);
@@ -681,7 +710,7 @@ int gpSet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
 //! \return GP_OK in case of success, GP_ERROR otherwise
 //! NB: the first joint of the thumb is not taken into account: it is supposed to be at its maximum value (90 degrees)
 //! in opposition to the other fingers.
-int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, double q[4], p3d_vector3 p, p3d_vector3 fingerpad_normal, int finger_index)
+int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, double q0[4], p3d_vector3 p, p3d_vector3 fingerpad_normal, int finger_index)
 {
   #ifdef GP_DEBUG
    if(finger_index<1 || finger_index>4 )
@@ -693,8 +722,15 @@ int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
 
   double l0, l1, l2, l3;
   double x, y, z;
+  double q[4];
   p3d_vector3 p_finger, fingerpad_normal_relative;
   p3d_matrix4 Tfinger_world;
+
+  //reverse the abduction angle to fit the new model
+  q[0]=  q0[0];
+  q[1]= -q0[1];
+  q[2]=  q0[2];
+  q[3]=  q0[3];
 
   switch(hand.type)
   {
@@ -731,9 +767,6 @@ int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
      fingerpad_normal_relative[2]=  -cos(q[2]+2*q[3]);
 
      p3d_xformVect(Tfinger_world, fingerpad_normal_relative, fingerpad_normal);
-//      g3d_drawColorSphere( p[0], p[1], p[2],  0.005, Yellow, NULL);
-//      glLineWidth(3);
-//      g3d_drawOneLine( p[0], p[1], p[2], p[0]+0.03*fingerpad_normal[0], p[1]+0.03*fingerpad_normal[1], p[2]+0.03*fingerpad_normal[2], Red, NULL);
     break;
     default:
        printf("%s: %d: gpSAHfinger_forward_kinematics(): this function only applies to GP_SAHAND_RIGHT et GP_SAHAND_LEFT hands.\n", __FILE__, __LINE__);
@@ -2193,7 +2226,7 @@ int gpSet_robot_hand_grasp_configuration(p3d_rob *robot, p3d_rob *object, const 
 
   q= p3d_alloc_config(robot);
 
-  objectJnt= object->o[grasp.body_index]->jnt;
+  objectJnt= object->o[0]->jnt;
 
   if(objectJnt==NULL)
   {
@@ -2240,7 +2273,7 @@ int gpSet_robot_hand_grasp_open_configuration(p3d_rob *robot, p3d_rob *object, c
 
   q= p3d_alloc_config(robot);
 
-  objectJnt= object->o[grasp.body_index]->jnt;
+  objectJnt= object->o[0]->jnt;
 
   if(objectJnt==NULL)
   {

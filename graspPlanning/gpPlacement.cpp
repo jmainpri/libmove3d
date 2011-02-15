@@ -304,14 +304,14 @@ int gpPlacement::draw(double length)
     glBegin(GL_LINE_LOOP);
     for(i=0; i<contacts.size(); i++)
     {
-      glVertex3f(contacts[i].position[0], contacts[i].position[1], contacts[i].position[2]);
+      glVertex3dv(contacts[i].position);
     }
     glEnd();
 
     //display the normal at center point:
     glColor3f(1, 0, 1);
     glBegin(GL_LINES);
-      glVertex3f(center[0], center[1], center[2]);
+      glVertex3dv(center);
 //       glVertex3f(center[0]+length*plane.normale[0], center[1]+length*plane.normale[1], center[2]+length*plane.normale[2]);
       glVertex3f(center[0]-4*length*plane.normale[0], center[1]-4*length*plane.normale[1], center[2]-4*length*plane.normale[2]);
     glEnd();
@@ -360,7 +360,7 @@ int gpPlacement::draw(double length)
 //! If the orthogonal projection of the object's center of mass on the plane of a face
 //! is inside the face, then this face corresponds to a stable placement.
 //! \param object pointer to the object (a freeflyer robot whose only the first polyhedron of the first body will be considered)
-//! \param placementList the computed placement list
+//! \param placementList the computed placement list (sorted from best to weaker stability)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpCompute_stable_placements(p3d_rob *object, std::list<gpPlacement> &placementList)
 {
@@ -368,6 +368,21 @@ int gpCompute_stable_placements(p3d_rob *object, std::list<gpPlacement> &placeme
   if(object==NULL)
   {
     printf("%s: %d: gpCompute_stable_placements: input object is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  if(object->o[0]==NULL)
+  {
+    printf("%s: %d: gpCompute_stable_placements: object->o[0] is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  if(object->o[0]->pol[0]==NULL)
+  {
+    printf("%s: %d: gpCompute_stable_placements: object->o[0]->pol[0] is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  if(object->o[0]->pol[0]->poly==NULL)
+  {
+    printf("%s: %d: gpCompute_stable_placements: object->o[0]->pol[0]->poly is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
   #endif
@@ -416,7 +431,6 @@ int gpCompute_stable_placements(p3d_rob *object, std::list<gpPlacement> &placeme
       {  p3d_vectCopy(polyhedron->the_points[chull->hull_faces[i][j+1]], p2);  }
       else
       {  p3d_vectCopy(polyhedron->the_points[chull->hull_faces[i][0]], p2);  }
- 
 
       p3d_vectSub(p1, proj, pp1);
       p3d_vectSub(p2, proj, pp2);
@@ -526,8 +540,8 @@ int gpCompute_stable_placements(p3d_rob *object, std::list<gpPlacement> &placeme
   i=1;
   for(iter= placementList.begin(); iter!=placementList.end(); iter++)
   {  
-    (*iter).ID= i++;
-    (*iter).stability/= max;
+    iter->ID= i++;
+    iter->stability/= max;
   }
 
   delete chull;

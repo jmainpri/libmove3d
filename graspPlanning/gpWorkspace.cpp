@@ -27,6 +27,7 @@ gpSAHandInfo::gpSAHandInfo()
 
 //! @ingroup workspace 
 //! Computes the position of the fingertip center point of the Schunk Anthropomorphic Hand finger.
+//! NB: The coupling between the 3rd and 4th joints is taken into account in the computation.
 //! \param length1 length of the first phalanx
 //! \param length2 length of the second phalanx
 //! \param length3 length of the third phalanx
@@ -60,12 +61,25 @@ int gpSAHfinger_forward_kinematics(double length1, double length2, double length
   return GP_OK;
 }
 
+//! Computes the jacobian matrix of the SAH finger.
+//! NB: The coupling between the 3rd and 4th joints is taken into account in the computation.
+//! \param length1 length of the first phalanx (proximal phalanx)
+//! \param length2 length of the second phalanx (middle phalanx)
+//! \param length3 length of the fthird phalanx (distal phalanx)
+//! \param q1 value of the first joint angle (abduction)
+//! \param q2 value of the second joint angle (subduction)
+//! \param q3 value of the thirs joint angle (flexion between proximal and middle phalanx)
+//! \parm J the computed jacobian
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpSAHfinger_jacobian(double length1, double length2, double length3, double q1, double q2, double q3, p3d_matrix3 J)
 {
   double a, b, c;
   double dx_dq1, dx_dq2, dx_dq3;
   double dy_dq1, dy_dq2, dy_dq3;
   double dz_dq1, dz_dq2, dz_dq3;
+
+  //reverse the abduction angle to fit the new model
+  q1= -q1;
 
 //   x= -sin(q1)*(  length1*cos(q2) + length2*cos(q2+q3) + length3*cos(q2+2*q3)  ); 
 //   y=  cos(q1)*(  length1*cos(q2) + length2*cos(q2+q3) + length3*cos(q2+2*q3)  );
@@ -714,7 +728,7 @@ int gpSAHfinger_workspace(gpSAHandInfo data, double dq, std::vector<gpVector3D> 
 //! is smaller than the given threshold.
 //! \param data geometrical info about the finger
 //! \param dq discretization step of the joint parameters (in radians). Do not use less than ~2 degrees (pi/180 rads)
-//! to avoid memory overload and excessive computatison time.
+//! to avoid memory overload and excessive computation time.
 //! \param dr the algorithm will end when it has found a sphere with radius < dr
 //! \param nb_spheres_max maximal number of spheres that will be computed
 //! \param spheres computed sphere set
@@ -797,10 +811,71 @@ int gpSAHfinger_workspace_approximation(gpSAHandInfo data, double dq, double dr,
   return GP_OK;
 }
 
+
+//! Computes the direction with the best force transmission at the fingertip (main axis of the force ellipsoid) of a finger of the SAH hand.
+//! \param Twrist hand pose (frame of the wrist center) in the world frame
+//! \param handProp structure containing information about the hand geometry
+//! \param q the finger joint parameters (angles in radians). Only the three last elements are used. The first one is assumed to be 0 for the thumb.
+//! \param finger_index index of the finger (thumb=1,forefinger=2,middlefinger=3,ringfinger=4)
+//! \param direction the computed direction
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSAHfinger_main_force_direction(p3d_matrix4 Twrist, gpHand_properties &handProp, double q[4], int finger_index, p3d_vector3 direction)
+{
+  if(finger_index<1 || finger_index>4 )
+  {
+    printf("%s: %d: gpSAHfinger_main_force_direction(): finger_index must be >= 1 and <=4 (finger_index= %d).\n",__FILE__,__LINE__, finger_index);
+    return GP_ERROR;
+  }
+
+  double l0, l1, l2, l3;
+  p3d_vector3 S, dir_finger;
+  p3d_matrix3 J, U, V;
+  p3d_matrix4 Tfinger_world;
+
+  switch(handProp.type)
+  {
+    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
+     l0= handProp.length_thumbBase;
+     l1= handProp.length_proxPha;
+     l2= handProp.length_midPha;
+     l3= handProp.length_distPha;
+
+     p3d_mat4Mult(Twrist, handProp.Twrist_finger[finger_index-1], Tfinger_world);
+    break;
+    default:
+       printf("%s: %d: gpSAHfinger_main_force_direction(): this function only applies to GP_SAHAND_RIGHT et GP_SAHAND_LEFT hands.\n", __FILE__, __LINE__);
+       return GP_ERROR;
+    break;
+  }
+
+  gpSAHfinger_jacobian(l1, l2, l3, q[1], q[2], q[3], J);
+
+  // to remove the abduction movement:
+  J[0][0]= 0.0;
+  J[1][0]= 0.0;
+  J[2][0]= 0.0;
+
+  p3d_mat3SVD(J, U, S, V);
+
+  dir_finger[0]= U[0][1];
+  dir_finger[1]= U[1][1];
+  dir_finger[2]= U[2][1];
+  p3d_vectNormalize(dir_finger, dir_finger);
+
+  p3d_xformVect(Tfinger_world, dir_finger, direction);
+  
+
+  return GP_OK;
+}
+
+//! Draws the force ellipsoid of a finger of the SAH hand.
+//! \param robot pointer to the robot hand
+//! \param handProp geometric data of the hand; must be initialized with initialize(GP_SAHAND_RIGHT);
+//! \param finger_index index of the finger (thumb=1,forefinger=2,middlefinger=3,ringfinger=4)
+//! \param handID used to find the finger joints in the robot
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDraw_SAHfinger_manipulability_ellipsoid(p3d_rob *robot, gpHand_properties &handProp, int finger_index, int handID)
 {
-  #ifdef GP_DEBUG
   if(robot==NULL)
   {
     printf("%s: %d: gpDraw_SAHfinger_manipulability_ellipsoid(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
@@ -811,7 +886,6 @@ int gpDraw_SAHfinger_manipulability_ellipsoid(p3d_rob *robot, gpHand_properties 
     printf("%s: %d: gpDraw_SAHfinger_manipulability_ellipsoid(): finger_index must be >= 1 and <=4 (finger_index= %d).\n",__FILE__,__LINE__, finger_index);
     return GP_ERROR;
   }
-  #endif
 
   double q[4];
   p3d_matrix3 J, U, V;
@@ -832,9 +906,12 @@ int gpDraw_SAHfinger_manipulability_ellipsoid(p3d_rob *robot, gpHand_properties 
 
   gpSAHfinger_jacobian(handProp.length_proxPha, handProp.length_midPha, handProp.length_distPha, q[1], q[2], q[3], J);
 
+  // to remove the abduction movement:
+  J[0][0]= 0.0;
+  J[1][0]= 0.0;
+  J[2][0]= 0.0;
 
   p3d_mat3SVD(J, U, S, V);
-
 
   for(int i=0; i<3; ++i)
   {
@@ -848,6 +925,7 @@ int gpDraw_SAHfinger_manipulability_ellipsoid(p3d_rob *robot, gpHand_properties 
   p3d_mat4SetRotMatrix(U, T);
   p3d_to_gl_matrix(T, mat3);
 
+
 //   switch(finger_index) 
 //   {
 //     case 1:   glColor4f(1.0, 0.0, 0.0, 0.5);  break;
@@ -856,9 +934,16 @@ int gpDraw_SAHfinger_manipulability_ellipsoid(p3d_rob *robot, gpHand_properties 
 //     case 4:   glColor4f(1.0, 1.0, 0.0, 0.5);  break;
 //     default:  glColor4f(1.0, 0.0, 1.0, 0.5);  break;
 //   }
-  glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT);
+
+ p3d_vector3 p1={0.0,0.0,0.0}, p2;
+ p3d_mat4ExtractColumnY(T, p2);
+ p2[0]*= -0.1;
+ p2[1]*= -0.1;
+ p2[2]*= -0.1;
+
+ glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT);
   
-  glColor4f(0.0, 1.0, 0.0, 0.6);
+ glColor4f(0.0, 1.0, 0.0, 0.6);
  glDisable(GL_LIGHTING);
  glEnable(GL_CULL_FACE);
  glEnable(GL_BLEND);
@@ -868,15 +953,18 @@ int gpDraw_SAHfinger_manipulability_ellipsoid(p3d_rob *robot, gpHand_properties 
    glMultMatrixf(mat1);
    glMultMatrixf(mat2);
    glTranslatef(position[0], position[1], position[2]);
+
+   g3d_draw_cylinder(p1, p2, 0.002, 8);
+
    glMultMatrixf(mat3);
-//     g3d_draw_ellipsoid(0.02,0.02,0.02, 20);
-    g3d_draw_ellipsoid(S[0]/3.3, S[1]/3.3, S[2]/3.3, 30);
+//     g3d_draw_ellipsoid(S[0]/3.3, S[1]/3.3, S[2]/3.3, 30);
+    g3d_draw_ellipsoid(0.01, S[1]/3.3, S[2]/3.3, 30);
   glPopMatrix();
 // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-glDisable(GL_BLEND);
-glEnable(GL_LIGHTING);
-glDepthMask(GL_TRUE);
-glDisable(GL_CULL_FACE);
+  glDisable(GL_BLEND);
+  glEnable(GL_LIGHTING);
+  glDepthMask(GL_TRUE);
+  glDisable(GL_CULL_FACE);
 
   glPopAttrib();
 

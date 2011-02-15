@@ -12,203 +12,11 @@
 #include <string>
 #include <sstream>
 
-//! Default constructor of the class gpContact.
-gpContact::gpContact()
-{
-  ID= 0;
-  surface= NULL;
-  face= 0;   
-  fingerID= 0;
-  position[0]= position[1]= position[2]= 0.0;
-  normal[0]= normal[1]= normal[2]= 0.0;
-  baryCoords[0]= baryCoords[1]= baryCoords[2]= 0.0;
-  curvature= 0;
-  mu= 0.3;
-}  
-
-
-gpContact::gpContact(const gpContact &contact)
-{
-  ID        = contact.ID; 
-  surface   = contact.surface; 
-  face      = contact.face; 
-  fingerID  = contact.fingerID;
-
-  for(int i=0; i<3; i++)
-  {
-    position[i]  = contact.position[i];
-    normal[i]    = contact.normal[i];
-    baryCoords[i]= contact.baryCoords[i];
-  }
-  mu= contact.mu;
-  curvature= contact.curvature;
-  score= contact.score;
-}  
-
-gpContact::~gpContact()
-{
-}  
-
-//! Copy operator of the class gpContact.
-gpContact & gpContact::operator = (const gpContact &contact)
-{
-  if(this!=&contact)
-  { 
-    ID       = contact.ID; 
-    surface  = contact.surface; 
-    face     = contact.face;
-    fingerID = contact.fingerID;
-
-    for(int i=0; i<3; i++)
-    {
-      position[i]  = contact.position[i];
-      normal[i]    = contact.normal[i];
-      baryCoords[i]= contact.baryCoords[i];
-    }
-    mu= contact.mu;
-    curvature= contact.curvature;
-    score= contact.score;
-  }   
-
-  return *this;
-}
-
-
-//! Draws a contact (position and friction cone).
-//! \param length lenght of the friction cone to draw
-//! \param nb_slices number of segments of the cone discretization
-//! \return GP_OK in case of success, GP_ERROR otherwise
-int gpContact::draw(double length, int nb_slices)
-{
-//   #ifdef GP_DEBUG
-//   if(surface==NULL)
-//   {
-//     printf("%s: %d: gpContact::draw((): no surface (p3d_polyhedre) is associated to the contact.\n", __FILE__, __LINE__);
-//     return GP_ERROR;
-//   }
-//   #endif
-  if(this==NULL)
-  {
-    printf("%s: %d: gpContact::draw(): the calling instance is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-
-  p3d_matrix4 pose;
-  GLfloat matGL[16];
-
-  p3d_mat4Copy(p3d_mat4IDENTITY, pose);
-
-  if(surface!=NULL)
-  { 
-    p3d_get_poly_pos(surface, pose );
-  }
-
-  p3d_matrix4_to_OpenGL_format(pose, matGL);
-
-  glPushAttrib(GL_LIGHTING_BIT);
-  glDisable(GL_LIGHTING);
-  glPushMatrix();
-//     glMultMatrixf(matGL);
-    g3d_drawSphere(position[0], position[1], position[2], length/10.0);
-    gpDraw_friction_cone(position, normal, mu, nb_slices, length);
-  glPopMatrix();
-  glPopAttrib();
-
-  return GP_OK;
-}
-
-//! Computes the barycentric coordinates of the contact.
-//! The barycentric coordinates are defined by the vertices of the triangle the contact belongs to.
-//! If the triangle points are p1, p2 and p3 and the contact is p, we have:
-//! p= a1*p1 + a2* p2 + a3*p3;
-//! \return GP_OK in case of success, GP_ERROR otherwise
-int gpContact::computeBarycentricCoordinates()
-{
-  if(this==NULL)
-  {
-    printf("%s: %d: gpContact::computeBarycentricCoordinates(): the calling instance is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-
-  if(surface==NULL)
-  {
-    printf("%s: %d: gpContact::computeBarycentricCoordinates(): the p3d_polyhedre associated to the contact is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-
-  if( (face < 0) || (face > surface->nb_faces) )
-  {
-    printf("%s: %d: gpContact::computeBarycentricCoordinates(): the face index of the contact exceeds the face array dimension of the p3d_polyhedre.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-  
-  p3d_vector3 p, p1, p2, p3;
-  p3d_matrix3 T, T_inv;
-
-  p3d_vectCopy(surface->the_points[surface->the_faces[face].the_indexs_points[0]-1], p1);
-  p3d_vectCopy(surface->the_points[surface->the_faces[face].the_indexs_points[1]-1], p2);
-  p3d_vectCopy(surface->the_points[surface->the_faces[face].the_indexs_points[2]-1], p3);
-
-  T[0][0]= p1[0];   T[0][1]= p2[0];    T[0][2]= p3[0]; 
-  T[1][0]= p1[1];   T[1][1]= p2[1];    T[1][2]= p3[1]; 
-  T[2][0]= p1[2];   T[2][1]= p2[2];    T[2][2]= p3[2]; 
-
-  p3d_mat3Invert(T, T_inv);
-
-  p3d_vec3Mat3Mult(T_inv, position, p);
-  
-  baryCoords[0]= p[0];
-  baryCoords[1]= p[1];
-  baryCoords[2]= p[2];
-
-//   for(int i=0; i<3; i++)
-//   {
-//     p[i]= baryCoords[0]*p1[i] +  baryCoords[1]*p2[i] +  baryCoords[2]*p3[i];
-//   }
-// 
-//   printf("[%f %f %f] [%f %f %f]\n",p[0],p[1],p[2],position[0],position[1],position[2]);
-
-  return GP_OK;
-}
-
-//! Computes the curvature at the contact.
-//! The computation is based on the barycentric coordinates of the contact and the curvature
-//! at the mesh vertices (computed outside Move3D).
-//! \return GP_OK in case of success, GP_ERROR otherwise
-int gpContact::computeCurvature()
-{
-  if(this==NULL)
-  {
-    printf("%s: %d: gpContact::computeCurvature(): the calling instance is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-
-  if(surface==NULL)
-  {
-    printf("%s: %d: gpContact::computeCurvature(): the p3d_polyhedre associated to the contact is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-
-  double c1, c2, c3;
-
-  c1= surface->curvatures[surface->the_faces[face].the_indexs_points[0]-1];
-  c2= surface->curvatures[surface->the_faces[face].the_indexs_points[1]-1];
-  c3= surface->curvatures[surface->the_faces[face].the_indexs_points[2]-1];
-
-  curvature= baryCoords[0]*c1 + baryCoords[1]*c2 + baryCoords[2]*c3;
-
-  return GP_OK;
-}
-
-//! Comparison function of the scores of two contacts.
-bool gpCompareContactScore(const gpContact &contact1, const gpContact &contact2)
-{
-  return (contact1.score < contact2.score) ? true : false;
-}
 
 //! Default constructor of the class gpGrasp
 gpGrasp::gpGrasp()
 {
+  autoGen         = true;
   ID              = 0;
   stability       = 0;
   IKscore         = 0;
@@ -217,21 +25,14 @@ gpGrasp::gpGrasp()
   p3d_mat4Copy(p3d_mat4IDENTITY, frame);
   handID          = 0;
   object          = NULL;
-  body_index      = 0;
   object_name     = "none";
   hand_type       = GP_HAND_NONE;
   tested          = false;
-  for(int i=0; i<3; ++i)
-  {
-    closestPointHand[i]  = 0.0;
-    closestPointObject[i]= 0.0;
-  }
 }
 
 gpGrasp::gpGrasp(const gpGrasp &grasp)
 {
-  unsigned int i, j;
-
+  autoGen= grasp.autoGen;
   ID= grasp.ID;
   stability= grasp.stability;
   IKscore= grasp.IKscore;
@@ -239,35 +40,17 @@ gpGrasp::gpGrasp(const gpGrasp &grasp)
   quality= grasp.quality;
   handID= grasp.handID;
 
-  for(i=0; i<4; i++)
-  {      
-    for(j=0; j<4; j++)
-    {  frame[i][j]= grasp.frame[i][j];  }
-  }
+  p3d_mat4Copy(grasp.frame, frame);
 
   object= grasp.object;
-  body_index= grasp.body_index;
   object_name= grasp.object_name;
   hand_type= grasp.hand_type;
   tested= grasp.tested;
 
-  contacts.resize(grasp.contacts.size());
-  for(i=0; i<contacts.size(); i++)
-  {  contacts[i]= grasp.contacts[i];  }
-
-  config.resize(grasp.config.size());  
-  for(i=0; i<config.size(); i++)
-  {  config[i]= grasp.config[i];  }
-
-  openConfig.resize(grasp.openConfig.size());  
-  for(i=0; i<openConfig.size(); i++)
-  {  openConfig[i]= grasp.openConfig[i];  }
-
-  for(int i=0; i<3; ++i)
-  {
-    closestPointHand[i]  = grasp.closestPointHand[i];
-    closestPointObject[i]= grasp.closestPointObject[i];
-  }
+  contacts= grasp.contacts;
+  config= grasp.config;  
+  openConfig= grasp.openConfig;
+  recomPlacement= grasp.recomPlacement;
 }
 
 gpGrasp::~gpGrasp()
@@ -279,9 +62,9 @@ gpGrasp::~gpGrasp()
 //! Copy operator of the class gpGrasp.
 gpGrasp & gpGrasp::operator = (const gpGrasp &grasp)
 {
-  unsigned int i, j;
   if( this!=&grasp )
   {
+    autoGen= grasp.autoGen;
     ID= grasp.ID;
     stability= grasp.stability;
     IKscore= grasp.IKscore;
@@ -289,35 +72,17 @@ gpGrasp & gpGrasp::operator = (const gpGrasp &grasp)
     quality= grasp.quality;
     handID= grasp.handID;
 
-    for(i=0; i<4; i++)
-    {
-      for(j=0; j<4; j++)
-      {  frame[i][j]= grasp.frame[i][j];  }
-    }
-
-    contacts.resize(grasp.contacts.size());
-    for(i=0; i<contacts.size(); i++)
-    {  contacts[i]= grasp.contacts[i];  }
+    p3d_mat4Copy(grasp.frame, frame);
 
     object= grasp.object;
-    body_index= grasp.body_index;
     object_name= grasp.object_name;
     hand_type= grasp.hand_type;
     tested= grasp.tested;
 
-    config.resize(grasp.config.size());  
-    for(i=0; i<config.size(); i++)
-    {  config[i]= grasp.config[i];   }
-
-    openConfig.resize(grasp.openConfig.size());  
-    for(i=0; i<openConfig.size(); i++)
-    {  openConfig[i]= grasp.openConfig[i];   }
-
-    for(int i=0; i<3; ++i)
-    {
-      closestPointHand[i]  = grasp.closestPointHand[i];
-      closestPointObject[i]= grasp.closestPointObject[i];
-    }
+    contacts= grasp.contacts;
+    config= grasp.config;  
+    openConfig= grasp.openConfig;
+    recomPlacement= grasp.recomPlacement;
   }
 
   return *this;
@@ -343,23 +108,29 @@ int gpGrasp::draw(double length, int nb_slices)
   }
 
   unsigned int i;
+  p3d_vector3 p;
   p3d_matrix4 pose;
   GLfloat matGL[16];
   gpHand_properties hand;
 
   if(object!=NULL)
-  {   p3d_get_body_pose(object, body_index, pose);  }
+  {   p3d_get_freeflyer_pose(object, pose);  }
   else
   {   p3d_mat4Copy(p3d_mat4IDENTITY, pose);   }
 
+  for(i=0; i<3; ++i)
+  {
+    p[i]= recomPlacement.center[i]-4*length*recomPlacement.plane.normale[i];
+  }
+
   p3d_matrix4_to_OpenGL_format(pose, matGL);
 
-  glPushAttrib(GL_LIGHTING_BIT);
+  glPushAttrib(GL_LIGHTING_BIT | GL_LINE_BIT);
   glPushMatrix();
     glMultMatrixf(matGL);
 
     for(i=0; i<contacts.size(); ++i)
-    {
+    { //if(i!=1) continue;
       if(i==0) { glColor3f(1.0, 0.0, 0.0);  }
       if(i==1) { glColor3f(0.0, 1.0, 0.0);  }
       if(i==2) { glColor3f(0.0, 0.0, 1.0);  }
@@ -367,11 +138,19 @@ int gpGrasp::draw(double length, int nb_slices)
       contacts[i].draw(length, nb_slices);
     }
 
-//     glColor3f(1,0,0);
-//     g3d_drawColorSphere(closestPointHand[0], closestPointHand[1], closestPointHand[2], 0.008, Red, NULL);
-//     glColor3f(0,1,0);
-//     g3d_drawColorSphere(closestPointObject[0], closestPointObject[1], closestPointObject[2], 0.008, Green, NULL);
-    g3d_draw_frame(frame, 4*length);
+    // draw recommanded placement:
+    glLineWidth(4);
+    glColor3f(0, 0, 1);
+    glBegin(GL_LINE_LOOP);
+    for(i=0; i<recomPlacement.contacts.size(); i++)
+    {  glVertex3dv(recomPlacement.contacts[i].position);  }
+    glEnd();
+
+    glColor3f(1, 0, 1);
+    glBegin(GL_LINES);
+      glVertex3dv(recomPlacement.center);
+      glVertex3dv(p);
+    glEnd();
 
 //     if(hand_type==GP_SAHAND_RIGHT)
 //     { 
@@ -607,34 +386,37 @@ int gpGrasp::computeStability()
   return GP_OK;
 }
 
-//! Determines if at least one contact of a grasp is too close to an angulous edge.
+//! Removes the contact that are too close to an sharp edge.
 //! For each contact of the grasp, the function considers the edges of the face the contact is on.
 //! If one of the edge is not too "flat", the distance from the contact to the edge is computed and 
 //! if the distance is above a threshold, the contact is regarded as too close to the edge.
 //! \param angleThreshold the edge angle (in radians) above which an edge is regarded as not flat
 //! \param distancethreshold the distance threshold
-//! \return true if one of the contact of a grasp is too close to an angulous edge, false otherwise
-bool gpGrasp::areContactsTooCloseToEdge(double angleThreshold, double distancethreshold)
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGrasp::removeContactsTooCloseToEdge(double angleThreshold, double distancethreshold)
 {
+  bool remove;
   unsigned int i, j, i1, i2;
   double distance;
   p3d_vector3 p1, p2, closestPoint;
   p3d_polyhedre *poly= NULL;
   int face_edges[3];
   float angle;
+  std::vector<gpContact> newContacts;
 
 
-  for(i=0; i<contacts.size(); i++)
+  for(i=0; i<contacts.size(); ++i)
   {
+    remove= false;
     poly= contacts[i].surface;
     if(poly==NULL)
     {
-      printf("%s: %d: gpGrasp::areContactsTooCloseToEdge(): a contact of the grasp has a NULL surface\n",__FILE__,__LINE__);
+      printf("%s: %d: gpGrasp::removeContactsTooCloseToEdge(): a contact of the grasp has a NULL surface\n",__FILE__,__LINE__);
       continue;
     }
     // compute the edges of the poly:
     if(poly->areEdgesAndNeighboursUpToDate==FALSE)
-    {printf("compute\n");
+    {
       p3d_compute_edges_and_face_neighbours(poly);
     }
 
@@ -661,11 +443,15 @@ bool gpGrasp::areContactsTooCloseToEdge(double angleThreshold, double distanceth
 
       distance= gpPoint_to_line_segment_distance(contacts[i].position, p1, p2, closestPoint);
       if(distance < distancethreshold) 
-      {  return true; }
+      {  remove= true; }
     }
+    if(remove==false)
+    {  newContacts.push_back(contacts[i]);  }
   }
 
-  return false;
+  contacts= newContacts;
+
+  return GP_OK;
 }
 
 //! Computes the quality of the grasp.
@@ -718,7 +504,7 @@ int gpGrasp::computeQuality()
     break;
   }
  
-   poly= object->o[body_index]->pol[0]->poly;
+   poly= object->o[0]->pol[0]->poly;
    
    //! check if the object volume properties were already computed:
    if(poly->volume==0)
@@ -806,6 +592,7 @@ int gpGrasp::computeQuality()
   else
   {
     quality= fcWeight*fcScore + directionWeight*directionScore + curvatureWeight*curvatureScore + configWeight*configScore + centroidWeight*centroidScore;
+    quality= curvatureWeight*minCurvatureScore + centroidWeight*1.0/centroidScore;
   }
 
 
@@ -818,22 +605,59 @@ int gpGrasp::computeQuality()
 }
 
 
-//! Grasp quality comparison operator.
-bool gpGrasp::operator < (const gpGrasp &grasp)
+
+//! Comparison function of the quality scores of two grasps.
+//! \return true if quality of grasp 1 is less than quality of grasp 2
+bool gpCompareGraspQuality(const gpGrasp &grasp1, const gpGrasp &grasp2)
 {
-  if(this==NULL)
+  unsigned int i;
+  double curvatureScore;
+  std::list<double> curvatureScores1, curvatureScores2;
+
+  for(i=0; i<grasp1.contacts.size(); ++i)
   {
-    printf("%s: %d: gpGrasp::operator <: the calling instance is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
+    curvatureScore= 1.0 - grasp1.contacts.at(i).curvature;
+    curvatureScores1.push_back(curvatureScore);
+  }
+  for(i=0; i<grasp2.contacts.size(); ++i)
+  {
+    curvatureScore= 1.0 - grasp2.contacts.at(i).curvature;
+    curvatureScores2.push_back(curvatureScore);
   }
 
-  return (quality < grasp.quality) ? true : false;
+  curvatureScores1.sort();
+  curvatureScores2.sort();
+
+  while( curvatureScores1.size() > curvatureScores2.size() )
+  {
+    curvatureScores1.pop_front();
+  }
+  while( curvatureScores2.size() > curvatureScores1.size() )
+  {
+    curvatureScores2.pop_front();
+  }
+
+  return (curvatureScores1.front() < curvatureScores2.front()) ? true : false;
+//   return (grasp1.quality < grasp2.quality) ? true : false;
+}
+
+//! Reversed comparison function of the quality scores of two grasps.
+//! \return true if quality of grasp 1 is greater than quality of grasp 2
+bool gpReversedCompareGraspQuality(const gpGrasp &grasp1, const gpGrasp &grasp2)
+{
+  return !(gpCompareGraspQuality(grasp1, grasp2));
 }
 
 //! Comparison function of the visibility scores of two grasps.
-bool gpCompareVisibility(const gpGrasp &grasp1, const gpGrasp &grasp2)
+bool gpCompareGraspVisibility(const gpGrasp &grasp1, const gpGrasp &grasp2)
 {
   return (grasp1.visibility < grasp2.visibility) ? true : false;
+}
+
+//! Comparison function of the number of contacts of two grasps.
+bool gpCompareGraspNumberOfContacts(const gpGrasp &grasp1, const gpGrasp &grasp2)
+{
+  return (grasp1.contacts.size() < grasp2.contacts.size()) ? true : false;
 }
 
 //! Prints the content of a gpGrasp variable in the standard output.
@@ -1048,7 +872,6 @@ int gpHand_properties::initialize(gpHand_type hand_type)
 
        p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp_frame_hand);
        Tgrasp_frame_hand[2][3]= 0.007;
-//        Tgrasp_frame_hand[2][3]= 0.018;
 
       //transformation grasp frame -> arm's wrist frame:
       /*
@@ -1060,23 +883,6 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        T[1][0]=  0.0;  T[1][1]=  0.0;  T[1][2]= -1.0;  T[1][3]=  0.0;
        T[2][0]=  1.0;  T[2][1]=  0.0;  T[2][2]=  0.0;  T[2][3]= -0.007;
        T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
-
-// //        T[0][0]=  0.0;  T[0][1]=  0.0;  T[0][2]=  1.0;  T[0][3]=  0.0;
-// //        T[1][0]= -1.0;  T[1][1]=  0.0;  T[1][2]=  0.0;  T[1][3]=  0.0;
-// //        T[2][0]=  0.0;  T[2][1]= -1.0;  T[2][2]=  0.0;  T[2][3]=  0.0;
-// //        T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
-// //        Thand_wrist[0][0]=  0.0;  Thand_wrist[0][1]= -1.0;  Thand_wrist[0][2]=  0.0;  Thand_wrist[0][3]=  0.0; 
-// //        Thand_wrist[1][0]=  0.0;  Thand_wrist[1][1]=  0.0;  Thand_wrist[1][2]= -1.0;  Thand_wrist[1][3]=  0.0;
-// //        Thand_wrist[2][0]=  1.0;  Thand_wrist[2][1]=  0.0;  Thand_wrist[2][2]=  0.0;  Thand_wrist[2][3]=  0.065; 
-// //        Thand_wrist[3][0]=  0.0;  Thand_wrist[3][1]=  0.0;  Thand_wrist[3][2]=  0.0;  Thand_wrist[3][3]=  1.0;
-
-
-//        axis[0]= 0;
-//        axis[1]= 0;
-//        axis[2]= 1;
-//        p3d_mat4Rot(R, axis, M_PI/8.0);
-//        p3d_matMultXform(R, T, Thand_wrist);
-       //p3d_mat4Copy(T, Thand_wrist);
 
        nb_positions= 2100;
        nb_directions= 12;
@@ -1428,10 +1234,10 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        workspace.at(50).setCenter(-0.005824, 0.036771, -0.096259); 
        workspace.at(50).radius= 0.003897; 
 
-       nb_positions= 500;
-       nb_directions= 12;
-       nb_rotations= 10;
-       max_nb_grasp_frames= 7000;
+       nb_positions= 600;
+       nb_directions= 16;
+       nb_rotations=16;
+       max_nb_grasp_frames= 300000;
     break;
     default:
        printf("%s: %d: gpHand_properties::initalize(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
@@ -1751,6 +1557,7 @@ int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object, bool environment
   int result, nbChanges, col_test;
   double qnew[4]; // SAHand finger joint parameters to set (the first one is only needed by the thumb)
   p3d_matrix4 objectFrame;
+
   configPt config0, config;
   std::vector<bool> blocked, fingerBlocked;
   std::vector<double> q, qstart, qstop, delta;
@@ -1764,7 +1571,7 @@ int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object, bool environment
 
   handProp.initialize(this->hand_type);
 
-  p3d_get_body_pose(object, this->body_index, objectFrame);
+  p3d_get_freeflyer_pose(object, objectFrame);
 
   gpInverse_geometric_model_freeflying_hand(robot, objectFrame, this->frame, handProp, config);
   p3d_set_and_update_this_robot_conf(robot, config);
@@ -1920,11 +1727,6 @@ int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object, bool environment
     break;
  }
 
-//  p3d_col_robot_robot_distance(robot, object, closestPointHand, closestPointObject);
-//  p3d_matInvertXform(objectFrame, objectFrameInv);
-//  p3d_xformPoint(objectFrameInv, closestPointHand, this->closestPointHand);
-//  p3d_xformPoint(objectFrameInv, closestPointObject, this->closestPointObject); 
-
  p3d_set_and_update_this_robot_conf(robot, config0);
 
  return GP_OK;
@@ -2020,18 +1822,6 @@ bool gpDoubleGrasp::operator < (const gpDoubleGrasp &dgrasp)
   }
 
   return (quality < dgrasp.quality) ? true : false;
-}
-
-//! Double grasp quality comparison operator.
-bool gpDoubleGrasp::operator > (const gpDoubleGrasp &dgrasp)
-{
-  if(this==NULL)
-  {
-    printf("%s: %d: gpDoubleGrasp::operator >: the calling instance is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-
-  return (quality > dgrasp.quality) ? true : false;
 }
 
 

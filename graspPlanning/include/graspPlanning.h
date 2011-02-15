@@ -12,7 +12,7 @@
 //! must be suffixed with the number of the part (e.g. there will be fingerJointForeBase_1 and
 //! fingerJointForeBase_2).
 
-// cd BioMove3Dgit/BioMove3D/build/
+// cd BioMove3Dgit/BioMove3D/build_test/
 // ./Debug/bin/i386-linux/move3d -f ~/BioMove3DDemos/Bauzil/gsSAHand.p3d
 
 /** @defgroup graspPlanning 
@@ -53,11 +53,11 @@
 #define GP_EPSILON 0.00001
 
 //! Contact friction coefficient:
-#define GP_FRICTION_COEFFICIENT 0.5
+#define GP_FRICTION_COEFFICIENT 0.3
 
 
 //! version of the grasp planner (for grasp list file compatibility)
-#define GP_VERSION  "0.0.1"
+#define GP_VERSION  "0.0.2"
 
 //! Converts a variable to a std::string.
 template<class T> std::string convertToString(const T& t)

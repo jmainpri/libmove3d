@@ -8,11 +8,11 @@ extern int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matr
 
 extern int gpGrasp_generation_pr2_gripper(p3d_polyhedre *polyhedron, gpHand_properties &handProp, double mu, std::list<class gpGrasp> &graspList);
 
-extern int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_index, p3d_matrix4 gFrame, gpHand_properties &handProp, gpKdTree &kdtree, std::list<class gpGrasp> &graspList);
+extern int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, p3d_matrix4 gFrame, gpHand_properties &handProp, gpKdTree &kdtree, std::list<class gpGrasp> &graspList);
 
 extern int gpGrasp_frame_from_inertia_axes(p3d_matrix3 iaxes, p3d_vector3 cmass, int direction, double displacement, int axis, double angle, p3d_matrix4 gframe);
 
-extern int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, int body_index, gpHand_properties &handProp, unsigned int nbPositions, unsigned int nbDirections, unsigned int nbRotations, std::list<class gpGrasp> &graspList);
+extern int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, gpHand_properties &handProp, unsigned int nbPositions, unsigned int nbDirections, unsigned int nbRotations, std::list<class gpGrasp> &graspList);
 
 extern int gpInverse_geometric_model_freeflying_hand(p3d_rob *robot, p3d_matrix4 objectFrame, p3d_matrix4 graspFrame, gpHand_properties &handProp, configPt q);
 
@@ -40,7 +40,7 @@ extern int gpGrasp_context_collision_filter(std::list<gpGrasp> &graspList, p3d_r
 
 extern int gpGrasp_stability_filter(std::list<gpGrasp> &graspList);
 
-extern int gpGrasp_quality_filter(std::list<gpGrasp> &graspList);
+extern int gpCompute_grasps_best_placement(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &hand);
 
 extern int gpGrasp_visibility_filter(p3d_rob *robot, p3d_rob *object, p3d_jnt *cam_jnt, double camera_fov, int imageWidth, int imageHeight, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpHand_properties &hand);
 
@@ -58,6 +58,8 @@ extern int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *
 
 extern int gpReduce_grasp_list_size(const std::list<gpGrasp> &originalList, std::list<gpGrasp> &reducedList, unsigned int maxSize);
 
-extern int gpRemove_edge_grasps(const std::list<gpGrasp> &originalList, std::list<gpGrasp> &reducedList, double angle, double step);
+extern int gpRemove_edge_contacts(std::list<gpGrasp> &graspList, double angle, double step);
+
+extern int gpCompute_grasp_qualities_and_sort(std::list<gpGrasp> &graspList);
 
 #endif

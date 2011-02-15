@@ -22,8 +22,7 @@ class gpSAHandInfo
    gpSAHandInfo();
 };
 
-
-extern int gpSAHfinger_forward_kinematics(float q1, float q2, float q3, float length1, float length2, float length3, p3d_vector3 position, p3d_vector3 normal);
+extern int gpSAHfinger_forward_kinematics(double length1, double length2, double length3, double q1, double q2, double q3, p3d_vector3 position, p3d_vector3 normal);
 
 extern int gpSAHfinger_outer_workspace(double length1, double length2, double length3, double dq, std::vector<gpVector3D> &points, std::vector<gpVector3D> &normals);
 
@@ -40,6 +39,8 @@ extern void p3d_mat3SVD(p3d_matrix3 M, p3d_matrix3 U, p3d_vector3 S, p3d_matrix3
 extern void p3d_mat4SVD(p3d_matrix4 M, p3d_matrix4 U, p3d_vector4 S, p3d_matrix4 V);
 
 extern int gpSAHfinger_jacobian(double length1, double length2, double length3, double q1, double q2, double q3, p3d_matrix3 J);
+
+extern int gpSAHfinger_main_force_direction(p3d_matrix4 Twrist, gpHand_properties &handProp, double q[4], int finger_index, p3d_vector3 direction);
 
 // extern int gpSAHfinger_manipulability_ellipsoid(double length1, double length2, double length3, double q1, double q2, double q3);
 
