@@ -2258,8 +2258,10 @@ static void min_max_curvature(GtsVertex * v, gpointer *data)
   GtsVector n;
   gdouble c = 0.;
 
-  if (!gts_vertex_is_boundary (v, s) &&  gts_vertex_mean_curvature_normal (v, s, n)) 
-  {  c = gts_vector_norm (n)/2.0; }
+  if (!gts_vertex_is_boundary(v, s) &&  gts_vertex_mean_curvature_normal(v, s, n)) 
+  {  c = gts_vector_norm (n)/2.0;  }
+  else
+  {  return;  }
 
   if (c < *min) { *min = c; }
   if (c > *max) { *max = c; }
@@ -2280,15 +2282,19 @@ static void write_curvature(GtsVertex *v, gpointer *data)
   GtsVector n;
   gdouble c= 0.0;
 
+
   if( !gts_vertex_is_boundary(v, s) && gts_vertex_mean_curvature_normal(v, s, n) ) 
-  {  c = gts_vector_norm(n)/2.0; }
+  { 
+    c = gts_vector_norm(n)/2.0;
+    c= (c-*min)/(*max-*min);
+  }
   else
-  {  c= 0; }
+  {  c= *max; }
 
   gpointer p= g_hash_table_lookup(vertex_hash_GTS, v);
   uint i= GPOINTER_TO_UINT(p);
 
-  poly->curvatures[i]= (c-*min)/(*max-*min);
+  poly->curvatures[i]= c;
 }
 
 //! Computes the mean curvature of each vertex of the polyhedron.
