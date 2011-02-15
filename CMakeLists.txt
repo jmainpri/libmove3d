@@ -141,8 +141,6 @@ BM3D_flag(VCOLLIDE "Use vCollide Collision detector" OFF)
 BM3D_flag(BIO "Compilation with module Bio" OFF)
 BM3D_flag(ENERGY "Compilation with module Bio-Energy" OFF)
 
-BM3D_flag(BIO_BALL "Sets Ball compiling mode" OFF)
-
 # Path planning --
 BM3D_flag(MULTIGRAPH "Compilation with module Multi-Graph" OFF P3D_PLANNER)
 BM3D_flag(LIGHT_PLANNER "Extern Mode (Use this mode to have a scriped functions for planning pick and place tasks)"  OFF P3D_PLANNER)
@@ -195,6 +193,10 @@ BM3D_flag(GENERATE_STUDIO "Set required options to compile mov3d-studio, the sta
 BM3D_flag(GENERATE_VIEWER_LIB "Set the required options to compile the stand-alone move3d viewer (requires SPARK at run-time)" OFF MOVE3D_ROBOTICS MOVE3D_CORE QT_LIBRARY QT_GL)
 
 BM3D_flag(MOVE3D_ROBOTICS "Set all the standard options related to robotics" OFF HRI_PLANNER GRASP_PLANNING LIGHT_PLANNER MULTIGRAPH MULTILOCALPATH USE_GSL )
+
+# TODO : implement a proper search for the GSL and/or Lapack libraries, and add the relevant flags (USE_GSL and USE_CLAPACK)
+# It is necessary to link against either GSL or Lapack for protein loop sampling.
+BM3D_flag(MOVE3D_BIO "Set all the standard options related to bio motion planning" OFF BIO WITH_XFORMS)
 
 BM3D_ProcessCompilationFlags()
 BM3D_SetCompilationFlags()
@@ -376,15 +378,6 @@ IF(QWT)
   SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${QWT_INCLUDE_DIR})
   SET(LIBS ${LIBS} ${QWT_LIBRARIES})
 ENDIF(QWT)
-
-#-------------- BIO ---------------------------------------
-#----------------------------------------------------------
-IF(BIO_BALL)
-  FIND_PACKAGE(BALL REQUIRED)
-  INCLUDE_directories(${BALL_INCLUDE_DIR})
-  SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${BALL_INCLUDE_DIR})
-  SET(LIBS ${LIBS} ${BALL_LIBRARIES})
-ENDIF(BIO_BALL)
 
 #-------------- HRP2 --------------------------------------
 #----------------------------------------------------------

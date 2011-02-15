@@ -41,9 +41,8 @@
 #include "cost_space.hpp"
 #include <boost/bind.hpp>
 #endif
-
-#ifdef BIO_BALL
-#include "ball_energy.hpp"
+#ifdef WITH_XFORMS
+#include "Graphic-pkg.h"
 #endif
 
 static int FILTER_TO_BE_SET_ACTIVE = FALSE;
@@ -541,15 +540,6 @@ int main(int argc, char ** argv) {
     bio_set_list_firstjnts_flexible_sc();
     if (XYZ_ROBOT->num_subrobot_ligand != -1)
       bio_set_nb_dof_ligand();
-#ifdef BIO_BALL
-    new BallEnergy(XYZ_ENV);
-    if(global_costSpace)
-    {
-      global_costSpace->addCost("BALLmmff94",
-				boost::bind(&BallEnergy::computeEnergy, XYZ_ENV->energyComputer, _1));
-      global_costSpace->setCost("BALLmmff94");
-    }
-#endif
   }
 #endif
   // fmodif Juan

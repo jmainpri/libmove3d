@@ -2,10 +2,6 @@
 #ifndef _ENVIRONMENT_H
 #define _ENVIRONMENT_H
 
-#ifdef BIO_BALL
-class BallEnergy;
-#endif
-
 /* Structure d'environnement */
 typedef struct env {
   char      *name;
@@ -43,11 +39,6 @@ typedef struct env {
   //! a point cloud (e.g. the output of a 3D scanner), that can be used to test collision with the robots
   p3d_vector3 *collisionCloud;
   int cloudSize;
-
-#ifdef BIO_BALL
-  BallEnergy* energyComputer;
-#endif
-
 } p3d_env,*pp3d_env;
 
 #endif /* #ifndef _ENVIRONMENT_H */
