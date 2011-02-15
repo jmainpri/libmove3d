@@ -1,34 +1,36 @@
 varying vec3 normal, lightDir, eyeVec;
+varying vec4 color;
 
 void main (void)
 {
-	vec4 final_color = 	(gl_FrontLightModelProduct.sceneColor * gl_FrontMaterial.ambient) + (gl_LightSource[0].ambient * gl_FrontMaterial.ambient);
-							
-	vec3 N = normalize(normal);
-	vec3 L = normalize(lightDir);
-	
-	float lambertTerm = dot(N,L);
+  vec4 final_color =   (gl_FrontLightModelProduct.sceneColor * gl_FrontMaterial.ambient) + (gl_LightSource[0].ambient * gl_FrontMaterial.ambient);
 
-	
-	if(lambertTerm > 0.0)
-	{
-		final_color += gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse * lambertTerm;	
+  vec3 N = normalize(normal);
+  vec3 L = normalize(lightDir);
 
-		vec3 E = normalize(eyeVec);
-		vec3 R = reflect(-L, N);
-		float specular = pow( max(dot(R, E), 0.0),  gl_FrontMaterial.shininess );
-		final_color += gl_LightSource[0].specular *  gl_FrontMaterial.specular * specular;	
-	}
+  float lambertTerm = dot(N,L);
+
+
+  if(lambertTerm > 0.0)
+  {
+    final_color += gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse * lambertTerm;  
+
+    vec3 E = normalize(eyeVec);
+    vec3 R = reflect(-L, N);
+    float specular = pow( max(dot(R, E), 0.0),  gl_FrontMaterial.shininess );
+    final_color += gl_LightSource[0].specular *  gl_FrontMaterial.specular * specular;  
+  }
   else // for back faces -> comment to cull those faces
-	{
-		final_color += gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse * -lambertTerm;	
+  {
+    final_color += gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse * -lambertTerm;  
 
-		vec3 E = normalize(eyeVec);
-		vec3 R = reflect(-L, -N);
-		float specular = pow( max(dot(R, E), 0.0),  gl_FrontMaterial.shininess );
-		final_color += gl_LightSource[0].specular *  gl_FrontMaterial.specular * specular;
-	}
+    vec3 E = normalize(eyeVec);
+    vec3 R = reflect(-L, -N);
+    float specular = pow( max(dot(R, E), 0.0),  gl_FrontMaterial.shininess );
+    final_color += gl_LightSource[0].specular *  gl_FrontMaterial.specular * specular;
+  }
 
 
-	gl_FragColor = final_color;			
+  gl_FragColor = final_color;
+  gl_FragColor.a = color.a;
 }
