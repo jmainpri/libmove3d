@@ -584,6 +584,7 @@ configPt ManipulationPlanner::getOpenGraspConf(p3d_rob* object, int armId, gpGra
 }
 
 configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const {
+  
   if (graspConf) 
   {
     ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
@@ -600,31 +601,42 @@ configPt ManipulationPlanner::getApproachFreeConf(p3d_rob* object, int armId, gp
       p3d_mat4ExtractColumnZ(tAtt, tAttY);
     }
     
-    p3d_xformVect(objTmp, tAttY, tAttT);
-    objTmp[0][3] -= getApproachFreeOffset() * tAttT[0];
-    objTmp[1][3] -= getApproachFreeOffset() * tAttT[1];
-    objTmp[2][3] -= getApproachFreeOffset() * tAttT[2];
-    
-//    q[mData.getManipulationJnt()->index_dof + 0] -= getApproachFreeOffset() * tAttT[0];
-//    q[mData.getManipulationJnt()->index_dof + 1] -= getApproachFreeOffset() * tAttT[1];
-//    q[mData.getManipulationJnt()->index_dof + 2] -= getApproachFreeOffset() * tAttT[2];
-
     gpUnFix_hand_configuration(_robot, handProp, armId);
     gpSet_grasp_open_configuration(_robot, grasp, q, armId);
     gpFix_hand_configuration(_robot, handProp, armId);
     
-//    gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
-
-    configPt qApproachFree = setRobotCloseToConfGraspApproachOrExtract(_robot, q, objTmp, tAtt, false, armId, true);
-    if ( qApproachFree ){
-      optimizeRedundentJointConfigDist(_robot, mData.getCcCntrt()->argu_i[0], qApproachFree, object->joints[1]->abs_pos, tAtt, q, armId, getOptimizeRedundentSteps());
+    configPt qApproachFree = NULL;
+    
+    const unsigned int MaxDesc = 2 ;
+    for (unsigned int i=0; i<MaxDesc; i++) 
+    {
+      double alpha = 1 - (double)i/(double)MaxDesc;
+      
+      p3d_xformVect(objTmp, tAttY, tAttT);
+      objTmp[0][3] -= alpha * getApproachFreeOffset() * tAttT[0];
+      objTmp[1][3] -= alpha * getApproachFreeOffset() * tAttT[1];
+      objTmp[2][3] -= alpha * getApproachFreeOffset() * tAttT[2];
+      
+      //    q[mData.getManipulationJnt()->index_dof + 0] -= getApproachFreeOffset() * tAttT[0];
+      //    q[mData.getManipulationJnt()->index_dof + 1] -= getApproachFreeOffset() * tAttT[1];
+      //    q[mData.getManipulationJnt()->index_dof + 2] -= getApproachFreeOffset() * tAttT[2];
+      
+      //    gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
+      
+      qApproachFree = setRobotCloseToConfGraspApproachOrExtract(_robot, q, objTmp, tAtt, false, armId, true);
+      if ( qApproachFree ){
+        optimizeRedundentJointConfigDist(_robot, mData.getCcCntrt()->argu_i[0], qApproachFree, object->joints[1]->abs_pos, tAtt, q, armId, getOptimizeRedundentSteps());
+        break;
+      }
     }
-//    gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
+    
     p3d_destroy_config(_robot, q);
     q = NULL;
     
     deactivateCcCntrts(_robot, armId);
     return qApproachFree;
+//    gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
+    
   }
   return NULL;
 }

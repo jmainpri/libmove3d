@@ -56,6 +56,10 @@ private:
   //! Compute workspace of with partiular 
   //! manipulation planner parameters
   bool evaluateWorkspace();
+  
+  //! Compute the entire trajectories for a set of
+  //! given entries
+  bool computeTrajectories();
 	
 	p3d_rob* m_Robot;
 	

@@ -414,6 +414,89 @@ bool ManipulationTestFunctions::evaluateWorkspace()
   return true;
 }
 
+static int 
+drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp)
+{
+  g3d_draw_allwin_active();
+  return true;
+}
+
+bool ManipulationTestFunctions::computeTrajectories()
+{
+  m_nbOrientations = 4;
+  bool const rotate_only_around_z = true;
+  
+  p3d_rob* object= (p3d_rob*) p3d_get_robot_by_name((char*) m_OBJECT_NAME.c_str());
+  p3d_rob* plate= (p3d_rob*) p3d_get_robot_by_name((char*) "IKEA_SHELF");
+  if(object==NULL || plate == NULL)
+  { 
+    printf("%s: %d: there is no robot named \"%s\".\n",__FILE__,__LINE__,m_OBJECT_NAME.c_str());
+    return false;
+  }
+  
+  p3d_rob* shelf= (p3d_rob*) p3d_get_robot_by_name((char*) "SHELF");
+  p3d_set_freeflyer_pose2(shelf, 0, 0, 0, 0, 0, 0);
+  
+  initManipulationGenom() ;
+  
+  vector< pair< vector<double> , vector<double> > > objectAndPlate;
+  objectAndPlate.clear();
+  
+  vector<double> posOject(3);
+  vector<double> posPlate(3);
+  
+  posPlate[0] = 4.35; posPlate[1] = -2.80; posPlate[2] = 0.00; 
+  posOject[0] = 4.35; posOject[1] = -2.80; posOject[2] = 0.80;
+  
+  objectAndPlate.push_back( make_pair(posOject,posPlate) );
+  
+  posPlate[0] = 4.50; posPlate[1] = -2.80; posPlate[2] = 0.00; 
+  posOject[0] = 4.50; posOject[1] = -2.80; posOject[2] = 0.80;
+  
+  objectAndPlate.push_back( make_pair(posOject,posPlate) );
+  
+  posPlate[0] = 4.35; posPlate[1] = -2.00; posPlate[2] = 0.00; 
+  posOject[0] = 4.35; posOject[1] = -2.00; posOject[2] = 0.80;
+  
+  objectAndPlate.push_back( make_pair(posOject,posPlate) );
+  
+  posPlate[0] = 4.50; posPlate[1] = -2.00; posPlate[2] = 0.00; 
+  posOject[0] = 4.50; posOject[1] = -2.00; posOject[2] = 0.80;
+  
+  objectAndPlate.push_back( make_pair(posOject,posPlate) );
+
+  
+  for (unsigned int i=0; i<objectAndPlate.size(); i++)
+  {
+    vector<double> pos;
+    pos = objectAndPlate[i].first;
+    
+    double x = pos[0];
+    double y = pos[1];
+    double z = pos[2];
+    
+    pos = objectAndPlate[i].second;
+    
+    for (unsigned int j=0; j<m_nbOrientations; j++) 
+    {
+      if(rotate_only_around_z)
+      {  p3d_set_freeflyer_pose2(object, x, y, z, 0, 0, p3d_random(-M_PI,M_PI));  }
+      else
+      {  p3d_set_freeflyer_pose2(object, x, y, z, p3d_random(-M_PI,M_PI), p3d_random(-M_PI,M_PI), p3d_random(-M_PI,M_PI));  } 
+    
+      
+      p3d_set_freeflyer_pose2(plate,  pos[0], pos[1], pos[2], 0, 0, 0);
+      p3d_set_and_update_this_robot_conf(m_Robot,m_qInit);
+      
+      g3d_draw_allwin_active();
+      
+      if( manipTest(ARM_PICK_GOTO) )
+      {
+        g3d_show_tcur_rob(m_Robot,drawtraj_fct); 
+      }
+    }
+  }
+}
 
 //! Main function that 
 //!
@@ -453,6 +536,11 @@ bool ManipulationTestFunctions::runTest(int id)
   {
 //     global_manipPlanTest = this;
     return this->evaluateWorkspace();
+  }
+  if (id == 9) 
+  {
+    //     global_manipPlanTest = this;
+    return this->computeTrajectories();
   }
   else {
     cout << "Test : " << id << " not defined " << endl;
