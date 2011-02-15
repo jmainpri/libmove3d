@@ -170,6 +170,7 @@ class gpConvexHull
 class gpConvexHull3D: public gpConvexHull
 {
   public:
+   gpConvexHull3D();
    gpConvexHull3D(p3d_vector3 *point_array, unsigned int nbpoints);
    int setPoints(p3d_vector3 *point_array, unsigned int nbpoints);
    int voronoi(bool verbose= true);

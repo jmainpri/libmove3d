@@ -14,14 +14,14 @@
 #include "../graspPlanning/include/graspPlanning.h"
 #include "../graspPlanning/include/gpConvexHull.h"
 
-//! see qhull_interface.cpp for more information
-extern "C"
-{
-  #include "qhull/qhull_a.h"
-}
+////! see qhull_interface.cpp for more information
+// extern "C"
+// {
+//   #include "qhull/qhull_a.h"
+// }
+#include "../graspPlanning/qhull/qhull_a.h"
 
 #include "../include/p3d_matrix.h"
-
 
 //! Default gpRidge constructor (dimension= 2, size= 2)
 gpRidge::gpRidge()
@@ -507,9 +507,9 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
   unsigned int i, j, cntV= 0, cntF= 0, cntR= 0;
   double offset= 0, minoffset_=-1.0;
   unsigned int numpoints;   // number of points
-  coordT *point_array;      // array of coordinates for each point
+  coordT *point_array= NULL;      // array of coordinates for each point
   boolT ismalloc;           // True if qhull should free points in qh_freeqhull() or reallocation
-  char flags[128]; // option flags for qhull, see qh_opt.htm
+  char flags[64]; // option flags for qhull, see qh_opt.htm
                                // OPTION 'Qt' is mandatory because we need the output facets to be simplicial
   FILE *outfile= stdout;    // output from qh_produce_output()			
 	                    // use NULL to skip qh_produce_output() 
@@ -517,10 +517,10 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
   FILE *errfile= stderr;    // error messages from qhull code
 
   int exitcode;             // 0 if no error from qhull
-  pointT *centrum;
-  vertexT *vertex, **vertexp; //vertex is used by the macro FORALLvertices, vertexp is used by the macro FOREACHvertex
-  facetT *facet;  // used by the macro FORALLfacets
-  ridgeT *ridge, **ridgep; // used by the macro FOREACHridge_
+  pointT *centrum= NULL;
+  vertexT *vertex= NULL, **vertexp= NULL; //vertex is used by the macro FORALLvertices, vertexp is used by the macro FOREACHvertex
+  facetT *facet= NULL;  // used by the macro FORALLfacets
+  ridgeT *ridge= NULL, **ridgep= NULL; // used by the macro FOREACHridge_
   int curlong, totlong;	  // memory remaining after qh_memfreeshort
 
   
@@ -531,23 +531,24 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
   // -C: facet post-merging
   if(simplicial_facets)
   {   
-    if(postMergingCentrumRadius > 0)
+    if(postMergingCentrumRadius > 0.0)
     {  sprintf(flags, "qhull s -Q11 -Qt -C%f", postMergingCentrumRadius);  }
     else
     {  sprintf(flags, "qhull s -Q11 -Qt");  }
   }
   else
   {    
-    if(postMergingCentrumRadius > 0)
-    {  sprintf(flags, "qhull s -C%f", postMergingCentrumRadius);  }
+    if(postMergingCentrumRadius > 0.0)
+    {  sprintf(flags, "qhull s Tc -C%f", postMergingCentrumRadius);  }
     else
     {  sprintf(flags, "qhull s");  }
   }
 
   if(verbose)
   {
+     printf("QHULL OPTIONS= %s\n", flags);
      outfile= stdout;
-     errfile= stderr;
+     errfile= stdout;
   }
   else
   {
@@ -558,41 +559,55 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
   // initialize numpoints, point_array[], ismalloc here
   numpoints= points_.size();
   point_array= (coordT *) malloc(dimension_*numpoints*sizeof(coordT)); //use malloc to allocate memory because Qhull uses free()
-  for(i=0; i<numpoints; i++)
+
+  if(point_array==NULL)
+  {
+    printf("%s: %d: gpConvexHull::compute(): failed to allocate %d coords.\n",__FILE__,__LINE__,dimension_*numpoints);
+    return GP_ERROR;
+  }
+
+  for(i=0; i<numpoints; ++i)
   {
     if(points_[i].size()!=dimension_)
     {
-      printf("%s: %d: gpConvexHull::compute(): an input point has an incorrect dimension (dimension is must be >= 2%d instead of %d).\n",__FILE__,__LINE__,points_[i].size(),dimension_); 
+      printf("%s: %d: ConvexHull::compute(): an input point has an incorrect dimension (dimension is %d instead of %d).\n",__FILE__,__LINE__,points_[i].size(),dimension_); 
       if(!verbose) {  fclose(errfile);  }
       return GP_ERROR;
     }
-    for(j=0; j<dimension_; j++)
+    for(j=0; j<dimension_; ++j)
     {
       point_array[dimension_*i+j]= points_[i][j]; 
-    //  point_array[3*i+j]= points_[i][j]; // MAJOR BUG! -> also check previous line
     }
   }
   ismalloc= True;
+
+  qh_freeqhull(!qh_ALL);
+  qh_memfreeshort(&curlong, &totlong);
 
   exitcode= qh_new_qhull(dimension_, numpoints, point_array, ismalloc, flags, outfile, errfile);
 
   contains_origin= true;
   minoffset_= -1.0;
+
   if(!exitcode)  // if no error 
   {
      // get the hull vertices:
-     hull_vertices.resize(qh num_vertices); // qh defined in qhull.h
+     hull_vertices.resize(qh_qh.num_vertices);
      cntV= 0;
-     FORALLvertices
+
+     // strangely, the following (getting hull vertices and facets) is not working anymore
+     // with the old version of (qhull-2003.1-14, with .so library) but works
+     // with qhull-2010.1. Since the embedding of qhull-2010.1 code in BioMove3D, it is OK.
+     for(vertex=qh_qh.newvertex_list;vertex && vertex->next;vertex= vertex->next)
      {
        hull_vertices[cntV]= qh_pointid(vertex->point);
        cntV++;
      }
 
      // now, get the hull faces:
-     hull_faces.resize(qh num_facets);// qh defined in qhull.h
+     hull_faces.resize(qh_qh.num_facets);
      cntF= 0;
-     FORALLfacets
+     for(facet=qh_qh.facet_list;facet && facet->next;facet=facet->next)
      {
         hull_faces[cntF].setDimension(dimension_);
         hull_faces[cntF].resize(qh_setsize(facet->vertices));
@@ -674,7 +689,7 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
   {  largest_ball_radius_= minoffset_;  }
 
   qh_freeqhull(!qh_ALL);  
-  qh_memfreeshort (&curlong, &totlong);
+  qh_memfreeshort(&curlong, &totlong);
   if (curlong || totlong)
   {
      fprintf(errfile, "qhull internal warning (main): did not free %d bytes of long memory (%d pieces)\n",  totlong, curlong); 
@@ -1126,11 +1141,15 @@ int gpConvexHull::isPointInside(std::vector<double> point, bool &inside, double 
   return GP_OK;
 }
 
+gpConvexHull3D::gpConvexHull3D(): gpConvexHull()
+{
+  dimension_= 3;
+}
+
 //! Initializes the input point set from the given p3d_vector3 array (with the same order so that, after hull computation,
 //! indices in hull_vertices and hull_faces correspond to the indices in point_array).
 gpConvexHull3D::gpConvexHull3D(p3d_vector3 *point_array, unsigned int nb_points)
 {
-//   unsigned int i;
   int result;
 
   dimension_= 3;
