@@ -101,6 +101,14 @@ bool p3d_test_middle_of_CVS( p3d_traj * trajPt,
   return res;
 }
 
+
+//! get las linear traj
+p3d_traj* m_lastLinTraj=NULL;
+p3d_traj* p3d_get_last_linear_traj()
+{
+  return m_lastLinTraj;
+}
+
 void
 draw_trajectory_ptp () {
   int i;
@@ -481,7 +489,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
   trajSmPt->range_param = p3d_compute_traj_rangeparam (trajSmPt);
 
   trajSmPt->rob->tcur = trajSmPt;
-  g3d_add_traj ( (char *) "traj_SoftMotion", trajSmPt->num);
+  g3d_add_traj ( (char *) "traj_SoftMotion", trajSmPt->num , trajSmPt->rob , trajSmPt );
 
   return FALSE;
 }
@@ -586,7 +594,7 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
   trajSmPTPPt->nlp = p3d_compute_traj_nloc (trajSmPTPPt);
   trajSmPTPPt->range_param = p3d_compute_traj_rangeparam (trajSmPTPPt);
   trajSmPTPPt->rob->tcur = trajSmPTPPt;
-  g3d_add_traj ( (char *) "traj_SoftMotion_PTP", trajSmPTPPt->num);
+  g3d_add_traj ( (char *) "traj_SoftMotion_PTP", trajSmPTPPt->num , trajSmPTPPt->rob , trajSmPTPPt );
   printf ("BioMove3D: softMotion point-to-point trajectory OK\n");
   printf("ltot = %f\n",ltot);
   //  printf("nlp = ");
@@ -620,6 +628,7 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
   // smTraj.print();
 //  print_MiddleOfCVS();
   p3d_test_middle_of_CVS( trajPt , trajSmPt );
+  m_lastLinTraj = trajPt;
 
 
       if (fct_draw){(*fct_draw)();}

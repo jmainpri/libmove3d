@@ -292,7 +292,7 @@ void g3d_add_config_to_ui(char* name,p3d_rob* rob,double* q)
 }
 
 /* ajoute une trajectoire aux trajectoires du robot disponibles */
-void g3d_add_traj(char *name,int i){
+void g3d_add_traj(char *name, int i, p3d_rob* rob, p3d_traj* traj){
  char str[100];
  int ir = p3d_get_desc_curnum(P3D_ROBOT); 
  p3d_traj *trajPt = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);

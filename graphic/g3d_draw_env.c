@@ -1389,10 +1389,11 @@ void g3d_draw_env_custom()
     if (hri_draw_distance) {
       glLineWidth(3.);
       
-      for (unsigned int i = 0; i < hri_disp_dist.size() / 6; i++) {
-	g3d_drawOneLine(hri_disp_dist[0 + 6 * i], hri_disp_dist[1 + 6 * i],
-			hri_disp_dist[2 + 6 * i], hri_disp_dist[3 + 6 * i],
-			hri_disp_dist[4 + 6 * i], hri_disp_dist[5 + 6 * i], Blue, NULL);
+      for (unsigned int i = 0; i < hri_disp_dist.size() / 6; i++) 
+      {
+        g3d_drawOneLine(hri_disp_dist[0 + 6 * i], hri_disp_dist[1 + 6 * i],
+                        hri_disp_dist[2 + 6 * i], hri_disp_dist[3 + 6 * i],
+                        hri_disp_dist[4 + 6 * i], hri_disp_dist[5 + 6 * i], Blue, NULL);
       }
       glLineWidth(1.);
     }
@@ -1444,14 +1445,21 @@ void g3d_draw_env()
   /* Debut Modification Thibaut */
   if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win);
   /* Fin Modification Thibaut */
-if(ext_g3d_export_cpp_graph!=NULL){
-	ext_g3d_export_cpp_graph();
-}
+
 #ifdef P3D_PLANNER
 	//std::cout << "XYZ_GRAPH : " << XYZ_GRAPH << std::endl;
-  if(XYZ_GRAPH && ENV.getBool(Env::drawGraph))
-	{
-	  g3d_draw_graph();
+  
+  if(ENV.getBool(Env::drawGraph)) 
+  {
+    if(ext_g3d_export_cpp_graph!=NULL)
+    {
+      ext_g3d_export_cpp_graph();
+    }
+  
+    if(XYZ_GRAPH )
+    {
+      g3d_draw_graph();
+    }
   }
 #endif
 	

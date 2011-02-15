@@ -19,7 +19,7 @@
 
 using namespace std;
 
-void (*draw_opengl)();
+extern void (*draw_opengl)();
 
 extern void* GroundCostObj;
 

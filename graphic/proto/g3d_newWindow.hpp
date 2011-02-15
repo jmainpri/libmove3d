@@ -33,13 +33,11 @@ void qt_reset_mob_frame(G3D_Window* win);
 
 G3D_Window * qt_get_cur_g3d_win();
 
-// Function pointer 
-// to external functionalities
-extern void (*ext_g3d_export_cpp_graph)();
-extern void (*ext_g3d_draw_allwin_active)();
+// Function pointers 
+// to external drawing functionalities
 extern void (*ext_g3d_calc_cam_param)(g3d_cam_param& p);
 extern void (*ext_g3d_get_win_mouse)(int* x, int* y);
-extern void (*ext_g3d_add_traj_to_ui)(char* name,int i);
+extern void (*ext_g3d_add_traj_to_ui)(char* name,int i, p3d_rob* rob , p3d_traj* traj);
 extern void (*ext_g3d_add_config_to_ui)(char* name,p3d_rob* rob,double* q);
 
 #endif // QTG3DWINDOW_HPP

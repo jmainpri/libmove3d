@@ -22,7 +22,7 @@ extern void* GroundCostObj;
 
 // Function to fraw the 
 // openGL scene
-void (*draw_opengl)();
+extern void (*draw_opengl)();
 
 // Is window initialized
 bool m_init = true;

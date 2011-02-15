@@ -37,10 +37,14 @@ XformError("Error: Xform is not compiled, check your flags or make changes to th
 // --------------------------------------------------------------------
 // Function pointers to external graphics
 
+// Function pointer to draw 
+// The open_gl display from other libraries
+void (*draw_opengl)();
+
 void (*ext_g3d_draw_allwin_active)();
 void (*ext_g3d_calc_cam_param)(g3d_cam_param& p);
 void (*ext_g3d_get_win_mouse)(int* x, int* y);
-void (*ext_g3d_add_traj_to_ui)(char* name,int i);
+void (*ext_g3d_add_traj_to_ui)(char* name,int i, p3d_rob* rob , p3d_traj* traj );
 void (*ext_g3d_add_config_to_ui)(char* name,p3d_rob* rob,double* q);
 
 // --------------------------------------------------------------------
@@ -102,7 +106,7 @@ void dummy_g3d_draw_all_win_active()
 	
 }
 
-void dummy_add_traj_to_ui(char* name,int i)
+void dummy_add_traj_to_ui(char* name,int i, p3d_rob* rob , p3d_traj* traj )
 {
   
 }
@@ -188,10 +192,10 @@ void g3d_draw_win_back_buffer(G3D_Window *win)
 }
 #endif
 
-void g3d_add_traj ( char *name, int i )
+void g3d_add_traj ( char *name, int i , p3d_rob* rob , p3d_traj* traj  )
 {
 	cout << "g3d_add_traj ( char *name, int i )" << endl;
-	ext_g3d_add_traj_to_ui(name,i);
+	ext_g3d_add_traj_to_ui(name,i,rob,traj);
 }
 
 void g3d_add_config_to_ui(char* name,p3d_rob* rob,double* q)

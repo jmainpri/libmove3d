@@ -27,7 +27,7 @@ extern int g3d_get_KCD_CHOICE_IS_ACTIVE();
 extern int p3d_get_user_drawnjnt(void);
 extern void p3d_set_user_drawnjnt(int jnt);
 extern p3d_traj *p3d_graph_to_traj ( p3d_rob *robotPt );
-extern void g3d_add_traj ( char *name, int i );
+extern void g3d_add_traj ( char *name, int i , p3d_rob* rob = NULL , p3d_traj* traj = NULL );
 extern void g3d_add_config_to_ui( char *name, p3d_rob *robotPt , configPt q );
 #endif
 

@@ -921,7 +921,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::concatTrajectories (std::vector<p
     }
 
     _robot->tcur = (*concatTraj);
-    g3d_add_traj((char*)"Task", (*concatTraj)->num);
+    g3d_add_traj((char*)"Task", (*concatTraj)->num, _robot, (*concatTraj) );
 
     return MANIPULATION_TASK_OK;
 }
