@@ -7,6 +7,7 @@ gp_inertia_axes.c
 gp_volInt.c
 gpConvexHull.cpp 
 gp_geometry.cpp 
+gpContact.cpp
 gpGrasp.cpp 
 gp_grasp_generation.cpp 
 gp_grasping_utils.cpp 
@@ -14,6 +15,22 @@ gp_grasp_io.cpp
 gpKdTree.cpp 
 gpPlacement.cpp 
 gpWorkspace.cpp
+qhull/rboxlib.c
+qhull/user.c
+qhull/global.c
+qhull/stat.c
+qhull/io.c
+qhull/geom2.c
+qhull/poly2.c
+qhull/merge.c
+qhull/libqhull.c
+qhull/geom.c
+qhull/poly.c
+qhull/qset.c
+qhull/mem.c
+qhull/usermem.c
+qhull/userprintf.c
+qhull/random.c
 )
 
 IF(WITH_XFORMS)
