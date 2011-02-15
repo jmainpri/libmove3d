@@ -228,7 +228,7 @@ void p3d_mat3Mult(p3d_matrix3 a, p3d_matrix3 b, p3d_matrix3 c)
  output      :
  notes       :
 \*****************************************************************************/
-void p3d_mat4Copy(p3d_matrix4 source, p3d_matrix4 dest)
+void p3d_mat4Copy(const p3d_matrix4 source, p3d_matrix4 dest)
 {
   int i, j;
 

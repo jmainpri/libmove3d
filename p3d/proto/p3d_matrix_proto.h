@@ -13,7 +13,7 @@ extern void p3d_mat4Mult ( p3d_matrix4 a, p3d_matrix4 b, p3d_matrix4 c );
 extern void p3d_matvec4Mult ( p3d_matrix4 a, p3d_vector4 v, p3d_vector4 c );
 extern void p3d_vec3Mat4Mult ( double a[3], p3d_matrix4 b, p3d_matrix_type c[3] );
 extern void p3d_mat3Mult ( p3d_matrix3 a, p3d_matrix3 b, p3d_matrix3 c );
-extern void p3d_mat4Copy ( p3d_matrix4 source, p3d_matrix4 dest );
+extern void p3d_mat4Copy (const p3d_matrix4 source, p3d_matrix4 dest );
 extern void p3d_mat3Copy ( p3d_matrix3 source, p3d_matrix3 dest );
 extern void p3d_mat4Transpose ( p3d_matrix4 source, p3d_matrix4 dest );
 extern void p3d_mat3Transpose ( p3d_matrix3 source, p3d_matrix3 dest );
