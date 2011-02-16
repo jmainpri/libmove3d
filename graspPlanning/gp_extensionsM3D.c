@@ -85,7 +85,7 @@ int p3d_get_obj_pos(p3d_obj *o, p3d_matrix4 pose)
 /*
 void draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 {
-	double color_tab[15][3]= {  {1,0,0}, {0,1,0}, {0,0,1}, {1,1,0}, {1,0,1}, {0,1,1} , {1,0.5,0.5}, {0.5,1,0.5}, {0.5,0.5,1}, {1,0.25,0.5}, {1,0.5,0.25}, {0.25,1.0,0.5}, {0.5,1,0.25}, {0.25,0.5,1}, {0.5,0.25,1}  };
+  double color_tab[15][3]= {  {1,0,0}, {0,1,0}, {0,0,1}, {1,1,0}, {1,0,1}, {0,1,1} , {1,0.5,0.5}, {0.5,1,0.5}, {0.5,0.5,1}, {1,0.25,0.5}, {1,0.5,0.25}, {0.25,1.0,0.5}, {0.5,1,0.25}, {0.25,0.5,1}, {0.5,0.25,1}  };
 
 
   int i, j;
@@ -105,7 +105,7 @@ void draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
    for(i= 0; i<polyhedron->nb_faces; i++)
    {
-		 g3d_set_color_mat(Any, color_tab[i%15]);
+     g3d_set_color_mat(Any, color_tab[i%15]);
      glBegin(GL_POLYGON);
        for(j=0; j<polyhedron->the_faces[i].nb_points; j++)
        {
@@ -1380,6 +1380,10 @@ void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, GLfloat mat[16])
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpExport_bodies_for_coldman(p3d_rob *robot)
 {
+  if(robot==NULL)  {
+    printf("%s: %d: gpExport_bodies_for_coldman(): the input robot is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
   size_t pos;
   unsigned int k, countM;
   int i, j, shift;
@@ -1395,10 +1399,10 @@ int gpExport_bodies_for_coldman(p3d_rob *robot)
   path= getenv("HOME_MOVE3D");
   
   if(path==NULL)  {
-	pathName.assign("./graspPlanning/export/");
+    pathName.assign("./graspPlanning/export/");
   }
   else  { 
-    pathName.assign(path);	
+    pathName.assign(path);  
     pathName+= "/graspPlanning/export/";
   }
   
