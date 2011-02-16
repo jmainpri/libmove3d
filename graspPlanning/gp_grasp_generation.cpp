@@ -3212,11 +3212,20 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
 
   gpCompute_grasps_best_placement(graspList,  hand_robot, object, handProp);
 
+  //place the hand far away:
+  configPt qfar= p3d_alloc_config(hand_robot);
+  p3d_get_robot_config_into(hand_robot, &qfar);
+  qfar[hand_robot->joints[1]->index_dof] = hand_robot->joints[1]->dof_data[0].vmax;
+  qfar[hand_robot->joints[1]->index_dof + 1] = hand_robot->joints[1]->dof_data[1].vmax;
+  qfar[hand_robot->joints[1]->index_dof + 2] = hand_robot->joints[1]->dof_data[2].vmax;
+  p3d_set_and_update_this_robot_conf(hand_robot, qfar);
+  p3d_destroy_config(hand_robot, qfar);
+
+
   if(graspList.empty())
   {  return GP_ERROR;   }
 
-
-  gpDeactivate_object_fingertips_collisions(hand_robot, object->o[0], handProp, -1);
+  gpDeactivate_object_fingertips_collisions(hand_robot, object->o[0], handProp, 0);
 
   i=0;
   for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
