@@ -772,39 +772,39 @@ double optimizeRedundentJointConfigCost(p3d_rob* robot, int redJntId, configPt q
  */
 double optimizeRedundentJointConfigDist(p3d_rob* robot, int redJntId, configPt q, p3d_matrix4 objectPos, p3d_matrix4 tAtt, configPt refConf, int armId, int nbTests){
   if(q){
-    double refDist = p3d_dist_config_2(robot, q, refConf);
-    double dist = P3D_HUGE, vmin = -P3D_HUGE, vmax = P3D_HUGE;
+    double dist = P3D_HUGE, refDist = P3D_HUGE, vmin = -P3D_HUGE, vmax = P3D_HUGE;
     p3d_jnt* redJnt = robot->joints[redJntId];
     p3d_jnt_get_dof_bounds(redJnt, 0, &vmin, &vmax);
     int qId = redJnt->index_dof; //The index of the redundent joint in the configPt
     double refValue = q[qId], value = P3D_HUGE;
     p3d_matrix4 bak;
     activateCcCntrts(robot, armId, false);
+    ManipulationUtils::printConstraintInfo(robot);
     p3d_mat4Copy((*robot->armManipulationData)[armId].getCcCntrt()->Tatt, bak);
-    p3d_mat4Copy(tAtt, (*robot->armManipulationData)[armId].getCcCntrt()->Tatt);
+    p3d_mat4Copy(tAtt, (*robot->armManipulationData)[armId].getCcCntrt()->Tatt);   
     q[qId] = refConf[qId];
-    if(p3d_is_collision_free(robot, q)){
-      dist = p3d_dist_config_2(robot, q, refConf);
-    }else{
+    if(!p3d_is_collision_free(robot, q) || !p3d_connectable_confs(robot, refConf, q, &dist)){
+      refDist = dist;
       for(int i = 0; i < nbTests; i++){
         q[qId] = p3d_random(vmin, vmax);
-        if(p3d_is_collision_free(robot, q)){
-          double tmpDist = p3d_dist_config_2(robot, q, refConf);
+        double tmpDist = P3D_HUGE;
+        if(p3d_is_collision_free(robot, q) && p3d_connectable_confs(robot, refConf, q, &tmpDist)){
           if(tmpDist < dist){
-  //           printf("Dist = %f\n", dist);
             dist = tmpDist;
+            printf("Dist = %f\n", dist);
+            g3d_draw_allwin_active();
             value = q[qId];
           }
         }
       }
-      if(refDist < dist){
+      if(refDist <= dist){
         q[qId] = refValue;
         dist = refDist;
       }else{
         q[qId] = value;
       }
     }
-//     printf("Selected Dist = %f\n", dist);
+    printf("Selected Dist = %f\n", dist);
     p3d_set_and_update_this_robot_conf(robot, q);
     p3d_get_robot_config_into(robot, &q);
     deactivateCcCntrts(robot, armId);
