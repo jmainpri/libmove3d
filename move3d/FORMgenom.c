@@ -63,6 +63,7 @@ static FL_OBJECT * BT_SET_X_OBJ = NULL;
 
 
 static FL_OBJECT * BT_ARM_GOTO_Q_OBJ = NULL;
+static FL_OBJECT * BT_ARM_EXTRACT_OBJ = NULL;
 static FL_OBJECT * BT_ARM_GOTO_X_OBJ = NULL;
 static FL_OBJECT * BT_SIMPLE_GRASP_PLANNER_OBJ = NULL;
 static FL_OBJECT * BT_FIND_GRASP_CONFIG_AND_COMP_TRAJ_OBJ = NULL;
@@ -91,6 +92,7 @@ static void genomKey();
 static void CB_genomSetQ_obj(FL_OBJECT *obj, long arg);
 static void CB_genomSetX_obj(FL_OBJECT *obj, long arg);
 static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg);
+static void CB_genomArmExtract_obj(FL_OBJECT *obj, long arg);
 static void CB_genomArmGotoX_obj(FL_OBJECT *obj, long arg);
 static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg);
 
@@ -145,7 +147,7 @@ static void g3d_create_genom_group(void) {
 	int x, y, dy, w, h;
 	FL_OBJECT *obj;
 
-	obj = fl_add_labelframe(FL_ENGRAVED_FRAME, 5, 15, 140, 810, "Genom Requests");
+	obj = fl_add_labelframe(FL_ENGRAVED_FRAME, 5, 15, 140, 850, "Genom Requests");
 
 	GENOMGROUP = fl_bgn_group();
 
@@ -189,7 +191,11 @@ static void g3d_create_genom_group(void) {
 	BT_ARM_GOTO_Q_OBJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Arm Goto Q");
 //	BT_PLOT_Q_WRITE_FILE_OBJ= fl_add_button(FL_RADIO_BUTTON, x, y + 1*dy, w, h, "Write file and plot qi");
 	fl_set_call_back(BT_ARM_GOTO_Q_OBJ, CB_genomArmGotoQ_obj, 1);
-
+  
+        y+= dy;
+  BT_ARM_EXTRACT_OBJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Arm Extract");
+  fl_set_call_back(BT_ARM_EXTRACT_OBJ, CB_genomArmExtract_obj, 1);
+  
         y+= dy;
   BT_ARM_GOTO_X_OBJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Arm Goto X");
 //  BT_PLOT_Q_WRITE_FILE_OBJ= fl_add_button(FL_RADIO_BUTTON, x, y + 1*dy, w, h, "Write file and plot qi");
@@ -474,6 +480,30 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
         return;
 }
 
+static void CB_genomArmExtract_obj(FL_OBJECT *obj, long arg) {
+
+//  int nbPositions = 0;
+
+  if (manipulation== NULL) {
+    initManipulationGenom();
+  }
+
+  if(FORMGENOM_CARTESIAN == 1) {
+    for(int i=0; i<manipulation->robot()->armManipulationData->size(); i++) {
+      manipulation->setArmCartesian(i,true);
+    }
+  } else {
+    for(int i=0; i<manipulation->robot()->armManipulationData->size(); i++) {
+      manipulation->setArmCartesian(i,false);
+    }
+  }
+
+  std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
+  std::vector <SM_TRAJ> smTrajs;
+  std::vector <double>  objStart, objGoto;
+  manipulation->armPlanTask(ARM_EXTRACT,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", confs, smTrajs);
+        return;
+}
 
 
 

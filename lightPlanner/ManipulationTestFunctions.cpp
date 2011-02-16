@@ -333,11 +333,13 @@ void ManipulationTestFunctions::drawEvalutedWorkspace()
     double successRate = m_workspacePoints[i].first;
     
     GroundColorMixGreenToRed(colorvector,1-successRate);
+    if(successRate == 0){
+      colorvector[3] = 1;
+    }
     
     x = m_workspacePoints[i].second[0];
     y = m_workspacePoints[i].second[1];
     z = m_workspacePoints[i].second[2];
-    
     //if(successRate == 0.0)
     {
       colorvector[3] = successRate+0.2;
@@ -377,14 +379,14 @@ bool ManipulationTestFunctions::evaluateWorkspace()
   
   m_nbOrientations = 5;
   
-  const double SizeInXPos = 1.4; // Taille du decallage selon X
-  const double SizeInYPos = 0.9; // Taille du decallage selon Y
-  const double SizeInZPos = 1.5; // Taille du decallage selon Z
-  const double SizeInXNeg = -0.9; // Taille du decallage selon X
-  const double SizeInYNeg = -1.4 ; // Taille du decallage selon Y
+  const double SizeInXPos = 0.8; // Taille du decallage selon X  0.6
+  const double SizeInYPos = 0.6; // Taille du decallage selon Y  1.5
+  const double SizeInZPos = 0.40; // Taille du decallage selon Z
+  const double SizeInXNeg = 0; // Taille du decallage selon X
+  const double SizeInYNeg = 0 ; // Taille du decallage selon Y
   const double SizeInZNeg = 0; // Taille du decallage selon Z
 
-  for (double dz=SizeInXNeg; dz<=SizeInXPos; dz=dz+0.1){
+  for (double dz=SizeInZNeg; dz<=SizeInZPos; dz=dz+0.1){
     for (double dx=SizeInXNeg; dx<=SizeInXPos; dx=dx+0.1)
     {
       for (double dy=SizeInYNeg; dy<=SizeInYPos; dy=dy+0.1)
@@ -396,7 +398,7 @@ bool ManipulationTestFunctions::evaluateWorkspace()
         z = zref + dz;
         
         p3d_set_freeflyer_pose2(object, x, y, z, rx, ry, rz);
-        p3d_set_freeflyer_pose2(plate, x, y, z, 0, 0, 0);
+//         p3d_set_freeflyer_pose2(plate, x, y, z, 0, 0, 0);
         manipTestGraspingWithDifferentObjectOrientations(true,successRate);
 
         pos[0] = x;
@@ -405,6 +407,7 @@ bool ManipulationTestFunctions::evaluateWorkspace()
 
         m_workspacePoints.push_back( make_pair( successRate , pos ) );
         saveToFileEvalutedWorkspace();
+        drawEvalutedWorkspace();
       }
     }
   }

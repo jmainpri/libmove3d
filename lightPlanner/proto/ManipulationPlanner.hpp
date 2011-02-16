@@ -96,8 +96,6 @@ class  ManipulationPlanner {
   //! one local path group
   double distConfig( configPt q1, configPt q2, int group ) const ;
   
-  //! Generates a free configuration from a worspace point and a grasp 
-  configPt getFreeHoldingConf( p3d_rob* obj, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, std::vector<double> &objGoto ) const;
   /** Generate the grasp configuration given the grasp the arm and the object.
   @return the attach matrix computed given the grasp and Tatt2 from the p3d file
   @return the configuration cost
@@ -109,6 +107,10 @@ class  ManipulationPlanner {
   configPt getApproachFreeConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const;
   /** Generate the grasp approach configuration given the grasp configuration, the grasp, the arm, the attach matrix and the object.*/
   configPt getApproachGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const;
+  /** Generates a free configuration from a worspace point and a grasp*/
+  configPt getFreeHoldingConf( p3d_rob* obj, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, std::vector<double> &objGoto, p3d_rob* support = NULL ) const;
+  /** Generate the extract configuration by moving the arm over Z axis until we have a collision free or passing 5 * offset */
+  configPt getExtractConf(int armId, configPt currentConf, p3d_matrix4 tAtt) const;
   
 	MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;
   
@@ -148,7 +150,8 @@ class  ManipulationPlanner {
 #endif
     /** Move the arm from a free configuration to a grasping configuration of the object placed on a support */
     MANIPULATION_TASK_MESSAGE armToFreePoint(int armId, configPt qStart, std::vector<double> &objGoto, std::vector <p3d_traj*> &trajs);
-    MANIPULATION_TASK_MESSAGE armToFree(int armId, configPt qStart, configPt qGoal, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armExtract(int armId, configPt qStart, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armToFree(int armId, configPt qStart, configPt qGoal, bool useSafetyDistance, std::vector <p3d_traj*> &trajs);
     
     /** Move the arm from a free configuration to a grasping configuration of the object placed on a support */
     MANIPULATION_TASK_MESSAGE armPickGoto(int armId, configPt qStart, p3d_rob* object, std::vector <p3d_traj*> &trajs);
