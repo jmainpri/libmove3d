@@ -88,7 +88,7 @@ int  p3d_get_search_verbose(){
 
 /**********************************************************************/
 
-p3d_localpath *p3d_local_planner(p3d_rob *robotPt, configPt q1, configPt q2)
+p3d_localpath * p3d_local_planner(p3d_rob *robotPt, configPt q1, configPt q2)
 {
   configPt q[2];
   q[0] = q1;
@@ -658,4 +658,27 @@ p3d_localpath *append_to_localpath(p3d_localpath *localpath1Pt,
   localpath2Pt->prev_lp = localpath1Pt;
 
   return localpath2Pt;
+}
+
+/**
+ * @brief Test if two configuration are connectable with a local path creation and validation
+ * @param robot : the considered robot
+ * @param qStart : the start configuration
+ * @param qGoal : the goal configuration
+ * @param ntest : the number of tests durring the validation of the localpath
+ * @param dist : the length of the localpath (For linear lp the lenght is the distance between the two configs)
+ * 
+ * @return true if the configurations are connectable
+ */
+int p3d_connectable_confs(p3d_rob *robot, configPt qStart, configPt qGoal, double * length){
+  p3d_localpath * lp = p3d_local_planner(robot, qStart, qGoal);
+  if(lp){
+    int ntest = 0;
+    if(!p3d_unvalid_localpath_test(robot, lp, &ntest)){
+      *length = lp->length(robot, lp);
+      lp->destroy(robot, lp);
+      return TRUE;
+    }
+  }
+  return FALSE;
 }

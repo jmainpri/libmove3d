@@ -32,6 +32,6 @@ extern int p3d_unvalid_localpath_classic_test ( p3d_rob *robotPt, p3d_localpath 
 extern int p3d_unvalid_localpath_separated_classic_test ( p3d_rob *robotPt, p3d_localpath *localpathPt, int *ntest, double *Kpath );
 extern void p3d_set_localpath_ikSol(p3d_localpath *localpathPt, p3d_rob* robotPt, int* iksol1, int isSing1, int* iksol2, int isSing2);
 extern p3d_localpath *append_to_localpath(p3d_localpath *localpath1Pt, p3d_localpath *localpath2Pt);
-
+extern int p3d_connectable_confs(p3d_rob *robot, configPt qStart, configPt qGoal, double * length);
 
 #endif /* __CEXTRACT__ */
