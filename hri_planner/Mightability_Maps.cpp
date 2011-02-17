@@ -26,6 +26,7 @@
 #include "include/hri_bitmap_bin_heap.h"
 #include "include/HRI_tasks.h"
 #include "../graspPlanning/include/gpPlacement.h"
+#include "../graspPlanning/proto/gp_geometry_proto.h"
 
 #include <list>
 #include <string>
