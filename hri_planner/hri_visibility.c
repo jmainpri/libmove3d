@@ -98,7 +98,7 @@ int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera
 
   //everything is ready now.
 
-  g3d_is_object_visible_from_current_viewpoint(win, object, result, save, (char*)"/Users/easisbot/");
+  g3d_is_object_visible_from_current_viewpoint(win, object, result, save, (char*)"../screenshots/");
 
   //restore viewport
   if(!save){
@@ -201,7 +201,8 @@ int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, 
   // display the object in red
   p3d_set_robot_display_mode(object, P3D_ROB_UNLIT_RED_DISPLAY);
 
-  ext_g3d_draw_allwin_active_backbuffer(); //only the object should be drawn in red, everthing else is black
+//   ext_g3d_draw_allwin_active_backbuffer(); //only the object should be drawn in red, everthing else is black
+  g3d_draw_win_back_buffer(win); //only the object should be drawn in red, everthing else is black
 
   if(save) {
     sprintf(name, "%sidealview%i.ppm",path, crntcnt++);
@@ -247,7 +248,9 @@ int g3d_is_object_visible_from_current_viewpoint(g3d_win* win, p3d_rob *object, 
     // display the object in red
     p3d_set_robot_display_mode(object, P3D_ROB_UNLIT_RED_DISPLAY);
 
-    ext_g3d_draw_allwin_active_backbuffer();
+    //ext_g3d_draw_allwin_active_backbuffer();
+    g3d_draw_win_back_buffer(win);
+
 
     if(save){
       //save the image. All is blue, the object is red.
