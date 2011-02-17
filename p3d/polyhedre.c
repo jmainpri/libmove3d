@@ -1724,6 +1724,38 @@ int p3d_compute_face_areas_and_centroids(poly_polyhedre *poly)
 }
 
 
+//! Computes and fills the area and centroid fields of each face.
+//!  \return 0 in case of success, 1 otherwise
+int p3d_compute_area(poly_polyhedre *poly, double &area)
+{
+  if(poly==NULL)
+  {  
+    printf("%s: %d: p3d_compute_area(): input poly_polyhedre is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  if(p3d_compute_face_areas_and_centroids(poly)!=0)
+  {
+    printf("%s: %d: p3d_compute_area(): can not compute areas of faces.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  unsigned int i;
+  p3d_vector3 *points=  NULL;
+  p3d_face *faces= NULL;
+
+  points= poly->the_points;
+  faces= poly->the_faces;
+
+  area= 0.0;
+  for(i=0; i<poly->nb_faces; i++)
+  {
+    area+= faces[i].area;
+  }
+
+  return 0;
+}
+
 //! Computes the normal of each vertex of the polyhedron.
 //! The normal of a vertex is a weighted sum of the normals of the triangles it belongs to.
 //! The weights are the angles between the two edges the vertex belongs to. 

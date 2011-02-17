@@ -55,6 +55,7 @@ extern void poly_compute_poly_BB ( poly_polyhedre *p, double *xmin, double *xmax
 extern p3d_triangle* p3d_triangulate_polygon(p3d_vector2 *vertices, int nb_vertices, unsigned int *nb_triangles);
 extern p3d_triangle* p3d_triangulate_face(poly_index *the_indexs, unsigned int nb_points, poly_polyhedre *polyhedron, unsigned int *nb_triangles);
 extern int p3d_compute_face_areas_and_centroids(poly_polyhedre *poly);
+extern int p3d_compute_area(poly_polyhedre *poly, double &area);
 extern int p3d_compute_edges_and_face_neighbours(poly_polyhedre *polyhedron);
 extern int p3d_compute_vertex_normals(poly_polyhedre *poly);
 extern int p3d_export_as_OFF(poly_polyhedre *poly);
