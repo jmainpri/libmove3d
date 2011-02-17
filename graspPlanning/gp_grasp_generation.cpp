@@ -3194,16 +3194,18 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
       printf("%s: %d: gpGet_grasp_list(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str() );
       printf("It contains %d grasps.\n",graspList.size() );
     }
+    printf("Now, compute open configs.\n");
     for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
       igrasp->computeOpenConfig(hand_robot, object, true);
     }
+    printf("Done.\n");
   }
 
-  configPt q0=  p3d_alloc_config(hand_robot);
-  p3d_get_robot_config_into(hand_robot, &q0);
-  gpGrasp_context_collision_filter(graspList, hand_robot, object, handProp);
-  p3d_set_and_update_this_robot_conf(hand_robot, q0);
-  p3d_destroy_config(hand_robot, q0);
+//   configPt q0=  p3d_alloc_config(hand_robot);
+//   p3d_get_robot_config_into(hand_robot, &q0);
+//   gpGrasp_context_collision_filter(graspList, hand_robot, object, handProp);
+//   p3d_set_and_update_this_robot_conf(hand_robot, q0);
+//   p3d_destroy_config(hand_robot, q0);
 
 //   for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
 //     igrasp->computeQuality();
