@@ -316,7 +316,7 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env)
       persp->point_tolerance = 20;
     break;
     case HRI_HERAKLES:
-      persp->camjoint = agent->robotPt->joints[47];
+      persp->camjoint = agent->robotPt->joints[46];
       persp->fov = 160;
       persp->foa = 70; // TODO: By default This should be 30. Change for a particular manip while waiting a fix on vis placements
       persp->tilt_jnt_idx = 6;
