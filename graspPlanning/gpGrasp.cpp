@@ -1567,7 +1567,7 @@ int gpGrasp::computeOpenConfig(p3d_rob *robot, p3d_rob *object, bool environment
   config0= p3d_get_robot_config(robot);
   config= p3d_alloc_config(robot);
 
-  nbSteps= 10;
+  nbSteps= 5;
 
   handProp.initialize(this->hand_type);
 
