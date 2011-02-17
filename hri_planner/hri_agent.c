@@ -127,7 +127,7 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
     }
     else {
       if(strcasestr(robot->name,"HERAKLES")) {
-        hri_agent->type = HRI_ACHILE_KINECT;
+        hri_agent->type = HRI_HERAKLES;
         hri_agent->is_human = TRUE;
       }
       else {
@@ -315,7 +315,7 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env)
       persp->pointjoint = agent->robotPt->joints[36];
       persp->point_tolerance = 20;
     break;
-    case HRI_ACHILE_KINECT:
+    case HRI_HERAKLES:
       persp->camjoint = agent->robotPt->joints[47];
       persp->fov = 160;
       persp->foa = 70; // TODO: By default This should be 30. Change for a particular manip while waiting a fix on vis placements
@@ -894,6 +894,117 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[8].active_joint = 39; /* active joint */
       (*tasklist)[8].default_joints_no = 8;
 
+      return TRUE;
+      
+      
+    case HRI_HERAKLES:
+      manip->type = TWO_ARMED;
+      *tasklist_no = 9;
+      *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
+      
+      (*tasklist)[0].type = GIK_RATREACH;
+      (*tasklist)[0].default_joints[0] = 3;
+      (*tasklist)[0].default_joints[1] = 4;
+      (*tasklist)[0].default_joints[2] = 8;
+      (*tasklist)[0].default_joints[3] = 9;
+      (*tasklist)[0].default_joints[4] = 10;
+      (*tasklist)[0].default_joints[5] = 11;
+      (*tasklist)[0].default_joints[6] = 12;
+      (*tasklist)[0].default_joints[7] = 13;
+      (*tasklist)[0].default_joints[8] = 14;
+      (*tasklist)[0].active_joint = 36; /* active joint */
+      (*tasklist)[0].default_joints_no = 9;
+      
+      (*tasklist)[1].type = GIK_LATREACH;
+      (*tasklist)[1].default_joints[0] = 3;
+      (*tasklist)[1].default_joints[1] = 4;
+      (*tasklist)[1].default_joints[2] = 15;
+      (*tasklist)[1].default_joints[3] = 16;
+      (*tasklist)[1].default_joints[4] = 17;
+      (*tasklist)[1].default_joints[5] = 18;
+      (*tasklist)[1].default_joints[6] = 19;
+      (*tasklist)[1].default_joints[7] = 20;
+      (*tasklist)[1].default_joints[8] = 21;
+      (*tasklist)[1].active_joint = 37; /* active joint */
+      (*tasklist)[1].default_joints_no = 9;
+      
+      (*tasklist)[2].type = GIK_RAREACH;
+      (*tasklist)[2].default_joints[0] = 8;
+      (*tasklist)[2].default_joints[1] = 9;
+      (*tasklist)[2].default_joints[2] = 10;
+      (*tasklist)[2].default_joints[3] = 11;
+      (*tasklist)[2].default_joints[4] = 12;
+      (*tasklist)[2].default_joints[5] = 13;
+      (*tasklist)[2].default_joints[6] = 14;
+      (*tasklist)[2].active_joint = 36; /* active joint */
+      (*tasklist)[2].default_joints_no = 7;
+      
+      (*tasklist)[3].type = GIK_LAREACH;
+      (*tasklist)[3].default_joints[0] = 15;
+      (*tasklist)[3].default_joints[1] = 16;
+      (*tasklist)[3].default_joints[2] = 17;
+      (*tasklist)[3].default_joints[3] = 18;
+      (*tasklist)[3].default_joints[4] = 19;
+      (*tasklist)[3].default_joints[5] = 20;
+      (*tasklist)[3].default_joints[6] = 21;
+      (*tasklist)[3].active_joint = 37; /* active joint */
+      (*tasklist)[3].default_joints_no = 7;
+      
+      (*tasklist)[4].type = GIK_RAWREACH;
+      (*tasklist)[4].default_joints[0] = 8;
+      (*tasklist)[4].default_joints[1] = 9;
+      (*tasklist)[4].default_joints[2] = 10;
+      (*tasklist)[4].default_joints[3] = 11;
+      (*tasklist)[4].default_joints[4] = 12;
+      (*tasklist)[4].default_joints[5] = 13;
+      (*tasklist)[4].default_joints[6] = 14;
+      (*tasklist)[4].active_joint = 14; /* active joint */
+      (*tasklist)[4].default_joints_no = 7;
+      
+      (*tasklist)[5].type = GIK_LAWREACH;
+      (*tasklist)[5].default_joints[0] = 15;
+      (*tasklist)[5].default_joints[1] = 16;
+      (*tasklist)[5].default_joints[2] = 17;
+      (*tasklist)[5].default_joints[3] = 18;
+      (*tasklist)[5].default_joints[4] = 19;
+      (*tasklist)[5].default_joints[5] = 20;
+      (*tasklist)[5].default_joints[6] = 21;
+      (*tasklist)[5].active_joint = 21; /* active joint */
+      (*tasklist)[5].default_joints_no = 7;
+      
+      (*tasklist)[6].type = GIK_LOOK;
+      (*tasklist)[6].default_joints[0] = 3;
+      (*tasklist)[6].default_joints[1] = 4;
+      (*tasklist)[6].default_joints[2] = 5;
+      (*tasklist)[6].default_joints[3] = 6;
+      (*tasklist)[6].default_joints[4] = 43;
+      (*tasklist)[6].active_joint = 43; /* active joint */
+      (*tasklist)[6].default_joints_no = 5;
+      
+      (*tasklist)[7].type = GIK_RAPOINT;
+      (*tasklist)[7].default_joints[0] = 8;
+      (*tasklist)[7].default_joints[1] = 9;
+      (*tasklist)[7].default_joints[2] = 10;
+      (*tasklist)[7].default_joints[3] = 11;
+      (*tasklist)[7].default_joints[4] = 12;
+      (*tasklist)[7].default_joints[5] = 13;
+      (*tasklist)[7].default_joints[6] = 14;
+      (*tasklist)[7].default_joints[7] = 38;
+      (*tasklist)[7].active_joint = 38; /* active joint */
+      (*tasklist)[7].default_joints_no = 8;
+      
+      (*tasklist)[8].type = GIK_LAPOINT;
+      (*tasklist)[8].default_joints[0] = 15;
+      (*tasklist)[8].default_joints[1] = 16;
+      (*tasklist)[8].default_joints[2] = 17;
+      (*tasklist)[8].default_joints[3] = 18;
+      (*tasklist)[8].default_joints[4] = 19;
+      (*tasklist)[8].default_joints[5] = 20;
+      (*tasklist)[8].default_joints[6] = 21;
+      (*tasklist)[8].default_joints[7] = 39;
+      (*tasklist)[8].active_joint = 39; /* active joint */
+      (*tasklist)[8].default_joints_no = 8;
+      
       return TRUE;
 
     case HRI_BERT:
