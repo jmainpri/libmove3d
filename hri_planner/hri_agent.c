@@ -126,58 +126,64 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
       hri_agent->is_human = TRUE;
     }
     else {
-      if(strcasestr(robot->name,"TINMAN")) {
-        hri_agent->type = HRI_TINMAN;
+      if(strcasestr(robot->name,"HERAKLES")) {
+        hri_agent->type = HRI_ACHILE_KINECT;
         hri_agent->is_human = TRUE;
       }
       else {
-        if(strcasestr(robot->name,"JIDOKUKA")) {
-          hri_agent->type = HRI_JIDOKUKA;
-          hri_agent->is_human = FALSE;
+        if(strcasestr(robot->name,"TINMAN")) {
+          hri_agent->type = HRI_TINMAN;
+          hri_agent->is_human = TRUE;
         }
         else {
-          if(strcasestr(robot->name,"PR2")) {
-            hri_agent->type = HRI_PR2;
+          if(strcasestr(robot->name,"JIDOKUKA")) {
+            hri_agent->type = HRI_JIDOKUKA;
             hri_agent->is_human = FALSE;
           }
           else {
-            if(strcasestr(robot->name,"JIDO")) {
-              hri_agent->type = HRI_JIDO1;
+            if(strcasestr(robot->name,"PR2")) {
+              hri_agent->type = HRI_PR2;
               hri_agent->is_human = FALSE;
             }
             else {
-              if(strcasestr(robot->name,"HRP2")) {
-                hri_agent->type = HRI_HRP214;
+              if(strcasestr(robot->name,"JIDO")) {
+                hri_agent->type = HRI_JIDO1;
                 hri_agent->is_human = FALSE;
               }
               else {
-                if(strcasestr(robot->name,"B21")) {
-                  hri_agent->type = HRI_B21;
+                if(strcasestr(robot->name,"HRP2")) {
+                  hri_agent->type = HRI_HRP214;
                   hri_agent->is_human = FALSE;
                 }
                 else {
-                  if(strcasestr(robot->name,"JUSTIN")) {
-                    hri_agent->type = HRI_MOBILE_JUSTIN;
+                  if(strcasestr(robot->name,"B21")) {
+                    hri_agent->type = HRI_B21;
                     hri_agent->is_human = FALSE;
                   }
                   else {
-                    if(strcasestr(robot->name,"BH")) {
-                      hri_agent->type = HRI_BH;
+                    if(strcasestr(robot->name,"JUSTIN")) {
+                      hri_agent->type = HRI_MOBILE_JUSTIN;
                       hri_agent->is_human = FALSE;
                     }
                     else {
-                      if(strcasestr(robot->name,"ICUB")) {
-                        hri_agent->type = HRI_ICUB;
+                      if(strcasestr(robot->name,"BH")) {
+                        hri_agent->type = HRI_BH;
                         hri_agent->is_human = FALSE;
                       }
                       else {
-                        if(strcasestr(robot->name,"BERT")) {
-                          hri_agent->type = HRI_BERT;
+                        if(strcasestr(robot->name,"ICUB")) {
+                          hri_agent->type = HRI_ICUB;
                           hri_agent->is_human = FALSE;
                         }
                         else {
-                          PrintWarning(("Robot is unknown! Cannot initialize agents.\n"));
-                          return NULL;
+                          if(strcasestr(robot->name,"BERT")) {
+                            hri_agent->type = HRI_BERT;
+                            hri_agent->is_human = FALSE;
+                          }
+                          else {
+                            PrintWarning(("Robot is unknown! Cannot initialize agents.\n"));
+                            return NULL;
+                          }
                         }
                       }
                     }
@@ -309,6 +315,15 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env)
       persp->pointjoint = agent->robotPt->joints[36];
       persp->point_tolerance = 20;
     break;
+    case HRI_ACHILE_KINECT:
+      persp->camjoint = agent->robotPt->joints[47];
+      persp->fov = 160;
+      persp->foa = 70; // TODO: By default This should be 30. Change for a particular manip while waiting a fix on vis placements
+      persp->tilt_jnt_idx = 6;
+      persp->pan_jnt_idx  = 5;
+      persp->pointjoint = agent->robotPt->joints[40];
+      persp->point_tolerance = 20;
+      break;
     case HRI_SUPERMAN:
       persp->camjoint = agent->robotPt->joints[1]; //TODO: put the correct value
       persp->fov = 160;
