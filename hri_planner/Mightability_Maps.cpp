@@ -195,7 +195,7 @@ int USE_RESULTANT_MIGHTABILITY_SET=0;
 int resultant_MM_after_set_operation[100][100][100];//To store 1 as a valid resultant cell after the set operation. The indices should be synchronized with the indices of the corresponding bitmap set
 
 int SHOW_CURRENT_TASK_CANDIDATE_POINTS=0;
-char CURRENT_OBJECT_TO_MANIPULATE[50]="HORSE";//"WOODEN_OBJECT";//"GREY_TAPE";//"YELLOW_BOTTLE";//"HORSE";//"SMALL_YELLOW_BOTTLE";//"HORSE";
+char CURRENT_OBJECT_TO_MANIPULATE[50]="GREY_TAPE";//"WOODEN_OBJECT";//"GREY_TAPE";//"YELLOW_BOTTLE";//"HORSE";//"SMALL_YELLOW_BOTTLE";//"HORSE";
 
 HRI_AGENT * primary_human_MM;
 HRI_AGENT * jido_robot_MM;
@@ -324,7 +324,7 @@ int execute_Mightability_Map_functions()
 	g3d_drawDisc(hum_R_shoulder_pos[0], hum_R_shoulder_pos[1], hum_R_shoulder_pos[2], 0.05, 4, NULL);
       */ 
       ////g3d_drawDisc(point_to_look[0], point_to_look[1], point_to_look[2], 0.1, 4, NULL);
-#if !defined(COMPILE_FOR_GENOM)
+#if defined(WITH_XFORMS)
       if(MM_RECORD_MOVIE_FRAMES==1)
 	{
 	  AKP_record_movie_frames();
@@ -627,7 +627,8 @@ static int movie_count = 0;
 static int image_rate = 1;
 static int image_compress = 100;
 
-#if !defined(COMPILE_FOR_GENOM)
+
+#if defined(WITH_XFORMS)
 int AKP_record_movie_frames()
 {
   char str[512];
@@ -652,7 +653,7 @@ int AKP_record_movie_frames()
 int move_object_on_a_path()
 {
   envPt_MM = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-  int obj_index=get_index_of_robot_by_name ( "PINK_TRASHBIN" );
+  int obj_index=get_index_of_robot_by_name ((char *) "PINK_TRASHBIN" );
   configPt rob_cur_pos = MY_ALLOC(double,envPt_MM->robot[obj_index]->nb_dof); /* Allocation of temporary robot configuration */
 
   p3d_get_robot_config_into(envPt_MM->robot[obj_index],&rob_cur_pos);
@@ -664,7 +665,7 @@ int move_object_on_a_path()
   double end_y=y+0.75;
   double end_z=z+0.75;
 
-  int obj_index_2=get_index_of_robot_by_name ( "BLUE_TRASHBIN" );
+  int obj_index_2=get_index_of_robot_by_name ((char *)  "BLUE_TRASHBIN" );
   configPt rob_cur_pos_2 = MY_ALLOC(double,envPt_MM->robot[obj_index_2]->nb_dof); /* Allocation of temporary robot configuration */
 
   p3d_get_robot_config_into(envPt_MM->robot[obj_index_2],&rob_cur_pos_2);
@@ -691,7 +692,7 @@ int move_object_on_a_path()
       p3d_set_and_update_this_robot_conf(envPt_MM->robot[obj_index_2], rob_cur_pos_2); 
       robots_status_for_Mightability_Maps[obj_index_2].has_moved=1;
   
-#if !defined(COMPILE_FOR_GENOM)  
+#if defined(WITH_XFORMS)  
       fl_check_forms();
 #endif 
       g3d_draw_allwin_active();
@@ -1243,7 +1244,7 @@ int check_inside_polygon(int no_vertices, point_co_ordi *vertices, point_co_ordi
 
 }
 
-#if !defined(COMPILE_FOR_GENOM)
+#if defined(WITH_XFORMS)
 int is_point_in_fov(p3d_rob* robot, p3d_vector4 p)
 {
   
@@ -1257,8 +1258,8 @@ int is_point_in_fov(p3d_rob* robot, p3d_vector4 p)
   //robot->cam_h_angle = angleH;
   //robot->cam_v_angle = angleW;
   int plane;
-  G3D_Window *win = g3d_get_win_by_name("Perspective");
-#if !defined(COMPILE_FOR_GENOM)  
+  G3D_Window *win = g3d_get_win_by_name((char *) "Perspective");
+#if defined(WITH_XFORMS)  
   g3d_refresh_win(win);
 #endif
   int is_in_FOV=0;
@@ -5079,7 +5080,7 @@ int find_3D_grid_visibility(HRI_AGENT *agent,int type)//1 means human, 2 means H
 	    }//end if(cell_valid==1)
 	}//End for(;t2<1;t2+=interval) 
     }
-  printf(">>>>> visible_ctr=%d\n",visible_ctr);
+//   printf(">>>>> visible_ctr=%d\n",visible_ctr);
   return 1;
 }
 
@@ -6689,7 +6690,7 @@ int update_human_state(int state) //1 means sitting 0 means standing
 	hri_bt_3drefresh_all(INTERPOINT);
       }
       g3d_draw_env();
-#if !defined(COMPILE_FOR_GENOM)  
+#if defined(WITH_XFORMS)  
       fl_check_forms();
 #endif
       g3d_draw_allwin_active();
@@ -6973,8 +6974,8 @@ int virtually_update_non_primary_human_state(int state, int hum_index) //1 means
 int create_workspace_3D_grid()
 {
   int HRP2_table_index;
-  HRP2_table_index=get_index_of_robot_by_name("HRP2TABLE");
-  ////HRP2_table_index=get_index_of_robot_by_name("IKEA_SHELF");
+  HRP2_table_index=get_index_of_robot_by_name((char*)"HRP2TABLE");
+  ////HRP2_table_index=get_index_of_robot_by_name((char*)"IKEA_SHELF");
   configPt HRP2_table_pos = MY_ALLOC(double,envPt_MM->robot[HRP2_table_index]->nb_dof); /* Allocation of temporary robot configuration */
 
   p3d_get_robot_config_into(envPt_MM->robot[HRP2_table_index],&HRP2_table_pos);
@@ -15056,7 +15057,7 @@ int is_object_visible_for_agent(HRI_AGENT * agent, p3d_rob *object, double thres
   /////g3d_draw_win(win);
     ////return 0;
     g3d_draw_allwin_active();
-#if !defined(COMPILE_FOR_GENOM)
+#if defined(WITH_XFORMS)  
     fl_check_forms();
 #endif
     //everything is ready now.
@@ -15079,7 +15080,7 @@ int is_object_visible_for_agent(HRI_AGENT * agent, p3d_rob *object, double thres
     //AKP
     ////////printf("  >>>>>>> result = %lf, visibility = %lf \n",result, 100.0*result);
     g3d_draw_allwin_active();
-#if !defined(COMPILE_FOR_GENOM)
+#if defined(WITH_XFORMS)  
     fl_check_forms();
 #endif
     if(100.0*result>=threshold)
