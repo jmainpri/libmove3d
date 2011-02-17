@@ -45,6 +45,8 @@
 #include "Graphic-pkg.h"
 #endif
 
+#include "../graphic/proto/g3d_glut.hpp"
+
 static int FILTER_TO_BE_SET_ACTIVE = FALSE;
 //extern void g3d_create_main_form(void);
 //extern void g3d_loop(void);
