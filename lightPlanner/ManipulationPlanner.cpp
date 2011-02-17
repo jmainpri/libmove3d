@@ -1403,6 +1403,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
 
     // Compute to Approach config
     setSafetyDistance(_robot, getSafetyDistanceValue());
+printf("tSafetyDistance= %f\n", getSafetyDistanceValue());
+    setSafetyDistance(_robot, 0);
     if ((traj = computeTrajBetweenTwoConfigs(qStart, approachFreeConfig, &status)) || (status == MANIPULATION_TASK_EQUAL_QSTART_QGOAL))
     {
       trajs.push_back(traj);
