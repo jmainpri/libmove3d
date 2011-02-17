@@ -420,7 +420,8 @@ static void CB_double_grasp(FL_OBJECT *obj, long arg)
 
 static void CB_test(FL_OBJECT *obj, long arg)
 {
- gpExport_bodies_for_coldman(XYZ_ENV->cur_robot);
+//  gpExport_bodies_for_coldman(XYZ_ENV->cur_robot);
+ gpExport_robot_for_coldman(XYZ_ENV->cur_robot);
 //   gpCompute_stable_placements((p3d_rob*)p3d_get_robot_by_name(ObjectName), POSELIST);
 //   redraw();
   return;
@@ -953,8 +954,7 @@ static void CB_browse_grasps(FL_OBJECT *obj, long arg)
   count++;
   if(count >= GRASP_LIST.size())
   {  count= 0;  }
-  redraw();
-  return;
+
   gpSet_robot_hand_grasp_configuration(HAND_ROBOT, OBJECT, GRASP);
 //   gpSet_robot_hand_grasp_open_configuration(HAND_ROBOT, OBJECT, GRASP);
   p3d_copy_config_into(HAND_ROBOT, p3d_get_robot_config(HAND_ROBOT), &HAND_ROBOT->ROBOT_POS);
