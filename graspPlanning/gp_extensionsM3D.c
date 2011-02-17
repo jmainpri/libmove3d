@@ -16,6 +16,8 @@
 #include <string>
 #include <stdarg.h>
 #include <iostream>
+#include <sys/stat.h>
+#include <dirent.h>
 
 //! @ingroup graspPlanning 
 //! Cette fonction s'utilise comme un printf mais ecrit dans le fichier logfile.
@@ -1377,8 +1379,12 @@ void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, GLfloat mat[16])
 }
 
 //! @ingroup graspPlanning 
+//! Exports the bodies to make them usable by coldman. Each body is in a .obj file and its vertices
+//! are transformed so that their reference frame is the joint's frame.
+//! \param robot pointer to the robot
+//! \param folderName name of the folder wherein to save the body files
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpExport_bodies_for_coldman(p3d_rob *robot)
+int gpExport_bodies_for_coldman(p3d_rob *robot, const std::string &folderName)
 {
   if(robot==NULL)  {
     printf("%s: %d: gpExport_bodies_for_coldman(): the input robot is NULL.\n",__FILE__,__LINE__ );
@@ -1394,18 +1400,8 @@ int gpExport_bodies_for_coldman(p3d_rob *robot)
   p3d_obj *body;
   FILE *file= NULL;
   char *path= NULL;
-  std::string bodyName, pathName, objName, mtlName;
+  std::string bodyName, objName, mtlName;
 
-  path= getenv("HOME_MOVE3D");
-  
-  if(path==NULL)  {
-    pathName.assign("./graspPlanning/export/");
-  }
-  else  { 
-    pathName.assign(path);  
-    pathName+= "/graspPlanning/export/";
-  }
-  
   for(i=0; i<robot->no; i++)
   {
     body= robot->o[i];
@@ -1417,7 +1413,7 @@ int gpExport_bodies_for_coldman(p3d_rob *robot)
     }
     
     // first, write the .obj file:
-    objName= pathName + bodyName + ".obj";
+    objName= folderName + "/" + bodyName + ".obj";
 
     file= fopen(objName.c_str(), "w");
     if(file==NULL)
@@ -1473,8 +1469,7 @@ int gpExport_bodies_for_coldman(p3d_rob *robot)
     file= NULL;
 
     // now, write the .mtl file:
-    //sprintf(str, "./graspPlanning/export/%s.mtl",  bodyName.c_str());
-    mtlName= pathName + bodyName + ".mtl";
+    mtlName= folderName + "/" + bodyName + ".mtl";
     
     file= fopen(mtlName.c_str(), "w");
     if(file==NULL)
@@ -1515,6 +1510,8 @@ int gpExport_bodies_for_coldman(p3d_rob *robot)
       fprintf(file, "Ke %f %f %f\n", 0.2*color_vect[0], 0.2*color_vect[1], 0.2*color_vect[2]);
     }
   }
+
+  fclose(file);
 
   return GP_OK;
 }
@@ -1648,6 +1645,363 @@ int gpExport_obstacles_for_coldman()
       fprintf(file, "Ke %f %f %f\n", 0.2*color_vect[0], 0.2*color_vect[1], 0.2*color_vect[2]);
     }
   }
+
+  fclose(file);
+
+  return GP_OK;
+}
+
+
+//! Gets the average color of a body.
+//! \param obj pointer to the body
+//! \param color the computed color
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGet_obj_color(p3d_obj *obj, double color[4])
+{
+  if(obj==NULL)  {
+    printf("%s: %d: gpGet_obj_color(): the input p3d_obj is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+
+  int i;
+  double area, totalArea;
+  double color_vect[4];
+
+  color[0]= 0.0;
+  color[1]= 0.0;
+  color[2]= 0.0;
+  color[3]= 0.0;
+
+  for(i=0; i<obj->np; ++i)
+  {
+    if(obj->pol[i]->p3d_objPt!=obj)
+    {  continue;  }
+
+    if(obj->pol[i]->color_vect==NULL)
+    { 
+      g3d_get_color_vect(obj->pol[i]->color, color_vect);
+    }
+    else
+    { 
+      color_vect[0]= obj->pol[i]->color_vect[0];
+      color_vect[1]= obj->pol[i]->color_vect[1];
+      color_vect[2]= obj->pol[i]->color_vect[2];
+      color_vect[3]= obj->pol[i]->color_vect[3];
+    }
+
+    p3d_compute_area(obj->pol[i]->poly, area);
+
+    color[0]+= color_vect[0]*area;
+    color[1]+= color_vect[1]*area;
+    color[2]+= color_vect[2]*area;
+    color[3]+= color_vect[3]*area;
+    totalArea+= area;
+  }
+  
+  color[0]/= totalArea;
+  color[1]/= totalArea;
+  color[2]/= totalArea;
+  color[3]/= totalArea;
+
+  return GP_OK;
+}
+
+//! This structure is used only by gpExport_for_coldman to store the kinematic tree of a robot in a convenient way
+struct cd_jnt
+{
+  p3d_jnt *jnt;
+  cd_jnt *prev;
+  std::list<cd_jnt*> nexts;
+  std::vector<p3d_obj*> bodies;
+  int depth;
+};
+
+//! @ingroup graspPlanning 
+//! Exports the description of a robot into a xml file with the format required by coldman.
+//! Everything is exported but the constraints.
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpExport_robot_for_coldman(p3d_rob *robot)
+{
+  if(robot==NULL)  {
+    printf("%s: %d: gpExport_robot_for_coldman(): the input robot is NULL.\n",__FILE__,__LINE__ );
+    return GP_ERROR;
+  }
+
+  int i, j, bodyType;
+  size_t found;
+  double color[4];
+  p3d_obj *obj= NULL;
+  p3d_matrix4 Tinv, Trel;
+  char *path= NULL;
+  std::string folderName, str, space, name;
+  time_t rawtime;
+  struct tm * timeinfo;
+  FILE *file= NULL;
+  DIR *directory= NULL;
+  cd_jnt *cur_jnt= NULL, *previous= NULL;
+  std::list<cd_jnt*> open;
+  std::list<cd_jnt*> close;
+  std::map<p3d_jnt*, cd_jnt*> jointsMap;
+  std::vector<cd_jnt*> cdJoints;
+  cd_jnt *cdjnt;
+
+  path= getenv("HOME_MOVE3D");
+  
+  if(path==NULL)  {
+    folderName.assign("./graspPlanning/export/");
+  }
+  else  { 
+    folderName.assign(path);
+    folderName+= "/graspPlanning/export/";
+  }
+
+  str= folderName + std::string(robot->name) + ".xml";
+
+  file= fopen(str.c_str(), "w");
+  if(file==NULL)
+  { 
+    printf("%s: %d: gpExport_for_coldman(): can not open %s.\n", __FILE__, __LINE__, str.c_str());
+    return GP_ERROR;
+  }
+
+  time(&rawtime);
+  timeinfo= localtime(&rawtime);
+
+  // First, export the bodies:
+  folderName+= std::string(robot->name);
+  // look for a directory with the robot name:
+  directory= opendir(folderName.c_str());
+  if(directory==NULL)
+  {
+    // directory needs to be created:
+    if(mkdir(folderName.c_str(), S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH ) ==-1)
+    {
+      printf("%s: %d: gpExport_for_coldman(): failed to create directory \"%s\".\n", __FILE__, __LINE__, folderName.c_str());
+      return GP_ERROR;
+    }
+  }
+  else
+  {
+    closedir(directory);
+  }
+  gpExport_bodies_for_coldman(robot, folderName);
+
+
+  // Write the robot file:
+  fprintf(file, "<!-- Exported from Move3D \n");
+  fprintf(file, " creation date: %s -->\n\n", asctime(timeinfo));
+
+  fprintf(file, "<robot name=\"%s\">\n", robot->name);
+  fprintf(file, "<name> %s </name>\n", robot->name);
+  fprintf(file, "<models_directory> ./%s </models_directory>\n", robot->name);
+
+  cdJoints.resize(robot->njoints);
+  for(i=1; i<=robot->njoints; ++i)
+  {
+    cdJoints[i-1] = new cd_jnt;
+    cdJoints[i-1]->jnt= robot->joints[i];
+    cdJoints[i-1]->depth= 0;
+    jointsMap[robot->joints[i]]= cdJoints[i-1];
+  }
+
+  for(i=1; i<=robot->njoints; ++i)
+  {
+    cdjnt= jointsMap[robot->joints[i]];
+
+//     if(robot->joints[i]->prev_jnt!=NULL)
+    if(strcmp(robot->joints[i]->prev_jnt->name, "J0")==0)
+    {  cdjnt->prev= NULL; }
+    else
+    {  cdjnt->prev= jointsMap[robot->joints[i]->prev_jnt]; }
+
+    cdjnt->nexts.clear();
+    for(j=0; j<robot->joints[i]->n_next_jnt; ++j)
+    {
+      cdjnt->nexts.push_back( jointsMap[robot->joints[i]->next_jnt[j]] );
+    }
+  }
+
+  for(i=0; i<robot->no; ++i)
+  {
+    if(robot->o[i]->jnt!=NULL)
+    {
+      cdjnt= jointsMap[robot->o[i]->jnt];
+      cdjnt->bodies.push_back(robot->o[i]);
+    }
+  }
+
+  for(i=0; i<cdJoints.size(); ++i)
+  {
+    if(cdJoints[i]->prev==NULL)
+    {
+      open.push_back(cdJoints[i]);
+      close.push_back(cdJoints[i]);
+      break;
+    }
+  }
+
+  while(!open.empty())
+  {
+    cur_jnt= open.back();
+//     cur_jnt->processed= true;
+    open.pop_back();
+
+    // print the joint data:
+    space.clear();
+    for(i=0; i<cur_jnt->depth; ++i)
+    {  space+= "\t\t"; }
+    fprintf(file, "\n%s<joint name=\"%s\">\n", space.c_str(), cur_jnt->jnt->name);
+    space+= "\t";
+    fprintf(file, "%s<name> %s </name>\n", space.c_str(), cur_jnt->jnt->name);
+
+    // joint type and bounds:
+    switch(cur_jnt->jnt->type)
+    {
+      case P3D_BASE:
+       fprintf(file, "%s<type> base </type>\n", space.c_str());
+       fprintf(file, "%s<qmin> %f %f %f </qmin>\n",space.c_str(),cur_jnt->jnt->dof_data[0].vmin,cur_jnt->jnt->dof_data[1].vmin,RADTODEG*cur_jnt->jnt->dof_data[2].vmin);
+       fprintf(file, "%s<qmax> %f %f %f </qmax>\n",space.c_str(),cur_jnt->jnt->dof_data[0].vmax,cur_jnt->jnt->dof_data[1].vmax,RADTODEG*cur_jnt->jnt->dof_data[2].vmax);
+      break;
+      case P3D_FREEFLYER:
+       fprintf(file, "%s<type> freeflyer </type>\n", space.c_str());
+       fprintf(file, "%s<qmin> %f %f %f </qmin>\n",space.c_str(),cur_jnt->jnt->dof_data[0].vmin,cur_jnt->jnt->dof_data[1].vmin,cur_jnt->jnt->dof_data[2].vmin);
+       fprintf(file, "%s<qmax> %f %f %f </qmax>\n",space.c_str(),cur_jnt->jnt->dof_data[0].vmax,cur_jnt->jnt->dof_data[1].vmax,cur_jnt->jnt->dof_data[2].vmax);
+      break;
+      case P3D_ROTATE:
+       fprintf(file, "%s<type> revolute </type>\n", space.c_str());
+       fprintf(file, "%s<qmin> %f </qmin>\n", space.c_str(), RADTODEG*cur_jnt->jnt->dof_data[0].vmin);
+       fprintf(file, "%s<qmax> %f </qmax>\n", space.c_str(), RADTODEG*cur_jnt->jnt->dof_data[0].vmax);
+      break;
+      case P3D_TRANSLATE:
+       fprintf(file, "%s<type> prismatic </type>\n", space.c_str());
+       fprintf(file, "%s<qmin> %f </qmin>\n", space.c_str(), cur_jnt->jnt->dof_data[0].vmin);
+       fprintf(file, "%s<qmax> %f </qmax>\n", space.c_str(), cur_jnt->jnt->dof_data[0].vmax);
+      break;
+      case P3D_FIXED:
+       fprintf(file, "%s<type> revolute </type> <!--fixed-->\n", space.c_str());
+       fprintf(file, "%s<qmin> 0 </qmin>\n");
+       fprintf(file, "%s<qmax> 0 </qmax>\n");
+      break;
+      default:
+         printf("unhandled joint type: %d\n", cur_jnt->jnt->type);
+      break;
+    }
+    // relative transform with respect to the previous joint:
+    if(cur_jnt->prev!=NULL)
+    {
+      p3d_matInvertXform(cur_jnt->prev->jnt->abs_pos, Tinv);
+      p3d_mat4Mult(Tinv, cur_jnt->jnt->abs_pos_before_jnt, Trel);
+
+      fprintf(file, "%s<transformation>\n", space.c_str()); 
+      fprintf(file, "%s<ht_matrix> \n", space.c_str()); 
+      fprintf(file, "%s %f %f %f %f \n", space.c_str(), Trel[0][0], Trel[0][1], Trel[0][2], Trel[0][3]); 
+      fprintf(file, "%s %f %f %f %f \n", space.c_str(), Trel[1][0], Trel[1][1], Trel[1][2], Trel[1][3]); 
+      fprintf(file, "%s %f %f %f %f \n", space.c_str(), Trel[2][0], Trel[2][1], Trel[2][2], Trel[2][3]); 
+      fprintf(file, "%s</ht_matrix>\n", space.c_str()); 
+
+// The version with YPR angles does not work due to a convention mismatch:
+//        double tx, ty, tz, ax, ay, az;
+//        p3d_mat4ExtractPosReverseOrder2(Trel, &tx, &ty, &tz, &ax, &ay, &az);
+//       fprintf(file, "%s<translation>  %f %f %f </translation>\n", space.c_str(), tx, ty, tz); 
+//       fprintf(file, "%s<YPR_angles>  %f %f %f </YPR_angles>\n", space.c_str(), -RADTODEG*az, RADTODEG*ay, RADTODEG*ax); 
+
+      fprintf(file, "%s</transformation>\n", space.c_str());
+    }
+
+    
+    // bodies linked to the joint:
+    for(i=0; i<cur_jnt->bodies.size(); ++i)
+    {
+      obj= cur_jnt->bodies[i];
+      // check what kind of body it is:
+      for(j=0; j<obj->np ; ++j)
+      { 
+        if(obj->pol[j]->p3d_objPt==obj)// && obj->pol[j]->TYPE!=P3D_GRAPHIC)
+        {
+          bodyType= obj->pol[j]->TYPE;
+          break;
+        }
+      }
+
+      // only keep the part of the name that corresponds to the name in the robot .macro file:
+      name= obj->name;
+      found= name.find_last_of(".");
+      name= name.substr(found+1);
+      fprintf(file, "%s<body name=\"%s\">\n", space.c_str(), name.c_str()); 
+      fprintf(file, "%s <name> %s </name>\n", space.c_str(), name.c_str());
+      fprintf(file, "%s <file> %s.obj </file>\n", space.c_str(), name.c_str());
+      if(bodyType==P3D_GHOST)
+      {
+        fprintf(file, "%s <display> no </display>\n", space.c_str());
+      }
+      else if(bodyType==P3D_GRAPHIC)
+      {
+        fprintf(file, "%s <collision> no </collision>\n", space.c_str());
+      }
+
+      if(bodyType==P3D_GHOST)
+      {
+        fprintf(file, "%s <color> 1.0 1.0 0.0  1.0 </color>\n", space.c_str());
+      }
+      else
+      {
+        gpGet_obj_color(obj, color);
+//         fprintf(file, "%s <color> %f %f %f  1.0 </color>\n", space.c_str(),p3d_random(0.0,1.0),p3d_random(0.0,1.0),p3d_random(0.0,1.0));
+        fprintf(file, "%s <color> %f %f %f %f </color>\n", space.c_str(), color[0], color[1], color[2], color[3]);
+      }
+
+//       fprintf(file, "%s <color> 0.0 0.7 0.7 1.0 </color>\n", space.c_str());
+      fprintf(file, "%s</body>\n", space.c_str());
+    }
+
+
+
+    if(!cur_jnt->nexts.empty())
+    {
+      for(std::list<cd_jnt*>::iterator iter=cur_jnt->nexts.begin(); iter!=cur_jnt->nexts.end(); ++iter)
+      {
+        (*iter)->depth= cur_jnt->depth + 1;
+        open.push_back(*iter);
+        close.push_back(*iter);
+      }
+    }
+    else
+    {
+      space.clear();
+      for(i=0; i<cur_jnt->depth; ++i)
+      {  space+= "\t\t"; }
+      fprintf(file, "%s</joint> %s\n", space.c_str(), cur_jnt->jnt->name);
+
+      previous= cur_jnt->prev;
+      while(previous!=NULL)
+      {
+        previous->nexts.remove(cur_jnt);
+        if(previous->nexts.empty())
+        {
+          space.clear();
+          for(i=0; i<previous->depth; ++i)
+          {  space+= "\t\t"; }
+          fprintf(file, "%s</joint> <!--%s-->\n", space.c_str(), previous->jnt->name);
+          cur_jnt= previous;
+          previous= previous->prev;
+        }
+        else
+        {
+          previous= NULL;
+        }
+      }
+    }
+  }
+
+
+  fprintf(file, "</robot>\n");
+
+  for(i=0; i<cdJoints.size(); ++i)
+  {
+    delete cdJoints[i];
+  }
+
+  fclose(file);
 
   return GP_OK;
 }
