@@ -2131,7 +2131,7 @@ int gpInverse_geometric_model_freeflying_hand ( p3d_rob *robot, p3d_matrix4 obje
 
   p3d_mat4Mult(graspFrame_world, hand.Tgrasp_frame_hand, Twrist);
 
-  p3d_mat4ExtractPosReverseOrder2 ( Twrist, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11] );
+  p3d_mat4ExtractPosReverseOrder ( Twrist, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11] );
 
   return GP_OK;
 }
