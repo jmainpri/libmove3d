@@ -764,9 +764,10 @@ int p3d_set_object_to_carry_to_arm(p3d_rob *MyRobot, int arm_id,const char *obje
   p3d_rob *carriedObject= NULL;
 	
 	// Set carried object
-	(*MyRobot->armManipulationData)[arm_id].setCarriedObject( object_name );
-	carriedObject = (*MyRobot->armManipulationData)[arm_id].getCarriedObject();
-	
+    (*MyRobot->armManipulationData)[arm_id].setCarriedObject( object_name );
+  if(object_name){
+    carriedObject = (*MyRobot->armManipulationData)[arm_id].getCarriedObject();
+  }
   if(carriedObject == NULL) {
     printf("%s: %d: p3d_set_object_to_carry(): There is no robot with name \"%s\".\n", __FILE__, __LINE__, object_name);
     return 1;
