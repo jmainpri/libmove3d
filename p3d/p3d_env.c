@@ -1492,7 +1492,7 @@ void *p3d_sel_desc_name(int type, char* name) {
           }
         }
       }
-      PrintError(("MP: p3d_sel_desc_name: wrong name\n"));
+      PrintError(("MP: p3d_sel_desc_name: wrong name, %s\n", name));
       return(NULL);
 
     case P3D_OBSTACLE:
