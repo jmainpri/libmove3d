@@ -181,7 +181,7 @@ static void CB_test_obj(FL_OBJECT *ob, long arg) {
 
 	rob = XYZ_ENV->cur_robot;
 	double x, y, z, rx, ry, rz;
-p3d_mat4ExtractPosReverseOrder2(rob->joints[9]->abs_pos, &x, &y, &z, &rx, &ry , &rz);
+p3d_mat4ExtractPosReverseOrder(rob->joints[9]->abs_pos, &x, &y, &z, &rx, &ry , &rz);
 // RADTODEG does not exist watch out include files
 //printf("x %f %f %f %f %f %f\n",x, y, z, RADTODEG*rx, RADTODEG*ry, RADTODEG*rz);
 print_config_one_line_degrees(rob, rob->ROBOT_POS);

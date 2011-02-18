@@ -1172,7 +1172,7 @@ int p3d_update_carried_object_pos(p3d_rob *robotPt)
         q = p3d_alloc_config(object);
         p3d_get_robot_config_into(object, &q);
     //     p3d_mat4ExtractPosReverseOrder2(Tpose, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
-        p3d_mat4ExtractPosReverseOrder2((*robotPt->armManipulationData)[i].getManipulationJnt()->abs_pos, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
+        p3d_mat4ExtractPosReverseOrder((*robotPt->armManipulationData)[i].getManipulationJnt()->abs_pos, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
         p3d_set_and_update_this_robot_conf(object, q);
         p3d_destroy_config(object, q);
       }
@@ -1194,8 +1194,8 @@ int p3d_update_carried_object_pos(p3d_rob *robotPt)
 // 
 //     q= p3d_alloc_config(robotPt->carriedObject);
 //     p3d_get_robot_config_into(robotPt->carriedObject, &q);
-// //     p3d_mat4ExtractPosReverseOrder2(Tpose, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
-//     p3d_mat4ExtractPosReverseOrder2(robotPt->curObjectJnt->abs_pos, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
+// //     p3d_mat4ExtractPosReverseOrder(Tpose, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
+//     p3d_mat4ExtractPosReverseOrder(robotPt->curObjectJnt->abs_pos, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
 //     p3d_set_and_update_this_robot_conf(robotPt->carriedObject, q);
 //     p3d_destroy_config(robotPt->carriedObject, q);
 // 
@@ -1224,7 +1224,7 @@ int p3d_set_freeflyer_pose(p3d_rob *robotPt, p3d_matrix4 pose)
   configPt q= NULL;
   p3d_jnt *firstJoint= NULL;
 
-  p3d_mat4ExtractPosReverseOrder2(pose, &tx, &ty, &tz, &alpha, &beta, &gamma);
+  p3d_mat4ExtractPosReverseOrder(pose, &tx, &ty, &tz, &alpha, &beta, &gamma);
 
   firstJoint= robotPt->joints[1];
 
@@ -1328,7 +1328,7 @@ int p3d_set_freeflyer_pose_into(p3d_rob *robotPt, p3d_matrix4 pose, configPt q)
   double alpha_min, alpha_max, beta_min, beta_max, gamma_min, gamma_max;
   p3d_jnt *firstJoint= NULL;
 
-  p3d_mat4ExtractPosReverseOrder2(pose, &tx, &ty, &tz, &alpha, &beta, &gamma);
+  p3d_mat4ExtractPosReverseOrder(pose, &tx, &ty, &tz, &alpha, &beta, &gamma);
 
   firstJoint= robotPt->joints[1];
 

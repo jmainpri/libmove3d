@@ -809,7 +809,7 @@ int p3d_set_object_to_carry_to_arm(p3d_rob *MyRobot, int arm_id,const char *obje
 //  qgrab= p3d_alloc_config(robotPt);
 //  p3d_copy_config_into(robotPt, q2_conf, &qgrab);
 //
-//  p3d_mat4ExtractPosReverseOrder2(Ttt, &x, &y, &z, &alpha, &beta, &gamma);
+//  p3d_mat4ExtractPosReverseOrder(Ttt, &x, &y, &z, &alpha, &beta, &gamma);
 //
 //  p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
 //

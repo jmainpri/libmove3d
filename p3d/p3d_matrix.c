@@ -766,45 +766,6 @@ void p3d_mat4ExtractPosReverseOrder(p3d_matrix4 M,
 }
 
 
-//! A partir d'une matrice de transformation homogene, cette fonction extrait les parametres de translation
-//! et les angles d'Euler associes a la sous-matrice de rotation.
-//! La matrice de rotation est supposee avoir ete calculee a partir des angles d'Euler avec
-//! la fonction p3d_mat4PosReverseOrder() de move3D i.e. R= transpose(Rz*Ry*Rx) avec
-//! Rx, Ry et Rz les matrices de rotation selon x, y et z.
-//! Le deuxieme angle de rotation retourne est choisi pour être entre -pi/2 et pi/2.
-//! NOTE: cette fonction a due être ajoutee car la fonction de move3D censee faire la même chose
-//! ne marche pas dans tous les cas.
-void p3d_mat4ExtractPosReverseOrder2(p3d_matrix4 M,
-				    double * tx, double * ty, double * tz,
-				    double * ax, double * ay, double * az)
-{
-  double cy;
-  double epsilon= 10e-6;
-
-  (*ay)= asin(M[0][2]);
-  cy = cos( (*ay) );
-  if( (-epsilon < cy)  &&  (cy < epsilon) )
-  {
-    (*ax) = 0.0;
-    (*az)= atan2( M[1][0], M[1][1] );
-  }
-  else
-  {
-    (*ax)= -atan2( M[1][2], M[2][2] );
-    (*az)= -atan2( M[0][1], M[0][0] );
-
-    if( (*ay)<0 && (*ay)<-M_PI_2 )
-      (*ay)= -M_PI - (*ay);
-
-    if( (*ay)>0 && (*ay)>M_PI_2 )
-      (*ay)= M_PI - (*ay);
-  }
-
-  (*tx) = M[0][3];
-  (*ty) = M[1][3];
-  (*tz) = M[2][3];
-}
-
 // Calcule l'angle et l'axe d'une rotation à partir d'une matrice de transformation 4x4
 // (l'ancienne fonction move3d de base
 // ne marche pas pour certains cas singuliers).

@@ -2856,7 +2856,7 @@ p3d_mat4Print(pose,"pose");
     p3d_matInvertXform(T, T_inv);
 
 //     object->jnt
-   p3d_mat4ExtractPosReverseOrder2(pose0, &tx0, &ty0, &tz0, &ax0, &ay0, &az0);
+   p3d_mat4ExtractPosReverseOrder(pose0, &tx0, &ty0, &tz0, &ax0, &ay0, &az0);
 // p3d_mat4Print(T, "T_inv");
    tx= tx0;
    ty= ty0;
