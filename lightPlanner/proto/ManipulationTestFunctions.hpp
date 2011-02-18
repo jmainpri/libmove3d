@@ -48,6 +48,9 @@ public:
   //! Generic function to test the genom requests
 	bool manipTest(MANIPULATION_TASK_TYPE_STR type);
   
+  //! Returns the manipulation planner
+  ManipulationPlanner* getManipPlanner() { return m_manipulation; }
+  
 private:
   //! evaluates the number of grasp succes over 
   //! a series of gradomly selected targets

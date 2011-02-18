@@ -2873,7 +2873,7 @@ int nb_armDof =0;
       q = localpathPt->config_at_param(robotPt, localpathPt, u);
       I_can = p3d_set_and_update_this_robot_conf_multisol(robotPt, q, NULL, 0, localpathPt->ikSol);
       if(I_can == FALSE) {
-	printf("error config %d in lp %d\n",index, lpId);
+        printf("error config %d in lp %d\n",index, lpId);
       }
 			  
       p3d_get_robot_config_into(robotPt, &q);

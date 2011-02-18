@@ -681,6 +681,8 @@ configPt ManipulationPlanner::getApproachGraspConf(p3d_rob* object, int armId, g
 
 configPt ManipulationPlanner::getFreeHoldingConf( p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, std::vector<double> &objGoto ) const {
 
+  cout << " ManipulationPlanner::getFreeHoldingConf" << endl;
+  
   configPt tmpConf = p3d_get_robot_config(_robot);
   int restore = false;
   p3d_matrix4 bakTatt, objPos;
@@ -1687,10 +1689,12 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     }
     switch (task) {
       case ARM_FREE: {
-        printf("plan for ARM_FREE task\n");
+        printf("plan for task ");
         if(!ManipulationUtils::isValidVector(objGoto)){
+          printf("ARM_FREE (armToFree)\n");
           status = armToFree(armId, qi, qf, trajs);
         }else{
+          printf("ARM_FREE (armToFreePoint)\n");
           status = armToFreePoint(armId, qi, objGoto, trajs);
         }
         break;

@@ -70,13 +70,7 @@ void ManipulationTestFunctions::setDebugMode(bool value)
 //! and the initial and goal configuration
 //! are created
 void ManipulationTestFunctions::initManipulationGenom() 
-{
-	if (m_manipulation != NULL) 
-	{
-		delete m_manipulation;
-		m_manipulation = NULL;
-	}
-	
+{	
   if (m_manipulation == NULL) 
 	{
 		cout << "ManipulationTestFunctions::newManipulationPlanner" << endl;
@@ -94,15 +88,19 @@ void ManipulationTestFunctions::initManipulationGenom()
     // Warning SCENARIO dependant part, gsJidoKukaSAHand.p3d
     m_OBJECT_NAME = "GREY_TAPE";
     
-    m_objGoto.resize(3);
+    m_objGoto.resize(6);
     
-    //    m_objGoto[0] = 3.90;  // X
-    //    m_objGoto[1] = -2.85; // Y
-    //    m_objGoto[2] = 1.30;  // Z
+//    m_objGoto[0] = 4.23;
+//    m_objGoto[1] = -2.22;
+//    m_objGoto[2] = 1.00;
     
-    m_objGoto[0] = 4.23;
-    m_objGoto[1] = -2.22;
-    m_objGoto[2] = 1.00;
+    m_objGoto[0] = P3D_HUGE;
+    m_objGoto[1] = P3D_HUGE;
+    m_objGoto[2] = P3D_HUGE;
+    
+    m_objGoto[3] = P3D_HUGE;
+    m_objGoto[4] = P3D_HUGE;
+    m_objGoto[5] = P3D_HUGE;
   }
 	
   return;
@@ -144,7 +142,6 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 			break;
 			
 		case P3D_MULTILOCALPATH_PLANNER :
-			
 			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, m_OBJECT_NAME.c_str(), "", confs, smTrajs);
 			break;
 			

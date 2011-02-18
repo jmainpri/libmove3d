@@ -20,16 +20,6 @@
 
 #include "GroundHeight-pkg.h"
 
-#if defined( CXX_PLANNER )
-#include <boost/function.hpp>
-#include <boost/bind.hpp>
-#include "cost_space.hpp"
-#endif
-
-#if defined(HRI_COSTSPACE) && defined(HRI_PLANNER_GUI)
-#include "HRI_costspace/HRICS_HAMP.hpp"
-#endif
-
 #if defined(LIGHT_PLANNER)
 #include "lightPlanner/proto/lightPlannerApi.h"
 #include "lightPlanner/proto/ManipulationUtils.hpp"
@@ -101,14 +91,6 @@ int p3d_read_macro ( char *namemac,char *nameobj,double scale )
 		fd=fopen ( macro2,"r" );
 		read_macro_ground ( fd,nameobj,scale );
 		fclose ( fd );
-#ifdef CXX_PLANNER		
-		if(GroundCostObj)
-		{
-			std::cout << "Initializing the 2d costmap cost function" << std::endl;
-			global_costSpace->addCost("costMap2D",boost::bind(computeIntersectionWithGround, _1));
-			global_costSpace->setCost("costMap2D");
-		}
-#endif
 	}
 	if ( ! ( fd=fopen ( macro,"r" ) ) )
 	{
@@ -653,16 +635,6 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 
 		if ( strcmp ( fct,"p3d_CostEnvironment" ) == 0 )
 		{
-// TODO callback OOMOVE3D
-#if defined( CXX_PLANNER )
-			// initialize the cost function object.
-			global_costSpace = new CostSpace();
-			
-			std::cout << "Initializing the dist to obst costmap cost function" << std::endl;
-			global_costSpace->addCost("costDistToObst",boost::bind(computeDistanceToObstacles, _1));
-			global_costSpace->setCost("costDistToObst");
-#endif
-			
 			ENV.setBool ( Env::isCostSpace,true );
 			continue;
 		}
