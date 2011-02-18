@@ -1706,6 +1706,72 @@ int gpGet_obj_color(p3d_obj *obj, double color[4])
   return GP_OK;
 }
 
+//! Fills a transform matrix from translation and YPR parameters with the convention used in coldman i.e.
+//! rotation around Z, followed by a rotation around the new Y axis, followed by a rotation around the new X axis.
+void gpMatrix_from_parameters(p3d_matrix4 M, double tx, double ty, double tz, double yaw, double pitch, double roll)
+{
+  double ax, ay, az;
+  double cx, sx, cy, sy, cz, sz, czsy, szsy;
+
+  az= yaw;
+  ay= pitch;
+  ax= roll;
+
+  sx = sin(ax);
+  cx = cos(ax);
+  sy = sin(ay);
+  cy = cos(ay);
+  sz = sin(az);
+  cz = cos(az);
+
+  czsy = cz*sy;
+  szsy = sz*sy;
+
+  p3d_mat4Copy(p3d_mat4IDENTITY, M);
+
+  M[0][0] = cz*cy;     M[0][1] = czsy*sx - sz*cx;    M[0][2] = czsy*cx + sz*sx;
+  M[1][0] = sz*cy;     M[1][1] = szsy*sx + cz*cx;    M[1][2] = szsy*cx - cz*sx;
+  M[2][0] = -sy;       M[2][1] = cy*sx;              M[2][2] = cy*cx;
+
+  M[0][3] = tx;
+  M[1][3] = ty;
+  M[2][3] = tz;
+}
+
+//! Extracts the parameters of a transform matrix with the convention used by coldman.
+void gpExtract_matrix_parameters_for_coldman(p3d_matrix4 M, double &tx, double &ty, double &tz,  double &yaw, double &pitch, double &roll)
+{
+  double cy, ax, ay, az;
+  double epsilon= 10e-6;
+
+  ay= -asin(M[2][0]);
+  cy = cos(ay);
+  if( fabs(cy) < epsilon )
+  {
+    ax = 0.0;
+    az= atan2( -M[0][1], M[1][1] );
+  }
+  else
+  {
+    ax= atan2( M[2][1], M[2][2] );
+    az= atan2( M[1][0], M[0][0] );
+
+    if( (ay < 0) && (ay < -M_PI_2) )
+    {  ay= -M_PI - ay;  }
+
+    if( (ay > 0) && (ay > M_PI_2) )
+   {   ay= M_PI - ay; }
+  }
+
+  tx = M[0][3];
+  ty = M[1][3];
+  tz = M[2][3];
+
+  yaw= az;
+  pitch= ay;
+  roll= ax;
+}
+
 //! This structure is used only by gpExport_for_coldman to store the kinematic tree of a robot in a convenient way
 struct cd_jnt
 {
@@ -1730,6 +1796,7 @@ int gpExport_robot_for_coldman(p3d_rob *robot)
   int i, j, bodyType;
   size_t found;
   double color[4];
+  double tx, ty, tz, yaw, pitch, roll;
   p3d_obj *obj= NULL;
   p3d_matrix4 Tinv, Trel;
   char *path= NULL;
@@ -1808,7 +1875,6 @@ int gpExport_robot_for_coldman(p3d_rob *robot)
   {
     cdjnt= jointsMap[robot->joints[i]];
 
-//     if(robot->joints[i]->prev_jnt!=NULL)
     if(strcmp(robot->joints[i]->prev_jnt->name, "J0")==0)
     {  cdjnt->prev= NULL; }
     else
@@ -1843,7 +1909,6 @@ int gpExport_robot_for_coldman(p3d_rob *robot)
   while(!open.empty())
   {
     cur_jnt= open.back();
-//     cur_jnt->processed= true;
     open.pop_back();
 
     // print the joint data:
@@ -1893,17 +1958,17 @@ int gpExport_robot_for_coldman(p3d_rob *robot)
       p3d_mat4Mult(Tinv, cur_jnt->jnt->abs_pos_before_jnt, Trel);
 
       fprintf(file, "%s<transformation>\n", space.c_str()); 
-      fprintf(file, "%s<ht_matrix> \n", space.c_str()); 
-      fprintf(file, "%s %f %f %f %f \n", space.c_str(), Trel[0][0], Trel[0][1], Trel[0][2], Trel[0][3]); 
-      fprintf(file, "%s %f %f %f %f \n", space.c_str(), Trel[1][0], Trel[1][1], Trel[1][2], Trel[1][3]); 
-      fprintf(file, "%s %f %f %f %f \n", space.c_str(), Trel[2][0], Trel[2][1], Trel[2][2], Trel[2][3]); 
-      fprintf(file, "%s</ht_matrix>\n", space.c_str()); 
 
-// The version with YPR angles does not work due to a convention mismatch:
-//        double tx, ty, tz, ax, ay, az;
-//        p3d_mat4ExtractPosReverseOrder2(Trel, &tx, &ty, &tz, &ax, &ay, &az);
-//       fprintf(file, "%s<translation>  %f %f %f </translation>\n", space.c_str(), tx, ty, tz); 
-//       fprintf(file, "%s<YPR_angles>  %f %f %f </YPR_angles>\n", space.c_str(), -RADTODEG*az, RADTODEG*ay, RADTODEG*ax); 
+//    we can use direct matrix:
+//       fprintf(file, "%s<ht_matrix> \n", space.c_str()); 
+//       fprintf(file, "%s %f %f %f %f \n", space.c_str(), Trel[0][0], Trel[0][1], Trel[0][2], Trel[0][3]); 
+//       fprintf(file, "%s %f %f %f %f \n", space.c_str(), Trel[1][0], Trel[1][1], Trel[1][2], Trel[1][3]); 
+//       fprintf(file, "%s %f %f %f %f \n", space.c_str(), Trel[2][0], Trel[2][1], Trel[2][2], Trel[2][3]); 
+//       fprintf(file, "%s</ht_matrix>\n", space.c_str()); 
+//    but preferably YPR angles:
+      gpExtract_matrix_parameters_for_coldman(Trel, tx, ty, tz, yaw, pitch, roll);
+      fprintf(file, "%s<translation>  %f %f %f </translation>\n", space.c_str(), tx, ty, tz); 
+      fprintf(file, "%s<YPR_angles>  %f %f %f </YPR_angles>\n", space.c_str(), RADTODEG*yaw, RADTODEG*pitch, RADTODEG*roll); 
 
       fprintf(file, "%s</transformation>\n", space.c_str());
     }
@@ -1970,7 +2035,7 @@ int gpExport_robot_for_coldman(p3d_rob *robot)
       space.clear();
       for(i=0; i<cur_jnt->depth; ++i)
       {  space+= "\t\t"; }
-      fprintf(file, "%s</joint> %s\n", space.c_str(), cur_jnt->jnt->name);
+      fprintf(file, "%s</joint> <!--%s-->\n", space.c_str(), cur_jnt->jnt->name);
 
       previous= cur_jnt->prev;
       while(previous!=NULL)
@@ -2140,7 +2205,7 @@ int gpPrint_robot_AABBs(p3d_rob *robot)
 //      printf("\t %s: [ %2.4f %2.4f %2.4f %2.4f %2.4f %2.4f ]\n", robot->o[i]->name, xmin, xmax, ymin, ymax, zmin, zmax);
 
 //      p3d_get_body_pose(robot, i, pose);
-//      p3d_mat4ExtractPosReverseOrder2(pose, &tx, &ty, &tz, &ax, &ay, &az);
+//      p3d_mat4ExtractPosReverseOrder(pose, &tx, &ty, &tz, &ax, &ay, &az);
       pqp_top_OBB(robot->o[i], tx, ty, tz, ax, ay, az, xmin, xmax, ymin, ymax, zmin, zmax);
      printf("\t p3d_add_desc_box base1 %f %f %f P3D_GHOST\n",(xmax-xmin),(ymax-ymin),(zmax-zmin));
 
