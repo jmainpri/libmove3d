@@ -38,6 +38,8 @@ extern double ZminEnv;
 extern double ZmaxEnv;
 extern void* GroundCostObj;
 
+void (*ext_compute_config_cost_along_traj)(p3d_rob* r,configPt q) = (void (*)(p3d_rob* r,configPt q))(dummy_void);
+
 // Warning Jim
 #ifndef P3D_PLANNER
 void* GroundCostObj;
@@ -380,37 +382,12 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 			
       p3d_set_and_update_this_robot_conf_multisol(robotPt, q, NULL, 0, localpathPt->ikSol);
 
-// TODO callback OOMOVE3D
-#ifdef P3D_PLANNER
-#if defined( CXX_PLANNER )
-      if(ENV.getBool(Env::isCostSpace))
-      {
-				p3d_rob* costRobot = robotPt;
-				configPt cost_q = q;
-#ifdef HRI_COSTSPACE
-				if ( ENV.getBool(Env::enableHri) ) 
-				{
-					std::string robotName(costRobot->name);
-					
-					if( robotName.find("ROBOT") == std::string::npos ) // Does not contain Robot
-					{
-						costRobot = p3d_get_robot_by_name_containing("ROBOT");
-						cost_q = p3d_get_robot_config(costRobot);
-						//cout << "Change the robot position = " << robotPt->name << endl;
-					}
-				}
-#endif
-				Robot* r_Cost( global_Project->getActiveScene()->getRobotByName(costRobot->name) );
-				Configuration	q_Cost(r_Cost,cost_q);
-				
-				std::cout << "Cost for " << r_Cost->getName() << " = " 
-				<< global_costSpace->cost(q_Cost) << std::endl;
-			}
-#endif
+      // The callback funcion
+      // can be defined outside libmove3d
+      ext_compute_config_cost_along_traj(robotPt,q);
   
 #ifndef WITH_XFORMS
 	  stopShowTraj = (*fct_stop)();
-#endif
 #endif
 			
 	  p3d_destroy_config(robotPt, q);

@@ -32,6 +32,10 @@ struct g3d_win {
 
 };
 
+// Funtion when not drawing, to be assigned to 
+// all function pointers that are defined outside libmove3d
+void dummy_void();
+
 // Function pointers 
 // to external drawing functionalities
 extern void (*ext_g3d_export_cpp_graph)();

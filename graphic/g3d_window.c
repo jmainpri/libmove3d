@@ -79,10 +79,6 @@ static void startPicking(int cursorX, int cursorY);
 static int stopPicking();
 static int processHits (GLint hits, GLuint buffer[]);
 
-//funtion when not drawing
-void dummy_void() {}
-
-
 #ifndef NOFORMS
 /*   Defined for UNIX (s & GLX)
 

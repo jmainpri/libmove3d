@@ -2214,6 +2214,14 @@ p3d_localpath *p3d_copy_softMotion_localpath(p3d_rob* robotPt, p3d_localpath* lo
   for(int i = 0; i < softMotion_localpathPt->nbActiveCntrts; i++){
     softMotion_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
   }
+  
+#ifdef MULTILOCALPATH
+  softMotion_localpathPt->mlpID = localpathPt->mlpID;
+  for(int j=0; j< MAX_MULTILOCALPATH_NB ; j++) {
+    softMotion_localpathPt->mlpLocalpath[j] = localpathPt->mlpLocalpath[j];
+  }
+#endif
+  
   return softMotion_localpathPt;
 }
 
