@@ -4,7 +4,6 @@
 
  */
 #ifndef __CEXTRACT__
-
 extern int g3d_traj_get_NB_KEY_FRAME ( void );
 extern void g3d_traj_set_NB_KEY_FRAME ( int param );
 extern void g3d_draw_trace ( void );
@@ -13,5 +12,7 @@ extern int g3d_show_tcur_rob ( p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_
 extern void g3d_draw_tcur ( p3d_rob *robotPt, int NumBody, int NbKeyFrames );
 extern void g3d_draw_all_tcur ( void );
 extern void g3d_draw_trace_all_tcur(void);
+
+extern void (*ext_compute_config_cost_along_traj)(p3d_rob* r,configPt q);
 
 #endif /* __CEXTRACT__ */
