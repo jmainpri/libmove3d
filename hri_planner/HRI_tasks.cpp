@@ -8,7 +8,10 @@
 //
 // Copyright: See COPYING file that comes with this distribution
 //
-//
+/*
+ cd /home/akpandey/AKP_modules/BioMove3D_New3/build/;
+ /home/akpandey/AKP_modules/BioMove3D_New3/build/Debug/bin/i386-linux/move3d-studio -f /home/akpandey/AKP_modules/mhp_new/BioMove3DDemos_new3/GS/gsJidoKukaSAHandSM_MA_new.p3d -sc /home/akpandey/AKP_modules/mhp_new/BioMove3DDemos_new3/GS/SCENARIO/ManipulationTestSAHand_MA_new4.sce -dmax 0.05
+*/
 
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
@@ -166,8 +169,8 @@ int find_current_HRI_manip_task_solution()
 #endif
    }
 
-   UPDATE_MIGHTABILITY_MAP_INFO=1;
-   SHOW_MIGHTABILITY_MAP_INFO=1;
+   ////UPDATE_MIGHTABILITY_MAP_INFO=1;
+   ////SHOW_MIGHTABILITY_MAP_INFO=1;
 }
 
 static void initManipulation()
@@ -786,7 +789,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
    ArmManipulationData mData = ( *manipulation->robot()->armManipulationData ) [0];
    p3d_rob* object= ( p3d_rob* ) p3d_get_robot_by_name ( ( char* ) obj_to_manipulate );
    int armID= 0;
-   p3d_matrix4 T0, T;
+   p3d_matrix4 Tplacement0, T;
 //   gpGrasp grasp;
    MANIPULATION_TASK_MESSAGE status;
    int result;
@@ -808,7 +811,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
 
 
    gpGet_grasp_list ( object->name, armHandProp.type, graspList );
-   p3d_get_freeflyer_pose ( object, T0 );
+   p3d_get_freeflyer_pose ( object, Tplacement0 );
    p3d_get_freeflyer_pose2 ( object, &x, &y, &z, &rx, &ry, &rz );
 
 //    ////gpReduce_grasp_list_size ( graspList, graspList, 30 );
@@ -820,7 +823,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
    ////return 0;
 //   status= manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), (char*)obj_to_manipulate, (char*)"", confs, smTrajs);
    p3d_matrix4 handFrame, tAtt, Tobject;
-   configPt refConf= NULL, approachConf= NULL, graspConf= NULL, openConf= NULL, placeConf= NULL;
+   configPt refConf= NULL, approachConf= NULL, graspConf= NULL, openConf= NULL, liftConf= NULL, placeConf= NULL;
    std::list<gpPlacement> curr_placementListOut;
    get_placements_in_3D ( object,  curr_placementListOut );
 
@@ -842,7 +845,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
       p3d_set_and_update_this_robot_conf ( manipulation->robot(), refConf );
 //      p3d_copy_config_into(manipulation->robot(), q0, &manipulation->robot()->ROBOT_POS);
       printf ( "grasp id= %d\n",igrasp->ID );
-      p3d_set_freeflyer_pose ( object, T0 );
+      p3d_set_freeflyer_pose ( object, Tplacement0 );
 
 
       p3d_mat4Mult ( igrasp->frame, handProp.Tgrasp_frame_hand, handFrame );
@@ -940,16 +943,16 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
                            ////iter->draw(0.05);
                            if ( iplacement->stability<=0 ) //As the placement list is sorted
                               break;
-                           p3d_mat4Copy ( T0, T );
+                           p3d_mat4Copy ( Tplacement0, T );
 
-                           iplacement->position[0]= point_to_give.x-0.3;
+                           iplacement->position[0]= point_to_give.x;
                            iplacement->position[1]= point_to_give.y;
                            iplacement->position[2]= point_to_give.z;
                            p3d_matrix4 Tplacement;
                            iplacement->computePoseMatrix ( Tplacement );
                            p3d_set_freeflyer_pose ( object, Tplacement );
-                           p3d_get_freeflyer_pose2 ( object,  &x, &y, &z, &rx, &ry, &rz );
-
+                            //p3d_get_freeflyer_pose2 ( object,  &x, &y, &z, &rx, &ry, &rz );
+                            //printf(" >>> (x, y, z, rx, ry, rz)=(%lf, %lf, %lf, %lf, %lf, %lf) \n",x, y, z, rx, ry, rz);
                            p3d_mat4Mult ( igrasp->frame, handProp.Tgrasp_frame_hand, handFrame );
                            p3d_mat4Mult ( handFrame, manipulation->robot()->ccCntrts[armID]->Tatt2, tAtt );
 
@@ -961,25 +964,47 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
                               manipulation->unFixAllHands();
                               gpSet_grasp_configuration ( manipulation->robot(), *igrasp, armID );
                               manipulation->fixAllHands ( NULL, false );
+                              p3d_set_freeflyer_pose ( object, Tplacement );
                               placeConf= setRobotGraspPosWithoutBase ( manipulation->robot(), Tplacement, tAtt,  0, 0, armID, false );
+                              ////ManipulationUtils::copyConfigToFORM ( object, placeConf ); 
                               ////pqp_print_colliding_pair();
                               g3d_draw_allwin_active();
                               if(placeConf!=NULL)
                               {
                                p3d_rob* support= ( p3d_rob* ) p3d_get_robot_by_name ( "SHELF" );
                                p3d_set_and_update_this_robot_conf ( manipulation->robot(), placeConf );
-                               MANIPULATION_TASK_MESSAGE place_status= manipulation->armPickTakeToFree(armID, graspConf, placeConf, object, support, place_trajs);
+//                                MANIPULATION_TASK_MESSAGE place_status= manipulation->armPickTakeToFree(armID, graspConf, placeConf, object, support, place_trajs);
+                               p3d_set_freeflyer_pose ( object, Tplacement0 );
+//                                liftConf=  manipulation->getApproachGraspConf(object, armID, *igrasp, graspConf, tAtt);
 
-                               if ( place_status==MANIPULATION_TASK_OK )
+                               p3d_mat4Copy(Tplacement0, Tplacement);
+                               Tplacement[2][3]+= 0.1;
+                               p3d_set_freeflyer_pose ( object, Tplacement );
+                               liftConf= setRobotGraspPosWithoutBase ( manipulation->robot(), Tplacement, tAtt,  0, 0, armID, false );
+                               p3d_set_freeflyer_pose ( object, Tplacement0);
+
+                               ManipulationUtils::copyConfigToFORM ( manipulation->robot(), graspConf );
+                               if(liftConf!=NULL)
                                {
-                              printf ( " Found for grasp_ctr=%d, and plac_ctr %d \n",grasp_ctr,plac_ctr );
-                              manipulation->concatTrajectories ( place_trajs, &traj );
-                              MANPIPULATION_TRAJECTORY_CONF_STR conf;
-                              SM_TRAJ smTraj;
-                              manipulation->computeSoftMotion ( traj, conf, smTraj );
-                               ////ManipulationUtils::copyConfigToFORM ( manipulation->robot(), placeConf ); //If want to store the config for visualization
-                               return 1;
+                                  ManipulationUtils::copyConfigToFORM ( manipulation->robot(), liftConf );
+                                  manipulation->fixAllHands ( NULL, false );
+                                  manipulation->robot()->isCarryingObject = TRUE;
+                                  (*manipulation->robot()->armManipulationData)[armID].setCarriedObject(object);
+//                                   manipulation->cleanRoadmap();
+                                  MANIPULATION_TASK_MESSAGE place_status= manipulation->armPickTakeToFree(armID, graspConf, placeConf, object, support, liftConf, *igrasp, place_trajs);
+    
+                                  if ( place_status==MANIPULATION_TASK_OK )
+                                  {
+                                  printf ( " Found for grasp_ctr=%d, and plac_ctr %d \n",grasp_ctr,plac_ctr );
+//                                  manipulation->concatTrajectories ( place_trajs, &traj );
+//                                   MANPIPULATION_TRAJECTORY_CONF_STR conf;
+//                                   SM_TRAJ smTraj;
+//                                   manipulation->computeSoftMotion ( traj, conf, smTraj );
+                                  ManipulationUtils::copyConfigToFORM ( manipulation->robot(), placeConf ); //If want to store the config for visualization
+                                  return 1;
+                                  }
                                }
+
                               }
                            }
                         }
@@ -999,7 +1024,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
       manipulation->setSafetyDistanceValue ( orig_safety_dist );
 // MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt qStart, p3d_rob* object, configPt graspConfig, configPt openConfig, configPt approachFreeConfig, std::vector <p3d_traj*> &trajs)
       continue;
-
+/*
 
       printf ( " >>>>> before armPlanTask(ARM_PICK_GOTO \n" );
       status = manipulation->armPlanTask ( ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), m_objStart, m_objGoto, ( char* ) obj_to_manipulate, ( char* ) "", *igrasp, confs, smTrajs );
@@ -1066,7 +1091,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
             ////iter->draw(0.05);
             if ( iplacement->stability<=0 ) //As the placement list is sorted
                break;
-            p3d_mat4Copy ( T0, T );
+            p3d_mat4Copy ( Tplacement0, T );
 
             iplacement->position[0]= point_to_give.x;
             iplacement->position[1]= point_to_give.y;
@@ -1135,7 +1160,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
                quit= true;
 
 //             if (manipulation->concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK) {
-//                   /* COMPUTE THE SOFTMOTION TRAJECTORY */
+//                   // COMPUTE THE SOFTMOTION TRAJECTORY 
 //                   MANPIPULATION_TRAJECTORY_CONF_STR conf;
 //                   SM_TRAJ smTraj;
 //                   manipulation->computeSoftMotion(traj, conf, smTraj);
@@ -1159,12 +1184,12 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
 
 
 
-      result= 0;
+      result= 0;*/
    }
 
    p3d_destroy_config ( manipulation->robot(), refConf );
    p3d_destroy_config ( manipulation->robot(), qcur );
-   p3d_set_freeflyer_pose ( object, T0 );
+   p3d_set_freeflyer_pose ( object, Tplacement0 );
 
 //WARNING: TMP for Videos, Comment the line below
    p3d_col_deactivate_robot ( object );
