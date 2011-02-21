@@ -129,7 +129,11 @@ class ArmManipulationData {
 			_carriedObject = carriedObject;
 		};
 		inline void setCarriedObject(const char* robotName){
-			_carriedObject = p3d_get_robot_by_name(robotName);
+      if(robotName){
+        _carriedObject = p3d_get_robot_by_name(robotName);
+      }else{
+        _carriedObject = NULL;
+      }
 		};
     inline void setPlacement(p3d_rob* placement){
       _placement = placement;
