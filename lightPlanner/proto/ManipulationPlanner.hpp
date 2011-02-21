@@ -88,13 +88,14 @@ class  ManipulationPlanner {
 	void fixManipulationJoints(int armId, configPt q, p3d_rob* object);
 	/** UnFix the free flyers*/
 	void unfixManipulationJoints(int armId);
+
+  
 	/** Generate needed configurations from the given grasp and object position */
+  MANIPULATION_TASK_MESSAGE computeManipulationData(int armId,p3d_rob* object);
+  MANIPULATION_TASK_MESSAGE computeManipulationData(int armId,p3d_rob* object,gpGrasp grasp);
 	MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, ManipulationData& configs);
 	MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, gpGrasp grasp, ManipulationData& configs);
-  
-  //! Compute the distance between 2 configurations for 
-  //! one local path group
-  double distConfig( configPt q1, configPt q2, int group ) const ;
+  MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;
   
   /** Generate the grasp configuration given the grasp the arm and the object.
   @return the attach matrix computed given the grasp and Tatt2 from the p3d file
@@ -108,14 +109,9 @@ class  ManipulationPlanner {
   /** Generate the grasp approach configuration given the grasp configuration, the grasp, the arm, the attach matrix and the object.*/
   configPt getApproachGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const;
   /** Generates a free configuration from a worspace point and a grasp*/
-  configPt getFreeHoldingConf( p3d_rob* obj, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, std::vector<double> &objGoto, p3d_rob* support = NULL ) const;
+  configPt getFreeHoldingConf( p3d_rob* obj, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, double& confCost, std::vector<double> &objGoto, p3d_rob* support = NULL ) const;
   /** Generate the extract configuration by moving the arm over Z axis until we have a collision free or passing 5 * offset */
   configPt getExtractConf(int armId, configPt currentConf, p3d_matrix4 tAtt) const;
-  
-	MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;
-  
-  MANIPULATION_TASK_MESSAGE computeManipulationData(int armId,p3d_rob* object);
-  MANIPULATION_TASK_MESSAGE computeManipulationData(int armId,p3d_rob* object,gpGrasp grasp);
   
 	/* ******************************* */
   /* ******* Planning Modes ******** */
@@ -171,7 +167,7 @@ class  ManipulationPlanner {
     /**  Move the arm from a free configuration to a placement configuration */
     MANIPULATION_TASK_MESSAGE armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, p3d_rob* placement, p3d_rob* support, std::vector <p3d_traj*> &trajs);
     MANIPULATION_TASK_MESSAGE armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, std::vector<double> &objGoto, p3d_rob* support, std::vector <p3d_traj*> &trajs);
-    MANIPULATION_TASK_MESSAGE armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, p3d_rob* support, configPt approachGraspConfig, configPt depositConfig, gpGrasp &grasp, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, p3d_rob* support, configPt approachGraspConfig, configPt depositConfig, std::vector <p3d_traj*> &trajs);
 
 #ifdef DPG
     /** \brief Check if the current path is in collision or not. Start from the begining of the trajectory
