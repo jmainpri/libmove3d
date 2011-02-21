@@ -78,7 +78,7 @@ void g3d_draw_graph(void) {
     return;
 
   indexjnt = p3d_get_user_drawnjnt();
-  if (indexjnt != -1) {
+  if (indexjnt != -1 && indexjnt <= robotPt->njoints ) {
     drawnjnt = XYZ_ROBOT->joints[indexjnt];
   } else {
 #ifdef P3D_COLLISION_CHECKING

@@ -508,25 +508,33 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
  *
  */
 
-void g3d_draw_tcur(p3d_rob *robotPt, int NumBody, int NbKeyFrames) {
+void g3d_draw_tcur(p3d_rob *robotPt, int indexjnt, int NbKeyFrames) {
   int modulo;
   p3d_localpath *localpathPt;
   double umax, u = 0, du;
   configPt q, qsave;
   int color;
-  p3d_obj *o;
+  p3d_jnt *drawnjnt;
+  p3d_obj *body = robotPt->o[robotPt->no-1];
   p3d_vector3 pi, pf;
   int val1, val2;
   double Cost1, Cost2;
 
   if (!robotPt->tcur)
     return;
-
-  if ((NumBody >= robotPt->no) || (NumBody < 0))
-    return;
-
-  if (!(o = robotPt->o[NumBody]))
-    return;
+  
+  indexjnt = p3d_get_user_drawnjnt();
+  if (indexjnt != -1 && indexjnt <= robotPt->njoints ) {
+    drawnjnt = robotPt->joints[indexjnt];
+  } else {
+#ifdef P3D_COLLISION_CHECKING
+    if (p3d_col_get_mode() == p3d_col_mode_bio) {
+      drawnjnt = robotPt->joints[0]->next_jnt[robotPt->joints[0]->n_next_jnt - 1];
+    } else {
+      drawnjnt = body->jnt;
+    }
+#endif
+  }
 
   qsave = p3d_get_robot_config(robotPt);
   color = Black;
@@ -541,7 +549,7 @@ void g3d_draw_tcur(p3d_rob *robotPt, int NumBody, int NbKeyFrames) {
   q = localpathPt->config_at_param(robotPt, localpathPt, 0);
   p3d_set_and_update_this_robot_conf(robotPt, q);
   
-  p3d_jnt_get_cur_vect_point(o->jnt, pi);
+  p3d_jnt_get_cur_vect_point(drawnjnt, pi);
   p3d_destroy_config(robotPt, q);
   u += du;
 
@@ -576,7 +584,7 @@ void g3d_draw_tcur(p3d_rob *robotPt, int NumBody, int NbKeyFrames) {
 //  				g3d_draw_frame(robotPt->joints[i]->abs_pos, 15);
 //  			}
 
-      p3d_jnt_get_cur_vect_point(o->jnt, pf);
+      p3d_jnt_get_cur_vect_point(drawnjnt, pf);
       p3d_destroy_config(robotPt, q);
       
       if ((!ENV.getBool(Env::isCostSpace)) || (GroundCostObj == NULL)) {
@@ -625,28 +633,24 @@ void g3d_draw_tcur(p3d_rob *robotPt, int NumBody, int NbKeyFrames) {
 
 void g3d_draw_all_tcur(void) {
 
-    if(!ENV.getBool(Env::debugCostOptim))
-    {
-        p3d_rob *robotPt;
-        int r, nr, ir;
-
-        r = p3d_get_desc_curnum(P3D_ROBOT);
-        nr = p3d_get_desc_number(P3D_ROBOT);
-
-        for (ir = 0;ir < nr;ir++) {
-            p3d_sel_desc_num(P3D_ROBOT, ir);
-            robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-            if (robotPt)
-            {
-	      int a = p3d_get_user_drawnjnt();
-	      if(a == -1) {
-	       a = robotPt->no;
-	      }
-	      g3d_draw_tcur(robotPt, a- 1 , NB_KEY_FRAME);
-            }
-        }
-        p3d_sel_desc_num(P3D_ROBOT, r);
+  if(!ENV.getBool(Env::debugCostOptim))
+  {
+    p3d_rob *robotPt;
+    int r, nr, ir;
+    
+    r = p3d_get_desc_curnum(P3D_ROBOT);
+    nr = p3d_get_desc_number(P3D_ROBOT);
+    
+    for (ir = 0;ir < nr;ir++) {
+      p3d_sel_desc_num(P3D_ROBOT, ir);
+      robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+      if (robotPt)
+      {
+	      g3d_draw_tcur(robotPt, p3d_get_user_drawnjnt(), NB_KEY_FRAME);
+      }
     }
+    p3d_sel_desc_num(P3D_ROBOT, r);
+  }
 	
 // TODO callback OOMOVE3D
 //#if defined( CXX_PLANNER )
