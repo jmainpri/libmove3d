@@ -28,6 +28,3 @@ dummyFunctions.cpp
 
 )
 ENDIF(NOT BIO)
-IF(CXX_PLANNER)
-include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/CppApi/SourceList.cmake)
-ENDIF(CXX_PLANNER)
