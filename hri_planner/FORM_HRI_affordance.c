@@ -10,7 +10,14 @@
 #ifdef USE_SYM_GEO_PLAN
 #include "include/Geo_Sym_Sys.h"
 #endif
+
+
 #define LOCAL_COMPUTATION_EPSILON (1e-9)
+
+////#define COMPILE_WITH_HTL
+#ifdef COMPILE_WITH_HTL
+#include "proto/FORM_Mocap_data_run_proto.h"
+#endif
 /* #define BH  Change this definition to JIDO, HRP2 or BH if you use these robots */
 
 
@@ -78,8 +85,21 @@ static FL_OBJECT  *HRI_MANIP_TASK_GROUP_OBJ;
 static FL_OBJECT  *MIGHTABILITY_SET_FRAME_OBJ;
 static FL_OBJECT  *MIGHTABILITY_SET_OPERATIONS_GROUP_OBJ;
 
+static FL_OBJECT  *BT_SHOW_VISIBILE_PLACE_AGENTS_OBJ[MAXI_NUM_OF_AGENT_FOR_HRI_TASK][12];
+static FL_OBJECT  *BT_SHOW_REACHABLE_PLACE_AGENTS_HAND_OBJ[MAXI_NUM_OF_AGENT_FOR_HRI_TASK][5];
+static FL_OBJECT  *BT_SHOW_REACHABLE_PLACE_AGENTS_OBJ[MAXI_NUM_OF_AGENT_FOR_HRI_TASK][12];
+static FL_OBJECT  *BT_SHOW_MIGHTABILITY_FOR_AGENTS_OBJ[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
+static FL_OBJECT  *BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_OBJ[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
+static FL_OBJECT  *BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_IN_3D_OBJ[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
+static FL_OBJECT  *BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_PLANE_OBJ[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
+static FL_OBJECT  *BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_TABLE_OBJ[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
+static FL_OBJECT  *BT_SHOW_OBJECT_MIGHTABILITY_FOR_AGENTS_OBJ[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
+static FL_OBJECT  *BT_HRI_TASK_PERFORMED_BY_AGENT_OBJ;
+static FL_OBJECT  *BT_HRI_TASK_PERFORMED_FOR_AGENT_OBJ;
+static FL_OBJECT  *BT_HRI_TASK_PERFORMED_FOR_OBJECT_OBJ;
+static FL_OBJECT  *BT_USE_OBJECT_DIMENSION_FOR_CANDIDATE_PTS_OBJ;
 
- #ifdef SECOND_HUMAN_EXISTS
+ #ifdef HUMAN2_EXISTS_FOR_MA
 static FL_OBJECT  *BT_SHOW_DIRECT_REACHABILITY_HUM2_OBJ; 
 static FL_OBJECT  *BT_SHOW_BENDING_REACHABILITY_HUM2_OBJ;
 static FL_OBJECT  *BT_SHOW_TURNING_AROUND_REACHABLE_HUM2_OBJ; 
@@ -134,7 +154,7 @@ extern int SHOW_PUT_OBJ_CANDIDATES;
 extern int SHOW_WEIGHT_BY_COLOR_FOR_CANDIDATE_POINTS;
 extern int SHOW_WEIGHT_BY_LENGTH_FOR_CANDIDATE_POINTS;
 
- #ifdef SECOND_HUMAN_EXISTS
+ #ifdef HUMAN2_EXISTS_FOR_MA
 extern int SHOW_3D_VISIBLE_PLACE_HUM2;
 extern int SHOW_2D_VISIBLE_PLACE_HUM2;
 extern int SHOW_2D_BENDING_REACHABLE_HUM2;
@@ -158,7 +178,7 @@ int SHOW_HUMAN_PERSPECTIVE=0;
 
 extern p3d_env *envPt_MM;
 
-extern int CURRENT_HRI_MANIPULATION_TASK;
+extern HRI_TASK_TYPE CURRENT_HRI_MANIPULATION_TASK;
 extern int SHOW_CURRENT_TASK_CANDIDATE_POINTS;
 extern char CURRENT_OBJECT_TO_MANIPULATE[50];
 
@@ -167,12 +187,33 @@ extern int UPDATE_MIGHTABILITY_MAP_INFO;
 extern int SHOW_MIGHTABILITY_MAP_INFO;  
 
 extern int AKP_RECORD_WINDOW_MOVEMENT;
+
+extern candidate_poins_for_task resultant_current_candidate_point;
 /*static void fct_draw(void)
 {
   if(G3D_DRAW_GRAPH) 
     g3d_draw_allwin_active();
 } 
 */
+extern flags_show_Mightability_Maps curr_flags_show_Mightability_Maps;
+
+extern int SHOW_MIGHTABILITY_MAPS_FOR_AGENTS[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
+extern int SHOW_OBJECT_MIGHTABILITY_FOR_AGENTS[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
+extern int SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_IN_3D[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
+extern int SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_PLANE[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
+extern int SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_TABLE[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
+
+extern int CONSIDER_OBJECT_DIMENSION_FOR_CANDIDATE_PTS;
+
+extern int NEED_TO_SHOW_MIGHTABILITY_MAPS;
+extern int NEED_TO_SHOW_OBJECT_MIGHTABILITY;
+
+extern HRI_TASK_AGENT CURRENT_TASK_PERFORMED_BY;
+extern HRI_TASK_AGENT CURRENT_TASK_PERFORMED_FOR;
+
+extern int indices_of_MA_agents[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
+
+
 
 #ifdef USE_HRP2_GIK
 static void CB_create_HRP2_robot_obj(FL_OBJECT *ob, long arg)
@@ -263,7 +304,7 @@ static void CB_show_bending_reach_hum_active_obj(FL_OBJECT *ob, long arg)
   else
   SHOW_3D_BENDING_REACHABLE_HUM=1;
  break;
-  #ifdef SECOND_HUMAN_EXISTS
+  #ifdef HUMAN2_EXISTS_FOR_MA
  case 2:
   if(SHOW_2D_BENDING_REACHABLE_HUM2==1)
   SHOW_2D_BENDING_REACHABLE_HUM2=0;
@@ -302,7 +343,7 @@ static void CB_show_dir_reach_active_obj(FL_OBJECT *ob, long arg)
   else
   SHOW_3D_DIRECT_REACHABLE_HUM=1;
  break;
-  #ifdef SECOND_HUMAN_EXISTS
+  #ifdef HUMAN2_EXISTS_FOR_MA
  case 2:
   if(SHOW_2D_DIRECT_REACHABLE_HUM2==1)
   SHOW_2D_DIRECT_REACHABLE_HUM2=0;
@@ -401,7 +442,7 @@ static void CB_show_visible_place_hum_active_obj(FL_OBJECT *ob, long arg)
   else
   SHOW_3D_VISIBLE_PLACE_STANDING_HUM=1;
  break;
-  #ifdef SECOND_HUMAN_EXISTS
+  #ifdef HUMAN2_EXISTS_FOR_MA
  case 4:
   if(SHOW_2D_VISIBLE_PLACE_HUM2==1)
   SHOW_2D_VISIBLE_PLACE_HUM2=0;
@@ -453,7 +494,7 @@ static void CB_show_turn_around_reach_place_active_obj(FL_OBJECT *ob, long arg)
   else
   SHOW_3D_TURNING_AROUND_REACHABLE_HUM=1;
  break;
-  #ifdef SECOND_HUMAN_EXISTS
+  #ifdef HUMAN2_EXISTS_FOR_MA
  case 2:
   if(SHOW_2D_TURNING_AROUND_REACHABLE_HUM2==1)
   SHOW_2D_TURNING_AROUND_REACHABLE_HUM2=0;
@@ -608,11 +649,32 @@ static void CB_calculate_affordance_active_obj_old(FL_OBJECT *ob, long arg)
  g3d_draw_allwin_active();
 }
 
+int add_agents_for_HRI_task()
+{
+  for(int i=0; i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK; i++)
+  {
+    fl_addto_choice(BT_HRI_TASK_PERFORMED_BY_AGENT_OBJ,envPt_MM->robot[indices_of_MA_agents[i]]->name);
+    fl_addto_choice(BT_HRI_TASK_PERFORMED_FOR_AGENT_OBJ,envPt_MM->robot[indices_of_MA_agents[i]]->name);
+  }
+  return 1;
+}
 
+int add_objects_for_HRI_task()
+{
+  for(int i=0; i<envPt_MM->nr; i++)
+  {
+    fl_addto_choice(BT_HRI_TASK_PERFORMED_FOR_OBJECT_OBJ,envPt_MM->robot[i]->name);
+  }
+  return 1;
+}
+ 
 static void CB_calculate_affordance_active_obj(FL_OBJECT *ob, long arg)
 {
 
  Create_and_init_Mightability_Maps();
+ 
+ add_agents_for_HRI_task();
+ add_objects_for_HRI_task();
 
  g3d_draw_env();
  fl_check_forms();
@@ -829,6 +891,18 @@ static void CB_show_weight_for_candidates_obj(FL_OBJECT *ob, long arg)
 static void CB_find_current_task_candidates_obj(FL_OBJECT *ob, long arg)
 {
 
+ //// find_candidate_points_for_current_HRI_task(CURRENT_HRI_MANIPULATION_TASK, JIDO_MA, HUMAN1_MA, &resultant_current_candidate_point);
+ candidate_poins_for_task *curr_resultant_candidate_points=MY_ALLOC(candidate_poins_for_task,1);
+ 
+ find_HRI_task_candidate_points(CURRENT_HRI_MANIPULATION_TASK,CURRENT_OBJECT_TO_MANIPULATE,CURRENT_TASK_PERFORMED_BY,CURRENT_TASK_PERFORMED_FOR,curr_resultant_candidate_points);
+ 
+  MY_FREE(curr_resultant_candidate_points, candidate_poins_for_task,1);
+
+  CANDIDATE_POINTS_FOR_TASK_FOUND=1;
+  
+  fl_check_forms();
+  g3d_draw_allwin_active();
+ return;
  ////find_candidate_points_on_plane_to_put_obj_new();
  ////assign_weights_on_candidte_points_to_put_obj(); 
  ////CANDIDATE_POINTS_FOR_TASK_FOUND=1;
@@ -996,7 +1070,104 @@ static void CB_use_resultant_MM_set(FL_OBJECT *ob, long arg)
 }
 
 
+static void CB_update_show_Mightabilities_for_agent_obj(FL_OBJECT *ob, long arg)
+{
+  ////printf(" %d\n",fl_get_button(ob));
+  NEED_TO_SHOW_MIGHTABILITY_MAPS=0;
+  NEED_TO_SHOW_OBJECT_MIGHTABILITY=0;
+  for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
+  {
+    if(fl_get_button(BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_OBJ[i])==TRUE)
+    {
+      SHOW_MIGHTABILITY_MAPS_FOR_AGENTS[i]=1;
+      
+      ////if(fl_get_button(BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_IN_3D_OBJ[i])==TRUE)
+	SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_IN_3D[i]=fl_get_button(BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_IN_3D_OBJ[i]);
+      
+      ////if(fl_get_button(BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_PLANE_OBJ[i])==TRUE)
+	SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_PLANE[i]=fl_get_button(BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_PLANE_OBJ[i]);
+	
+	SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_TABLE[i]=fl_get_button(BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_TABLE_OBJ[i]);
+      
+      NEED_TO_SHOW_MIGHTABILITY_MAPS=1;
+    }
+    else
+    {
+      SHOW_MIGHTABILITY_MAPS_FOR_AGENTS[i]=0;
+    }
+    if(fl_get_button(BT_SHOW_OBJECT_MIGHTABILITY_FOR_AGENTS_OBJ[i])==TRUE)
+    {
+      SHOW_OBJECT_MIGHTABILITY_FOR_AGENTS[i]=1;
+      NEED_TO_SHOW_OBJECT_MIGHTABILITY=1;
+    }
+    else
+    {
+      SHOW_OBJECT_MIGHTABILITY_FOR_AGENTS[i]=0;
+    }
+    
+    if(fl_get_button(BT_SHOW_MIGHTABILITY_FOR_AGENTS_OBJ[i])==TRUE)
+    {
+      for(int j=0;j<agents_for_MA_obj.for_agent[i].maxi_num_vis_states;j++)
+     {
+      if(fl_get_button(BT_SHOW_VISIBILE_PLACE_AGENTS_OBJ[i][j])==TRUE)
+      {
+	curr_flags_show_Mightability_Maps.show_visibility[i][j]=1+j%4;
+      }
+      else
+      {
+	curr_flags_show_Mightability_Maps.show_visibility[i][j]=0;
+      }
+     }
+     
+      for(int k=0;k<agents_for_MA_obj.for_agent[i].no_of_arms;k++)
+       {
+	
+       if(fl_get_button(BT_SHOW_REACHABLE_PLACE_AGENTS_HAND_OBJ[i][k])==TRUE)
+        {
+	  for(int j=0;j<agents_for_MA_obj.for_agent[i].maxi_num_reach_states;j++)
+         {
+	  if(fl_get_button(BT_SHOW_REACHABLE_PLACE_AGENTS_OBJ[i][j])==TRUE)
+          {
+	    	curr_flags_show_Mightability_Maps.show_reachability[i][j][k]=1+j%4;
 
+	  }
+	  else
+	  {
+	    curr_flags_show_Mightability_Maps.show_reachability[i][j][k]=0;
+	  }
+	 }
+        }
+       }
+       
+    }
+    else
+    {
+      for(int j=0;j<agents_for_MA_obj.for_agent[i].maxi_num_vis_states;j++)
+     {
+     
+	curr_flags_show_Mightability_Maps.show_visibility[i][j]=0;
+      
+     }
+     
+      for(int k=0;k<agents_for_MA_obj.for_agent[i].no_of_arms;k++)
+       {
+	
+       
+	  for(int j=0;j<agents_for_MA_obj.for_agent[i].maxi_num_reach_states;j++)
+         {
+	  
+	    curr_flags_show_Mightability_Maps.show_reachability[i][j][k]=0;
+	  
+	 }
+        }
+       }
+    }
+ 
+  
+  fl_check_forms();
+ g3d_draw_allwin_active();
+     
+}
 
 
 
@@ -1242,7 +1413,133 @@ static void g3d_create_show_object_visibility_obj(void)
 
 }
 
+static void g3d_create_show_visible_place_agents_obj(void)
+{
+  int x_st=50;
+  int y_st=50;
+  int width=50;
+  int height=20;
+  int x_shift=50;
+  int y_shift=20;
+  char type_name[20];
+  int label_fr_width=500;
+  int label_fr_height=90;
+  int x_init=50;
+  
+  
+  for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
+   {
+     int y_init=y_st;
+     x_st=x_init;
+     //y_st=50;
+     ////x_end=50;
+     //y_end=20;
+      sprintf(type_name,"%d",i);
 
+      HRI_MANIP_TASK_FRAME_OBJ = fl_add_labelframe(FL_BORDER_FRAME,x_st-5,y_st-5,label_fr_width,label_fr_height,type_name);
+      HRI_MANIP_TASK_GROUP_OBJ = fl_bgn_group();
+      x_st=x_init+120;
+      y_st-=15;
+      BT_SHOW_MIGHTABILITY_FOR_AGENTS_OBJ[i] = fl_add_checkbutton(FL_PUSH_BUTTON,x_st,y_st,width+5,height+5,"ACTIVATE");
+       fl_set_call_back(BT_SHOW_MIGHTABILITY_FOR_AGENTS_OBJ[i],CB_update_show_Mightabilities_for_agent_obj,0);
+       x_st+=x_shift+50;
+       y_st+=5;
+       BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_OBJ[i] = fl_add_checkbutton(FL_PUSH_BUTTON,x_st,y_st,width+5,height+5,"MM");
+       fl_set_call_back(BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_OBJ[i],CB_update_show_Mightabilities_for_agent_obj,0);
+       
+       x_st+=x_shift;
+       
+       BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_IN_3D_OBJ[i] = fl_add_checkbutton(FL_PUSH_BUTTON,x_st,y_st,width,height,"3D");
+       fl_set_call_back(BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_IN_3D_OBJ[i],CB_update_show_Mightabilities_for_agent_obj,0);
+
+       x_st+=x_shift-10;
+       
+       BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_PLANE_OBJ[i] = fl_add_checkbutton(FL_PUSH_BUTTON,x_st,y_st,width,height,"PLANES");
+       fl_set_call_back(BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_PLANE_OBJ[i],CB_update_show_Mightabilities_for_agent_obj,0);
+
+       x_st+=x_shift;
+       
+       BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_TABLE_OBJ[i] = fl_add_checkbutton(FL_PUSH_BUTTON,x_st,y_st,width,height,"TABLES");
+       fl_set_call_back(BT_SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_TABLE_OBJ[i],CB_update_show_Mightabilities_for_agent_obj,0);
+
+       x_st+=x_shift+15;
+       BT_SHOW_OBJECT_MIGHTABILITY_FOR_AGENTS_OBJ[i] = fl_add_checkbutton(FL_PUSH_BUTTON,x_st,y_st,width+5,height+5,"OOM");
+       fl_set_call_back(BT_SHOW_OBJECT_MIGHTABILITY_FOR_AGENTS_OBJ[i],CB_update_show_Mightabilities_for_agent_obj,0);
+       
+       x_st=x_init;
+       y_st=y_init;
+       ////y_st+=y_shift;
+      fl_add_text(FL_NORMAL_TEXT,x_st,y_st,50,20,"Visible");
+      x_st=x_init;
+      y_st+=y_shift;
+     for(int j=0;j<agents_for_MA_obj.for_agent[i].maxi_num_vis_states;j++)
+     {
+       ////itoa(j,type_name,10);
+       sprintf(type_name,"%d",j);
+       ////printf(" %s ",MM_CURRENT_STATE_HUM_VIS);
+       BT_SHOW_VISIBILE_PLACE_AGENTS_OBJ[i][j] = fl_add_checkbutton(FL_PUSH_BUTTON,x_st,y_st,width,height,type_name);
+       fl_set_call_back(BT_SHOW_VISIBILE_PLACE_AGENTS_OBJ[i][j],CB_update_show_Mightabilities_for_agent_obj,0);
+       
+       x_st+=x_shift;
+       ////x_end+=x_shift;
+     }
+      y_st+=y_shift;
+      x_st=x_init;
+      fl_add_text(FL_NORMAL_TEXT,x_st-5,y_st,150,20,"Reachability By hand -->");
+      x_st=x_init+120;
+      for(int k=0;k<agents_for_MA_obj.for_agent[i].no_of_arms;k++)
+       {
+	 ////y_st+=y_shift;
+      
+	 sprintf(type_name,"%d",k);
+      ////printf(" %s ",MM_CURRENT_STATE_HUM_VIS);
+      ////fl_add_labelframe(FL_OBJECT
+      ////fl_add_labelframe(FL_BORDER_FRAME,x_st-5,y_st-5,500,80,"By hand");
+	 
+       BT_SHOW_REACHABLE_PLACE_AGENTS_HAND_OBJ[i][k] = fl_add_checkbutton(FL_PUSH_BUTTON,x_st,y_st,width,height,type_name);
+       fl_set_call_back(BT_SHOW_REACHABLE_PLACE_AGENTS_HAND_OBJ[i][k],CB_update_show_Mightabilities_for_agent_obj,0);
+       
+       x_st+=x_shift;
+       }
+       
+       y_st+=y_shift;
+       x_st=x_init;
+     for(int j=0;j<agents_for_MA_obj.for_agent[i].maxi_num_reach_states;j++)
+     {
+      sprintf(type_name,"%d",j);
+      ////printf(" %s ",MM_CURRENT_STATE_HUM_VIS);
+      ////fl_add_labelframe(FL_OBJECT
+      ////fl_add_labelframe(FL_BORDER_FRAME,x_st-5,y_st-5,500,80,"By hand");
+	 
+       BT_SHOW_REACHABLE_PLACE_AGENTS_OBJ[i][j] = fl_add_checkbutton(FL_PUSH_BUTTON,x_st,y_st,width,height,type_name);
+       fl_set_call_back(BT_SHOW_REACHABLE_PLACE_AGENTS_OBJ[i][j],CB_update_show_Mightabilities_for_agent_obj,0);
+       
+       x_st+=x_shift;
+      
+     }
+     ////y_end+=y_shift;
+        fl_end_group();
+	y_st=y_init+label_fr_height+10;
+
+   }
+   
+/*
+     curr_flags_show_Mightability_Maps.show_visibility[i][j]=0;
+     }
+     for(int j=0;j<agents_for_MA_obj.for_agent[i].maxi_num_reach_states;j++)
+     {
+       for(int k=0;k<agents_for_MA_obj.for_agent[i].no_of_arms;k++)
+       {
+       curr_flags_show_Mightability_Maps.show_reachability[i][j][k]=0;
+       }
+     }
+   }
+   
+ BT_SHOW_2D_VISIBILE_PLACE_HUM_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,50,50,50,20,"Show Visible Places for Human on Plane");
+	
+  fl_set_call_back(BT_SHOW_2D_VISIBILE_PLACE_HUM_OBJ,CB_show_visible_place_hum_active_obj,0);
+*/
+}
 
 /*
 void g3d_create_make_object_accessible_obj(void)
@@ -1280,7 +1577,7 @@ BT_HIDE_OBJECT_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,200,500,50,20,"Hide");
 
 void g3d_create_find_current_task_candidates_obj(void)
 {
-BT_FIND_CURRENT_TASK_CANDIDATES_OBJ = fl_add_button(FL_NORMAL_BUTTON,200,400,150,20,"Find Current Task Candidates");
+BT_FIND_CURRENT_TASK_CANDIDATES_OBJ = fl_add_button(FL_NORMAL_BUTTON,360,450,150,20,"Find Current Task Candidates");
 	//fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
 	fl_set_call_back(BT_FIND_CURRENT_TASK_CANDIDATES_OBJ,CB_find_current_task_candidates_obj,0);
        
@@ -1289,7 +1586,7 @@ BT_FIND_CURRENT_TASK_CANDIDATES_OBJ = fl_add_button(FL_NORMAL_BUTTON,200,400,150
 
 void g3d_create_find_current_task_solution_obj(void)
 {
-BT_FIND_CURRENT_TASK_SOLUTION_OBJ = fl_add_button(FL_NORMAL_BUTTON,360,385,150,20,"Find Current Task Solution");
+BT_FIND_CURRENT_TASK_SOLUTION_OBJ = fl_add_button(FL_NORMAL_BUTTON,360,510,150,20,"Find Current Task Solution");
 	//fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
 	fl_set_call_back(BT_FIND_CURRENT_TASK_SOLUTION_OBJ,CB_find_current_task_solution_obj,0);
        
@@ -1298,7 +1595,7 @@ BT_FIND_CURRENT_TASK_SOLUTION_OBJ = fl_add_button(FL_NORMAL_BUTTON,360,385,150,2
 
 void g3d_create_execute_current_task_solution_obj(void)
 {
-BT_EXECUTE_CURRENT_TASK_SOLUTION_OBJ = fl_add_button(FL_NORMAL_BUTTON,360,415,150,20,"Execute Current Task Solution");
+BT_EXECUTE_CURRENT_TASK_SOLUTION_OBJ = fl_add_button(FL_NORMAL_BUTTON,360,540,150,20,"Execute Current Task Solution");
 	//fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
 	fl_set_call_back(BT_EXECUTE_CURRENT_TASK_SOLUTION_OBJ,CB_execute_current_task_solution_obj,0);
        
@@ -1379,7 +1676,7 @@ static void g3d_create_Mightability_Maps_Set_operations_group(void)
 
 void g3d_create_show_current_task_candidates_obj(void)
 {
-BT_SHOW_CURRENT_TASK_CANDIDATES_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,370,440,50,20,"Show Current Task Candidates");
+BT_SHOW_CURRENT_TASK_CANDIDATES_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,370,470,50,20,"Show Current Task Candidates");
 	//fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
 	fl_set_call_back(BT_SHOW_CURRENT_TASK_CANDIDATES_OBJ,CB_show_current_task_candidates_obj,0);
        
@@ -1387,7 +1684,7 @@ BT_SHOW_CURRENT_TASK_CANDIDATES_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,370,440,
 
 void g3d_create_show_weight_for_candidates_obj(void)
 {
-BT_SHOW_WEIGHT_FOR_CANDIDATES_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,370,460,150,20,"Show Weights for Candidates");
+BT_SHOW_WEIGHT_FOR_CANDIDATES_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,370,480,150,20,"Show Weights for Candidates");
 	//fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
 	fl_set_call_back(BT_SHOW_WEIGHT_FOR_CANDIDATES_OBJ,CB_show_weight_for_candidates_obj,0);
        
@@ -1399,7 +1696,7 @@ BT_SHOW_WEIGHT_FOR_CANDIDATES_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,370,460,15
 
 
 
-#ifdef SECOND_HUMAN_EXISTS
+#ifdef HUMAN2_EXISTS_FOR_MA
 ////////////Start For human2
 int x_shift=500;
 static void g3d_create_show_2D_visible_place_hum2_obj(void)
@@ -1521,9 +1818,117 @@ void g3d_delete_HRI_affordance_form(void)
   fl_free_form(HRI_AFFORDANCE_FORM);
 }
 
+void get_hri_task_performed_by_agent(FL_OBJECT *obj, long arg)
+{
 
+  int val = fl_get_choice(obj);
+  ////printf(" Agent by =%d\n",val);
+  CURRENT_TASK_PERFORMED_BY=HRI_TASK_AGENT( val-1);
+}
 
-////*** End Creating form for Mocap data run 
+void g3d_create_select_agent_by_task_obj(void)
+{
+  BT_HRI_TASK_PERFORMED_BY_AGENT_OBJ=fl_add_choice(FL_NORMAL_CHOICE,200,640,80,20,"Performed by");
+  //for(int i=0; i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK; i++)
+  //{
+    ////fl_addto_choice(BT_HRI_TASK_PERFORMED_BY_AGENT_OBJ,envPt_MM->robot[indices_of_MA_agents[i]]->name);
+    /*
+    switch(i)
+    {
+      case HUMAN1_MA:
+    fl_addto_choice(BT_HRI_TASK_PERFORMED_BY_AGENT_OBJ,"HUMAN1");
+     break;
+     
+     case HUMAN2_MA:
+    fl_addto_choice(BT_HRI_TASK_PERFORMED_BY_AGENT_OBJ,"HUMAN2");
+     break;
+     
+     case JIDO_MA:
+    fl_addto_choice(BT_HRI_TASK_PERFORMED_BY_AGENT_OBJ,"JIDO");
+     break;
+     
+     case HRP2_MA:
+    fl_addto_choice(BT_HRI_TASK_PERFORMED_BY_AGENT_OBJ,"HRP2");
+     break;
+    }
+    */
+  //}
+  fl_set_call_back(BT_HRI_TASK_PERFORMED_BY_AGENT_OBJ,get_hri_task_performed_by_agent,0);
+}
+
+void get_hri_task_performed_for_agent(FL_OBJECT *obj, long arg)
+{
+
+  int val = fl_get_choice(obj);
+  printf(" Agent for =%d\n",val);
+  CURRENT_TASK_PERFORMED_FOR=HRI_TASK_AGENT( val-1);
+}
+
+void g3d_create_select_agent_for_task_obj(void)
+{
+  BT_HRI_TASK_PERFORMED_FOR_AGENT_OBJ=fl_add_choice(FL_NORMAL_CHOICE,300,640,80,20," for");
+  //for(int i=0; i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK; i++)
+  //{
+    /////fl_addto_choice(BT_HRI_TASK_PERFORMED_BY_AGENT_OBJ,envPt_MM->robot[indices_of_MA_agents[i]]->name);
+    /*
+    switch(i)
+    {
+      case HUMAN1_MA:
+    fl_addto_choice(BT_HRI_TASK_PERFORMED_FOR_AGENT_OBJ,"HUMAN1");
+     break;
+     
+     case HUMAN2_MA:
+    fl_addto_choice(BT_HRI_TASK_PERFORMED_FOR_AGENT_OBJ,"HUMAN2");
+     break;
+     
+     case JIDO_MA:
+    fl_addto_choice(BT_HRI_TASK_PERFORMED_FOR_AGENT_OBJ,"JIDO");
+     break;
+     
+     case HRP2_MA:
+    fl_addto_choice(BT_HRI_TASK_PERFORMED_FOR_AGENT_OBJ,"HRP2");
+     break;
+    }
+    */
+ // }
+  fl_set_call_back(BT_HRI_TASK_PERFORMED_FOR_AGENT_OBJ,get_hri_task_performed_for_agent,0);
+}
+
+void get_hri_task_performed_for_object(FL_OBJECT *obj, long arg)
+{
+
+  int val = fl_get_choice(obj);
+  printf(" For object =%d\n",val);
+  strcpy(CURRENT_OBJECT_TO_MANIPULATE,envPt_MM->robot[val-1]->name);
+  printf(" CURRENT_OBJECT_TO_MANIPULATE=%s\n",CURRENT_OBJECT_TO_MANIPULATE);
+}
+
+void g3d_create_select_object_for_task_obj(void)
+{
+  BT_HRI_TASK_PERFORMED_FOR_OBJECT_OBJ=fl_add_choice(FL_NORMAL_CHOICE,50,640,80,20," object");
+//   for(int i=0; i<envPt_MM->nr; i++)
+//   {
+//     fl_addto_choice(BT_HRI_TASK_PERFORMED_FOR_OBJECT_OBJ,envPt_MM->robot[i]->name);
+//   }
+  
+  fl_set_call_back(BT_HRI_TASK_PERFORMED_FOR_OBJECT_OBJ,get_hri_task_performed_for_object,0);
+}
+
+void get_choice_use_object_dimension_for_candidate_pts(FL_OBJECT *obj, long arg)
+{
+  CONSIDER_OBJECT_DIMENSION_FOR_CANDIDATE_PTS=(int)fl_get_button(BT_USE_OBJECT_DIMENSION_FOR_CANDIDATE_PTS_OBJ);
+
+}
+void g3d_create_use_object_dimension_for_candidate_pts()
+{
+  BT_USE_OBJECT_DIMENSION_FOR_CANDIDATE_PTS_OBJ=fl_add_checkbutton(FL_PUSH_BUTTON,250,660,80,20," Use Object Dimension");
+//   for(int i=0; i<envPt_MM->nr; i++)
+//   {
+//     fl_addto_choice(BT_HRI_TASK_PERFORMED_FOR_OBJECT_OBJ,envPt_MM->robot[i]->name);
+//   }
+  
+  fl_set_call_back(BT_USE_OBJECT_DIMENSION_FOR_CANDIDATE_PTS_OBJ,get_choice_use_object_dimension_for_candidate_pts,0);
+}
 
 /************************/
 /* Option form creation */
@@ -1531,15 +1936,17 @@ void g3d_delete_HRI_affordance_form(void)
 void g3d_create_HRI_affordance_form(void)
 {
   #ifdef MM_SHOW_DEBUG_MODE_BUTTONS
-   #ifdef SECOND_HUMAN_EXISTS
-   HRI_AFFORDANCE_FORM = fl_bgn_form(FL_UP_BOX,1000.0,700.0);
-   #else
+   ////#ifdef HUMAN2_EXISTS_FOR_MA
+   /////HRI_AFFORDANCE_FORM = fl_bgn_form(FL_UP_BOX,1000.0,700.0);
+   /////#else
   HRI_AFFORDANCE_FORM = fl_bgn_form(FL_UP_BOX,600.0,700.0);
-   #endif
+  ///// #endif
   #else
   HRI_AFFORDANCE_FORM = fl_bgn_form(FL_UP_BOX,600.0,100.0);
   #endif
 
+  g3d_create_show_visible_place_agents_obj();
+  
    g3d_create_calculate_affordance_obj();
    g3d_create_show_object_reach_obj();
    g3d_create_show_object_visibility_obj();
@@ -1555,30 +1962,30 @@ void g3d_create_HRI_affordance_form(void)
   
   #ifdef MM_SHOW_DEBUG_MODE_BUTTONS
 //For 2D Affordance analysis
-  g3d_create_show_dir_reach_obj();
-  g3d_create_show_bending_reach_obj();
-  g3d_create_show_2D_visible_place_hum_obj();
-  g3d_create_show_turn_around_reach_place_obj();
-  
-  g3d_create_show_dir_reach_HRP2_obj();
-  g3d_create_show_2D_visible_place_HRP2_obj();
-
-//FOR 3D Affordance analysis
-  g3d_create_show_3D_dir_reach_hum_obj();
-  g3d_create_show_3D_bending_reach_hum_obj();
-  g3d_create_show_3D_visible_place_hum_obj();
-   #ifdef MM_FOR_VIRTUALLY_STANDING_HUMAN
-  g3d_create_show_2D_visible_place_standing_hum_obj();
-  g3d_create_show_3D_visible_place_standing_hum_obj();
-   #endif
-  g3d_create_show_3D_turn_around_reach_hum_obj();
-
-  g3d_create_show_3D_dir_reach_HRP2_obj();
-  //g3d_create_show_3d_bending_reach_HRP2_obj();
-  g3d_create_show_3D_visible_place_HRP2_obj();
+//  /* g3d_create_show_dir_reach_obj();
+//   g3d_create_show_bending_reach_obj();
+//   g3d_create_show_2D_visible_place_hum_obj();
+//   g3d_create_show_turn_around_reach_place_obj();
+//   
+//   g3d_create_show_dir_reach_HRP2_obj();
+//   g3d_create_show_2D_visible_place_HRP2_obj();
+// 
+// //FOR 3D Affordance analysis
+//   g3d_create_show_3D_dir_reach_hum_obj();
+//   g3d_create_show_3D_bending_reach_hum_obj();
+//   g3d_create_show_3D_visible_place_hum_obj();
+//    #ifdef MM_FOR_VIRTUALLY_STANDING_HUMAN
+//   g3d_create_show_2D_visible_place_standing_hum_obj();
+//   g3d_create_show_3D_visible_place_standing_hum_obj();
+//    #endif
+//   g3d_create_show_3D_turn_around_reach_hum_obj();
+// 
+//   g3d_create_show_3D_dir_reach_HRP2_obj();
+//   //g3d_create_show_3d_bending_reach_HRP2_obj();
+//   g3d_create_show_3D_visible_place_HRP2_obj();*/
   //g3d_create_show_3d_turn_around_reach_HRP2_obj();
      
-
+/*
 //FOR 2D decision making;
    g3d_show_2D_HRP2_hum_common_reachable_obj();
    g3d_show_2D_HRP2_hum_common_visible_obj();
@@ -1586,7 +1993,7 @@ void g3d_create_HRI_affordance_form(void)
 //FOR 3D decision making;
    g3d_show_3D_HRP2_hum_common_reachable_obj();
    g3d_show_3D_HRP2_hum_common_visible_obj();
-
+*/
 //For candidate points for a task
    g3d_create_show_current_task_candidates_obj();   
    g3d_create_find_current_task_candidates_obj(); 
@@ -1600,6 +2007,12 @@ void g3d_create_HRI_affordance_form(void)
    g3d_create_show_human_perspective_obj();
 
    g3d_create_hri_manipulation_task_group();
+   
+   g3d_create_select_agent_by_task_obj();
+   g3d_create_select_agent_for_task_obj();
+   g3d_create_select_object_for_task_obj();
+   
+   g3d_create_use_object_dimension_for_candidate_pts();
 
    g3d_create_Mightability_Maps_Set_operations_group();
 // // // //    g3d_create_show_current_how_to_placements_candidates_obj();
@@ -1618,8 +2031,8 @@ void g3d_create_HRI_affordance_form(void)
    g3d_update_HRP2_state_obj();
    ////g3d_create_put_object_obj();
     #endif
-  
-    #ifdef SECOND_HUMAN_EXISTS
+  /*
+    #ifdef HUMAN2_EXISTS_FOR_MA
     //For 2D Affordance analysis
   g3d_create_show_dir_reach_hum2_obj();
   g3d_create_show_bending_reach_hum2_obj();
@@ -1637,20 +2050,22 @@ void g3d_create_HRI_affordance_form(void)
   g3d_create_show_3D_turn_around_reach_hum2_obj();
 
     #endif
+    */
    #endif
   
     #ifdef USE_SYM_GEO_PLAN
     g3d_create_test_geometric_plan_obj();
     #endif
 
+    #ifdef COMPILE_WITH_HTL
+    g3d_create_show_mocap_data_run_form();
+    #endif
    
   fl_end_form();
 
- 
-  
- 
-
-   
+ #ifdef COMPILE_WITH_HTL
+   g3d_create_mocap_data_run_form();
+    #endif
   //g3d_create_psp_parameters_form();
        
 }

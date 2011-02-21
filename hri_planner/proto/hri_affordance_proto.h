@@ -39,7 +39,7 @@ extern int HRP2_find_collision_free_path_to_take_object_new();//In this version,
 extern int find_HRP2_GIK_sol_for_hand_orientation(p3d_vector3 req_hand_orientation_in_global_frame, int hand_by_reach, int state, int use_body_part);
 extern double* get_HRP2_hand_x_axis_orientation_in_global_frame(int for_hand);//1 for left, 2 for right hand
 extern int find_affordance_new();
-extern int find_reachable_sphere_surface(int for_hand, int for_agent);
+extern int find_reachable_sphere_surface(int for_hand, HRI_TASK_AGENT for_agent);
 extern int show_weighted_candidate_points_to_show_obj(int show_weight);
 extern int HRP2_show_object_to_human();
 extern int show_weighted_candidate_points_to_hide_obj();
@@ -57,10 +57,12 @@ extern int show_3D_workspace_Bounding_Box();
 extern int make_cells_around_point_obstacle_free(double hand_pos[3], int expansion);
 extern int make_cells_around_point_as_obstacle(hri_bitmapset *btset, int bt_type, point_co_ordi point, int extension);
 extern int find_candidate_points_on_plane_to_put_obj_new();
-extern int assign_weights_on_candidte_points_to_put_obj(char *object_name);
+extern int assign_weights_on_candidte_points_to_put_obj(char *object_name, candidate_poins_for_task *candidate_points, int indx_by_agent, int indx_for_agent);
 extern int reverse_sort_weighted_candidate_points_to_put_obj();
-extern int assign_weights_on_candidte_points_to_show_obj(char *object_name);
-extern int assign_weights_on_candidte_points_to_hide_obj(char *object_name);
+extern int assign_weights_on_candidte_points_to_show_obj(char *object_name, candidate_poins_for_task *candidate_points, int indx_by_agent, int indx_for_agent);
+
+extern int assign_weights_on_candidte_points_to_hide_obj(char *object_name, candidate_poins_for_task *candidate_points, int indx_by_agent, int indx_for_agent);
+
 extern int reverse_sort_weighted_candidate_points_to_show_obj();
 extern int reverse_sort_weighted_candidate_points_to_hide_obj();
 extern int reverse_sort_weighted_candidate_points_to_give_obj();
@@ -100,7 +102,7 @@ extern int update_human_pos_from_mocap_eye_glasses(point_co_ordi *mrkrs_pos, int
 extern int update_human_pos_from_mocap_rigid_hat(point_co_ordi *mrkrs_pos, int obj_index, char object_name[30], int is_primary_human);
 extern int init_mocap_data_run_file();
 extern int show_axis_of_FOV_from_mocap_eye_glass_data();
-extern int virtually_update_human_state_new(int state); //1 means sitting 0 means standing
+extern int virtually_update_human_state_new(HRI_AGENT *human_agent,int state); //1 means sitting 0 means standing
 extern int virtually_update_non_primary_human_state(int state, int hum_index); //1 means sitting 0 means standing, hum_index is the index of robot in environment (envPt)
 extern int JIDO_make_obj_accessible_to_human ( char obj_to_manipulate[50] );
 // extern int show_world_state_of_entire_plan(int exec_path_configs);
@@ -109,7 +111,8 @@ extern int JIDO_find_candidate_points_to_show_obj();
 /*extern int test_geometric_plan_creation_for_JIDO();*/
 extern int JIDO_give_obj_to_human ( char obj_to_manipulate[50] );
 extern int JIDO_find_candidate_points_to_give_obj();
-extern int assign_weights_on_candidte_points_to_give_obj(char *object_name); 
+extern int assign_weights_on_candidte_points_to_give_obj(char *object_name, candidate_poins_for_task *candidate_points, int indx_by_agent, int indx_for_agent);
+
 extern int show_weighted_candidate_points_to_give_obj(int show_weight);
 extern int JIDO_find_candidate_points_on_plane_to_hide_obj();
 extern int JIDO_hide_obj_from_human ( char obj_to_manipulate[50] );
@@ -132,7 +135,7 @@ extern int show_all_how_to_placements_in_3D(point_co_ordi at_place,int use_rando
 extern int initialize_MM_resultant_set();
 extern int caculate_and_show_resultant_MM();
 extern int show_current_ranked_candidate_placements();
-extern int show_current_task_candidate_points(int show_weight_by_color, int show_weight_by_length);
+extern int show_current_task_candidate_points(int show_weight_by_color, int show_weight_by_length, candidate_poins_for_task *candidate_points);
 extern int show_candidate_points_for_current_task(int show_weight_by_color, int show_weight_by_length);
 
 extern int assign_weights_on_candidate_points_to_displace_obj(char *object_name);
@@ -150,5 +153,18 @@ extern int set_current_HRI_manipulation_task(int arg);
 extern int find_current_HRI_manip_task_solution();
 extern int find_Mightability_Maps();
 extern int JIDO_give_obj_to_human( char *obj_to_manipulate );
+extern int find_candidate_points_for_current_HRI_task(HRI_TASK_TYPE curr_task, HRI_TASK_AGENT_ENUM performed_by, HRI_TASK_AGENT_ENUM performed_for, candidate_poins_for_task *resultant_candidate_point);
+extern int reverse_sort_HRI_task_weighted_candidate_points(candidate_poins_for_task *candidate_points);
+extern int JIDO_find_HRI_task_solution(HRI_TASK_TYPE CURR_TASK, HRI_TASK_AGENT for_agent, char *obj_to_manipulate);
+extern int find_HRI_task_candidate_points(HRI_TASK_TYPE CURR_TASK, char *obj_to_manipulate, HRI_TASK_AGENT performed_by,  HRI_TASK_AGENT performed_for, candidate_poins_for_task *curr_resultant_candidate_points);
+extern object_Symbolic_Mightability_Maps_Relation* create_object_oriented_Mightability_obj();
+extern int delete_object_oriented_Mightability_obj(object_Symbolic_Mightability_Maps_Relation *OOM);
+extern int copy_current_object_oriented_Mightability_into(object_Symbolic_Mightability_Maps_Relation* target);
+extern int print_object_oriented_Mightability(object_Symbolic_Mightability_Maps_Relation* OOM);
+extern int store_OOM_before_task();
+extern int print_object_oriented_Mightability_for_object(object_Symbolic_Mightability_Maps_Relation* OOM, int obj_index);
+extern int print_object_oriented_Mightability_for_object_by_agent(object_Symbolic_Mightability_Maps_Relation* OOM, int obj_index, HRI_TASK_AGENT agent);
+extern int find_candidate_points_for_current_HRI_task_for_object(HRI_TASK_TYPE curr_task, HRI_TASK_AGENT_ENUM performed_by, HRI_TASK_AGENT_ENUM performed_for, candidate_poins_for_task *resultant_candidate_point, char *object);
+
 #endif /* __CEXTRACT__ */
 

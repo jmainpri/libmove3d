@@ -11,17 +11,26 @@
 //
 //High Level action IDs
 #ifndef _HRI_tasks_H
-#define HRI_tasks_H
+#define _HRI_tasks_H
 
-#define MAKE_OBJECT_ACCESSIBLE 0
-#define SHOW_OBJECT 1
-#define GIVE_OBJECT 2
-#define HIDE_OBJECT 3
-#define PUT_AWAY_OBJECT 4
-#define HIDE_AWAY_OBJECT 5
-#define MAKE_SPACE_FREE_OF_OBJECT_OBJ 6
-#define PUT_INTO_OBJECT 7
+////#include "Mightability_Maps.h"
+////#define SECOND_HUMAN_EXISTS
 
+
+typedef enum HRI_TASK_TYPE_ENUM
+{
+MAKE_OBJECT_ACCESSIBLE=0,
+SHOW_OBJECT,
+GIVE_OBJECT,
+HIDE_OBJECT,
+PUT_AWAY_OBJECT,
+HIDE_AWAY_OBJECT,
+MAKE_SPACE_FREE_OF_OBJECT_OBJ,
+PUT_INTO_OBJECT,
+//Add new tasks here before the last line
+
+MAXI_NUM_OF_HRI_TASKS
+}HRI_TASK_TYPE;
 
 
 

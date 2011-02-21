@@ -4,7 +4,7 @@
 
 //AKP
 #ifdef USE_MIGHTABILITY_MAPS
-#include "Mightability_Maps.h"
+#include "Mightability_Analysis.h"
 #endif
 
 

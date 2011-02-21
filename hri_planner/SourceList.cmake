@@ -15,7 +15,7 @@ hri_kinect.c
 )
 IF(USE_MIGHTABILITY_MAPS)
 BM3D_SRC_SUBDIR_PROCESS(
-Mightability_Maps.cpp 
+Mightability_Analysis.cpp 
 HRI_tasks.cpp
 )
 ENDIF(USE_MIGHTABILITY_MAPS)
