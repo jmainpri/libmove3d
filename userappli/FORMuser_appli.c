@@ -52,6 +52,7 @@ static FL_OBJECT  *TESTMODEL;
 static FL_OBJECT  *SPECIFIC_MULTI;
 static FL_OBJECT  *TESTS;
 static FL_OBJECT  *TATT;
+static FL_OBJECT  *COST;
 static G3D_Window *win;
 //Grasp
 static FL_OBJECT  *GRASP_FRAME;
@@ -108,6 +109,8 @@ void g3d_create_user_appli_form(void){
   fl_set_call_back(TESTS,callbacks,14);
   g3d_create_button(&TATT,FL_NORMAL_BUTTON,60.0,30.0,"Tatt",(void**)&MISC_FRAME,0);
   fl_set_call_back(TATT,callbacks,15);
+  g3d_create_button(&COST,FL_NORMAL_BUTTON,60.0,30.0,"Cost",(void**)&MISC_FRAME,0);
+  fl_set_call_back(COST,callbacks,22);
 
   g3d_create_labelframe(&GRASP_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Grasp", (void**)&USER_APPLI_FORM, 1);
   g3d_create_button(&GRASPTEST,FL_NORMAL_BUTTON,30.0,30.0,"test",(void**)&GRASP_FRAME,0);
@@ -401,17 +404,48 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 16 :{
 #if defined(LIGHT_PLANNER)
-extern ManipulationTestFunctions* global_manipPlanTest;
 
-//       (*XYZ_ROBOT->armManipulationData)[0].setCarriedObject("Horse");
-//       XYZ_ROBOT->isCarryingObject = TRUE;
-ManipulationTestFunctions* tests = new ManipulationTestFunctions();
-global_manipPlanTest = tests;
+/** Manipulation Planner tests*/
 
-if(!tests->runTest(8))
-{
-   std::cout << "ManipulationTestFunctions::Fail" << std::endl;
-}
+// extern ManipulationTestFunctions* global_manipPlanTest;
+// 
+// //       (*XYZ_ROBOT->armManipulationData)[0].setCarriedObject("Horse");
+// //       XYZ_ROBOT->isCarryingObject = TRUE;
+// ManipulationTestFunctions* tests = new ManipulationTestFunctions();
+// global_manipPlanTest = tests;
+// 
+// if(!tests->runTest(9))
+// {
+//    std::cout << "ManipulationTestFunctions::Fail" << std::endl;
+// }
+
+/** Cost Test*/
+
+  p3d_multiLocalPath_disable_all_groupToPlan(XYZ_ROBOT);
+  p3d_multiLocalPath_set_groupToPlan(XYZ_ROBOT, 3, 1);
+  fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->abs_pos);
+  (*XYZ_ROBOT->armManipulationData)[0].fixHand(XYZ_ROBOT, false);
+  shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt, (*XYZ_ROBOT->armManipulationData)[0].getManipulationJnt(), 2);
+  activateCcCntrts(XYZ_ROBOT, 0, FALSE);
+  double minCost = P3D_HUGE, maxCost = -P3D_HUGE;
+  for(int i = 0; i < 10000; i++){
+    configPt q = p3d_alloc_config(XYZ_ROBOT);
+    p3d_shoot(XYZ_ROBOT, q, true);
+    if(p3d_set_and_update_this_robot_conf(XYZ_ROBOT, q)){
+      gpGrasp grasp;
+      double cost = computeRobotGraspArmCost(XYZ_ROBOT, 0, grasp, q, XYZ_ROBOT->openChainConf, (*XYZ_ROBOT->armManipulationData)[0].getManipulationJnt()->abs_pos);
+      if(cost < minCost){
+        minCost = cost;
+      }
+      if(cost > maxCost){
+        maxCost = cost;
+      }
+    }
+    p3d_destroy_config(XYZ_ROBOT, q);
+
+  }
+  deactivateCcCntrts(XYZ_ROBOT, 0);
+  std::cout << "Min cost = "<< minCost << ", Max cost = " << maxCost << std::endl;
 
 #endif
       break;
@@ -526,6 +560,13 @@ if(!tests->runTest(8))
 #endif
       break;
     }
-      
+    case 22:{
+#if defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
+      gpGrasp grasp;
+      double cost = computeRobotGraspArmCost(XYZ_ROBOT, 0, grasp, XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->openChainConf, (*XYZ_ROBOT->armManipulationData)[0].getManipulationJnt()->abs_pos);
+      std::cout << "Cost = "<< cost << std::endl;
+#endif
+      break;
+    }
   }
 }
