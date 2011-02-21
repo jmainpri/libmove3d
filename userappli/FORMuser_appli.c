@@ -407,45 +407,45 @@ static void callbacks(FL_OBJECT *ob, long arg){
 
 /** Manipulation Planner tests*/
 
-// extern ManipulationTestFunctions* global_manipPlanTest;
-// 
-// //       (*XYZ_ROBOT->armManipulationData)[0].setCarriedObject("Horse");
-// //       XYZ_ROBOT->isCarryingObject = TRUE;
-// ManipulationTestFunctions* tests = new ManipulationTestFunctions();
-// global_manipPlanTest = tests;
-// 
-// if(!tests->runTest(9))
-// {
-//    std::cout << "ManipulationTestFunctions::Fail" << std::endl;
-// }
+extern ManipulationTestFunctions* global_manipPlanTest;
+
+//       (*XYZ_ROBOT->armManipulationData)[0].setCarriedObject("Horse");
+//       XYZ_ROBOT->isCarryingObject = TRUE;
+ManipulationTestFunctions* tests = new ManipulationTestFunctions();
+global_manipPlanTest = tests;
+
+if(!tests->runTest(8))
+{
+   std::cout << "ManipulationTestFunctions::Fail" << std::endl;
+}
 
 /** Cost Test*/
 
-  p3d_multiLocalPath_disable_all_groupToPlan(XYZ_ROBOT);
-  p3d_multiLocalPath_set_groupToPlan(XYZ_ROBOT, 3, 1);
-  fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->abs_pos);
-  (*XYZ_ROBOT->armManipulationData)[0].fixHand(XYZ_ROBOT, false);
-  shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt, (*XYZ_ROBOT->armManipulationData)[0].getManipulationJnt(), 2);
-  activateCcCntrts(XYZ_ROBOT, 0, FALSE);
-  double minCost = P3D_HUGE, maxCost = -P3D_HUGE;
-  for(int i = 0; i < 10000; i++){
-    configPt q = p3d_alloc_config(XYZ_ROBOT);
-    p3d_shoot(XYZ_ROBOT, q, true);
-    if(p3d_set_and_update_this_robot_conf(XYZ_ROBOT, q)){
-      gpGrasp grasp;
-      double cost = computeRobotGraspArmCost(XYZ_ROBOT, 0, grasp, q, XYZ_ROBOT->openChainConf, (*XYZ_ROBOT->armManipulationData)[0].getManipulationJnt()->abs_pos);
-      if(cost < minCost){
-        minCost = cost;
-      }
-      if(cost > maxCost){
-        maxCost = cost;
-      }
-    }
-    p3d_destroy_config(XYZ_ROBOT, q);
-
-  }
-  deactivateCcCntrts(XYZ_ROBOT, 0);
-  std::cout << "Min cost = "<< minCost << ", Max cost = " << maxCost << std::endl;
+//   p3d_multiLocalPath_disable_all_groupToPlan(XYZ_ROBOT);
+//   p3d_multiLocalPath_set_groupToPlan(XYZ_ROBOT, 3, 1);
+//   fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->abs_pos);
+//   (*XYZ_ROBOT->armManipulationData)[0].fixHand(XYZ_ROBOT, false);
+//   shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt, (*XYZ_ROBOT->armManipulationData)[0].getManipulationJnt(), 2);
+//   activateCcCntrts(XYZ_ROBOT, 0, FALSE);
+//   double minCost = P3D_HUGE, maxCost = -P3D_HUGE;
+//   for(int i = 0; i < 10000; i++){
+//     configPt q = p3d_alloc_config(XYZ_ROBOT);
+//     p3d_shoot(XYZ_ROBOT, q, true);
+//     if(p3d_set_and_update_this_robot_conf(XYZ_ROBOT, q)){
+//       gpGrasp grasp;
+//       double cost = computeRobotGraspArmCost(XYZ_ROBOT, 0, grasp, q, XYZ_ROBOT->openChainConf, (*XYZ_ROBOT->armManipulationData)[0].getManipulationJnt()->abs_pos);
+//       if(cost < minCost){
+//         minCost = cost;
+//       }
+//       if(cost > maxCost){
+//         maxCost = cost;
+//       }
+//     }
+//     p3d_destroy_config(XYZ_ROBOT, q);
+// 
+//   }
+//   deactivateCcCntrts(XYZ_ROBOT, 0);
+//   std::cout << "Min cost = "<< minCost << ", Max cost = " << maxCost << std::endl;
 
 #endif
       break;

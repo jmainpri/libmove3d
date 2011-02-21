@@ -232,7 +232,7 @@ int JIDO_make_obj_accessible_to_humanOld ( char *obj_to_manipulate )
 
 //   status= manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), (char*)obj_to_manipulate, (char*)"", confs, smTrajs);
    std::vector <double>  m_objStart, m_objGoto;
-   status = manipulation->armPlanTask ( ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), m_objStart, m_objGoto, ( char* ) obj_to_manipulate, ( char* ) "", confs, smTrajs );
+   status = manipulation->armPlanTask ( ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), m_objStart, m_objGoto, ( char* ) obj_to_manipulate, ( char* ) "", grasp, confs, smTrajs );
 
    if ( status==MANIPULATION_TASK_OK )
       //grasp= manipulation->getCurrentGrasp();
@@ -292,7 +292,8 @@ int JIDO_make_obj_accessible_to_humanOld ( char *obj_to_manipulate )
          printf ( "q==NULL after setRobotGraspPosWithoutBase()\n" );
          continue;
       }
-      status= manipulation->armPlanTask ( ARM_TAKE_TO_FREE,0,manipulation->robotStart(), q,  m_objStart, m_objGoto, ( char* ) obj_to_manipulate, ( char* ) "", confs, smTrajs );
+      gpGrasp grasp;
+      status= manipulation->armPlanTask ( ARM_TAKE_TO_FREE,0,manipulation->robotStart(), q,  m_objStart, m_objGoto, ( char* ) obj_to_manipulate, ( char* ) "",grasp, confs, smTrajs );
 
       printf ( " After armPlanTask, result = %d \n",status );
       p3d_set_object_to_carry_to_arm ( manipulation->robot(), 0, object->name );
@@ -496,9 +497,9 @@ int JIDO_make_obj_accessible_to_human_old_new ( char *obj_to_manipulate )
 //         m_objGoto[3]= P3D_HUGE;
 //         m_objGoto[4]= P3D_HUGE;
 //         m_objGoto[5]= P3D_HUGE;
-
+        gpGrasp grasp;
          p3d_copy_config_into ( manipulation->robot(), qcur, &manipulation->robot()->ROBOT_POS );
-         status= manipulation->armPlanTask ( ARM_TAKE_TO_FREE,0,qcur, manipulation->robotGoto(),  m_objStart, m_objGoto, ( char* ) obj_to_manipulate, ( char* ) "HRP2TABLE", confs, smTrajs );
+         status= manipulation->armPlanTask ( ARM_TAKE_TO_FREE,0,qcur, manipulation->robotGoto(),  m_objStart, m_objGoto, ( char* ) obj_to_manipulate, ( char* ) "HRP2TABLE", grasp, confs, smTrajs );
 
 
          printf ( " After armPlanTask, result = %d \n",status );
@@ -714,8 +715,8 @@ int JIDO_show_obj_to_human ( char *obj_to_manipulate )
 //         m_objGoto[5]= P3D_HUGE;
 
          p3d_copy_config_into ( manipulation->robot(), qcur, &manipulation->robot()->ROBOT_POS );
-
-         status= manipulation->armPlanTask ( ARM_TAKE_TO_FREE,0,qcur, manipulation->robotGoto(),  m_objStart, m_objGoto, ( char* ) obj_to_manipulate, ( char* ) "HRP2TABLE", confs, smTrajs );
+        gpGrasp grasp;
+         status= manipulation->armPlanTask ( ARM_TAKE_TO_FREE,0,qcur, manipulation->robotGoto(),  m_objStart, m_objGoto, ( char* ) obj_to_manipulate, ( char* ) "HRP2TABLE", grasp, confs, smTrajs );
 
 
          printf ( " After armPlanTask, result = %d \n",status );
@@ -853,7 +854,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
 
       setMaxNumberOfTryForIK ( 3000 );
       p3d_get_freeflyer_pose ( object, Tobject );
-      manipulation->fixAllHands ( NULL, false );
+      ManipulationUtils::fixAllHands (manipulation->robot(), NULL, false );
       for ( int i=0; i<10; ++i )
       {
          p3d_set_and_update_this_robot_conf ( manipulation->robot(), refConf );
@@ -864,12 +865,12 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
          if ( graspConf!=NULL )
          {
             p3d_set_and_update_this_robot_conf ( manipulation->robot(), graspConf );
-            manipulation->unFixAllHands();
+            ManipulationUtils::unFixAllHands(manipulation->robot());
             gpSet_grasp_configuration ( manipulation->robot(), *igrasp, armID );
             p3d_get_robot_config_into ( manipulation->robot(), &graspConf );
             g3d_draw_allwin_active();
 
-            approachConf= manipulation->getApproachFreeConf ( object, armID, *igrasp, graspConf, tAtt );
+            approachConf= manipulation->getManipulationConfigs().getApproachFreeConf ( object, armID, *igrasp, graspConf, tAtt );
             if ( approachConf==NULL )
             {  
             p3d_destroy_config( manipulation->robot(), graspConf );  
@@ -879,7 +880,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
             ////{
                p3d_set_and_update_this_robot_conf ( manipulation->robot(), approachConf );
                g3d_draw_allwin_active();
-               openConf= manipulation->getOpenGraspConf ( object, armID, *igrasp, graspConf );
+               openConf= manipulation->getManipulationConfigs().getOpenGraspConf ( object, armID, *igrasp, graspConf );
                printf ( "approachConf= %p\n", approachConf );
                if ( openConf==NULL )
                {  
@@ -962,9 +963,9 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
                            for ( int j=0; j<10; ++j )
                            {
                               p3d_set_and_update_this_robot_conf ( manipulation->robot(), refConf );
-                              manipulation->unFixAllHands();
+                              ManipulationUtils::unFixAllHands(manipulation->robot());
                               gpSet_grasp_configuration ( manipulation->robot(), *igrasp, armID );
-                              manipulation->fixAllHands ( NULL, false );
+                              ManipulationUtils::fixAllHands (manipulation->robot(), NULL, false );
                               p3d_set_freeflyer_pose ( object, Tplacement );
                               placeConf= setRobotGraspPosWithoutBase ( manipulation->robot(), Tplacement, tAtt,  0, 0, armID, false );
                               ////ManipulationUtils::copyConfigToFORM ( object, placeConf ); 
@@ -990,7 +991,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
                                if(liftConf!=NULL)
                                {
                                   ManipulationUtils::copyConfigToFORM ( manipulation->robot(), liftConf );
-                                  manipulation->fixAllHands ( NULL, false );
+                                  ManipulationUtils::fixAllHands ( manipulation->robot(), NULL, false );
                                   manipulation->robot()->isCarryingObject = TRUE;
                                   (*manipulation->robot()->armManipulationData)[armID].setCarriedObject(object);
 //                                   manipulation->cleanRoadmap();
@@ -1404,8 +1405,8 @@ int JIDO_give_obj_to_human_14_02_11 ( char *obj_to_manipulate )
             p3d_copy_config_into ( manipulation->robot(), qcur, &manipulation->robot()->ROBOT_POS );
             //switch to cartesian for the giving motion:
             // (*manipulation->robot()->armManipulationData)[armID].setCartesian(true);
-
-            status= manipulation->armPlanTask ( ARM_TAKE_TO_FREE,0,qcur, manipulation->robotGoto(),  m_objStart, m_objGoto, ( char* ) obj_to_manipulate, ( char* ) "HRP2TABLE", confs, smTrajs );
+            gpGrasp grasp;
+            status= manipulation->armPlanTask ( ARM_TAKE_TO_FREE,0,qcur, manipulation->robotGoto(),  m_objStart, m_objGoto, ( char* ) obj_to_manipulate, ( char* ) "HRP2TABLE", grasp, confs, smTrajs );
 //         trajs.clear();
 //         status= manipulation->armPlanTask(ARM_TAKE_TO_FREE,0,qcur, manipulation->robotGoto(),  m_objStart, m_objGoto, (char*)obj_to_manipulate, (char*)"HRP2TABLE", trajs);
 
@@ -1685,8 +1686,8 @@ int JIDO_make_obj_accessible_to_human ( char *obj_to_manipulate )
             p3d_copy_config_into ( manipulation->robot(), qcur, &manipulation->robot()->ROBOT_POS );
             //switch to cartesian for the giving motion:
             // (*manipulation->robot()->armManipulationData)[armID].setCartesian(true);
-
-            status= manipulation->armPlanTask ( ARM_TAKE_TO_FREE,0,qcur, manipulation->robotGoto(),  m_objStart, m_objGoto, ( char* ) obj_to_manipulate, ( char* ) "HRP2TABLE", confs, smTrajs );
+            gpGrasp grasp;
+            status= manipulation->armPlanTask ( ARM_TAKE_TO_FREE,0,qcur, manipulation->robotGoto(),  m_objStart, m_objGoto, ( char* ) obj_to_manipulate, ( char* ) "HRP2TABLE", grasp, confs, smTrajs );
 //         trajs.clear();
 //         status= manipulation->armPlanTask(ARM_TAKE_TO_FREE,0,qcur, manipulation->robotGoto(),  m_objStart, m_objGoto, (char*)obj_to_manipulate, (char*)"HRP2TABLE", trajs);
 
@@ -1930,9 +1931,9 @@ int JIDO_hide_obj_from_human ( char *obj_to_manipulate )
 //         m_objGoto[3]= P3D_HUGE;
 //         m_objGoto[4]= P3D_HUGE;
 //         m_objGoto[5]= P3D_HUGE;
-
+         gpGrasp grasp;
          p3d_copy_config_into ( manipulation->robot(), qcur, &manipulation->robot()->ROBOT_POS );
-         status= manipulation->armPlanTask ( ARM_TAKE_TO_FREE,0,qcur, manipulation->robotGoto(),  m_objStart, m_objGoto, ( char* ) obj_to_manipulate, ( char* ) "HRP2TABLE", confs, smTrajs );
+         status= manipulation->armPlanTask ( ARM_TAKE_TO_FREE,0,qcur, manipulation->robotGoto(),  m_objStart, m_objGoto, ( char* ) obj_to_manipulate, ( char* ) "HRP2TABLE", grasp, confs, smTrajs );
 
 
          printf ( " After armPlanTask, result = %d \n",status );

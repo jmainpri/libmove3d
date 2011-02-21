@@ -2,6 +2,7 @@
 #include "ManipulationUtils.hpp"
 
 #include "Move3d-pkg.h"
+#include "lightPlannerApi.h"
 
 /* Message gestion */
 
@@ -145,4 +146,63 @@ bool ManipulationUtils::isValidVector(std::vector<double> objectPos){
     }
   }
   return false;
+}
+
+void ManipulationUtils::fixAllHands(p3d_rob* robot, configPt q, bool rest) {
+    if (q != NULL) {
+        p3d_set_and_update_this_robot_conf(robot, q);
+    }
+    for (uint i = 0; i < (*robot->armManipulationData).size(); i++) {
+        (*robot->armManipulationData)[i].fixHand(robot, rest);
+    }
+    if (q != NULL) {
+        p3d_get_robot_config_into(robot, &q);
+    }
+}
+
+void ManipulationUtils::unFixAllHands(p3d_rob* robot) {
+    for (uint i = 0; i < (*robot->armManipulationData).size(); i++) {
+        (*robot->armManipulationData)[i].unFixHand(robot);
+    }
+}
+
+void ManipulationUtils::unfixManipulationJoints(p3d_rob* robot, int armId) {
+    for (uint i = 0; i < (*robot->armManipulationData).size(); i++) {
+        unFixJoint(robot, (*robot->armManipulationData)[i].getManipulationJnt());
+    }
+}
+
+void ManipulationUtils::fixManipulationJoints(p3d_rob* robot, int armId, configPt q, p3d_rob* object) {
+    p3d_matrix4 pos;
+    if (object) {
+        p3d_mat4Copy(object->joints[1]->abs_pos, pos);
+    } else {
+        p3d_mat4Copy(p3d_mat4IDENTITY, pos);
+    }
+    if (q) {
+        p3d_set_and_update_this_robot_conf(robot, q);
+    }
+    for (uint i = 0; i < (*robot->armManipulationData).size(); i++) {
+        if(!(*robot->armManipulationData)[i].getCartesian()){
+          fixJoint(robot, (*robot->armManipulationData)[i].getManipulationJnt(), pos);
+        }
+    }
+    if (q) {
+        p3d_get_robot_config_into(robot, &q);
+    }
+}
+
+
+
+void ArmManipulationData::fixHand(p3d_rob* robot, bool rest) {
+    if (rest) {
+        gpSet_hand_rest_configuration(robot, _handProp, this->getId());
+    }
+    gpFix_hand_configuration(robot, _handProp, this->getId());
+    gpDeactivate_hand_selfcollisions(robot, this->getId());
+}
+
+void ArmManipulationData::unFixHand(p3d_rob* robot) {
+    gpUnFix_hand_configuration(robot, _handProp, this->getId());
+    gpActivate_hand_selfcollisions(robot, this->getId());
 }

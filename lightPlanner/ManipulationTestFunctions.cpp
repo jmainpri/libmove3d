@@ -128,7 +128,8 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 	{
 		case P3D_LINEAR_PLANNER :
 		{
-			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, m_OBJECT_NAME.c_str(), "", trajs);
+      gpGrasp grasp;
+			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, m_OBJECT_NAME.c_str(), "", grasp, trajs);
 			
 			if(status == MANIPULATION_TASK_OK )
 			{
@@ -138,17 +139,21 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 					p3d_concat_traj(m_manipulation->robot()->tcur, trajs[i]);
 				}
 			}
+			break;
 		}
-			break;
 			
-		case P3D_MULTILOCALPATH_PLANNER :
-			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, m_OBJECT_NAME.c_str(), "", confs, smTrajs);
-			break;
 			
-		case P3D_SOFT_MOTION_PLANNER:
+		case P3D_MULTILOCALPATH_PLANNER :{
+      gpGrasp grasp;
+			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, m_OBJECT_NAME.c_str(), "", grasp, confs, smTrajs);
+			break;
+    }
+			
+		case P3D_SOFT_MOTION_PLANNER:{
 			cout << "Manipulation : localpath softmotion should not be called" << endl;
 			succeed = false;
 			break;
+    }
 	}
 	
 	
@@ -206,11 +211,11 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
     p3d_multiLocalPath_set_groupToPlan(m_manipulation->robot(), m_manipulation->getUpBodyMLP() , 1);
     
     m_manipulation->checkConfigForCartesianMode(m_qInit, object);
-    m_manipulation->fixAllHands(m_qInit, false);
+    ManipulationUtils::fixAllHands(m_manipulation->robot(), m_qInit, false);
     p3d_set_collision_tolerance_inhibition(object, TRUE);
     ManipulationData data(m_Robot);
-    
-    if ( m_manipulation->findArmGraspsConfigs(0, object, data) == MANIPULATION_TASK_OK)
+    gpGrasp grasp;
+    if ( m_manipulation->findArmGraspsConfigs(0, object, grasp, data) == MANIPULATION_TASK_OK)
     {
       n++;
       cout << "!!! OK =-) !!!" << endl;
@@ -378,13 +383,13 @@ bool ManipulationTestFunctions::evaluateWorkspace()
   double yref = y;
   double zref = z;
   
-  m_nbOrientations = 5;
+  m_nbOrientations = 10;
   
   const double SizeInXPos = 0.8; // Taille du decallage selon X  0.6
   const double SizeInYPos = 0.6; // Taille du decallage selon Y  1.5
-  const double SizeInZPos = 0.40; // Taille du decallage selon Z
+  const double SizeInZPos = 0.0; // Taille du decallage selon Z
   const double SizeInXNeg = 0; // Taille du decallage selon X
-  const double SizeInYNeg = 0 ; // Taille du decallage selon Y
+  const double SizeInYNeg = 0; // Taille du decallage selon Y
   const double SizeInZNeg = 0; // Taille du decallage selon Z
 
   for (double dz=SizeInZNeg; dz<=SizeInZPos; dz=dz+0.1){

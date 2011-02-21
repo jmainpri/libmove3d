@@ -51,6 +51,15 @@ class  ManipulationUtils {
     //! Check if the given vector is valid or not
     //! \return true if the vector is valid false otherwise
     static bool isValidVector(std::vector<double> ObjectPos);
+
+    /** Fix the sampling of all the robots hands, desactivate hands self collisions and set the to rest configuration */
+    static void fixAllHands(p3d_rob* robot, configPt q, bool rest);
+    /** UnFix the sampling of all the robots hands, activate hands self collision */
+    static void unFixAllHands(p3d_rob* robot);
+    /** Fix the free flyer on the object pos. TODO: This function have to be changed to deal with cartesian mode (fix on the arm not on the object)*/
+    static void fixManipulationJoints(p3d_rob* robot, int armId, configPt q, p3d_rob* object);
+    /** UnFix the free flyers*/
+    static void unfixManipulationJoints(p3d_rob* robot, int armId);
 };
 
 //! @ingroup manipulation

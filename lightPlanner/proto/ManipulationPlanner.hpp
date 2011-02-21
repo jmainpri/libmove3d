@@ -6,6 +6,7 @@
 
 #include "ManipulationStruct.h"
 #include "ManipulationUtils.hpp"
+#include "ManipulationConfigs.hpp"
 
 #include <map>
 
@@ -15,7 +16,7 @@ class  ManipulationPlanner {
   /* ******************************* */
   /* ******* (Con)Destructor ******* */
   /* ******************************* */
-    ManipulationPlanner(p3d_rob * robotPt);
+    ManipulationPlanner(p3d_rob * robot);
     virtual ~ManipulationPlanner();
 
   /* ******************************* */
@@ -58,15 +59,6 @@ class  ManipulationPlanner {
     void setOptimizeTime(double time);
     double getOptimizeTime(void) const;
 
-    void setOptimizeRedundentSteps(int nbSteps);
-    int getOptimizeRedundentSteps(void) const;
-    
-    void setApproachFreeOffset(double offset);
-    double getApproachFreeOffset(void) const;
-
-    void setApproachGraspOffset(double offset);
-    double getApproachGraspOffset(void) const;
-
     void setSafetyDistanceValue(double value);
     double getSafetyDistanceValue(void) const;
   
@@ -77,42 +69,14 @@ class  ManipulationPlanner {
 	
 
     inline ManipulationData getManipulationData()  const {return _configs;}
+    inline ManipulationConfigs getManipulationConfigs()  const {return _manipConf;}
 	/* ******************************* */
   /* ******* Hands / Grasping ****** */
   /* ******************************* */
-	/** Fix the sampling of all the robots hands, desactivate hands self collisions and set the to rest configuration */
-	void fixAllHands(configPt q, bool rest) const;
-	/** UnFix the sampling of all the robots hands, activate hands self collision */
-	void unFixAllHands();
-	/** Fix the free flyer on the object pos. TODO: This function have to be changed to deal with cartesian mode (fix on the arm not on the object)*/
-	void fixManipulationJoints(int armId, configPt q, p3d_rob* object);
-	/** UnFix the free flyers*/
-	void unfixManipulationJoints(int armId);
-
-  
-	/** Generate needed configurations from the given grasp and object position */
-  MANIPULATION_TASK_MESSAGE computeManipulationData(int armId,p3d_rob* object);
-  MANIPULATION_TASK_MESSAGE computeManipulationData(int armId,p3d_rob* object,gpGrasp grasp);
-	MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, ManipulationData& configs);
-	MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, gpGrasp grasp, ManipulationData& configs);
-  MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;
-  
-  /** Generate the grasp configuration given the grasp the arm and the object.
-  @return the attach matrix computed given the grasp and Tatt2 from the p3d file
-  @return the configuration cost
-  @return the grasp configuration */
-  configPt getGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, double& confCost) const;
-  /** Generate the open configuration given the grasp configuration, the grasp, the arm and the object.*/
-  configPt getOpenGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf) const;
-  /** Generate the open approach configuration given the grasp configuration, the grasp, the arm, the attach matrix and the object.*/
-  configPt getApproachFreeConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const;
-  /** Generate the grasp approach configuration given the grasp configuration, the grasp, the arm, the attach matrix and the object.*/
-  configPt getApproachGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const;
-  /** Generates a free configuration from a worspace point and a grasp*/
-  configPt getFreeHoldingConf( p3d_rob* obj, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, double& confCost, std::vector<double> &objGoto, p3d_rob* support = NULL ) const;
-  /** Generate the extract configuration by moving the arm over Z axis until we have a collision free or passing 5 * offset */
-  configPt getExtractConf(int armId, configPt currentConf, p3d_matrix4 tAtt) const;
-  
+  /** Generate needed configurations from the given grasp and object position */
+    MANIPULATION_TASK_MESSAGE computeManipulationData(int armId,p3d_rob* object, gpGrasp& grasp);
+    MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, gpGrasp& grasp, ManipulationData& configs);
+    MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;
 	/* ******************************* */
   /* ******* Planning Modes ******** */
   /* ******************************* */
@@ -150,9 +114,8 @@ class  ManipulationPlanner {
     MANIPULATION_TASK_MESSAGE armToFree(int armId, configPt qStart, configPt qGoal, bool useSafetyDistance, std::vector <p3d_traj*> &trajs);
     
     /** Move the arm from a free configuration to a grasping configuration of the object placed on a support */
-    MANIPULATION_TASK_MESSAGE armPickGoto(int armId, configPt qStart, p3d_rob* object, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armPickGoto(int armId, configPt qStart, p3d_rob* object, gpGrasp& grasp, std::vector <p3d_traj*> &trajs);
     MANIPULATION_TASK_MESSAGE armPickGoto(int armId, configPt qStart, p3d_rob* object, configPt graspConfig, configPt openConfig, configPt approachFreeConfig, std::vector <p3d_traj*> &trajs);
-    MANIPULATION_TASK_MESSAGE armPickGoto(int armId, configPt qStart, p3d_rob* object, gpGrasp grasp, std::vector <p3d_traj*> &trajs);
 
     /** Move the arm from a grasping configuration (of the object placed on a support) to a free configuration */
     MANIPULATION_TASK_MESSAGE armPickTakeToFreePoint(int armId, configPt qStart, std::vector<double> &objGoto, p3d_rob* object, p3d_rob* support, std::vector <p3d_traj*> &trajs);
@@ -169,31 +132,15 @@ class  ManipulationPlanner {
     MANIPULATION_TASK_MESSAGE armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, std::vector<double> &objGoto, p3d_rob* support, std::vector <p3d_traj*> &trajs);
     MANIPULATION_TASK_MESSAGE armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, p3d_rob* support, configPt approachGraspConfig, configPt depositConfig, std::vector <p3d_traj*> &trajs);
 
-#ifdef DPG
-    /** \brief Check if the current path is in collision or not. Start from the begining of the trajectory
-    \return 1 in case of collision, 0 otherwise*/
-    int checkCollisionOnTraj();
-    /** \brief Check if the current path is in collision or not. Start from the given local path id
-    \return 1 in case of collision, 0 otherwise*/
-    int checkCollisionOnTraj(int currentLpId);
-    /** Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
-    \return MANIPULATION_TASK_OK for success */
-    MANIPULATION_TASK_MESSAGE replanCollidingTraj(int currentLpId, std::vector <p3d_traj*> &trajs);
-    /** Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
-    \return MANIPULATION_TASK_OK for success */
-    MANIPULATION_TASK_MESSAGE replanCollidingTraj(int currentLpId, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs);
-#endif
   /* ******************************* */
   /* ******** Task Planning ******** */
   /* ******************************* */
     /** Computes a path for a given manipulation elementary task. Generate a set of Trajectories */
-    MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName,  const char* supportName, std::vector <p3d_traj*> &trajs);
-    MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName,  const char* supportName, gpGrasp grasp, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName,  const char* supportName, gpGrasp& grasp, std::vector <p3d_traj*> &trajs);
 
 #ifdef MULTILOCALPATH
     /** Computes a path for a given manipulation elementary task. Generate a set of SoftMotion Paths */
-    MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName,  const char* supportName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs);
-    MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName,  const char* supportName, gpGrasp grasp, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs);
+    MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName,  const char* supportName, gpGrasp& grasp, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs);
 #endif
 	
   private:
@@ -218,12 +165,6 @@ class  ManipulationPlanner {
     int _optimizeSteps;
     /** Time limit for the optimisation*/
     double _optimizeTime;
-    /** Number of steps when optimizing the redundent joint*/
-    int _optimizeRedundentSteps;
-    /** Offset to generate the approach configuration of a grasp (not carrying an object)*/
-    double _approachFreeOffset;
-    /** Offset to generate the approach configuration of a grasp (carrying an object)*/
-    double _approachGraspOffset;
     /** Offset to generate the approach configuration of a grasp (carrying an object)*/
     double _safetyDistanceValue;
 	
@@ -231,6 +172,7 @@ class  ManipulationPlanner {
   /* *******  Manipulation Data **** */
   /* ******************************* */
 	ManipulationData _configs;
+  ManipulationConfigs _manipConf;
 	
   /* ******************************* */
   /* ** Motion Planning funtions *** */

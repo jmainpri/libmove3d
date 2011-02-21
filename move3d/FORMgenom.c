@@ -476,7 +476,8 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
 	std::vector <SM_TRAJ> smTrajs;
   std::vector <double>  objStart, objGoto;
-	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", confs, smTrajs);
+  gpGrasp grasp;
+	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", grasp, confs, smTrajs);
         return;
 }
 
@@ -501,7 +502,8 @@ static void CB_genomArmExtract_obj(FL_OBJECT *obj, long arg) {
   std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
   std::vector <SM_TRAJ> smTrajs;
   std::vector <double>  objStart, objGoto;
-  manipulation->armPlanTask(ARM_EXTRACT,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", confs, smTrajs);
+  gpGrasp grasp;
+  manipulation->armPlanTask(ARM_EXTRACT,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", grasp, confs, smTrajs);
         return;
 }
 
@@ -541,8 +543,8 @@ static void CB_genomArmGotoX_obj(FL_OBJECT *obj, long arg)
   objGoto.push_back(0.0);
   objGoto.push_back(0.0);
   objGoto.push_back(0.0);
-  
-  manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", confs, smTrajs);
+  gpGrasp grasp;
+  manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"",grasp, confs, smTrajs);
         return;
 }
 
@@ -832,7 +834,8 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
   std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
   std::vector <SM_TRAJ> smTrajs;
   std::vector <double>  objStart, objGoto;
-        manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)"", confs, smTrajs);
+  gpGrasp grasp;
+  manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)"",grasp,  confs, smTrajs);
 
 //         g3d_win *win= NULL;
 //         win= g3d_get_cur_win();
@@ -864,7 +867,8 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
     objStart.push_back(P3D_HUGE);
     objGoto.push_back(P3D_HUGE);
   }
-  manipulation->armPlanTask(ARM_TAKE_TO_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)SUPPORT_NAME, confs, smTrajs);
+  gpGrasp grasp;
+  manipulation->armPlanTask(ARM_TAKE_TO_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)SUPPORT_NAME, grasp, confs, smTrajs);
 
 	g3d_draw_allwin_active();
 	return;
@@ -900,7 +904,8 @@ static void CB_genomPickUp_takeObjectToXYZ(FL_OBJECT *obj, long arg) {
     objGoto.push_back(P3D_HUGE);
     objGoto.push_back(P3D_HUGE);
     objGoto.push_back(P3D_HUGE);
-    manipulation->armPlanTask(ARM_TAKE_TO_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)SUPPORT_NAME, confs, smTrajs);
+    gpGrasp grasp;
+    manipulation->armPlanTask(ARM_TAKE_TO_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)SUPPORT_NAME, grasp, confs, smTrajs);
 
   g3d_draw_allwin_active();
   return;
@@ -935,7 +940,8 @@ static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg) {
   objGoto.push_back(1.023060646334923);
   objGoto.push_back(0.0);
   objGoto.push_back(0.0);
-  manipulation->armPlanTask(ARM_TAKE_TO_PLACE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto, (char*)OBJECT_NAME, (char*)"", confs, smTrajs);
+  gpGrasp grasp;
+  manipulation->armPlanTask(ARM_TAKE_TO_PLACE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto, (char*)OBJECT_NAME, (char*)"", grasp, confs, smTrajs);
   g3d_draw_allwin_active();
 
   return;
@@ -968,8 +974,9 @@ static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
   objGoto.push_back(0.0);
   objGoto.push_back(0.0);
   objGoto.push_back(P3D_HUGE);
-  
-  manipulation->armPlanTask(ARM_PLACE_FROM_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)SUPPORT_NAME, confs, smTrajs);
+  gpGrasp grasp;
+
+  manipulation->armPlanTask(ARM_PLACE_FROM_FREE,0,manipulation->robotStart(), manipulation->robotGoto(), objStart, objGoto,(char*)OBJECT_NAME, (char*)SUPPORT_NAME, grasp, confs, smTrajs);
 
   g3d_draw_allwin_active();
 

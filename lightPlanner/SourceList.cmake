@@ -15,13 +15,13 @@ BM3D_SRC_SUBDIR_PROCESS(
 )
 
 IF(MULTILOCALPATH)
-
   BM3D_SRC_SUBDIR_PROCESS( 
 	ManipulationTestFunctions.cpp
-	ManipulationPlanner.cpp 
+	ManipulationPlanner.cpp
+  ManipulationConfigs.cpp
 	ManipulationUtils.cpp
 	)
-ENDIF()
+ENDIF(MULTILOCALPATH)
 
 ENDIF(GRASP_PLANNING)
 BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME}/proto)
