@@ -10,7 +10,7 @@
 //
 /*
  cd /home/akpandey/AKP_modules/BioMove3D_New3/build/;
- /home/akpandey/AKP_modules/BioMove3D_New3/build/Debug/bin/i386-linux/move3d-studio -f /home/akpandey/AKP_modules/mhp_new/BioMove3DDemos_new3/GS/gsJidoKukaSAHandSM_MA_new.p3d -sc /home/akpandey/AKP_modules/mhp_new/BioMove3DDemos_new3/GS/SCENARIO/ManipulationTestSAHand_MA_new4.sce -dmax 0.05
+ /home/akpandey/AKP_modules/BioMove3D_New3/build/Debug/bin/i386-linux/move3d-studio -f /home/akpandey/AKP_modules/mhp_new/BioMove3DDemos_new3/GS/gsJidoKukaSAHandSM_MA_new.p3d -sc /home/akpandey/AKP_modules/mhp_new/BioMove3DDemos_new3/GS/SCENARIO/ManipulationTestSAHand_MA_new4.sce -dmax 0.01
 */
 
 #include "Util-pkg.h"
@@ -858,7 +858,8 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
       {
          p3d_set_and_update_this_robot_conf ( manipulation->robot(), refConf );
          graspConf= setRobotGraspPosWithoutBase ( manipulation->robot(), Tobject, tAtt,  0, 0, armID, false );
-
+         if(graspConf==NULL)
+         printf(" No IK Found to grasp\n");
          printf ( "graspConf= %p\n", graspConf );
          if ( graspConf!=NULL )
          {
@@ -918,7 +919,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
                         //          if(i1==0)
                         //     goal_pos.x=candidate_points_to_put.point[i1].x +0.5;
                         //          else
-                        goal_pos.x=candidate_points_to_give.point[i1].x;
+                        goal_pos.x=candidate_points_to_give.point[i1].x-0.1;
                         goal_pos.y=candidate_points_to_give.point[i1].y;
                         goal_pos.z=candidate_points_to_give.point[i1].z+0.01;
                         //goal_pos.z= T0[2][3] + 0.15;
@@ -968,6 +969,8 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate )
                               placeConf= setRobotGraspPosWithoutBase ( manipulation->robot(), Tplacement, tAtt,  0, 0, armID, false );
                               ////ManipulationUtils::copyConfigToFORM ( object, placeConf ); 
                               ////pqp_print_colliding_pair();
+                              if(placeConf==NULL)
+                              printf(" No IK Found to place\n");
                               g3d_draw_allwin_active();
                               if(placeConf!=NULL)
                               {
