@@ -209,7 +209,8 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
     m_manipulation->fixAllHands(m_qInit, false);
     p3d_set_collision_tolerance_inhibition(object, TRUE);
     ManipulationData data(m_Robot);
-    if ( m_manipulation->findArmGraspsConfigs(0, object, data) == MANIPULATION_TASK_OK) 
+    
+    if ( m_manipulation->findArmGraspsConfigs(0, object, data) == MANIPULATION_TASK_OK)
     {
       n++;
       cout << "!!! OK =-) !!!" << endl;
@@ -418,12 +419,15 @@ static int
 drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp)
 {
   g3d_draw_allwin_active();
+#ifdef XFORMS
+  fl_check_forms();
+#endif
   return true;
 }
 
 bool ManipulationTestFunctions::computeTrajectories()
 {
-  m_nbOrientations = 4;
+  m_nbOrientations = 2;
   bool const rotate_only_around_z = true;
   
   p3d_rob* object= (p3d_rob*) p3d_get_robot_by_name((char*) m_OBJECT_NAME.c_str());
@@ -445,12 +449,12 @@ bool ManipulationTestFunctions::computeTrajectories()
   vector<double> posOject(3);
   vector<double> posPlate(3);
   
-  posPlate[0] = 4.35; posPlate[1] = -2.80; posPlate[2] = 0.00; 
+  posPlate[0] = 4.35; posPlate[1] = -3.1; posPlate[2] = 0.00;
   posOject[0] = 4.35; posOject[1] = -2.80; posOject[2] = 0.80;
   
   objectAndPlate.push_back( make_pair(posOject,posPlate) );
   
-  posPlate[0] = 4.50; posPlate[1] = -2.80; posPlate[2] = 0.00; 
+  posPlate[0] = 4.50; posPlate[1] = -3.1; posPlate[2] = 0.00;
   posOject[0] = 4.50; posOject[1] = -2.80; posOject[2] = 0.80;
   
   objectAndPlate.push_back( make_pair(posOject,posPlate) );
