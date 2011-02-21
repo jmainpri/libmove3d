@@ -551,7 +551,7 @@ IF(GENERATE_VIEWER_LIB) #Install the move3d-viewer library + the headers
 		CONFIGURATIONS ${CMAKE_BUILD_TYPE})
 	
 	INSTALL(DIRECTORY ${BM3D_SOURCE_DIRECTORIES} ${BioMove3D_SOURCE_DIR}/include 
-			DESTINATION include/libmove3d 
+			DESTINATION include/libmove3d-viewer 
 			FILES_MATCHING REGEX "\\.[h|hpp]")
 
 ELSEIF(GENERATE_LIBMOVE3D) # Only install the library and the headers
