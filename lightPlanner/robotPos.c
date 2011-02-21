@@ -704,6 +704,7 @@ configPt setRobotCloseToConfGraspApproachOrExtract(p3d_rob* robot, configPt refC
 }
 
 #ifdef GRASP_PLANNING
+double costConst = 1;
 /**
  * @brief Optimize the given robot configuration using the redundent joint to get smarter configurations
  * @param robot the robot
@@ -718,7 +719,7 @@ configPt setRobotCloseToConfGraspApproachOrExtract(p3d_rob* robot, configPt refC
  */
 double optimizeRedundentJointConfigCost(p3d_rob* robot, int redJntId, configPt q, p3d_matrix4 objectPos, p3d_matrix4 tAtt, gpGrasp& grasp, int armId, int nbTests){
   if(q){
-    double refCost = computeRobotGraspArmCost(robot, armId, grasp, q , robot->openChainConf, objectPos)/270;
+    double refCost = computeRobotGraspArmCost(robot, armId, grasp, q , robot->openChainConf, objectPos)/costConst;
     double cost = P3D_HUGE, vmin = -P3D_HUGE, vmax = P3D_HUGE;
     //get the redundent joint from the id
     p3d_jnt* redJnt = robot->joints[redJntId];
@@ -736,7 +737,7 @@ double optimizeRedundentJointConfigCost(p3d_rob* robot, int redJntId, configPt q
     for(int i = 0; i < nbTests; i++){
       q[qId] = p3d_random(vmin, vmax);
       if(p3d_is_collision_free(robot, q)){
-        double tmpCost = computeRobotGraspArmCost(robot, armId, grasp, q , robot->openChainConf, objectPos)/270;
+        double tmpCost = computeRobotGraspArmCost(robot, armId, grasp, q , robot->openChainConf, objectPos)/costConst;
         if(tmpCost < cost){
           cost = tmpCost;
           value = q[qId];
@@ -779,7 +780,6 @@ double optimizeRedundentJointConfigDist(p3d_rob* robot, int redJntId, configPt q
     double refValue = q[qId], value = P3D_HUGE;
     p3d_matrix4 bak;
     activateCcCntrts(robot, armId, false);
-    ManipulationUtils::printConstraintInfo(robot);
     p3d_mat4Copy((*robot->armManipulationData)[armId].getCcCntrt()->Tatt, bak);
     p3d_mat4Copy(tAtt, (*robot->armManipulationData)[armId].getCcCntrt()->Tatt);   
     q[qId] = refConf[qId];
@@ -791,8 +791,7 @@ double optimizeRedundentJointConfigDist(p3d_rob* robot, int redJntId, configPt q
         if(p3d_is_collision_free(robot, q) && p3d_connectable_confs(robot, refConf, q, &tmpDist)){
           if(tmpDist < dist){
             dist = tmpDist;
-            printf("Dist = %f\n", dist);
-            g3d_draw_allwin_active();
+//             printf("Dist = %f\n", dist);
             value = q[qId];
           }
         }
@@ -804,11 +803,14 @@ double optimizeRedundentJointConfigDist(p3d_rob* robot, int redJntId, configPt q
         q[qId] = value;
       }
     }
-    printf("Selected Dist = %f\n", dist);
+//     printf("Selected Dist = %f\n", dist);
     p3d_set_and_update_this_robot_conf(robot, q);
     p3d_get_robot_config_into(robot, &q);
     deactivateCcCntrts(robot, armId);
     p3d_mat4Copy(bak, (*robot->armManipulationData)[armId].getCcCntrt()->Tatt);
+    if(dist == P3D_HUGE){
+      return -1;
+    }
     return dist;
   }
   return -1;
@@ -992,49 +994,56 @@ double computeRobotConfCostSpecificArm(p3d_rob* robot, configPt refConfig, confi
 
 #ifdef GRASP_PLANNING
 double computeRobotGraspArmCost(p3d_rob* robot, int whichArm, gpGrasp grasp, configPt q, configPt refConfig, p3d_matrix4 objectPos){
-  double armMediumJointCost = 0;
+  double armMediumJointCost = 0.0, thumbDirectionCost = 0.0, mediusDirectionCost = 0.0, distConf = 0.0;
   p3d_cntrt* ct = (*robot->armManipulationData)[whichArm].getCcCntrt();
   p3d_jnt* baseJnt = robot->baseJnt;
   int weight = 1;
   p3d_set_and_update_this_robot_conf(robot, q);
-  //MediumJointCost
-//   for(int j = 0; j < ct->npasjnts; j++){
-//     if((!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")) && j >= 2){
-//       weight = (ct->npasjnts - j);
-//     }else{
-//       weight = (ct->npasjnts - j + 1);
-//     }
-//     armMediumJointCost += weight * SQR(q[ct->pasjnts[j]->index_dof] - refConfig[ct->pasjnts[j]->index_dof]);
-//   }
-//   if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")){
-//     armMediumJointCost += 5 * SQR(q[robot->joints[ct->argu_i[0]]->index_dof] - refConfig[robot->joints[ct->argu_i[0]]->index_dof]);
-//   }
-
   
-  /* Base orientation cost (Better is on the refConf base/obj line)*/
-  p3d_set_and_update_this_robot_conf(robot, refConfig);
-  p3d_vector3 obj, current, ref, objCurrent, refCurrent;
-  p3d_mat4ExtractColumnX(robot->baseJnt->abs_pos, ref);
-
-  obj[0] = objectPos[0][3] - robot->baseJnt->abs_pos[0][3];
-  obj[1] = objectPos[1][3] - robot->baseJnt->abs_pos[1][3];
-  obj[2] = objectPos[2][3] - robot->baseJnt->abs_pos[2][3];
-
-  p3d_set_and_update_this_robot_conf(robot, q);
-  p3d_mat4ExtractColumnX(robot->baseJnt->abs_pos, current);
-
-  p3d_vectXprod(obj, current, objCurrent);
-  p3d_vectXprod(ref, current, refCurrent);
-
-  if(p3d_vectDotProd(objCurrent,refCurrent) <= 0){
-    weight = 5;
-  }else{
-    weight = 10;
+  //MediumJointCost Max 270
+  for(int j = 0; j < ct->npasjnts; j++){
+    if((!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")) && j >= 2){
+      weight = (ct->npasjnts - j);
+    }else{
+      weight = (ct->npasjnts - j + 1);
+    }
+    armMediumJointCost += weight * SQR(q[ct->pasjnts[j]->index_dof] - refConfig[ct->pasjnts[j]->index_dof]);
   }
-  armMediumJointCost += weight* SQR(q[baseJnt->index_dof] - refConfig[baseJnt->index_dof]);
+  if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")){
+    armMediumJointCost += 5 * SQR(q[robot->joints[ct->argu_i[0]]->index_dof] - refConfig[robot->joints[ct->argu_i[0]]->index_dof]);
+  }
+
+  distConf = p3d_dist_config(robot, q, refConfig);
+  
+  /* Base orientation cost (Better is on the refConf base/obj line)*/  //!!!!!Not Working
+//   p3d_set_and_update_this_robot_conf(robot, refConfig);
+//   p3d_vector3 obj, current, ref, objCurrent, refCurrent;
+//   p3d_mat4ExtractColumnX(robot->baseJnt->abs_pos, ref);
+// 
+//   obj[0] = objectPos[0][3] - robot->baseJnt->abs_pos[0][3];
+//   obj[1] = objectPos[1][3] - robot->baseJnt->abs_pos[1][3];
+//   obj[2] = objectPos[2][3] - robot->baseJnt->abs_pos[2][3];
+// 
+//   p3d_set_and_update_this_robot_conf(robot, q);
+//   p3d_mat4ExtractColumnX(robot->baseJnt->abs_pos, current);
+// 
+//   p3d_vectXprod(obj, current, objCurrent);
+//   p3d_vectXprod(ref, current, refCurrent);
+// 
+//   if(p3d_vectDotProd(objCurrent,refCurrent) <= 0){
+//     weight = 5;
+//   }else{
+//     weight = 10;
+//   }
+//   armMediumJointCost += weight* SQR(q[baseJnt->index_dof] - refConfig[baseJnt->index_dof]);
 
 
+// Get the thumb in base direction. Max 1.5
   if((!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")) ){
+    p3d_vector3 frontDir, leftDir, upDir = {0,0,1};
+    frontDir[0] = objectPos[0][3] - robot->baseJnt->abs_pos[0][3];
+    frontDir[1] = objectPos[1][3] - robot->baseJnt->abs_pos[1][3];
+    frontDir[2] = objectPos[2][3] - robot->baseJnt->abs_pos[2][3];
     p3d_matrix4 wristPose;
     p3d_mat4Copy(ct->pasjnts[ct->npasjnts -1]->abs_pos , wristPose);
     p3d_vector3 thumbDirection, mediusDirection;
@@ -1045,32 +1054,14 @@ double computeRobotGraspArmCost(p3d_rob* robot, int whichArm, gpGrasp grasp, con
     }else if(!strcmp(ct->namecntrt, "p3d_lwr_arm_ik")){
       p3d_mat4ExtractColumnZ(wristPose, mediusDirection);
     }
-    double product = 0.0;
-    p3d_vectNormalize(obj, obj);
-    if( (product = p3d_vectDotProd(obj, thumbDirection)) > 0 ){
-      armMediumJointCost += ABS(product);
-    }
-
-    if( (product = p3d_vectDotProd(obj, mediusDirection)) < 0 ){
-      armMediumJointCost += ABS(product);
-    }
-
+    p3d_vectNormalize(frontDir, frontDir);
+    p3d_vectXprod(upDir, frontDir, leftDir);
+    
+    thumbDirectionCost = 1 - p3d_vectDotProd(leftDir, thumbDirection);
+    mediusDirectionCost = 1 - p3d_vectDotProd(frontDir, mediusDirection);
   }
-  
-//   p3d_vector3 robotObjectDir, base, object;
-// 
-//   if (baseJnt || (baseJnt && baseJnt->num == 0)) {
-//     baseJnt = robot->joints[1];
-//   }
-//   p3d_mat4ExtractTrans(baseJnt->abs_pos, base);
-//   p3d_mat4ExtractTrans(objectPos, object);
-//   robotObjectDir[0] = object[0] - base[0];
-//   robotObjectDir[1] = object[1] - base[1];
-//   robotObjectDir[2] = object[2] - base[2];
-//   p3d_vectNormalize(robotObjectDir, robotObjectDir);
-  
-  return armMediumJointCost;
-//   return 1 - ((1 + p3d_vectDotProd(graspDir, robotObjectDir)) / 2);
+
+  return (/*armMediumJointCost/270 + */(thumbDirectionCost + mediusDirectionCost)/4 + distConf/16)/2;
 }
 #endif
 
