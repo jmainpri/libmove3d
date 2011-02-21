@@ -111,11 +111,6 @@ void switchBBActivationForGrasp(void) {
 }
 
 void setSafetyDistance(p3d_rob* robot, double dist){
-//   if(dist != 0){
-//     disableAutoCol(robot);
-//   }else{
-//     enableAutoCol(robot);
-//   }
   p3d_set_env_object_tolerance(dist);
   p3d_col_set_tolerance(dist);
 }
