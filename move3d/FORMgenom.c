@@ -477,7 +477,7 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	std::vector <SM_TRAJ> smTrajs;
   std::vector <double>  objStart, objGoto;
   gpGrasp grasp;
-	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"", grasp, confs, smTrajs);
+	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, OBJECT_NAME , (char*)"", grasp, confs, smTrajs);
         return;
 }
 

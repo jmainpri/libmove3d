@@ -698,14 +698,14 @@ int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECT
 //! @param qStart : the configuration from which to start
 //! @param objGoto : the Cartesian goal pose
 //! @param trajs : the vector of trajector optained
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFreePoint(int armId, configPt qStart, std::vector<double> &objGoto, std::vector <p3d_traj*> &trajs){
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFreePoint(int armId, configPt qStart, std::vector<double> &objGoto, p3d_rob* object, std::vector <p3d_traj*> &trajs){
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   gpGrasp grasp;
   double confCost = -1;
   configPt qGoal = _manipConf.getFreeHoldingConf(NULL, armId, grasp, (*_robot->armManipulationData)[armId].getCcCntrt()->Tatt, confCost, objGoto, NULL);
 
   if(qGoal){
-    status = armToFree(armId, qStart, qGoal, true, trajs);
+    status = armToFree(armId, qStart, qGoal, true, NULL,trajs);
   }else{
     status = MANIPULATION_TASK_NO_TRAJ_FOUND;
   }
@@ -713,7 +713,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFreePoint(int armId, configP
   return status;
 }
 
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armExtract(int armId, configPt qStart, std::vector <p3d_traj*> &trajs) {
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armExtract(int armId, configPt qStart, p3d_rob* object, std::vector <p3d_traj*> &trajs) {
  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   int updateTatt = false;
 
@@ -732,7 +732,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armExtract(int armId, configPt qS
 
   if (status == MANIPULATION_TASK_OK){
     //Compute the path between theses configurations
-    status = armToFree(armId, qStart, qGoal, false, trajs);
+    status = armToFree(armId, qStart, qGoal, false, NULL, trajs);
   }
 
   return status;
@@ -745,15 +745,23 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armExtract(int armId, configPt qS
 //! @param qStart : the configuration from which to start
 //! @param objGoto : the Cartesian goal pose
 //! @param trajs : the vector of trajector optained
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qStart, configPt qGoal, bool useSafetyDistance, std::vector <p3d_traj*> &trajs){
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qStart, configPt qGoal, bool useSafetyDistance, p3d_rob* object, std::vector <p3d_traj*> &trajs){
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   p3d_traj* traj = NULL;
 
   ManipulationUtils::fixAllHands(_robot, qStart, false);
   fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
-  checkConfigForCartesianMode(qStart, NULL);
-  checkConfigForCartesianMode(qGoal, NULL);
-
+  checkConfigForCartesianMode(qStart, object);
+  checkConfigForCartesianMode(qGoal, object);
+  if(object){
+    ArmManipulationData& armData = (*_robot->armManipulationData)[armId];
+    gpHand_properties handProp = armData.getHandProperties();
+    gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId); 
+    
+    p3d_set_object_to_carry_to_arm(_robot, armId, object->name);
+//TODO Change for Cartesian mode
+    setAndActivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(), armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
+  }
   if (MPDEBUG) {
       ManipulationUtils::copyConfigToFORM(_robot, qStart);
       ManipulationUtils::copyConfigToFORM(_robot, qGoal);
@@ -766,6 +774,10 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qSt
   }
   if(useSafetyDistance){
     setSafetyDistance(_robot, 0);
+  }
+  if(object){
+    gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
+    gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId); //the hand name is hand1 for arm0 and hand 2 for arm1
   }
   return status;
 }
@@ -1258,10 +1270,10 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
         printf("plan for task ");
         if(!ManipulationUtils::isValidVector(objGoto)){
           printf("ARM_FREE (armToFree)\n");
-          status = armToFree(armId, qi, qf, true, trajs);
+          status = armToFree(armId, qi, qf, true, object, trajs);
         }else{
           printf("ARM_FREE (armToFreePoint)\n");
-          status = armToFreePoint(armId, qi, objGoto, trajs);
+          status = armToFreePoint(armId, qi, objGoto, object, trajs);
         }
         break;
       }
@@ -1296,7 +1308,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       case ARM_EXTRACT: {
         
         printf("plan for ARM_EXTRACT task\n");
-        status = armExtract(armId, qi, trajs);
+        status = armExtract(armId, qi, object, trajs);
         break;
       }
         //       case ARM_TAKE_TO_FREE_POINT:{
@@ -1337,6 +1349,11 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
   return status;
 }
 
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName, const char* supportName, std::vector <p3d_traj*> &trajs){
+  gpGrasp grasp;
+  return armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, trajs);
+}
+
 //! Computes a path for a specific task
 //! This function is an interface for the softmotion
 //! trajectory generation
@@ -1368,6 +1385,11 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       }
     }
     return returnMessage;
+}
+
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName, const char* supportName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs) {
+  gpGrasp grasp;
+  return armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, grasp, confs, smTrajs);
 }
 
 #endif
