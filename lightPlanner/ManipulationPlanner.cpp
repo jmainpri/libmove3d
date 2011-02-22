@@ -702,10 +702,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFreePoint(int armId, configP
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   gpGrasp grasp;
   double confCost = -1;
-  configPt qGoal = _manipConf.getFreeHoldingConf(NULL, armId, grasp, (*_robot->armManipulationData)[armId].getCcCntrt()->Tatt, confCost, objGoto, NULL);
-
+  configPt qGoal = _manipConf.getFreeHoldingConf(object, armId, grasp, (*_robot->armManipulationData)[armId].getCcCntrt()->Tatt, confCost, objGoto, NULL);
   if(qGoal){
-    status = armToFree(armId, qStart, qGoal, true, NULL,trajs);
+    status = armToFree(armId, qStart, qGoal, true, object ,trajs);
   }else{
     status = MANIPULATION_TASK_NO_TRAJ_FOUND;
   }
@@ -751,16 +750,15 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qSt
 
   ManipulationUtils::fixAllHands(_robot, qStart, false);
   fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
-  checkConfigForCartesianMode(qStart, object);
-  checkConfigForCartesianMode(qGoal, object);
+
+  checkConfigForCartesianMode(qStart, NULL);
+  checkConfigForCartesianMode(qGoal, NULL);
+  p3d_set_and_update_this_robot_conf(_robot, qStart);
   if(object){
-    ArmManipulationData& armData = (*_robot->armManipulationData)[armId];
-    gpHand_properties handProp = armData.getHandProperties();
+    gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
     gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId); 
-    
+
     p3d_set_object_to_carry_to_arm(_robot, armId, object->name);
-//TODO Change for Cartesian mode
-    setAndActivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(), armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
   }
   if (MPDEBUG) {
       ManipulationUtils::copyConfigToFORM(_robot, qStart);
@@ -778,6 +776,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qSt
   if(object){
     gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
     gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId); //the hand name is hand1 for arm0 and hand 2 for arm1
+    (*_robot->armManipulationData)[armId].setCarriedObject((p3d_rob*) NULL);
+    _robot->isCarryingObject = FALSE;
   }
   return status;
 }

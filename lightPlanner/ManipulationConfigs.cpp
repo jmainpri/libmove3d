@@ -260,7 +260,6 @@ configPt ManipulationConfigs::getFreeHoldingConf( p3d_rob* object, int armId, gp
   }else{
     p3d_mat4Copy(mData.getManipulationJnt()->abs_pos , objPos);
   }
-  g3d_draw_allwin_active();
   q = setRobotGraspPosWithoutBase(_robot, objPos, tAtt, false, sampleObjectRotation , armId, true);
   if(q){
     optimizeRedundentJointConfigCost(_robot, mData.getCcCntrt()->argu_i[0], q, objPos, tAtt, grasp, armId, getOptimizeRedundentSteps());
@@ -272,11 +271,13 @@ configPt ManipulationConfigs::getFreeHoldingConf( p3d_rob* object, int armId, gp
     }
   }
   deactivateCcCntrts(_robot, armId);
-
-  _robot->isCarryingObject = FALSE;
-  mData.setCarriedObject((p3d_rob*)NULL);
+  
   // Reset robot to the initial robot configuration
   p3d_set_and_update_this_robot_conf(_robot, tmpConf);
+  
+  _robot->isCarryingObject = FALSE;
+  mData.setCarriedObject((p3d_rob*)NULL);
+
   p3d_destroy_config(_robot, tmpConf);
 
   if(restore){
