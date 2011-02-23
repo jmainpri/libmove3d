@@ -3223,7 +3223,7 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
   if(graspList.empty())
   {  return GP_ERROR;   }
 
-  gpDeactivate_object_fingertips_collisions(hand_robot, object->o[0], handProp, 0);
+  gpDeactivate_object_fingertips_collisions(hand_robot, object->o[0], handProp, -1);
 
   i=1;
   for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
