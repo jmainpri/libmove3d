@@ -3179,7 +3179,6 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
       igrasp->computeOpenConfig(hand_robot, object, false);
     }
     printf("Done.\n");
-
     gpSave_grasp_list(graspList, graspListFile);
   }
   else
@@ -3194,11 +3193,11 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
       printf("%s: %d: gpGet_grasp_list(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str() );
       printf("It contains %d grasps.\n",graspList.size() );
     }
-    printf("Now, compute open configs.\n");
-    for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
-      igrasp->computeOpenConfig(hand_robot, object, true);
-    }
-    printf("Done.\n");
+//     printf("Now, compute open configs.\n");
+//     for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
+//       igrasp->computeOpenConfig(hand_robot, object, true);
+//     }
+//     printf("Done.\n");
   }
 
 //   configPt q0=  p3d_alloc_config(hand_robot);
@@ -3207,9 +3206,6 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
 //   p3d_set_and_update_this_robot_conf(hand_robot, q0);
 //   p3d_destroy_config(hand_robot, q0);
 
-//   for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
-//     igrasp->computeQuality();
-//   }
   gpCompute_grasp_qualities_and_sort(graspList);
 
   gpCompute_grasps_best_placement(graspList,  hand_robot, object, handProp);
@@ -3612,6 +3608,7 @@ int gpReduce_grasp_list_size(const std::list<gpGrasp> &originalList, std::list<g
   bool firstTest;
   int i, remove;
   double d, dmin;
+  std::list<gpGrasp>::const_iterator citer1, citer2;
   std::list<gpGrasp>::iterator iter1, iter2;
 
   reducedList= originalList;
@@ -3624,59 +3621,29 @@ int gpReduce_grasp_list_size(const std::list<gpGrasp> &originalList, std::list<g
     iter1->ID= i++; 
   }
 
-//   nbClusters= maxSize;
-//   clusters.resize(nbClusters);
-//   clusterSize= (originalList.size()) / (nbClusters);
-//   printf("maxSize= %d \n",maxSize);
-//   printf("nbClusters= %d clusterSize= %d\n",nbClusters,clusterSize);
-// 
-//   for(i=0; i<clusters.size(); ++i)
-//   {
-//     reducedList.sort();
-//     reducedList.reverse();
-// 
-//     clusters.at(i).push_back(reducedList.front());
-//     iter1=reducedList.begin();
-//     for(iter2=reducedList.begin(); iter2!=reducedList.end(); ++iter2)
-//     {
-//       iter2->visibility= gpGraspDistance(*iter1, *iter2);
-//     }
-//     reducedList.pop_front();
-//     reducedList.sort(gpCompareVisibility);
-// 
-//     for(j=0; j<clusterSize; ++j)
-//     {
-//       if(reducedList.empty())
-//       {  break; }
-//       clusters.at(i).push_back(reducedList.front());
-//       reducedList.pop_front();
-//     }
-// 
-//   }
-//   reducedList.clear();
-//   for(i=0; i<clusters.size(); ++i)
-//   {
-//    reducedList.push_back( clusters.at(i).front() );
-//   }
-
-
   while(reducedList.size() > maxSize)
   {
     firstTest= true;
     // look for the two grasps that are the closest to each other:
-    for(iter1=reducedList.begin(); iter1!=reducedList.end(); iter1++)
+    for(iter1=reducedList.begin(); iter1!=reducedList.end(); ++iter1)
     {
-      for(iter2=reducedList.begin(); iter2!=reducedList.end(); iter2++)
+      iter2= iter1;
+      iter2++;
+      while(iter2!=reducedList.end())
       {
         if(iter1->ID==iter2->ID)
-        {  continue;  }
+        {  
+          iter2++;
+          continue;
+        }
         d= gpGraspDistance(*iter1, *iter2);
         if( d < dmin || firstTest==true )
         {
           dmin= d;
-          remove= iter2->ID;;
+          remove= iter2->ID;
           firstTest= false;
         }
+        iter2++;
       }
     }
 
@@ -3687,7 +3654,7 @@ int gpReduce_grasp_list_size(const std::list<gpGrasp> &originalList, std::list<g
         reducedList.erase(iter1);
         break;
       } 
-    }
+   }
   }
 
 
@@ -3813,43 +3780,9 @@ int gpCompute_grasp_qualities_and_sort(std::list<gpGrasp> &graspList)
     igrasp->quality= igrasp->curvatureScore + 0.2*igrasp->centroidScore;
   }
 
-  // copy the list in a vector:
-//   graspVector.reserve(graspList.size());
-//   for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)
-//   {
-//     graspVector.push_back(*igrasp);
-//   }
-// 
-//   // first sort by decreasing number of contacts:
-//   std::sort(graspVector.begin(), graspVector.end(), gpCompareGraspNumberOfContacts);
-//   std::reverse(graspVector.begin(), graspVector.end());
-// 
-//   // sort according to quality for each subset with the same number of contacts:
-//   i0= 0;
-//   for(i=0; i<graspVector.size(); ++i)
-//   {
-//     if(i==0)
-//     {  nbContacts= graspVector[i].contacts.size(); }
-// 
-//     if(graspVector[i].contacts.size()!=nbContacts)
-//     {
-//       std::sort(graspVector.begin()+i0, graspVector.begin()+i, gpReversedCompareGraspQuality);
-//       nbContacts= graspVector[i].contacts.size();
-//       i0= i;
-//     }
-//   }
-// printf("graspVector size %d\n",graspVector.size());
-//   std::sort(graspVector.begin()+i0, graspVector.end(), gpReversedCompareGraspQuality);
 
   graspList.sort(gpReversedCompareGraspQuality);
 
-  // copy in the list
-//   graspList.clear();
-//   for(i=0; i<graspVector.size(); ++i)
-//   {
-//     graspVector[i].ID= i+1;
-//     graspList.push_back(graspVector[i]);
-//   }
   i= 1;
   for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)
   {
