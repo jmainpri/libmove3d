@@ -109,7 +109,7 @@ extern int JIDO_make_obj_accessible_to_human ( char obj_to_manipulate[50] );
 extern int JIDO_show_obj_to_human ( char obj_to_manipulate[50] );
 extern int JIDO_find_candidate_points_to_show_obj();
 /*extern int test_geometric_plan_creation_for_JIDO();*/
-extern int JIDO_give_obj_to_human ( char obj_to_manipulate[50] );
+extern int JIDO_give_obj_to_human ( char obj_to_manipulate[50] ,candidate_poins_for_task *curr_candidate_points);
 extern int JIDO_find_candidate_points_to_give_obj();
 extern int assign_weights_on_candidte_points_to_give_obj(char *object_name, candidate_poins_for_task *candidate_points, int indx_by_agent, int indx_for_agent);
 
