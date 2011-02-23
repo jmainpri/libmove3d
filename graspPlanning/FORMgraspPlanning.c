@@ -1,6 +1,7 @@
 #include <time.h>
 #include <list>
 #include <string>
+#include <algorithm>
 #include "GraspPlanning-pkg.h"
 #include "Collision-pkg.h"
 #include "../lightPlanner/proto/lightPlannerApi.h"
@@ -29,6 +30,12 @@ static gpDoubleGrasp DOUBLEGRASP;
 int initialize_grasp_planner();
 void draw_grasp_planner();
 
+gpConvexHull chull;
+gpConvexHull3D chull3d;
+std::vector<gpVector3D> POINTS;
+p3d_vector3 E1, E2, E3;
+p3d_vector3 A1, B1, C1, D1, A2, B2, C2, D2;
+p3d_matrix4 FRAME;
 
 #include "ManipulationPlanner.hpp"
 static ManipulationPlanner *manipulation= NULL;
@@ -234,6 +241,25 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 
 void draw_grasp_planner()
 {   
+//   chull3d.draw();
+  g3d_draw_cylinder(E1, E2, 0.005, 8);
+  g3d_draw_cylinder(E2, E3, 0.005, 8);
+
+  glBegin(GL_QUADS);
+    glVertex3dv(A1); glVertex3dv(B1); glVertex3dv(D1); glVertex3dv(C1);
+    glVertex3dv(A2); glVertex3dv(B2); glVertex3dv(D2); glVertex3dv(C2);
+  glEnd();
+
+  g3d_draw_frame(FRAME, 0.1);
+
+  p3d_vector3 com;
+  p3d_vectCopy(XYZ_ENV->cur_robot->o[0]->pol[0]->poly->cmass, com);
+  g3d_draw_solid_sphere(com[0], com[1], com[2], 0.003, 4);
+
+  for(unsigned int i=0; i<POINTS.size(); ++i)
+  {
+    g3d_draw_solid_sphere(POINTS[i][0], POINTS[i][1], 0.0, 0.003, 4);
+  }
 
   G3D_Window *win;
 //   p3d_rob *hand_robot= p3d_get_robot_by_name((char*)(GP_GRIPPER_ROBOT_NAME));
@@ -417,13 +443,155 @@ static void CB_double_grasp(FL_OBJECT *obj, long arg)
 }
 
 
+struct gpBorderEdge
+{
+  double length;
+  gpVector3D e1, e2;
+};
+
+bool gpCmpBorderEdge(const gpBorderEdge &e1, const gpBorderEdge &e2)
+{  return (e1.length > e2.length); }
+
+void compute_object_border()
+{
+  double dz, minZ;
+  p3d_vector3 p;
+  std::vector<unsigned int> edgeIndices;
+  p3d_polyhedre *poly= NULL;
+  std::vector<double> coords(2);
+  std::vector< std::vector<double> > input_points;
+  gpBorderEdge edge;
+  std::vector<gpBorderEdge> edges;
+  double dotU, dotV, dotW, minDotU, maxDotV;
+  p3d_vector3 e1, e2, u, v, w= {0,0,1}, diff;
+
+  poly= XYZ_ENV->cur_robot->o[0]->pol[0]->poly;
+
+  gpCompute_mass_properties(poly);
+
+  POINTS.resize(poly->nb_points);
+  for(unsigned int i=0; i<poly->nb_points; ++i)
+  {
+    if( (i==0) ||  (poly->the_points[i][2] < minZ) )
+    {  minZ= poly->the_points[i][2]; }
+  }
+  dz= 0.03;
+  for(unsigned int i=0; i<poly->nb_points; ++i)
+  {
+    if(poly->the_points[i][2] > minZ + dz)
+    {  continue;  }
+    coords[0]= poly->the_points[i][0];
+    coords[1]= poly->the_points[i][1];
+    input_points. push_back(coords);
+  }
+  POINTS.resize(input_points.size());
+  for(unsigned int i=0; i<input_points.size(); ++i)
+  {
+    POINTS[i][0]= input_points[i][0];
+    POINTS[i][1]= input_points[i][1];
+    POINTS[i][2]= minZ+dz; 
+ }
+  chull.setPoints(input_points);
+  chull.compute(false, 0.0, true);
+
+  for(unsigned int i=0; i<chull.nbFaces(); ++i)
+  {
+    edgeIndices= chull.hull_faces[i].vertices();
+    edge.e1.set(input_points[edgeIndices[0]][0], input_points[edgeIndices[0]][1], minZ+dz);
+    edge.e2.set(input_points[edgeIndices[1]][0], input_points[edgeIndices[1]][1], minZ+dz);
+    edge.length= sqrt( pow(edge.e2.x-edge.e1.x,2) + pow(edge.e2.y-edge.e1.y,2) + pow(edge.e2.z-edge.e1.z,2) );
+    edges.push_back(edge);
+  }
+
+  std::sort(edges.begin(), edges.end(),  gpCmpBorderEdge);
+  edge= edges.front();
+  edge= edges.at(1);
+  for(unsigned int i=0; i<3; ++i)
+  {
+    E1[i]= edge.e1[i];
+    E2[i]= edge.e2[i];
+  }
+
+  p3d_vectSub(E2, E1, u);
+  p3d_vectNormalize(u, u);
+  p3d_vectXprod(w, u, v);
+
+  std::vector<float> dots;
+  for(unsigned int i=0; i<poly->nb_points; ++i)
+  {
+    p3d_vectCopy(poly->the_points[i], p);
+    if( p[2] > minZ + dz)
+    {  continue; }
+    p[2]= minZ + dz;
+    p3d_vectSub(p, E1, diff);
+    dotU= p3d_vectDotProd(diff, u);
+    dotV= p3d_vectDotProd(diff, v);
+    dots.push_back(dotU);
+  }
+
+//   std::sort(dots.begin(), dots.end(),  std::greater <float>());
+  std::sort(dots.begin(), dots.end());
+  minDotU= dots[1];
+
+
+  for(unsigned int i=0; i<3; ++i)
+  {
+    E2[i]= E1[i] + minDotU*u[i];
+    E3[i]= E1[i] + minDotU*u[i] - v[i];
+
+    A1[i]= E1[i];
+    B1[i]= E2[i];
+    C1[i]= E1[i];
+    D1[i]= E2[i];
+
+    A2[i]= E2[i];
+    B2[i]= E3[i];
+    C2[i]= E2[i];
+    D2[i]= E3[i];
+  }
+  A1[2]= B1[2]= A2[2]= B2[2]= minZ;
+  C1[2]= D1[2]= C2[2]= D2[2]= minZ+dz;
+
+
+  p3d_vectSub(E3, E2, u);
+  p3d_vectNormalize(u, u);
+  p3d_vectSub(E1, E2, v);
+  p3d_vectNormalize(v, v);
+  p3d_vectXprod(u, v, w);
+  p3d_vectNormalize(w, w);
+  p3d_mat4Copy(p3d_mat4IDENTITY, FRAME);
+  for(unsigned int i=0; i<3; ++i)
+  {
+    FRAME[i][0]= u[i];     FRAME[i][1]= v[i];     FRAME[i][2]= w[i];  FRAME[i][3]= E2[i];
+  }
+  FRAME[2][3]= minZ;
+
+  p3d_matrix4 Tobj, Tobj_inv, T;
+  p3d_get_freeflyer_pose(XYZ_ENV->cur_robot, Tobj);
+  p3d_matInvertXform(Tobj, Tobj_inv);
+  p3d_mat4Mult(Tobj_inv, FRAME, T);
+  p3d_mat4Print(T, "T");
+//   FILE *file;
+//   file= fopen("vertices","w");
+//   for(unsigned int i=0; i<poly->nb_points; ++i)
+//   {
+//     fprintf(file, "    p3d_add_desc_vert %f %f %f\n",poly->the_points[i][0]-poly->cmass[0],poly->the_points[i][1]-poly->cmass[1],poly->the_points[i][2]-poly->cmass[2]);
+//   }
+//   fclose(file);
+}
 
 static void CB_test(FL_OBJECT *obj, long arg)
 {
-//  gpExport_bodies_for_coldman(XYZ_ENV->cur_robot);
- gpExport_robot_for_coldman(XYZ_ENV->cur_robot);
+p3d_export_as_OFF(XYZ_ENV->cur_robot->o[0]->pol[0]->poly);
+// gpExport_robot_for_coldman(XYZ_ENV->cur_robot);
+//  chull3d.setPoints(XYZ_ENV->cur_robot->o[0]->pol[0]->poly->the_points, XYZ_ENV->cur_robot->o[0]->pol[0]->poly->nb_points);
+//  chull3d.compute(false, -1.0, true); 
+// 
+//  chull3d.setPoints(XYZ_ENV->cur_robot->o[0]->pol[0]->poly->the_points, XYZ_ENV->cur_robot->o[0]->pol[0]->poly->nb_points);
+//  chull3d.compute(false, -1.0, true); 
+//  compute_object_border();
 //   gpCompute_stable_placements((p3d_rob*)p3d_get_robot_by_name(ObjectName), POSELIST);
-//   redraw();
+  redraw();
   return;
   p3d_rob *object= (p3d_rob*)p3d_get_robot_by_name(ObjectName);
   
