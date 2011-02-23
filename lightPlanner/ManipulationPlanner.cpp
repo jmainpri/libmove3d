@@ -1038,8 +1038,24 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
     deactivateCcCntrts(_robot,armId);
 
     p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
-//TODO Change for Cartesian mode
-    setAndActivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(), armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
+    p3d_matrix4 tAtt;
+    _configs.getAttachFrame(tAtt);
+    if(tAtt[0][0] != 0 || tAtt[0][1] != 0 || tAtt[0][2] != 0 || tAtt[0][3] != 0){
+       p3d_mat4Copy(tAtt, armData.getCcCntrt()->Tatt);
+    }
+    
+    checkConfigForCartesianMode(qStart, object);
+    if(MPDEBUG){
+       ManipulationUtils::copyConfigToFORM(_robot, qStart);
+    }
+    checkConfigForCartesianMode(approachGraspConfig, object);
+    if(MPDEBUG){
+       ManipulationUtils::copyConfigToFORM(_robot, approachGraspConfig);
+    }
+    checkConfigForCartesianMode(qGoal, object);
+    if(MPDEBUG){
+       ManipulationUtils::copyConfigToFORM(_robot, qGoal);
+    }
 
     p3d_set_and_update_this_robot_conf(_robot, qStart);
     gpHand_properties handProp = armData.getHandProperties();
@@ -1179,9 +1195,24 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlaceFromFree(int armId, confi
     deactivateCcCntrts(_robot,armId);
 
     p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
-
-    //TODO Change for cartesian mode
-    setAndActivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(), armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
+    p3d_matrix4 tAtt;
+    _configs.getAttachFrame(tAtt);
+    if(tAtt[0][0] != 0 || tAtt[0][1] != 0 || tAtt[0][2] != 0 || tAtt[0][3] != 0){
+       p3d_mat4Copy(tAtt, armData.getCcCntrt()->Tatt);
+    }
+    
+    checkConfigForCartesianMode(qStart, object);
+    if(MPDEBUG){
+       ManipulationUtils::copyConfigToFORM(_robot, qStart);
+    }
+    checkConfigForCartesianMode(approachGraspConfig, object);
+    if(MPDEBUG){
+       ManipulationUtils::copyConfigToFORM(_robot, approachGraspConfig);
+    }
+    checkConfigForCartesianMode(depositConfig, object);
+    if(MPDEBUG){
+       ManipulationUtils::copyConfigToFORM(_robot, depositConfig);
+    }
 
     p3d_set_and_update_this_robot_conf(_robot, qStart);
     gpHand_properties handProp = armData.getHandProperties();

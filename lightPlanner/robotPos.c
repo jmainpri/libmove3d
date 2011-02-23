@@ -167,6 +167,20 @@ void sampleBaseJoint(p3d_rob* robot, p3d_jnt* baseJnt, double minRadius, double 
 }
 
 
+/** @brief The maximal number of shoot to try before returning false*/
+static int MaxNumberOfTry = 10000;
+
+
+void setMaxNumberOfTryForIK(int value)
+{
+  MaxNumberOfTry = value;
+}
+
+int getMaxNumberOfTryForIK()
+{
+  return  MaxNumberOfTry;
+}
+
 //! When the robot is carrying an object
 //! the constraint is set active and if specified
 //! the carried-object robot reference configuration is set to the argument parameters
@@ -178,6 +192,7 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
   double robotSize = 0;
   double translationFactor = 0;
   double rotationFactor = 0;
+  int nbTry = 0;
   
   if(cntrtToActivate == -1){
     cntrtToActivate = 0;
@@ -185,7 +200,7 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
   
   p3d_rob* carriedObject = (*robot->armManipulationData)[cntrtToActivate].getCarriedObject();
   configPt carriedObjectRefConf = p3d_alloc_config(carriedObject);
-  configPt carriedObjectConf = p3d_alloc_config(carriedObject);
+  configPt carriedObjectConf = p3d_get_robot_config(carriedObject);
   
   carriedObjectRefConf[6]  = objPos._x;
   carriedObjectRefConf[7]  = objPos._y;
@@ -195,6 +210,7 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
   carriedObjectRefConf[11] = objPos._rz;
   
   p3d_sel_desc_num(P3D_ROBOT,carriedObject->num);
+  p3d_set_and_update_this_robot_conf(carriedObject, carriedObjectConf);
   p3d_get_BB_rob_max_size(carriedObject, &robotSize);
   translationFactor = robotSize/5;
   rotationFactor = 1;
@@ -225,7 +241,8 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
     if(~shootObjectRot & 4){
       carriedObjectConf[11] = objPos._rz;
     }
-  }while(!p3d_set_and_update_this_robot_conf_with_partial_reshoot(carriedObject, carriedObjectConf) && p3d_col_test());
+    nbTry++;
+  }while(nbTry < MaxNumberOfTry/100 && !p3d_set_and_update_this_robot_conf_with_partial_reshoot(carriedObject, carriedObjectConf) && p3d_col_test());
   
   p3d_sel_desc_num(P3D_ROBOT,robot->num);
   
@@ -240,20 +257,6 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
   
   p3d_destroy_config(carriedObject, carriedObjectRefConf);
   p3d_destroy_config(carriedObject, carriedObjectConf);
-}
-
-/** @brief The maximal number of shoot to try before returning false*/
-static int MaxNumberOfTry = 10000;
-
-
-void setMaxNumberOfTryForIK(int value)
-{
-  MaxNumberOfTry = value;
-}
-
-int getMaxNumberOfTryForIK()
-{
-  return  MaxNumberOfTry;
 }
 
 

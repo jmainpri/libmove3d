@@ -204,6 +204,7 @@ configPt ManipulationConfigs::getFreeHoldingConf( p3d_rob* object, int armId, gp
   cout << " ManipulationConfigs::getFreeHoldingConf" << endl;
 
   configPt tmpConf = p3d_get_robot_config(_robot);
+  configPt objectConf = NULL;
   int restore = false;
   p3d_matrix4 bakTatt, objPos;
   ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
@@ -218,6 +219,7 @@ configPt ManipulationConfigs::getFreeHoldingConf( p3d_rob* object, int armId, gp
   }
 
   if(object){
+    objectConf = p3d_get_robot_config(object);
     mData.setCarriedObject(object);
     _robot->isCarryingObject = TRUE;
   }
@@ -269,6 +271,8 @@ configPt ManipulationConfigs::getFreeHoldingConf( p3d_rob* object, int armId, gp
     if(support){
       p3d_col_activate_pair_of_objects(object->joints[1]->o, support->joints[1]->o);
     }
+    p3d_set_and_update_this_robot_conf(object, objectConf);
+    p3d_destroy_config(object, objectConf);
   }
   deactivateCcCntrts(_robot, armId);
   
