@@ -1402,7 +1402,7 @@ int gpExport_bodies_for_coldman(p3d_rob *robot, const std::string &folderName)
   char *path= NULL;
   std::string bodyName, objName, mtlName;
 
-  for(i=0; i<robot->no; i++)
+  for(i=0; i<robot->no; ++i)
   {
     body= robot->o[i];
     bodyName= body->name;
@@ -1470,15 +1470,13 @@ int gpExport_bodies_for_coldman(p3d_rob *robot, const std::string &folderName)
 
     // now, write the .mtl file:
     mtlName= folderName + "/" + bodyName + ".mtl";
-    
+    printf("open %s\n",mtlName.c_str());
     file= fopen(mtlName.c_str(), "w");
     if(file==NULL)
     { 
-       printf("%s: %d: gpExport_bodies_for_coldman(): can not open %s.\n", __FILE__,__LINE__,mtlName.c_str());
-       return GP_ERROR;
+      printf("%s: %d: gpExport_bodies_for_coldman(): can not open %s.\n", __FILE__,__LINE__,mtlName.c_str());
+      return GP_ERROR;
     }
-
-    fprintf(file, "# %s material\n",  bodyName.c_str());
 
     countM= 1;
     for(j=0; j<body->np; j++)
@@ -1807,10 +1805,9 @@ int gpExport_robot_for_coldman(p3d_rob *robot)
   DIR *directory= NULL;
   cd_jnt *cur_jnt= NULL, *previous= NULL;
   std::list<cd_jnt*> open;
-  std::list<cd_jnt*> close;
-  std::map<p3d_jnt*, cd_jnt*> jointsMap;
+  std::map<p3d_jnt*, cd_jnt*> jointsMap; // map pointers to p3d_jnt and cd_jnt
   std::vector<cd_jnt*> cdJoints;
-  cd_jnt *cdjnt;
+  cd_jnt *cdjnt= NULL;
 
   path= getenv("HOME_MOVE3D");
   
@@ -1854,7 +1851,7 @@ int gpExport_robot_for_coldman(p3d_rob *robot)
   gpExport_bodies_for_coldman(robot, folderName);
 
 
-  // Write the robot file:
+  // Now, write the robot file:
   fprintf(file, "<!-- Exported from Move3D \n");
   fprintf(file, " creation date: %s -->\n\n", asctime(timeinfo));
 
@@ -1875,18 +1872,19 @@ int gpExport_robot_for_coldman(p3d_rob *robot)
   {
     cdjnt= jointsMap[robot->joints[i]];
 
-    if(strcmp(robot->joints[i]->prev_jnt->name, "J0")==0)
+    if(strcmp(robot->joints[i]->prev_jnt->name, "J0")==0) // this is the root joint
     {  cdjnt->prev= NULL; }
     else
     {  cdjnt->prev= jointsMap[robot->joints[i]->prev_jnt]; }
 
     cdjnt->nexts.clear();
-    for(j=0; j<robot->joints[i]->n_next_jnt; ++j)
+    for(j=0; j<robot->joints[i]->n_next_jnt; ++j) // store the chidlren joints
     {
       cdjnt->nexts.push_back( jointsMap[robot->joints[i]->next_jnt[j]] );
     }
   }
 
+  // store the bodies linked to each joint:
   for(i=0; i<robot->no; ++i)
   {
     if(robot->o[i]->jnt!=NULL)
@@ -1896,12 +1894,12 @@ int gpExport_robot_for_coldman(p3d_rob *robot)
     }
   }
 
+  // initialize open list with the root joint:
   for(i=0; i<cdJoints.size(); ++i)
   {
     if(cdJoints[i]->prev==NULL)
     {
       open.push_back(cdJoints[i]);
-      close.push_back(cdJoints[i]);
       break;
     }
   }
@@ -1959,13 +1957,13 @@ int gpExport_robot_for_coldman(p3d_rob *robot)
 
       fprintf(file, "%s<transformation>\n", space.c_str()); 
 
-//    we can use direct matrix:
+//    we can directly use the matrix:
 //       fprintf(file, "%s<ht_matrix> \n", space.c_str()); 
 //       fprintf(file, "%s %f %f %f %f \n", space.c_str(), Trel[0][0], Trel[0][1], Trel[0][2], Trel[0][3]); 
 //       fprintf(file, "%s %f %f %f %f \n", space.c_str(), Trel[1][0], Trel[1][1], Trel[1][2], Trel[1][3]); 
 //       fprintf(file, "%s %f %f %f %f \n", space.c_str(), Trel[2][0], Trel[2][1], Trel[2][2], Trel[2][3]); 
 //       fprintf(file, "%s</ht_matrix>\n", space.c_str()); 
-//    but preferably YPR angles:
+//    -> but preferably use YPR angles:
       gpExtract_matrix_parameters_for_coldman(Trel, tx, ty, tz, yaw, pitch, roll);
       fprintf(file, "%s<translation>  %f %f %f </translation>\n", space.c_str(), tx, ty, tz); 
       fprintf(file, "%s<YPR_angles>  %f %f %f </YPR_angles>\n", space.c_str(), RADTODEG*yaw, RADTODEG*pitch, RADTODEG*roll); 
@@ -1981,7 +1979,7 @@ int gpExport_robot_for_coldman(p3d_rob *robot)
       // check what kind of body it is:
       for(j=0; j<obj->np ; ++j)
       { 
-        if(obj->pol[j]->p3d_objPt==obj)// && obj->pol[j]->TYPE!=P3D_GRAPHIC)
+        if(obj->pol[j]->p3d_objPt==obj)
         {
           bodyType= obj->pol[j]->TYPE;
           break;
@@ -2011,32 +2009,29 @@ int gpExport_robot_for_coldman(p3d_rob *robot)
       else
       {
         gpGet_obj_color(obj, color);
-//         fprintf(file, "%s <color> %f %f %f  1.0 </color>\n", space.c_str(),p3d_random(0.0,1.0),p3d_random(0.0,1.0),p3d_random(0.0,1.0));
         fprintf(file, "%s <color> %f %f %f %f </color>\n", space.c_str(), color[0], color[1], color[2], color[3]);
       }
-
-//       fprintf(file, "%s <color> 0.0 0.7 0.7 1.0 </color>\n", space.c_str());
       fprintf(file, "%s</body>\n", space.c_str());
     }
 
 
-
+    // add the children to the open list:
     if(!cur_jnt->nexts.empty())
     {
       for(std::list<cd_jnt*>::iterator iter=cur_jnt->nexts.begin(); iter!=cur_jnt->nexts.end(); ++iter)
       {
         (*iter)->depth= cur_jnt->depth + 1;
         open.push_back(*iter);
-        close.push_back(*iter);
       }
     }
-    else
+    else // the joint has no children, so we need to write its end-tag
     {
       space.clear();
       for(i=0; i<cur_jnt->depth; ++i)
       {  space+= "\t\t"; }
       fprintf(file, "%s</joint> <!--%s-->\n", space.c_str(), cur_jnt->jnt->name);
 
+      // ending the current joint might end the description of its ancestors-> go back in the joint hierarchy:
       previous= cur_jnt->prev;
       while(previous!=NULL)
       {
