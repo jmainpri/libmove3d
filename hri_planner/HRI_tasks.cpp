@@ -812,15 +812,32 @@ void fct_draw_loop()
 #endif
 }
 
+double get_wrist_head_alignment_angle(p3d_matrix4 wristFrame, p3d_matrix4 headFrame)
+{
+  double angle;
+  p3d_vector3 wristPos, headPos, wristDir, dir;
 
+  p3d_mat4ExtractTrans(wristFrame, wristPos);
+  p3d_mat4ExtractColumnZ(wristFrame, wristDir);
+  p3d_mat4ExtractTrans(headFrame, headPos);
+
+  p3d_vectSub(headPos, wristPos, dir);
+  p3d_vectNormalize(dir, dir);
+
+  angle= acos( p3d_vectDotProd(wristDir, dir) );
+  return angle;
+}
+
+p3d_matrix4 WRIST_FRAME;
 int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task *curr_candidate_points)
 {
- int obj_index=get_index_of_robot_by_name ( obj_to_manipulate );
+  float clock0, elapsedTime;
+   int obj_index=get_index_of_robot_by_name ( obj_to_manipulate );
 
-   ////get_set_of_points_to_give_object ( obj_to_manipulate );
-   ////reverse_sort_weighted_candidate_points_to_give_obj();
+  // get_set_of_points_to_give_object ( obj_to_manipulate );
+  // reverse_sort_weighted_candidate_points_to_give_obj();
 
-   printf ( " <<<<<< curr_candidate_points.no_points = %d >>>>>>>>\n", curr_candidate_points->no_points );
+   printf ( " <<<<<< curr_candidate_points->no_points = %d >>>>>>>>\n", curr_candidate_points->no_points );
    if ( curr_candidate_points->no_points<=0 )
    {
       printf ( " AKP ERROR : No Candidate points\n" );
@@ -840,7 +857,10 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
    {
       initManipulation();
    }
+   clock0= clock();
 
+   p3d_vector3 startPoint, endPoint, pointingDirection, headCenter, intersection1, intersection2;
+   double headRadius;
    std::list<gpGrasp> graspList;
    std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
    std::vector <SM_TRAJ> smTrajs;
@@ -866,7 +886,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
    p3d_traj *traj = NULL;
    std::vector <p3d_traj*> trajs;
    std::vector <p3d_traj*> place_trajs;
-   double visibility;
+   double visibility, confCost;
 
 
    gpGet_grasp_list ( object->name, armHandProp.type, graspList );
@@ -874,11 +894,11 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
    p3d_get_freeflyer_pose2 ( object, &x, &y, &z, &rx, &ry, &rz );
 
 //    ////gpReduce_grasp_list_size ( graspList, graspList, 30 );
-//     std::list<gpGrasp> graspList2;
-//     graspList2= graspList;
-//     gpGrasp_handover_filter(p3d_get_robot_by_name ( "SAHandRight" ), p3d_get_robot_by_name ( "SAHandRight2" ), object, graspList, graspList2);
-//     printf(" After gpGrasp_handover_filter()\n");
-//     printf(" graspList.size()=%d,graspList2.size()=%d\n",graspList.size(),graspList2.size());
+    std::list<gpGrasp> graspList2;
+    graspList2= graspList;
+    gpGrasp_handover_filter(p3d_get_robot_by_name ( "SAHandRight" ), p3d_get_robot_by_name ( "SAHandRight2" ), object, graspList, graspList2);
+    printf(" After gpGrasp_handover_filter()\n");
+    printf(" graspList.size()=%d,graspList2.size()=%d\n",graspList.size(),graspList2.size());
    ////return 0;
 //   status= manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), (char*)obj_to_manipulate, (char*)"", confs, smTrajs);
    p3d_matrix4 handFrame, tAtt, Tobject;
@@ -902,7 +922,6 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
    {
       grasp_ctr++;
       p3d_set_and_update_this_robot_conf ( manipulation->robot(), refConf );
-//      p3d_copy_config_into(manipulation->robot(), q0, &manipulation->robot()->ROBOT_POS);
       printf ( "grasp id= %d\n",igrasp->ID );
       p3d_set_freeflyer_pose ( object, Tplacement0 );
 
@@ -912,23 +931,27 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
 
       setMaxNumberOfTryForIK ( 3000 );
       p3d_get_freeflyer_pose ( object, Tobject );
-      manipulation->fixAllHands ( NULL, false );
-      for ( int i=0; i<10; ++i )
+      ManipulationUtils::fixAllHands (manipulation->robot(), NULL, false );
+      for ( int i=0; i<5; ++i )
       {
          p3d_set_and_update_this_robot_conf ( manipulation->robot(), refConf );
+
          graspConf= setRobotGraspPosWithoutBase ( manipulation->robot(), Tobject, tAtt,  0, 0, armID, false );
+         //graspConf= getGraspConf(object, armID, grasp, tAtt, confCost);
+
+
          if(graspConf==NULL)
-         printf(" No IK Found to grasp\n");
+         {/*printf(" No IK Found to grasp\n");*/}
          printf ( "graspConf= %p\n", graspConf );
          if ( graspConf!=NULL )
          {
             p3d_set_and_update_this_robot_conf ( manipulation->robot(), graspConf );
-            manipulation->unFixAllHands();
+            ManipulationUtils::unFixAllHands(manipulation->robot());
             gpSet_grasp_configuration ( manipulation->robot(), *igrasp, armID );
             p3d_get_robot_config_into ( manipulation->robot(), &graspConf );
             g3d_draw_allwin_active();
 
-            approachConf= manipulation->getApproachFreeConf ( object, armID, *igrasp, graspConf, tAtt );
+            approachConf= manipulation->getManipulationConfigs().getApproachFreeConf ( object, armID, *igrasp, graspConf, tAtt );
             if ( approachConf==NULL )
             {  
             p3d_destroy_config( manipulation->robot(), graspConf );  
@@ -938,7 +961,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
             ////{
                p3d_set_and_update_this_robot_conf ( manipulation->robot(), approachConf );
                g3d_draw_allwin_active();
-               openConf= manipulation->getOpenGraspConf ( object, armID, *igrasp, graspConf );
+               openConf= manipulation->getManipulationConfigs().getOpenGraspConf ( object, armID, *igrasp, graspConf );
                printf ( "approachConf= %p\n", approachConf );
                if ( openConf==NULL )
                {  
@@ -955,11 +978,15 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
 //                   ManipulationUtils::copyConfigToFORM ( manipulation->robot(), openConf );
 //                   ManipulationUtils::copyConfigToFORM ( manipulation->robot(), graspConf );
 
+                    //Added by Mokhtar to fix the issue of object colliding with environment in the generated plan
+                   p3d_multiLocalPath_disable_all_groupToPlan ( manipulation->robot() );
+                   p3d_multiLocalPath_set_groupToPlan ( manipulation->robot(), manipulation->getUpBodyMLP(), 1 );
+
                   status= manipulation->armPickGoto ( armID, refConf, object, graspConf, openConf,  approachConf, trajs );
 
 //                   p3d_destroy_config( manipulation->robot(), graspConf );
-//                   p3d_destroy_config( manipulation->robot(), approachConf );
-//                   p3d_destroy_config( manipulation->robot(), openConf );
+                  p3d_destroy_config( manipulation->robot(), approachConf );
+                  p3d_destroy_config( manipulation->robot(), openConf );
 
                   // manipulation->cleanRoadmap();
                   if ( status==MANIPULATION_TASK_OK )
@@ -967,25 +994,18 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
                      printf ( " Found for grasp_ctr=%d, and IK %d \n",grasp_ctr,i );
                      manipulation->concatTrajectories ( trajs, &traj );
                      MANPIPULATION_TRAJECTORY_CONF_STR conf;
-                     SM_TRAJ smTraj;
-                     manipulation->computeSoftMotion ( traj, conf, smTraj );
-                     g3d_is_object_visible_from_viewpoint ( HRI_AGENTS_FOR_MA[HUMAN1_MA]->perspective->camjoint->abs_pos, HRI_AGENTS_FOR_MA[HUMAN1_MA]->perspective->fov, object, &visibility, 1 );
-                     printf ( " visibility=%lf\n",visibility );
+                     SM_TRAJ smTraj_to_pick;
+                     manipulation->computeSoftMotion ( traj, conf, smTraj_to_pick );
+
+                     //g3d_is_object_visible_from_viewpoint ( HRI_AGENTS_FOR_MA[HUMAN1_MA]->perspective->camjoint->abs_pos, HRI_AGENTS_FOR_MA[HUMAN1_MA]->perspective->fov, object, &visibility, 1 );
+                     //printf ( " visibility=%lf\n",visibility );
 
                      for ( int i1=0;i1<curr_candidate_points->no_points;i1++ )
                      {
                         printf ( "checking for place %d and grasp id= %d\n",i1, igrasp->ID );
-                        //          if(i1==0)
-                        //     goal_pos.x=candidate_points_to_put.point[i1].x +0.5;
-                        //          else
-                        goal_pos.x=curr_candidate_points->point[i1].x-0.1;
+                        goal_pos.x=curr_candidate_points->point[i1].x;
                         goal_pos.y=curr_candidate_points->point[i1].y;
                         goal_pos.z=curr_candidate_points->point[i1].z+0.01;
-                        //goal_pos.z= T0[2][3] + 0.15;
-                        //    goal_pos.x=T0[0][3];
-                        //    goal_pos.y=T0[1][3];
-                        //    goal_pos.z=T0[2][3]+0.04;
-
 
                         point_to_give.x=goal_pos.x;
                         point_to_give.y=goal_pos.y;
@@ -996,7 +1016,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
                         obj_tmp_pos[8]=point_to_give.z;
 
                         get_ranking_based_on_view_point ( HRI_AGENTS_FOR_MA[HUMAN1_MA]->perspective->camjoint->abs_pos,goal_pos, object, envPt_MM->robot[rob_indx.HUMAN], curr_placementListOut );
-                        int plac_ctr=0;
+                        int plac_ctr=0 ;
                         for ( std::list<gpPlacement>::iterator iplacement=curr_placementListOut.begin(); iplacement!=curr_placementListOut.end(); ++iplacement )
                         {
                            plac_ctr++;
@@ -1010,32 +1030,75 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
                            iplacement->position[2]= point_to_give.z;
                            p3d_matrix4 Tplacement;
                            iplacement->computePoseMatrix ( Tplacement );
-                           p3d_set_freeflyer_pose ( object, Tplacement );
+                            p3d_set_freeflyer_pose ( object, Tplacement );
                             //p3d_get_freeflyer_pose2 ( object,  &x, &y, &z, &rx, &ry, &rz );
                             //printf(" >>> (x, y, z, rx, ry, rz)=(%lf, %lf, %lf, %lf, %lf, %lf) \n",x, y, z, rx, ry, rz);
                            p3d_mat4Mult ( igrasp->frame, handProp.Tgrasp_frame_hand, handFrame );
-                           p3d_mat4Mult ( handFrame, manipulation->robot()->ccCntrts[armID]->Tatt2, tAtt );
+                           p3d_mat4Mult ( handFrame, (*manipulation->robot()->armManipulationData)[armID].getCcCntrt()->Tatt2, tAtt );
+                            p3d_mat4Mult (  Tplacement, tAtt, WRIST_FRAME );
+//                             g3d_win *win= NULL;
+//                             win= g3d_get_cur_win();
+//                             win->fct_draw2= &(execute_Mightability_Map_functions);
+
+//                             p3d_mat4ExtractTrans(FRAME, startPoint);
+//                             p3d_mat4ExtractColumnZ(FRAME, pointingDirection);
+//                             for(int ki=0; ki<3; ++ki)
+//                             { endPoint[ki]= startPoint[ki] + 10*pointingDirection[ki]; }
+//                             p3d_mat4ExtractTrans(HRI_AGENTS_FOR_MA[HUMAN1_MA]->perspective->camjoint->abs_pos, headCenter);
+//                             headRadius= 0.5;
+// p3d_vectCopy(headCenter, SPHERE_CENTER);
+// p3d_vectCopy(startPoint, STARTPOINT);
+// p3d_vectCopy(endPoint, ENDPOINT);
+//                             p3d_vectSub(headCenter, wristPosition, )
+// 
+// 
+//                           //  g3d_draw_allwin_active();
+//                             if( gpLine_segment_sphere_intersection(startPoint, endPoint, headCenter, headRadius, intersection1, intersection2)==0 )
+//                             { continue; }
+                           if( get_wrist_head_alignment_angle(WRIST_FRAME, HRI_AGENTS_FOR_MA[HUMAN1_MA]->perspective->camjoint->abs_pos) > 30*DEGTORAD)
+                            { continue; }
 
                            // it is reactivated in armPickGoTo, so we need to deactivate again:
                            gpDeactivate_object_fingertips_collisions( manipulation->robot(), object->joints[1]->o, armHandProp, armID);
-                           for ( int j=0; j<10; ++j )
+                           for ( int j=0; j<5; ++j )
                            {
                               p3d_set_and_update_this_robot_conf ( manipulation->robot(), refConf );
-                              manipulation->unFixAllHands();
+                              ManipulationUtils::unFixAllHands(manipulation->robot());
                               gpSet_grasp_configuration ( manipulation->robot(), *igrasp, armID );
-                              manipulation->fixAllHands ( NULL, false );
+                              ManipulationUtils::fixAllHands (manipulation->robot(), NULL, false );
                               p3d_set_freeflyer_pose ( object, Tplacement );
+                              p3d_matrix4 testFrame;
+                              p3d_mat4Copy(Tplacement,testFrame);
                               placeConf= setRobotGraspPosWithoutBase ( manipulation->robot(), Tplacement, tAtt,  0, 0, armID, false );
                               ////ManipulationUtils::copyConfigToFORM ( object, placeConf ); 
                               ////pqp_print_colliding_pair();
                               if(placeConf==NULL)
-                              printf(" No IK Found to place\n");
-                              g3d_draw_allwin_active();
+                              {/*printf(" No IK Found to place\n");*/}
+
+                              ////g3d_draw_allwin_active();
                               if(placeConf!=NULL)
                               {
+                                p3d_set_and_update_this_robot_conf ( manipulation->robot(), placeConf );
+                                g3d_draw_allwin_active();
+                                g3d_is_object_visible_from_viewpoint ( HRI_AGENTS_FOR_MA[HUMAN1_MA]->perspective->camjoint->abs_pos, HRI_AGENTS_FOR_MA[HUMAN1_MA]->perspective->fov, object, &visibility, 1 );
+                                printf ( " visibility=%lf\n",visibility );
+                                if(visibility<=0.9)
+                                {
+                                 printf(" IK found to place but the object's visibility %lf is not good\n",visibility);
+                                 p3d_set_and_update_this_robot_conf ( manipulation->robot(), refConf );
+                                 continue;
+                                }
+
+                                 printf(" IK found to place and the object's visibility %lf is good\n",visibility); 
+                                p3d_set_and_update_this_robot_conf ( manipulation->robot(), refConf );
+                              //ManipulationUtils::unFixAllHands(manipulation->robot());
+                              //gpSet_grasp_configuration ( manipulation->robot(), *igrasp, armID );
+                              //ManipulationUtils::fixAllHands (manipulation->robot(), NULL, false );
+
                                p3d_rob* support= ( p3d_rob* ) p3d_get_robot_by_name ( "SHELF" );
                                p3d_set_and_update_this_robot_conf ( manipulation->robot(), placeConf );
 //                                MANIPULATION_TASK_MESSAGE place_status= manipulation->armPickTakeToFree(armID, graspConf, placeConf, object, support, place_trajs);
+
                                p3d_set_freeflyer_pose ( object, Tplacement0 );
 //                                liftConf=  manipulation->getApproachGraspConf(object, armID, *igrasp, graspConf, tAtt);
 
@@ -1043,30 +1106,45 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
                                Tplacement[2][3]+= 0.1;
                                p3d_set_freeflyer_pose ( object, Tplacement );
                                liftConf= setRobotGraspPosWithoutBase ( manipulation->robot(), Tplacement, tAtt,  0, 0, armID, false );
+                               if ( liftConf ){
+                                  if (optimizeRedundentJointConfigDist(manipulation->robot(), (*manipulation->robot()->armManipulationData)[armID].getCcCntrt()->argu_i[0], liftConf, object->joints[1]->abs_pos, tAtt, graspConf, armID, manipulation->getManipulationConfigs().getOptimizeRedundentSteps()) == -1){
+                                    p3d_destroy_config(manipulation->robot(), liftConf);
+                                    liftConf = NULL;
+                                    return 0;
+                                  }
+                                }
                                p3d_set_freeflyer_pose ( object, Tplacement0);
 
                                ManipulationUtils::copyConfigToFORM ( manipulation->robot(), graspConf );
                                if(liftConf!=NULL)
-                               {
+                               {printf(" %d th IK Found to lift \n",j);
                                   ManipulationUtils::copyConfigToFORM ( manipulation->robot(), liftConf );
-                                  manipulation->fixAllHands ( NULL, false );
+                                  ManipulationUtils::copyConfigToFORM ( manipulation->robot(), placeConf );
+//                                   ManipulationUtils::fixAllHands ( manipulation->robot(), NULL, false );
                                   manipulation->robot()->isCarryingObject = TRUE;
                                   (*manipulation->robot()->armManipulationData)[armID].setCarriedObject(object);
-//                                   manipulation->cleanRoadmap();
-                                  MANIPULATION_TASK_MESSAGE place_status= manipulation->armPickTakeToFree(armID, graspConf, placeConf, object, support, liftConf, *igrasp, place_trajs);
-    
+                                   manipulation->cleanRoadmap();
+                                  
+                                 //Added by Mokhtar to avoid the object collision issue of planner
+                                  p3d_multiLocalPath_disable_all_groupToPlan ( manipulation->robot() );
+                                  p3d_multiLocalPath_set_groupToPlan ( manipulation->robot(), manipulation->getUpBodyMLP(), 1 );
+
+                                  MANIPULATION_TASK_MESSAGE place_status = manipulation->armPickTakeToFree(armID, graspConf, placeConf, object, support, liftConf, *igrasp, place_trajs);
+
                                   if ( place_status==MANIPULATION_TASK_OK )
                                   {
                                   printf ( " Found for grasp_ctr=%d, and plac_ctr %d \n",grasp_ctr,plac_ctr );
-//                                  manipulation->concatTrajectories ( place_trajs, &traj );
-//                                   MANPIPULATION_TRAJECTORY_CONF_STR conf;
-//                                   SM_TRAJ smTraj;
-//                                   manipulation->computeSoftMotion ( traj, conf, smTraj );
-                                  ManipulationUtils::copyConfigToFORM ( manipulation->robot(), placeConf ); //If want to store the config for visualization
-				  p3d_set_freeflyer_pose ( object, Tplacement0 );
-				  manipulation->setSafetyDistanceValue ( orig_safety_dist );
+                                 manipulation->concatTrajectories ( place_trajs, &traj );
+                                  MANPIPULATION_TRAJECTORY_CONF_STR conf;
+                                  SM_TRAJ smTraj_to_place;
+                                  manipulation->computeSoftMotion ( traj, conf, smTraj_to_place );
+//                                   ManipulationUtils::copyConfigToFORM ( manipulation->robot(), placeConf ); //If want to store the config for visualization
+                                  p3d_set_freeflyer_pose ( object, Tplacement0); 
+                                  gpDeactivate_object_fingertips_collisions( manipulation->robot(), object->joints[1]->o, armHandProp, armID);
+                                   elapsedTime= ( clock()-clock0 ) /CLOCKS_PER_SEC;
+                                   printf("Computation time: %2.1fs= %dmin%ds\n",elapsedTime, ( int ) ( elapsedTime/60.0 ), ( int ) ( elapsedTime - 60* ( ( int ) ( elapsedTime/60.0 ) ) ) );
                                   return 1;
-                                  }
+                                  }else {printf ( " no path found for place \n"); return 1;}
                                }
 
                               }
@@ -1125,15 +1203,15 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
       // gpSet_grasp_configuration(manipulation->robot(), grasp, handProp.type);
       // gpFix_hand_configuration(manipulation->robot(), handProp, handProp.type);
 
-      for ( i1=0;i1<candidate_points_to_give.no_points;i1++ )
+      for ( i1=0;i1<curr_candidate_points->no_points;i1++ )
       {
          printf ( "checking for place %d and grasp id= %d\n",i1, igrasp->ID );
 //          if(i1==0)
 //     goal_pos.x=candidate_points_to_put.point[i1].x +0.5;
 //          else
-         goal_pos.x=candidate_points_to_give.point[i1].x;
-         goal_pos.y=candidate_points_to_give.point[i1].y;
-         goal_pos.z=candidate_points_to_give.point[i1].z+0.01;
+         goal_pos.x=curr_candidate_points->point[i1].x;
+         goal_pos.y=curr_candidate_points->point[i1].y;
+         goal_pos.z=curr_candidate_points->point[i1].z+0.01;
 //goal_pos.z= T0[2][3] + 0.15;
 //    goal_pos.x=T0[0][3];
 //    goal_pos.y=T0[1][3];
@@ -1148,7 +1226,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
          obj_tmp_pos[7]=point_to_give.y;
          obj_tmp_pos[8]=point_to_give.z;
 
-         get_ranking_based_on_view_point ( primary_human_MM->perspective->camjoint->abs_pos,goal_pos, object, envPt_MM->robot[rob_indx.HUMAN], curr_placementListOut );
+         get_ranking_based_on_view_point ( HRI_AGENTS_FOR_MA[HUMAN1_MA]->perspective->camjoint->abs_pos,goal_pos, object, envPt_MM->robot[rob_indx.HUMAN], curr_placementListOut );
 
          for ( std::list<gpPlacement>::iterator iplacement=curr_placementListOut.begin(); iplacement!=curr_placementListOut.end(); ++iplacement )
          {
@@ -1171,7 +1249,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
 // // //        p3d_set_freeflyer_pose2(object, point_to_give.x, point_to_give.y, point_to_give.z, rx, ry, rz);
 
             double visibility_threshold=95.0;
-            int is_visible=is_object_visible_for_agent ( primary_human_MM, object, visibility_threshold, 0, 1 );
+            int is_visible=is_object_visible_for_agent ( HRI_AGENTS_FOR_MA[HUMAN1_MA], object, visibility_threshold, 0, 1 );
             printf ( " is_visible for place %d= %d \n",i1,is_visible );
             if ( is_visible==0 )
                continue;
@@ -1240,7 +1318,7 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
          }//End of placement itr
          if ( quit==true )
             break;
-      }//End for ( i1=0;i1<candidate_points_to_give.no_points;i1++ )
+      }//End for ( i1=0;i1<curr_candidate_points->no_points;i1++ )
       if ( quit==true )
       {
          break;
