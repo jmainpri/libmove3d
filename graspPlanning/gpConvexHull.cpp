@@ -379,7 +379,7 @@ gpConvexHull::gpConvexHull()
  largest_ball_radius_= 0.0;
 }
 
-gpConvexHull::gpConvexHull(const std::vector< std::vector<float> > &points)
+gpConvexHull::gpConvexHull(const std::vector< std::vector<double> > &points)
 {
   int result;
 
@@ -405,7 +405,7 @@ gpConvexHull::~gpConvexHull()
 //! Sets the point set that will then be used when calling compute() or voronoi().
 //! \param points a vector of vectors whose size will give the dimension of the space
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpConvexHull::setPoints(const std::vector< std::vector<float> > &points)
+int gpConvexHull::setPoints(const std::vector< std::vector<double> > &points)
 {
   if(this==NULL)
   {
@@ -491,10 +491,14 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
     printf("%s: %d: gpConvexHull::compute(): the calling instance is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
-
+  if(points_.empty())
+  {
+    printf("%s: %d: gpConvexHull::compute(): no input points have been set.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
   if(dimension_ < 2)
   {
-    printf("%s: %d: gpConvexHull::compute(): points dimension is must be >= 2.\n",__FILE__,__LINE__);
+    printf("%s: %d: gpConvexHull::compute(): points dimension must be >= 2.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
   if(points_.size() < dimension_+1)
@@ -598,7 +602,7 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
      // strangely, the following (getting hull vertices and facets) is not working anymore
      // with the old version of (qhull-2003.1-14, with .so library) but works
      // with qhull-2010.1. Since the embedding of qhull-2010.1 code in BioMove3D, it is OK.
-     for(vertex=qh_qh.newvertex_list;vertex && vertex->next;vertex= vertex->next)
+     FORALLvertices
      {
        hull_vertices[cntV]= qh_pointid(vertex->point);
        cntV++;
@@ -607,7 +611,7 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
      // now, get the hull faces:
      hull_faces.resize(qh_qh.num_facets);
      cntF= 0;
-     for(facet=qh_qh.facet_list;facet && facet->next;facet=facet->next)
+     FORALLfacets
      {
         hull_faces[cntF].setDimension(dimension_);
         hull_faces[cntF].resize(qh_setsize(facet->vertices));
@@ -736,14 +740,14 @@ int gpConvexHull::voronoi(bool verbose)
 
   char name[]= "/tmp/fileXXXXXX";
   int fd;
-  std::vector<float> v;
+  std::vector<double> v;
   char buffer[256];
   std::istringstream iss;
   unsigned int index, site1, site2, dimension, nbVoronoiVertices, nbVoronoiRidges, nbElements;
   unsigned long int nbHypercubeVertices, mask;
   int bit;
-  float coord, scaleFactor;
-  std::vector< std::pair<float,float> > boundaries; // point set bounding box
+  double coord, scaleFactor;
+  std::vector< std::pair<double,double> > boundaries; // point set bounding box
   gpVoronoiRidge voronoiRidge;
   gpVoronoiCell cell;
 
@@ -950,7 +954,7 @@ int gpConvexHull::voronoi(bool verbose)
           }
         }
         for(k=0; k<voronoi_ridges_.at(i).center_.size(); ++k)
-        {  voronoi_ridges_.at(i).center_.at(k)/=  (float) voronoi_ridges_.at(i).vertices_.size();  }
+        {  voronoi_ridges_.at(i).center_.at(k)/=  (double) voronoi_ridges_.at(i).vertices_.size();  }
      }
 
      // create the voronoi cells from the ridges:
@@ -1214,8 +1218,8 @@ int gpConvexHull3D::draw(bool wireframe)
   }
 
   unsigned int i, j, k, k1, k2;
-//   float s= 0.1;
-  std::vector<float> normal, center;
+//   double s= 0.1;
+  std::vector<double> normal, center;
   double color[4];
 
   glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT | GL_LINE_BIT | GL_POINT_BIT);
@@ -1434,8 +1438,8 @@ int gpConvexHull3D::voronoi(bool verbose)
   }
 
   unsigned int i, j, k, rindex;
-  float norm, dot;
-  std::vector<float> p1(3), p2(3), op1(3), op2(3), direction(3);
+  double norm, dot;
+  std::vector<double> p1(3), p2(3), op1(3), op2(3), direction(3);
 
   gpConvexHull::voronoi(verbose);
  
