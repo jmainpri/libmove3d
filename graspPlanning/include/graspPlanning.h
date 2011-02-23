@@ -13,7 +13,7 @@
 //! fingerJointForeBase_2).
 
 // cd BioMove3Dgit/BioMove3D/build_test/
-// ./Debug/bin/i386-linux/move3d -f ~/BioMove3DDemos/Bauzil/gsSAHand.p3d
+// ./Debug/bin/i386-linux/move3d-studio -f ~/BioMove3DDemos/Bauzil/gsSAHand.p3d
 
 /** @defgroup graspPlanning 
 * The grasp planning module is dedicated to
@@ -256,6 +256,13 @@ class gpVector3D
    gpVector3D()
    {
      x= y= z= 0.0;
+   }
+
+   gpVector3D(double x0, double y0, double z0)
+   {
+     x= x0;
+     y= y0;
+     z= z0;
    }
 
    double operator [] (unsigned int i) const
