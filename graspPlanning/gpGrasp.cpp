@@ -237,35 +237,6 @@ double gpGraspDistance(const gpGrasp &grasp1, const gpGrasp &grasp2)
   p3d_vectSub(pos1, pos2, diff);
   d= p3d_vectNorm(diff);
   return d;
-/*
-  double threshold= 0.02;
-  p3d_vectCopy(grasp1.object->o[grasp1.body_index]->pol[0]->poly->cmass, cmass);
-
-  p3d_vectSub(pos1, cmass, ray1);
-  p3d_vectNormalize(ray1, ray1);
-  p3d_vectSub(pos2, cmass, ray2);
-  p3d_vectNormalize(ray2, ray2);
-  alpha= acos(p3d_vectDotProd(ray1, ray2));
-
-  grasp1.direction(direction1);
-  grasp2.direction(direction2);
-  beta= acos(p3d_vectDotProd(direction1, direction2));
-
-  return (fabs(beta));
-  return (fabs(alpha) + fabs(beta));
-
-  if(d > threshold)
-  {
-    return d;
-  }
-  else
-  {
-    d= p3d_mat4Distance((p3d_matrix_type(*)[4]) grasp1.frame, (p3d_matrix_type(*)[4]) grasp2.frame, 0.0, 1.0);
-    d*= threshold/M_PI; // to ensure the continuity
-    return d;
-  }
-
-  return p3d_mat4Distance((p3d_matrix_type(*)[4]) grasp1.frame, (p3d_matrix_type(*)[4]) grasp2.frame, 1.0, 10.0);*/
 }
 
 
