@@ -67,6 +67,7 @@ class gpFace
    std::vector<double> center() { return center_; }
    unsigned int id() { return id_; }
    double offset() { return offset_; }
+   std::vector<unsigned int> vertices() { return vertices_; }
    int print();
    int reverseVertexOrder();
    int orderFromRidges();
@@ -90,8 +91,8 @@ class gpVoronoiRidge
    //! Indices of the ridge vertices (referring to elements in the "voronoi_vertices_" array of ConvexHull).
    std::vector<unsigned int> vertices_;
 
-   std::vector<float> center_;  /*!< ridge's centrum */
-   std::vector<float> normal_;  /*!< ridge's normal vector: only used in 3D */
+   std::vector<double> center_;  /*!< ridge's centrum */
+   std::vector<double> normal_;  /*!< ridge's normal vector: only used in 3D */
 };
 
 
@@ -142,14 +143,14 @@ class gpConvexHull
    std::vector<gpFace> hull_faces;
 
    //! for voronoi regions computation:
-   std::vector< std::vector< float > > voronoi_vertices_;
+   std::vector< std::vector< double > > voronoi_vertices_;
    std::vector<gpVoronoiRidge> voronoi_ridges_;
    std::vector<gpVoronoiCell> voronoi_cells_;
 
    gpConvexHull();
-   gpConvexHull(const std::vector< std::vector<float> > &points);
+   gpConvexHull(const std::vector< std::vector<double> > &points);
    virtual ~gpConvexHull();
-   int setPoints(const std::vector< std::vector<float> > &points);
+   int setPoints(const std::vector< std::vector<double> > &points);
    unsigned int nbVertices() {  return hull_vertices.size(); }
    unsigned int nbFaces()    {  return hull_faces.size(); }
    int pointCoordinates(unsigned int i, std::vector<double> &coord);
