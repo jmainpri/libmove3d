@@ -699,7 +699,9 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
 #if defined(LIGHT_PLANNER)
 	localpathMg->isCarryingObject = robotPt->isCarryingObject;
   for (int i = 0; i < MAX_CARRIED_OBJECTS; i++){
+   if(i < robotPt->armManipulationData->size() ){
     localpathMg->carriedObject[i] = (*robotPt->armManipulationData)[i].getCarriedObject(); /*!< pointer to the carried object (obstacle environment or robot body) */
+   }
   }
 	//p3d_mat4Copy(robotPt->Tgrasp, localpathMg->Tgrasp);
 #endif

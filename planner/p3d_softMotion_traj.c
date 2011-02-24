@@ -16,9 +16,12 @@
 #include "../lightPlanner/proto/ManipulationPlanner.hpp"
 #include "../lightPlanner/proto/ManipulationUtils.hpp"
 
+#include "softMotion/softMotionStruct.h"
 static int NB_TRAJPTP_CONFIG = 0;
 static configPt TRAJPTP_CONFIG[200];
 
+
+#define SAMPLING_TIME 0.01
 using namespace std;
 
 //! returns the vector of the end 
@@ -295,6 +298,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
         || localpathMlp1Pt->next_lp->mlpLocalpath[IGRAPH_OUTPUT] == NULL) {
       /* It's the last localpath */
 
+#include <../../include/softMotion/Sm_Traj.h>
       localpathTmp1Pt =
 	p3d_extract_softMotion_with_velocities (robotPt, localpath1Pt,
 						(double)
@@ -495,7 +499,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
 }
 
 int
-p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
+p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file, bool approximate,
                                 std::vector < int >&lp,
                                 std::vector < std::vector <
                                 double > > &positions, SM_TRAJ & smTraj)
@@ -602,7 +606,7 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
 //    p3d_softMotion_export_traj (robotPt, trajSmPTPPt, 0,
 //                                (char *) "softMotion_PTP_Q.traj",
 //                                (char *) "softMotion_PTP_Seg.traj",
-//                                ENV.getBool (Env::plotSoftMotionCurve), lp,
+//                                ENV.getBool (Env::plotSoftMotionCurve), SAMPLING_TIME, lp,
 //                                positions, smTraj);
 //    }
 
@@ -620,10 +624,99 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file,
     p3d_softMotion_export_traj (robotPt, trajSmPt, 1,
                                 (char *) "softMotion_Smoothed_Q.traj",
                                 (char *) "softMotion_Smoothed_Seg.traj",
-                                ENV.getBool (Env::plotSoftMotionCurve), lp,
+                                ENV.getBool (Env::plotSoftMotionCurve), SAMPLING_TIME, lp,
                                 positions, smTraj);
   }
   
+///////////////////////////////////////////////////
+
+
+
+if(approximate == true) {
+   std::vector< std::vector<SM_COND> > discTraj;
+   discTraj.resize(positions[0].size());
+
+   for(unsigned int i=0; i<discTraj.size(); i++) {
+    discTraj[i].resize(positions.size());
+   }
+
+   for(unsigned int i=0; i< positions.size(); i++) {
+    for(unsigned int j=0; j<positions[0].size(); j++) {
+     discTraj[j][i].x = positions[i][j];
+     if(i>0) {
+      discTraj[j][i].v = (discTraj[j][i].x - discTraj[j][i-1].x)/SAMPLING_TIME;
+      if(i>1) {
+       discTraj[j][i].a = (discTraj[j][i].v - discTraj[j][i-1].v)/SAMPLING_TIME;
+      } else {
+       discTraj[j][i].a = 0.0;
+      }
+     } else {
+      discTraj[j][i].v = 0.0;
+      discTraj[j][i].a = 0.0;
+     }
+    }
+   }
+
+
+    smTraj.clear();
+    /* function approximate :
+     *  PARAMETER:
+     * std::vector< std::vector<SM_COND> > discTraj,
+     * double samplingTime,
+     * double errorPosMax,
+     * double errorVelMax,
+     * int trajId
+     * RETURN SM_TRAJ
+     */
+    smTraj.approximate(discTraj, SAMPLING_TIME, 0.01, 0.1, 36, true);
+    smTraj.save("move3dSoftMotion_Seg.traj");
+
+// std::vector<double> maxVel;
+// maxVel.resize(7);
+// 
+// for(uint i=0; i<maxVel.size(); i++) {
+//   maxVel[i] = 1.96;
+// }
+// 
+// SM_LIMITS limits;
+// limits.maxJerk = 9.0;
+// limits.maxAcc = 3.0;
+// limits.maxVel = 1.0;
+//     
+// smTraj.computeMaxTimeScaleVector(maxVel, SAMPLING_TIME, limits);
+    
+}
+
+//   if(file != NULL) {
+//     fclose(file);
+//     printf("File %s created\n", "totoXav");
+//   }
+// 
+// 
+// 
+//  if ((file = fopen("move3dTotoXav2","w+"))==NULL) {
+//     printf("cannot open File %s", "move3dtotoXav");
+//   }
+// 
+// if(file != NULL) {
+// //  fprintf(file,"%d\n", positions.size());
+// // fprintf(file,"%d\n", positions[0].size());
+//  for(unsigned int w=0; w<discTraj[0].size();w++){
+// // 	  fprintf(file,"%d",w);
+// 	  for(int u=0; u<discTraj.size(); u++) {
+// 	   fprintf(file,"%f %f %f ", discTraj[u][w].x, discTraj[u][w].v, discTraj[u][w].a);
+// 	  }
+// 	  fprintf(file,"\n");
+// 	}
+// }
+// 
+//   if(file != NULL) {
+//     fclose(file);
+//     printf("File %s created\n", "totoXav");
+//   }
+
+
+/////////////////////////////////////////////////////
 
   // smTraj.print();
 //  print_MiddleOfCVS();

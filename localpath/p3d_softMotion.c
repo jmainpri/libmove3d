@@ -2554,10 +2554,10 @@ void lm_set_and_get_motionTimes(p3d_softMotion_data* softMotion_data, double* ti
   return;
 }
 
-void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType,  char *fileName, char *fileNameSeg, bool flagPlot,
+void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType,  char *fileName, char *fileNameSeg, bool flagPlot,double SAMPLING_TIME,
 					    std::vector <int> &lp, std::vector < std::vector <double> > &positions,
 					    SM_TRAJ &smTraj) {
-  double SIMPLING_TIME = 0.01;
+
 
   int j=0;
   int nb_dof = 0, nbGpJnt = 0;
@@ -2855,7 +2855,7 @@ int nb_armDof =0;
   while (localpathPt != NULL) {
     //specificPt = localpathPt->mlpLocalpath[upBodySm_mlpID]->specific.softMotion_data;
     umax = localpathPt->range_param;
-    if(umax < SIMPLING_TIME) {
+    if(umax < SAMPLING_TIME) {
       //printf("localpath tooooooo smallll %f\n", umax);
       localpathPt = localpathPt->next_lp;
       if(localpathPt == NULL) {
@@ -2915,7 +2915,7 @@ int nb_armDof =0;
       }
       p3d_destroy_config(robotPt, q);
       q = NULL;
-      du = SIMPLING_TIME;
+      du = SAMPLING_TIME;
       u += du;
 			
       if (u > (umax - EPS6)) {

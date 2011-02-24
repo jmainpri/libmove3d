@@ -666,7 +666,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::concatTrajectories (std::vector<p
 
 #ifdef MULTILOCALPATH
 int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECTORY_CONF_STR &confs, SM_TRAJ &smTraj) {
-
+    bool approximate = false;
     if (!traj) {
         printf("SoftMotion : ERREUR : no generated traj\n");
         return MANIPULATION_TASK_ERROR_UNKNOWN;
@@ -679,7 +679,13 @@ int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECT
         printf("Optimization with softMotion not possible: current trajectory is not multi-localpath one\n");
         return MANIPULATION_TASK_ERROR_UNKNOWN;
     }
-    if (p3d_convert_traj_to_softMotion(traj, true, confs.first, confs.second, smTraj) == 1) {
+    for (uint i = 0; i < (*_robot->armManipulationData).size(); i++) {
+        ArmManipulationData& armData  = (*_robot->armManipulationData)[i];
+        if (armData.getCartesian()) {
+          approximate = true;
+	}
+    }
+    if (p3d_convert_traj_to_softMotion(traj, true, approximate,confs.first, confs.second, smTraj) == 1) {
         printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
         return MANIPULATION_TASK_ERROR_UNKNOWN;
     }
