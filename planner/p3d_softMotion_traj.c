@@ -298,7 +298,6 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
         || localpathMlp1Pt->next_lp->mlpLocalpath[IGRAPH_OUTPUT] == NULL) {
       /* It's the last localpath */
 
-#include <../../include/softMotion/Sm_Traj.h>
       localpathTmp1Pt =
 	p3d_extract_softMotion_with_velocities (robotPt, localpath1Pt,
 						(double)
