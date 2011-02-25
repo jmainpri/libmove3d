@@ -192,22 +192,26 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
   double robotSize = 0;
   double translationFactor = 0;
   double rotationFactor = 0;
-  int nbTry = 0;
+  int nbTry = 0, objIdx = 6;
   
   if(cntrtToActivate == -1){
     cntrtToActivate = 0;
   }
   
   p3d_rob* carriedObject = (*robot->armManipulationData)[cntrtToActivate].getCarriedObject();
+  if(!carriedObject){
+    carriedObject = robot;
+    objIdx = (*robot->armManipulationData)[cntrtToActivate].getManipulationJnt()->index_dof;
+  }
   configPt carriedObjectRefConf = p3d_alloc_config(carriedObject);
   configPt carriedObjectConf = p3d_get_robot_config(carriedObject);
   
-  carriedObjectRefConf[6]  = objPos._x;
-  carriedObjectRefConf[7]  = objPos._y;
-  carriedObjectRefConf[8]  = objPos._z;
-  carriedObjectRefConf[9]  = objPos._rx;
-  carriedObjectRefConf[10] = objPos._ry;
-  carriedObjectRefConf[11] = objPos._rz;
+  carriedObjectRefConf[objIdx]  = objPos._x;
+  carriedObjectRefConf[objIdx + 1]  = objPos._y;
+  carriedObjectRefConf[objIdx + 2]  = objPos._z;
+  carriedObjectRefConf[objIdx + 3]  = objPos._rx;
+  carriedObjectRefConf[objIdx + 4] = objPos._ry;
+  carriedObjectRefConf[objIdx + 5] = objPos._rz;
   
   p3d_sel_desc_num(P3D_ROBOT,carriedObject->num);
   p3d_set_and_update_this_robot_conf(carriedObject, carriedObjectConf);
@@ -218,42 +222,46 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
   do{
     // This loop continues 
     // until a configuration is found collision free for the carried object
-//    g3d_draw_allwin_active();
-    p3d_gaussian_config2_specific(carriedObject, carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, true);
+//     g3d_draw_allwin_active();
+    if(carriedObject){
+      p3d_gaussian_config2_specific(carriedObject, carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, true);
+    }else{
+      p3d_gaussian_config2_Joint_specific(robot, (*robot->armManipulationData)[cntrtToActivate].getManipulationJnt(), carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, true);
+    }
 //Bit computation to get the positions and rotations to sample.
 //When the Bit = 1 the corresponding position or rotation has to be sampled
     if(~shootObjectPos & 1){
-      carriedObjectConf[6]  = objPos._x;
+      carriedObjectConf[objIdx]  = objPos._x;
     }
     if(~shootObjectPos & 2){
-      carriedObjectConf[7]  = objPos._y;
+      carriedObjectConf[objIdx + 1]  = objPos._y;
     }
     if(~shootObjectPos & 4){
-      carriedObjectConf[8]  = objPos._z;
+      carriedObjectConf[objIdx + 2]  = objPos._z;
     }
     
     if(~shootObjectRot & 1){
-      carriedObjectConf[9]  = objPos._rx;
+      carriedObjectConf[objIdx + 3]  = objPos._rx;
     }
     if(~shootObjectRot & 2){
-      carriedObjectConf[10] = objPos._ry;
+      carriedObjectConf[objIdx + 4] = objPos._ry;
     }
     if(~shootObjectRot & 4){
-      carriedObjectConf[11] = objPos._rz;
+      carriedObjectConf[objIdx + 5] = objPos._rz;
     }
     nbTry++;
-  }while(nbTry < MaxNumberOfTry/100 && !p3d_set_and_update_this_robot_conf_with_partial_reshoot(carriedObject, carriedObjectConf) && p3d_col_test());
+  }while(nbTry < MaxNumberOfTry/100 /*&& !((*robot->armManipulationData)[cntrtToActivate].getCarriedObject())*/ && !p3d_set_and_update_this_robot_conf_with_partial_reshoot(carriedObject, carriedObjectConf) && p3d_col_test());
   
   p3d_sel_desc_num(P3D_ROBOT,robot->num);
   
   int ffjntIndex = (*robot->armManipulationData)[cntrtToActivate].getManipulationJnt()->index_dof;
   
-  q[ffjntIndex] = carriedObjectConf[6];
-  q[ffjntIndex + 1] = carriedObjectConf[7];
-  q[ffjntIndex + 2] = carriedObjectConf[8];
-  q[ffjntIndex + 3] = carriedObjectConf[9];
-  q[ffjntIndex + 4] = carriedObjectConf[10];
-  q[ffjntIndex + 5] = carriedObjectConf[11];
+  q[ffjntIndex] = carriedObjectConf[objIdx];
+  q[ffjntIndex + 1] = carriedObjectConf[objIdx + 1];
+  q[ffjntIndex + 2] = carriedObjectConf[objIdx + 2];
+  q[ffjntIndex + 3] = carriedObjectConf[objIdx + 3];
+  q[ffjntIndex + 4] = carriedObjectConf[objIdx + 4];
+  q[ffjntIndex + 5] = carriedObjectConf[objIdx + 5];
   
   p3d_destroy_config(carriedObject, carriedObjectRefConf);
   p3d_destroy_config(carriedObject, carriedObjectConf);
@@ -292,20 +300,6 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
     // Activate arms constraints
     activateCcCntrts(robot, cntrtToActivate, nonUsedCntrtDesactivation);
     
-    // Changes the 3rd joint (which is not passive) bounds
-    // of p3d_kuka_arm and p3d_lwr_arm
-    // to get a human-like posture
-    double bakJntBoundMin[robot->armManipulationData->size()];
-    double bakJntBoundMax[robot->armManipulationData->size()];
-    for(int i = 0; i < (int)robot->armManipulationData->size(); i++){
-      p3d_cntrt* ct = (*robot->armManipulationData)[i].getCcCntrt();
-      if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")){
-        //restrict the third joint
-        p3d_jnt_get_dof_bounds(robot->joints[ct->argu_i[0]], 0, &(bakJntBoundMin[i]), &(bakJntBoundMax[i]));
-        p3d_jnt_set_dof_rand_bounds_deg(robot->joints[ct->argu_i[0]], 0, -120, 0);
-      }
-    }
-    
     int nbTry = 0;
     int nbTryColliding = 0;
     bool collision = false;
@@ -340,7 +334,7 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
           // within a circle of minRadius and maxRadius
           sampleBaseJoint(robot, baseJnt, minRadius, maxRadius, objPos, q);
           
-        } 
+        }
         else if (baseJnt->type != P3D_ROTATE)
         {
           for(int i = 0; i < baseJnt->dof_equiv_nbr; i++){
@@ -350,14 +344,7 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
         
         if(shootObjectPos || shootObjectRot)
         {
-          // When the robot is carrying an object
-          // the constraint is set active if specified
-          // the carried-object robot reference configuration is set to the argument parameters (objPos)
-          // and it loops until a configuration is found collision free for the object
-          if(robot->isCarryingObject)
-          {
-            sampleObjectConfiguration(robot,objPos,cntrtToActivate,q, shootObjectPos, shootObjectRot);
-          }
+          sampleObjectConfiguration(robot,objPos,cntrtToActivate,q, shootObjectPos, shootObjectRot);
         } 
         else 
         {
@@ -375,20 +362,7 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
         }
         
         nbTry++;
-        
-        // If nbTry is too large try with larger bounds 
-        // for the third joint 
-        if(!isKukaBoundOff && nbTry > MaxNumberOfTry / 2){
-          for(int i = 0; i < (int)robot->armManipulationData->size(); i++){
-            p3d_cntrt* ct = (*robot->armManipulationData)[i].getCcCntrt();
-            if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")){
-              //unrestrict the third joint
-              p3d_jnt_set_dof_rand_bounds(robot->joints[ct->argu_i[0]], 0, bakJntBoundMin[i], bakJntBoundMax[i]);
-            }
-          }
-          isKukaBoundOff = true;
-        }
-        
+
       } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && nbTry < MaxNumberOfTry);
 //       g3d_draw_allwin_active();
       nbTryColliding++;
@@ -411,15 +385,6 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
       return NULL;
     }
     
-    // Sets back to orginal values the 3rd joint bounds
-    // of p3d_kuka_arm and p3d_lwr_arm to get a human-like posture
-    for(int i = 0; i < (int)robot->armManipulationData->size(); i++){
-      p3d_cntrt* ct = (*robot->armManipulationData)[i].getCcCntrt();
-      if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik") || !strcmp(ct->namecntrt, "p3d_lwr_arm_ik")){
-        //unrestrict the third joint
-        p3d_jnt_set_dof_rand_bounds(robot->joints[ct->argu_i[0]], 0, bakJntBoundMin[i], bakJntBoundMax[i]);
-      }
-    }
     p3d_get_robot_config_into( robot, &q );
     p3d_destroy_config(robot, qInit);
     deactivateCcCntrts(robot, cntrtToActivate);

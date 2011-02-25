@@ -12,6 +12,7 @@ extern double NormalRand ( double Sigma_d_a );
 extern double p3d_gaussian_random( const double& mean, const double& variance , const double& min, const double& max);
 extern void p3d_bridge_shoot(p3d_rob *r, configPt q, int sample_passive);//mokhtar
 extern void p3d_obprm_shoot(p3d_rob *r, configPt q, int sample_passive);//mokhtar
+extern void p3d_gaussian_config2_Joint_specific(p3d_rob *r, p3d_jnt* jntPt, configPt c1, configPt c2, double translationFactor, double rotationFactor, int sample_passive);
 extern void p3d_gaussian_config2_specific(p3d_rob *r, configPt c1, configPt c2, double translationFactor, double rotationFactor, int sample_passive);
 extern int p3d_shoot ( p3d_rob *robotPt, configPt q , int sample_passive);
 extern int p3d_standard_shoot(p3d_rob *robotPt, configPt q, int sample_passive);

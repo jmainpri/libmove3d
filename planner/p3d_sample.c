@@ -191,6 +191,46 @@ static void p3d_gaussian_config2(p3d_rob *r, configPt c1, configPt c2, int sampl
 /* p3d_shoot_gaussian(Robot, Config, Config)       */
 /* Gaussian nearby configuration generator         */
 /* in: the robot, the starting configuration,      */
+/*     a nearby configuration The joint to sample  */
+/* out: void                                       */
+/* uses: p3d_random_gaussian(Sigma, JointType)     */
+/*   Generates a configuration c2 that is "close   */
+/*   to" (given a certain Normal distribution) the */
+/*   starting configuration c1                     */
+/*   Ensures that c2 is inside the workspace.      */
+/***************************************************/
+void p3d_gaussian_config2_Joint_specific(p3d_rob *r, p3d_jnt* jntPt, configPt c1, configPt c2, double translationFactor, double rotationFactor, int sample_passive)
+{
+  int ij;
+  double factor, jmin, jmax;
+  int i, k;
+
+  for(i=0; i<jntPt->dof_equiv_nbr; i++) {
+    k = jntPt->index_dof+i;
+    if (p3d_jnt_get_dof_is_user(jntPt, i) && (p3d_jnt_get_dof_is_active_for_planner(jntPt,i) || sample_passive)) {
+      p3d_jnt_get_dof_rand_bounds(jntPt, i, &jmin, &jmax);
+      if (p3d_jnt_is_dof_angular(jntPt, i)) {
+        factor = rotationFactor;
+      } else {
+        factor = translationFactor;
+      }
+      if (fabs(jmax - jmin) > EPS6) {
+        do {
+          c2[k] = c1[k] + NormalRand(factor);
+        } while((c2[k] < jmin) || (c2[k] > jmax));
+      }
+    }
+    else {
+      c2[k] = c1[k];
+    }
+  }
+}
+
+/***************************************************/
+/* by Boor 7-12-1999                               */
+/* p3d_shoot_gaussian(Robot, Config, Config)       */
+/* Gaussian nearby configuration generator         */
+/* in: the robot, the starting configuration,      */
 /*     a nearby configuration                      */
 /* out: void                                       */
 /* uses: p3d_random_gaussian(Sigma, JointType)     */
