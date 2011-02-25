@@ -150,7 +150,7 @@ BM3D_flag(USE_MIGHTABILITY_MAPS "Mightability Map Calculation and Planning" OFF)
 
 
 BM3D_flag(MULTILOCALPATH "Compilation avec le module Multi-Localpath" OFF USE_GBM)
-BM3D_flag(GRASP_PLANNING "Grasp planning module" OFF)
+BM3D_flag(GRASP_PLANNING "Grasp planning module" OFF USE_GBM)
 
 BM3D_flag(FK_CNTRT "to use the automatic generation of forward kinematics constraints (reciprocal of the closed chained constraints)" OFF LIGHT_PLANNER)
 
