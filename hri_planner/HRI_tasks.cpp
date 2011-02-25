@@ -912,7 +912,6 @@ int JIDO_give_obj_to_human ( char *obj_to_manipulate,  candidate_poins_for_task 
 // while(graspList.size()>5)
 // graspList.pop_back();
 
-   ( *manipulation->robot()->armManipulationData ) [armID].setManipState ( handFree ) ;
    p3d_multiLocalPath_disable_all_groupToPlan ( manipulation->robot() );
    p3d_multiLocalPath_set_groupToPlan ( manipulation->robot(), manipulation->getUpBodyMLP(), 1 );
    int grasp_ctr=0;

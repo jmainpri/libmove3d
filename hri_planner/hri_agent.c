@@ -1459,7 +1459,7 @@ int hri_agent_is_grasping_obj(HRI_AGENT* agent, bool is_grasping , const char* O
   if(obj == NULL){ 
     return  !is_grasping;
   }
-
+#ifdef LIGHT_PLANNER
   ArmManipulationData& armData = (*rob->armManipulationData)[armId];
   
   if( is_grasping ){
@@ -1492,7 +1492,9 @@ int hri_agent_is_grasping_obj(HRI_AGENT* agent, bool is_grasping , const char* O
     desactivateTwoJointsFixCntrt(rob,armData.getManipulationJnt(),
                                  armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
   }
-  
+#else
+  printf("WARNING : Compile with LIGHT_PLANNER Flag\n");
+#endif
   return is_grasping;
 }
 
