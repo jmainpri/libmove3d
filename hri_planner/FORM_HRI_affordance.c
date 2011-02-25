@@ -273,7 +273,7 @@ static void CB_show_human_perspective_obj(FL_OBJECT *ob, long arg)
   int cur_hum_index=get_index_of_robot_by_name ( "ACHILE_HUMAN1" );
    HRI_AGENT * target_human;
    target_human = hri_create_agent(envPt_MM->robot[cur_hum_index]);
-   printf(" Inside JIDO_hide_obj_from_human(), HRI_AGENT for human is created, target_human name = %s\n",target_human->robotPt->name);
+////   printf(" Inside JIDO_hide_obj_from_human(), HRI_AGENT for human is created, target_human name = %s\n",target_human->robotPt->name);
    show_humans_perspective(target_human, FALSE);
  SHOW_HUMAN_PERSPECTIVE=1;
  }

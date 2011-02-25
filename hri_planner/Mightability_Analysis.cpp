@@ -301,6 +301,9 @@ int SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_IN_3D[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
 int SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_PLANE[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
 int SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_TABLE[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
 
+double mini_visibility_threshold_for_task[MAXI_NUM_OF_HRI_TASKS];
+double maxi_visibility_threshold_for_task[MAXI_NUM_OF_HRI_TASKS];
+
 //================================
 
 int execute_Mightability_Map_functions()
@@ -815,6 +818,37 @@ int init_Mightability_Analyses_data()
     ///grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.for_agent[HUMAN1].visible[MM_CURRENT_STATE_HUM_VIS]==1)
 		   
   //}
+}
+
+int init_visibility_acceptance_for_tasks()
+{
+for(int i=0;i<MAXI_NUM_OF_HRI_TASKS;i++)
+ {
+switch(i)
+  {
+   case SHOW_OBJECT:
+    mini_visibility_threshold_for_task[i]=0.9;
+    maxi_visibility_threshold_for_task[i]=1.1;
+   break;
+  
+   case GIVE_OBJECT:
+    mini_visibility_threshold_for_task[i]=0.9;
+    maxi_visibility_threshold_for_task[i]=1.1;
+   break;
+
+   case MAKE_OBJECT_ACCESSIBLE:
+    mini_visibility_threshold_for_task[i]=0.9;
+    maxi_visibility_threshold_for_task[i]=1.0;
+   break;
+
+   case HIDE_OBJECT:
+    mini_visibility_threshold_for_task[i]=-0.1;
+    maxi_visibility_threshold_for_task[i]=.05;
+   break;
+
+  }
+
+ }
 }
 
 int init_accepted_states_for_agent_obj_MA()
@@ -1531,8 +1565,8 @@ int init_accepted_states_for_tasks_JIDO_HUMAN1()
       
       if(HUMAN1_CURRENT_STATE_MM==HRI_SITTING)
       {
-	accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].accepted_reach[accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].no_accepted_reach_states]=MM_SITTING_LEAN_FORWARD_STATE_HUM_REACH;
-	accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].no_accepted_reach_states++;
+	////accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].accepted_reach[accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].no_accepted_reach_states]=MM_SITTING_LEAN_FORWARD_STATE_HUM_REACH;
+	////accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].no_accepted_reach_states++;
 	accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].accepted_visibility[accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].no_accepted_vis_states]=MM_SITTING_STRAIGHT_HEAD_STATE_HUM_VIS;
         accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].no_accepted_vis_states++;
       }	
@@ -1540,8 +1574,8 @@ int init_accepted_states_for_tasks_JIDO_HUMAN1()
       {
       if(HUMAN1_CURRENT_STATE_MM==HRI_STANDING)
        {
-	 accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].accepted_reach[accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].no_accepted_reach_states]=MM_STANDING_LEAN_FORWARD_STATE_HUM_REACH;
-	 accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].no_accepted_reach_states++;
+	 ////accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].accepted_reach[accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].no_accepted_reach_states]=MM_STANDING_LEAN_FORWARD_STATE_HUM_REACH;
+	 ////accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].no_accepted_reach_states++;
 	 accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].accepted_visibility[accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].no_accepted_vis_states]=MM_STANDING_STRAIGHT_HEAD_STATE_HUM_VIS;
         accepted_states_for_HRI_task[JIDO_MA][HUMAN1_MA][HUMAN1_MA][i].no_accepted_vis_states++;
        }	
@@ -3778,7 +3812,15 @@ int create_agents_for_Mightabilities()
 {
   for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
   {
+     HRI_AGENTS_FOR_MA[i]=NULL;
+    printf(" Creating agent %d for HRI tasks \n",i);
     HRI_AGENTS_FOR_MA[i]=hri_create_agent(envPt_MM->robot[indices_of_MA_agents[i]]);
+    ////printf(" HRI_AGENTS_FOR_MA[i] = %p \n",HRI_AGENTS_FOR_MA[i]);
+    if(HRI_AGENTS_FOR_MA[i]==NULL)
+    {
+    printf(" >>>> AKP ERROR : Agent %d is defined for HRI task but can not be created, it can lead to segmentation fault for finding task solutions.\n", i);
+    
+    }
     HRI_AGENTS_FOR_MA[i]->perspective->enable_vision_draw=TRUE;
  
     HRI_AGENTS_FOR_MA_running_pos[i]=MY_ALLOC(double, envPt_MM->robot[indices_of_MA_agents[i]]->nb_dof);
@@ -4147,7 +4189,7 @@ int Create_and_init_Mightability_Maps()
   assign_indices_of_robots();
   create_agents_for_Mightabilities();
  
-  
+  init_visibility_acceptance_for_tasks();
   init_current_vis_state_indices_for_MA_agents();
   /////for(int it=0;it<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;it++)
   /////printf("indices_of_MA_agents[%d]=%d\n",it,indices_of_MA_agents[it]);
@@ -19567,7 +19609,8 @@ int find_candidate_points_for_current_HRI_task_for_object(HRI_TASK_TYPE curr_tas
 	      resultant_candidate_point->point[resultant_candidate_point->no_points].y=cell_y_world;	  
 	      resultant_candidate_point->point[resultant_candidate_point->no_points].z=cell_z_world;
 	      
-	      resultant_candidate_point->weight[resultant_candidate_point->no_points]=0;	
+	      resultant_candidate_point->weight[resultant_candidate_point->no_points]=0;
+              resultant_candidate_point->horizontal_surface_of[resultant_candidate_point->no_points]=	grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_map_cell_obj_info.horizontal_surface_of;
 	      
 	      resultant_candidate_point->no_points++;
 	      

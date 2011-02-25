@@ -6,6 +6,9 @@
  */
 #ifndef __CEXTRACT__
 
+#include "ManipulationPlanner.hpp"
+#include "ManipulationUtils.hpp"
+
 extern int find_affordance();
 extern int show_affordance();
 extern int create_3d_grid_for_HRP2_GIK(point_co_ordi grid_center);
@@ -109,7 +112,7 @@ extern int JIDO_make_obj_accessible_to_human ( char obj_to_manipulate[50] );
 extern int JIDO_show_obj_to_human ( char obj_to_manipulate[50] );
 extern int JIDO_find_candidate_points_to_show_obj();
 /*extern int test_geometric_plan_creation_for_JIDO();*/
-extern int JIDO_give_obj_to_human ( char obj_to_manipulate[50] ,candidate_poins_for_task *curr_candidate_points);
+extern int JIDO_give_obj_to_human (char *obj_to_manipulate, HRI_TASK_TYPE task, HRI_TASK_AGENT by_agent, HRI_TASK_AGENT for_agent, candidate_poins_for_task *curr_candidate_points, std::list<gpGrasp> &graspList, std::list<gpPlacement> &curr_placementList);
 extern int JIDO_find_candidate_points_to_give_obj();
 extern int assign_weights_on_candidte_points_to_give_obj(char *object_name, candidate_poins_for_task *candidate_points, int indx_by_agent, int indx_for_agent);
 
@@ -165,6 +168,7 @@ extern int store_OOM_before_task();
 extern int print_object_oriented_Mightability_for_object(object_Symbolic_Mightability_Maps_Relation* OOM, int obj_index);
 extern int print_object_oriented_Mightability_for_object_by_agent(object_Symbolic_Mightability_Maps_Relation* OOM, int obj_index, HRI_TASK_AGENT agent);
 extern int find_candidate_points_for_current_HRI_task_for_object(HRI_TASK_TYPE curr_task, HRI_TASK_AGENT_ENUM performed_by, HRI_TASK_AGENT_ENUM performed_for, candidate_poins_for_task *resultant_candidate_point, char *object);
-
+extern int init_visibility_acceptance_for_tasks();
+extern int JIDO_perform_task (char *obj_to_manipulate, HRI_TASK_TYPE task, HRI_TASK_AGENT by_agent, HRI_TASK_AGENT for_agent, candidate_poins_for_task *curr_candidate_points, std::list<gpGrasp> graspList, std::list<gpPlacement> curr_placementList);
 #endif /* __CEXTRACT__ */
 
