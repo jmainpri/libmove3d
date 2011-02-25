@@ -139,7 +139,7 @@ configPt ManipulationConfigs::getApproachFreeConf(p3d_rob* object, int armId, gp
       qApproachFree = setRobotCloseToConfGraspApproachOrExtract(_robot, q, objTmp, tAtt, false, armId, true);
       if ( qApproachFree ){
         double dist = -1;
-        if ((dist = optimizeRedundentJointConfigDist(_robot, mData.getCcCntrt()->argu_i[0], qApproachFree, object->joints[1]->abs_pos, tAtt, q, armId, getOptimizeRedundentSteps())) == -1){
+        if ((dist = optimizeRedundentJointConfigDist(_robot, mData.getCcCntrt()->argu_i[0], qApproachFree, object->joints[1]->abs_pos, tAtt, q, armId, getOptimizeRedundentSteps())) == -1 || dist == -2){
           p3d_destroy_config(_robot, qApproachFree);
           qApproachFree = NULL;
         }
@@ -182,7 +182,8 @@ configPt ManipulationConfigs::getApproachGraspConf(p3d_rob* object, int armId, g
     // Sample a configuration for the robot
     configPt approachConfig = setRobotCloseToConfGraspApproachOrExtract(_robot, q, object->joints[1]->abs_pos, tAtt, false, armId, true);
     if ( approachConfig ){
-      if (optimizeRedundentJointConfigDist(_robot, mData.getCcCntrt()->argu_i[0], approachConfig, object->joints[1]->abs_pos, tAtt, q, armId, getOptimizeRedundentSteps()) == -1){
+      double dist = -1;
+      if ((dist = optimizeRedundentJointConfigDist(_robot, mData.getCcCntrt()->argu_i[0], approachConfig, object->joints[1]->abs_pos, tAtt, q, armId, getOptimizeRedundentSteps())) == -1 || dist == -2){
         p3d_destroy_config(_robot, approachConfig);
         approachConfig = NULL;
       }
@@ -313,7 +314,7 @@ configPt ManipulationConfigs::getExtractConf(int armId, configPt currentConf, p3
     }
     if ( extractConfig ){
       double dist = -1;
-      if ((dist = optimizeRedundentJointConfigDist(_robot, mData.getCcCntrt()->argu_i[0], extractConfig,  mData.getManipulationJnt()->abs_pos, tAtt, currentConf, armId, getOptimizeRedundentSteps())) == -1){
+      if ((dist = optimizeRedundentJointConfigDist(_robot, mData.getCcCntrt()->argu_i[0], extractConfig,  mData.getManipulationJnt()->abs_pos, tAtt, currentConf, armId, getOptimizeRedundentSteps())) == -1 || dist == -2){
         p3d_destroy_config(_robot, extractConfig);
         extractConfig = NULL;
       }

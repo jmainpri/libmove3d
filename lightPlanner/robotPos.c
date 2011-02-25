@@ -777,7 +777,7 @@ double optimizeRedundentJointConfigDist(p3d_rob* robot, int redJntId, configPt q
     deactivateCcCntrts(robot, armId);
     p3d_mat4Copy(bak, (*robot->armManipulationData)[armId].getCcCntrt()->Tatt);
     if(dist == P3D_HUGE){
-      return -1;
+      return -2;
     }
     return dist;
   }
