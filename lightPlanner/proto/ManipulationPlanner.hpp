@@ -68,7 +68,7 @@ class  ManipulationPlanner {
     inline configPt robotGoto() const{if (_robot != NULL) {return _robot->ROBOT_GOTO;} else {return NULL;}}
 	
 
-    inline ManipulationData getManipulationData()  const {return _configs;}
+    inline ManipulationData& getManipulationData() {return _configs;}
     inline ManipulationConfigs getManipulationConfigs()  const {return _manipConf;}
 	/* ******************************* */
   /* ******* Hands / Grasping ****** */
