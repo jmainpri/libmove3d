@@ -38,7 +38,10 @@ double hri_bt_dist_heuristic(hri_bitmapset * btset, hri_bitmap* bitmap, int x_s,
   // or to use Voronoi-like paths to consider walls and obstacles
   return btset->parameters->path_length_weight * sqrt((double) SQR(x_f-x_s)+SQR(y_f-y_s)+SQR(z_f-z_s));
 
-  /*
+  // breadth first search (inefficient, used to display more nodes in visu)
+//  return 1;
+
+  /*// old code, weird mix of euclid and manhattan in 3d
    double cost = 0;
    double h_2ddiag, h_2dmanh, h_diag;
    double D3 = M_SQRT3, D2 = M_SQRT2, D=1.;
@@ -840,6 +843,7 @@ double getDirectionalVal(hri_bitmapset * btset, hri_bitmap_cell* current_cell, h
   int i;
   double val = 0, result = 0;
   double dist, vis, hz;
+  double start_realx, start_realy, goal_realx, goal_realy;
 
   int x = current_cell->x;
   int y = current_cell->y;
@@ -867,20 +871,7 @@ double getDirectionalVal(hri_bitmapset * btset, hri_bitmap_cell* current_cell, h
 //     vis  =  btset->bitmap[BT_VISIBILITY]->calculate_cell_value(btset,x,y,z);
 //     dist =  btset->bitmap[BT_DISTANCE]->calculate_cell_value(btset,x,y,z);
 
-     // NEW
-     hz = hri_bt_calc_hz_value_human(btset, btset->human[i], current_cell->x, current_cell->y);
-     vis = hri_bt_calc_vis_value_human(btset, btset->human[i], current_cell->x, current_cell->y, current_cell->z); // z = 0?
-     dist = hri_bt_calc_dist_value_human(btset, btset->human[i], current_cell->x, current_cell->y, current_cell->z);
 
-     if(btset->combine_type == BT_COMBINE_SUM) {
-       val = dist + vis + hz;
-     } else if(btset->combine_type == BT_COMBINE_MAX) {
-       val = MAX(dist, vis);
-       val = MAX(result, hz);
-     } else {
-       PrintError(("Can't combine bitmaps\n"));
-       val = 0;
-     }
 
      // TODO: Now modify these costs depending on the heading
      // angle of the robot when going from from_cell to current_cell
@@ -906,102 +897,175 @@ double getDirectionalVal(hri_bitmapset * btset, hri_bitmap_cell* current_cell, h
      // result will be multiplied with this value being between 0 and 1
      double directionalSignificance = 1;
 
+     double final_sprint = 0.6;
+
      // check distance to goal if possible, as close to goal, directional Significance is always 1
      double goal_distance = -1;
      hri_bitmap* path_bitmap = btset->bitmap[BT_PATH];
      if (path_bitmap->search_goal != NULL) {
-       double start_realx = ( path_bitmap->search_goal->x * btset->pace)+btset->realx;
-       double start_realy = ( path_bitmap->search_goal->y * btset->pace)+btset->realy;
-       goal_distance = DISTANCE2D(start_realx, start_realy, realx, realy);
+       goal_realx = ( path_bitmap->search_goal->x * btset->pace)+btset->realx;
+       goal_realy = ( path_bitmap->search_goal->y * btset->pace)+btset->realy;
+       goal_distance = DISTANCE2D(goal_realx, goal_realy, realx, realy);
      } else  if (btset->robot->ROBOT_GOTO != NULL) {
-       double start_realx = btset->robot->ROBOT_GOTO[ROBOTq_X];
-       double start_realy = btset->robot->ROBOT_GOTO[ROBOTq_Y];
-       goal_distance = DISTANCE2D(start_realx, start_realy, realx, realy);
+       goal_realx = btset->robot->ROBOT_GOTO[ROBOTq_X];
+       goal_realy = btset->robot->ROBOT_GOTO[ROBOTq_Y];
+       goal_distance = DISTANCE2D(goal_realx, goal_realy, realx, realy);
+     } else {
+       // should be a bug, we just make sure the next if is not true
+       goal_distance = final_sprint + 1;
      }
 
-     double final_sprint = 0.6;
-     if (goal_distance < 0 || goal_distance > final_sprint) {
-       if (fabs(humanInDirection) > btset->parameters->directional_freePassAngle) {
-         directionalSignificance = 0;
-       } else {
-         // fabs(humanInDirection) == 0 is worst case, significance should be 1 then
-         directionalSignificance = directionalSignificance *  (1 - (fabs(humanInDirection) / btset->parameters->directional_freePassAngle));
+//     if (getPathGridLength(current_cell) * btset->pace < 0.5) {
+//   make the robot always consider costs on the first few grid cells?
+//     } else
 
-         // human is ahead of robot, but is human travellling in the same direction?
-         if (btset->human[i]->actual_state == BT_MOVING) {
 
-           // this is how far into the future we project human path
-           double projectionTime = 3; // seconds, TODO: put into parametes once necessary
-           double projectionx, projectiony, projectionth;
+     if (goal_distance < final_sprint) {
+       // robot is so close to goal that direct approach is only useful alternative
+//       PrintDebug(("Final sprint, signific = 0, (%d, %d)", current_cell->x, current_cell->y));
+       directionalSignificance = 0;
+     } else  if ((btset->human[i]->actual_state != BT_MOVING) && (goal_distance <  DISTANCE2D(humanx, humany, realx, realy))) {
+       // robot is approaching a point between itself and the human
+       directionalSignificance = 0;
+     } else if (fabs(humanInDirection) > btset->parameters->directional_freePassAngle) {
+       directionalSignificance = 0;
+//       PrintDebug(("Human behind bot, signific = 0, (%d, %d)", current_cell->x, current_cell->y));
+     } else {
+       // fabs(humanInDirection) == 0 is worst case, significance should be 1 then
+       directionalSignificance = directionalSignificance *  (1 - (fabs(humanInDirection) / btset->parameters->directional_freePassAngle));
 
-           // project discrete human path of length x as n waypoints / waycircles (circles for simple stochastic estimates getting worse over time).
-           // Measure minimal distance robot to projected human path + comfort gap
-           if (getClosestPoseOnProjection(btset, btset->human[i], realx, realy, projectionTime, &projectionx, &projectiony, &projectionth) == 0) {
+       // human is ahead of robot, but is human travellling in the same direction?
+       if ((btset->parameters->motion_congruence == TRUE) && (btset->human[i]->actual_state == BT_MOVING)) {
 
+         // this is how far into the future we project human path
+         double projectionTime = 5; // seconds, TODO: put into parametes once necessary
+         double projectionx, projectiony, projectionth;
+
+         // project discrete human path of length x as n waypoints / waycircles (circles for simple stochastic estimates getting worse over time).
+         // Measure minimal distance robot to projected human path + comfort gap
+         if (getClosestPoseOnProjection(btset, btset->human[i], realx, realy, projectionTime, &projectionx, &projectiony, &projectionth) == 0) {
+
+           // how far from each other the human and robot would pass each other
+           double passingDistance = DISTANCE2D(realx, realy, projectionx, projectiony);
+           // the further we project, the more uncertain it is
+           double uncertainty = DISTANCE2D(humanx, humany, projectionx, projectiony) / 10;
+
+           passingDistance = passingDistance - uncertainty;
+           if (passingDistance < 0 ) {
+             passingDistance = 0;
+           }
+
+           double comfortPassingDistance = 0.2;
+           // robot radius + human radius + context-dependant-comfort-zone
+           double passingThreshold = 0.4 + 0.4 + comfortPassingDistance; // TODO: use real values, put into parameters
+
+           // area outside prediction where robot can do whatever he wants. Inside, he should not move towards the predicted path of human in small angles
+           double passingThreshold2 = passingThreshold + 1; // TODO: use real values, put into parameters
+
+
+           // if distance > threshold, all angles that maintain the distance are good, others are bad for a certain region
+           if (passingDistance > passingThreshold) {
+//             if (passingDistance > passingThreshold2) {
+               directionalSignificance = 0;
+//               PrintDebug(("Robot outside path threshold, signific = 0, (%d, %d)", current_cell->x, current_cell->y));
+//             } else {
+//               // bad angles that reduce the distance when passing distance is < threshold2
+//               if (humanInDirection > 0) {
+//                 // human on the right of robot heading
+//                 if (normalizeAngleDeviation(robotDirection - (M_PI - projectionth)) >= 0) {
+//                   // robot moving straigh or left, is ok
+////                   PrintDebug(("Robot not crossing inside right, signific = 0, (%d, %d)", current_cell->x, current_cell->y));
+//                   directionalSignificance = 0;
+//                 }
+//               } else {
+//                 // human on the left of robot heading
+//                 if (normalizeAngleDeviation(robotDirection - (M_PI - projectionth)) <= 0) {
+//                   // robot moving straigh or right, is ok
+//                   directionalSignificance = 0;
+////                   PrintDebug(("Robot not crossing inside left, signific = 0, (%d, %d)", current_cell->x, current_cell->y));
+//                 }
+//               }
+//             }
+
+           } // endif check passing threshold
+
+           // if we passed all the above without reducing significance to 0, check heading.
+           // unless robot itself is already in the hot zone, planning incurs no cost for crossing it other than at confronting angles.
+           // if the robot already is within the hot zone, it should get out of it at angles > 90 degrees
+           if (directionalSignificance > 0 ) {
              //          difference between robot heading and human heading
              double headingDiff = getAngleDeviation(robotDirection, projectionth);
-             // heading difference to 0 can be good or bad.
+             double actualDistance;
 
-             // how far from each other the human and robot would pass each other
-             double passingDistance = DISTANCE2D(realx, realy, projectionx, projectiony);
+             /**
+              * when human is already close to robot, robot should not move into the way of human
+              * Only if human is still far away, the robot may plan to cross the humans path
+              */
+             double hotZone = 1; // 1 meter around human is hot
 
-             double comfortPassingDistance = 0.2;
-             // robot radius + human radius + context-dependant-comfort-zone
-             double passingThreshold = 0.4  + 0.4 + comfortPassingDistance; // TODO: use real values, put into parameters
-
-             // area outside prediction where robot can do whatever he wants. Inside, he should not move towards the predicted path of human in small angles
-             double passingThreshold2 = passingThreshold + 1; // TODO: use real values, put into parameters
-
-
-             // if distance > threshold, all angles that maintain the distance are good, others are bad for a certain region
-             if (passingDistance > passingThreshold) {
-               if (passingDistance > passingThreshold2) {
-                 directionalSignificance = 0;
-               } else {
-                 // bad angles that reduce the distance when passing distance is < threshold2
-                 if (humanInDirection > 0) {
-                   // human on the right of robot heading
-                   if (normalizeAngleDeviation(robotDirection - (M_PI - projectionth)) >= 0) {
-                     // robot moving straigh or left, is ok
-                     directionalSignificance = 0;
-                   }
-                 } else {
-                   // human on the left of robot heading
-                   if (normalizeAngleDeviation(robotDirection - (M_PI - projectionth)) <= 0) {
-                     // robot moving straigh or right, is ok
-                     directionalSignificance = 0;
-                   }
-                 }
-               }
-             } // endif check passing threshold
-
-             // if we passed all the above without reducing significance to 0, check heading.
-             if (directionalSignificance > 0 ) {
-               //if distance < threashold, all angles leading out are good, angles staying in are bad.
-
-               /** up to 135 degrees (45 degrees is inverse), human will move out of the way in a good way
-                * (e.g. crossing or one follows the other),  so robot locomotion can make that safely.*/
-               if (normalizeAngleDeviation(M_PI - fabs(headingDiff )) < btset->parameters->directional_noConflictHeading) {
-                 // human direction is opposite to robot direction, so robot should avoid being in the way
-                 // fabs(headingDiff ) == M_Pi is worst case, significance should be 1 then
-                 directionalSignificance = directionalSignificance * ( 1 - (( M_PI - fabs(headingDiff ) ) / btset->parameters->directional_noConflictHeading ));
-               } else {
-                 directionalSignificance = 0;
-               }
+             if (path_bitmap->search_goal != NULL) {
+               start_realx = ( path_bitmap->search_start->x * btset->pace)+btset->realx;
+               start_realy = ( path_bitmap->search_start->y * btset->pace)+btset->realy;
+               getClosestPoseOnProjection(btset, btset->human[i], start_realx, start_realy, projectionTime, &projectionx, &projectiony, &projectionth);
+               actualDistance = DISTANCE2D(start_realx, start_realy, projectionx, projectiony);
+             } else  if (btset->robot->ROBOT_POS != NULL) {
+               start_realx = btset->robot->ROBOT_POS[ROBOTq_X];
+               start_realy = btset->robot->ROBOT_POS[ROBOTq_Y];
+               getClosestPoseOnProjection(btset, btset->human[i], start_realx, start_realy, projectionTime, &projectionx, &projectiony, &projectionth);
+               actualDistance = DISTANCE2D(start_realx, start_realy, projectionx, projectiony);
+             } else {
+               // should never happen, just settng it higher than threshold here for next if
+               actualDistance = hotZone + 1;
              }
 
-           } // end get projection
-         } // endif moving
-       }// end human is in front of robot search pos
-     } // end goal is not close to robot search pos
+
+             double limitAngle = btset->parameters->directional_noConflictHeading;
+             if (actualDistance < hotZone) {
+               limitAngle = M_PI_2;
+             }
+             // heading difference to 0 can be good or bad.
+             /** up to 135 degrees (45 degrees is inverse), human will move out of the way in a good way
+              * (e.g. crossing or one follows the other),  so robot locomotion can make that safely.*/
+             if (normalizeAngleDeviation(M_PI - fabs(headingDiff )) < limitAngle ) {
+               // human direction is opposite to robot direction, so robot should avoid being in the way
+               // fabs(headingDiff ) == M_Pi is worst case, significance should be 1 then
+               directionalSignificance = directionalSignificance * ( 1 - (normalizeAngleDeviation( M_PI - fabs(headingDiff ) ) / limitAngle  ));
+             } else {
+               directionalSignificance = 0;
+               //                 PrintDebug(("Robot not confront conflict, signific = 0, (%d, %d) : %f", current_cell->x, current_cell->y, normalizeAngleDeviation( M_PI - fabs(headingDiff ) )));
+             }
+
+           }
+
+
+         } // end get projection
+       } // endif moving
+     }// end human is in front of robot search pos
+
+     if (directionalSignificance > 0) {
+       hz = hri_bt_calc_hz_value_human(btset, btset->human[i], current_cell->x, current_cell->y);
+       vis = hri_bt_calc_vis_value_human(btset, btset->human[i], current_cell->x, current_cell->y, current_cell->z); // z = 0?
+       dist = hri_bt_calc_dist_value_human(btset, btset->human[i], current_cell->x, current_cell->y, current_cell->z);
+
+       if(btset->combine_type == BT_COMBINE_SUM) {
+         val = dist + vis + hz;
+       } else if(btset->combine_type == BT_COMBINE_MAX) {
+         val = MAX(dist, vis);
+         val = MAX(val, hz);
+       } else {
+         PrintError(("Can't combine bitmaps\n"));
+         val = 0;
+       }
+       val = val * directionalSignificance;
+     } else {
+       val = 0;
+     }
 
      //printf("cost reduced by %f \n", directionalSignificance);
-     val = val * directionalSignificance;
-
      if(result < val) {
        result = val;
      }
-   }
+   } // end for humans
 
    // experimental feature to avoid robot moving in the middle of corridor, walk on left or right lane instead
    // usually turned off, so val != BT_OBST_SURE_CORRIDOR_MARK unless feature turned on
@@ -1043,12 +1107,21 @@ double hri_bt_A_CalculateCellG(hri_bitmapset * btset, hri_bitmap_cell* current_c
   if ( btset->bitmap[BT_OBSTACLES]->nz == 1 && btset->parameters->directional_cost == TRUE) {
     // recalculate val from scratch, depending on human and robot pose in this search context
     double val = getDirectionalVal(btset, current_cell, fromcell, distance);
+
     current_cell->val = val;
+
+    // add the costs of the path to the parent, the social costs in this cell, and the path length
+      result = fromcell->g +
+                                  val +
+                                  (distance * btset->parameters->path_length_weight);
+
+  } else {
+    // add the costs of the path to the parent, the social costs in this cell, and the path length
+      result = fromcell->g +
+                                  current_cell->val +
+                                  (distance * btset->parameters->path_length_weight);
   }
 
-  // add the costs of the path to the parent, the social costs in this cell, and the path length
-    result = fromcell->g +
-                                current_cell->val +
-                                (distance * btset->parameters->path_length_weight);
+
     return result;
 }

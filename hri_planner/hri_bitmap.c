@@ -328,7 +328,10 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
 
   if( bitmap->type == BT_PATH){
     hri_bt_show_path(btset,bitmap);
-    return;
+    if (btset->parameters->directional_cost == FALSE) {
+      return;
+    }
+
   }
 
 
@@ -377,10 +380,29 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
           }
           break;
         case BT_COMBINED:
+          if(bitmap->data[i][j][0].val == 0)
+                     continue; // don't draw
           if(bitmap->data[i][j][0].val == -2)
             color = Red;
           if(bitmap->data[i][j][0].val == -1)
             continue; // don't draw
+          break;
+        case BT_PATH:
+          if(bitmap->data[i][j][0].val == -2)
+            continue; // don't draw
+          if(bitmap->data[i][j][0].val == -1)
+            continue; // don't draw
+
+          if(bitmap->data[i][j][0].val == 0)
+            continue; // don't draw
+          color = Blue;
+          base = 0;
+          length = 0.2;
+          if (btset->parameters->directional_cost == TRUE) {
+            if (bitmap->data[i][j][0].parent != NULL) {
+              value = fabs((bitmap->data[i][j][0].g - bitmap->data[i][j][0].parent->g)- (btset->parameters->path_length_weight * DISTANCE2D(bitmap->data[i][j][0].parent->x, bitmap->data[i][j][0].parent->y, bitmap->data[i][j][0].x, bitmap->data[i][j][0].y)));
+            }
+          }
           break;
         case BT_VELOCITY:
           if(bitmap->data[i][j][0].val <= -1)
@@ -460,7 +482,7 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   bitmapset->parameters->path_length_weight = 40;
   bitmapset->parameters->soft_collision_distance_weight = 8;
   bitmapset->parameters->soft_collision_base_cost = 15;
-  bitmapset->parameters->start_cell_tolerance = 2;
+  bitmapset->parameters->start_cell_tolerance = 5;
   bitmapset->parameters->goal_cell_tolerance = 8; // high tolerance for flawed grasp planning
 
   /** distances between which the social costs of MOVING humans are reduced, up to zero.
@@ -489,7 +511,7 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   bitmapset->parameters->directional_cost = FALSE;
   /*
    * When TRUE, moving humans only have costs where robot moves towards them on their predicted path, not it
-   * crosses the path or goes in the same direction
+   * crosses the path or goes in the same direction. Only works when directional_cost == TRUE;
    * default is FALSE
    */
   bitmapset->parameters->motion_congruence = FALSE;
@@ -501,13 +523,13 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   /** used if directional_cost == TRUE
    * the angle at which a human is considered "behind" the robot and thus not relevant for costs
    * default is M_PI_2 = 90 degrees**/
-  bitmapset->parameters->directional_freePassAngle = M_PI_2;
+  bitmapset->parameters->directional_freePassAngle = M_PI_2 + 0.2;
   /** used if directional_cost == TRUE
      * the inverse angle at which a moving human in front of the robot is considered "harmless",
      * as he does not move towards the robot, but will go elsewhere
      * 0 means the human goes in the opposite direction (conflict), Pi means he is going in same direction (nice)
      * default is M_PI_4 = 45 degrees **/
-  bitmapset->parameters->directional_noConflictHeading = M_PI_4;
+  bitmapset->parameters->directional_noConflictHeading =  M_PI_4 + 0.2;
 }
 
 
