@@ -1050,15 +1050,15 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
        p3d_mat4Copy(tAtt, armData.getCcCntrt()->Tatt);
     }
     
-    checkConfigForCartesianMode(qStart, object);
+    checkConfigForCartesianMode(qStart, NULL);
     if(MPDEBUG){
        ManipulationUtils::copyConfigToFORM(_robot, qStart);
     }
-    checkConfigForCartesianMode(approachGraspConfig, object);
+    checkConfigForCartesianMode(approachGraspConfig, NULL);
     if(MPDEBUG){
        ManipulationUtils::copyConfigToFORM(_robot, approachGraspConfig);
     }
-    checkConfigForCartesianMode(qGoal, object);
+    checkConfigForCartesianMode(qGoal, NULL);
     if(MPDEBUG){
        ManipulationUtils::copyConfigToFORM(_robot, qGoal);
     }
@@ -1166,7 +1166,15 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlaceFromFree(int armId, confi
   if (qGoal) {
     ManipulationUtils::copyConfigToFORM(_robot, qGoal);
     if(!_configs.getApproachGraspConfig()){
+      (*_robot->armManipulationData)[armId].setCarriedObject(object);
+      _robot->isCarryingObject = TRUE;
+      p3d_set_and_update_this_robot_conf(_robot, qGoal);
       configPt approachGraspConfig = _manipConf.getApproachGraspConf(object, armId, *(_configs.getGrasp()), qGoal, tAtt);
+      (*_robot->armManipulationData)[armId].setCarriedObject(object);
+      _robot->isCarryingObject = TRUE;
+      p3d_set_and_update_this_robot_conf(_robot, qStart);
+      (*_robot->armManipulationData)[armId].setCarriedObject((p3d_rob*) NULL);
+      _robot->isCarryingObject = FALSE;
       if(approachGraspConfig){
         ManipulationUtils::copyConfigToFORM(_robot, approachGraspConfig);
         _configs.setApproachGraspConfig(approachGraspConfig);
@@ -1207,15 +1215,15 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlaceFromFree(int armId, confi
        p3d_mat4Copy(tAtt, armData.getCcCntrt()->Tatt);
     }
     
-    checkConfigForCartesianMode(qStart, object);
+    checkConfigForCartesianMode(qStart, NULL);
     if(MPDEBUG){
        ManipulationUtils::copyConfigToFORM(_robot, qStart);
     }
-    checkConfigForCartesianMode(approachGraspConfig, object);
+    checkConfigForCartesianMode(approachGraspConfig, NULL);
     if(MPDEBUG){
        ManipulationUtils::copyConfigToFORM(_robot, approachGraspConfig);
     }
-    checkConfigForCartesianMode(depositConfig, object);
+    checkConfigForCartesianMode(depositConfig, NULL);
     if(MPDEBUG){
        ManipulationUtils::copyConfigToFORM(_robot, depositConfig);
     }

@@ -223,7 +223,10 @@ configPt ManipulationConfigs::getFreeHoldingConf( p3d_rob* object, int armId, gp
     mData.setCarriedObject(object);
     _robot->isCarryingObject = TRUE;
   }
+  
   deactivateCcCntrts(_robot, armId);
+  desactivateTwoJointsFixCntrt(_robot, mData.getManipulationJnt(), mData.getCcCntrt()->pasjnts[mData.getCcCntrt()->npasjnts -1]);
+  
   // Set Manipulation joint and hand configuration
 
   int idManipIndexDof = mData.getManipulationJnt()->index_dof;

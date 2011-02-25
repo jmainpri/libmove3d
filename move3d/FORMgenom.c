@@ -537,14 +537,14 @@ static void CB_genomArmGotoX_obj(FL_OBJECT *obj, long arg)
   objStart.push_back(P3D_HUGE);
   objStart.push_back(P3D_HUGE);
   objStart.push_back(P3D_HUGE);
-  objGoto.push_back(4.05);
-  objGoto.push_back(-2.68);
-  objGoto.push_back(0.87);
+  objGoto.push_back(2.74);
+  objGoto.push_back(-4.57);
+  objGoto.push_back(1.32);
   objGoto.push_back(0.0);
   objGoto.push_back(0.0);
   objGoto.push_back(P3D_HUGE);
   gpGrasp grasp;
-  manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, OBJECT_NAME, (char*)"",grasp, confs, smTrajs);
+  manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"", (char*)"",grasp, confs, smTrajs);
         return;
 }
 
