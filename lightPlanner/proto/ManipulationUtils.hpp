@@ -72,7 +72,7 @@ class ArmManipulationData {
       _ccCntrt = ccCntrt;
       _fkCntrt = fkCntrt;
       _manipulationJnt = manipulationJnt;
-      if(_ccCntrt != NULL){
+      if(_ccCntrt == NULL){
         _tAtt[0][0] = _tAtt[0][1] = _tAtt[0][2] = _tAtt[0][3] =  0;
       }else{
         p3d_mat4Copy(_ccCntrt->Tatt, _tAtt);
