@@ -304,11 +304,14 @@ int SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_TABLE[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
 double mini_visibility_threshold_for_task[MAXI_NUM_OF_HRI_TASKS];
 double maxi_visibility_threshold_for_task[MAXI_NUM_OF_HRI_TASKS];
 
+int test_inside(p3d_rob *container, p3d_rob *object);
+int voronoi(p3d_rob *container, p3d_rob *object);
 //================================
 
 int execute_Mightability_Map_functions()
 {
    
+test_inside(( p3d_rob* ) p3d_get_robot_by_name ( "TRASHBIN" ), ( p3d_rob* ) p3d_get_robot_by_name ( "GREY_TAPE" ));
 
   if(Affordances_Found==1)
     {
@@ -19622,4 +19625,131 @@ int find_candidate_points_for_current_HRI_task_for_object(HRI_TASK_TYPE curr_tas
     }
     printf("resultant_candidate_point->no_points=%d\n",resultant_candidate_point->no_points);
     return 1;
+}
+
+int test_inside(p3d_rob *container, p3d_rob *object)
+{
+  if(container==NULL||object==NULL)
+  {
+   printf(" NULL argument\n");
+   return 0;
+  }
+  bool inside;
+  double distance;
+  int i, j, k, nbPoints, result;
+  p3d_vector3 p;
+  p3d_vector3 *points= NULL;
+  p3d_matrix4 T;
+  p3d_polyhedre *polyContainer= NULL, *poly= NULL;
+  std::vector<double> point(3);
+  gpConvexHull3D chull;
+
+  polyContainer= container->o[0]->pol[0]->poly;
+  poly= object->o[0]->pol[0]->poly;
+
+  nbPoints= 0;
+  for(i=0; i <container->o[0]->np; ++i)
+  {  nbPoints+= container->o[0]->pol[i]->poly->nb_points; }
+  points= (p3d_vector3 *) malloc(nbPoints*sizeof(p3d_vector3));
+
+  k= 0;
+  for(i=0; i <container->o[0]->np; ++i)
+  {  
+    p3d_matMultXform(container->o[0]->jnt->abs_pos, container->o[0]->pol[i]->pos_rel_jnt, T);
+
+    for(j=0; j<container->o[0]->pol[i]->poly->nb_points; ++j)
+    {
+      p3d_vectCopy(container->o[0]->pol[i]->poly->the_points[j], p);
+      p3d_xformPoint(T, p, points[k]);
+      k++;
+    }
+  }
+
+
+  chull.setPoints(points, nbPoints);
+  chull.compute(true, 0.0, false);
+//   chull.draw();
+
+  p3d_get_freeflyer_pose(object, T);
+  result= 1;
+
+  for(i=0; i <object->o[0]->np; ++i)
+  {  
+    p3d_matMultXform(object->o[0]->jnt->abs_pos, object->o[0]->pol[i]->pos_rel_jnt, T);
+
+    for(j=0; j<object->o[0]->pol[i]->poly->nb_points; ++j)
+    {
+      p3d_xformPoint(T, object->o[0]->pol[i]->poly->the_points[j], p);
+
+      point[0]= p[0];
+      point[1]= p[1];
+      point[2]= p[2];
+      chull.isPointInside(point, inside, distance);
+      if(!inside)
+      {
+        printf(" NOT \n"); 
+        result= 0;
+        i= object->o[0]->np;
+        break;  
+      }
+    }
+  }
+
+
+  free(points);
+  if(result==1) printf(" YES \n");
+  return result;
+}
+
+
+
+int voronoi(p3d_rob *container, p3d_rob *object)
+{
+  if(container==NULL||object==NULL)
+  {
+   printf(" NULL argument\n");
+   return 0;
+  }
+  bool inside;
+  double distance;
+  int i, j, k, nbPoints, result;
+  p3d_vector3 p;
+  p3d_vector3 *points= NULL;
+  p3d_matrix4 T;
+  p3d_polyhedre *polyContainer= NULL, *poly= NULL;
+  std::vector<double> point(3);
+  gpConvexHull3D chull;
+
+  polyContainer= container->o[0]->pol[0]->poly;
+  poly= object->o[0]->pol[0]->poly;
+
+  nbPoints= 0;
+  for(i=0; i <container->o[0]->np; ++i)
+  {  nbPoints+= container->o[0]->pol[i]->poly->nb_points; }
+  points= (p3d_vector3 *) malloc(nbPoints*sizeof(p3d_vector3));
+
+  k= 0;
+  for(i=0; i <container->o[0]->np; ++i)
+  {  
+    p3d_matMultXform(container->o[0]->jnt->abs_pos, container->o[0]->pol[i]->pos_rel_jnt, T);
+
+    for(j=0; j<container->o[0]->pol[i]->poly->nb_points; ++j)
+    {
+      p3d_vectCopy(container->o[0]->pol[i]->poly->the_points[j], p);
+      p3d_xformPoint(T, p, points[k]);
+      k++;
+    }
+  }
+
+
+  chull.setPoints(points, nbPoints);
+//   chull.compute(true, 0.0, false);
+ chull.voronoi(false);
+ // chull.draw();
+
+
+
+  free(points);
+  if(result==1) printf(" YES \n");
+  return result;
 }
