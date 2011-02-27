@@ -74,7 +74,7 @@ extern HRI_AGENT *HRI_AGENTS_FOR_MA[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
 extern double mini_visibility_threshold_for_task[MAXI_NUM_OF_HRI_TASKS];
 extern double maxi_visibility_threshold_for_task[MAXI_NUM_OF_HRI_TASKS];
 
-action_performance_node curret_task;
+////action_performance_node curret_task;
 
 
 //TODO : Put in HRI_tasks_Proto.h
@@ -987,7 +987,7 @@ int JIDO_perform_task ( char *obj_to_manipulate, HRI_TASK_TYPE task, HRI_TASK_AG
 //       initManipulation();
 //    }
 
-int PLAN_IN_CARTESIAN=1;
+int PLAN_IN_CARTESIAN=0;
 if(PLAN_IN_CARTESIAN == 1) 
     {
     for(int i=0; i<manipulation->robot()->armManipulationData->size(); i++) 
@@ -1048,6 +1048,7 @@ if(PLAN_IN_CARTESIAN == 1)
    manipulation->setSafetyDistanceValue ( 0.0 );
 
    gpGrasp_context_collision_filter(graspList, ( p3d_rob* ) p3d_get_robot_by_name ( "SAHandRight" ), object, handProp);
+   p3d_set_freeflyer_pose2( ( p3d_rob* ) p3d_get_robot_by_name ( "SAHandRight" ),5,5,5,0,0,0);
 
    for ( std::list<gpGrasp>::iterator igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp )
    {
@@ -1072,7 +1073,8 @@ if(PLAN_IN_CARTESIAN == 1)
 
 
          if(graspConf==NULL)
-         {/*printf(" No IK Found to grasp\n");*/
+         {
+          printf(" No IK Found to grasp\n");
           continue;
          }
          printf ( "graspConf= %p\n", graspConf );
@@ -1218,6 +1220,7 @@ if(PLAN_IN_CARTESIAN == 1)
                            p3d_mat4Mult (  Tplacement, tAtt, WRIST_FRAME );
                            if( get_wrist_head_alignment_angle(WRIST_FRAME, HRI_AGENTS_FOR_MA[for_agent]->perspective->camjoint->abs_pos) > 30*DEGTORAD)
                             { 
+                            printf(" Wrist Alignment is not good \n");
                             continue; 
                             }
                            }
@@ -1240,7 +1243,8 @@ if(PLAN_IN_CARTESIAN == 1)
                               ////ManipulationUtils::copyConfigToFORM ( object, placeConf ); 
                               ////pqp_print_colliding_pair();
                               if(placeConf==NULL)
-                              {/*printf(" No IK Found to place\n");*/
+                              {
+                               printf(" No IK Found to place\n");
                                continue;
                               }
 
@@ -1268,7 +1272,7 @@ if(PLAN_IN_CARTESIAN == 1)
                                 g3d_draw_allwin_active();
 
                                 
-                                g3d_is_object_visible_from_viewpoint ( HRI_AGENTS_FOR_MA[for_agent]->perspective->camjoint->abs_pos, HRI_AGENTS_FOR_MA[for_agent]->perspective->fov, object, &visibility, 0 );
+                                g3d_is_object_visible_from_viewpoint ( HRI_AGENTS_FOR_MA[for_agent]->perspective->camjoint->abs_pos, HRI_AGENTS_FOR_MA[for_agent]->perspective->fov, object, &visibility, 1 );
 
                                 printf ( " mini_visibility_threshold_for_task[task]= %lf, maxi_visibility_threshold_for_task[task]=%lf, visibility=%lf\n",mini_visibility_threshold_for_task[task], maxi_visibility_threshold_for_task[task],visibility );
 
@@ -1298,6 +1302,7 @@ if(PLAN_IN_CARTESIAN == 1)
                                p3d_mat4Copy(Tplacement0, Tplacement);
                                Tplacement[2][3]+= 0.03;
                                p3d_set_freeflyer_pose ( object, Tplacement );
+                               
                                liftConf= setRobotGraspPosWithoutBase ( manipulation->robot(), Tplacement, tAtt,  0, 0, armID, false );
 //                                liftConf= setRobotGraspPosWithoutBase ( manipulation->robot(), Tplacement, p3d_mat4IDENTITY,  0, 0, armID, false );
                                  g3d_draw_allwin_active();
@@ -1306,7 +1311,7 @@ if(PLAN_IN_CARTESIAN == 1)
                                 printf(" Fail to find liftConf\n");
                                 continue;
                                }
-
+                               printf(" LiftConf found\n");
                               
                                   ////p3d_set_and_update_this_robot_conf ( manipulation->robot(), liftConf );
                                  //// g3d_draw_allwin_active();
@@ -1317,6 +1322,7 @@ if(PLAN_IN_CARTESIAN == 1)
                                  {
                                    p3d_destroy_config(manipulation->robot(), liftConf);
                                    liftConf = NULL;
+                                   printf(" Fail optimizeRedundentJointConfigDist()\n");
                                    continue;
                                   }
                                 
