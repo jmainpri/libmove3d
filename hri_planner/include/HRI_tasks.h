@@ -32,7 +32,21 @@ PUT_INTO_OBJECT,
 MAXI_NUM_OF_HRI_TASKS
 }HRI_TASK_TYPE;
 
+/*
+typedef struct world_state_configs
+{
+ //int no_robots;
+ std::vector <configPt> robot_config;// robot_config[50]; //To store configurations of all the robots, it should be synchronized with the index of the robots
+   
+ 
+}world_state_configs;
 
-
+typedef struct atomic_HRI_task
+{
+ HRI_TASK_TYPE task_type;
+ world_state_configs before_task;
+ world_state_configs after_task;
+ 
+}atomic_HRI_task;*/
 
 #endif

@@ -1,5 +1,7 @@
 #ifndef _MIGHTABILITY_MAP_H
 #define _MIGHTABILITY_MAP_H
+#include <map>
+
 #include "HRI_tasks.h"
 ////#include "hri_agent.h"
 
@@ -71,6 +73,8 @@ typedef enum HRI_TASK_AGENT_ENUM
 
   MAXI_NUM_OF_AGENT_FOR_HRI_TASK
 }HRI_TASK_AGENT;
+
+////extern std::map<std::string,int> HriTaskAgent;
 
 
 typedef enum HRP2_STATES_HRI
