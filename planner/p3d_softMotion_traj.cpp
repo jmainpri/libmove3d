@@ -627,6 +627,7 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file, bool a
                                 positions, smTraj);
   }
   
+  
 ///////////////////////////////////////////////////
 
 
@@ -668,8 +669,9 @@ if(approximate == true) {
      * RETURN SM_TRAJ
      */
     smTraj.approximate(discTraj, SAMPLING_TIME, 0.01, 0.1, 36, true);
+   if(ENV.getBool (Env::writeSoftMotionFiles)) {
     smTraj.save((char*)"move3dSoftMotion_Seg.traj");
-
+   }
 // std::vector<double> maxVel;
 // maxVel.resize(7);
 // 
