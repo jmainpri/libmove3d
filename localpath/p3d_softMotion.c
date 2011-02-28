@@ -15,6 +15,9 @@ char * array_group_name[] = {
 };
 int P3D_NB_GROUP = 4;
 
+int p3d_softMotion_plot_q(std::vector< std::vector<double> > &position);
+
+
 ptr_to_softMotion_groupplanner array_softMotion_groupplanner[]= {
   (NULL),
   (int (*)(p3d_rob*, int, p3d_group_type, p3d_softMotion_data* , int*))(p3d_softMotion_localplanner_FREEFLYER),
@@ -2554,7 +2557,7 @@ void lm_set_and_get_motionTimes(p3d_softMotion_data* softMotion_data, double* ti
   return;
 }
 
-void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType,  char *fileName, char *fileNameSeg, bool flagPlot,double SAMPLING_TIME,
+void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType,  char *fileName, char *fileNameSeg, bool flagSaveFile, bool flagPlot,double SAMPLING_TIME,
 					    std::vector <int> &lp, std::vector < std::vector <double> > &positions,
 					    SM_TRAJ &smTraj) {
 
@@ -2577,7 +2580,7 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
   std::vector <double>  q_armOld;
   std::vector <double>  vqi;
   std::vector <double>  min, max;
-  gnuplot_ctrl * h = NULL;
+
  
 
   SM_SEG seg;
@@ -2587,10 +2590,13 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
   int upBodySm_mlpID = -1;
   int jointsToExportGpID = -1;
   configPt dofsToExport = NULL;
-int nb_armDof =0;
+  int nb_armDof =0;
   int w = 0;
-  if ((filepTrajtr = fopen(fileName,"w+"))==NULL) {
-    printf("cannot open File %s", fileName);
+
+  if(flagSaveFile) {
+    if ((filepTrajtr = fopen(fileName,"w+"))==NULL) {
+      printf("cannot open File %s", fileName);
+    }
   }
 
   index = 0;
@@ -2844,11 +2850,14 @@ int nb_armDof =0;
   }
 
   smTraj.computeTimeOnTraj();
-//   smTraj.setTrajId(36);
-  smTraj.save(fileNameSeg);
-  printf("File %s created\n", fileNameSeg);
+  smTraj.setTrajId(36);
 
-  //smTraj.print();
+  if(flagSaveFile) {
+    smTraj.save(fileNameSeg);
+    printf("File %s created\n", fileNameSeg);
+  }
+
+  
   localpathPt = traj->courbePt;
   u = 0.0;
   lpId = 0;
@@ -2932,7 +2941,6 @@ int nb_armDof =0;
 
 
   p3d_destroy_config(robotPt, dofsToExport);
-  //printf("lpId %d traj->nlp %d\n ",lpId, traj->nlp);
 
   if(filepTrajtr != NULL) {
     fclose(filepTrajtr);
@@ -2940,53 +2948,65 @@ int nb_armDof =0;
   }
 	
   if(flagPlot == true) {
-    FILE * f = NULL;
-    f = fopen("temp.dat","w");
+    p3d_softMotion_plot_q(positions);
+  }
+  return;
+}
 
-    for(unsigned int i=0; i<positions.size(); i++){
+
+int p3d_softMotion_plot_q(std::vector< std::vector<double> > &positions)
+{
+  gnuplot_ctrl * h = NULL;
+  FILE * f = NULL;
+  
+  f = fopen("temp.dat","w");
+  if(f==NULL) {
+    printf("ERROR p3d_softMotion_plot_q: cannot open file\n");
+    return 1;
+  }
+  
+  for(unsigned int i=0; i<positions.size(); i++){
       fprintf(f,"%d ",i);
       for(unsigned int v=0; v<positions[i].size(); v++){
 	fprintf(f,"%f ",positions[i][v]);
       }
       fprintf(f,"\n ");
-    }
-
-		
-    fclose(f);
-    h = gnuplot_init();
-    if(h == NULL){
-      printf("Gnuplot Init problem");
-    }
-    gnuplot_cmd(h,(char*)"set term wxt");
-    gnuplot_cmd(h,(char*)"set xrange [%d:%d]",0,index-1);
-    gnuplot_cmd(h,(char*)"set yrange [-4.5:8]");  // maxi for Jido is 255�
-    std::string gnuplotCmd;
-    gnuplotCmd.clear();
-    char text[255];
-    char text2[255];
-    if(positions.size()>1){
-      for(unsigned int i=0; i<positions.at(0).size(); i++){
-	sprintf(text,"%d",i+1);
-	sprintf(text2,"%d",i+2);
-	if(i==0) {
-	  gnuplotCmd.append("plot ");
-	}
-	gnuplotCmd.append("\"temp.dat\" using 1:");
-	gnuplotCmd.append(text2);
-	gnuplotCmd.append(" with lines lt ");
-	gnuplotCmd.append(text);
-	gnuplotCmd.append(" ti \"q");
-	gnuplotCmd.append(text);
-	if(i<qplot_i.size()-1){
-	  gnuplotCmd.append("\", ");
-	} else {
-	  gnuplotCmd.append("\" ");
-	}
-      }	
-    }
-    gnuplot_cmd(h, (char*)gnuplotCmd.c_str());
   }
-  return;
+  
+  fclose(f);
+  h = gnuplot_init();
+  if(h == NULL){
+    printf("Gnuplot Init problem");
+  }
+  gnuplot_cmd(h,(char*)"set term wxt");
+  gnuplot_cmd(h,(char*)"set xrange [%d:%d]",0,positions.size());
+  gnuplot_cmd(h,(char*)"set yrange [-4.5:8]");  // maxi for Jido is 255�
+  std::string gnuplotCmd;
+  gnuplotCmd.clear();
+  char text[255];
+  char text2[255];
+  if(positions.size()>1){
+    for(unsigned int i=0; i<positions.at(0).size(); i++){
+      sprintf(text,"%d",i+1);
+      sprintf(text2,"%d",i+2);
+      if(i==0) {
+	gnuplotCmd.append("plot ");
+      }
+      gnuplotCmd.append("\"temp.dat\" using 1:");
+      gnuplotCmd.append(text2);
+      gnuplotCmd.append(" with lines lt ");
+      gnuplotCmd.append(text);
+      gnuplotCmd.append(" ti \"q");
+      gnuplotCmd.append(text);
+      if(i<positions.at(0).size()-1){
+	gnuplotCmd.append("\", ");
+      } else {
+	gnuplotCmd.append("\" ");
+      }
+    }	
+  }
+  gnuplot_cmd(h, (char*)gnuplotCmd.c_str());
+return 0;
 }
 
 ///////////////////////////////////////////////
