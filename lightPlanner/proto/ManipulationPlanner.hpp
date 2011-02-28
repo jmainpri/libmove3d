@@ -33,7 +33,8 @@ class  ManipulationPlanner {
   /* ******* (Ge)Setters *********** */
   /* ******************************* */
     void setDebugMode(bool value);
-  
+    void setDebugSoftMotionMode(bool value);
+
 #ifdef MULTILOCALPATH
   /** Multilocalpath Id for the base */
   int getBaseMLP() { return _BaseMLP; } 
