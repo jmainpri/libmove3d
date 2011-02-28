@@ -158,7 +158,7 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg) {
 static void CB_softMotion_plot_curve_obj(FL_OBJECT *obj, long arg) {
 	
         ENV.setBool(Env::plotSoftMotionCurve, !ENV.getBool(Env::plotSoftMotionCurve));
-	
+        ENV.setBool(Env::writeSoftMotionFiles, !ENV.getBool(Env::writeSoftMotionFiles));
 	if(ENV.getBool(Env::plotSoftMotionCurve))
 	{  fl_set_button(BT_PLOT_Q_PLOT_CURVE_OBJ, TRUE);
 	}
