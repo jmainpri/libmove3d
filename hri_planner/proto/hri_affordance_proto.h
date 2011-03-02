@@ -108,7 +108,7 @@ extern int show_axis_of_FOV_from_mocap_eye_glass_data();
 extern int virtually_update_human_state_new(HRI_AGENT *human_agent,int state); //1 means sitting 0 means standing
 extern int virtually_update_non_primary_human_state(int state, int hum_index); //1 means sitting 0 means standing, hum_index is the index of robot in environment (envPt)
 extern int JIDO_make_obj_accessible_to_human ( char obj_to_manipulate[50] );
-// extern int show_world_state_of_entire_plan(int exec_path_configs);
+extern int show_world_state_of_entire_plan(std::vector<HRI_task_node> &hri_task_list, int exec_path_configs);
 extern int JIDO_show_obj_to_human ( char obj_to_manipulate[50] );
 extern int JIDO_find_candidate_points_to_show_obj();
 /*extern int test_geometric_plan_creation_for_JIDO();*/
@@ -153,7 +153,7 @@ extern int HRP2_hide_obj_from_human( char obj_to_manipulate[50] );
 extern int make_cells_corresponding_to_object_obstacle_free(char *object_name);
 extern int HRP2_take_object(char obj_to_manipulate[50]);
 extern int set_current_HRI_manipulation_task(int arg);
-extern int find_current_HRI_manip_task_solution();
+extern int find_current_HRI_manip_task_solution(HRI_task_desc curr_task, traj_for_HRI_task &res_traj);
 extern int find_Mightability_Maps();
 extern int JIDO_give_obj_to_human( char *obj_to_manipulate );
 extern int find_candidate_points_for_current_HRI_task(HRI_TASK_TYPE curr_task, HRI_TASK_AGENT_ENUM performed_by, HRI_TASK_AGENT_ENUM performed_for, candidate_poins_for_task *resultant_candidate_point);
@@ -169,6 +169,10 @@ extern int print_object_oriented_Mightability_for_object(object_Symbolic_Mightab
 extern int print_object_oriented_Mightability_for_object_by_agent(object_Symbolic_Mightability_Maps_Relation* OOM, int obj_index, HRI_TASK_AGENT agent);
 extern int find_candidate_points_for_current_HRI_task_for_object(HRI_TASK_TYPE curr_task, HRI_TASK_AGENT_ENUM performed_by, HRI_TASK_AGENT_ENUM performed_for, candidate_poins_for_task *resultant_candidate_point, char *object);
 extern int init_visibility_acceptance_for_tasks();
-extern int JIDO_perform_task (char *obj_to_manipulate, HRI_TASK_TYPE task, HRI_TASK_AGENT by_agent, HRI_TASK_AGENT for_agent, candidate_poins_for_task *curr_candidate_points, std::list<gpGrasp> graspList, std::list<gpPlacement> curr_placementList);
+extern int JIDO_perform_task (char *obj_to_manipulate, HRI_TASK_TYPE task, HRI_TASK_AGENT by_agent, HRI_TASK_AGENT for_agent, candidate_poins_for_task *curr_candidate_points, std::list<gpGrasp> graspList, std::list<gpPlacement> curr_placementList, traj_for_HRI_task &res_trajs);
+extern int validate_HRI_task(HRI_task_desc curr_task, int task_plan_id);
+extern int show_traj_for_this_HRI_task(HRI_task_node &for_task,int show_traj);
+extern int show_desired_HRI_task_plan();
+extern int show_plan_for_this_sub_task(HRI_task_node &for_task, traj_for_HRI_sub_task &sub_task_traj, int sub_task_index, int show_traj);
 #endif /* __CEXTRACT__ */
 

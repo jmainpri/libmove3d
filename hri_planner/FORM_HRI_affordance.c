@@ -14,7 +14,7 @@
 
 #define LOCAL_COMPUTATION_EPSILON (1e-9)
 
-////#define COMPILE_WITH_HTL
+//#define COMPILE_WITH_HTL
 #ifdef COMPILE_WITH_HTL
 #include "proto/FORM_Mocap_data_run_proto.h"
 #endif
@@ -84,6 +84,8 @@ static FL_OBJECT  *HRI_MANIP_TASK_FRAME_OBJ;
 static FL_OBJECT  *HRI_MANIP_TASK_GROUP_OBJ;
 static FL_OBJECT  *MIGHTABILITY_SET_FRAME_OBJ;
 static FL_OBJECT  *MIGHTABILITY_SET_OPERATIONS_GROUP_OBJ;
+static FL_OBJECT  *HRI_TASK_PLAN_LIST_FRAME_OBJ;
+static FL_OBJECT  *HRI_TASK_PLAN_LIST_GROUP_OBJ;
 
 static FL_OBJECT  *BT_SHOW_VISIBILE_PLACE_AGENTS_OBJ[MAXI_NUM_OF_AGENT_FOR_HRI_TASK][12];
 static FL_OBJECT  *BT_SHOW_REACHABLE_PLACE_AGENTS_HAND_OBJ[MAXI_NUM_OF_AGENT_FOR_HRI_TASK][5];
@@ -122,6 +124,11 @@ static FL_OBJECT  *BT_SHOW_CURRENT_HAND_ONLY_GRASPS_OBJ;
 static FL_OBJECT  *BT_SHOW_CURRENT_WHOLE_BODY_GRASPS_OBJ;
 static FL_OBJECT  *BT_SHOW_CURRENT_WHOLE_BODY_COLLISION_FREE_GRASPS_OBJ;
 static FL_OBJECT  *BT_SHOW_WHOLE_BODY_FINAL_PLACE_GRASPS_OBJ;
+
+static FL_OBJECT  *BT_SELECT_HRI_TASK_PLAN_ID;
+static FL_OBJECT  *BT_SELECT_HRI_TASK_SUB_PLAN_ID;
+static FL_OBJECT  *BT_SHOW_HRI_TASK_TRAJ_TYPE_OBJ;
+static FL_OBJECT  *BT_SHOW_HRI_PLAN_TYPE_OBJ;
 
 extern int CALCULATE_AFFORDANCE;
 int SHOW_HRP2_GIK_SOL=0;
@@ -213,7 +220,16 @@ extern HRI_TASK_AGENT CURRENT_TASK_PERFORMED_FOR;
 
 extern int indices_of_MA_agents[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
 
+extern std::vector<HRI_task_node> HRI_task_list;
 
+extern std::map<std::string, int > HRI_task_plan_DESC_ID_map;
+extern std::map<int,std::string > HRI_sub_task_NAME_ID_map;
+extern int CURRENT_HRI_TASK_PLAN_ID_TO_SHOW;
+extern int INDEX_CURRENT_HRI_TASK_SUB_PLAN_TO_SHOW;
+extern int SHOW_HRI_TASK_TRAJ_TYPE;
+extern int SHOW_HRI_PLAN_TYPE;
+
+int update_HRI_task_plan_list();
 
 #ifdef USE_HRP2_GIK
 static void CB_create_HRP2_robot_obj(FL_OBJECT *ob, long arg)
@@ -968,7 +984,23 @@ static void CB_find_current_task_solution_obj(FL_OBJECT *ob, long arg)
  ////char CURRENT_OBJECT_TO_MANIPULATE[50]="HORSE";
  /////strcpy(CURRENT_OBJECT_TO_MANIPULATE,XYZ_ENV->cur_robot->name);
 
- find_current_HRI_manip_task_solution();
+ ////////////////traj_for_HRI_task res_trajs;
+ ////////////////find_current_HRI_manip_task_solution(res_trajs);
+ HRI_task_desc task;
+ task.task_type=CURRENT_HRI_MANIPULATION_TASK;
+ task.by_agent=CURRENT_TASK_PERFORMED_BY;
+ task.for_agent=CURRENT_TASK_PERFORMED_FOR;
+ task.for_object=CURRENT_OBJECT_TO_MANIPULATE;
+ printf(" inside CB_find_current_task_solution_obj() CURRENT_OBJECT_TO_MANIPULATE= %s,  task.for_object =%s\n",CURRENT_OBJECT_TO_MANIPULATE,task.for_object.c_str());
+ static int task_plan_id=0;
+ validate_HRI_task(task, task_plan_id);
+ printf(" After validate_HRI_task\n");
+ task_plan_id++;
+ update_HRI_task_plan_list();
+ printf(" After update_HRI_task_plan_list \n");
+
+ fl_check_forms();
+ g3d_draw_allwin_active(); 
 
 //  printf("<<<< CURRENT_HRI_MANIPULATION_TASK=%d for object = %s\n",CURRENT_HRI_MANIPULATION_TASK, CURRENT_OBJECT_TO_MANIPULATE);
 // 
@@ -1016,6 +1048,7 @@ static void CB_find_current_task_solution_obj(FL_OBJECT *ob, long arg)
 //   win= g3d_get_cur_win();
 //   win->fct_draw2= NULL;
 
+printf(" returning from CB_find_current_task_solution_obj()\n");
 return;
 
 
@@ -1029,9 +1062,11 @@ static void CB_execute_current_task_solution_obj(FL_OBJECT *ob, long arg)
  ////char CURRENT_OBJECT_TO_MANIPULATE[50]="HORSE";
  /////strcpy(CURRENT_OBJECT_TO_MANIPULATE,XYZ_ENV->cur_robot->name);
 
- printf("<<<< CURRENT_HRI_MANIPULATION_TASK=%d for object = %s\n",CURRENT_HRI_MANIPULATION_TASK, CURRENT_OBJECT_TO_MANIPULATE);
-
-////////show_world_state_of_entire_plan ( 1 );
+ ////printf("<<<< CURRENT_HRI_MANIPULATION_TASK=%d for object = %s\n",CURRENT_HRI_MANIPULATION_TASK, CURRENT_OBJECT_TO_MANIPULATE);
+////////int exec_path_configs=0;
+////////show_world_state_of_entire_plan(HRI_task_list, exec_path_configs);
+ show_desired_HRI_task_plan();
+////show_world_state_of_entire_plan ( 1 );
 return;
 
 
@@ -1595,7 +1630,7 @@ BT_FIND_CURRENT_TASK_SOLUTION_OBJ = fl_add_button(FL_NORMAL_BUTTON,360,510,150,2
 
 void g3d_create_execute_current_task_solution_obj(void)
 {
-BT_EXECUTE_CURRENT_TASK_SOLUTION_OBJ = fl_add_button(FL_NORMAL_BUTTON,360,540,150,20,"Execute Current Task Solution");
+BT_EXECUTE_CURRENT_TASK_SOLUTION_OBJ = fl_add_button(FL_NORMAL_BUTTON,360,540,150,20,"Execute Solution");
 	//fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
 	fl_set_call_back(BT_EXECUTE_CURRENT_TASK_SOLUTION_OBJ,CB_execute_current_task_solution_obj,0);
        
@@ -1644,6 +1679,8 @@ static void g3d_create_hri_manipulation_task_group(void)
   fl_end_group();
  
 }
+
+
 
 
 static void g3d_create_Mightability_Maps_Set_operations_group(void)
@@ -1930,6 +1967,138 @@ void g3d_create_use_object_dimension_for_candidate_pts()
   fl_set_call_back(BT_USE_OBJECT_DIMENSION_FOR_CANDIDATE_PTS_OBJ,get_choice_use_object_dimension_for_candidate_pts,0);
 }
 
+
+int update_HRI_task_plan_list()
+{
+  
+  fl_clear_choice(BT_SELECT_HRI_TASK_PLAN_ID);
+  std::map<std::string,int>::iterator it;
+
+  for ( it=HRI_task_plan_DESC_ID_map.begin() ; it != HRI_task_plan_DESC_ID_map.end(); it++ )
+  {
+    fl_addto_choice(BT_SELECT_HRI_TASK_PLAN_ID,it->first.c_str());
+    
+  }
+
+  
+  return 1;
+}
+
+int update_HRI_task_sub_plan_list(int plan_id)
+{
+    fl_clear_choice(BT_SELECT_HRI_TASK_SUB_PLAN_ID);
+  for(int i=0;i<HRI_task_list.size();i++)
+  {
+  if(HRI_task_list[i].task_plan_id==plan_id)
+   {
+    for(int j=0;j<HRI_task_list[i].traj.sub_task_traj.size();j++)
+    {
+    INDEX_CURRENT_HRI_TASK_SUB_PLAN_TO_SHOW=j;
+    fl_addto_choice(BT_SELECT_HRI_TASK_SUB_PLAN_ID,HRI_sub_task_NAME_ID_map.find(HRI_task_list[i].traj.sub_task_traj[j].sub_task_type)->second.c_str());
+    }
+    
+    break;
+   }
+  }
+  
+
+  
+  return 1;
+}
+
+void get_hri_task_plan(FL_OBJECT *obj, long arg)
+{
+
+  int val = fl_get_choice(obj);
+  printf(" For task plan =%d\n",val);
+
+ const char *task_plan_desc=fl_get_choice_text(obj);
+ CURRENT_HRI_TASK_PLAN_ID_TO_SHOW=HRI_task_plan_DESC_ID_map.find(task_plan_desc)->second;
+
+  update_HRI_task_sub_plan_list(CURRENT_HRI_TASK_PLAN_ID_TO_SHOW);
+  
+  ////CURRENT_TASK_PERFORMED_FOR=HRI_TASK_AGENT( val-1);
+}
+
+void get_hri_task_sub_plan(FL_OBJECT *obj, long arg)
+{
+
+  int val = fl_get_choice(obj);
+  INDEX_CURRENT_HRI_TASK_SUB_PLAN_TO_SHOW=val-1;
+  printf(" For task sub plan =%d\n",val-1);
+  ////CURRENT_TASK_PERFORMED_FOR=HRI_TASK_AGENT( val-1);
+}
+
+
+void CB_select_show_hri_task_traj_type_obj(FL_OBJECT *obj, long arg)
+{
+ SHOW_HRI_TASK_TRAJ_TYPE=(int) arg;
+}
+
+void CB_select_show_hri_plan_type_obj(FL_OBJECT *obj, long arg)
+{
+ ////int val = fl_get_choice(obj);
+ 
+ SHOW_HRI_PLAN_TYPE=(int) arg;
+}
+
+static void g3d_create_hri_task_plan_list_group(void)
+{
+  int x=360, y=570;
+  HRI_TASK_PLAN_LIST_FRAME_OBJ = fl_add_labelframe(FL_BORDER_FRAME,x,y,400,50,"Current HRI Manipulation Task");
+
+  int x_shift=50, y_shift=10;
+
+  ////HRI_TASK_PLAN_LIST_GROUP_OBJ = fl_bgn_group();
+
+  BT_SELECT_HRI_TASK_PLAN_ID=fl_add_choice(FL_NORMAL_CHOICE,x+x_shift,y+y_shift,100,20,"Task Plan");
+  fl_set_call_back(BT_SELECT_HRI_TASK_PLAN_ID,get_hri_task_plan,0);
+
+  x_shift+=160;
+  BT_SELECT_HRI_TASK_SUB_PLAN_ID=fl_add_choice(FL_NORMAL_CHOICE,x+x_shift,y+y_shift,100,20,"Sub Plan");
+  fl_set_call_back(BT_SELECT_HRI_TASK_SUB_PLAN_ID,get_hri_task_sub_plan,0);
+
+   fl_bgn_group();
+  x_shift+=100;
+  y_shift=2;
+  fl_add_text(FL_NORMAL_TEXT,x+x_shift,y+y_shift,50,20," Show ");
+  y_shift+=12;
+  BT_SHOW_HRI_PLAN_TYPE_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,x+x_shift,y+y_shift,50,20,"Final Configs");
+	//fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
+	fl_set_call_back(BT_SHOW_HRI_PLAN_TYPE_OBJ,CB_select_show_hri_plan_type_obj,0);
+
+  
+   y_shift+=12;
+  BT_SHOW_HRI_PLAN_TYPE_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,x+x_shift,y+y_shift,50,20,"Trajectory");
+	//fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
+	fl_set_call_back(BT_SHOW_HRI_PLAN_TYPE_OBJ,CB_select_show_hri_plan_type_obj,1);
+  
+  fl_end_group();
+ 
+  fl_bgn_group();
+  x_shift=1, y_shift=30;
+  fl_add_text(FL_NORMAL_TEXT,x+x_shift,y+y_shift,20,20," for ");
+  x_shift+=30;
+  BT_SHOW_HRI_TASK_TRAJ_TYPE_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,x+x_shift,y+y_shift,50,20,"Complete Plan");
+	//fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
+	fl_set_call_back(BT_SHOW_HRI_TASK_TRAJ_TYPE_OBJ,CB_select_show_hri_task_traj_type_obj,0);
+
+  
+   x_shift+=90;
+  BT_SHOW_HRI_TASK_TRAJ_TYPE_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,x+x_shift,y+y_shift,50,20,"Selected Task");
+	//fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
+	fl_set_call_back(BT_SHOW_HRI_TASK_TRAJ_TYPE_OBJ,CB_select_show_hri_task_traj_type_obj,1);
+
+  
+   x_shift+=90;
+  BT_SHOW_HRI_TASK_TRAJ_TYPE_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,x+x_shift,y+y_shift,50,20,"Selected Sub Task");
+	//fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
+	fl_set_call_back(BT_SHOW_HRI_TASK_TRAJ_TYPE_OBJ,CB_select_show_hri_task_traj_type_obj,2);
+
+  fl_end_group();
+ 
+}
+
 /************************/
 /* Option form creation */
 /************************/
@@ -1939,10 +2108,10 @@ void g3d_create_HRI_affordance_form(void)
    ////#ifdef HUMAN2_EXISTS_FOR_MA
    /////HRI_AFFORDANCE_FORM = fl_bgn_form(FL_UP_BOX,1000.0,700.0);
    /////#else
-  HRI_AFFORDANCE_FORM = fl_bgn_form(FL_UP_BOX,600.0,700.0);
+  HRI_AFFORDANCE_FORM = fl_bgn_form(FL_UP_BOX,800.0,700.0);
   ///// #endif
   #else
-  HRI_AFFORDANCE_FORM = fl_bgn_form(FL_UP_BOX,600.0,100.0);
+  HRI_AFFORDANCE_FORM = fl_bgn_form(FL_UP_BOX,800.0,100.0);
   #endif
 
   g3d_create_show_visible_place_agents_obj();
@@ -2015,6 +2184,8 @@ void g3d_create_HRI_affordance_form(void)
    g3d_create_use_object_dimension_for_candidate_pts();
 
    g3d_create_Mightability_Maps_Set_operations_group();
+
+   g3d_create_hri_task_plan_list_group();
 // // // //    g3d_create_show_current_how_to_placements_candidates_obj();
 // // // //    g3d_create_show_all_how_to_placements_obj();
 // // // //    g3d_create_show_current_hand_only_grasps_obj();

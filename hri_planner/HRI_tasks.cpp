@@ -75,7 +75,16 @@ extern double mini_visibility_threshold_for_task[MAXI_NUM_OF_HRI_TASKS];
 extern double maxi_visibility_threshold_for_task[MAXI_NUM_OF_HRI_TASKS];
 
 ////action_performance_node curret_task;
+std::vector<HRI_task_node> HRI_task_list;
+std::map<int,std::string > HRI_task_NAME_ID_map;
+std::map<int,std::string > HRI_sub_task_NAME_ID_map;
+std::map<std::string, int > HRI_task_plan_DESC_ID_map;
+world_state_configs final_configs_after_a_task;
 
+int CURRENT_HRI_TASK_PLAN_ID_TO_SHOW;
+int INDEX_CURRENT_HRI_TASK_SUB_PLAN_TO_SHOW;
+int SHOW_HRI_TASK_TRAJ_TYPE;
+int SHOW_HRI_PLAN_TYPE;
 
 //TODO : Put in HRI_tasks_Proto.h
 int get_placements_in_3D(char *obj_to_manipulate,  std::list<gpPlacement> &placementListOut);
@@ -259,10 +268,16 @@ int store_initial_world_state_for_action(action_performance_node curret_task, st
 }
 */
 
-int find_current_HRI_manip_task_solution()
+int find_current_HRI_manip_task_solution(HRI_task_desc curr_task, traj_for_HRI_task &res_traj)
 {
 
+CURRENT_HRI_MANIPULATION_TASK=curr_task.task_type;
+CURRENT_TASK_PERFORMED_BY=curr_task.by_agent;
+CURRENT_TASK_PERFORMED_FOR=curr_task.for_agent;
+strcpy(CURRENT_OBJECT_TO_MANIPULATE,curr_task.for_object.c_str());
+
 printf("<<<< CURRENT_HRI_MANIPULATION_TASK=%d for object = %s, TASK_PERFORMED_BY=%d, TASK_PERFORMED_FOR=%d\n",CURRENT_HRI_MANIPULATION_TASK, CURRENT_OBJECT_TO_MANIPULATE, CURRENT_TASK_PERFORMED_BY, CURRENT_TASK_PERFORMED_FOR);
+
 
 switch(CURRENT_TASK_PERFORMED_BY)
  {
@@ -318,12 +333,15 @@ case HIDE_OBJECT:
   p3d_rob* object= ( p3d_rob* ) p3d_get_robot_by_name ( ( char* ) CURRENT_OBJECT_TO_MANIPULATE );
   gpCompute_stable_placements (object, curr_placementList ); //this will give just based on the object and infinite plane the different ways an object can be put onto the place with different faces touching the plane. It will not give different orientation of the object along the vertical axis
 
+  ////remove_hide_places_based_due_to_object(( char* ) CURRENT_OBJECT_TO_MANIPULATE);
   }
  break;
  
  }
 
- JIDO_perform_task ( CURRENT_OBJECT_TO_MANIPULATE, CURRENT_HRI_MANIPULATION_TASK, CURRENT_TASK_PERFORMED_BY, CURRENT_TASK_PERFORMED_FOR, curr_resultant_candidate_points, candidate_grasps_for_task, curr_placementList );
+ res_traj.task_type=CURRENT_HRI_MANIPULATION_TASK;
+
+ int validate_task_result=JIDO_perform_task ( CURRENT_OBJECT_TO_MANIPULATE, CURRENT_HRI_MANIPULATION_TASK, CURRENT_TASK_PERFORMED_BY, CURRENT_TASK_PERFORMED_FOR, curr_resultant_candidate_points, candidate_grasps_for_task, curr_placementList,  res_traj);
 
 
 
@@ -370,7 +388,7 @@ case HIDE_OBJECT:
   SHOW_MIGHTABILITY_MAP_INFO=1;   
   
   
-
+ return validate_task_result;
 }
 
 
@@ -953,10 +971,18 @@ double get_wrist_head_alignment_angle(p3d_matrix4 wristFrame, p3d_matrix4 headFr
   return angle;
 }
 
+static int traj_play = TRUE;
+
+static int 
+default_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp)
+{
+  g3d_draw_allwin_active();
+  fl_check_forms();
+  return(traj_play);
+}
 
 
-
-int JIDO_perform_task ( char *obj_to_manipulate, HRI_TASK_TYPE task, HRI_TASK_AGENT by_agent, HRI_TASK_AGENT for_agent, candidate_poins_for_task *curr_candidate_points, std::list<gpGrasp> graspList, std::list<gpPlacement> placementList)
+int JIDO_perform_task ( char *obj_to_manipulate, HRI_TASK_TYPE task, HRI_TASK_AGENT by_agent, HRI_TASK_AGENT for_agent, candidate_poins_for_task *curr_candidate_points, std::list<gpGrasp> graspList, std::list<gpPlacement> placementList, traj_for_HRI_task &res_trajs)
 {
   float clock0, elapsedTime;
    int obj_index=get_index_of_robot_by_name ( obj_to_manipulate );
@@ -1024,17 +1050,20 @@ if(PLAN_IN_CARTESIAN == 1)
    bool quit= false;
    p3d_traj *traj = NULL;
    std::vector <p3d_traj*> trajs;
+   std::vector <p3d_traj*> take_trajs;
    std::vector <p3d_traj*> place_trajs;
    double visibility, confCost;
 
    p3d_get_freeflyer_pose ( object, Tplacement0 );
    p3d_get_freeflyer_pose2 ( object, &x, &y, &z, &rx, &ry, &rz );
 
+   traj_for_HRI_sub_task traj_sub_task;
 
    p3d_matrix4 handFrame, tAtt, Tobject;
-   configPt refConf= NULL, approachConf= NULL, graspConf= NULL, openConf= NULL, liftConf= NULL, placeConf= NULL;
+   configPt refConf= NULL, approachConf= NULL, graspConf= NULL, openConf= NULL, liftConf= NULL, placeConf= NULL, obj_refConf=NULL;
  
    refConf= p3d_get_robot_config ( manipulation->robot() );
+   obj_refConf= p3d_get_robot_config ( object );
 
 
    ( *manipulation->robot()->armManipulationData ) [armID].setManipState ( handFree ) ;
@@ -1120,7 +1149,7 @@ if(PLAN_IN_CARTESIAN == 1)
                    p3d_multiLocalPath_disable_all_groupToPlan ( manipulation->robot() );
                    p3d_multiLocalPath_set_groupToPlan ( manipulation->robot(), manipulation->getUpBodyMLP(), 1 );
 
-                  status= manipulation->armPickGoto ( armID, refConf, object, graspConf, openConf,  approachConf, trajs );
+                  status= manipulation->armPickGoto ( armID, refConf, object, graspConf, openConf,  approachConf, take_trajs );
 
 //                   p3d_destroy_config( manipulation->robot(), graspConf );
                   p3d_destroy_config( manipulation->robot(), approachConf );
@@ -1130,11 +1159,15 @@ if(PLAN_IN_CARTESIAN == 1)
                   if ( status==MANIPULATION_TASK_OK )
                   {
                      printf ( " Found for grasp_ctr=%d, and IK %d \n",grasp_ctr,i );
-                     manipulation->concatTrajectories ( trajs, &traj );
+
+                    
+
+/* Following is commented because no need to concatanate trajs segments and compute soft motion at this stage
+                     manipulation->concatTrajectories ( take_trajs, &traj );
                      MANPIPULATION_TRAJECTORY_CONF_STR conf;
                      SM_TRAJ smTraj_to_pick;
                      manipulation->computeSoftMotion ( traj, conf, smTraj_to_pick );
-
+*/
                      //g3d_is_object_visible_from_viewpoint ( HRI_AGENTS_FOR_MA[HUMAN1_MA]->perspective->camjoint->abs_pos, HRI_AGENTS_FOR_MA[HUMAN1_MA]->perspective->fov, object, &visibility, 1 );
                      //printf ( " visibility=%lf\n",visibility );
 
@@ -1272,7 +1305,7 @@ if(PLAN_IN_CARTESIAN == 1)
                                 g3d_draw_allwin_active();
 
                                 
-                                g3d_is_object_visible_from_viewpoint ( HRI_AGENTS_FOR_MA[for_agent]->perspective->camjoint->abs_pos, HRI_AGENTS_FOR_MA[for_agent]->perspective->fov, object, &visibility, 1 );
+                                g3d_is_object_visible_from_viewpoint ( HRI_AGENTS_FOR_MA[for_agent]->perspective->camjoint->abs_pos, HRI_AGENTS_FOR_MA[for_agent]->perspective->fov, object, &visibility, 0 );
 
                                 printf ( " mini_visibility_threshold_for_task[task]= %lf, maxi_visibility_threshold_for_task[task]=%lf, visibility=%lf\n",mini_visibility_threshold_for_task[task], maxi_visibility_threshold_for_task[task],visibility );
 
@@ -1353,19 +1386,65 @@ if(PLAN_IN_CARTESIAN == 1)
                                   if ( place_status==MANIPULATION_TASK_OK )
                                   {
                                   printf ( " Found for grasp_ctr=%d, and plac_ctr %d \n",grasp_ctr,plac_ctr );
-                                 manipulation->concatTrajectories ( place_trajs, &traj );
+/*
+                                  manipulation->robot()->tcur=place_trajs[0];
+
+                                  g3d_show_tcur_rob(manipulation->robot(),default_drawtraj_fct);
+
+                                  manipulation->robot()->tcur=place_trajs[1];
+
+                                  g3d_show_tcur_rob(manipulation->robot(),default_drawtraj_fct);
+*/
+                                  traj_sub_task.armID=armID;
+                                  traj_sub_task.sub_task_type=REACH_TO_TAKE;
+                                  traj_sub_task.traj=take_trajs[0];
+                                  res_trajs.sub_task_traj.push_back(traj_sub_task);
+
+
+                                  traj_sub_task.armID=armID;
+                                  traj_sub_task.sub_task_type=REACH_TO_GRASP;
+                                  traj_sub_task.traj=take_trajs[1];
+                                  res_trajs.sub_task_traj.push_back(traj_sub_task);
+
+
+                                  traj_sub_task.armID=armID;
+                                  traj_sub_task.sub_task_type=GRASP;
+                                  traj_sub_task.traj=take_trajs[2];
+                                  res_trajs.sub_task_traj.push_back(traj_sub_task);
+
+
+                                  traj_sub_task.armID=armID;
+                                  traj_sub_task.sub_task_type=LIFT_OBJECT;
+                                  traj_sub_task.traj=place_trajs[0];
+                                  res_trajs.sub_task_traj.push_back(traj_sub_task);
+
+
+                                  traj_sub_task.armID=armID;
+                                  traj_sub_task.sub_task_type=CARRY_OBJECT;
+                                  traj_sub_task.traj=place_trajs[1];
+                                  res_trajs.sub_task_traj.push_back(traj_sub_task);
+
+/* Below is commented because no need to concatinate traj now and no need to generate soft motion
+ 
+                                  manipulation->concatTrajectories ( place_trajs, &traj );
                                   MANPIPULATION_TRAJECTORY_CONF_STR conf;
                                   SM_TRAJ smTraj_to_place;
                                   manipulation->computeSoftMotion ( traj, conf, smTraj_to_place );
 //                                   ManipulationUtils::copyConfigToFORM ( manipulation->robot(), placeConf ); //If want to store the config for visualization
+*/
                                   p3d_set_freeflyer_pose ( object, Tplacement0); 
                                   gpDeactivate_object_fingertips_collisions( manipulation->robot(), object->joints[1]->o, armHandProp, armID);
                                    elapsedTime= ( clock()-clock0 ) /CLOCKS_PER_SEC;
                                    printf("Computation time: %2.1fs= %dmin%ds\n",elapsedTime, ( int ) ( elapsedTime/60.0 ), ( int ) ( elapsedTime - 60* ( ( int ) ( elapsedTime/60.0 ) ) ) );
-                                    
+                                     manipulation->robot()->isCarryingObject = FALSE;
                                    p3d_set_and_update_this_robot_conf ( manipulation->robot(), refConf );
+                                   p3d_set_and_update_this_robot_conf ( object, obj_refConf );
                                    manipulation->setSafetyDistanceValue ( orig_safety_dist );
-                                  return 1;
+
+                                    p3d_destroy_config ( manipulation->robot(), refConf );
+                                    p3d_destroy_config ( manipulation->robot(), obj_refConf );
+                                    p3d_destroy_config ( manipulation->robot(), qcur );
+                                   return 1;
                                   }////else {printf ( " no path found for place \n"); return 1;}
                                ////}
 
@@ -1550,13 +1629,14 @@ if(PLAN_IN_CARTESIAN == 1)
 
       result= 0;*/
    }
-
+   result= 0;
    p3d_destroy_config ( manipulation->robot(), refConf );
+   p3d_destroy_config ( manipulation->robot(), obj_refConf );
    p3d_destroy_config ( manipulation->robot(), qcur );
    p3d_set_freeflyer_pose ( object, Tplacement0 );
 
 //WARNING: TMP for Videos, Comment the line below
-   p3d_col_deactivate_robot ( object );
+   //////////p3d_col_deactivate_robot ( object );
 
 // g3d_win *win= NULL;
 //  win= g3d_get_win_by_name((char *)"Move3D");
@@ -3576,4 +3656,388 @@ int get_ranking_based_on_view_point(p3d_matrix4 view_frame,point_co_ordi point,p
   p3d_set_freeflyer_pose(object, Tcur);
 ////////exit(0);
   return 0;
+}
+
+////// related to execution of a sequence of tasks //////
+int show_desired_HRI_task_plan()
+{
+ if(SHOW_HRI_TASK_TRAJ_TYPE==0)//Show complete plan
+ {
+  show_world_state_of_entire_plan(HRI_task_list, SHOW_HRI_PLAN_TYPE);
+  return 1;
+ }
+ 
+ if(SHOW_HRI_TASK_TRAJ_TYPE==1)//Show plan for selected task
+ {
+  for(int i=0;i<HRI_task_list.size();i++)
+  {
+  if(HRI_task_list[i].task_plan_id==CURRENT_HRI_TASK_PLAN_ID_TO_SHOW)
+   {
+   show_traj_for_this_HRI_task(HRI_task_list[i], SHOW_HRI_PLAN_TYPE);
+   return 1;
+   }
+  }
+ }
+ 
+ if(SHOW_HRI_TASK_TRAJ_TYPE==2)//Show plan for selected sub task of selected task
+ {
+  for(int i=0;i<HRI_task_list.size();i++)
+  {
+  if(HRI_task_list[i].task_plan_id==CURRENT_HRI_TASK_PLAN_ID_TO_SHOW)
+   {
+   show_plan_for_this_sub_task(HRI_task_list[i], HRI_task_list[i].traj.sub_task_traj[INDEX_CURRENT_HRI_TASK_SUB_PLAN_TO_SHOW], INDEX_CURRENT_HRI_TASK_SUB_PLAN_TO_SHOW, SHOW_HRI_PLAN_TYPE);
+   
+   return 1;
+   }
+  }
+  
+ } 
+ 
+// SHOW_HRI_PLAN_TYPE
+// INDEX_CURRENT_HRI_TASK_SUB_PLAN_TO_SHOW
+// CURRENT_HRI_TASK_PLAN_ID_TO_SHOW
+//  SHOW_HRI_TASK_TRAJ_TYPE
+}
+
+int show_traj_for_this_HRI_task(HRI_task_node &for_task, int show_traj)
+{
+ for(int j=0;j<envPt_MM->nr;j++)
+   {
+   ////printf(" Restoring robot %s \n",envPt_MM->robot[i]->name);
+   p3d_set_and_update_this_robot_conf(envPt_MM->robot[j],for_task.before_task.robot_config[j]);
+   
+   }
+g3d_draw_allwin_active();
+for(int i=0;i<for_task.traj.sub_task_traj.size();i++)
+  {
+
+ 
+
+  if(show_traj==1)
+   {
+  envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]]->tcur=for_task.traj.sub_task_traj[i].traj;
+
+  printf(" Sub traj type=%d\n",for_task.traj.sub_task_traj[i].sub_task_type);
+
+  if(for_task.traj.sub_task_traj[i].sub_task_type==LIFT_OBJECT||for_task.traj.sub_task_traj[i].sub_task_type==CARRY_OBJECT||for_task.traj.sub_task_traj[i].sub_task_type==PUT_DOWN_OBJECT)
+    {
+    envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]]->isCarryingObject = TRUE;
+    }
+
+  
+  g3d_show_tcur_rob(envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]],default_drawtraj_fct);
+ 
+
+    if(for_task.traj.sub_task_traj[i].sub_task_type==LIFT_OBJECT||for_task.traj.sub_task_traj[i].sub_task_type==CARRY_OBJECT||for_task.traj.sub_task_traj[i].sub_task_type==PUT_DOWN_OBJECT)
+    {
+    envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]]->isCarryingObject = FALSE;
+    }
+   }
+
+   for(int j=0;j<envPt_MM->nr;j++)
+   {
+   ////printf(" Restoring robot %s \n",envPt_MM->robot[i]->name);
+   
+  p3d_set_and_update_this_robot_conf(envPt_MM->robot[j],for_task.traj.sub_task_traj[i].config_after_sub_task.robot_config[j]);
+  
+   }
+  g3d_draw_allwin_active();
+  }
+
+ for(int j=0;j<envPt_MM->nr;j++)
+   {
+   ////printf(" Restoring robot %s \n",envPt_MM->robot[i]->name);
+   p3d_set_and_update_this_robot_conf(envPt_MM->robot[j],for_task.after_task.robot_config[j]);
+   
+   }
+g3d_draw_allwin_active();
+return 1;
+}
+
+int show_traj_for_this_HRI_sub_task(HRI_task_node &for_task,traj_for_HRI_sub_task &sub_task_traj)
+{
+  envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]]->tcur=sub_task_traj.traj;
+
+  if(sub_task_traj.sub_task_type==LIFT_OBJECT||sub_task_traj.sub_task_type==CARRY_OBJECT||sub_task_traj.sub_task_type==PUT_DOWN_OBJECT)
+   {
+     p3d_set_object_to_carry_to_arm(envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]], sub_task_traj.armID, for_task.hri_task.for_object.c_str());
+     printf(" setting object to carry %s \n",for_task.hri_task.for_object.c_str());
+     envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]]->isCarryingObject = TRUE;
+   }
+  
+  
+  g3d_show_tcur_rob(envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]],default_drawtraj_fct);
+
+  if(sub_task_traj.sub_task_type==LIFT_OBJECT||sub_task_traj.sub_task_type==CARRY_OBJECT||sub_task_traj.sub_task_type==PUT_DOWN_OBJECT)
+   {
+    envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]]->isCarryingObject = FALSE;
+   }
+ 
+}
+
+int free_final_configs_stored()
+{
+ for(int i=envPt_MM->nr-1;i>=0;i--)
+  {
+   if(final_configs_after_a_task.robot_config[i]!=NULL)
+   {
+    MY_FREE(final_configs_after_a_task.robot_config[i], double, envPt_MM->robot[i]->nb_dof);
+
+   }
+   final_configs_after_a_task.robot_config.pop_back();
+  }
+  
+}
+
+//It will modify the envPt_MM->robots to refect the world state as it would be after executing the sub task 
+int get_final_configs_for_this_HRI_sub_task_traj(HRI_task_node &for_task, traj_for_HRI_sub_task &sub_task_traj )
+{
+////for(int i=0;i<for_task.traj.sub_task_traj.size();i++)
+ //// {
+ 
+  envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]]->tcur=sub_task_traj.traj;//for_task.traj.sub_task_traj[i].traj;
+
+  printf(" Sub traj type=%d\n",sub_task_traj.sub_task_type);
+
+  p3d_localpath* lp = NULL;
+  for(lp=sub_task_traj.traj->courbePt;lp->next_lp;lp=lp->next_lp)
+  {//Go to the last lp of the trajectory
+  }
+  
+
+//   if(sub_task_traj.sub_task_type==LIFT_OBJECT||sub_task_traj.sub_task_type==CARRY_OBJECT||sub_task_traj.sub_task_type==PUT_DOWN_OBJECT)
+//    {}
+    if(lp->isCarryingObject)
+    {
+      p3d_set_object_to_carry_to_arm(envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]], sub_task_traj.armID, lp->carriedObject[sub_task_traj.armID]->name);
+    }
+
+    final_configs_after_a_task.robot_config.resize(envPt_MM->nr);
+
+    final_configs_after_a_task.robot_config[indices_of_MA_agents[for_task.hri_task.by_agent]]= p3d_config_at_param_along_traj(sub_task_traj.traj,sub_task_traj.traj->range_param);
+    
+    p3d_set_and_update_this_robot_conf(envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]],final_configs_after_a_task.robot_config[indices_of_MA_agents[for_task.hri_task.by_agent]]);
+    ////if(envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]]->isCarryingObject == TRUE)
+    if(lp->isCarryingObject)
+    {
+      p3d_matrix4 objPos;
+     ArmManipulationData& mData = (*envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]]->armManipulationData)[sub_task_traj.armID];
+     p3d_mat4Copy(mData.getManipulationJnt()->abs_pos , objPos);
+     p3d_set_freeflyer_pose ( envPt_MM->robot[get_index_of_robot_by_name((char*)for_task.hri_task.for_object.c_str())], objPos );
+     envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]]->isCarryingObject = false;
+     //final_configs_after_a_task.robot_config[get_index_of_robot_by_name(for_task.for_object.c_str())]=
+    }
+    ////p3d_set_and_update_this_robot_conf(envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]],final_configs_after_a_task.robot_config[indices_of_MA_agents[for_task.hri_task.by_agent]]);
+    
+  /////g3d_show_tcur_rob(envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]],default_drawtraj_fct);
+
+  //if(sub_task_traj.sub_task_type==LIFT_OBJECT||sub_task_traj.sub_task_type==CARRY_OBJECT||sub_task_traj.sub_task_type==PUT_DOWN_OBJECT)
+   //{
+   // envPt_MM->robot[indices_of_MA_agents[for_task.hri_task.by_agent]]->isCarryingObject = FALSE;
+   //}
+  
+}
+ 
+int validate_HRI_task(HRI_task_desc curr_task, int task_plan_id)
+{
+ HRI_task_node curr_task_to_validate;
+ curr_task_to_validate.task_plan_id=task_plan_id;
+ curr_task_to_validate.hri_task.task_type=curr_task.task_type;
+ curr_task_to_validate.hri_task.for_object=curr_task.for_object;
+ printf(">>> Inside validate_HRI_task(), curr_task_to_validate.hri_task.for_object =%s curr_task.for_object = %s\n",curr_task_to_validate.hri_task.for_object.c_str(), curr_task.for_object.c_str());
+ curr_task_to_validate.hri_task.by_agent=curr_task.by_agent;
+ curr_task_to_validate.hri_task.for_agent=curr_task.for_agent;
+
+ configPt tmp_config;
+
+ for(int i=0;i<envPt_MM->nr;i++)
+  {
+  tmp_config=MY_ALLOC(double,envPt_MM->robot[i]->nb_dof);
+  p3d_get_robot_config_into(envPt_MM->robot[i],&tmp_config);
+  
+  curr_task_to_validate.before_task.robot_config.push_back(tmp_config);
+  ////MY_FREE(tmp_config,double,envPt_MM->robot[i]->nb_dof);//DONOT FREE it because configs are stored 
+  }
+
+  ////traj_for_HRI_task res_trajs;
+  
+  if(find_current_HRI_manip_task_solution(curr_task, curr_task_to_validate.traj)==0)
+  {
+   printf(" Fail to validate current task \n");
+   return 0;
+  }
+  
+  ////curr_task_to_validate.traj=res_trajs;
+
+  printf(" Num of sub task traj for the current task = %d \n", curr_task_to_validate.traj.sub_task_traj.size());
+
+  //To get the world state if the task will be executed
+  // p3d_config_at_param_along_traj(..,..);
+  int show_traj=0;
+  if(show_traj==1)
+  {
+   show_traj_for_this_HRI_task(curr_task_to_validate, show_traj);
+  }
+  
+  ////p3d_config_at_param_along_traj(curr_task_to_validate.traj.sub_task_traj.[curr_task_to_validate.traj.sub_task_traj.size()-1]
+  for(int i=0;i<curr_task_to_validate.traj.sub_task_traj.size();i++)
+  {
+  ////get_final_configs_for_this_HRI_sub_task_traj(curr_task_to_validate, curr_task_to_validate.traj.sub_task_traj[curr_task_to_validate.traj.sub_task_traj.size()-1]);
+  get_final_configs_for_this_HRI_sub_task_traj(curr_task_to_validate, curr_task_to_validate.traj.sub_task_traj[i]);
+  for(int j=0;j<envPt_MM->nr;j++)
+   {
+  
+  tmp_config=MY_ALLOC(double,envPt_MM->robot[j]->nb_dof);
+  p3d_get_robot_config_into(envPt_MM->robot[j],&tmp_config);
+  
+  curr_task_to_validate.traj.sub_task_traj[i].config_after_sub_task.robot_config.push_back(tmp_config);
+  ////MY_FREE(tmp_config,double,envPt_MM->robot[i]->nb_dof);//DONOT FREE it because configs are stored 
+   }
+  free_final_configs_stored();
+  }
+                                  
+  //Store the last sub task final traj as the final traj of the task itself
+  for(int i=0;i<envPt_MM->nr;i++)
+  {
+  
+  tmp_config=MY_ALLOC(double,envPt_MM->robot[i]->nb_dof);
+  p3d_get_robot_config_into(envPt_MM->robot[i],&tmp_config);
+  
+  curr_task_to_validate.after_task.robot_config.push_back(tmp_config);
+  ////MY_FREE(tmp_config,double,envPt_MM->robot[i]->nb_dof);//DONOT FREE it because configs are stored 
+  }
+
+  HRI_task_list.push_back(curr_task_to_validate);
+
+  char task_plan_id_str[20];
+  std::string task_plan_desc;
+  sprintf (task_plan_id_str, "%d_",curr_task_to_validate.task_plan_id);
+  task_plan_desc=task_plan_id_str;
+  task_plan_desc+=envPt_MM->robot[indices_of_MA_agents[curr_task_to_validate.hri_task.by_agent]]->name;
+  task_plan_desc+='_';
+  task_plan_desc+=HRI_task_NAME_ID_map.find(curr_task_to_validate.hri_task.task_type)->second;
+  task_plan_desc+='_';
+  ////printf("task_plan_desc before adding obj name = %s \n",task_plan_desc.c_str());
+ //// printf(" curr_task.for_object.c_str() = %s\n", curr_task.for_object.c_str());
+  task_plan_desc+=curr_task_to_validate.hri_task.for_object.c_str();
+ ////  printf("task_plan_desc after adding obj name = %s \n",task_plan_desc.c_str());
+  task_plan_desc+='_';
+  task_plan_desc+=envPt_MM->robot[indices_of_MA_agents[curr_task_to_validate.hri_task.for_agent]]->name;
+  
+  HRI_task_plan_DESC_ID_map[task_plan_desc]=curr_task_to_validate.task_plan_id;
+  printf(" Inserted into HRI_task_plan_DESC_ID_map key= %s and task_plan_id = %d\n",task_plan_desc.c_str(), curr_task_to_validate.task_plan_id);
+  ////show_traj_for_this_HRI_task(curr_task_to_validate[0]);
+  printf(" Restoring the actual environment before this task. \n");
+  for(int i=0;i<envPt_MM->nr;i++)
+  {
+   ////printf(" Restoring robot %s \n",envPt_MM->robot[i]->name);
+   p3d_set_and_update_this_robot_conf(envPt_MM->robot[i],HRI_task_list[HRI_task_list.size()-1].before_task.robot_config[i]);
+   
+  }
+
+ ////free_final_configs_stored();
+ g3d_draw_allwin_active();
+ printf(" returning form validate_HRI_task()\n");
+  ////robots_status_for_Mightability_Maps[r_ctr].has_moved
+  
+}
+
+int show_world_state_of_entire_plan(std::vector<HRI_task_node> &hri_task_list, int exec_path_configs)
+{
+ for(int i=0;i<hri_task_list.size();i++)
+ {
+   for(int j=0;j<envPt_MM->nr;j++)
+  {
+   ////printf(" Restoring robot %s \n",envPt_MM->robot[i]->name);
+   p3d_set_and_update_this_robot_conf(envPt_MM->robot[j],hri_task_list[i].before_task.robot_config[j]);
+   
+  }
+  g3d_draw_allwin_active();
+  fl_check_forms();
+  
+  for(int k=0;k<hri_task_list[i].traj.sub_task_traj.size();k++)
+  {
+ 
+  
+   if(exec_path_configs==1)
+    {
+    show_traj_for_this_HRI_sub_task(hri_task_list[i],hri_task_list[i].traj.sub_task_traj[k]);
+    }
+
+   for(int j=0;j<envPt_MM->nr;j++)
+   {
+   ////printf(" Restoring robot %s \n",envPt_MM->robot[i]->name);
+   
+  p3d_set_and_update_this_robot_conf(envPt_MM->robot[j],hri_task_list[i].traj.sub_task_traj[k].config_after_sub_task.robot_config[j]);
+
+   }
+
+  g3d_draw_allwin_active();
+  fl_check_forms();
+  
+//  printf(" Sub traj type=%d\n",for_task.traj.sub_task_traj[i].sub_task_type);
+  }
+
+ 
+  
+  for(int j=0;j<envPt_MM->nr;j++)
+  {
+   ////printf(" Restoring robot %s \n",envPt_MM->robot[i]->name);
+   p3d_set_and_update_this_robot_conf(envPt_MM->robot[j],hri_task_list[i].after_task.robot_config[j]);
+   
+  }
+g3d_draw_allwin_active();
+  fl_check_forms();
+ }
+
+}
+
+int show_plan_for_this_sub_task(HRI_task_node &for_task, traj_for_HRI_sub_task &sub_task_traj, int sub_task_index, int show_traj)
+{
+  if(sub_task_index==0)
+  {
+  
+  for(int j=0;j<envPt_MM->nr;j++)
+   {
+   ////printf(" Restoring robot %s \n",envPt_MM->robot[i]->name);
+   p3d_set_and_update_this_robot_conf(envPt_MM->robot[j],for_task.before_task.robot_config[j]);
+   
+   }
+  }
+  if(sub_task_index>0)
+  {
+   for(int j=0;j<envPt_MM->nr;j++)
+   {
+   ////printf(" Restoring robot %s \n",envPt_MM->robot[i]->name);
+   
+  p3d_set_and_update_this_robot_conf(envPt_MM->robot[j],for_task.traj.sub_task_traj[sub_task_index-1].config_after_sub_task.robot_config[j]);
+
+   }
+  }
+
+  g3d_draw_allwin_active();
+  fl_check_forms();
+  
+   if(show_traj==1)
+    {
+    show_traj_for_this_HRI_sub_task(for_task,sub_task_traj);
+    }
+
+   for(int j=0;j<envPt_MM->nr;j++)
+   {
+   ////printf(" Restoring robot %s \n",envPt_MM->robot[i]->name);
+   
+  p3d_set_and_update_this_robot_conf(envPt_MM->robot[j],sub_task_traj.config_after_sub_task.robot_config[j]);
+
+   }
+
+  g3d_draw_allwin_active();
+  fl_check_forms();
+  
+//  printf(" Sub traj type=%d\n",for_task.traj.sub_task_traj[i].sub_task_type);
+  
+
+ 
+ 
+
 }

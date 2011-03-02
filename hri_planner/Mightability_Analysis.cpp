@@ -222,7 +222,7 @@ int USE_RESULTANT_MIGHTABILITY_SET=0;
 int resultant_MM_after_set_operation[100][100][100];//To store 1 as a valid resultant cell after the set operation. The indices should be synchronized with the indices of the corresponding bitmap set
 
 int SHOW_CURRENT_TASK_CANDIDATE_POINTS=0;
-char CURRENT_OBJECT_TO_MANIPULATE[50]="CUPHANDLE";//"WOODEN_OBJECT";//"GREY_TAPE";//"YELLOW_BOTTLE";//"HORSE";//"SMALL_YELLOW_BOTTLE";//"HORSE";
+char CURRENT_OBJECT_TO_MANIPULATE[50]="PAPERDOG";//"CUPHANDLE";//"WOODEN_OBJECT";//"GREY_TAPE";//"YELLOW_BOTTLE";//"HORSE";//"SMALL_YELLOW_BOTTLE";//"HORSE";
 
 //HRI_AGENT * primary_human_MM;
 //HRI_AGENT * human2_MM;
@@ -249,6 +249,11 @@ p3d_vector3 points_on_FOV_screen[4000]; //To store all the points on the screen
 int no_points_on_FOV_screen=0;
 
 std::list<gpTriangle> global_htris;
+////std::vector<std::pair<int,std::string> > HRI_task_NAME_ID_pair;
+////std::vector<std::pair<int,std::string> > HRI_sub_task_NAME_ID_pair;
+extern std::map<int,std::string > HRI_task_NAME_ID_map;
+extern std::map<int,std::string > HRI_sub_task_NAME_ID_map;
+
 
 //TODO Put into proto file
 int get_current_FOV_vertices(HRI_AGENT *agent);
@@ -263,7 +268,8 @@ int get_horizontal_surfaces();
 int update_horizontal_surfaces();
 int show_Mightability_Maps();
 int show_Object_Oriented_Mightabilities();
-
+int test_inside(p3d_rob *container, p3d_rob *object);
+int voronoi(p3d_rob *container, p3d_rob *object);
 
 // agent_state_task_constraint accepted_states_for_HRP2[MAXI_NUM_OF_HRI_TASKS]; 
 // agent_state_task_constraint accepted_states_for_HUMAN1[MAXI_NUM_OF_HRI_TASKS]; 
@@ -304,14 +310,13 @@ int SHOW_MIGHTABILITY_MAPS_FOR_AGENTS_ON_TABLE[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
 double mini_visibility_threshold_for_task[MAXI_NUM_OF_HRI_TASKS];
 double maxi_visibility_threshold_for_task[MAXI_NUM_OF_HRI_TASKS];
 
-int test_inside(p3d_rob *container, p3d_rob *object);
-int voronoi(p3d_rob *container, p3d_rob *object);
+
 //================================
 
 int execute_Mightability_Map_functions()
 {
    
-test_inside(( p3d_rob* ) p3d_get_robot_by_name ( "TRASHBIN" ), ( p3d_rob* ) p3d_get_robot_by_name ( "GREY_TAPE" ));
+////test_inside(( p3d_rob* ) p3d_get_robot_by_name ( "TRASHBIN" ), ( p3d_rob* ) p3d_get_robot_by_name ( "GREY_TAPE" ));
 
   if(Affordances_Found==1)
     {
@@ -362,7 +367,8 @@ test_inside(( p3d_rob* ) p3d_get_robot_by_name ( "TRASHBIN" ), ( p3d_rob* ) p3d_
 
 	  get_object_mightabilities();
 	  ////printf(" **** After Calling get_object_mightabilities() \n");
-
+          //////////show_obstacle_cells_belonging_to(get_index_of_robot_by_name( CURRENT_OBJECT_TO_MANIPULATE ));
+          
 	}
 
       if(SHOW_MIGHTABILITY_MAP_INFO==1)
@@ -821,6 +827,42 @@ int init_Mightability_Analyses_data()
     ///grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.for_agent[HUMAN1].visible[MM_CURRENT_STATE_HUM_VIS]==1)
 		   
   //}
+}
+
+int init_HRI_task_name_ID_map()
+{
+ HRI_task_NAME_ID_map[MAKE_OBJECT_ACCESSIBLE]="MAKE_OBJECT_ACCESSIBLE";
+ HRI_task_NAME_ID_map[SHOW_OBJECT]="SHOW_OBJECT";
+ HRI_task_NAME_ID_map[GIVE_OBJECT]="GIVE_OBJECT";
+ HRI_task_NAME_ID_map[HIDE_OBJECT]="HIDE_OBJECT";
+ HRI_task_NAME_ID_map[PUT_AWAY_OBJECT]="PUT_AWAY_OBJECT";
+ HRI_task_NAME_ID_map[HIDE_AWAY_OBJECT]="HIDE_AWAY_OBJECT";
+ HRI_task_NAME_ID_map[MAKE_SPACE_FREE_OF_OBJECT_OBJ]="MAKE_SPACE_FREE_OF_OBJECT_OBJ";
+ HRI_task_NAME_ID_map[PUT_INTO_OBJECT]="PUT_INTO_OBJECT";
+
+ HRI_sub_task_NAME_ID_map[REACH_TO_TAKE]="REACH_TO_TAKE";
+ HRI_sub_task_NAME_ID_map[REACH_TO_GRASP]="REACH_TO_GRASP";
+ HRI_sub_task_NAME_ID_map[GRASP]="GRASP";
+ HRI_sub_task_NAME_ID_map[LIFT_OBJECT]="LIFT_OBJECT";
+ HRI_sub_task_NAME_ID_map[CARRY_OBJECT]="CARRY_OBJECT";
+ HRI_sub_task_NAME_ID_map[PUT_DOWN_OBJECT]="PUT_DOWN_OBJECT";
+/*
+ HRI_task_NAME_ID_pair.push_back(std::make_pair(MAKE_OBJECT_ACCESSIBLE,"MAKE_OBJECT_ACCESSIBLE"));
+ HRI_task_NAME_ID_pair.push_back(std::make_pair(SHOW_OBJECT,"SHOW_OBJECT"));
+ HRI_task_NAME_ID_pair.push_back(std::make_pair(GIVE_OBJECT,"GIVE_OBJECT"));
+ HRI_task_NAME_ID_pair.push_back(std::make_pair(HIDE_OBJECT,"HIDE_OBJECT"));
+ HRI_task_NAME_ID_pair.push_back(std::make_pair(PUT_AWAY_OBJECT,"PUT_AWAY_OBJECT"));
+ HRI_task_NAME_ID_pair.push_back(std::make_pair(HIDE_AWAY_OBJECT,"HIDE_AWAY_OBJECT"));
+ HRI_task_NAME_ID_pair.push_back(std::make_pair(MAKE_SPACE_FREE_OF_OBJECT_OBJ,"MAKE_SPACE_FREE_OF_OBJECT_OBJ"));
+ HRI_task_NAME_ID_pair.push_back(std::make_pair(PUT_INTO_OBJECT,"PUT_INTO_OBJECT"));
+
+ HRI_sub_task_NAME_ID_pair.push_back(std::make_pair(REACH_TO_TAKE,"REACH_TO_TAKE"));
+ HRI_sub_task_NAME_ID_pair.push_back(std::make_pair(REACH_TO_GRASP,"REACH_TO_GRASP"));
+ HRI_sub_task_NAME_ID_pair.push_back(std::make_pair(GRASP,"GRASP"));
+ HRI_sub_task_NAME_ID_pair.push_back(std::make_pair(LIFT_OBJECT,"LIFT_OBJECT"));
+ HRI_sub_task_NAME_ID_pair.push_back(std::make_pair(CARRY_OBJECT,"CARRY_OBJECT"));
+ HRI_sub_task_NAME_ID_pair.push_back(std::make_pair(PUT_DOWN_OBJECT,"PUT_DOWN_OBJECT"));
+*/
 }
 
 int init_visibility_acceptance_for_tasks()
@@ -4191,6 +4233,7 @@ int Create_and_init_Mightability_Maps()
    get_indices_for_MA_agents();
   assign_indices_of_robots();
   create_agents_for_Mightabilities();
+  init_HRI_task_name_ID_map();
  
   init_visibility_acceptance_for_tasks();
   init_current_vis_state_indices_for_MA_agents();
@@ -13235,15 +13278,49 @@ int update_3D_grid_for_Mightability_Maps(hri_bitmapset * bitmapset, int expansio
 
 int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expansion, int bt_type)
 {
+  if(bitmapset==NULL)
+  {
+   printf(" AKP ERROR : bitmapset=NULL\n");
+   return 0;
+  }
+
+  int x,y,z;
+ hri_bitmap * bitmap;
+
+//Tmp for test commet it
+/*
+      bitmap = bitmapset->bitmap[HRP2_GIK_MANIP];
+int object_index=get_index_of_robot_by_name(CURRENT_OBJECT_TO_MANIPULATE);
+  for(x=0; x<bitmap->nx; x++)
+	{
+	  for(y=0; y<bitmap->ny; y++)
+	    {
+	      for(z=0; z<bitmap->nz; z++)
+		{
+                   if(bitmapset->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[object_index]==1)
+		  ////if(bitmapset->bitmap[HRP2_GIK_MANIP]->data[x][y][z].val < 0)  
+		    {
+                      
+		     printf("  cell (x, y, z) = (%d %d %d) belongs to %s\n",x, y, z,envPt_MM->robot[object_index]->name);
+                     printf("no_of_objects_belogs to this cell=%d\n", grid_around_HRP2.GRID_SET->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[object_index]);
+                                      
+                                     	      
+		    }
+		}
+	    }
+	}  
+*/
+//End tmp for tets
+
   configPt visq;
   configPt cur_rob_pos;
-  hri_bitmap * bitmap;
+ 
   double increment=3.0/4.0*bitmapset->pace;
   visq = p3d_get_robot_config(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY]);
   bitmap = bitmapset->bitmap[bt_type];
-  envPt_MM= (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  ////envPt_MM= (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   
-  int x,y,z;
+
 
   int no = envPt_MM->no;
   int nr = envPt_MM->nr;
@@ -13261,7 +13338,7 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
 	  cur_rob_pos=MY_ALLOC(double,r->nb_dof); 
 	  p3d_get_robot_config_into(r,&cur_rob_pos);
   
-	  ///////////////printf(" Moved Object name = %s \n",r->name);
+	  ////////printf(" Updating obstacle cells for Object = %s \n",r->name);
 	  if(strcasestr(r->name,"visball"))
 	    {
 	      robots_status_for_Mightability_Maps[r_ctr].has_moved=0;
@@ -13281,6 +13358,299 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
   
 	  ////////// printf(" inside update_3D_grid_for_Mightability_Maps_new(), NEED_HUMAN_VISIBILITY_UPDATE=%d\n",NEED_HUMAN_VISIBILITY_UPDATE);
     
+          p3d_col_deactivate_robot(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY]);
+          p3d_col_activate_rob_rob(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY], envPt_MM->robot[r_ctr]);//Only to test the collision between the visball and current object
+
+	  ////**** First making previously occupied cells as free cells  
+	    p3d_set_and_update_this_robot_conf(r, robots_status_for_Mightability_Maps[r_ctr].rob_prev_config);
+	    ////////p3d_col_deactivate_rob_rob(bitmapset->visball,r);//To make a cell occupied only if there is collision of visball with other objects not with robot
+	    int r_o_ctr=0; 
+	    int cell_ctr_tmp=0;
+	    for(r_o_ctr=0;r_o_ctr<r->no;r_o_ctr++)
+	      {
+		o = r->o[r_o_ctr];
+		////printf(" o->name = %s \n",o->name);
+		double BBx;
+		for(BBx=o->BB.xmin;BBx<o->BB.xmax;BBx+=increment)
+		  {
+		    visq[6] = BBx;
+		    x=(BBx- bitmapset->realx)/bitmapset->pace;  
+		    double BBy;
+		    for(BBy=o->BB.ymin;BBy<o->BB.ymax&&x>0&&x<bitmap->nx;BBy+=increment)
+		      {
+			visq[7]  = BBy;
+			y=(BBy- bitmapset->realy)/bitmapset->pace;  
+			double BBz;
+			for(BBz=o->BB.zmin;BBz<o->BB.zmax&&y>0&&y<bitmap->ny;BBz+=increment)
+			  {
+			    visq[8]  = BBz;
+			    z=(BBz - bitmapset->realz)/bitmapset->pace;  
+      
+     
+
+			    if(x>0&&x<bitmap->nx&&y>0&&y<bitmap->ny&&z>0&&z<bitmap->nz)
+			      {
+				////bitmapset->bitmap[bt_type]->data[x][y][z].val = 0;  //no obstacle
+ 
+				/*if(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects==1)
+				  {
+				  printf(" Cell belongs to bottle only\n");
+				  }*/
+
+				////////cell_ctr_tmp++;
+				//////////printf(" cell_ctr=%d: %d, %d\n",cell_ctr_tmp,bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr],bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects);
+				//////////// if(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.is_horizontal_surface==0)//NOT the cell just above the  horizontal surface of table
+				//{
+				  //////////printf(" Not horizontal surface\n");
+				  ////printf(" cell_ctr=%d, %d, %d\n",cell_ctr_tmp,bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr],bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects);
+
+				  ////////////if((bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]==1&&   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects==1&&bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects==0)||(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]==1&&   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects==1&&bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects==0)||(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]==1&&   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects==1&&bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects==1&&bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]==1))
+                                   /*if(r_ctr==get_index_of_robot_by_name(CURRENT_OBJECT_TO_MANIPULATE))
+                                      {
+                                      printf("  cell (x, y, z) = (%d %d %d) ",x, y, z);
+                                      
+                                      printf("no_of_objects_belogs to this cell=%d\n", grid_around_HRP2.GRID_SET->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]);
+                                      } */
+
+				  if(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]==1)
+				    {  
+				      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=0;  
+                                      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects--;
+				      ////bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects--;
+                                      ////printf(" Cell belongs to moved object and no of obj belongs to this cell =%d\n",bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects);
+				      if(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects==0)
+                                      {
+                                           bitmapset->bitmap[bt_type]->data[x][y][z].val = 0;  //no obstacle
+				      }
+				    }//End if the cell belongs to this object
+				 
+				//}//End if NOT the cell just above the  horizontal surface of table
+        
+        
+        
+			
+       
+       
+			      }
+			  }
+		      }
+		  }
+	      }
+   
+	  ////////p3d_col_activate_rob_rob(bitmapset->visball,r);
+	  p3d_set_and_update_this_robot_conf(r, cur_rob_pos);
+	  MY_FREE(cur_rob_pos, double,r->nb_dof); 
+	  ////*****END making the previously occupied cells as free cells  
+
+	    ////*****Now creating exact obstacle at new place of robot
+
+	    ////printf(" r->name = %s ,r->no=%d \n",r->name,r->no);
+	    r_o_ctr=0; 
+	    for(r_o_ctr=0;r_o_ctr<r->no;r_o_ctr++)
+	      {
+		o = r->o[r_o_ctr];
+		////printf(" o->name = %s \n",o->name);
+		double BBx;
+		for(BBx=o->BB.xmin;BBx<o->BB.xmax;BBx+=increment)
+		  {
+		    visq[6] = BBx;
+		    x=(BBx- bitmapset->realx)/bitmapset->pace;  
+		    double BBy;
+		    for(BBy=o->BB.ymin;BBy<o->BB.ymax&&x>0&&x<bitmap->nx;BBy+=increment)
+		      {
+			visq[7]  = BBy;
+			y=(BBy- bitmapset->realy)/bitmapset->pace;  
+			double BBz;
+			for(BBz=o->BB.zmin;BBz<o->BB.zmax&&y>0&&y<bitmap->ny;BBz+=increment)
+			  {
+			    visq[8]  = BBz;
+			    z=(BBz - bitmapset->realz)/bitmapset->pace;  
+      
+     
+
+			    if(x>0&&x<bitmap->nx&&y>0&&y<bitmap->ny&&z>0&&z<bitmap->nz)
+			      {
+				p3d_set_and_update_this_robot_conf(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY], visq);
+				int kcd_with_report=0;
+				int res = p3d_col_test_robot(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],kcd_with_report);
+				if(res>0) ////if(p3d_col_test_robot(bitmapset->visball,FALSE))
+				  {
+				    //////// printf(" Populating ACTUAL obstacle for x, y, z = %d %d %d\n",x, y, z);
+       
+				    bitmapset->bitmap[bt_type]->data[x][y][z].val = -1;  //Exact obstacle
+       
+				    if(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]==0)//the cell does not already belong to this robot index
+				      { 
+					bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=1;
+					bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects++;
+				      }
+				    /////////bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=1;
+				      //else
+				      //{
+				      //bitmapset->bitmap[bt_type]->data[x][y][surf_z].is_horizontal_surface=0;//Does not belong to a horizontal surface of table
+				      // }
+          /*
+				      int i=0; 
+				      for(i=x-expansion;i<=x+expansion;i++)
+					{
+					  //printf(" for i = %d\n",i);
+					  if(i>=0&&i<bitmap->nx)
+					    {
+					      int j=0;
+					      for(j=y-expansion;j<=y+expansion;j++)
+						{
+						  //printf(" for i, j = %d %d\n",i, j);
+						  if(j>=0&&j<bitmap->ny)
+						    {
+						      int k=0;
+						      for(k=z-expansion;k<=z+expansion;k++)
+							{
+							  //printf(" for i, j, k = %d %d %\n",i, j, k);
+							  if(k>=0&&k<bitmap->nz)
+							    {
+                 
+							      // printf(" Populating %d, %d, %d \n",i,j,k);
+							      if(bitmapset->bitmap[bt_type]->data[i][j][k].val == -1) //Already exact obstacle
+								{
+                   
+								  if(bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]==0)//the cell does not already close to this robot index
+								    { 
+								      bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=1;
+								      bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.no_close_to_objects++;
+								    }
+								}
+							      else
+								{
+								  bitmapset->bitmap[bt_type]->data[i][j][k].val = -2;  //Near to the obstacle
+                
+								  if(bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]==0)//the cell does not already close to this robot index
+								    { 
+								      bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=1;
+								      bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.no_close_to_objects++;
+								    }
+								}
+							      bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=1;
+							    }
+							} 
+						    }
+						}
+					    } 
+					} */
+				  }
+				////else
+				////{
+				////printf("Inside BB but no collison\n");
+				////exit(0);
+				////}
+			      }
+			  }   
+		      }
+		  }
+	      }
+	    ////printf(" Setting has moved = 0\n");
+	    robots_status_for_Mightability_Maps[r_ctr].has_moved=0;
+	    ////p3d_set_and_update_this_robot_conf(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config,r->ROBOT_POS);
+	    ////robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[6]=r->ROBOT_POS[6];
+	    ////robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[7]=r->ROBOT_POS[7];
+	    ////robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[8]=r->ROBOT_POS[8];
+	    ////////////////p3d_copy_config_into(r,r->ROBOT_POS, &(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config));
+	    ////////robots_status_for_Mightability_Maps[r_ctr].prev_BB=r->BB;
+             p3d_col_activate_robot(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY]);
+	    p3d_get_robot_config_into ( r,&robots_status_for_Mightability_Maps[r_ctr].rob_prev_config ); 
+	}
+   
+    }
+  
+
+  return 1;
+}
+
+int update_3D_grid_for_Mightability_Maps_new_28_02_2011(hri_bitmapset * bitmapset, int expansion, int bt_type)
+{
+  if(bitmapset==NULL)
+  {
+  
+   printf(" AKP ERROR : bitmapset=NULL\n");
+   return 0;
+  }
+
+  int x,y,z;
+ hri_bitmap * bitmap;
+
+//Tmp for test commet it
+
+      bitmap = bitmapset->bitmap[HRP2_GIK_MANIP];
+int object_index=get_index_of_robot_by_name(CURRENT_OBJECT_TO_MANIPULATE);
+  for(x=0; x<bitmap->nx; x++)
+	{
+	  for(y=0; y<bitmap->ny; y++)
+	    {
+	      for(z=0; z<bitmap->nz; z++)
+		{
+                   if(bitmapset->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[object_index]==1)
+		  ////if(bitmapset->bitmap[HRP2_GIK_MANIP]->data[x][y][z].val < 0)  
+		    {
+                      
+		     printf("  cell (x, y, z) = (%d %d %d) belongs to %s\n",x, y, z,envPt_MM->robot[object_index]->name);
+                     printf("no_of_objects_belogs to this cell=%d\n", grid_around_HRP2.GRID_SET->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[object_index]);
+                                      
+                                     	      
+		    }
+		}
+	    }
+	}  
+
+//End tmp for tets
+
+  configPt visq;
+  configPt cur_rob_pos;
+ 
+  double increment=3.0/4.0*bitmapset->pace;
+  visq = p3d_get_robot_config(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY]);
+  bitmap = bitmapset->bitmap[bt_type];
+  ////envPt_MM= (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  
+
+
+  int no = envPt_MM->no;
+  int nr = envPt_MM->nr;
+  p3d_obj *o;
+  p3d_rob *r;
+  int r_ctr=0;
+  ////printf(" ***************************\n");
+  for(r_ctr=0;r_ctr<nr;r_ctr++)
+    {
+      //// printf(" **** [%d] : %s \n",r_ctr,envPt_MM->robot[r_ctr]->name);
+      if(robots_status_for_Mightability_Maps[r_ctr].has_moved==1)
+	{
+	  r = envPt_MM->robot[r_ctr];
+
+	  cur_rob_pos=MY_ALLOC(double,r->nb_dof); 
+	  p3d_get_robot_config_into(r,&cur_rob_pos);
+  
+	  printf(" Updating obstacle cells for Object = %s \n",r->name);
+	  if(strcasestr(r->name,"visball"))
+	    {
+	      robots_status_for_Mightability_Maps[r_ctr].has_moved=0;
+	      continue;
+	    }
+ /*  
+	  NEED_HUMAN1_ALL_VISIBILITY_UPDATE=1;
+#ifdef HUMAN2_EXISTS_FOR_MA
+	  NEED_HUMAN2_ALL_VISIBILITY_UPDATE=1;
+#endif
+
+#ifdef JIDO_EXISTS_FOR_MA
+	  NEED_JIDO_ALL_VISIBILITY_UPDATE=1;
+#elif defined(HRI_HRP2)
+	  NEED_HRP2_ALL_VISIBILITY_UPDATE=1;
+#endif*/
+  
+	  ////////// printf(" inside update_3D_grid_for_Mightability_Maps_new(), NEED_HUMAN_VISIBILITY_UPDATE=%d\n",NEED_HUMAN_VISIBILITY_UPDATE);
+    
+          p3d_col_deactivate_robot(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY]);
+          p3d_col_activate_rob_rob(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY], envPt_MM->robot[r_ctr]);//Only to test the collision between the visball and current object
+
 	  ////**** First making previously occupied cells as free cells  
 	    p3d_set_and_update_this_robot_conf(r, robots_status_for_Mightability_Maps[r_ctr].rob_prev_config);
 	    ////////p3d_col_deactivate_rob_rob(bitmapset->visball,r);//To make a cell occupied only if there is collision of visball with other objects not with robot
@@ -13320,18 +13690,26 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
 				cell_ctr_tmp++;
 				//////////printf(" cell_ctr=%d: %d, %d\n",cell_ctr_tmp,bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr],bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects);
 				//////////// if(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.is_horizontal_surface==0)//NOT the cell just above the  horizontal surface of table
-				{
+				//{
 				  //////////printf(" Not horizontal surface\n");
 				  ////printf(" cell_ctr=%d, %d, %d\n",cell_ctr_tmp,bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr],bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects);
 
 				  ////////////if((bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]==1&&   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects==1&&bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects==0)||(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]==1&&   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects==1&&bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects==0)||(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]==1&&   bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects==1&&bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects==1&&bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]==1))
+                                   if(r_ctr==get_index_of_robot_by_name(CURRENT_OBJECT_TO_MANIPULATE))
+                                      {
+                                      printf("  cell (x, y, z) = (%d %d %d) ",x, y, z);
+                                      
+                                      printf("no_of_objects_belogs to this cell=%d\n", grid_around_HRP2.GRID_SET->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]);
+                                      } 
+
 				  if(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]==1)
 				    {  
 				      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=0;  
 				      ////bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects--;
-
+                                      printf(" Cell belongs to moved object and no of obj belongs to this cell =%d\n",bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects);
 				      if(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects==1)
 					{
+                                           bitmapset->bitmap[bt_type]->data[x][y][z].val = 0;  //no obstacle
 					  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects=0; 
 
 					  if(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects==0)
@@ -13371,12 +13749,20 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
 					}
 				      else
 					{
+                                          printf(" The cell belongs to some other obstacles also \n");
 					  //bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=0;  
 					  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects--;
 					} 
 				    }//End if the cell belongs to this object
 				  else //The cell does not belong to this object
 				    {
+                                      if(r_ctr==get_index_of_robot_by_name(CURRENT_OBJECT_TO_MANIPULATE))
+                                      {
+                                      ////printf("  cell (x, y, z) = (%d %d %d) ",x, y, z);
+                                      
+                                      printf(" The cell does not belong to the object\n");
+                                      } 
+                                      
 				      if(bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]==1)//The cell close to this object, so remove from the list of close objects
 					{
 					  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=0;   ////bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects--;
@@ -13394,7 +13780,7 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
             
 
 				    }// End else of if the cell belongs to this object
-				}//End if NOT the cell just above the  horizontal surface of table
+				//}//End if NOT the cell just above the  horizontal surface of table
         
         
         
@@ -13619,7 +14005,7 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
 	    ////robots_status_for_Mightability_Maps[r_ctr].rob_prev_config[8]=r->ROBOT_POS[8];
 	    ////////////////p3d_copy_config_into(r,r->ROBOT_POS, &(robots_status_for_Mightability_Maps[r_ctr].rob_prev_config));
 	    ////////robots_status_for_Mightability_Maps[r_ctr].prev_BB=r->BB;
-
+             p3d_col_activate_robot(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY]);
 	    p3d_get_robot_config_into ( r,&robots_status_for_Mightability_Maps[r_ctr].rob_prev_config ); 
 	}
    
@@ -13628,6 +14014,7 @@ int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expa
 
   return 1;
 }
+
 
 int create_exact_obstacles_for_HRP2_GIK_manip_fast_new2 ( hri_bitmapset * bitmapset, int expansion, int bt_type )
 {
@@ -13696,6 +14083,8 @@ int create_exact_obstacles_for_HRP2_GIK_manip_fast_new2 ( hri_bitmapset * bitmap
 	  ////robots_status_for_Mightability_Maps[r_ctr].prev_BB=r->BB;
 	  robots_status_for_Mightability_Maps[r_ctr].has_moved=0;
 
+          p3d_col_deactivate_robot(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY]);
+          p3d_col_activate_rob_rob(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY], envPt_MM->robot[r_ctr]);//Only to test the collision between the visball and current object
 	  //////////printf(" Robot name = %s \n",r->name);
 				
 	  ////printf(" r->name = %s ,r->no=%d \n",r->name,r->no);
@@ -13727,12 +14116,299 @@ int create_exact_obstacles_for_HRP2_GIK_manip_fast_new2 ( hri_bitmapset * bitmap
 			      int res = p3d_col_test_robot ( envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],kcd_with_report );
 			      if ( res>0 ) ////if(p3d_col_test_robot(bitmapset->visball,FALSE))
 				{
+                                   if(r_ctr==get_index_of_robot_by_name(CURRENT_OBJECT_TO_MANIPULATE))
+                                   {
+                                      printf(" Obstacle cell (x, y, z) = (%d %d %d)\n",x, y, z);
+                                     //// printf(" Obstacle cell found for object\n");
+                                   }
 				  //////// printf(" Populating ACTUAL obstacle for x, y, z = %d %d %d\n",x, y, z);
 
 				  bitmapset->bitmap[bt_type]->data[x][y][z].val = -1;  //Exact obstacle
 
 				  if ( bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]==0 ) //the cell does not already belong to this robot index
 				    {
+                   
+                                      if(r_ctr==get_index_of_robot_by_name(CURRENT_OBJECT_TO_MANIPULATE))
+                                      {
+                                     
+                                      printf(" Assigned cell belongs to object %s \n",envPt_MM->robot[r_ctr]->name);
+                                      } 
+
+				      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=1;//cell belong to this robot index
+				      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.objects_belonging_to[bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects]=r_ctr;
+
+				      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects++;
+				    }
+
+				  ////////////bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=1;//cell belong to this robot index
+
+
+										
+										
+				  //else
+				  //{
+				  //bitmapset->bitmap[bt_type]->data[x][y][surf_z].is_horizontal_surface=0;//Does not belong to a horizontal surface of table
+				  // }
+                                 /*
+				  int i=0;
+				  for ( i=x-expansion;i<=x+expansion;i++ )
+				    {
+				      //printf(" for i = %d\n",i);
+				      if ( i>=0&&i<bitmap->nx )
+					{
+					  int j=0;
+					  for ( j=y-expansion;j<=y+expansion;j++ )
+					    {
+					      //printf(" for i, j = %d %d\n",i, j);
+					      if ( j>=0&&j<bitmap->ny )
+						{
+						  int k=0;
+						  for ( k=z-expansion;k<=z+expansion;k++ )
+						    {
+						      //printf(" for i, j, k = %d %d %\n",i, j, k);
+						      if ( k>=0&&k<bitmap->nz )
+							{
+							  // printf(" Populating %d, %d, %d \n",i,j,k);
+							  if ( bitmapset->bitmap[bt_type]->data[i][j][k].val == -1 ) //Already exact obstacle
+							    {
+
+							      if ( bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]==0 ) //the cell does not already close to this robot index
+								{
+								  bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=1;//cell close to this robot index
+								  bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.no_close_to_objects++;
+								}
+							      bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=1;//cell close to this robot index
+							    }
+							  else
+							    {
+							      bitmapset->bitmap[bt_type]->data[i][j][k].val = -2;  //Near to the obstacle
+
+							      if ( bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]==0 ) //the cell does not already close to this robot index
+								{
+								  bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=1;//cell close to this robot index
+								  bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.no_close_to_objects++;
+								}
+							      bitmapset->bitmap[bt_type]->data[i][j][k].Mightability_map_cell_obj_info.close_to_objects_indx[r_ctr]=1;//cell close to this robot index
+							    }
+							}
+						    }
+						}
+					    }
+					}
+				    }*/
+				}
+			      ////else
+			      ////{
+			      ////printf("Inside BB but no collison\n");
+			      ////exit(0);
+			      ////}
+			    }
+			}
+		    }
+		}
+	    }
+			
+	}//End for ( r_ctr=0;r_ctr<nr;r_ctr++ )
+
+p3d_col_activate_robot(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY]);
+
+      ////Now same thing for objects (non robots)
+      int o_ctr=0;
+      for ( o_ctr=0;o_ctr<no;o_ctr++ )
+	{
+
+	  o = envPt_MM->o[r_ctr];
+	  //// printf(" o->name = %s, \n",o->name);
+	  double BBx;
+	  for ( BBx=o->BB.xmin;BBx<o->BB.xmax;BBx+=increment )
+	    {
+	      visq[6]  = BBx;
+	      x= ( BBx- bitmapset->realx ) /bitmapset->pace;
+	      double BBy;
+	      for ( BBy=o->BB.ymin;BBy<o->BB.ymax&&x>0&&x<bitmap->nx;BBy+=increment )
+		{
+		  visq[7]  = BBy;
+		  y= ( BBy- bitmapset->realy ) /bitmapset->pace;
+		  double BBz;
+		  for ( BBz=o->BB.zmin;BBz<o->BB.zmax&&y>0&&y<bitmap->ny;BBz+=increment )
+		    {
+		      visq[8]  = BBz;
+		      z= ( BBz- bitmapset->realz ) /bitmapset->pace;
+
+
+		      if ( z>0&&z<bitmap->nz )
+			{
+			  p3d_set_and_update_this_robot_conf ( envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY], visq );
+			  int kcd_with_report=0;
+			  int res = p3d_col_test_robot ( envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],kcd_with_report );
+			  if ( res>0 ) ////if(p3d_col_test_robot(bitmapset->visball,FALSE))
+			    {
+			      //printf(" Populating ACTUAL obstacle for x, y, z = %d %d %d\n",x, y, z);
+
+			      bitmapset->bitmap[bt_type]->data[x][y][z].val = -2;
+
+			      int i=0;
+			      for ( i=x-expansion;i<=x+expansion;i++ )
+				{
+				  //printf(" for i = %d\n",i);
+				  if ( i>=0&&i<bitmap->nx )
+				    {
+				      int j=0;
+				      for ( j=y-expansion;j<=y+expansion;j++ )
+					{
+					  //printf(" for i, j = %d %d\n",i, j);
+					  if ( j>=0&&j<bitmap->ny )
+					    {
+					      int k=0;
+					      for ( k=z-expansion;k<=z+expansion;k++ )
+						{
+						  //printf(" for i, j, k = %d %d %\n",i, j, k);
+						  if ( k>=0&&k<bitmap->nz )
+						    {
+						      // printf(" Populating %d, %d, %d \n",i,j,k);
+
+						      bitmapset->bitmap[bt_type]->data[i][j][k].val = -2;
+						    }
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+
+	    }
+	}
+      p3d_destroy_config ( envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY], visq );
+      //         MY_FREE ( visq,double,bitmapset->visball->nb_dof );
+    }
+
+  ////ChronoPrint(" Time for create obstacle cell fast ");
+  ////ChronoOff();
+	
+  return 1;
+}
+
+int create_exact_obstacles_for_HRP2_GIK_manip_fast_new2_28_02_2011 ( hri_bitmapset * bitmapset, int expansion, int bt_type )
+{
+  ////ChronoOff();
+  ////ChronoOn();
+
+  if ( bt_type==HRP2_GIK_MANIP )
+    {
+      //                  configPt visq = MY_ALLOC(double,ACBTSET->visball->nb_dof); /* Allocation of temporary robot configuration */
+      //                  p3d_get_robot_config_into(ACBTSET->robot,&visq); 
+      // 		
+      // 		hri_bitmap * bitmap;
+      // 		double increment=3.0/4.0*bitmapset->pace;
+      configPt visq;
+      hri_bitmap * bitmap;
+      double increment=3.0/4.0*bitmapset->pace;
+      visq = p3d_get_robot_config(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY]);
+
+      ////visq = p3d_get_robot_config(bitmapset->visball);
+
+      bitmap = bitmapset->bitmap[bt_type];
+      envPt_MM= ( p3d_env * ) p3d_get_desc_curid ( P3D_ENV );
+      int no = envPt_MM->no;
+      int nr = envPt_MM->nr;
+
+      int x,y,z;
+      for ( x=0; x<bitmap->nx; x++ )
+	{
+	  for ( y=0; y<bitmap->ny; y++ )
+	    {
+	      for ( z=0; z<bitmap->nz; z++ )
+		{
+		  bitmapset->bitmap[bt_type]->data[x][y][z].val = 0;
+		  int nr_ctr=0;
+		  for ( ;nr_ctr<nr;nr_ctr++ )
+		    {
+		      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[nr_ctr]=0;//Initially does not belong to any cell
+
+		      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.close_to_objects_indx[nr_ctr]=0;//Initially does not belong to any cell
+		    }
+		  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.is_horizontal_surface=0;
+		  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.horizontal_surface_of=nr_ctr;//horizontal surface belongs to this robot index
+		  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.near_horizontal_surface=0;
+
+
+		  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects=0;
+		  bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects=0;
+		}
+	    }
+	}
+
+
+      p3d_obj *o;
+      p3d_rob *r;
+      int r_ctr=0;
+      for ( r_ctr=0;r_ctr<nr;r_ctr++ )
+	{
+			
+	  r = envPt_MM->robot[r_ctr];
+	  if ( strcasestr ( r->name,"visball" ) )
+	    {
+	      continue;
+	    }
+	  robots_status_for_Mightability_Maps[r_ctr].rob_prev_config=MY_ALLOC ( double,r->nb_dof );
+	  p3d_get_robot_config_into ( r,&robots_status_for_Mightability_Maps[r_ctr].rob_prev_config );
+	  ////robots_status_for_Mightability_Maps[r_ctr].prev_BB=r->BB;
+	  robots_status_for_Mightability_Maps[r_ctr].has_moved=0;
+
+          p3d_col_deactivate_robot(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY]);
+          p3d_col_activate_rob_rob(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY], envPt_MM->robot[r_ctr]);//Only to test the collision between the visball and current object
+	  //////////printf(" Robot name = %s \n",r->name);
+				
+	  ////printf(" r->name = %s ,r->no=%d \n",r->name,r->no);
+	  int r_o_ctr=0;
+	  for ( r_o_ctr=0;r_o_ctr<r->no;r_o_ctr++ )
+	    {
+	      o = r->o[r_o_ctr];
+	      ////printf(" o->name = %s \n",o->name);
+	      double BBx;
+	      for ( BBx=o->BB.xmin;BBx<o->BB.xmax;BBx+=increment )
+		{
+		  visq[6]  = BBx;
+		  x= ( BBx- bitmapset->realx ) /bitmapset->pace;
+		  double BBy;
+		  for ( BBy=o->BB.ymin;BBy<o->BB.ymax&&x>0&&x<bitmap->nx;BBy+=increment )
+		    {
+		      visq[7]  = BBy;
+		      y= ( BBy- bitmapset->realy ) /bitmapset->pace;
+		      double BBz;
+		      for ( BBz=o->BB.zmin;BBz<o->BB.zmax&&y>0&&y<bitmap->ny;BBz+=increment )
+			{
+			  visq[8]  = BBz;
+			  z= ( BBz - bitmapset->realz ) /bitmapset->pace;
+
+			  if ( x>0&&x<bitmap->nx&&y>0&&y<bitmap->ny&&z>0&&z<bitmap->nz )
+			    {
+			      p3d_set_and_update_this_robot_conf ( envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY], visq );
+			      int kcd_with_report=0;
+			      int res = p3d_col_test_robot ( envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],kcd_with_report );
+			      if ( res>0 ) ////if(p3d_col_test_robot(bitmapset->visball,FALSE))
+				{
+                                   if(r_ctr==get_index_of_robot_by_name(CURRENT_OBJECT_TO_MANIPULATE))
+                                   {
+                                      printf(" Obstacle cell (x, y, z) = (%d %d %d)\n",x, y, z);
+                                     //// printf(" Obstacle cell found for object\n");
+                                   }
+				  //////// printf(" Populating ACTUAL obstacle for x, y, z = %d %d %d\n",x, y, z);
+
+				  bitmapset->bitmap[bt_type]->data[x][y][z].val = -1;  //Exact obstacle
+
+				  if ( bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]==0 ) //the cell does not already belong to this robot index
+				    {
+                   
+                                      if(r_ctr==get_index_of_robot_by_name(CURRENT_OBJECT_TO_MANIPULATE))
+                                      {
+                                     
+                                      printf(" Assigned cell belongs to object %s \n",envPt_MM->robot[r_ctr]->name);
+                                      } 
+
 				      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[r_ctr]=1;//cell belong to this robot index
 				      bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.objects_belonging_to[bitmapset->bitmap[bt_type]->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects]=r_ctr;
 
@@ -13809,7 +14485,7 @@ int create_exact_obstacles_for_HRP2_GIK_manip_fast_new2 ( hri_bitmapset * bitmap
 			
 	}//End for ( r_ctr=0;r_ctr<nr;r_ctr++ )
 
-
+p3d_col_activate_robot(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY]);
       ////Now same thing for objects (non robots)
       int o_ctr=0;
       for ( o_ctr=0;o_ctr<no;o_ctr++ )
@@ -18240,6 +18916,39 @@ int show_symbolic_Mightability_Map_Relations()
 
 int show_obstacle_cells_belonging_to(int object_index)
 {
+hri_bitmapset * bitmapset=grid_around_HRP2.GRID_SET;
+
+
+      double shift_for_cell_mid=bitmapset->pace/2.0;
+      hri_bitmap * bitmap;
+      bitmap = bitmapset->bitmap[HRP2_GIK_MANIP];
+      int x,y,z;
+      for(x=0; x<bitmap->nx; x++)
+	{
+	  for(y=0; y<bitmap->ny; y++)
+	    {
+	      for(z=0; z<bitmap->nz; z++)
+		{
+                   if(bitmapset->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[object_index]==1)
+		  ////if(bitmapset->bitmap[HRP2_GIK_MANIP]->data[x][y][z].val < 0)  
+		    {
+		      double tmp_x  = x*bitmapset->pace+bitmapset->realx+shift_for_cell_mid;
+		      double tmp_y  = y*bitmapset->pace+bitmapset->realy+shift_for_cell_mid;
+		      double tmp_z  = z*bitmapset->pace+bitmapset->realz+shift_for_cell_mid;
+		      
+			g3d_drawDisc(tmp_x, tmp_y, tmp_z, 0.01, 3, NULL);
+		      
+		    }
+		}
+	    }
+	}  
+      //////////g3d_drawDisc(point_of_curr_collision.x, point_of_curr_collision.y,point_of_curr_collision.z, 0.1,4, NULL);
+  
+  return 1;
+}
+
+int show_obstacle_cells_belonging_to_old(int object_index)
+{
 #ifndef COMMENT_TMP
   //////////printf(" Showing obstacle cells belonging to index %d\n",object_index);
   int x,y,z;
@@ -19171,12 +19880,21 @@ int print_object_oriented_Mightability_for_object_by_agent(object_Symbolic_Might
 int find_candidate_points_for_current_HRI_task_for_object(HRI_TASK_TYPE curr_task, HRI_TASK_AGENT_ENUM performed_by, HRI_TASK_AGENT_ENUM performed_for, candidate_poins_for_task *resultant_candidate_point, char *object)
 {
   int no_expansion_cells=0;
+  double ox,oy,oz,orx,ory,orz;
+  int obj_index=get_index_of_robot_by_name(object);
+
   if(CONSIDER_OBJECT_DIMENSION_FOR_CANDIDATE_PTS==1)
   {
-  int obj_index=get_index_of_robot_by_name(object);
-  double ox,oy,oz,orx,ory,orz;
+  
+  
   p3d_get_freeflyer_pose2(envPt_MM->robot[obj_index], &ox,&oy,&oz,&orx,&ory,&orz);
-  p3d_set_freeflyer_pose2(envPt_MM->robot[obj_index], 0,0,0,0,0,0);
+  p3d_set_freeflyer_pose2(envPt_MM->robot[obj_index], 0,0,10,0,0,0);
+  
+  //To update the MM assuming the object is not there as a constraint for visibility and reachability
+  update_robots_and_objects_status();
+  update_horizontal_surfaces();
+  update_Mightability_Maps_new();
+
   double obj_BB_height=envPt_MM->robot[obj_index]->BB.zmax-envPt_MM->robot[obj_index]->BB.zmin;
   double obj_BB_length=envPt_MM->robot[obj_index]->BB.xmax-envPt_MM->robot[obj_index]->BB.xmin;
   double obj_BB_width=envPt_MM->robot[obj_index]->BB.ymax-envPt_MM->robot[obj_index]->BB.ymin;
@@ -19216,6 +19934,7 @@ int find_candidate_points_for_current_HRI_task_for_object(HRI_TASK_TYPE curr_tas
    {
    need_placement_on_plane=1;  
    }
+   
    
    int i,j,k;
    int x=0;
@@ -19623,6 +20342,22 @@ int find_candidate_points_for_current_HRI_task_for_object(HRI_TASK_TYPE curr_tas
 	    }
 	}
     }
+
+
+  if(CONSIDER_OBJECT_DIMENSION_FOR_CANDIDATE_PTS==1)
+  {
+  ////int obj_index=get_index_of_robot_by_name(object);
+  
+  p3d_set_freeflyer_pose2(envPt_MM->robot[obj_index], ox,oy,oz,orx,ory,orz);
+  
+  //To reupdate the MM with object at original position 
+  update_robots_and_objects_status();
+  update_horizontal_surfaces();
+  update_Mightability_Maps_new();
+
+  
+  }
+
     printf("resultant_candidate_point->no_points=%d\n",resultant_candidate_point->no_points);
     return 1;
 }
@@ -19753,3 +20488,4 @@ int voronoi(p3d_rob *container, p3d_rob *object)
   if(result==1) printf(" YES \n");
   return result;
 }
+
