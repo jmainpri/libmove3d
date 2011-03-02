@@ -1167,11 +1167,11 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlaceFromFree(int armId, confi
         ManipulationUtils::copyConfigToFORM(_robot, approachGraspConfig);
         _configs.setApproachGraspConfig(approachGraspConfig);
       }else{
-         status = MANIPULATION_TASK_NO_GRASP;
+         status = MANIPULATION_TASK_NO_PLACE;
       }
     }
   } else {
-    status = MANIPULATION_TASK_NO_GRASP;
+    status = MANIPULATION_TASK_NO_PLACE;
   }
 
   if (status == MANIPULATION_TASK_OK)
@@ -1262,6 +1262,101 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlaceFromFree(int armId, confi
     return status;
 }
 
+
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armEscapeObject(int armId, configPt qStart, p3d_rob* object, std::vector <p3d_traj*> trajs){
+  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+  int updateTatt = false;
+  ArmManipulationData& armData = (*_robot->armManipulationData)[armId];
+
+  if(!object){
+    return MANIPULATION_TASK_UNKNOWN_OBJECT;
+  }
+  
+  deactivateCcCntrts(_robot, armId);
+  desactivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(), armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
+  
+  p3d_set_and_update_this_robot_conf(_robot, qStart);
+
+  p3d_matrix4 tAtt;
+  _configs.getAttachFrame(tAtt);
+  if(tAtt[0][0] == 0 && tAtt[0][1] == 0 && tAtt[0][2] == 0 && tAtt[0][3] == 0){
+    p3d_compute_Tatt(armData.getCcCntrt());
+    _configs.setAttachFrame(armData.getCcCntrt()->Tatt);
+    _configs.getAttachFrame(tAtt);
+  }
+  if(!_configs.getGrasp()){
+    _configs.setGrasp(new gpGrasp());
+    gpSet_grasp_configuration(_robot, *_configs.getGrasp(), qStart, armId);
+  }
+  activateCcCntrts(_robot, armId, false);
+  
+  if(!_configs.getApproachGraspConfig()){
+    configPt openGraspConfig = _manipConf.getOpenGraspConf(object, armId, *_configs.getGrasp(), qStart);
+    if (openGraspConfig) {
+      _configs.setOpenConfig(openGraspConfig);
+    }
+  }
+
+  if (_configs.getOpenConfig()) {
+    if(!_configs.getApproachFreeConfig()){
+      configPt approachFreeConfig = _manipConf.getApproachFreeConf(object, armId, *(_configs.getGrasp()), qStart, tAtt);
+      if(approachFreeConfig){
+        _configs.setApproachGraspConfig(approachFreeConfig);
+      }else{
+         status = MANIPULATION_TASK_NO_GRASP;
+      }
+    }
+  } else {
+    status = MANIPULATION_TASK_NO_GRASP;
+  }
+  deactivateCcCntrts(_robot, armId);
+  
+  if (status == MANIPULATION_TASK_OK){
+    //Compute the path between theses configurations
+    status = armEscapeObject(armId, qStart, _configs.getOpenConfig(), _configs.getApproachFreeConfig(), object, trajs);
+  }
+
+  return status;
+}
+
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armEscapeObject(int armId, configPt qStart, configPt openGraspConfig, configPt approachFreeConfig, p3d_rob* object, std::vector <p3d_traj*> trajs){
+  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+  p3d_traj* traj = NULL;
+
+
+  fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
+
+  checkConfigForCartesianMode(qStart, NULL);
+  checkConfigForCartesianMode(openGraspConfig, NULL);
+  checkConfigForCartesianMode(approachFreeConfig, NULL);
+  p3d_set_and_update_this_robot_conf(_robot, qStart);
+  gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
+  gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
+
+  if (MPDEBUG) {
+      ManipulationUtils::copyConfigToFORM(_robot, qStart);
+      ManipulationUtils::copyConfigToFORM(_robot, openGraspConfig);
+      ManipulationUtils::copyConfigToFORM(_robot, approachFreeConfig);
+  }
+  setSafetyDistance(_robot, getSafetyDistanceValue());
+  ManipulationUtils::unFixAllHands(_robot);
+  if ((traj = computeTrajBetweenTwoConfigs(qStart, openGraspConfig, &status)) || (status == MANIPULATION_TASK_EQUAL_QSTART_QGOAL)){
+    trajs.push_back(traj);
+    ManipulationUtils::fixAllHands(_robot, qStart, false);
+    if ((traj = computeTrajBetweenTwoConfigs(openGraspConfig, approachFreeConfig, &status)) || (status == MANIPULATION_TASK_EQUAL_QSTART_QGOAL)){
+      trajs.push_back(traj);
+      cout << "Manipulation : traj found" << endl;
+      status =  MANIPULATION_TASK_OK;
+    }
+  }
+  
+  setSafetyDistance(_robot, 0);
+  
+  gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId); //the hand name is hand1 for arm0 and hand 2 for arm1
+  
+  return status;
+}
+
 /* ******************************* */
 /* ******** Task Planning ******** */
 /* ******************************* */
@@ -1288,6 +1383,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     ENV.setBool(Env::drawTraj, false);
     checkConfigForCartesianMode(qi, object);
     checkConfigForCartesianMode(qf, object);
+//     showConfig_2(qi);
     ManipulationUtils::fixAllHands(_robot, qi, false);
     ManipulationUtils::fixAllHands(_robot, qf, false);
     p3d_set_and_update_this_robot_conf(_robot, qi);
@@ -1339,26 +1435,15 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
         break;
       }
       case ARM_EXTRACT: {
-        
         printf("plan for ARM_EXTRACT task\n");
         status = armExtract(armId, qi, object, trajs);
         break;
       }
-        //       case ARM_TAKE_TO_FREE_POINT:{
-        //         printf("plan for ARM_PICK_TAKE_TO_FREE_POINT task\n");
-        //         status = armPickTakeToFreePoint(armId, objGoto, object, trajs);
-        //         break;
-        //       }
-        //       case ARM_PICK_AND_PLACE: {
-        //         printf("plan for ARM_PICK_AND_PLACE task\n");
-        //         status = armPickAndPlace(armId, qi, qf, object, support, trajs);
-        //         break;
-        //       }
-        //       case ARM_PICK_GOTO_AND_TAKE_TO_FREE: {
-        //         printf("plan for ARM_PICK_GOTO_AND_TAKE_TO_FREE task\n");
-        //         status = armPickGotoAndTakeToFree(armId, qi, qf, object, support, trajs);
-        //         break;
-        //       }
+      case ARM_ESCAPE_OBJECT:{
+        printf("plan for ARM_ESCAPE_OBJECT task\n");
+        status = armEscapeObject(armId, qi, object, trajs);
+        break;
+      }
       default: {
         printf("%s: %d: ManipulationPlanner::armPlanTask(): wrong task.\n", __FILE__, __LINE__);
         status = MANIPULATION_TASK_INVALID_TASK;
