@@ -69,10 +69,14 @@ class ArmManipulationData {
   public:
     ArmManipulationData(int id = 0, p3d_cntrt* ccCntrt = NULL, p3d_cntrt* fkCntrt = NULL, p3d_jnt *manipulationJnt = NULL, int cartesianGroup = -1, int cartesianSmGroup = -1, int handGroup = -1, int handSmGroup = -1){
        _id = id;
-			_manipState = handFree;
       _ccCntrt = ccCntrt;
       _fkCntrt = fkCntrt;
       _manipulationJnt = manipulationJnt;
+      if(_ccCntrt == NULL){
+        _tAtt[0][0] = _tAtt[0][1] = _tAtt[0][2] = _tAtt[0][3] =  0;
+      }else{
+        p3d_mat4Copy(_ccCntrt->Tatt, _tAtt);
+      }
 #ifdef MULTILOCALPATH
       _cartesianGroup = cartesianGroup;
       _cartesianSmGroup = cartesianSmGroup;
@@ -120,6 +124,9 @@ class ArmManipulationData {
     inline void setManipulationJnt(p3d_rob* robot, int manipulationJnt){
       _manipulationJnt = robot->joints[manipulationJnt];
     };
+    inline void setAttachFrame(p3d_matrix4 tAtt){
+      p3d_mat4Copy(tAtt, _tAtt);
+    }
 #ifdef MULTILOCALPATH
     inline void setCartesianGroup(int cartesianGroup){
       _cartesianGroup = cartesianGroup;
@@ -174,6 +181,9 @@ class ArmManipulationData {
     inline p3d_jnt* getManipulationJnt(void) const{
       return _manipulationJnt;
     };
+    inline void getAttachFrame(p3d_matrix4 tAtt) const{
+      p3d_mat4Copy((p3d_matrix_type(*)[4])_tAtt, tAtt);
+    }
 #ifdef MULTILOCALPATH
     inline int getCartesianGroup(void) const{
       return _cartesianGroup;
@@ -205,23 +215,11 @@ class ArmManipulationData {
     inline bool getCartesian(void) const{
       return _cartesian;
     };
-	
-	MANIPULATION_ARM_STATE& getManipState() {
-		return _manipState;
-	}
-
-	
-	void setManipState(MANIPULATION_ARM_STATE newState) {
-                 _manipState= newState;
-	}
-
+  
 	private :
   //!arm ID
   int _id;
-	//! Arm object-manipulation state
-	//! The state should be provided by an external module
-	MANIPULATION_ARM_STATE _manipState;
-	
+
 	/***************/
 	/* Constraints */
 	/***************/
@@ -229,6 +227,8 @@ class ArmManipulationData {
 	p3d_cntrt * _ccCntrt;
 	/** Arm corresopnding Forward kinematic Constraint*/
 	p3d_cntrt * _fkCntrt;
+  /** Default Attach Matrix*/
+  p3d_matrix4 _tAtt;
 	/** Freeflyer */
 	p3d_jnt * _manipulationJnt;
 	/** < choose to plan the arm motion in cartesian space (for the end effector) or joint space  */
@@ -276,7 +276,9 @@ class ManipulationData{
   public:
     ManipulationData(p3d_rob* robot){
       _robot = robot;
+#ifdef GRASP_PLANNING
       _grasp = NULL;
+#endif
       _graspConfig = NULL;
       _graspConfigCost = P3D_HUGE;
       _openConfig = NULL;
@@ -442,7 +444,9 @@ class ManipulationData{
     }
     ManipulationData& operator = (const ManipulationData& data){
       _robot = data.getRobot();
+#ifdef GRASP_PLANNING
       setGrasp(data.getGrasp());
+#endif
       setGraspConfig(data.getGraspConfig());
       setOpenConfig(data.getOpenConfig());
       setApproachFreeConfig(data.getApproachFreeConfig());

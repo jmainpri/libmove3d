@@ -33,7 +33,8 @@ class  ManipulationPlanner {
   /* ******* (Ge)Setters *********** */
   /* ******************************* */
     void setDebugMode(bool value);
-  
+    void setDebugSoftMotionMode(bool value);
+
 #ifdef MULTILOCALPATH
   /** Multilocalpath Id for the base */
   int getBaseMLP() { return _BaseMLP; } 
@@ -68,7 +69,7 @@ class  ManipulationPlanner {
     inline configPt robotGoto() const{if (_robot != NULL) {return _robot->ROBOT_GOTO;} else {return NULL;}}
 	
 
-    inline ManipulationData getManipulationData()  const {return _configs;}
+    inline ManipulationData& getManipulationData() {return _configs;}
     inline ManipulationConfigs getManipulationConfigs()  const {return _manipConf;}
 	/* ******************************* */
   /* ******* Hands / Grasping ****** */

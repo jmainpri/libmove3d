@@ -227,10 +227,24 @@ typedef struct astar_parameters{
   int use_changepath_reluctance;
   /* how many grid steps away a free start cell may be found from the robot real position */
   int start_cell_tolerance;
+  /* how many grid steps away a free goal cell may be found from the x,y,z of the search command */
+  int goal_cell_tolerance;
+
+  double moving_human_deprecation_start;
+  double moving_human_deprecation_full;
 
   int use_corridors;
 
   double corridor_Costs;
+
+  /* whether grid cell costs are static or depend on where the motion moves to (in 2D)*/
+  int directional_cost;
+  int motion_congruence;
+
+  double directional_freePassAngle;
+  double directional_noConflictHeading;
+
+  double angle2d_minimum;
 } hri_astar_parameters;
 
 

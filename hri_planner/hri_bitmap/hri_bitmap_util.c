@@ -21,31 +21,31 @@ hri_bitmap* hri_bt_get_bitmap(int type, hri_bitmapset* bitmapset) {
 }
 
 
-
-/**
- * returns the direction the satellite cell is with respect to the center cell
- */
-int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell) {
-  int xdiff, ydiff;
-  xdiff = satellite_cell->x - center_cell->x;
-  ydiff = satellite_cell->y - center_cell->y;
-  if(xdiff==-1) {
-    if (ydiff==-1) return BT_DIRECTION_NORTHEAST;
-    if (ydiff== 0) return BT_DIRECTION_EAST;
-    if (ydiff== 1) return BT_DIRECTION_SOUTHEAST;
-  }
-  if(xdiff==0) {
-    if(ydiff==-1) return BT_DIRECTION_NORTH;
-    if(ydiff== 1) return BT_DIRECTION_SOUTH;
-  }
-  if(xdiff==1) {
-    if(ydiff==-1) return BT_DIRECTION_NORTHWEST;
-    if(ydiff== 0) return BT_DIRECTION_WEST;
-    if(ydiff== 1) return BT_DIRECTION_SOUTHWEST;
-  }
-  PrintError(("Bug: Invalid entries causing xdiff, ydiff = %i,%i", xdiff, ydiff));
-  return -1;
-}
+// useless once we used 16 directions
+///**
+// * returns the direction the satellite cell is with respect to the center cell
+// */
+//int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell) {
+//  int xdiff, ydiff;
+//  xdiff = satellite_cell->x - center_cell->x;
+//  ydiff = satellite_cell->y - center_cell->y;
+//  if(xdiff==-1) {
+//    if (ydiff==-1) return BT_DIRECTION_NORTHEAST;
+//    if (ydiff== 0) return BT_DIRECTION_EAST;
+//    if (ydiff== 1) return BT_DIRECTION_SOUTHEAST;
+//  }
+//  if(xdiff==0) {
+//    if(ydiff==-1) return BT_DIRECTION_NORTH;
+//    if(ydiff== 1) return BT_DIRECTION_SOUTH;
+//  }
+//  if(xdiff==1) {
+//    if(ydiff==-1) return BT_DIRECTION_NORTHWEST;
+//    if(ydiff== 0) return BT_DIRECTION_WEST;
+//    if(ydiff== 1) return BT_DIRECTION_SOUTHWEST;
+//  }
+//  PrintError(("Bug: Invalid entries causing xdiff, ydiff = %i,%i", xdiff, ydiff));
+//  return -1;
+//}
 
 
 /**
@@ -588,20 +588,162 @@ hri_bitmap_cell* hri_bt_get_closest_cell(hri_bitmapset* bitmapset, hri_bitmap* b
 }
 
 /**
+ * normalizes angle into deviation angle range, meaning -PI to PI.
+ *
+ * This is useful for all costs that depend on the heading of a human or robot,
+ *  negative values mean left of, positive values mean right of, the perspective of an agent.
+ */
+double normalizeAngleDeviation(double angle_deviation) {
+  while (angle_deviation < -M_PI) {
+     angle_deviation = M_2PI + angle_deviation;
+   }
+  while(angle_deviation > M_PI) {
+     angle_deviation = M_2PI - angle_deviation;
+   }
+   return angle_deviation;
+}
+
+/**
  * returns the angle difference between two angles as value between -PI and PI,
  * meaning the smaller of the left and right side angles
  */
 double getAngleDeviation(double angle1, double angle2) {
-  double angle_deviation = angle1 - angle2;
-  // get the angle deviation between -PI and PI
-  if (angle_deviation < -M_PI) {
-    angle_deviation = M_2PI + angle_deviation;
-  } else if (angle_deviation > M_PI) {
-    angle_deviation = M_2PI - angle_deviation;
-  }
-  return angle_deviation;
+  return normalizeAngleDeviation(angle1 - angle2);
 }
 
+/** find the distance from the point (cx,cy) to the line segment
+ * determined by the points (ax,ay) and (bx,by)
+ *
+ * distanceSegment = distance from the point to the line segment
+ * distanceLine = distance from the point to the line (assuming
+ *                                       infinite extent in both directions
+ * px, py = projection onto line
+ * */
+void distanceFromLine(double cx, double cy, double ax, double ay ,
+                                          double bx, double by,
+                                          double * distanceSegment, double * distanceLine,
+                                          double * px, double * py)
+{
+/*
+
+Subject 1.02: How do I find the distance from a point to a line?
+
+
+    Let the point be C (Cx,Cy) and the line be AB (Ax,Ay) to (Bx,By).
+    Let P be the point of perpendicular projection of C on AB.  The parameter
+    r, which indicates P's position along AB, is computed by the dot product
+    of AC and AB divided by the square of the length of AB:
+
+    (1)    AC dot AB
+        r = ---------
+            ||AB||^2
+
+    r has the following meaning:
+
+        r=0      P = A
+        r=1      P = B
+        r<0      P is on the backward extension of AB
+        r>1      P is on the forward extension of AB
+        0<r<1    P is interior to AB
+
+    The length of a line segment in d dimensions, AB is computed by:
+
+        L = sqrt( (Bx-Ax)^2 + (By-Ay)^2 + ... + (Bd-Ad)^2)
+
+    so in 2D:
+
+        L = sqrt( (Bx-Ax)^2 + (By-Ay)^2 )
+
+    and the dot product of two vectors in d dimensions, U dot V is computed:
+
+        D = (Ux * Vx) + (Uy * Vy) + ... + (Ud * Vd)
+
+    so in 2D:
+
+        D = (Ux * Vx) + (Uy * Vy)
+
+    So (1) expands to:
+
+            (Cx-Ax)(Bx-Ax) + (Cy-Ay)(By-Ay)
+        r = -------------------------------
+                          L^2
+
+    The point P can then be found:
+
+        Px = Ax + r(Bx-Ax)
+        Py = Ay + r(By-Ay)
+
+    And the distance from A to P = r*L.
+
+    Use another parameter s to indicate the location along PC, with the
+    following meaning:
+          s<0      C is left of AB
+          s>0      C is right of AB
+          s=0      C is on AB
+
+    Compute s as follows:
+
+            (Ay-Cy)(Bx-Ax)-(Ax-Cx)(By-Ay)
+        s = -----------------------------
+                        L^2
+
+
+    Then the distance from C to P = |s|*L.
+
+*/
+
+
+        double r_numerator = (cx-ax)*(bx-ax) + (cy-ay)*(by-ay);
+        double r_denomenator = (bx-ax)*(bx-ax) + (by-ay)*(by-ay);
+        double r = r_numerator / r_denomenator;
+
+        *px = ax + r*(bx-ax);
+        *py = ay + r*(by-ay);
+
+        double s =  ((ay-cy)*(bx-ax)-(ax-cx)*(by-ay) ) / r_denomenator;
+
+        *distanceLine = fabs(s)*sqrt(r_denomenator);
+
+//
+// (xx,yy) is the point on the lineSegment closest to (cx,cy)
+//
+        double xx = *px;
+        double yy = *py;
+
+        if ( (r >= 0) && (r <= 1) )
+        {
+                *distanceSegment = *distanceLine;
+        }
+        else
+        {
+
+                double dist1 = (cx-ax)*(cx-ax) + (cy-ay)*(cy-ay);
+                double dist2 = (cx-bx)*(cx-bx) + (cy-by)*(cy-by);
+                if (dist1 < dist2)
+                {
+                        xx = ax;
+                        yy = ay;
+                        *distanceSegment = sqrt(dist1);
+                }
+                else
+                {
+                        xx = bx;
+                        yy = by;
+                        *distanceSegment = sqrt(dist2);
+                }
+        }
+        return;
+}
+
+/**
+ * returns the path angle in cell2 for going from cell1 over cell2 to cell3
+ */
+double get3CellAngle(hri_bitmap_cell* cell1, hri_bitmap_cell* cell2, hri_bitmap_cell* cell3) {
+  double angle1to2 = atan2(cell2->y - cell1->y, cell2->x - cell1->x);
+  double angle2to3 = atan2(cell3->y - cell2->y, cell3->x - cell2->x);
+  double result = getAngleDeviation(angle1to2, angle2to3);
+  return result;
+}
 
 /**
  * returns the bitmap cell closest to x,y,z doubles of real world
@@ -746,6 +888,44 @@ double getCellDistance (hri_bitmap_cell* cell1, hri_bitmap_cell* cell2 )
   return DISTANCE3D(cell1->x, cell1->y, cell1->z, cell2->x, cell2->y, cell2->z);
 }
 
+/**
+ * returns the nth cell after start, by going backwards from end
+ */
+hri_bitmap_cell* hri_bt_nth_from_start(hri_bitmap_cell* path_start, hri_bitmap_cell* path_end, int n) {
+  // make 2 cells run from end to start in distance n
+  hri_bitmap_cell* runner1 = path_end;
+  hri_bitmap_cell* runner2 = path_end;
+  int delay = n;
+  while (runner1 != NULL) {
+    runner1 = runner1->parent;
+    if (delay > 0) {
+      delay--;
+    } else {
+      runner2 = runner2->parent;
+    }
+  }
+  if (delay == 0) {
+    return runner2;
+  } else {
+    return NULL;
+  }
+}
+
+/**
+ * gets the length of a path from that cell to the origin (cell without parent)
+ * value is in terms of grid square side length, e.g. 1.5 means 1.5 cells away
+ */
+double getPathGridLength(hri_bitmap_cell* path_end) {
+  double length = 0;
+  // make 2 cells run from end to start in distance n
+  hri_bitmap_cell* runner = path_end;
+  while (runner != NULL) {
+    if (runner->parent != NULL) {
+      length += getCellDistance(runner, runner->parent);
+    }
+    runner = runner->parent;
+  }
+}
 
 /**
  * Checks for 3d collision for robot movement from one cell to next, return FALSE if none, TRUE if collision

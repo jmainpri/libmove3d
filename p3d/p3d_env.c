@@ -2096,7 +2096,7 @@ int p3d_end_obj(void) {
     if (XYZ_OBSTACLES->np > 0) {
       double bodyMaxDist = p3d_jnt_compute_max_distance_body_vertex(XYZ_OBSTACLES);
       jntPt->dist = bodyMaxDist > jntPt->dist ? bodyMaxDist : jntPt->dist;
-//Modif Mokhtar : Passage à une fonction separee
+//Modif Mokhtar : Passage a une fonction separee
 //       for (ip = 0;ip < XYZ_OBSTACLES->np;ip++) {
 //         p = XYZ_OBSTACLES->pol[ip];
 // //         if (p->TYPE != P3D_GRAPHIC) {
@@ -2603,7 +2603,7 @@ int p3d_set_multi_graph_data(p3d_rob* r, int nbJoints, int *joints){
         p3d_cntrt * existingCntrt = getJntFixedCntrt(r->cntrt_manager, joints[i]);
         if (existingCntrt == NULL){
           if((r->joints[joints[i]])->type != P3D_BASE && (r->joints[joints[i]])->type != P3D_FIXED){//si ce n'est pas le joint base ni un joint fixe
-            //on cree une contrainte pour chaque joint et on la désactive
+            //on cree une contrainte pour chaque joint et on la desactive
             int Jpasiv[1] = {joints[i]};
             double Dval[1] = {(r->joints[joints[i]])->dof_data[0].v};
             if (p3d_constraint("p3d_fixed_jnt", -1, Jpasiv, -1, NULL,-1, Dval, -1, NULL, -1, 0)){
@@ -2615,7 +2615,7 @@ int p3d_set_multi_graph_data(p3d_rob* r, int nbJoints, int *joints){
         }else{
           (r->mg->mgJoints[r->mg->nbGraphs - 1])->cntrts[i] = -1;
         }
-      }else{// si le joint a déja été déclaré
+      }else{// si le joint a deja ete declare
         return FALSE;
       }
     }

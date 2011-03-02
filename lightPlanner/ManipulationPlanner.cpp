@@ -35,6 +35,8 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robot) :_robot(robot), _config
     _safetyDistanceValue = 0.0;
     setMaxNumberOfTryForIK(10000);
 
+    setDebugSoftMotionMode(false);
+
 #ifdef MULTILOCALPATH
     _BaseMLP = -1;
     _HeadMLP = -1;
@@ -108,6 +110,10 @@ int ManipulationPlanner::cleanTraj() {
 /* ******************************* */
 void ManipulationPlanner::setDebugMode(bool value){
   MPDEBUG = value;
+}
+
+void ManipulationPlanner::setDebugSoftMotionMode(bool value){
+  ENV.setBool(Env::writeSoftMotionFiles, value);
 }
 
 void ManipulationPlanner::setPlanningMethod(p3d_traj* (*funct)(p3d_rob* robot, configPt qs, configPt qg)){
@@ -800,12 +806,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
   
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   
-  if ((*_robot->armManipulationData)[armId].getManipState() != handFree ) 
-  {
-    cout << "Warning::ManipulationPlanner::the robot is not in a hand free state" << endl;
-    //return status;
-  }
-  
   status = computeManipulationData(armId,object, grasp);
   
   if (status == MANIPULATION_TASK_OK)
@@ -875,13 +875,12 @@ printf("tSafetyDistance= %f\n", getSafetyDistanceValue());
         gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);
         if ((traj = computeTrajBetweenTwoConfigs(openConfig, graspConfig, &status)) || (status == MANIPULATION_TASK_EQUAL_QSTART_QGOAL))
         {
-            trajs.push_back(traj);
+          trajs.push_back(traj);
 
-            // This state should be set
-            // After acknolegment by another module
-            (*_robot->armManipulationData)[armId].getManipState() = holdingObjectInStablePose;
-            gpActivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);
-            status = MANIPULATION_TASK_OK;
+          // This state should be set
+          // After acknolegment by another module
+          gpActivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);
+          status = MANIPULATION_TASK_OK;
         }
         else {
           cout << "Warning::ManipulationPlanner::armPickGoto computeTraj failed between openConfig and graspConfig" << endl;
@@ -912,11 +911,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFreePoint(int armId,
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   int updateTatt = false;
   
-  if ((*_robot->armManipulationData)[armId].getManipState() != holdingObjectInStablePose) 
-  {
-    cout << "Warning::ManipulationPlanner:: the robot is not holding object in a stable pose" << endl;
-    //return status;
-  }
   deactivateCcCntrts(_robot, armId);
   p3d_set_and_update_this_robot_conf(_robot, qStart);
   
@@ -971,12 +965,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFreePoint(int armId,
  MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* support, std::vector <p3d_traj*> &trajs) {
 
     MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
-
-    if ((*_robot->armManipulationData)[armId].getManipState() != holdingObjectInStablePose)
-    {
-        cout << "Warning::ManipulationPlanner:: the robot is not holding object in a stable pose" << endl;
-        //return status;
-    }
 
   deactivateCcCntrts(_robot, armId);
   p3d_set_and_update_this_robot_conf(_robot, qStart);

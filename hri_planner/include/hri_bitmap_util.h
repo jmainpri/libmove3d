@@ -12,7 +12,7 @@
 
 int on_map(int x, int y, int z, hri_bitmap* bitmap);
 
-int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell);
+//int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell);
 
 int isHardEdge(hri_bitmap_cell *last_cell, hri_bitmap_cell *middle_cell);
 
@@ -52,7 +52,20 @@ int localPathCollides (hri_bitmapset * btset, hri_bitmap_cell* cell, hri_bitmap_
 
 double getCellDistance (hri_bitmap_cell* cell1, hri_bitmap_cell* cell2 );
 
+double get3CellAngle(hri_bitmap_cell* cell1, hri_bitmap_cell* cell2, hri_bitmap_cell* cell3);
+
+hri_bitmap_cell* hri_bt_nth_from_start(hri_bitmap_cell* path_start, hri_bitmap_cell* path_end, int n);
+
+double getPathGridLength(hri_bitmap_cell* path_end);
+
+double normalizeAngleDeviation(double angle_deviation);
+
 double getAngleDeviation(double angle1, double angle2);
+
+void distanceFromLine(double cx, double cy, double ax, double ay ,
+                                          double bx, double by,
+                                          double * distanceSegment, double * distanceLine,
+                                          double * proPointx, double * proPointy);
 
 double getRotationBoundingCircleRadius(p3d_rob *robot);
 

@@ -604,7 +604,7 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file, bool a
 //  if (param_write_file == true) {
 //    p3d_softMotion_export_traj (robotPt, trajSmPTPPt, 0,
 //                                (char *) "softMotion_PTP_Q.traj",
-//                                (char *) "softMotion_PTP_Seg.traj",
+//                                (char *) "softMotion_PTP_Seg.traj",ENV.getBool (Env::writeSoftMotionFiles),
 //                                ENV.getBool (Env::plotSoftMotionCurve), SAMPLING_TIME, lp,
 //                                positions, smTraj);
 //    }
@@ -622,10 +622,11 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file, bool a
     smTraj.clear ();
     p3d_softMotion_export_traj (robotPt, trajSmPt, 1,
                                 (char *) "softMotion_Smoothed_Q.traj",
-                                (char *) "softMotion_Smoothed_Seg.traj",
+                                (char *) "softMotion_Smoothed_Seg.traj",ENV.getBool (Env::writeSoftMotionFiles),
                                 ENV.getBool (Env::plotSoftMotionCurve), SAMPLING_TIME, lp,
                                 positions, smTraj);
   }
+  
   
 ///////////////////////////////////////////////////
 
@@ -668,8 +669,9 @@ if(approximate == true) {
      * RETURN SM_TRAJ
      */
     smTraj.approximate(discTraj, SAMPLING_TIME, 0.01, 0.1, 36, true);
-    smTraj.save("move3dSoftMotion_Seg.traj");
-
+   if(ENV.getBool (Env::writeSoftMotionFiles)) {
+    smTraj.save((char*)"move3dSoftMotion_Seg.traj");
+   }
 // std::vector<double> maxVel;
 // maxVel.resize(7);
 // 

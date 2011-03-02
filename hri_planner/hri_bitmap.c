@@ -23,8 +23,8 @@ hri_bitmapset* BTSET = NULL;
 hri_bitmapset * ACBTSET = NULL;
 pp3d_graph BTGRAPH = NULL;
 
-int PLACEMENT;
-int PLCMT_TYPE;
+int PLACEMENT = 0; // when plcmt_type is look, then 3, 4, 5, 6, 7 refer to possible placements
+int PLCMT_TYPE; /** Look, body, or approach */
 
 static int insert2table(double value, int cx, int cy, int cz, double * Table,	int * x, int * y, int * z, int l);
 
@@ -136,14 +136,14 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
     return FALSE;
 
   if(bitmap->data == NULL) {
-    hri_bt_create_data(bitmap);
+    hri_bt_create_data(bitmap); /** ALLOC */
   }
   if (type== BT_COMBINED) { // need to initialize obstacles bitmap to activate combined.
     if(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset) == NULL) {
-      hri_bt_create_data(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset));
+      hri_bt_create_data(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset)); /** ALLOC */
     }
   }
-  if(type != BT_PATH ) { // oath bitmap is filled on findPath
+  if(type != BT_PATH ) { // path bitmap is filled on findPath
     if ( !hri_bt_fill_bitmap(bitmapset, type)) {
       PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
       return FALSE;
@@ -155,7 +155,7 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 
 /****************************************************************/
 /*!
- * \brief Fill the bitmap with right parameters as defined by the bitmaps own calculate function
+ * \brief Fill the bitmap of the given type with right values as defined by the bitmaps own calculate function
  *
  * \param type  type of the bitmap
  *
@@ -171,7 +171,7 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
     return FALSE;
   }
 
-  // TK human can change position and comeinto existence
+  // TK human can change position and come into existence
   if(type == BT_OBSTACLES){
     if(btset->bitmap[BT_OBSTACLES] != NULL) {
       hri_bt_create_obstacles(btset);
@@ -328,7 +328,10 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
 
   if( bitmap->type == BT_PATH){
     hri_bt_show_path(btset,bitmap);
-    return;
+    if (btset->parameters->directional_cost == FALSE) {
+      return;
+    }
+
   }
 
 
@@ -377,10 +380,29 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
           }
           break;
         case BT_COMBINED:
+          if(bitmap->data[i][j][0].val == 0)
+                     continue; // don't draw
           if(bitmap->data[i][j][0].val == -2)
             color = Red;
           if(bitmap->data[i][j][0].val == -1)
             continue; // don't draw
+          break;
+        case BT_PATH:
+          if(bitmap->data[i][j][0].val == -2)
+            continue; // don't draw
+          if(bitmap->data[i][j][0].val == -1)
+            continue; // don't draw
+
+          if(bitmap->data[i][j][0].val == 0)
+            continue; // don't draw
+          color = Blue;
+          base = 0;
+          length = 0.2;
+          if (btset->parameters->directional_cost == TRUE) {
+            if (bitmap->data[i][j][0].parent != NULL) {
+              value = fabs((bitmap->data[i][j][0].g - bitmap->data[i][j][0].parent->g)- (btset->parameters->path_length_weight * DISTANCE2D(bitmap->data[i][j][0].parent->x, bitmap->data[i][j][0].parent->y, bitmap->data[i][j][0].x, bitmap->data[i][j][0].y)));
+            }
+          }
           break;
         case BT_VELOCITY:
           if(bitmap->data[i][j][0].val <= -1)
@@ -460,16 +482,54 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   bitmapset->parameters->path_length_weight = 40;
   bitmapset->parameters->soft_collision_distance_weight = 8;
   bitmapset->parameters->soft_collision_base_cost = 15;
-  bitmapset->parameters->start_cell_tolerance = 2;
-  /** reluctance is an experimental feature to prefer previously planned
+  bitmapset->parameters->start_cell_tolerance = 5;
+  bitmapset->parameters->goal_cell_tolerance = 8; // high tolerance for flawed grasp planning
+
+  /** distances between which the social costs of MOVING humans are reduced, up to zero.
+   * Beyond full we do not care about moving humans
+   * anymore, as by the time the robot gets there, the human will be
+   * somewhere else. If start is negative, human will never be considered, not even when close
+   * if full is negative, social costs never deprectate.
+   * if start >= full, then humans are fully considered to full, then not considered at all.
+   * Default are start = 0, full =  -1 **/
+  bitmapset->parameters->moving_human_deprecation_start = 0; // 1;
+  bitmapset->parameters->moving_human_deprecation_full = -1; // 4;
+
+  /** reluctance is an experimental feature to prefer previously planned. Default is FALSE.
    * paths to new ones, that does not seem to change the robot behavior much (maybe in special cases?).
    * Also might be buggy as result path start is not request start */
   bitmapset->parameters->use_changepath_reluctance = FALSE;
   bitmapset->parameters->path_reuse_cell_startcell_tolerance = 3;
   bitmapset->parameters->path_reuse_threshold = 30;
-  /** corridors is an experimental feature to increase costs in the middle of corridors, benefit was not proved yet.*/
+  /** corridors is an experimental feature to increase costs in the middle of corridors, benefit was not proved yet. Default is FALSE*/
   bitmapset->parameters->use_corridors = FALSE;
   bitmapset->parameters->corridor_Costs = 50;
+  /*
+   * directional calculations are an experimental feature, false means costs are stable as described in Sisbot'07
+   * TRUE means going toward human is more expensive than going away from human
+   * default is FALSE */
+  bitmapset->parameters->directional_cost = FALSE;
+  /*
+   * When TRUE, moving humans only have costs where robot moves towards them on their predicted path, not it
+   * crosses the path or goes in the same direction. Only works when directional_cost == TRUE;
+   * default is FALSE
+   */
+  bitmapset->parameters->motion_congruence = FALSE;
+  /** Prevents sharp turns If the angle in the path is greater than this number, the edge won't be allowed.
+   * This is useful in particular when using directional costs.
+   * When value is > Pi, e.g. 4, all angles are allowed.
+   * Experimental feature, therefore Default = 4  */
+  bitmapset->parameters->angle2d_minimum = M_PI_2 - 0.1;
+  /** used if directional_cost == TRUE
+   * the angle at which a human is considered "behind" the robot and thus not relevant for costs
+   * default is M_PI_2 = 90 degrees**/
+  bitmapset->parameters->directional_freePassAngle = M_PI_2 + 0.2;
+  /** used if directional_cost == TRUE
+     * the inverse angle at which a moving human in front of the robot is considered "harmless",
+     * as he does not move towards the robot, but will go elsewhere
+     * 0 means the human goes in the opposite direction (conflict), Pi means he is going in same direction (nice)
+     * default is M_PI_4 = 45 degrees **/
+  bitmapset->parameters->directional_noConflictHeading =  M_PI_4 + 0.2;
 }
 
 
@@ -737,8 +797,8 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
   }
   /* c'est ici qu'on doit gerer le bras */
 
-  prev_orient = atan2(G->last_node->N->q[ROBOTq_Y]-bitmap->current_search_node->y,
-                      G->last_node->N->q[ROBOTq_X]-bitmap->current_search_node->x);
+  prev_orient = atan2(G->last_node->N->q[ROBOTq_Y] - bitmap->current_search_node->y,
+                      G->last_node->N->q[ROBOTq_X] - bitmap->current_search_node->x);
 
   prev_node =  G->last_node->N;
 
@@ -764,10 +824,10 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
 
     /*  q[ROBOTq_RZ] = (prev_orient + atan2((bitmap->current_search_node->y-bitmap->current_search_node->parent->y), */
     /* 					(bitmap->current_search_node->x-bitmap->current_search_node->parent->x)))/2; */
-    if(bitmap->current_search_node != bitmap->search_start) {
+    if (bitmap->current_search_node != bitmap->search_start) {
       q[ROBOTq_RZ] = atan2((bitmap->current_search_node->parent->y-bitmap->current_search_node->y),
                            (bitmap->current_search_node->parent->x-bitmap->current_search_node->x))+M_PI;
-    } else{
+    } else {
       q[ROBOTq_RZ] = G->search_start->q[ROBOTq_RZ];
     }
 
@@ -791,13 +851,12 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
 
   } // end while
     // destroy the last q as it was never used
-  p3d_destroy_config(G->rob,q);
-  dist = p3d_APInode_dist(G,prev_node,G->search_start);
-  p3d_create_edges(G,prev_node ,G->search_start ,dist);
+  p3d_destroy_config(G->rob, q);
+  dist = p3d_APInode_dist(G, prev_node, G->search_start);
+  p3d_create_edges(G, prev_node, G->search_start, dist);
   p3d_merge_comp(G, G->search_start->comp, &(prev_node->comp));
 
   return TRUE;
-
 }
 
 /****************************************************************/
@@ -928,16 +987,35 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   }
 
 
+
+
   // hri_bt_create_obstacles(bitmapset); // update obstacle map
 
   // the following checks are all just relevant for navigation, not for manipulation
   if (!manip) {
-
-    if(hri_bt_isRobotOnCellInCollision(bitmapset, bitmap, new_search_goal, bitmapset->robot->ROBOT_GOTO[11], FALSE)) {
-      PrintError(("Goal Position is in an obstacle or human (%f, %f) \n", qf[0], qf[1]));
-      return HRI_PATH_SEARCH_ERROR_NAV_GOAL_IN_OBSTACLE;
-    }
+      if(hri_bt_isRobotOnCellInCollision(bitmapset, bitmap, new_search_goal, bitmapset->robot->ROBOT_GOTO[11], FALSE)) {
+          if (FALSE) {
+              bitmapset->pathexist = FALSE;
+              PrintError(("Goal Position is in an obstacle or human (%f, %f) \n", qf[0], qf[1]));
+              return HRI_PATH_SEARCH_ERROR_NAV_GOAL_IN_OBSTACLE;
+          } else {
+              new_search_goal =
+                  hri_bt_get_closest_free_cell(bitmapset, bitmap,
+                      qf[0],
+                      qf[1],
+                      qf[2],
+                      bitmapset->robot->ROBOT_GOTO[11],
+                      bitmapset->parameters->goal_cell_tolerance);
+              if(new_search_goal == NULL) {
+                  bitmapset->pathexist = FALSE;
+                  PrintError(("No free Goal Position is free around (%f, %f) in cell range %d\n", qf[0], qf[1], bitmapset->parameters->goal_cell_tolerance));
+                  return HRI_PATH_SEARCH_ERROR_NAV_GOAL_IN_OBSTACLE;
+              }
+          }
+      }
   } // endif not manip
+
+  //printf("Search goal cell  for (%f, %f), %d, %d\n", qf[0], qf[1], new_search_goal->x, new_search_goal->y);
 
   if (bitmapset->parameters->use_changepath_reluctance
       && bitmapset->pathexist) {
@@ -1280,31 +1358,26 @@ configPt hri_bt_set_TARGET()
         /*       } */
         /*       break;  */
     }
-  }
-  if(PLCMT_TYPE == BT_TRG_LOOK){
+  } else  if(PLCMT_TYPE == BT_TRG_LOOK){
     q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-1*cos(orient);
     q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-1*sin(orient);
-  }
-  if(PLCMT_TYPE == BT_TRG_APPROACH){
+  } else if(PLCMT_TYPE == BT_TRG_APPROACH){
     q_f = p3d_copy_config(BTSET->robot, q);
-    while(places < 5){
+    // find the place with minmal costs
+    while(places < 5) {
       if(places == 0){
         q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-1*sin(orient);
         q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*cos(orient);
-      }
-      if(places == 1){
+      } else if(places == 1){
         q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)-0.7*sin(orient);
         q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)+0.7*cos(orient);
-      }
-      if(places == 2){
+      } else if(places == 2){
         q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*cos(orient);
         q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*sin(orient);
-      }
-      if(places == 3){
+      } else if(places == 3){
         q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)+0.7*sin(orient);
         q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)-0.7*cos(orient);
-      }
-      if(places == 4){
+      } else if(places == 4){
         q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*sin(orient);
         q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-1*cos(orient);
       }
@@ -1320,30 +1393,27 @@ configPt hri_bt_set_TARGET()
     if(min == 0){
       q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-1*sin(orient);
       q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*cos(orient);
-    }
-    if(min == 1){
+    } else if(min == 1){
       q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)-0.7*sin(orient);
       q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)+0.7*cos(orient);
-    }
-    if(min == 2){
+    } else if(min == 2){
       q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*cos(orient);
       q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*sin(orient);
-    }
-    if(min == 3){
+    } else if(min == 3){
       q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)+0.7*sin(orient);
       q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)-0.7*cos(orient);
-    }
-    if(min == 4){
+    } else if(min == 4){
       q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*sin(orient);
       q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-1*cos(orient);
     }
 
     q[ROBOTq_RZ] = atan2((BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-q[ROBOTq_Y]),
                          (BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-q[ROBOTq_X]));
-    if(q[ROBOTq_RZ]<0)
+    if(q[ROBOTq_RZ] < 0) {
       q[ROBOTq_RZ] = q[ROBOTq_RZ]+M_PI;
-    else
+    } else {
       q[ROBOTq_RZ] = q[ROBOTq_RZ]-M_PI;
+    }
     /*q[12] = M_PI;
      q[18] = 0; Only for blue humanoid robot */
 
@@ -1357,382 +1427,9 @@ configPt hri_bt_set_TARGET()
 
 }
 
-/****************************************************************/
-/*!
- * \brief Calculate hidden zones cost of the given coordinate
- *
- * \param x x grid coordinate
- * \param y y grid coordinate
- * \param z  coordinate
- *
- * \return the cost
- */
-/****************************************************************/
-double hri_bt_calc_hz_value(hri_bitmapset * btset, int rob_grid_x, int rob_grid_y, int rob_grid_z)
-{
 
-  double humanx, humany;
-  // the position where we want to test for visibility
-  double robotx, roboty;
-  // the closest grid cells where the human stands (rounded down)
-  configPt qhuman, qtarget;
-  double dist;
-  p3d_localpath *path=NULL;
-  double treshhold;
-  double temp_env_dmax, val,res=-3;
 
-  int i, ntest;
 
-  //cannot calculate with empty bitmap or missing visball
-  if (btset == NULL || btset->visball == NULL) {
-    return res;
-  }
-
-  // the realrobot coordinates
-  robotx = btset->pace * rob_grid_x + btset->realx;
-  roboty = btset->pace * rob_grid_y + btset->realy;
-
-  // TODO: need to check visball DOF freedom to match
-  // that of human and target space, else ghost zones will appear
-
-  for(i=0; i<btset->human_no; i++){
-    if(!btset->human[i]->exists)
-      continue;
-    val = -2;
-    treshhold = btset->human[i]->state[btset->human[i]->actual_state].hradius;
-
-    humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
-    humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
-
-    dist = DISTANCE2D(humanx,humany,robotx,roboty);
-
-    if (dist>treshhold){
-      continue;
-    }
-
-    /* to check if position is hidden, let visball go from human config
-     * to target config and check for collisions.
-     */
-    //    check the angle is in human head field of view
-    if (is_in_fow(humanx, humany,
-                  robotx, roboty,
-                  /* head orientation */
-                  btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v +
-                  btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v,
-                  /* roughly 80 degrees */ 0.8 )) {
-
-      // create visball configuration at human position
-      qhuman = p3d_copy_config(btset->visball, btset->visball->ROBOT_POS); /*ALLOC */
-      qhuman[6] = humanx;
-      qhuman[7] = humany;
-      qhuman[8] = btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos[2][3];
-
-      // create visball configuration at target grid cell position
-      qtarget = p3d_copy_config(btset->visball, qhuman); /*ALLOC */
-      qtarget[6] = robotx;
-      qtarget[7] = roboty;
-
-      // deactivate collisions between visball and human and robot
-      p3d_col_deactivate_rob_rob(btset->visball, btset->human[i]->HumanPt);
-      p3d_col_deactivate_rob_rob(btset->visball, btset->robot);
-
-      temp_env_dmax = p3d_get_env_dmax();
-      p3d_set_env_dmax(0);
-
-      // calculate a localpath object for visball from human to goal
-      path = p3d_local_planner(btset->visball, qtarget, qhuman);
-
-      val = -1;
-      if (path == NULL ||  p3d_unvalid_localpath_test(btset->visball, path, &ntest)){
-        val = (double)( (((double)-1000) / treshhold) * dist + 1000);
-      }
-
-      p3d_set_env_dmax(temp_env_dmax);
-      destroy_list_localpath(btset->visball, path);
-
-
-      p3d_destroy_config(btset->visball, qhuman); /* FREE */
-      p3d_destroy_config(btset->visball, qtarget); /* FREE */
-    }  // end if is_in_fow
-
-    // take the maximum of vals for all humans
-    if(res < val){
-      res = val;
-    }
-  } // end for humans
-
-  return res;
-}
-
-/****************************************************************/
-/*!
- * \brief Test if the point is in the field of view of the man
- *
- * \param xh x coordinate of human
- * \param yh y coordinate of human
- * \param xt x coordinate of the point
- * \param yt y coordinate of the point
- * \param orient humans looking direction
- * \param fowangle humans fow angle (angle tolerance left and right)
- *
- * \return the cost
- */
-/****************************************************************/
-static int is_in_fow(double xh, double yh, double xt, double yt, double orient, double fowangle)
-{
-  double angle2human = atan2(yt - yh, xt - xh);
-
-  // check is different depending on orientation of human
-	if (fabs(angle2human - orient) < fowangle) {
-    return TRUE;
-  } else {
-    if ((angle2human > M_PI_2) && (M_PI > angle2human) && (orient < -M_PI_2)
-        && (orient > -M_PI - EPS5))
-      if (orient + M_2PI - angle2human < fowangle) {
-        return TRUE;
-      }
-    if ((angle2human < -M_PI_2) && (-M_PI - EPS5 < angle2human) && (orient
-                                                                    > M_PI_2) && (orient < M_PI + EPS5)) {
-      if (angle2human - orient + M_2PI < fowangle) {
-        return TRUE;
-      }
-    }
-  }
-  return FALSE;
-
-}
-
-/****************************************************************/
-/*!
- * \brief Calculate safety cost of the given coordinate
- *
- * \param x x coordinate
- * \param y y coordinate
- *
- * \return the cost
- */
-/****************************************************************/
-double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
-{
-  int i;
-  double radius,height;
-  double val = 0, sigmoid = 0, quot = 0, res =0;
-  double realx, realy;
-  double humanx, humany;
-  double distance;
-
-  if(btset==NULL){
-    PrintError(("btset is null, cant get distance value\n"));
-    return -1;
-  }
-
-  for(i=0; i<btset->human_no; i++){
-    if(!btset->human[i]->exists)
-      continue;
-    height = btset->human[i]->state[btset->human[i]->actual_state].dheight;
-    radius = btset->human[i]->state[btset->human[i]->actual_state].dradius;
-
-    realx = (x*btset->pace)+btset->realx;
-    realy = (y*btset->pace)+btset->realy;
-    humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
-    humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
-
-    distance = DISTANCE2D(realx,realy,humanx,humany);
-
-    if(distance > radius) {
-      val = 0;
-    } else {
-      // sigmoid function up to radius
-      sigmoid = cos(distance / radius * M_PI_2) + 0;
-      quot = 1 / (0.6 + distance );
-      val = pow(height * (sigmoid * quot), 3);
-    }
-    if(res < val) {
-      res = val;
-    }
-  }
-
-  return res;
-
-}
-
-
-
-
-/****************************************************************/
-/*!
- * \brief Calculate velocity cost of the given coordinate
- *
- * \param x x coordinate
- * \param y y coordinate
- *
- * \return the cost
- */
-/****************************************************************/
-double hri_bt_calc_vel_value(hri_bitmapset * btset,int x, int y, int z)
-{
-
-
-
-  return 0;
-}
-
-
-
-/****************************************************************/
-/*!
- * \brief Calculate visibility cost of the given coordinate
- *
- * \param x x coordinate
- * \param y y coordinate
- *
- * \return the cost
- */
-/****************************************************************/
-double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
-{
-  int i;
-  double radius,height,stretch_back;
-  double val = 0,res =0;
-  double realx, realy;
-  double angle,angle_deviation,deltax,deltay, orient,distance_cosine;
-  double humanx, humany;
-  double distance;
-
-  if(btset==NULL){
-    PrintError(("btset is null, cant get visibility value\n"));
-    return -1;
-  }
-
-  for(i=0; i<btset->human_no; i++){
-    if(!btset->human[i]->exists)
-      continue;
-    height = btset->human[i]->state[btset->human[i]->actual_state].vheight;
-    stretch_back = btset->human[i]->state[btset->human[i]->actual_state].vback;
-    radius = btset->human[i]->state[btset->human[i]->actual_state].vradius;
-
-
-    realx = (x*btset->pace)+btset->realx;
-    realy = (y*btset->pace)+btset->realy;
-    humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
-    humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
-    orient = btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v + btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v;
-
-    distance = DISTANCE2D(realx,realy,humanx,humany);
-
-    if(distance > radius ) {
-      val = 0;
-    } else {
-
-      deltax = realx-humanx;
-      deltay = realy-humany;
-      angle = atan2(deltay, deltax);
-      // orient goes from -PI to PI, angle goes from - PI to PI
-      // get the absolute angle deviation between 0 and PI
-      angle_deviation = ABS(getAngleDeviation(orient, angle));
-
-      if (btset->human[i]->actual_state != BT_MOVING) {
-      	if ((angle_deviation < M_PI_4 )) {
-      		// leave open area in front of human
-      		val =0;
-      	} else {
-      		// cosine function is 0 at borders of radius
-      		distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
-
-      		// use stretch to increase / decrease weight more on more backward angles
-      		val = distance_cosine * (height + (angle_deviation - M_PI_4) * stretch_back);
-      	}
-      } else {
-      	if (angle_deviation < M_PI_4 ) {
-      		// predictive costs
-      		distance_cosine = pow(cos((distance * M_PI_2) / radius), 2); // value between 0 and 1 depending on distance and radius
-
-      		// use stretch to increase / decrease weight more on more backward angles
-      		val = distance_cosine * (height + (M_PI - angle_deviation) * stretch_back);
-      	} else {
-      		val = 0;
-      	}
-      }
-    }
-    if(res < val) {
-      res = val;
-    }
-  }
-
-  return res;
-}
-/****************************************************************/
-/*!
- * \brief Calculate the combined cost of the given coordinate
- *
- * \param x x coordinate
- * \param y y coordinate
- *
- * \returns in case of a sure collision, else the cost combining hidden zones, visibility and distance regardless of collisions
- */
-/****************************************************************/
-double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
-{
-  double dist, vis, hz;
-  int result;
-
-  if(btset==NULL || btset->bitmap==NULL){
-    PrintError(("Try to calculate an unexisting bitmap\n"));
-    return -2;
-  }
-
-  if (btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_SURE_COLLISION) {
-    return -2;
-  }
-
-
-  // if( btset->bitmap[BT_OBSTACLES]!= NULL &&  btset->bitmap[BT_OBSTACLES]->data != NULL)
-  //   if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val < 0)
-  //     return -1;      COMMENT TO CHECK OBSTACLES OUTSIDE OF THIS FUNCTION ACCORDING TO WHERE WE CAME FROM
-
-
-  /* res = p3d_col_test_robot(btset->robot,TRUE); */
-
-  /*   if(res){ */
-  /*     printf("Robot in colision!!!\n"); */
-  /*     return 0; */
-  /*   } */
-
-  hz =  btset->bitmap[BT_HIDZONES]->calculate_cell_value(btset,x,y,z);
-  // hri_bt_calc_hz_value(x,y,z,0,NULL);
-  if(hz > -1)
-    return hz;
-  vis  =  btset->bitmap[BT_VISIBILITY]->calculate_cell_value(btset,x,y,z);
-  // hri_bt_calc_vis_value(x,y,z,0,NULL);
-  dist =  btset->bitmap[BT_DISTANCE]->calculate_cell_value(btset,x,y,z);
-  // dist = hri_bt_calc_dist_VALUE(x,y,z,0,NULL);
-  //printf("Values: %f %f\n",dist,vis);
-  if(btset->combine_type == BT_COMBINE_SUM) {
-    result = dist + vis;
-  } else if(btset->combine_type == BT_COMBINE_MAX) {
-    result = MAX(dist, vis);
-  } else {
-    PrintError(("Can't combine bitmaps\n"));
-    result = 0;
-  }
-
-  if (btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_SURE_CORRIDOR_MARK) {
-    result += btset->parameters->corridor_Costs;
-  }
-
-  if(result > 0 && result < BT_NAVIG_THRESHOLD) {
-    // too little to matter for safety and comfort, but can still make the robot change ways
-    result = 0;
-  }
-  // add costs around objects for object and robot safety
-  if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val > 0) {
-    result +=btset->bitmap[BT_OBSTACLES]->data[x][y][z].val;
-  }
-
-
-  return result;
-
-}
 
 /**************************ASTAR********************************/
 /*!
@@ -1827,7 +1524,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
 /*!
  * \brief A* search: calculate neighbours
  *
- * all neighbors not opened yet will be opened, all openedneighbors will
+ * all neighbors not opened yet will be opened,
  * all opened neighbors will be updated if they are cheaper to reach by the center cell
  *
  * \param bitmap the bitmap
@@ -1871,10 +1568,20 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
           return FALSE;
         }
 
-        if(btset->bitmap[BT_OBSTACLES]->data[x+i][y+j][z+k].val == BT_OBST_SURE_COLLISION) continue; /* Is the cell in obstacle? */
+        if(btset->bitmap[BT_OBSTACLES]->data[x+i][y+j][z+k].val == BT_OBST_SURE_COLLISION) {
+//          printf("collsion in (%d, %d)\n", x+i, y+j);
+          continue; /* Is the cell in obstacle? */
+        }
 
         /* closed cells already have a minimum path to start, and all neighbors opened */
         if(current_cell->closed) continue;
+
+        // prevent sharp turns
+        if (center_cell->parent != NULL
+            && get3CellAngle(center_cell->parent, center_cell, current_cell) >  btset->parameters->angle2d_minimum) {
+          continue;
+        }
+
         /* open cells might have less g cost for going through current node */
         int manhattan_distance = ABS(i) + ABS(j) + ABS(k);
         if (manhattan_distance == 1) {
@@ -1896,8 +1603,9 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
           }
 
         } else { // cell was neither open nor closed
-          if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == FALSE)
+          if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == FALSE) {
             continue;// leave untouched
+          }
           current_cell->h = hri_bt_dist_heuristic(btset, bitmap, current_cell->x, current_cell->y, current_cell->z);
           // TK:dead code never used because of if before
           //          if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == BT_OBST_POTENTIAL_COLLISION
@@ -1923,6 +1631,7 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
    * diagonals that would be reached by going 1 step horizontal or vertical, and one step diagonal.
    *
    * We use the value and open properties use for single grid steps calculated earlier.
+   * To be fair with costs, the cost in a cell are its own costs plus the average of the two "jumped" cells
    */
   if (bitmap->nz == 1) {
     k = 0;
@@ -1954,6 +1663,12 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
 
         /* closed cells already have a minimum path to start, and all neighbors opened */
         if(current_cell->closed) continue;
+
+        // prevent sharp turns
+        if (center_cell->parent != NULL
+            && get3CellAngle(center_cell->parent, center_cell, current_cell) >  btset->parameters->angle2d_minimum) {
+          continue;
+        }
 
         // 2D code, 2 reference points stepped over
         //ref1 is horizontal / vertical stepped over cell, ref2 diagonally stepped over cell
@@ -2151,7 +1866,7 @@ int hri_bt_update_hidzones(hri_bitmapset * btset,double radius)
 
 /****************************************************************/
 /*!
- * \brief reconstructs the distance bitmap
+ * \brief reconstructs the combined bitmap
  * assumes that BT_OBSTACLE bitmap has been updated first.
  * \param radius radius
  * \param heigth height
@@ -2216,7 +1931,38 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
     numOfNodes++;
     bitmap->current_search_node = bitmap->current_search_node->parent;
   }
-  length = numOfNodes+2; /* ADDING 2 FOR START AND GOAL CONFIGS */
+  bitmap->current_search_node = bitmap->search_goal;
+
+  int goalValid = TRUE; // goal config in obstacle (might be allowed)
+  //TODO: int firstValid = TRUE; // first cell point useful?
+  //TODO: int lastValid = TRUE; // last cellpont useful?
+
+
+  configPt qc;
+  qc = p3d_get_robot_config(btset->robot); /** ALLOC */
+  qc[6]  = btset->robot->ROBOT_GOTO[ROBOTq_X];
+  qc[7]  = btset->robot->ROBOT_GOTO[ROBOTq_Y];
+  qc[11] = btset->robot->ROBOT_GOTO[ROBOTq_RZ];
+  p3d_set_and_update_this_robot_conf(btset->robot, qc);
+  if(p3d_col_test_robot_statics(btset->robot, FALSE)){
+    goalValid = FALSE;
+    // for visuals, set robot on last valid point
+    qc = p3d_get_robot_config(btset->robot); /** ALLOC */
+      qc[6]  = (bitmap->current_search_node->x * btset->pace) + btset->realx;
+      qc[7]  = (bitmap->current_search_node->y * btset->pace) + btset->realy;
+      qc[11] = btset->robot->ROBOT_GOTO[ROBOTq_RZ];
+      p3d_set_and_update_this_robot_conf(btset->robot, qc);
+  }
+  p3d_destroy_config(btset->robot, qc); /** FREE */
+
+  if(goalValid) {
+    // goal config is valid
+    length = numOfNodes+2; /* ADDING 2 FOR START AND GOAL CONFIGS */
+    printf("... omitting goal config... ");
+  } else {
+    // goal config is not valid, approaching close position instead
+    length = numOfNodes+1;
+  }
 
   btset->path->xcoord = MY_ALLOC(double,length); /* ALLOC */
   btset->path->ycoord = MY_ALLOC(double,length); /* ALLOC */
@@ -2224,11 +1970,12 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
   btset->path->theta  = MY_ALLOC(double,length); /* ALLOC */
   btset->path->length = length;
 
-  // setting path end position to robot goto position
-  btset->path->xcoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_X];
-  btset->path->ycoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_Y];
-  btset->path->zcoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_Z];
-  btset->path->theta[length-1]  = btset->robot->ROBOT_GOTO[ROBOTq_RZ];
+
+  /**
+    * grid start and end nodes were mere approximations
+    * of the real position, we can get rid of them (though formally
+    * we should check for collisions doing so)
+    */
 
   // setting path start position to robot current position
   btset->path->xcoord[0] = btset->robot->ROBOT_POS[ROBOTq_X];
@@ -2236,12 +1983,23 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
   btset->path->zcoord[0] = btset->robot->ROBOT_POS[ROBOTq_Z];
   btset->path->theta[0]  = btset->robot->ROBOT_POS[ROBOTq_RZ];
 
+  if(goalValid) {
+    //  setting path end position to robot goto position
+    btset->path->xcoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_X];
+    btset->path->ycoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_Y];
+    btset->path->zcoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_Z];
+    btset->path->theta[length-1]  = btset->robot->ROBOT_GOTO[ROBOTq_RZ];
+  }
+
+  // TODO: check whether first and last grid cell make sense, to avoid hard edge, e.g. (0.05, 0.05), (0, 0), (0.1, 0.1)
+
   /*  We assign each array element of the path, except the first and last node, the xyz of from the btset path. */
   bitmap->current_search_node = bitmap->search_goal;
   for (j = numOfNodes; j > 0; j--) {
     btset->path->xcoord[j] = (bitmap->current_search_node->x * btset->pace) + btset->realx;
     btset->path->ycoord[j] = (bitmap->current_search_node->y * btset->pace) + btset->realy;
     btset->path->zcoord[j] = (bitmap->current_search_node->z * btset->pace) + btset->realz;
+    // printf("Added node (%f,%f)\n", btset->path->xcoord[j], btset->path->ycoord[j]);
     bitmap->current_search_node = bitmap->current_search_node->parent;
   }
 
@@ -2581,10 +2339,15 @@ int hri_bt_write_path2file()
 
 }
 
+/**
+ * calls hri_bt_start_search to  perform path search
+ * On success, also sets robot->graph to a new Graph with the path of the solution, for dynamic display in move3d
+ * returns TRUE on search success, false else
+ */
 int hri_bt_calculate_bitmap_path(hri_bitmapset * btset, p3d_rob *robotPt, configPt qs, configPt qg, int manip)
 {
   p3d_graph *G;
-  p3d_node  *Ns=NULL,*Ng=NULL;
+  p3d_node  *nodeStart=NULL,*nodeGoal=NULL;
   p3d_list_node *graph_node;
   configPt  q_s=NULL, q_g=NULL;
   double searchgoal[3], searchstart[3];
@@ -2629,25 +2392,25 @@ int hri_bt_calculate_bitmap_path(hri_bitmapset * btset, p3d_rob *robotPt, config
   robotPt->GRAPH = G;
   graph_node = G->nodes;
 
-  if(Ns == NULL) {
+  if(nodeStart == NULL) {
     q_s = p3d_copy_config(robotPt, qs);
-    Ns = p3d_APInode_make(G,q_s);
-    p3d_insert_node(G,Ns);
-    p3d_create_compco(G,Ns);
-    Ns->type = ISOLATED;
+    nodeStart = p3d_APInode_make(G,q_s);
+    p3d_insert_node(G,nodeStart);
+    p3d_create_compco(G,nodeStart);
+    nodeStart->type = ISOLATED;
   }
 
-  if(Ng == NULL) {
+  if(nodeGoal == NULL) {
     q_g = p3d_copy_config(robotPt, qg);
-    Ng = p3d_APInode_make(G,q_g);
-    p3d_insert_node(G,Ng);
-    p3d_create_compco(G,Ng);
-    Ng->type = ISOLATED;
+    nodeGoal = p3d_APInode_make(G,q_g);
+    p3d_insert_node(G,nodeGoal);
+    p3d_create_compco(G,nodeGoal);
+    nodeGoal->type = ISOLATED;
   }
 
   /* Initialize some data in the graph for the A* graph search */
-  G->search_start = Ns;
-  G->search_goal = Ng;
+  G->search_start = nodeStart;
+  G->search_goal = nodeGoal;
   G->search_done = FALSE;
 
   btset->changed = FALSE;
@@ -2656,7 +2419,7 @@ int hri_bt_calculate_bitmap_path(hri_bitmapset * btset, p3d_rob *robotPt, config
 
   //hri_bt_opt_path(BTSET->bitmap[BT_PATH]);
   //hri_bt_write_path2file();
-  hri_bt_bitmap_to_GRAPH(btset,G,btset->bitmap[BT_PATH]);
+  hri_bt_bitmap_to_GRAPH(btset, G, btset->bitmap[BT_PATH]);
 
   /* hri_print_info_graph(G);*/
   MY_ALLOC_INFO("After hri_hri_planner");
