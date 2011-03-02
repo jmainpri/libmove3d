@@ -589,7 +589,7 @@ p3d_get_robot_config_into(envPt_MM->robot[obj_index],&obj_tmp_pos);
 
      printf("grasp id= %d\n",iter->ID);
      p3d_set_freeflyer_pose(object, T0);
-    (*manipulation->robot()->armManipulationData)[armID].setManipState(handFree) ;
+////    (*manipulation->robot()->armManipulationData)[armID].setManipState(handFree) ;
     
 //     status = manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), m_objStart, m_objGoto, (char*)obj_to_manipulate, (char*)"", *iter, confs, smTrajs);
     status = manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), m_objStart, m_objGoto, (char*)obj_to_manipulate, (char*)"", *iter, confs, smTrajs);
@@ -803,7 +803,7 @@ p3d_get_robot_config_into(envPt_MM->robot[obj_index],&obj_tmp_pos);
 
      printf("grasp id= %d\n",iter->ID);
      p3d_set_freeflyer_pose(object, T0);
-    (*manipulation->robot()->armManipulationData)[armID].setManipState(handFree) ;
+////    (*manipulation->robot()->armManipulationData)[armID].setManipState(handFree) ;
     
 //     status = manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), m_objStart, m_objGoto, (char*)obj_to_manipulate, (char*)"", *iter, confs, smTrajs);
     status = manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), m_objStart, m_objGoto, (char*)obj_to_manipulate, (char*)"", *iter, confs, smTrajs);
@@ -1066,7 +1066,7 @@ if(PLAN_IN_CARTESIAN == 1)
    obj_refConf= p3d_get_robot_config ( object );
 
 
-   ( *manipulation->robot()->armManipulationData ) [armID].setManipState ( handFree ) ;
+////   ( *manipulation->robot()->armManipulationData ) [armID]. ( handFree ) ;
 
    p3d_multiLocalPath_disable_all_groupToPlan ( manipulation->robot() );
 
@@ -1723,7 +1723,7 @@ if(PLAN_IN_CARTESIAN == 1) {
    refConf= p3d_get_robot_config ( manipulation->robot() );
 
 
-   ( *manipulation->robot()->armManipulationData ) [armID].setManipState ( handFree ) ;
+////   ( *manipulation->robot()->armManipulationData ) [armID].setManipState ( handFree ) ;
    p3d_multiLocalPath_disable_all_groupToPlan ( manipulation->robot() );
 
    p3d_multiLocalPath_set_groupToPlan ( manipulation->robot(), manipulation->getUpBodyMLP(), 1 );
@@ -2287,7 +2287,7 @@ if(PLAN_IN_CARTESIAN == 1) {
 // while(graspList.size()>5)
 // graspList.pop_back();
 
-   ( *manipulation->robot()->armManipulationData ) [armID].setManipState ( handFree ) ;
+////   ( *manipulation->robot()->armManipulationData ) [armID].setManipState ( handFree ) ;
    p3d_multiLocalPath_disable_all_groupToPlan ( manipulation->robot() );
    p3d_multiLocalPath_set_groupToPlan ( manipulation->robot(), manipulation->getUpBodyMLP(), 1 );
    int grasp_ctr=0;
@@ -2900,7 +2900,7 @@ std::list<gpPlacement> tmp_placement_list;
      ////if(iter->ID==11)
      ////continue;
      p3d_set_freeflyer_pose(object, T0);
-    (*manipulation->robot()->armManipulationData)[armID].setManipState(handFree) ;
+////    (*manipulation->robot()->armManipulationData)[armID].setManipState(handFree) ;
     
     printf(" >>>>> before armPlanTask(ARM_PICK_GOTO \n");
     status = manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), m_objStart, m_objGoto, (char*)obj_to_manipulate, (char*)"", *iter, confs, smTrajs);
@@ -3159,7 +3159,7 @@ p3d_get_robot_config_into(envPt_MM->robot[obj_index],&obj_tmp_pos);
 
      printf("grasp id= %d\n",iter->ID);
      p3d_set_freeflyer_pose(object, T0);
-    (*manipulation->robot()->armManipulationData)[armID].setManipState(handFree) ;
+////    (*manipulation->robot()->armManipulationData)[armID].setManipState(handFree) ;
     
 //     status = manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), m_objStart, m_objGoto, (char*)obj_to_manipulate, (char*)"", *iter, confs, smTrajs);
     status = manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(), m_objStart, m_objGoto, (char*)obj_to_manipulate, (char*)"", *iter, confs, smTrajs);
