@@ -42,7 +42,9 @@ GRASP,
 LIFT_OBJECT,
 CARRY_OBJECT,
 PUT_DOWN_OBJECT,
-//NOTE: Don't forget to add any new task in init_HRI_task_name_ID_pair() also
+RELEASE_OBJECT,
+RETREAT_HAND,
+//NOTE: Don't forget to add any new task in init_HRI_task_name_ID_map() also
 //Add new sub tasks here before the last line
 
 MAXI_NUM_SUB_TASKS

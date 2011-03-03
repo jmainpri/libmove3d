@@ -55,6 +55,7 @@ typedef struct STRUCT_HRI_ENTITY {
   unsigned long last_detection_time;
   int undetection_iter;
   HRI_DETECTION undetection_status; /* why and how much was the object undetected */
+  double visibility_percentage; /** visibility percentage score for robot for disappear management */
 
   int can_disappear_and_move; /* Can this entity disappear? For example a furniture can be considered a not movable */
   int disappeared; /* Is present but it is not at the place where it is supposed to be */

@@ -54,6 +54,7 @@ HRI_ENTITIES * hri_create_entities()
 	entities->entities[ent_i]->last_detection_time = 0;
 	entities->entities[ent_i]->undetection_iter = 0;
 	entities->entities[ent_i]->undetection_status = HRI_NEVER_DETECTED;
+	entities->entities[ent_i]->visibility_percentage = 0.0;
         entities->entities[ent_i]->can_disappear_and_move = FALSE;
         entities->entities[ent_i]->disappeared = FALSE;
 	entities->entities[ent_i]->last_ismoving_iter = 0;
@@ -727,6 +728,7 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
   HRI_AGENT * agent;
   HRI_KNOWLEDGE_ON_ENTITY * kn_on_ent;
   configPt objectQ;
+  double visibility_percentage_threshold = 80;
 
   //Object moving and disappearance management.
 
@@ -737,6 +739,9 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	if(ents->entities[e_i]->detection_time != ents->entities[e_i]->last_detection_time){
 	  if(!ents->entities[e_i]->is_present)
 	    ents->entities[e_i]->is_present = TRUE;
+	  /// reinitialize visibility percentage for undetection management
+	  if( ents->entities[e_i]->visibility_percentage > 0 )
+	    ents->entities[e_i]->visibility_percentage = 0;
 	  if(ents->entities[e_i]->undetection_status != HRI_DETECTED){
 	    ents->entities[e_i]->undetection_status = HRI_DETECTED;
 	    ents->entities[e_i]->undetection_iter = 0;
@@ -787,38 +792,64 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	if( ents->entities[e_i]->undetection_status != HRI_NEVER_DETECTED){
 	  agent=agents->all_agents[robotMyselfIndex];
 	  kn_on_ent = &agent->knowledge->entities[e_i];	  
-	  if(!ents->entities[e_i]->disappeared && ((kn_on_ent->is_placed_from_visibility == HRI_FOV) || (kn_on_ent->is_placed_from_visibility == HRI_FOA)) && (kn_on_ent->visibility == HRI_VISIBLE) && ents->isWorldStatic){
-	    // iter on unexplained detection
-	    if((ents->entities[e_i]->undetection_status == HRI_UNEXPLAINED_UNDETECTION_ITER) && (ents->entities[e_i]->undetection_iter < hasDisappearFilterLength))
-	      ents->entities[e_i]->undetection_iter++;
-	    //  reach maximum number of unexplained detection
-	    else if((ents->entities[e_i]->undetection_status == HRI_UNEXPLAINED_UNDETECTION_ITER) && (ents->entities[e_i]->undetection_iter == hasDisappearFilterLength))
-	      ents->entities[e_i]->undetection_status = HRI_UNEXPLAINED_UNDETECTION_MAX;
-	    //  initialize iteration on maximum unexplained detection
-	    else if((ents->entities[e_i]->undetection_status != HRI_UNEXPLAINED_UNDETECTION_ITER) && (ents->entities[e_i]->undetection_status != HRI_UNEXPLAINED_UNDETECTION_MAX)){
-	      ents->entities[e_i]->undetection_status = HRI_UNEXPLAINED_UNDETECTION_ITER;
-	      ents->entities[e_i]->undetection_iter = 0;
+	  if(!ents->entities[e_i]->disappeared && ((kn_on_ent->is_placed_from_visibility == HRI_FOV) || (kn_on_ent->is_placed_from_visibility == HRI_FOA)) && (kn_on_ent->visibility == HRI_VISIBLE)){
+	    if(ents->isWorldStatic){
+
+	      // specific test for this entity to assess percentage visibility 
+	      // Todo : when to recompute it. Not all the time but often enough.
+	      if( ents->entities[e_i]->visibility_percentage == 0 ){
+		g3d_compute_visibility_in_fov_for_suspect_undetected_entity( ents, e_i, agent,agents);	    
+		printf("Disappear Management - Visibility percentage : %f for entity %s\n" ,ents->entities[e_i]->visibility_percentage , ents->entities[e_i]->name);
+	      }
+
+	      // We will consider that the object should be detected above a certain threshold
+	      if( ents->entities[e_i]->visibility_percentage > visibility_percentage_threshold){
+	      
+		// iter on unexplained detection
+		if((ents->entities[e_i]->undetection_status == HRI_UNEXPLAINED_UNDETECTION_ITER) && (ents->entities[e_i]->undetection_iter < hasDisappearFilterLength))
+		  ents->entities[e_i]->undetection_iter++;
+		//  reach maximum number of unexplained detection
+		else if((ents->entities[e_i]->undetection_status == HRI_UNEXPLAINED_UNDETECTION_ITER) && (ents->entities[e_i]->undetection_iter == hasDisappearFilterLength))
+		  ents->entities[e_i]->undetection_status = HRI_UNEXPLAINED_UNDETECTION_MAX;
+		//  initialize iteration on maximum unexplained detection
+		else if((ents->entities[e_i]->undetection_status != HRI_UNEXPLAINED_UNDETECTION_ITER) && (ents->entities[e_i]->undetection_status != HRI_UNEXPLAINED_UNDETECTION_MAX)){
+		  ents->entities[e_i]->undetection_status = HRI_UNEXPLAINED_UNDETECTION_ITER;
+		  ents->entities[e_i]->undetection_iter = 0;
+		}
+		// Object has disappeared
+		else if((ents->entities[e_i]->undetection_status == HRI_UNEXPLAINED_UNDETECTION_MAX)){
+		  ents->entities[e_i]->disappeared = TRUE;
+		  ents->eventsInTheWorld = TRUE;
+		  ents->entities[e_i]->is_pl_state_transition_new = TRUE;
+		  ents->entities[e_i]->pl_state_transition = HRI_DISAPPEAR;
+		  printf("%s HAS DISAPPEAR\n",ents->entities[e_i]->name);  
+		  // put object in 0,0,0 if disappear. 	
+		  objectQ = MY_ALLOC(double, ents->entities[e_i]->robotPt->nb_dof); /* ALLOC */
+		  p3d_get_robot_config_into(ents->entities[e_i]->robotPt, &objectQ);
+		  objectQ[6] = objectQ[7] = objectQ[8] = 0;      
+		  p3d_set_and_update_this_robot_conf(ents->entities[e_i]->robotPt, objectQ);
+		  MY_FREE(objectQ, double, ents->entities[e_i]->robotPt->nb_dof); /* FREE */
+		}
+		else
+		  printf("Unmanaged state for undetected objects in  hri_manage_object_disappearance_and_move function\n");
+	      }
+	      else {
+		/** low percentage can explain undetection */	    
+		if(!ents->entities[e_i]->disappeared)
+		  ents->entities[e_i]->undetection_status = HRI_EXPLAINED_UNDETECTION;
+	      }
 	    }
-	    // Object has disappeared
-	    else if((ents->entities[e_i]->undetection_status == HRI_UNEXPLAINED_UNDETECTION_MAX)){
-	      ents->entities[e_i]->disappeared = TRUE;
-	      ents->eventsInTheWorld = TRUE;
-	      ents->entities[e_i]->is_pl_state_transition_new = TRUE;
-	      ents->entities[e_i]->pl_state_transition = HRI_DISAPPEAR;
-	      printf("%s HAS DISAPPEAR\n",ents->entities[e_i]->name);  
-	      // put object in 0,0,0 if disappear. 	
-	      objectQ = MY_ALLOC(double, ents->entities[e_i]->robotPt->nb_dof); /* ALLOC */
-	      p3d_get_robot_config_into(ents->entities[e_i]->robotPt, &objectQ);
-	      objectQ[6] = objectQ[7] = objectQ[8] = 0;      
-	      p3d_set_and_update_this_robot_conf(ents->entities[e_i]->robotPt, objectQ);
-	      MY_FREE(objectQ, double, ents->entities[e_i]->robotPt->nb_dof); /* FREE */
+	    else {
+	      // World is not Static
+	      // need to update visibility precentage for this entity for next disappear management.
+	      ents->entities[e_i]->visibility_percentage = 0;
 	    }
-	    else
-	      printf("Unmanaged state for undetected objects in  hri_manage_object_disappearance_and_move function\n");
+	    
 	  }
-	  else
+	  else {
 	    if(!ents->entities[e_i]->disappeared)
 	      ents->entities[e_i]->undetection_status = HRI_EXPLAINED_UNDETECTION;
+	  }
 	}
       }
     }
@@ -897,8 +928,27 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
       }
 
       if(ents->needSituationAssessmentUpdate && ents->isWorldStatic){
-	// VISIBLITY
-	g3d_compute_visibility_for_given_entities(present_ents, agent, vis_result, present_ents_nb);
+	/*** for Agent itself ( the one that perceive ) , we use a specific visibility*/
+	if(a_i == agents->source_agent_idx){
+	  /** VISIBILITY in fov only and taking into account own agent: we do the actual visibility procesing only for entities in fov and foa ie: that should be perceived if not hidden. For other we remember past values */
+	  /// We first remember past visibility values
+	  for(e_j=0; e_j<present_ents_nb; e_j++) {
+	    ge_j = present_ents_global_idxs[e_j];
+	    kn_on_ent = &agent->knowledge->entities[ge_j];
+	    vis_result[e_j] = kn_on_ent->visibility;
+	  }
+	  /// make sure we can add an entity in the the present entities table to take into account agent itself
+	  if(present_ents_nb<ents->entities_nb)
+	    g3d_compute_visibility_in_fov_for_given_entities(present_ents, ents->entities[agent->entity_idx] , agent, vis_result, present_ents_nb);
+	  else
+	    printf("Number of present entities equal total number of entities. Impossible to use g3d_compute_visibility_in_fov_for_given_entities functions that must be used without agent itself in present entities\n");
+	}
+	else {	  
+	  /** VISIBLITY we recompute visibility from scratch moving pan and tilt to cover all pan and tilt spectrum with fov delta. */
+	  g3d_compute_visibility_for_given_entities(present_ents, agent, vis_result, present_ents_nb); 
+	}
+	  
+
 	
 	for(e_j=0; e_j<present_ents_nb; e_j++) {
 	  ge_j = present_ents_global_idxs[e_j];

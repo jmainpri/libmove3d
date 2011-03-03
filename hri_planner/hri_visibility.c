@@ -122,7 +122,7 @@ int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera
 //! \param object pointer to the object
 //! \param result return the ratio of the visibility of the object
 //! \return TRUE in case of success, FALSE otherwise
-int g3d_get_given_entities_pixelpresence_from_viewpoint(p3d_matrix4 camera_frame, double camera_fov, HRI_ENTITY **objects, int objects_nb, double *results, int save)
+int g3d_get_given_entities_pixelpresence_from_viewpoint(p3d_matrix4 camera_frame, double camera_fov, HRI_ENTITY **objects, int objects_nb, bool display_others_in_blue,double *results, int save)
 {
   GLint viewport[4];
   g3d_states st;
@@ -162,7 +162,7 @@ int g3d_get_given_entities_pixelpresence_from_viewpoint(p3d_matrix4 camera_frame
   g3d_set_projection_matrix(win->vs.projection_mode);
 
   // everything is ready now.
-  g3d_get_given_entities_pixelpresence_in_current_viewpoint(win, objects, objects_nb, results, save, (char*)"/home/easisbot/");
+  g3d_get_given_entities_pixelpresence_in_current_viewpoint(win, objects, objects_nb, display_others_in_blue,results, save, (char*)"/home/mwarnier/");
 
   // restore viewport
   if(!save){
@@ -307,8 +307,8 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
   double * results;
   int i, o_i, j, t;
   double pan_max_head_turning, tilt_max_head_turning, pan_head_turning_iter, tilt_head_turning_iter;
-  double visible_pixel_treshold_init = 0.002;
-  double visible_pixel_treshold = 0.002;
+  double visible_pixel_treshold = 0.001;
+  double visibility_processing_fov = 60; /// for opengl visibility processing we choose one fov different from agent fov. 
   double elevation, azimuth;
   int pan_div_no, tilt_div_no;
   int vis_pl;
@@ -335,16 +335,19 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
       res[i] = HRI_INVISIBLE;
   }
 
+  //TODO : manage better this : Ack to manage big differences in field of view.
+  /* visible_pixel_treshold = visible_pixel_treshold_init*tan( DTOR(30))*tan(DTOR(30))/(tan(DTOR(visibility_processing_fov/2))*tan(DTOR(visibility_processing_fov/2))); */
+
   // SAVE AGENT PARAMETERS
   saved_pan_value = q[panJnt->index_dof];
   saved_tilt_value = q[tiltJnt->index_dof];
 
   // COMPUTE HOW MANY TIMES AGENTS NEEDS TO TURN HIS HEAD TO SEE ALL THE SCENE
   pan_max_head_turning = RTOD(panJnt->dof_data[0].vmax - panJnt->dof_data[0].vmin);
-  pan_div_no = ceil(pan_max_head_turning/agent->perspective->fov);
+  pan_div_no = ceil(pan_max_head_turning/visibility_processing_fov);
   pan_head_turning_iter = DTOR(pan_max_head_turning-0.1)/pan_div_no; // -1 to be sure not to reach panJnt->dof_data[0].vmax
   tilt_max_head_turning = RTOD(tiltJnt->dof_data[0].vmax - tiltJnt->dof_data[0].vmin);
-  tilt_div_no = ceil(tilt_max_head_turning/(agent->perspective->fov*0.75));
+  tilt_div_no = ceil(tilt_max_head_turning/(visibility_processing_fov*0.75));
   tilt_head_turning_iter = DTOR(tilt_max_head_turning-0.1)/tilt_div_no; // -1 to be sure not to reach tiltJnt->dof_data[0].vmax
 
   // FOR EACH TILT
@@ -373,12 +376,9 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
       }
             
       // TEST THEIR VISIBILITY
-      g3d_get_given_entities_pixelpresence_from_viewpoint(agent->perspective->camjoint->abs_pos, agent->perspective->fov,
-							  entities_to_test, o_i, results, save_images);
+      g3d_get_given_entities_pixelpresence_from_viewpoint(agent->perspective->camjoint->abs_pos, visibility_processing_fov,
+							  entities_to_test, o_i, TRUE,results, save_images);
       //printf("%d. Number of tested entities: %d\n", j+2, o_i);
-
-      //TODO : manage better this : Ack to manage big differences in field of view.
-      visible_pixel_treshold = visible_pixel_treshold_init*60*60/(agent->perspective->fov*agent->perspective->fov);
 
       // EVALUATE AND WRITE THE RESULT
       for(i=0; i<o_i; i++) {
@@ -397,6 +397,157 @@ int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * ag
   MY_FREE(results, double, ent_nb); // FREE
   MY_FREE(entities_to_test, HRI_ENTITY *, ent_nb); // FREE
   MY_FREE(entities_to_test_indexes, int, ent_nb); // FREE
+
+  return TRUE;
+}
+
+/** Compute visibility on field of view only and taking into account agent itself (mostly arms and hands) that can hide some objects Added Matthieu Warnier 22/02/2011*/
+
+int g3d_compute_visibility_in_fov_for_given_entities(HRI_ENTITY ** ents, HRI_ENTITY * agent_entity ,HRI_AGENT * agent, HRI_VISIBILITY * res, int ent_nb)
+{
+  HRI_ENTITY ** entities_to_test;
+  int * entities_to_test_indexes;
+  double * results;
+  int i, o_i;
+  double visible_pixel_treshold = 0.001;
+  double visibility_processing_fov = 60; /// for opengl visibility processing we choose one fov different from agent fov. 
+  double elevation, azimuth;
+  int vis_pl;
+  int save_images = FALSE;
+
+  //TODO : manage better this : Ack to manage big differences in field of view.
+  /* visible_pixel_treshold = visible_pixel_treshold_init*tan( DTOR(30))*tan(DTOR(30))/(tan(DTOR(visibility_processing_fov/2))*tan(DTOR(visibility_processing_fov/2))); */
+
+  /// We add one element more in results and entities to test to include agent itself entity
+  results = MY_ALLOC(double, ent_nb+1); // ALLOC
+  entities_to_test = MY_ALLOC(HRI_ENTITY *, ent_nb+1); // ALLOC
+  entities_to_test_indexes = MY_ALLOC(int, ent_nb); // ALLOC
+
+ 
+  for(i=0; i<ent_nb; i++) {
+    if(ents[i]->disappeared)
+      res[i] = HRI_UK_VIS;
+  }
+
+      
+  // SELECT IN FOV/FOA OBJECTS
+  for(o_i=0, i=0; i<ent_nb; i++) {
+    if(ents[i]->disappeared)
+      vis_pl= HRI_UK_VIS_PLACE;
+    else
+      hri_object_visibility_placement(agent, ents[i]->robotPt, &vis_pl, &elevation, &azimuth);
+	  
+    if( (vis_pl == HRI_FOV) || (vis_pl == HRI_FOA)) {
+      entities_to_test[o_i] = ents[i];
+      entities_to_test_indexes[o_i] = i;
+      o_i++;
+    }
+  }
+
+  // Add agent itself. We could try to use only its parts that are in fov
+  entities_to_test[o_i] = agent_entity;
+  o_i++;
+
+  // TEST THEIR VISIBILITY
+  g3d_get_given_entities_pixelpresence_from_viewpoint(agent->perspective->camjoint->abs_pos, visibility_processing_fov,
+						      entities_to_test, o_i, TRUE,results, save_images);
+
+  //printf("agent %s threshold %f\n",agent->robotPt->name,visible_pixel_treshold);
+  // EVALUATE AND WRITE THE RESULT (except for agent itself)
+  for(i=0; i<o_i-1; i++) {
+    //printf("name: %s , value %f , threshold %f , %f\n",entities_to_test[i]->name,results[i],visible_pixel_treshold,results[i]/visible_pixel_treshold);
+    if(visible_pixel_treshold < results[i]) 
+      res[entities_to_test_indexes[i]] = HRI_VISIBLE;
+    else
+      res[entities_to_test_indexes[i]] = HRI_INVISIBLE;    
+  }
+  
+  MY_FREE(results, double, ent_nb+1); // FREE
+  MY_FREE(entities_to_test, HRI_ENTITY *, ent_nb+1); // FREE
+  MY_FREE(entities_to_test_indexes, int, ent_nb); // FREE
+
+  return TRUE;
+}
+
+/** Compute visibility on field of view only and taking into account agent itself (mostly arms and hands) that can hide some objects Added Matthieu Warnier 22/02/2011*/
+
+int g3d_compute_visibility_in_fov_for_suspect_undetected_entity(HRI_ENTITIES * ents, int suspect_undetected_entity_index,HRI_AGENT * agent,HRI_AGENTS * agents)
+{
+  HRI_KNOWLEDGE_ON_ENTITY * kn_on_ent;
+  HRI_ENTITY ** entities_to_test;
+  int * entities_to_test_indexes;
+  double * results;
+  int o_i, e_i , visibility_processing_suspect_undetected_entity_index;
+  double visibility_processing_fov = 60; /// for opengl visibility processing we choose one fov different from agent fov. 
+  double suspect_untedected_entity_real_visibility_score;
+  /* double elevation, azimuth; */
+  /* int vis_pl; */
+  int save_images = FALSE;
+
+
+  /// We add one element more in results and entities to test to include agent itself entity
+  results = MY_ALLOC(double,ents->entities_nb ); // ALLOC
+  entities_to_test = MY_ALLOC(HRI_ENTITY *,ents->entities_nb ); // ALLOC
+  entities_to_test_indexes = MY_ALLOC(int,ents->entities_nb ); // ALLOC
+  
+  /// First select entities that are present, not disppeared not part or agent itself and in FOV / FOA.
+  for(o_i=0, e_i=0; e_i<ents->entities_nb; e_i++) {
+    // If the entity is a part of the current agent, we skip it since it doesn't make sense to compute it from his own point of view
+    // TODO: Or does it?
+    if( (ents->entities[e_i]->type == HRI_AGENT_PART) || (ents->entities[e_i]->type == HRI_ISAGENT) ) {
+      if( agent == agents->all_agents[ents->entities[e_i]->agent_idx] )
+	continue;
+    }
+  	   
+    if(ents->entities[e_i]->is_present && !ents->entities[e_i]->disappeared) {
+      kn_on_ent = &agent->knowledge->entities[e_i];  
+      if((kn_on_ent->is_placed_from_visibility == HRI_FOV) || (kn_on_ent->is_placed_from_visibility == HRI_FOA)){
+	entities_to_test[o_i] = ents->entities[e_i];
+	entities_to_test_indexes[o_i] = e_i;
+	//printf("Entity name %s",ents->entities[e_i]->name);
+	if(suspect_undetected_entity_index == e_i)
+	  visibility_processing_suspect_undetected_entity_index = o_i;
+	o_i++;
+      }
+    }
+  }
+  //printf("g3d_compute_visibility_in_fov_for_suspect_undetected_entity :%d %d\n",visibility_processing_suspect_undetected_entity_index, o_i);
+
+  // Check we do not have too many entities in the selection. It should not be possible and would create some memory problems
+  if(o_i < ents->entities_nb){
+    
+    // Add agent itself. We could try to use only its parts that are in fov
+    entities_to_test[o_i] = ents->entities[agent->entity_idx];
+    o_i++;
+  
+    // TEST REAL VISIBILITY
+    g3d_get_given_entities_pixelpresence_from_viewpoint(agent->perspective->camjoint->abs_pos, visibility_processing_fov,
+							entities_to_test, o_i,TRUE, results, save_images);
+
+    // Save suspect object value
+    suspect_untedected_entity_real_visibility_score = results[visibility_processing_suspect_undetected_entity_index];
+ 
+    o_i=0;
+    entities_to_test[o_i] = ents->entities[suspect_undetected_entity_index];
+    o_i++;
+
+    // TEST OBJECT ONLY VISIBILITY
+    g3d_get_given_entities_pixelpresence_from_viewpoint(agent->perspective->camjoint->abs_pos, visibility_processing_fov,
+							entities_to_test, o_i, FALSE , results, save_images);
+
+    if(results[0]>0)
+      ents->entities[suspect_undetected_entity_index]->visibility_percentage = suspect_untedected_entity_real_visibility_score / results[0]*100;
+    else
+      printf("impossible Result 0 for object only visibility in g3d_compute_visibility_in_fov_for_suspect_undetected_entity\n");
+
+    //printf("g3d_compute_visibility_in_fov_for_suspect_undetected_entity :%f %f %f\n",suspect_untedected_entity_real_visibility_score ,results[0] , ents->entities[suspect_undetected_entity_index]->visibility_percentage);
+
+  }
+  else
+    printf("entity table size too bif g3d_compute_visibility_in_fov_for_suspect_undetected_entity\n");
+  MY_FREE(results, double, ents->entities_nb); // FREE
+  MY_FREE(entities_to_test, HRI_ENTITY *, ents->entities_nb); // FREE
+  MY_FREE(entities_to_test_indexes, int, ents->entities_nb); // FREE
 
   return TRUE;
 }
@@ -510,16 +661,17 @@ int g3d_visibility_for_given_objects_in_current_viewpoint_pixelpercentage(g3d_wi
 }
 
 /* Computes visibility in one image acquisition for given objects */
-int g3d_get_given_entities_pixelpresence_in_current_viewpoint(g3d_win* win, HRI_ENTITY **objects, int objects_nb,
-                                                             double *vis_results, int save, char *path)
+int g3d_get_given_entities_pixelpresence_in_current_viewpoint(g3d_win* win, HRI_ENTITY **objects, int objects_nb, bool display_others_in_blue , double *vis_results, int save, char *path)
 {
   unsigned char *image;
-  int i, width, height;
+  int i, width, height,pixel_value_to_array_index;
   GLint viewport[4];
   static int crntcnt = 0;
   char name[256];
   double color[4]= {0,0,0,1};
   int *visiblepixels;
+  p3d_rob_display_mode _p3d_rob_display_mode;
+  p3d_obj_display_mode _p3d_obj_display_mode;
 
   if(objects_nb == 0) {
     return TRUE;
@@ -545,11 +697,23 @@ int g3d_get_given_entities_pixelpresence_in_current_viewpoint(g3d_win* win, HRI_
   //do not forget to set the backgroung to black:
   g3d_set_win_bgcolor(win->vs, 0, 0, 0);
 
+  //Choose how to display others objects and robs.
+  if(display_others_in_blue){
+    // Others rob and objects are displayed in blue. It will hide one entity even if the hiding rob or obj is not in the entities itself  
+    _p3d_obj_display_mode = P3D_OBJ_UNLIT_BLUE_DISPLAY;
+    _p3d_rob_display_mode = P3D_ROB_UNLIT_BLUE_DISPLAY;
+  }
+  else {
+    // Others rob and objects are not displayed. Use it with only one entity. We can have visibility score as if entity was not hidden at all to process percentage visibility.
+    _p3d_obj_display_mode = P3D_OBJ_NO_DISPLAY;
+    _p3d_rob_display_mode = P3D_ROB_NO_DISPLAY;
+  }
+
   for(i=0; i<XYZ_ENV->no; i++) {
-    p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_UNLIT_BLUE_DISPLAY);
+    p3d_set_obj_display_mode(XYZ_ENV->o[i], _p3d_obj_display_mode);
   }
   for(i=0; i<XYZ_ENV->nr; i++) {
-    p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_UNLIT_BLUE_DISPLAY);
+    p3d_set_robot_display_mode(XYZ_ENV->robot[i], _p3d_rob_display_mode); 
   }
 
   // display all the objects in a single image in the different colors of red
@@ -572,7 +736,12 @@ int g3d_get_given_entities_pixelpresence_in_current_viewpoint(g3d_win* win, HRI_
 
   for(i=0; i<width*height; i++){
     if(image[3*i]>0) {
-      visiblepixels[(int)((image[3*i])/10)-1]++;
+      //add test to avoid unending segmentation fault due to wrong image being used so that the resulting array index is bigger than the table size
+      pixel_value_to_array_index = (int)((image[3*i])/10)-1; 
+      if(pixel_value_to_array_index<objects_nb)
+	visiblepixels[pixel_value_to_array_index]++;
+      else
+	printf("Wrong image for visibility calculation in BackBuffer in g3d_get_given_entities_pixelpresence_in_current_viewpoint");
     }
   }
 

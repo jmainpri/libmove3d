@@ -1034,6 +1034,7 @@ if(PLAN_IN_CARTESIAN == 1)
    p3d_rob* object= ( p3d_rob* ) p3d_get_robot_by_name ( ( char* ) obj_to_manipulate );
    int armID= 0;
    p3d_matrix4 Tplacement0, T;
+   p3d_matrix4 Tfinal_placement;
 //   gpGrasp grasp;
    MANIPULATION_TASK_MESSAGE status;
    int result;
@@ -1052,6 +1053,7 @@ if(PLAN_IN_CARTESIAN == 1)
    std::vector <p3d_traj*> trajs;
    std::vector <p3d_traj*> take_trajs;
    std::vector <p3d_traj*> place_trajs;
+   std::vector <p3d_traj*> release_obj_trajs;
    double visibility, confCost;
 
    p3d_get_freeflyer_pose ( object, Tplacement0 );
@@ -1270,7 +1272,7 @@ if(PLAN_IN_CARTESIAN == 1)
                               ManipulationUtils::fixAllHands (manipulation->robot(), NULL, false );
                               p3d_set_freeflyer_pose ( object, Tplacement );
                               ////p3d_matrix4 testFrame;
-                              ////p3d_mat4Copy(Tplacement,testFrame);
+                              p3d_mat4Copy(Tplacement,Tfinal_placement);
                               
                               placeConf= setRobotGraspPosWithoutBase ( manipulation->robot(), Tplacement, tAtt,  0, 0, armID, false );
                               ////ManipulationUtils::copyConfigToFORM ( object, placeConf ); 
@@ -1361,12 +1363,12 @@ if(PLAN_IN_CARTESIAN == 1)
                                 
                                p3d_set_freeflyer_pose ( object, Tplacement0);
 
-                               ManipulationUtils::copyConfigToFORM ( manipulation->robot(), graspConf );
+                               ////ManipulationUtils::copyConfigToFORM ( manipulation->robot(), graspConf );
                                ////if(liftConf!=NULL)
                                ////{
                                   printf(" %d th IK Found to lift \n",j);
-                                  ManipulationUtils::copyConfigToFORM ( manipulation->robot(), liftConf );
-                                  ManipulationUtils::copyConfigToFORM ( manipulation->robot(), placeConf );
+                                 //// ManipulationUtils::copyConfigToFORM ( manipulation->robot(), liftConf );
+                                  ////ManipulationUtils::copyConfigToFORM ( manipulation->robot(), placeConf );
 //                                   ManipulationUtils::fixAllHands ( manipulation->robot(), NULL, false );
                                   manipulation->robot()->isCarryingObject = TRUE;
                                   (*manipulation->robot()->armManipulationData)[armID].setCarriedObject(object);
@@ -1380,11 +1382,13 @@ if(PLAN_IN_CARTESIAN == 1)
 //     for(int i=0; i<manipulation->robot()->armManipulationData->size(); i++) {
 //      manipulation->setArmCartesian(i,true);
 //     }
-//     }
+//     }                           
+                                  ManipulationUtils::copyConfigToFORM ( manipulation->robot(), graspConf );
                                   MANIPULATION_TASK_MESSAGE place_status = manipulation->armPickTakeToFree(armID, graspConf, placeConf, object, support, liftConf, *igrasp, place_trajs);
-
+                                 
                                   if ( place_status==MANIPULATION_TASK_OK )
                                   {
+                                 
                                   printf ( " Found for grasp_ctr=%d, and plac_ctr %d \n",grasp_ctr,plac_ctr );
 /*
                                   manipulation->robot()->tcur=place_trajs[0];
@@ -1424,6 +1428,38 @@ if(PLAN_IN_CARTESIAN == 1)
                                   traj_sub_task.traj=place_trajs[1];
                                   res_trajs.sub_task_traj.push_back(traj_sub_task);
 
+                                  if(1)
+                                  {
+                                  //p3d_set_freeflyer_pose ( object, Tfinal_placement );
+                                  //p3d_get_freeflyer_pose2 ( object,  &x, &y, &z, &rx, &ry, &rz );
+                                  //printf(" >>> Obj final pos (x, y, z, rx, ry, rz)=(%lf, %lf, %lf, %lf, %lf, %lf) \n",x, y, z, rx, ry, rz);
+
+
+                                  manipulation->getManipulationData().clear();
+                                  manipulation->getManipulationData().setAttachFrame(tAtt);
+                                  manipulation->getManipulationData().setGraspConfig(placeConf);
+                                  manipulation->getManipulationData().setGrasp(&(*igrasp));
+
+                                  
+                                  ManipulationUtils::copyConfigToFORM ( manipulation->robot(), placeConf );
+
+                                  MANIPULATION_TASK_MESSAGE release_obj_status = manipulation->armEscapeObject(armID, placeConf,  object, release_obj_trajs);
+                                  printf(" release_obj_status= %d \n",release_obj_status);
+
+                                  if(release_obj_status==MANIPULATION_TASK_OK)
+                                   {
+                                  printf("release_obj_trajs.size()=%d\n",release_obj_trajs.size());
+                                  traj_sub_task.armID=armID;
+                                  traj_sub_task.sub_task_type=RELEASE_OBJECT;
+                                  traj_sub_task.traj=release_obj_trajs[0];
+                                  res_trajs.sub_task_traj.push_back(traj_sub_task); 
+
+                                  traj_sub_task.armID=armID;
+                                  traj_sub_task.sub_task_type=RETREAT_HAND;
+                                  traj_sub_task.traj=release_obj_trajs[1];
+                                  res_trajs.sub_task_traj.push_back(traj_sub_task); 
+                                   }
+                                  } 
 /* Below is commented because no need to concatinate traj now and no need to generate soft motion
  
                                   manipulation->concatTrajectories ( place_trajs, &traj );
