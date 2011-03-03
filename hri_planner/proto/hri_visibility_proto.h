@@ -21,4 +21,6 @@ extern int g3d_is_object_visible_from_current_viewpoint2(g3d_win* win, p3d_rob *
 extern int hri_compute_agent_sees(HRI_AGENT * agent, int threshold, int save, int draw_at_end);
 extern int hri_turn_agent_head_direction(HRI_AGENT *agent, double elevation, double azimuth);
 extern int g3d_compute_visibility_for_given_entities(HRI_ENTITY ** ents, HRI_AGENT * agent, HRI_VISIBILITY * res, int res_nb);
+extern int g3d_compute_visibility_in_fov_for_given_entities(HRI_ENTITY ** ents,HRI_ENTITY * agent_entity , HRI_AGENT * agent, HRI_VISIBILITY * res, int res_nb);
+extern int g3d_compute_visibility_in_fov_for_suspect_undetected_entity(HRI_ENTITIES * ents, int suspect_undetected_entity_index,HRI_AGENT * agent,HRI_AGENTS * agents);
 extern double hri_simple_is_point_visible_by_robot(p3d_vector3 point,p3d_rob* robotPt);
