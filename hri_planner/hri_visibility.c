@@ -639,6 +639,79 @@ void p3d_cartesian2spherical(double x, double y, double z,
   *theta = acos( (z-originz)/distance );
 }
 
+const int HRICS_HUMANj_NECK_PAN=  5;
+const int HRICS_HUMANj_NECK_TILT= 6;
+const double HRICS_HRI_EYE_TOLERANCE_TILT=0.3;
+const double HRICS_HRI_EYE_TOLERANCE_PAN=0.3;
+
+double hri_simple_is_point_visible_by_robot(p3d_vector3 point,p3d_rob* robotPt)
+{
+  {
+    double phi,theta;
+    double Dphi, Dtheta;
+    //	double Ccoord[6];
+    p3d_vector4 realcoord,newcoord;
+    p3d_matrix4 inv;
+    
+    realcoord[0] = point[0];
+    realcoord[1] = point[1];
+    realcoord[2] = point[2];
+    realcoord[3] = 1;
+    
+    // get the right frame
+    p3d_matrix4 newABS;
+    p3d_matrix4 rotation ={	{1,0,0,0},
+      {0,0,-1,0},
+      {0,1,0,0},
+      {0,0,0,1}};
+    //Matrix4d newAbsPos; = m_Human->getRobotStruct()->joints[HUMANj_NECK_TILT]->abs_pos
+    
+    p3d_mat4Mult(robotPt->joints[HRICS_HUMANj_NECK_TILT]->abs_pos,rotation,newABS);
+    
+    //	p3d_mat4ExtractPosReverseOrder(m_Human->getRobotStruct()->joints[6]->abs_pos,
+    //								   Ccoord, Ccoord+1, Ccoord+2,Ccoord+3, Ccoord+4, Ccoord+5);
+    
+    p3d_matInvertXform(newABS,inv);
+    
+    p3d_matvec4Mult(inv, realcoord, newcoord);
+    
+    //p3d_psp_cartesian2spherical(newcoord[0],newcoord[1],newcoord[2],
+    //								0,0,0,&phi,&theta);
+    
+    {
+      double x =newcoord[0];
+      double y =newcoord[1];
+      double z =newcoord[2];
+      
+      double originx=0;
+      double originy=0;
+      double originz=0;
+      
+      double distance = DISTANCE3D(x,y,z,originx,originy,originz);
+      
+      phi = atan2( (y-originy),(x-originx) );
+      theta = acos( (z-originz)/distance );
+    }
+    
+    phi = ABS(phi);
+    theta = ABS(theta - M_PI_2);
+    
+    if(phi < HRICS_HRI_EYE_TOLERANCE_PAN/2.)
+      Dphi = 0;
+    else
+      Dphi = phi - HRICS_HRI_EYE_TOLERANCE_PAN/2.;
+    
+    if(theta < HRICS_HRI_EYE_TOLERANCE_TILT/2.)
+      Dtheta = 0;
+    else
+      Dtheta = theta - HRICS_HRI_EYE_TOLERANCE_TILT/2.;
+    
+    return (Dtheta+Dphi)/(M_2PI-(HRICS_HRI_EYE_TOLERANCE_TILT/2.)-(HRICS_HRI_EYE_TOLERANCE_PAN/2.))/0.65;
+    //return Dphi/M_PI;
+    //return Dtheta/M_PI_2;
+  } 
+}
+
 int hri_entity_visibility_placement(HRI_AGENT *agent, HRI_ENTITY *ent, int *result, double *elevation, double *azimuth)
 {
 
