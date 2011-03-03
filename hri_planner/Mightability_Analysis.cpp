@@ -846,6 +846,9 @@ int init_HRI_task_name_ID_map()
  HRI_sub_task_NAME_ID_map[LIFT_OBJECT]="LIFT_OBJECT";
  HRI_sub_task_NAME_ID_map[CARRY_OBJECT]="CARRY_OBJECT";
  HRI_sub_task_NAME_ID_map[PUT_DOWN_OBJECT]="PUT_DOWN_OBJECT";
+ HRI_sub_task_NAME_ID_map[RELEASE_OBJECT]="RELEASE_OBJECT";
+ HRI_sub_task_NAME_ID_map[RETREAT_HAND]="RETREAT_HAND";
+
 /*
  HRI_task_NAME_ID_pair.push_back(std::make_pair(MAKE_OBJECT_ACCESSIBLE,"MAKE_OBJECT_ACCESSIBLE"));
  HRI_task_NAME_ID_pair.push_back(std::make_pair(SHOW_OBJECT,"SHOW_OBJECT"));

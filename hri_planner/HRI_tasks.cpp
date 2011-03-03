@@ -1052,6 +1052,7 @@ if(PLAN_IN_CARTESIAN == 1)
    std::vector <p3d_traj*> trajs;
    std::vector <p3d_traj*> take_trajs;
    std::vector <p3d_traj*> place_trajs;
+   std::vector <p3d_traj*> release_obj_trajs;
    double visibility, confCost;
 
    p3d_get_freeflyer_pose ( object, Tplacement0 );
@@ -1424,6 +1425,24 @@ if(PLAN_IN_CARTESIAN == 1)
                                   traj_sub_task.traj=place_trajs[1];
                                   res_trajs.sub_task_traj.push_back(traj_sub_task);
 
+                                  if(1)
+                                  {
+                                  MANIPULATION_TASK_MESSAGE release_obj_status = manipulation->armEscapeObject(armID, placeConf,  object, release_obj_trajs);
+                                  printf(" release_obj_status= %d \n",release_obj_status);
+                                  if(release_obj_status==MANIPULATION_TASK_OK)
+                                   {
+                                  printf("release_obj_trajs.size()=%d\n",release_obj_trajs.size());
+                                  traj_sub_task.armID=armID;
+                                  traj_sub_task.sub_task_type=RELEASE_OBJECT;
+                                  traj_sub_task.traj=release_obj_trajs[0];
+                                  res_trajs.sub_task_traj.push_back(traj_sub_task); 
+
+                                  traj_sub_task.armID=armID;
+                                  traj_sub_task.sub_task_type=RETREAT_HAND;
+                                  traj_sub_task.traj=release_obj_trajs[1];
+                                  res_trajs.sub_task_traj.push_back(traj_sub_task); 
+                                   }
+                                  } 
 /* Below is commented because no need to concatinate traj now and no need to generate soft motion
  
                                   manipulation->concatTrajectories ( place_trajs, &traj );
