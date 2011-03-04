@@ -3494,6 +3494,50 @@ void g3d_draw_solid_cylinder(double radius, double length, int nbSegments)
 }
 
 //! @ingroup graphic
+//! Draws a cylinder and aligned along z-axis.
+//! \param x x coordinate of the sphere cylinder
+//! \param y y coordinate of the sphere cylinder
+//! \param radius cylinder radius
+//! \param length cylinder length
+//! \param nbSegments number of segments of the discretization of the cylinder's section
+void g3d_draw_solid_cylinder(double x_, double y_, double radius, double length, int nbSegments)
+{
+  int i;
+  float alpha, dalpha, *cost, *sint;
+  cost= sint= NULL;
+
+  if(nbSegments < 3)
+  { nbSegments= 3; }
+  if(nbSegments > 100)
+  { nbSegments= 100; }
+
+  cost= new float[nbSegments+1];
+  sint= new float[nbSegments+1];
+
+  dalpha= 2*M_PI/((float) nbSegments);
+  for(i=0; i<=nbSegments; i++)
+  {
+    alpha= i*dalpha;
+    cost[i]= cos(alpha);
+    sint[i]= sin(alpha);
+  }
+
+
+  glBegin(GL_TRIANGLE_STRIP);
+   for(i=0; i<=nbSegments; i++)
+   {
+     glNormal3f(cost[i], sint[i], 0.0);
+     glVertex3f(x_ + radius*cost[i], y_ + radius*sint[i], length/2 +  0.5*length);
+     glVertex3f(x_ + radius*cost[i], y_ + radius*sint[i], length/2 + -0.5*length);
+   }
+  glEnd();
+
+
+  delete [] cost;
+  delete [] sint;
+}
+
+//! @ingroup graphic
 //! Draws the face normals of a body. Each normal is drawn starting from the face center.
 //! \param obj pointer to the body
 //! \param length length of the displayed normals
