@@ -134,8 +134,8 @@ class  ManipulationPlanner {
     MANIPULATION_TASK_MESSAGE armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, p3d_rob* support, configPt approachGraspConfig, configPt depositConfig, std::vector <p3d_traj*> &trajs);
 
     /** Move the arm to escape from a placed object */
-    MANIPULATION_TASK_MESSAGE armEscapeObject(int armId, configPt qStart, p3d_rob* object, std::vector <p3d_traj*> trajs);
-    MANIPULATION_TASK_MESSAGE armEscapeObject(int armId, configPt qStart, configPt openGraspConfig, configPt approachFreeConfig, p3d_rob* object, std::vector <p3d_traj*> trajs);
+    MANIPULATION_TASK_MESSAGE armEscapeObject(int armId, configPt qStart, p3d_rob* object, std::vector <p3d_traj*> &trajs);
+    MANIPULATION_TASK_MESSAGE armEscapeObject(int armId, configPt qStart, configPt openGraspConfig, configPt approachFreeConfig, p3d_rob* object, std::vector <p3d_traj*> &trajs);
   /* ******************************* */
   /* ******** Task Planning ******** */
   /* ******************************* */
