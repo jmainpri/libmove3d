@@ -193,7 +193,7 @@ int show_obstacle_cells_belonging_to(int object_index);
 point_co_ordi point_to_put;
 int MM_RECORD_MOVIE_FRAMES=0;
 int AKP_RECORD_WINDOW_MOVEMENT=0;
-#if !defined(COMPILE_FOR_GENOM)
+#if defined(WITH_XFORM)
 int AKP_record_movie_frames();
 #endif
 point_co_ordi human1_curr_eye_pos; //To store the eye pos used in calculating the 3D grid visibility from the current head orientation
@@ -432,7 +432,7 @@ int execute_Mightability_Map_functions()
 	g3d_drawDisc(hum_R_shoulder_pos[0], hum_R_shoulder_pos[1], hum_R_shoulder_pos[2], 0.05, 4, NULL);
       */ 
       ////g3d_drawDisc(point_to_look[0], point_to_look[1], point_to_look[2], 0.1, 4, NULL);
-#if !defined(COMPILE_FOR_GENOM)
+#if defined(WITH_XFORM)
       if(MM_RECORD_MOVIE_FRAMES==1)
 	{
 	  AKP_record_movie_frames();
@@ -736,7 +736,7 @@ static int movie_count = 0;
 static int image_rate = 1;
 static int image_compress = 100;
 
-#if !defined(COMPILE_FOR_GENOM)
+#if defined(WITH_XFORM)
 int AKP_record_movie_frames()
 {
   char str[512];
@@ -800,7 +800,7 @@ int move_object_on_a_path()
       p3d_set_and_update_this_robot_conf(envPt_MM->robot[obj_index_2], rob_cur_pos_2); 
       robots_status_for_Mightability_Maps[obj_index_2].has_moved=1;
   
-#if !defined(COMPILE_FOR_GENOM)  
+#if defined(WITH_XFORM)  
       fl_check_forms();
 #endif 
       g3d_draw_allwin_active();
@@ -4560,7 +4560,7 @@ int get_set_of_points_to_give_object(char *object_name)
   }
 */
 /*
-  #if !defined(COMPILE_FOR_GENOM)  
+  #if defined(WITH_XFORM)  
   int get_points_on_FOV_screen(p3d_rob *r)
   {
   printf(">>>> get_points_on_FOV_screen, r->cam_body_index =%d\n",r->cam_body_index);
@@ -4673,7 +4673,7 @@ int check_inside_polygon(int no_vertices, point_co_ordi *vertices, point_co_ordi
 
 }
 
-#if !defined(COMPILE_FOR_GENOM)
+#if defined(WITH_XFORM)
 int is_point_in_fov(p3d_rob* robot, p3d_vector4 p)
 {
   
@@ -4688,7 +4688,7 @@ int is_point_in_fov(p3d_rob* robot, p3d_vector4 p)
   //robot->cam_v_angle = angleW;
   int plane;
   G3D_Window *win = g3d_get_win_by_name("Perspective");
-#if !defined(COMPILE_FOR_GENOM)  
+#if defined(WITH_XFORM)  
   g3d_refresh_win(win);
 #endif
   int is_in_FOV=0;
@@ -10126,7 +10126,7 @@ agent_type=JIDO_MA;
   return 1;
 }
 /*
-  #if !defined(COMPILE_FOR_GENOM)  
+  #if defined(WITH_XFORM)  
   int find_affordance_new()
   {
 
@@ -11168,7 +11168,7 @@ for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
 
 }
 /*
-  #if !defined(COMPILE_FOR_GENOM)  
+  #if defined(WITH_XFORM)  
   int update_Mightability_Maps()
   {
   double total_time=0.0;
@@ -19263,7 +19263,7 @@ int is_object_visible_for_agent(HRI_AGENT * agent, p3d_rob *object, double thres
   /////g3d_draw_win(win);
     ////return 0;
     g3d_draw_allwin_active();
-#if !defined(COMPILE_FOR_GENOM)
+#if defined(WITH_XFORM)
     fl_check_forms();
 #endif
     //everything is ready now.
@@ -19286,7 +19286,7 @@ int is_object_visible_for_agent(HRI_AGENT * agent, p3d_rob *object, double thres
     //AKP
     ////////printf("  >>>>>>> result = %lf, visibility = %lf \n",result, 100.0*result);
     g3d_draw_allwin_active();
-#if !defined(COMPILE_FOR_GENOM)
+#if defined(WITH_XFORM)
     fl_check_forms();
 #endif
     if(100.0*result>=threshold)

@@ -950,7 +950,7 @@ p3d_get_robot_config_into(envPt_MM->robot[obj_index],&obj_tmp_pos);
 #endif
 void fct_draw_loop()
 {
-#if !defined(COMPILE_FOR_GENOM)
+#if defined(WITH_XFORM)
   g3d_screenshot((char *)"Move3D");
 #endif
 }
@@ -977,7 +977,9 @@ static int
 default_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp)
 {
   g3d_draw_allwin_active();
+  #if defined(WITH_XFORM)
   fl_check_forms();
+#endif
   return(traj_play);
 }
 
@@ -3989,8 +3991,9 @@ int show_world_state_of_entire_plan(std::vector<HRI_task_node> &hri_task_list, i
    
   }
   g3d_draw_allwin_active();
+    #if defined(WITH_XFORM)
   fl_check_forms();
-  
+#endif  
   for(int k=0;k<hri_task_list[i].traj.sub_task_traj.size();k++)
   {
  
@@ -4009,8 +4012,9 @@ int show_world_state_of_entire_plan(std::vector<HRI_task_node> &hri_task_list, i
    }
 
   g3d_draw_allwin_active();
+    #if defined(WITH_XFORM)
   fl_check_forms();
-  
+#endif  
 //  printf(" Sub traj type=%d\n",for_task.traj.sub_task_traj[i].sub_task_type);
   }
 
@@ -4023,7 +4027,11 @@ int show_world_state_of_entire_plan(std::vector<HRI_task_node> &hri_task_list, i
    
   }
 g3d_draw_allwin_active();
+  #if defined(WITH_XFORM)
+
   fl_check_forms();
+#endif
+
  }
 
 }
@@ -4052,8 +4060,10 @@ int show_plan_for_this_sub_task(HRI_task_node &for_task, traj_for_HRI_sub_task &
   }
 
   g3d_draw_allwin_active();
+    #if defined(WITH_XFORM)
+
   fl_check_forms();
-  
+#endif  
    if(show_traj==1)
     {
     show_traj_for_this_HRI_sub_task(for_task,sub_task_traj);
@@ -4068,8 +4078,10 @@ int show_plan_for_this_sub_task(HRI_task_node &for_task, traj_for_HRI_sub_task &
    }
 
   g3d_draw_allwin_active();
+    #if defined(WITH_XFORM)
+
   fl_check_forms();
-  
+#endif  
 //  printf(" Sub traj type=%d\n",for_task.traj.sub_task_traj[i].sub_task_type);
   
 
