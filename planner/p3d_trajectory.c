@@ -444,7 +444,7 @@ int p3d_concat_traj(p3d_traj *traj1Pt, p3d_traj *traj2Pt)
   p3d_destroy_config(robotPt, q1_end);
   p3d_destroy_config(robotPt, q2_start);
   localpath1Pt = traj1Pt->courbePt;
-  localpath2Pt = traj2Pt->courbePt;	
+  localpath2Pt = traj2Pt->courbePt;
   
   /* go to end of first trajectory */
   while (localpath1Pt->next_lp != NULL) {
