@@ -259,6 +259,9 @@ configPt p3d_multiLocalPath_config_at_param(p3d_rob *robotPt, p3d_localpath *loc
 	return p3d_copy_config(robotPt, localpathPt->q_init);
   }
 
+  if (param > localpathPt->length_lp)
+    param = localpathPt->length_lp;
+  
   for (i = 0; i < robotPt->mlp->nblpGp; i++) {
     q[i] = NULL;
 
