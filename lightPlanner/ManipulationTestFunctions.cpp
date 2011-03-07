@@ -129,7 +129,7 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 		case P3D_LINEAR_PLANNER :
 		{
       gpGrasp grasp;
-			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, m_OBJECT_NAME.c_str(), "", grasp, trajs);
+			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, m_OBJECT_NAME.c_str(), "", (char*)"", grasp, trajs);
 			
 			if(status == MANIPULATION_TASK_OK )
 			{
@@ -145,7 +145,7 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 			
 		case P3D_MULTILOCALPATH_PLANNER :{
       gpGrasp grasp;
-			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, m_OBJECT_NAME.c_str(), "", grasp, confs, smTrajs);
+			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, m_OBJECT_NAME.c_str(), "", (char*)"", grasp, confs, smTrajs);
 			break;
     }
 			

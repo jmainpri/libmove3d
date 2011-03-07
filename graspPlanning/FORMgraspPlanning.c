@@ -1278,7 +1278,7 @@ void test_manipulation()
 //   p3d_matrix4 handFrame;
   gpHand_properties armHandProp = (*manipulation->robot()->armManipulationData)[0].getHandProperties();
 
-  manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(),  objStart, objGoto, ObjectName, (char*)"", grasp, confs, smTrajs);
+  manipulation->armPlanTask(ARM_PICK_GOTO,0,manipulation->robotStart(), manipulation->robotGoto(),  objStart, objGoto, ObjectName, (char*)"", (char*)"", grasp, confs, smTrajs);
 
 }
 
