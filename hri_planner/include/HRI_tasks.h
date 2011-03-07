@@ -13,7 +13,7 @@
 #ifndef _HRI_tasks_H
 #define _HRI_tasks_H
 
-////#include "Mightability_Analysis.h"
+#include "Mightability_Analysis.h"
 ////#define SECOND_HUMAN_EXISTS
 
 
@@ -51,6 +51,63 @@ MAXI_NUM_SUB_TASKS
 }HRI_SUB_TASK_TYPE;
 
 
+typedef struct HRI_task_desc
+{
+ HRI_TASK_TYPE task_type;
+ 
+ std::string for_object;
 
+ HRI_TASK_AGENT by_agent;
+ HRI_TASK_AGENT for_agent;
+
+}HRI_task_desc;
+
+typedef struct world_state_configs
+{
+ //int no_robots;
+ std::vector <configPt> robot_config;// robot_config[50]; //To store configurations of all the robots, it should be synchronized with the index of the robots
+   
+ 
+}world_state_configs;
+
+typedef struct traj_for_HRI_sub_task
+{
+int armID;
+HRI_SUB_TASK_TYPE sub_task_type;
+p3d_traj* traj;
+world_state_configs config_after_sub_task;
+}traj_for_HRI_sub_task;
+
+typedef struct traj_for_HRI_task
+{
+HRI_TASK_TYPE task_type;
+std::vector<traj_for_HRI_sub_task> sub_task_traj;
+
+}traj_for_HRI_task;
+
+// typedef struct HRI_task_desc
+// {
+//  HRI_TASK_TYPE task_type;
+//  
+//  std::string for_object;
+// 
+//  HRI_TASK_AGENT_ENUM by_agent;
+//  HRI_TASK_AGENT_ENUM for_agent;
+// 
+//  
+// 
+// }HRI_task_desc;
+
+
+typedef struct HRI_task_node
+{
+ HRI_task_desc hri_task;
+ int task_plan_id;
+ world_state_configs before_task;
+ world_state_configs after_task;
+ 
+ traj_for_HRI_task traj;
+
+}HRI_task_node;
 
 #endif
