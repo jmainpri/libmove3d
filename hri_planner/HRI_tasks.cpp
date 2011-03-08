@@ -37,7 +37,8 @@
 #include <list>
 #include <string>
 #include <iostream>
-
+#include <map>
+using namespace std;
 HRI_TASK_TYPE CURRENT_HRI_MANIPULATION_TASK;
 //candidate_poins_for_task candidate_points_to_put;
 //candidate_poins_for_task candidate_points_to_show;
@@ -77,6 +78,7 @@ extern double maxi_visibility_threshold_for_task[MAXI_NUM_OF_HRI_TASKS];
 ////action_performance_node curret_task;
 std::vector<HRI_task_node> HRI_task_list;
 std::map<int,std::string > HRI_task_NAME_ID_map;
+////std::map<std::string,int > HRI_task_ID_NAME_map;
 std::map<int,std::string > HRI_sub_task_NAME_ID_map;
 std::map<std::string, int > HRI_task_plan_DESC_ID_map;
 world_state_configs final_configs_after_a_task;
@@ -126,6 +128,75 @@ int set_current_HRI_manipulation_task(int arg)
 }
 
 p3d_matrix4 WRIST_FRAME;
+
+int convert_symbolic_HRI_task_desc_into(symbolic_HRI_task_desc &HRI_task_ip, HRI_task_desc &task_to_validate)
+{ // map<char,int>::iterator it;
+ printf(" Inside convert_symbolic_HRI_task_desc_into() with task name= %s, for object %s, by agent = %s, for agent= %s\n",HRI_task_ip.task_name,HRI_task_ip.for_object, HRI_task_ip.by_agent,HRI_task_ip.for_agent);
+ 
+ std::map<int, string>::iterator it;
+ int task_known=0;
+ for(it = HRI_task_NAME_ID_map.begin(); it != HRI_task_NAME_ID_map.end(); ++it)
+ {
+ if(strcasestr(HRI_task_ip.task_name,it->second.c_str()))
+  {
+   task_to_validate.task_type=(HRI_TASK_TYPE)it->first;
+   task_known=1;
+   break;
+  }
+ 
+ }
+ 
+ if(task_known==0)
+ {
+ printf("  >>>> HRI_TASK ERROR : The task to perform is not known. \n"); 
+ return -1;
+ }
+
+ int for_object_index=get_index_of_robot_by_name(HRI_task_ip.for_object);
+ if(for_object_index==-1)
+ {
+  printf(" >>>> HRI_TASK ERROR : The object %s for which the task is to be performed is not known. \n",HRI_task_ip.for_object); 
+  return -2;
+ }
+ task_to_validate.for_object=HRI_task_ip.for_object;
+ 
+ int by_agent_index=get_index_of_robot_by_name(HRI_task_ip.by_agent);
+ if(by_agent_index==-1)
+ {
+  printf(" >>>> HRI_TASK ERROR : The agent %s to perform the task is not known. \n",HRI_task_ip.by_agent); 
+  return -3;
+ }
+
+ int for_agent_index=get_index_of_robot_by_name(HRI_task_ip.for_agent);
+ if(for_agent_index==-1)
+ {
+  printf(" >>>> HRI_TASK ERROR : The agent %s for whom the task is to be performed is not known. \n",HRI_task_ip.for_agent); 
+  return -4;
+ }
+
+ for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
+ {
+   if(indices_of_MA_agents[i]==by_agent_index)
+   {
+     task_to_validate.by_agent=(HRI_TASK_AGENT)i;
+     break;
+   }
+ }
+ 
+ for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
+ {
+   if(indices_of_MA_agents[i]==for_agent_index)
+   {
+     task_to_validate.for_agent=(HRI_TASK_AGENT)i;
+     break;
+   }
+ }
+ 
+  
+  
+ return 1;
+ 
+}
 
 static void initManipulation() {
   if (manipulation == NULL) {
@@ -1162,7 +1233,7 @@ if(PLAN_IN_CARTESIAN == 1)
                   // manipulation->cleanRoadmap();
                   if ( status==MANIPULATION_TASK_OK )
                   {
-                     printf ( " Found for grasp_ctr=%d, and IK %d \n",grasp_ctr,i );
+                     printf ( " path found to pick for grasp_ctr=%d, and IK %d \n",grasp_ctr,i );
 
                     
 
@@ -1219,7 +1290,7 @@ if(PLAN_IN_CARTESIAN == 1)
 
                         if(task!=HIDE_OBJECT)
                         {
-                        get_ranking_based_on_view_point ( HRI_AGENTS_FOR_MA[for_agent]->perspective->camjoint->abs_pos,goal_pos, object, envPt_MM->robot[indices_of_MA_agents[for_agent]], curr_placementList );
+                         get_ranking_based_on_view_point ( HRI_AGENTS_FOR_MA[for_agent]->perspective->camjoint->abs_pos,goal_pos, object, envPt_MM->robot[indices_of_MA_agents[for_agent]], curr_placementList );
                         }
 
                         int plac_ctr=0 ;
@@ -1308,7 +1379,7 @@ if(PLAN_IN_CARTESIAN == 1)
                                 }
                                 g3d_draw_allwin_active();
 
-                                
+                               
                                 g3d_is_object_visible_from_viewpoint ( HRI_AGENTS_FOR_MA[for_agent]->perspective->camjoint->abs_pos, HRI_AGENTS_FOR_MA[for_agent]->perspective->fov, object, &visibility, 0 );
 
                                 printf ( " mini_visibility_threshold_for_task[task]= %lf, maxi_visibility_threshold_for_task[task]=%lf, visibility=%lf\n",mini_visibility_threshold_for_task[task], maxi_visibility_threshold_for_task[task],visibility );
@@ -1319,7 +1390,7 @@ if(PLAN_IN_CARTESIAN == 1)
                                 p3d_set_and_update_this_robot_conf ( manipulation->robot(), refConf );
                                 continue;
                                 } 
-
+                                
                                 
                                  printf(" IK found to place and the object's visibility %lf is good\n",visibility); 
                                 
@@ -1430,7 +1501,7 @@ if(PLAN_IN_CARTESIAN == 1)
                                   traj_sub_task.traj=place_trajs[1];
                                   res_trajs.sub_task_traj.push_back(traj_sub_task);
 
-                                  if(1)
+                                  if(0)
                                   {
                                   //p3d_set_freeflyer_pose ( object, Tfinal_placement );
                                   //p3d_get_freeflyer_pose2 ( object,  &x, &y, &z, &rx, &ry, &rz );

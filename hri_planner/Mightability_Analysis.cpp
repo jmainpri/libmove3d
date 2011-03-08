@@ -868,6 +868,7 @@ int init_HRI_task_name_ID_map()
 */
 }
 
+
 int init_visibility_acceptance_for_tasks()
 {
 for(int i=0;i<MAXI_NUM_OF_HRI_TASKS;i++)
@@ -17824,6 +17825,10 @@ int find_candidate_points_on_plane_to_put_obj()
 
 int get_index_of_robot_by_name(char *rob_name)
 {
+   if(rob_name==NULL)
+   {
+     return -1;
+   }
   p3d_env *envPt_MM= (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int nr,i;
  
@@ -17831,13 +17836,18 @@ int get_index_of_robot_by_name(char *rob_name)
 	
   for(i=0;i<nr;i++)
     {
-		
+       
+		////printf(" comparing %s and %s \n",envPt_MM->robot[i]->name,rob_name);
       if (strcmp(envPt_MM->robot[i]->name,rob_name)==0)
 	{
 	  return i;
 	}
+	////else
+	////{
+	////  printf(" Fail \n");
+	////}
     }
-  return NULL;
+  return -1;
 }
   
 int make_cells_around_point_obstacle_free(double hand_pos[3], int expansion)

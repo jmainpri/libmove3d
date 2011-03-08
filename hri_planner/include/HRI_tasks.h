@@ -16,7 +16,6 @@
 #include "Mightability_Analysis.h"
 ////#define SECOND_HUMAN_EXISTS
 
-
 typedef enum HRI_TASK_TYPE_ENUM
 {
 MAKE_OBJECT_ACCESSIBLE=0,
@@ -109,5 +108,15 @@ typedef struct HRI_task_node
  traj_for_HRI_task traj;
 
 }HRI_task_node;
+
+typedef struct symbolic_HRI_task_desc
+{
+ char task_name[50];//See HRI_tasks.h for various types
+ char for_object[50];
+
+ char by_agent[50]; //see enum HRI_TASK_AGENT_ENUM in Mightability_Analysis.h
+ char for_agent[50];//see enum HRI_TASK_AGENT_ENUM in Mightability_Analysis.h
+
+}symbolic_HRI_task_desc;
 
 #endif

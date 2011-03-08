@@ -174,5 +174,6 @@ extern int validate_HRI_task(HRI_task_desc curr_task, int task_plan_id);
 extern int show_traj_for_this_HRI_task(HRI_task_node &for_task,int show_traj);
 extern int show_desired_HRI_task_plan();
 extern int show_plan_for_this_sub_task(HRI_task_node &for_task, traj_for_HRI_sub_task &sub_task_traj, int sub_task_index, int show_traj);
+extern int convert_symbolic_HRI_task_desc_into(symbolic_HRI_task_desc &HRI_task_ip, HRI_task_desc &task_to_validate);
 #endif /* __CEXTRACT__ */
 

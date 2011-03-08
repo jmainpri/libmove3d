@@ -69,6 +69,7 @@ typedef enum HRI_TASK_AGENT_ENUM
 #ifdef PR2_EXISTS_FOR_MA  
   PR2_MA,
 #endif
+  //NOTE: DO NOT FORGET to add new agents in the function init_HRI_agent_name_ID_map() also
   //Add new performers here before the last line
 
   MAXI_NUM_OF_AGENT_FOR_HRI_TASK
