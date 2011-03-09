@@ -175,5 +175,9 @@ extern int show_traj_for_this_HRI_task(HRI_task_node &for_task,int show_traj);
 extern int show_desired_HRI_task_plan();
 extern int show_plan_for_this_sub_task(HRI_task_node &for_task, traj_for_HRI_sub_task &sub_task_traj, int sub_task_index, int show_traj);
 extern int convert_symbolic_HRI_task_desc_into(symbolic_HRI_task_desc &HRI_task_ip, HRI_task_desc &task_to_validate);
+extern int get_soft_motion_trajectories_for_plan_ID(int HRI_task_plan_id, std::vector <SM_TRAJ> &smTrajs);
+extern int ececute_this_HRI_task_p3d_Traj_in_simu(char *for_robot, p3d_traj *traj);
+extern int ececute_this_HRI_task_SM_Traj_in_simu(char *for_robot, SM_TRAJ &smTraj);
+extern int show_p3d_trajectories_for_plan_ID(int HRI_task_plan_id);
 #endif /* __CEXTRACT__ */
 

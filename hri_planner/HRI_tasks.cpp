@@ -33,6 +33,7 @@
 
 #include "ManipulationPlanner.hpp"
 #include "ManipulationUtils.hpp"
+#include "ManipulationStruct.h"
 #include "robotPos.h"
 #include <list>
 #include <string>
@@ -1503,7 +1504,7 @@ if(PLAN_IN_CARTESIAN == 1)
 
                                   if(0)
                                   {
-                                  //p3d_set_freeflyer_pose ( object, Tfinal_placement );
+                                  p3d_set_freeflyer_pose ( object, Tfinal_placement );
                                   //p3d_get_freeflyer_pose2 ( object,  &x, &y, &z, &rx, &ry, &rz );
                                   //printf(" >>> Obj final pos (x, y, z, rx, ry, rz)=(%lf, %lf, %lf, %lf, %lf, %lf) \n",x, y, z, rx, ry, rz);
 
@@ -4159,4 +4160,112 @@ int show_plan_for_this_sub_task(HRI_task_node &for_task, traj_for_HRI_sub_task &
  
  
 
+}
+
+int get_soft_motion_trajectory_for_p3d_traj_vector(std::vector <p3d_traj*> trajs, std::vector <SM_TRAJ> &smTrajs)
+{
+  ////std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs
+    p3d_traj* traj = NULL;
+    
+   if (manipulation->concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK) 
+   {
+        smTrajs.clear();
+//         for(unsigned i = 0; i < trajs.size(); i++){
+        /* COMPUTE THE SOFTMOTION TRAJECTORY */
+          MANPIPULATION_TRAJECTORY_CONF_STR conf;
+          SM_TRAJ smTraj;
+          manipulation->computeSoftMotion(traj/*s.at(i)*/, conf, smTraj);
+         //// confs.push_back(conf);
+          smTrajs.push_back(smTraj);
+//         }
+    } 
+    else 
+    {
+     printf("Fail to concatanate trajectories \n");
+     return 0;
+    }	 
+    
+    return 1;
+}
+
+int get_soft_motion_trajectory_for_p3d_traj(p3d_traj* traj, SM_TRAJ &smTraj)
+{
+    
+  //// std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs
+         ////smTrajs.clear();
+//         for(unsigned i = 0; i < trajs.size(); i++){
+        /* COMPUTE THE SOFTMOTION TRAJECTORY */
+          MANPIPULATION_TRAJECTORY_CONF_STR conf;
+         //// SM_TRAJ smTraj;
+          manipulation->computeSoftMotion(traj/*s.at(i)*/, conf, smTraj);
+     ////     confs.push_back(conf);
+         //// smTrajs.push_back(smTraj);
+//         }
+	  
+	  return 1;
+}
+
+int get_soft_motion_trajectories_for_plan_ID(int HRI_task_plan_id, std::vector <SM_TRAJ> &smTrajs)
+{
+  p3d_traj* traj;
+  SM_TRAJ smTraj;
+  ////smTrajs.clear();
+  
+  for(int i=0;i<HRI_task_list.size();i++)
+  {
+  if(HRI_task_list[i].task_plan_id==HRI_task_plan_id)
+   {
+     for(int j=0;j<HRI_task_list[i].traj.sub_task_traj.size();j++)
+     {
+       traj=HRI_task_list[i].traj.sub_task_traj[j].traj;
+       get_soft_motion_trajectory_for_p3d_traj(traj, smTraj);
+       
+       smTrajs.push_back(smTraj);
+     }
+  
+   
+   return 1;
+   }
+  }
+  
+  printf(" The task plan ID has not been found\n");
+  return 0;
+  
+}
+
+int ececute_this_HRI_task_SM_Traj_in_simu(char *for_robot, SM_TRAJ &smTraj)
+{
+   
+   //envPt_MM->robot[get_index_of_robot_by_name(for_robot)]->tcur=;
+  
+  //g3d_show_tcur_rob(envPt_MM->robot[get_index_of_robot_by_name(for_robot)],default_drawtraj_fct);
+  return 1;
+}
+
+int ececute_this_HRI_task_p3d_Traj_in_simu(char *for_robot, p3d_traj *traj)
+{
+   
+   envPt_MM->robot[get_index_of_robot_by_name(for_robot)]->tcur=traj;
+  
+  g3d_show_tcur_rob(envPt_MM->robot[get_index_of_robot_by_name(for_robot)],default_drawtraj_fct);
+}
+
+int show_p3d_trajectories_for_plan_ID(int HRI_task_plan_id)
+{
+  
+  
+  for(int i=0;i<HRI_task_list.size();i++)
+  {
+  if(HRI_task_list[i].task_plan_id==HRI_task_plan_id)
+   {
+     show_traj_for_this_HRI_task(HRI_task_list[i],1);
+  
+   
+   return 1;
+   }
+  }
+  
+  printf(" The task plan ID has not been found\n");
+  return 0;
+  
 }
