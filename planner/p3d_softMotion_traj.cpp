@@ -111,7 +111,8 @@ int p3d_getQSwitchIDFromMidCVS(double tau, double t_rep, int* id) {
   int i = 0;
   if(m_vectOfCVS.empty()) {
     printf("m_vectOfCVS is empty\n");
-   return 0;
+    *id =  1;
+    return 1;
   }
 
   for(i=0; (tau+t_rep) > m_vectOfCVS[i].second.tau; i++) {
