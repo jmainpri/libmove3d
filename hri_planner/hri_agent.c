@@ -1511,3 +1511,16 @@ int hri_is_robot_an_agent(p3d_rob * robot, HRI_AGENTS * agents, int * is_human, 
   }
   return FALSE;
 }
+
+HRI_AGENT* hri_get_one_agent_of_type(HRI_AGENTS * agents, HRI_AGENT_TYPE agentType)
+{
+  for(int i=0; i<agents->all_agents_no; i++) 
+  {
+    if( agentType == agents->all_agents[i]->type ) 
+    {
+      return agents->all_agents[i];
+    }
+  }
+  return NULL;
+}
+

@@ -22,3 +22,4 @@ extern int hri_agent_compute_posture(HRI_AGENT * agent, double neck_height, int 
 extern int hri_agent_compute_state_posture(HRI_AGENT * agent, int state, configPt q);
 extern int hri_agent_is_grasping_obj(HRI_AGENT* agent, bool is_grasping , const char* OBJECT , int armId);
 extern int hri_is_robot_an_agent(p3d_rob * robot, HRI_AGENTS * agents, int * is_human, int * agent_idx);
+extern HRI_AGENT* hri_get_one_agent_of_type(HRI_AGENTS * agents, HRI_AGENT_TYPE agentType);
