@@ -830,6 +830,21 @@ int p3d_multiLocalPath_get_value_groupToPlan(p3d_rob* robotPt, const int mlpID) 
   }
 }
 
+int p3d_multilocapath_print_group_info(p3d_rob* robotPt) {
+
+   int i=0;
+   int id;
+   printf("**********************************\n");
+   printf(" multilocalpath info\n");
+   for( i=0; i<robotPt->mlp->nblpGp; i++) {
+
+     id = p3d_multiLocalPath_get_group_by_name(robotPt, robotPt->mlp->mlpJoints[i]->gpName);
+     printf("mlp_group: %s activation: %d\n",robotPt->mlp->mlpJoints[i]->gpName , p3d_multiLocalPath_get_value_groupToPlan(robotPt, id)); 
+   }
+   printf("**********************************\n");
+  return 0;
+}
+
 /**
  *  Set to De-activated all the group of multilocalpath
  * @param robotPt The robot

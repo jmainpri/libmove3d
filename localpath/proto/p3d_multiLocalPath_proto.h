@@ -25,5 +25,7 @@ extern int p3d_multiLocalPath_get_group_by_name(p3d_rob* robotPt, char* name);
 
 extern void p3d_multiLocalPath_enable_all_groupToPlan(p3d_rob* robotPt);
 extern int p3d_multiLocalPath_update_joint_sampling_activation(p3d_rob* robotPt);
+
+extern int p3d_multilocapath_print_group_info(p3d_rob* robotPt);
 #endif
 #endif
