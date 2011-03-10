@@ -55,20 +55,21 @@ void print_MiddleOfCVS(void)
 {
   cout << " m_vectOfCVS( " << m_vectOfCVS.size() << " ) = " << endl;
   for(unsigned int i=0;i<m_vectOfCVS.size();i++) {
-    cout << "First = " << m_vectOfCVS[i].first << " , " << m_vectOfCVS[i].second << endl;
+    cout << "First = " << m_vectOfCVS[i].first << " , " << m_vectOfCVS[i].second.tau << " , " << m_vectOfCVS[i].second.s <<  endl;
   }
 }
 
 //! compute the End of The CSV for the 
 //! geometric path
-void p3d_computeMiddleOfCVSParam( p3d_localpath* smPath, p3d_localpath* linPath, double trajLength )
+void p3d_computeMiddleOfCVSParam(int lpId, p3d_localpath* smPath, p3d_localpath* linPath, double trajLength )
 {
   middleOfCVS pairTmp;
   if(smPath==NULL || linPath==NULL) {
     return;
   }
-  pairTmp.first = 0.5 * smPath->length_lp;
-  pairTmp.second =  0.5 * linPath->length_lp + trajLength;
+  pairTmp.first = lpId;
+  pairTmp.second.tau = 0.5 * smPath->length_lp;
+  pairTmp.second.s =  0.5 * linPath->length_lp + trajLength;
   m_vectOfCVS.push_back( pairTmp );
 }
 
@@ -80,11 +81,11 @@ bool p3d_test_middle_of_CVS( p3d_traj * trajPt,
   bool res = true;
   p3d_rob* rob = trajPt->rob;
   for(unsigned int i=0;i<m_vectOfCVS.size();i++){
-    configPt q1 = p3d_config_at_distance_along_traj(trajSmPt, m_vectOfCVS[i].first) ;   
+    configPt q1 = p3d_config_at_distance_along_traj(trajSmPt, m_vectOfCVS[i].second.tau) ;   
      p3d_set_and_update_this_robot_conf_multisol(rob, q1, NULL, 0, trajSmPt->courbePt->ikSol);
      p3d_get_robot_config_into(rob, &q1);
  
-    configPt q2 = p3d_config_at_distance_along_traj(trajPt,   m_vectOfCVS[i].second) ;  
+    configPt q2 = p3d_config_at_distance_along_traj(trajPt,   m_vectOfCVS[i].second.s) ;  
     p3d_set_and_update_this_robot_conf_multisol(rob, q2, NULL, 0, trajPt->courbePt->ikSol);
     p3d_get_robot_config_into(rob, &q2);
 
@@ -92,13 +93,13 @@ bool p3d_test_middle_of_CVS( p3d_traj * trajPt,
 
     if( !p3d_equal_config( rob, q1, q2) ){
       printf("config differ in p3d_test_middle_of_CVS\n");    
-      printf("ith CVS : %d\n",i);    
+      printf("s= %f tau = %f ith CVS : %d lpId %d \n", m_vectOfCVS[i].second.s, m_vectOfCVS[i].second.tau, i,  m_vectOfCVS[i].first);    
       //print_config(rob, q1);
       //print_config(rob, q2);
       res = false;
     }
     else {
-      //printf("Ith (%d): OK \n",i);
+      printf("Ith (%d): OK lpId= %d s= %f tau %f\n",i, m_vectOfCVS[i].first, m_vectOfCVS[i].second.s, m_vectOfCVS[i].second.tau );
     }
   }
   return res;
@@ -318,7 +319,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
       end_trajSmPt = append_to_localpath (end_trajSmPt, localpathTmp1Pt);
       
       /* Save the instant at the middle of the tvc segment */
-      m_vectOfCVS[indexOfCVS].first = timeLength + 0.5*(localpath1Pt->specific.softMotion_data->specific->motion[0].Times.Tvc);
+      m_vectOfCVS[indexOfCVS].second.tau = timeLength + 0.5*(localpath1Pt->specific.softMotion_data->specific->motion[0].Times.Tvc);
       indexOfCVS++;
       timeLength += localpathTmp1Pt->length_lp;
 
@@ -453,7 +454,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
         nlp++;
 
 	/* Save the instant at the middle of the tvc segment */
-	m_vectOfCVS[indexOfCVS].first = timeLength + 0.5*(localpath1Pt->specific.softMotion_data->specific->motion[0].Times.Tvc);
+	m_vectOfCVS[indexOfCVS].second.tau = timeLength + 0.5*(localpath1Pt->specific.softMotion_data->specific->motion[0].Times.Tvc);
 	indexOfCVS++;
 	timeLength += localpathTmp1Pt->length_lp;
 
@@ -469,7 +470,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
           append_to_localpath (end_trajSmPt, localpathTmp1Pt);
         nlp++;
 	/* Save the instant at the middle of the tvc segment */
-        m_vectOfCVS[indexOfCVS].first = timeLength + 0.5*(localpathTmp1Pt->specific.softMotion_data->specific->motion[0].Times.Tvc);
+        m_vectOfCVS[indexOfCVS].second.tau = timeLength + 0.5*(localpathTmp1Pt->specific.softMotion_data->specific->motion[0].Times.Tvc);
 	indexOfCVS++;
 	timeLength += localpathTmp1Pt->length_lp;
 
@@ -530,6 +531,7 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file, bool a
     }
   }
 
+  int lpId = 1;
   p3d_clearConfigArrayToDraw(robotPt);
   ///////////////////////////////////////////////////////////////////////////
   ////  CONVERT LINEAR TRAJECTORY TO SOFTMOTION POINT TO POINT TRAJECTORY ///
@@ -557,7 +559,7 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file, bool a
   
   // Get the length localPath
   m_vectOfCVS.clear();
-  p3d_computeMiddleOfCVSParam(end_trajSmPt->mlpLocalpath[IGRAPH_OUTPUT], localpathMlp1Pt, 0.0 );
+  p3d_computeMiddleOfCVSParam(lpId, end_trajSmPt->mlpLocalpath[IGRAPH_OUTPUT], localpathMlp1Pt, 0.0 );
   linLength = localpathMlp1Pt->length_lp;
   
   localpathMlp1Pt = localpathMlp1Pt->next_lp;
@@ -584,8 +586,8 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file, bool a
       p3d_destroy_config (robotPt, q_end);
 
       end_trajSmPt = append_to_localpath (end_trajSmPt, localpathTmp1Pt);
-      
-      p3d_computeMiddleOfCVSParam(localpathTmp1Pt->mlpLocalpath[IGRAPH_OUTPUT], 
+      lpId ++;
+      p3d_computeMiddleOfCVSParam(lpId, localpathTmp1Pt->mlpLocalpath[IGRAPH_OUTPUT], 
                                localpathMlp1Pt, 
                                linLength );
     }

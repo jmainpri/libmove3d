@@ -5,7 +5,13 @@
 #include "Localpath-pkg.h"
 
 #include <utility>
-typedef std::pair<double,double> middleOfCVS;
+
+typedef struct midCVSParams {
+  double s;
+  double tau;
+} midCVSParams;
+
+typedef std::pair< int, midCVSParams > middleOfCVS;
 
 int p3d_multilocalpath_switch_to_linear_groups (p3d_rob * robotPt);
 
