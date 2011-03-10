@@ -593,6 +593,10 @@ void g3d_draw_tcur(p3d_rob *robotPt, int indexjnt, int NbKeyFrames) {
         if( ENV.getBool(Env::drawMultiColorLocalpath) )
         {
           g3d_drawOneLine(pi[0],pi[1],pi[2],pf[0],pf[1],pf[2],color,NULL);
+          
+          if (u == 0.0 ) {
+            g3d_drawSphere(pf[0],pf[1],pf[2],0.015);
+          }
         }
         else {
           g3d_drawOneLine(pi[0], pi[1], pi[2], pf[0], pf[1], pf[2], Black, NULL);
@@ -612,7 +616,8 @@ void g3d_draw_tcur(p3d_rob *robotPt, int indexjnt, int NbKeyFrames) {
 
       u += du;
     }
-    u -= umax;
+    u = 0.0;
+    //u -= umax;
     localpathPt = localpathPt->next_lp;
     modulo++;
     if (modulo > 3)
