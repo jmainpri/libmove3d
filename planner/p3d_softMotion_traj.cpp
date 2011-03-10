@@ -106,6 +106,19 @@ bool p3d_test_middle_of_CVS( p3d_traj * trajPt,
 }
 
 
+int p3d_getQSwitchIDFromMidCVS(double tau, double t_rep, int* id) {
+  
+  int i = 0;
+  for(i=0; (tau+t_rep) > m_vectOfCVS[i].second.tau; i++) {
+    if(i== m_vectOfCVS.size()) {
+      printf("ERROR getQSwitchIDFromMidCVS \n");
+      return 1;
+    }
+  }
+  *id =  m_vectOfCVS[i].first;
+  return 0;
+}
+
 //! get las linear traj
 p3d_traj* m_lastLinTraj=NULL;
 p3d_traj* p3d_get_last_linear_traj()
@@ -724,6 +737,17 @@ if(approximate == true) {
   // smTraj.print();
 //  print_MiddleOfCVS();
   p3d_test_middle_of_CVS( trajPt , trajSmPt );
+
+
+  //// HERE THE EXAMPLE TO USE THE FUNCTION THAT DETERMINE THE INDEX OF Q_SWITCH
+  int id=0;
+  double tau =  m_vectOfCVS[m_vectOfCVS.size()-1].second.tau /3.0; 
+  double t_rep = 2.0; // in second
+  p3d_getQSwitchIDFromMidCVS(tau, t_rep, &id); 
+  printf("the index of the q_switch is %d\n", id);
+
+
+
   m_lastLinTraj = trajPt;
 
 
