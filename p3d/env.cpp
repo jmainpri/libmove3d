@@ -26,6 +26,7 @@ Env::Env()
 	mBoolMap.insert(boolMap_t(Env::drawTrajVector, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawAll, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawGrid, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::drawEntireGrid, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawLightSource, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawDistance, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawPoints, new boolContainer(false)));
@@ -163,6 +164,7 @@ Env::Env()
 	mDoubleMap.insert(doubleMap_t(Env::coeffJoint, new doubleContainer(1.0)));
 	mDoubleMap.insert(doubleMap_t(Env::coeffEnerg, new doubleContainer(1.0)));
 	mDoubleMap.insert(doubleMap_t(Env::coeffConfo, new doubleContainer(1.0)));
+	mDoubleMap.insert(doubleMap_t(Env::coeffArmPr, new doubleContainer(0.0)));
 	mDoubleMap.insert(doubleMap_t(Env::multCost, new doubleContainer(1.0)));
 	mDoubleMap.insert(doubleMap_t(Env::refiRadius, new doubleContainer(2.0)));
 	
