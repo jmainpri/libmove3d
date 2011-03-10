@@ -1401,7 +1401,7 @@ if(PLAN_IN_CARTESIAN == 1)
                               //gpSet_grasp_configuration ( manipulation->robot(), *igrasp, armID );
                               //ManipulationUtils::fixAllHands (manipulation->robot(), NULL, false );
 
-                               p3d_rob* support= ( p3d_rob* ) p3d_get_robot_by_name ( "SHELF" );
+                               p3d_rob* support= ( p3d_rob* ) p3d_get_robot_by_name ( "IKEA_SHELF" );
                                p3d_set_and_update_this_robot_conf ( manipulation->robot(), placeConf );
 //                                MANIPULATION_TASK_MESSAGE place_status= manipulation->armPickTakeToFree(armID, graspConf, placeConf, object, support, place_trajs);
 
@@ -1457,7 +1457,7 @@ if(PLAN_IN_CARTESIAN == 1)
 //      manipulation->setArmCartesian(i,true);
 //     }
 //     }                           
-                                  ManipulationUtils::copyConfigToFORM ( manipulation->robot(), graspConf );
+                                  ////ManipulationUtils::copyConfigToFORM ( manipulation->robot(), graspConf );
                                   MANIPULATION_TASK_MESSAGE place_status = manipulation->armPickTakeToFree(armID, graspConf, placeConf, object, support, liftConf, *igrasp, place_trajs);
                                  
                                   if ( place_status==MANIPULATION_TASK_OK )
@@ -1502,24 +1502,25 @@ if(PLAN_IN_CARTESIAN == 1)
                                   traj_sub_task.traj=place_trajs[1];
                                   res_trajs.sub_task_traj.push_back(traj_sub_task);
 
-                                  if(0)
+                                  if(task==HIDE_OBJECT||task==MAKE_OBJECT_ACCESSIBLE) //Need to place and release the object
                                   {
                                   p3d_set_freeflyer_pose ( object, Tfinal_placement );
                                   //p3d_get_freeflyer_pose2 ( object,  &x, &y, &z, &rx, &ry, &rz );
                                   //printf(" >>> Obj final pos (x, y, z, rx, ry, rz)=(%lf, %lf, %lf, %lf, %lf, %lf) \n",x, y, z, rx, ry, rz);
-
 
                                   manipulation->getManipulationData().clear();
                                   manipulation->getManipulationData().setAttachFrame(tAtt);
                                   manipulation->getManipulationData().setGraspConfig(placeConf);
                                   manipulation->getManipulationData().setGrasp(&(*igrasp));
 
-                                  
+                                  p3d_set_and_update_this_robot_conf ( manipulation->robot(), placeConf );
                                   ManipulationUtils::copyConfigToFORM ( manipulation->robot(), placeConf );
+
+                                  g3d_draw_allwin_active();
 
                                   MANIPULATION_TASK_MESSAGE release_obj_status = manipulation->armEscapeObject(armID, placeConf,  object, release_obj_trajs);
                                   printf(" release_obj_status= %d \n",release_obj_status);
-
+                                  ////return 0;
                                   if(release_obj_status==MANIPULATION_TASK_OK)
                                    {
                                   printf("release_obj_trajs.size()=%d\n",release_obj_trajs.size());
