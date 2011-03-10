@@ -113,7 +113,7 @@ int p3d_getQSwitchIDFromMidCVS(double tau, double t_rep, int* id) {
     if(i== m_vectOfCVS.size()) {
       printf("WARNING getQSwitchIDFromMidCVS set id to the last localpath \n");
       *id =  m_vectOfCVS[m_vectOfCVS.size()-1].first;
-      return 0;
+      return 1;
     }
   }
   *id =  m_vectOfCVS[i].first;
