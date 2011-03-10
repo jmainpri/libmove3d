@@ -4206,6 +4206,49 @@ int get_soft_motion_trajectory_for_p3d_traj(p3d_traj* traj, SM_TRAJ &smTraj)
 	  return 1;
 }
 
+int get_single_soft_motion_traj_for_SHARY(int HRI_task_plan_id, int sub_traj_st_index, int sub_traj_end_index, SM_TRAJ &smTraj )
+{
+  
+  p3d_traj* traj;
+  ////SM_TRAJ smTraj;
+  ////smTrajs.clear();
+  std::vector <p3d_traj*> trajs;
+  
+                     
+                     
+		     
+  for(int i=0;i<HRI_task_list.size();i++)
+  {
+  if(HRI_task_list[i].task_plan_id==HRI_task_plan_id)
+   {
+     if(sub_traj_st_index<0||sub_traj_end_index>HRI_task_list[i].traj.sub_task_traj.size())
+     {
+       printf(" HRI_TASKS ERROR: Sub trajectory index range is not valid\n");
+       return 0;
+     }
+       
+     for(int j=sub_traj_st_index;j<=sub_traj_end_index;j++)
+     {
+       trajs.push_back(HRI_task_list[i].traj.sub_task_traj[j].traj);
+      
+     }
+     
+      manipulation->concatTrajectories ( trajs, &traj );
+       get_soft_motion_trajectory_for_p3d_traj(traj, smTraj);
+       
+       ////smTrajs.push_back(smTraj);
+  
+   
+   return 1;
+   }
+  }
+  
+  printf(" The task plan ID has not been found\n");
+  return 0;
+  
+}
+
+
 int get_soft_motion_trajectories_for_plan_ID(int HRI_task_plan_id, std::vector <SM_TRAJ> &smTrajs)
 {
   p3d_traj* traj;

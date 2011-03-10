@@ -179,5 +179,6 @@ extern int get_soft_motion_trajectories_for_plan_ID(int HRI_task_plan_id, std::v
 extern int ececute_this_HRI_task_p3d_Traj_in_simu(char *for_robot, p3d_traj *traj);
 extern int ececute_this_HRI_task_SM_Traj_in_simu(char *for_robot, SM_TRAJ &smTraj);
 extern int show_p3d_trajectories_for_plan_ID(int HRI_task_plan_id);
+extern int get_single_soft_motion_traj_for_SHARY(int HRI_task_plan_id, int sub_traj_st_index, int sub_traj_end_index, SM_TRAJ &smTraj );
 #endif /* __CEXTRACT__ */
 
