@@ -18,7 +18,8 @@ typedef enum ENUM_HRI_ENTITY_SUBTYPE {
   HRI_AGENT_HEAD = 3,
   HRI_AGENT_HAND = 4,
   HRI_AGENT_AGENT = 5, 
-  HRI_UK_ENTITY_SUBTYPE = 6
+  HRI_OBJECT_PLACEMAT = 6,  // planar objects to materialize some areas on furnitures 
+  HRI_UK_ENTITY_SUBTYPE = 7
 } HRI_ENTITY_SUBTYPE;
 
 typedef enum ENUM_HRI_MOTION {

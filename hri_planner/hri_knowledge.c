@@ -73,6 +73,8 @@ HRI_ENTITIES * hri_create_entities()
 	}
 	else if(strcasestr(env->robot[i]->name,"TRASHBIN"))
 	  entities->entities[ent_i]->subtype = HRI_OBJECT_CONTAINER;
+	else if(strcasestr(env->robot[i]->name,"PLACEMAT"))
+	  entities->entities[ent_i]->subtype = HRI_OBJECT_PLACEMAT;
 	else
 	  entities->entities[ent_i]->subtype = HRI_UK_ENTITY_SUBTYPE;
         ent_i++;
@@ -1083,23 +1085,29 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
 	  for(e_j=0; e_j<present_ents_nb; e_j++) {
 	    ge_j = present_ents_global_idxs[e_j];
 	    // do not compute placement relations that involve an agent or an agent part
-	    if( ((ent->type == HRI_AGENT_PART) || (ent->type == HRI_ISAGENT)) || !ent->can_disappear_and_move || ((ents->entities[ge_j]->type == HRI_AGENT_PART) || (ents->entities[ge_j]->type == HRI_ISAGENT)) ) {
-	      continue;
-	    }
-	    if( e_j != e_i) {
-	      if(ent->disappeared || ents->entities[ge_j]->disappeared)
-		placement_relation_result = HRI_UK_PLR;
-	      else
-		placement_relation_result = hri_placement_relation(ent, ents->entities[ge_j]);
-	      if (  kn_on_ent->is_placed[ge_j] ==  placement_relation_result) {
-		if ( kn_on_ent->placement_relation_ischanged[ge_j])
-		  kn_on_ent->placement_relation_ischanged[ge_j] = FALSE;
-	      }
-	      else {
-		kn_on_ent->is_placed_old [ge_j] = kn_on_ent->is_placed[ge_j];
-		kn_on_ent->is_placed[ge_j] = placement_relation_result;
-		kn_on_ent->placement_relation_ischanged[ge_j] = TRUE;
-		kn_on_ent->placement_relation_isexported[ge_j] = FALSE;
+	    /* if( ((ent->type == HRI_AGENT_PART) || (ent->type == HRI_ISAGENT)) || !ent->can_disappear_and_move || ((ents->entities[ge_j]->type == HRI_AGENT_PART) || (ents->entities[ge_j]->type == HRI_ISAGENT)) ) { */
+	    /*   continue; */
+	    /* } */
+
+	    // We want to know wether objects are on furniture, on placemat or inside a container
+	    // Wa also want to know on which furnitures are placemat
+	    if( ((ent->type == HRI_MOVABLE_OBJECT) && ((ents->entities[ge_j]->type == HRI_MOVABLE_OBJECT) || (ents->entities[ge_j]->type == HRI_OBJECT_SUPPORT) || (ents->entities[ge_j]->type == HRI_OBJECT_CONTAINER) || (ents->entities[ge_j]->type == HRI_OBJECT_PLACEMAT))) || ((ent->type == HRI_OBJECT_PLACEMAT) && (ents->entities[ge_j]->type == HRI_OBJECT_SUPPORT))) {
+
+	      if( e_j != e_i) {
+		if(ent->disappeared || ents->entities[ge_j]->disappeared)
+		  placement_relation_result = HRI_UK_PLR;
+		else
+		  placement_relation_result = hri_placement_relation(ent, ents->entities[ge_j]);
+		if (  kn_on_ent->is_placed[ge_j] ==  placement_relation_result) {
+		  if ( kn_on_ent->placement_relation_ischanged[ge_j])
+		    kn_on_ent->placement_relation_ischanged[ge_j] = FALSE;
+		}
+		else {
+		  kn_on_ent->is_placed_old [ge_j] = kn_on_ent->is_placed[ge_j];
+		  kn_on_ent->is_placed[ge_j] = placement_relation_result;
+		  kn_on_ent->placement_relation_ischanged[ge_j] = TRUE;
+		  kn_on_ent->placement_relation_isexported[ge_j] = FALSE;
+		}
 	      }
 	    }
 	  }
