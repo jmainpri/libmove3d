@@ -67,7 +67,7 @@ HRI_ENTITIES * hri_create_entities()
         entities->entities[ent_i]->type = HRI_OBJECT;
 	if(strcasestr(env->robot[i]->name,"TABLE")||strcasestr(env->robot[i]->name,"SHELF"))
 	  entities->entities[ent_i]->subtype = HRI_OBJECT_SUPPORT;
-	else if(strcasestr(env->robot[i]->name,"TAPE")||strcasestr(env->robot[i]->name,"BOTTLE")||strcasestr(env->robot[i]->name,"BOX")){
+	else if(strcasestr(env->robot[i]->name,"TAPE")||strcasestr(env->robot[i]->name,"BOTTLE")||strcasestr(env->robot[i]->name,"BOX")||strcasestr(env->robot[i]->name,"CUBE")){
 	  entities->entities[ent_i]->subtype = HRI_MOVABLE_OBJECT;
 	  entities->entities[ent_i]->can_disappear_and_move = TRUE;
 	}
