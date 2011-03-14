@@ -523,7 +523,8 @@ void p3d_add_desc_box(char name[20], double a, double b, double c, int type) {
     XYZ_OBSTACLES->pol = MY_ALLOC(p3d_poly *, 1);
     XYZ_OBSTACLES->pol[0] = p;
   }
-
+  XYZ_OBSTACLES->pol[np]->forceBBComputation = FALSE;
+  
   /* Boite de l'objet courant.... */
   XYZ_OBSTACLES->box.x1 = MIN(XYZ_OBSTACLES->pol[np]->box.x1, XYZ_OBSTACLES->box.x1);
   XYZ_OBSTACLES->box.x2 = MAX(XYZ_OBSTACLES->pol[np]->box.x2, XYZ_OBSTACLES->box.x2);
@@ -574,7 +575,7 @@ void p3d_add_desc_srect(char name[20], double a, double b, double h,
     XYZ_OBSTACLES->pol = MY_ALLOC(p3d_poly *, 1);
     XYZ_OBSTACLES->pol[0] = p;
   }
-
+  XYZ_OBSTACLES->pol[np]->forceBBComputation = FALSE;
   /* Boite de l'objet courant.... */
   XYZ_OBSTACLES->box.x1 = MIN(XYZ_OBSTACLES->pol[np]->box.x1, XYZ_OBSTACLES->box.x1);
   XYZ_OBSTACLES->box.x2 = MAX(XYZ_OBSTACLES->pol[np]->box.x2, XYZ_OBSTACLES->box.x2);
@@ -622,7 +623,7 @@ void p3d_add_desc_pyramid(char name[20], double a, double b, double c,
     XYZ_OBSTACLES->pol = MY_ALLOC(p3d_poly *, 1);
     XYZ_OBSTACLES->pol[0] = p;
   }
-
+XYZ_OBSTACLES->pol[np]->forceBBComputation = FALSE;
   /* Boite de l'objet courant.... */
   XYZ_OBSTACLES->box.x1 = MIN(XYZ_OBSTACLES->pol[np]->box.x1, XYZ_OBSTACLES->box.x1);
   XYZ_OBSTACLES->box.x2 = MAX(XYZ_OBSTACLES->pol[np]->box.x2, XYZ_OBSTACLES->box.x2);
@@ -664,7 +665,7 @@ void p3d_add_desc_cylindre(char name[20], double r, double l, int type) {
     XYZ_OBSTACLES->pol = MY_ALLOC(p3d_poly *, 1);
     XYZ_OBSTACLES->pol[0] = p;
   }
-
+XYZ_OBSTACLES->pol[np]->forceBBComputation = FALSE;
   /* Boite de l'objet courant.... */
   XYZ_OBSTACLES->box.x1 = MIN(XYZ_OBSTACLES->pol[XYZ_OBSTACLES->np]->box.x1, XYZ_OBSTACLES->box.x1);
   XYZ_OBSTACLES->box.x2 = MAX(XYZ_OBSTACLES->pol[XYZ_OBSTACLES->np]->box.x2, XYZ_OBSTACLES->box.x2);
@@ -707,7 +708,7 @@ void p3d_add_desc_cylindre_oval(char name[20], double a, double b, double l, int
     XYZ_OBSTACLES->pol = MY_ALLOC(p3d_poly *, 1);
     XYZ_OBSTACLES->pol[0] = p;
   }
-
+XYZ_OBSTACLES->pol[np]->forceBBComputation = FALSE;
   /* Boite de l'objet courant.... */
   XYZ_OBSTACLES->box.x1 = MIN(XYZ_OBSTACLES->pol[XYZ_OBSTACLES->np]->box.x1, XYZ_OBSTACLES->box.x1);
   XYZ_OBSTACLES->box.x2 = MAX(XYZ_OBSTACLES->pol[XYZ_OBSTACLES->np]->box.x2, XYZ_OBSTACLES->box.x2);
@@ -751,7 +752,7 @@ void p3d_add_desc_prisme(char name[20], int nvert, double r, double l, int type)
     XYZ_OBSTACLES->pol = MY_ALLOC(p3d_poly *, 1);
     XYZ_OBSTACLES->pol[0] = p;
   }
-
+XYZ_OBSTACLES->pol[np]->forceBBComputation = FALSE;
   /* Boite de l'objet courant.... */
   XYZ_OBSTACLES->box.x1 = MIN(XYZ_OBSTACLES->pol[XYZ_OBSTACLES->np]->box.x1, XYZ_OBSTACLES->box.x1);
   XYZ_OBSTACLES->box.x2 = MAX(XYZ_OBSTACLES->pol[XYZ_OBSTACLES->np]->box.x2, XYZ_OBSTACLES->box.x2);

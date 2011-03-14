@@ -1260,6 +1260,28 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			continue;
 		}
 
+    if ( ( strcmp ( fct, "p3d_force_BB_computation" ) == 0 ) )
+    {
+      if ( !read_desc_name ( fd, name ) )  return ( read_desc_error ( fct ) );
+      if ( fileType )  //is a macro file
+      {
+        strcpy ( namecompl, nameobj );
+        strcat ( namecompl, "." );
+        strcat ( namecompl, name );
+      }
+      else
+      {
+        strcpy ( namecompl, name );
+      }
+      {
+        p3d_poly *poly;
+        poly = p3d_poly_get_poly_by_name ( namecompl );
+        poly->forceBBComputation = TRUE;
+      }
+      continue;
+    }
+
+
 		//##################### JOINTS ######################
 
 		if ( strcmp ( fct, "p3d_beg_desc_jnt" ) == 0 )
@@ -1847,27 +1869,27 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			}
 		}
 
-		if ( ( strcmp ( fct, "p3d_set_prim_pos" ) == 0 ) || ( strcmp ( fct, "M3D_set_prim_pos" ) == 0 ) )
-		{
-			if ( !read_desc_name ( fd, name ) )  return ( read_desc_error ( fct ) );
-			if ( !read_desc_double ( fd, 6, dtab ) ) return ( read_desc_error ( fct ) );
-			if ( fileType )  //is a macro file
-			{
-				strcpy ( namecompl, nameobj );
-				strcat ( namecompl, "." );
-				strcat ( namecompl, name );
-			}
-			else
-			{
-				strcpy ( namecompl, name );
-			}
-			{
-				p3d_poly *poly;
-				poly = p3d_poly_get_poly_by_name ( namecompl );
-				p3d_set_prim_pos_deg ( poly, scale*dtab[0], scale*dtab[1], scale*dtab[2], dtab[3], dtab[4], dtab[5] );
-			}
-			continue;
-		}
+    if ( ( strcmp ( fct, "p3d_set_prim_pos" ) == 0 ) || ( strcmp ( fct, "M3D_set_prim_pos" ) == 0 ) )
+    {
+      if ( !read_desc_name ( fd, name ) )  return ( read_desc_error ( fct ) );
+      if ( !read_desc_double ( fd, 6, dtab ) ) return ( read_desc_error ( fct ) );
+      if ( fileType )  //is a macro file
+      {
+        strcpy ( namecompl, nameobj );
+        strcat ( namecompl, "." );
+        strcat ( namecompl, name );
+      }
+      else
+      {
+        strcpy ( namecompl, name );
+      }
+      {
+        p3d_poly *poly;
+        poly = p3d_poly_get_poly_by_name ( namecompl );
+        p3d_set_prim_pos_deg ( poly, scale*dtab[0], scale*dtab[1], scale*dtab[2], dtab[3], dtab[4], dtab[5] );
+      }
+      continue;
+    }
 
 		if ( ( strcmp ( fct, "p3d_set_prim_pos_by_mat" ) == 0 ) || ( strcmp ( fct, "M3D_set_prim_pos_by_mat" ) == 0 ) )
 		{

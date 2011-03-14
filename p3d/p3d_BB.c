@@ -251,7 +251,7 @@ void p3d_BB_update_BB_obj1(p3d_obj *obj, p3d_matrix4 mat) {
   BB->zmax = -P3D_HUGE;
 
   for (i = 0;i < np;i++) {
-    if (obj->pol[i]->TYPE != P3D_GRAPHIC) { // Modification Fabien
+    if (obj->pol[i]->TYPE != P3D_GRAPHIC || obj->pol[i]->forceBBComputation == TRUE) { // Modification Fabien
       p3d_BB_get_BB_poly(obj->pol[i], &x1, &x2, &y1, &y2, &z1, &z2);
       if (x1 < BB->xmin) {
         BB->xmin = x1;

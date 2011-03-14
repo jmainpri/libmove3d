@@ -141,7 +141,7 @@ typedef enum {
 
 /* Structure de polyhedre permettant d'utiliser I_COLLIDE */
 typedef struct p3d_poly
-{ 
+{
   struct obj *p3d_objPt; // pointer to the object (modif Juan)
   int entity_type;      /* the shape : 0,1,2=polyh, 3=sphere, 4=cube, 5=box, 6=cylinder, 7=cone */
   p3d_primitive *primitive_data; /* the data in case entity_type != polyhedron */
@@ -157,6 +157,7 @@ typedef struct p3d_poly
   /*! \brief Relative position from the joint of the object */
   p3d_matrix4 pos_rel_jnt ;
   int TYPE ; /* P3D_REAL : detecte et dessine ; P3D_GRAPHIC : dessine mais pas detecte ; P3D_GHOST : detecte mais pas dessine */
+  int forceBBComputation;
   int color ; 
   double *color_vect;
   int list;       /* liste opengl du polyhedre */

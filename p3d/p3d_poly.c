@@ -159,6 +159,7 @@ p3d_poly *p3d_poly_beg_poly(char name[20],int type) {
   poly->box.x2  = -P3D_HUGE; poly->box.y2 = -P3D_HUGE; poly->box.z2 = -P3D_HUGE;
   p3d_mat4Copy(p3d_mat4IDENTITY,poly->pos0);
   p3d_mat4Copy(p3d_mat4IDENTITY,poly->pos_rel_jnt);
+  poly->forceBBComputation = FALSE;
   return(poly);
 }
 
