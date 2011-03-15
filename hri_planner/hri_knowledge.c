@@ -446,10 +446,10 @@ int hri_is_on(p3d_vector3 topObjC, p3d_BB *topObjBB, p3d_BB *bottomObjBB)
   /* Test if topObj is on bottomObj */
   /* Condition 1: The center of topObj BB should be in the x,y limits of bottomObj BB and higher than bottomObj maximum z limit */
   /* Condition 2: The lower part of topObj BB souldn not be (higher than 5 cm) and (lower than 5 cm) from the higher part of bottomObj BB */
-
+  printf("Print for is on  X %f %f %f Y %f %f %f  Z %f %f %f \n",bottomObjBB->xmin, topObjC[0] ,bottomObjBB->xmax,bottomObjBB->ymin, topObjC[1] ,bottomObjBB->ymax,topObjBB->zmin,bottomObjBB->zmax,topObjBB->zmin-bottomObjBB->zmax);
   if((topObjC[0] >= bottomObjBB->xmin) && (topObjC[0] <= bottomObjBB->xmax) &&
-     (topObjC[1] >= bottomObjBB->ymin) && (topObjC[1] <= bottomObjBB->ymax) &&
-     (topObjC[2] >= bottomObjBB->zmax))
+     (topObjC[1] >= bottomObjBB->ymin) && (topObjC[1] <= bottomObjBB->ymax))
+    //&& (topObjC[2] >= bottomObjBB->zmax))
     if((topObjBB->zmin - bottomObjBB->zmax > -0.05) && (topObjBB->zmin-bottomObjBB->zmax < 0.05))
       return TRUE;
 
@@ -1091,13 +1091,16 @@ int hri_compute_geometric_facts(HRI_AGENTS * agents, HRI_ENTITIES * ents, int ro
 
 	    // We want to know wether objects are on furniture, on placemat or inside a container
 	    // Wa also want to know on which furnitures are placemat
-	    if( ((ent->type == HRI_MOVABLE_OBJECT) && ((ents->entities[ge_j]->type == HRI_MOVABLE_OBJECT) || (ents->entities[ge_j]->type == HRI_OBJECT_SUPPORT) || (ents->entities[ge_j]->type == HRI_OBJECT_CONTAINER) || (ents->entities[ge_j]->type == HRI_OBJECT_PLACEMAT))) || ((ent->type == HRI_OBJECT_PLACEMAT) && (ents->entities[ge_j]->type == HRI_OBJECT_SUPPORT))) {
-
+	    if( ((ent->subtype == HRI_MOVABLE_OBJECT) && ((ents->entities[ge_j]->subtype == HRI_MOVABLE_OBJECT) || (ents->entities[ge_j]->subtype == HRI_OBJECT_SUPPORT) || (ents->entities[ge_j]->subtype == HRI_OBJECT_CONTAINER) || (ents->entities[ge_j]->subtype == HRI_OBJECT_PLACEMAT))) || ((ent->subtype == HRI_OBJECT_PLACEMAT) && (ents->entities[ge_j]->subtype == HRI_OBJECT_SUPPORT))) {
+	      
 	      if( e_j != e_i) {
+
 		if(ent->disappeared || ents->entities[ge_j]->disappeared)
 		  placement_relation_result = HRI_UK_PLR;
 		else
 		  placement_relation_result = hri_placement_relation(ent, ents->entities[ge_j]);
+
+		printf("Entity %s , subtype : %d ,with entity %s with subtype %d result %d\n",ent->name,ent->subtype,ents->entities[ge_j]->name,ents->entities[ge_j]->subtype,placement_relation_result);
 		if (  kn_on_ent->is_placed[ge_j] ==  placement_relation_result) {
 		  if ( kn_on_ent->placement_relation_ischanged[ge_j])
 		    kn_on_ent->placement_relation_ischanged[ge_j] = FALSE;
