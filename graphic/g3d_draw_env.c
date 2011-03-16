@@ -29,7 +29,7 @@ extern ManipulationTestFunctions* global_manipPlanTest;
 #include "Hri_planner-pkg.h"
 int HRI_DRAW_TRAJ;
 // Hri distance draw
-extern double hri_cost_to_display;
+extern std::string hri_text_to_display;
 extern bool hri_draw_distance;
 extern std::vector<double> hri_disp_dist;
 #endif
@@ -1370,6 +1370,7 @@ void g3d_draw_env_custom()
   //g3d_hri_display_test();
   g3d_draw_all_agents_fovs(GLOBAL_AGENTS);
   g3d_hri_display_all_agents_sees(GLOBAL_AGENTS);
+  //g3d_hri_draw_kinect_state();
   if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
 ////#if defined(USE_MIGHTABILITY_MAPS) && !defined(COMPILE_ON_JIDO)
 #if defined(USE_MIGHTABILITY_MAPS)
@@ -1379,11 +1380,13 @@ void g3d_draw_env_custom()
 #endif
   
 #ifdef HRI_PLANNER
-  if(FALSE) { // Writing text or anything else breaks visibility functions. They should be enabled/disabled inside win->vs
+  if(FALSE) { 
+    // Writing text or anything else breaks visibility functions. 
+    // They should be enabled/disabled inside win->vs
     // Display a string with text
-    char string[50]; 
-    sprintf(string, "HRI cost = %2.2f", hri_cost_to_display );
-    
+    char string[150]; 
+    //sprintf(string, "HRI cost = %2.2f", hri_cost_to_display );
+    sprintf(string,hri_text_to_display.c_str());
     g3d_draw_text(string);
     
     if (hri_draw_distance) {
@@ -1456,7 +1459,7 @@ void g3d_draw_env()
       ext_g3d_export_cpp_graph();
     }
   
-    if(XYZ_GRAPH )
+    if( XYZ_GRAPH )
     {
       g3d_draw_graph();
     }
