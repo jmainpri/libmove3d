@@ -617,7 +617,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::concatTrajectories (std::vector<p
         PrintInfo ( ( "concateneAllTrajectories: robot is NULL.\n" ) );
         return MANIPULATION_TASK_NOT_INITIALIZED;
     }
-    if ( trajs.empty() ) {
+    if ( trajs.empty() || !trajs[0]) {
         PrintInfo ( ( "concateneAllTrajectories: the trajectory vector is empty.\n" ) );
         return MANIPULATION_TASK_NOT_INITIALIZED;
     }
@@ -1445,18 +1445,16 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armEscapeObject(int armId, config
     gpSet_grasp_configuration(_robot, grasp, qStart, armId);
     _configs.setGrasp(&grasp);
   }
-  activateCcCntrts(_robot, armId, false);
+//   activateCcCntrts(_robot, armId, false);
   
-  if(!_configs.getOpenConfig()){
-    configPt openGraspConfig = _manipConf.getOpenGraspConf(object, armId, *_configs.getGrasp(), qStart);
-    if (openGraspConfig) {
-      _configs.setOpenConfig(openGraspConfig);
-    }else{
-        status = MANIPULATION_TASK_NO_GRASP;
-    }
+  configPt openGraspConfig = _manipConf.getOpenGraspConf(object, armId, *_configs.getGrasp(), qStart);
+  if (openGraspConfig) {
+    _configs.setOpenConfig(openGraspConfig);
+  }else{
+      status = MANIPULATION_TASK_NO_GRASP;
   }
 
-  if(!_configs.getApproachFreeConfig()){
+  if(status == MANIPULATION_TASK_OK){
     configPt approachFreeConfig = _manipConf.getApproachFreeConf(object, armId, *(_configs.getGrasp()), qStart, tAtt);
     if(approachFreeConfig){
       _configs.setApproachFreeConfig(approachFreeConfig);

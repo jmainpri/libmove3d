@@ -2,6 +2,7 @@
 #include "robotPos.h"
 #include "lightPlannerApi.h"
 #include "Collision-pkg.h"
+#include <g3d_window_proto.h>
 
 
 static bool MCDEBUG=false;
@@ -82,14 +83,13 @@ configPt ManipulationConfigs::getOpenGraspConf(p3d_rob* object, int armId, gpGra
     if (p3d_is_collision_free(_robot,q))
     {
       return q;
-
     }
     else {
-        // if the grasp open config is colliding, recompute it taking into account the environment:
-        grasp.computeOpenConfig(_robot, object, true);
-        gpSet_grasp_open_configuration(_robot, grasp, q, armId);
-        if (p3d_is_collision_free(_robot,q)) {
-            return q;
+      // if the grasp open config is colliding, recompute it taking into account the environment:
+      grasp.computeOpenConfig(_robot, object, true);
+      gpSet_grasp_open_configuration(_robot, grasp, q, armId);
+      if (p3d_is_collision_free(_robot,q)) {
+          return q;
       }
     }
   }
