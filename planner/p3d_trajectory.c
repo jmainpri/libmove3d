@@ -409,8 +409,8 @@ int p3d_concat_traj(p3d_traj *traj1Pt, p3d_traj *traj2Pt)
   p3d_get_robot_config_into(robotPt, &q2_start);
   
 #ifdef MULTILOCALPATH
-  p3d_localplanner_type lpl_type = robotPt->lpl_type;
-  if (lpl_type == P3D_MULTILOCALPATH_PLANNER) {
+  p3d_localpath_type lpl_type = robotPt->lpl_type;
+  if (lpl_type == MULTI_LOCALPATH) {
     for(int i = 0; i < robotPt->mlp->nblpGp; i++) {
       if (p3d_multiLocalPath_get_value_groupToPlan(robotPt, i)) {
 	if(strcmp(robotPt->mlp->mlpJoints[i]->gpName,"upBody")==0) {

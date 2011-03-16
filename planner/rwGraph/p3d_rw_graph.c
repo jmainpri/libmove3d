@@ -392,8 +392,8 @@ static void write_node(p3d_graph *G, p3d_node *N, FILE *fd)
     fprintf(fd,"      p3d_edge %d %d %s %f",edges->E->Ni->num,edges->E->Nf->num,
 	    p3d_local_getname_planner(edges->E->planner),edges->E->longueur);
 
-    if ((edges->E->planner == P3D_RSARM_PLANNER) || 
-	(edges->E->planner == P3D_DUBINS_PLANNER)) {
+    if ((edges->E->planner == REEDS_SHEPP) || 
+	(edges->E->planner == DUBINS)) {
       rs_paramPt = lm_get_reeds_shepp_lm_param(G->rob);
       if (rs_paramPt == NULL){
 	radius = -1;
@@ -453,8 +453,8 @@ void p3d_print_node(p3d_graph *G, p3d_node *N)
     printf("      p3d_edge %d %d %s %f Cost %f",edges->E->Ni->num,edges->E->Nf->num,
 	    p3d_local_getname_planner(edges->E->planner),edges->E->longueur, edges->E->cost);
 
-    if ((edges->E->planner == P3D_RSARM_PLANNER) || 
-	(edges->E->planner == P3D_DUBINS_PLANNER)) {
+    if ((edges->E->planner == REEDS_SHEPP) || 
+	(edges->E->planner == DUBINS)) {
       rs_paramPt = lm_get_reeds_shepp_lm_param(G->rob);
       if (rs_paramPt == NULL){
 	radius = -1;
@@ -563,8 +563,8 @@ static int write_node_buff(p3d_graph *G, p3d_node *N, size_t* buffer,
       memcpy((void*)(/*(size_t)*/*buffer + *bsize), (void*)&edges->E->longueur, sizeof(double));	// edges->E->longueur: double (* nedge)
       *bsize += sizeof(double);
 
-      if((edges->E->planner == P3D_RSARM_PLANNER) ||
-	 (edges->E->planner == P3D_DUBINS_PLANNER))
+      if((edges->E->planner == REEDS_SHEPP) ||
+	 (edges->E->planner == DUBINS))
 	{
 	  rs_paramPt = lm_get_reeds_shepp_lm_param(G->rob);
 	  if (rs_paramPt == NULL){
@@ -642,7 +642,7 @@ static void set_canreach_compco(p3d_graph * graphPt)
  */
 static p3d_edge * set_one_edge(p3d_graph * graphPt, p3d_node * node_iPt,
 			       p3d_node * node_fPt,
-			       p3d_localplanner_type type, double dist)
+			       p3d_localpath_type type, double dist)
 {
   p3d_edge * edgePt;
   p3d_list_edge * list_edge1Pt, * list_edge2Pt;
@@ -919,10 +919,10 @@ static int read_graph_buff(size_t buffer, double *version)
 
 			  e = set_one_edge(G, tab_node[itab[0]-1], 
 				       tab_node[itab[1]-1],
-				       (p3d_localplanner_type)itab[2], buf_d);
+				       (p3d_localpath_type)itab[2], buf_d);
 			  
-			  if((e->planner == P3D_RSARM_PLANNER) ||
-			     (e->planner == P3D_DUBINS_PLANNER)) {
+			  if((e->planner == REEDS_SHEPP) ||
+			     (e->planner == DUBINS)) {
 					memcpy((void*)&buf_d, (void*)buffer, sizeof(double));
 					/*(size_t)*/buffer += sizeof(double);
 					/* this is the robot radius for a platform, to be ignored as long as Move3D
@@ -1214,11 +1214,11 @@ int p3d_read_this_graph(FILE *fd, p3d_graph **pG,
 
       for(iloc=0;iloc<P3D_NB_LOCAL_PLANNER;iloc++){
 	if(strcmp(name,p3d_local_getname_planner(
-				 (p3d_localplanner_type)iloc)) == 0)
+				 (p3d_localpath_type)iloc)) == 0)
 	  { break; }
       }
       set_one_edge(G, tab_node[itab[0]-1], tab_node[itab[1]-1],
-		   (p3d_localplanner_type)iloc, dtab[0]);
+		   (p3d_localpath_type)iloc, dtab[0]);
       continue;
     }
 

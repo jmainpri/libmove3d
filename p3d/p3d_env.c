@@ -2708,7 +2708,7 @@ int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints, int act
     (r->mlp->mlpJoints[r->mlp->nblpGp-1])->nbJoints = nbJoints;
     (r->mlp->mlpJoints[r->mlp->nblpGp-1])->joints = MY_ALLOC(int, nbJoints);
     //(r->mg->mgJoints[r->mg->nbGraphs-1])->gpName --> not need to init
-    (r->mlp->mlpJoints[r->mlp->nblpGp-1])->lplType = (p3d_localplanner_type)-1;
+    (r->mlp->mlpJoints[r->mlp->nblpGp-1])->lplType = (p3d_localpath_type)-1;
     (r->mlp->mlpJoints[r->mlp->nblpGp-1])->gpType = (p3d_group_type)-1;
     (r->mlp->mlpJoints[r->mlp->nblpGp-1])->local_method_params =  NULL;
 
@@ -2736,7 +2736,7 @@ int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints, int act
 int p3d_set_multi_localpath_data(p3d_rob* r, const char* gp_name_in, const char* gp_type_in, char* lpl_type_in, double *dtab)
 {
   psoftMotion_str softMotion_params = NULL;
-  p3d_localplanner_type lpl_type = (p3d_localplanner_type)-1;
+  p3d_localpath_type lpl_type = (p3d_localpath_type)-1;
   p3d_group_type gp_type = (p3d_group_type)P3D_NULL_OBJ;
   int nblpGp = r->mlp->nblpGp;
 
@@ -2761,7 +2761,7 @@ int p3d_set_multi_localpath_data(p3d_rob* r, const char* gp_name_in, const char*
     softMotion_params = lm_create_softMotion(r, nblpGp-1);
     if (softMotion_params != NULL){
       r->mlp->mlpJoints[nblpGp-1]->local_method_params =
-          lm_append_to_list(r->mlp->mlpJoints[nblpGp-1]->local_method_params, (void*)softMotion_params, P3D_SOFT_MOTION_PLANNER);
+          lm_append_to_list(r->mlp->mlpJoints[nblpGp-1]->local_method_params, (void*)softMotion_params, SOFT_MOTION);
     }
 //    printf("%s steering method for %s is called \n",lpl_type_in, gp_type_in);
     printf("%s steering method for %s is called \n",lpl_type_in, gp_name_in);

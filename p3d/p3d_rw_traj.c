@@ -66,7 +66,7 @@ int p3d_save_traj(const char *file, p3d_traj * traj) {
 /* Return a type of curpos, and change curpos to point on the
    next name.
    Return FALSE if curpos is a void string. */
-static int read_string_type(char ** curpos, p3d_localplanner_type *type) {
+static int read_string_type(char ** curpos, p3d_localpath_type *type) {
   char * name, *pos;
 
   pos = * curpos;
@@ -167,7 +167,7 @@ static int read_error(char*fct,
                       configPt *qi,
                       configPt *qg,
                       int tcur,
-                      p3d_localplanner_type lpl_cur) {
+                      p3d_localpath_type lpl_cur) {
   PrintError(("p3d_trajectory: read_error: invalid function %s\n", fct));
   PrintError(("  In line %i:%s\n", num_line, *line));
   if (size_max_line > 0) {
@@ -203,7 +203,7 @@ static int read_trajectory(FILE *f) {
   int size_max_dtab = 0; /* dynamic management of tab lenght  */
   int num_line = 0;
   int tcur, *ikSol = NULL, ikSolFlag = TRUE;
-  p3d_localplanner_type type, lpl_cur;
+  p3d_localpath_type type, lpl_cur;
   pp3d_rob robotPt;
   p3d_localpath *localpathPt;
 
@@ -367,6 +367,9 @@ static void save_localpath_data(FILE * fdest, pp3d_rob robotPt,
 	
   /* write initial configuration */
   q = localpathPt->config_at_distance(robotPt, localpathPt, 0);
+  p3d_set_and_update_this_robot_conf(robotPt,q);
+  p3d_get_robot_config_into(robotPt, &q);
+  
   q_deg = p3d_copy_config_rad_to_deg(robotPt, q);
 
   fprintf(fdest, "    ");
@@ -378,6 +381,9 @@ static void save_localpath_data(FILE * fdest, pp3d_rob robotPt,
   /* write end configuration */
   q = localpathPt->config_at_distance(robotPt, localpathPt,
                                       localpathPt->length_lp);
+  p3d_set_and_update_this_robot_conf(robotPt,q);
+  p3d_get_robot_config_into(robotPt, &q);
+  
   q_deg = p3d_copy_config_rad_to_deg(robotPt, q);
 
   fprintf(fdest, "    ");

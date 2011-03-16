@@ -51,8 +51,8 @@ int p3d_standard_shoot(p3d_rob *robotPt, configPt q, int sample_passive)
 		}
   }
 #ifdef  MULTILOCALPATH
-  p3d_localplanner_type lpl_type = robotPt->lpl_type;
-  if (lpl_type == P3D_MULTILOCALPATH_PLANNER) {
+  p3d_localpath_type lpl_type = robotPt->lpl_type;
+  if (lpl_type == MULTI_LOCALPATH) {
 //     configPt qTmp = p3d_get_robot_config(robotPt);
     configPt qTmp = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
     configPt qTmp2;

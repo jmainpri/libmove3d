@@ -150,7 +150,7 @@ int p3d_projectedGradientDescent(p3d_rob *rob,  p3d_strippoint *sp, double d0, c
   configPt qg = p3d_alloc_config(rob);
   double Kpath = 0, dmax;
   int microcol = p3d_col_get_microcollision(); 
-  p3d_localplanner_type planner = p3d_local_get_planner();
+  p3d_localpath_type planner = p3d_local_get_planner();
   p3d_localpath *path = NULL;
   
 
@@ -172,7 +172,7 @@ int p3d_projectedGradientDescent(p3d_rob *rob,  p3d_strippoint *sp, double d0, c
       p3d_copy_config_into(rob, sp->q, &q);
       return FALSE;
     }
-  p3d_local_set_planner(P3D_LINEAR_PLANNER);
+  p3d_local_set_planner(LINEAR);
   if (!(path = p3d_local_planner(rob, sp->q, qg)))
     {
       p3d_local_set_planner(planner);
@@ -226,7 +226,7 @@ int p3d_quickGradientDescent(p3d_rob *rob,  p3d_strippoint *sp, double d0, confi
   double Kpath = 0; 
   double dmax;
   int microcol = p3d_col_get_microcollision();
-  p3d_localplanner_type planner = p3d_local_get_planner();
+  p3d_localpath_type planner = p3d_local_get_planner();
   p3d_localpath *path = p3d_local_planner(rob, sp->prev->q, sp->next->q);
   configPt qg = path->config_at_distance(rob, path, sp->Kes * path->length_lp);
   path->destroy(rob, path); 
@@ -241,7 +241,7 @@ int p3d_quickGradientDescent(p3d_rob *rob,  p3d_strippoint *sp, double d0, confi
       p3d_copy_config_into(rob, sp->q, &q);
       return FALSE;
     }
-  p3d_local_set_planner(P3D_LINEAR_PLANNER);
+  p3d_local_set_planner(LINEAR);
   if (!(path = p3d_local_planner(rob, sp->q, qg)))
     {
       p3d_local_set_planner(planner);

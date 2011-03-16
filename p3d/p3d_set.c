@@ -564,7 +564,7 @@ void p3d_set_robot_config_deg_to_rad(const char * name, configPt q_deg)
  */
 void p3d_set_robot_steering_method(const char * name)
 {
-  p3d_localplanner_type lpl_type;
+  p3d_localpath_type lpl_type;
 #ifdef P3D_LOCALPATH
   lpl_type = p3d_local_getid_planner(name);
 
