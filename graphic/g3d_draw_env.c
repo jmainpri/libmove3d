@@ -1387,8 +1387,11 @@ void g3d_draw_env_custom()
     char string[150]; 
     //sprintf(string, "HRI cost = %2.2f", hri_cost_to_display );
     sprintf(string,hri_text_to_display.c_str());
+
+    glColor3f(0.0,0.0,0.0);
     g3d_draw_text(string);
     
+/**
     if (hri_draw_distance) {
       glLineWidth(3.);
       
@@ -1400,6 +1403,7 @@ void g3d_draw_env_custom()
       }
       glLineWidth(1.);
     }
+*/
   }
 
   hri_draw_kinect_points();

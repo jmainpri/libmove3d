@@ -14,8 +14,9 @@
 
 #include <limits>
 
+std::string hri_text_to_display;
 double								hri_cost_to_display=0;
-bool									hri_draw_distance=true;
+bool								hri_draw_distance=true;
 std::vector<double>		hri_disp_dist; // to draw the distance between the human and the robot
 std::vector<double>		hri_histo_dist; // to save all distances that have been computed
 static const double		hri_safe_radius = 1.0; // in meters

@@ -90,8 +90,9 @@ void g3d_draw_text(char* string)
 	glLoadIdentity();
 	glOrtho(0, viewport[2], 0, viewport[3], -1, 1);
 	
-	glTranslatef(viewport[2]-150,50, 0);
+	glTranslatef(350,viewport[3]-150, 0);
 	glScalef(15.0, 15.0,1.0);
+	glColor3f(0.0,0.0,0.0);
 	YsDrawUglyFont(string, -1);
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
