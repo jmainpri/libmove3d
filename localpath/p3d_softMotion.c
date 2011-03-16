@@ -7,6 +7,14 @@
 #include <stdio.h>
 #include <iostream>
 
+double constant_kin_cost(p3d_rob*,p3d_localpath*)
+{
+  return 1; // TODO set in p3d
+}
+
+double (*ext_compute_localpath_kin_cost)(p3d_rob* robotPt,p3d_localpath* path) = 
+constant_kin_cost;
+
 char * array_group_name[] = {
   (char*)"base",
   (char*)"freeflyer",
@@ -90,7 +98,27 @@ p3d_localpath *p3d_softMotion_localplanner(p3d_rob *robotPt, int multiLocalpathI
     p3d_set_search_status(P3D_ILLEGAL_GOAL);
     return(NULL);
   }
-
+  
+//  p3d_localpath *localpathCostPt=NULL;
+//
+//  if( ext_compute_localpath_kin_cost != constant_kin_cost )
+//  {
+//    localpathCostPt = p3d_linear_localplanner(robotPt, qi, qf, ikSol);
+//    softMotion_data->kinematic_cost = ext_compute_localpath_kin_cost( robotPt, localpathCostPt );
+//    localpathCostPt->destroy(robotPt,localpathCostPt);
+//  }
+//  else
+//  {
+//    softMotion_data->kinematic_cost = ext_compute_localpath_kin_cost( robotPt, localpathCostPt );
+//  }
+//  
+//  for( int i=0 ; i<softMotion_data->nbDofs; i++)
+//  {
+//    softMotion_data->specific->J_max[i] *=  softMotion_data->kinematic_cost;
+//    softMotion_data->specific->A_max[i] *=  softMotion_data->kinematic_cost;
+//    softMotion_data->specific->V_max[i] *=  softMotion_data->kinematic_cost;
+//  }
+  
   if(p3d_get_search_verbose()){
     PrintInfo(("MP: p3d_softMotion_localplanner : "));
     PrintInfo(("qi=("));
@@ -2292,7 +2320,7 @@ psoftMotion_str lm_get_softMotion_lm_param_multilocalpath(p3d_rob *robotPt, int 
   psoftMotion_str resultPt=NULL;
 
   while (list_paramPt) {
-    if (list_paramPt->lpl_type != P3D_SOFT_MOTION_PLANNER) {
+    if (list_paramPt->lpl_type != SOFT_MOTION) {
       list_paramPt = list_paramPt->next;
     }
     else {
