@@ -12,7 +12,7 @@ FL_OBJECT  **BUTTON_TAB_OBJ;
 
 static void CB_button_tab_obj(FL_OBJECT *ob, long arg)
 {
-  p3d_local_set_planner((p3d_localplanner_type) arg);
+  p3d_local_set_planner((p3d_localpath_type) arg);
 }  
 
 
@@ -32,7 +32,7 @@ void g3d_create_steering_form(void)
   GROUP = fl_bgn_group();
 
   for(i=0;i<P3D_NB_LOCAL_PLANNER;i++){
-    BUTTON_TAB_OBJ[i] = fl_add_checkbutton(FL_RADIO_BUTTON,45,25+i*20.0,55,25,p3d_local_getname_planner((p3d_localplanner_type) i));
+    BUTTON_TAB_OBJ[i] = fl_add_checkbutton(FL_RADIO_BUTTON,45,25+i*20.0,55,25,p3d_local_getname_planner((p3d_localpath_type) i));
     fl_set_object_color(BUTTON_TAB_OBJ[i],FL_MCOL,FL_GREEN);
     fl_set_call_back(BUTTON_TAB_OBJ[i],CB_button_tab_obj,i);
   }

@@ -2608,7 +2608,7 @@ int p3d_create_reeds_shepp_local_method_for_robot(p3d_rob *robotPt, double *dtab
     return FALSE;
   }
 
-  robotPt->lpl_type = P3D_RSARM_PLANNER;
+  robotPt->lpl_type = REEDS_SHEPP;
 
   rs_paramPt = lm_create_reeds_shepp(robotPt, dtab, itab);
 
@@ -2616,7 +2616,7 @@ int p3d_create_reeds_shepp_local_method_for_robot(p3d_rob *robotPt, double *dtab
     robotPt->local_method_params =
       lm_append_to_list(robotPt->local_method_params,
                         (void*)rs_paramPt,
-                        P3D_RSARM_PLANNER);
+                        REEDS_SHEPP);
   }
   return TRUE;
 }
@@ -2640,7 +2640,7 @@ int p3d_create_reeds_shepp_local_method(double *dtab, int *itab) {
     return FALSE;
   }
 
-  robotPt->lpl_type = P3D_RSARM_PLANNER;
+  robotPt->lpl_type = REEDS_SHEPP;
 
   rs_paramPt = lm_create_reeds_shepp(robotPt, dtab, itab);
 
@@ -2648,7 +2648,7 @@ int p3d_create_reeds_shepp_local_method(double *dtab, int *itab) {
     robotPt->local_method_params =
       lm_append_to_list(robotPt->local_method_params,
                         (void*)rs_paramPt,
-                        P3D_RSARM_PLANNER);
+                        REEDS_SHEPP);
   }
   return TRUE;
 }
@@ -2857,7 +2857,7 @@ lm_reeds_shepp_str *lm_get_reeds_shepp_lm_param(p3d_rob* robotPt) {
   lm_reeds_shepp_str *resultPt = NULL;
 
   while (list_paramPt) {
-    if (list_paramPt->lpl_type != P3D_RSARM_PLANNER) {
+    if (list_paramPt->lpl_type != REEDS_SHEPP) {
       list_paramPt = list_paramPt->next;
     } else {
       resultPt = (plm_reeds_shepp_str)(list_paramPt->lm_param);

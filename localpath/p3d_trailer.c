@@ -2571,14 +2571,14 @@ int p3d_create_trailer_local_method_for_robot(p3d_rob *robotPt,
     return FALSE;
   }
 
-  robotPt->lpl_type = P3D_TRAILER_PLANNER;
+  robotPt->lpl_type = TRAILER;
 
   trailer_params = lm_create_trailer(robotPt, dtab, itab);
 
   if (trailer_params != NULL){
     robotPt->local_method_params =
       lm_append_to_list(robotPt->local_method_params, (void*)trailer_params,
-			P3D_TRAILER_PLANNER);
+			TRAILER);
   }
   return TRUE;
 }
@@ -2601,14 +2601,14 @@ int p3d_create_trailer_local_method(double *dtab, int *itab)
     return FALSE;
   }
 
-  robotPt->lpl_type = P3D_TRAILER_PLANNER;
+  robotPt->lpl_type = TRAILER;
 
   trailer_params = lm_create_trailer(robotPt, dtab, itab);
 
   if (trailer_params != NULL){
     robotPt->local_method_params =
       lm_append_to_list(robotPt->local_method_params, (void*)trailer_params,
-			P3D_TRAILER_PLANNER);
+			TRAILER);
   }
   return TRUE;
 }
@@ -2857,7 +2857,7 @@ pflat_trailer_str lm_get_trailer_lm_param(p3d_rob *robotPt)
   pflat_trailer_str resultPt=NULL;
 
   while (list_paramPt) {
-    if (list_paramPt->lpl_type != P3D_TRAILER_PLANNER) {
+    if (list_paramPt->lpl_type != TRAILER) {
       list_paramPt = list_paramPt->next;
     }
     else {

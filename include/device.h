@@ -439,7 +439,7 @@ typedef struct jnt
  */
 typedef struct lm_list_param
 {
-  p3d_localplanner_type lpl_type;
+  p3d_localpath_type lpl_type;
   void  *lm_param;
   struct lm_list_param  *next;
 
@@ -492,7 +492,7 @@ typedef struct multiLocalPathJoint{
 	/*! \brief Group type see p3d_group_type in group.h */
 	p3d_group_type	gpType;
 	/*! \brief Current local planner associated to the sub-graph */
-	p3d_localplanner_type	lplType;
+	p3d_localpath_type	lplType;
 	/*! \brief Parameters of local planner associated to the sub-graph */
 	plm_list_param_str local_method_params;
 
@@ -676,7 +676,7 @@ typedef struct rob
   double *length_array;
 
   /*! \brief Current local planner associated to the robot */
-  p3d_localplanner_type lpl_type;
+  p3d_localpath_type lpl_type;
   /*! \brief Parameters of local planner associated to the robot */
   plm_list_param_str local_method_params;
 

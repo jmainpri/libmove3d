@@ -354,7 +354,7 @@ static void CB_local_search_obj(FL_OBJECT *ob, long arg) {
   char      str[255], sti[255];
   p3d_localpath *localpathPt = NULL;
   int ntest, ntrj, /*ir,*/ *ikSol = NULL;
-  p3d_localplanner_type lpl_type;
+  p3d_localpath_type lpl_type;
 
   p3d_SetStopValue(FALSE);
 

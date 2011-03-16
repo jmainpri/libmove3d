@@ -2162,14 +2162,14 @@ int p3d_create_hilflat_local_method_for_robot(p3d_rob *robotPt,
     return FALSE;
   }
 
-  robotPt->lpl_type = P3D_HILFLAT_PLANNER;
+  robotPt->lpl_type = HILFLAT;
 
   hilflat_params = lm_create_hilflat(robotPt, itab);
 
   if (hilflat_params != NULL){
     robotPt->local_method_params =
       lm_append_to_list(robotPt->local_method_params, (void*)hilflat_params,
-			P3D_HILFLAT_PLANNER);
+			HILFLAT);
   }
   return TRUE;
 }
@@ -2192,14 +2192,14 @@ int p3d_create_hilflat_local_method(int *itab)
     return FALSE;
   }
 
-  robotPt->lpl_type = P3D_HILFLAT_PLANNER;
+  robotPt->lpl_type = HILFLAT;
 
   hilflat_params = lm_create_hilflat(robotPt, itab);
 
   if (hilflat_params != NULL){
     robotPt->local_method_params =
       lm_append_to_list(robotPt->local_method_params, (void*)hilflat_params,
-			P3D_HILFLAT_PLANNER);
+			HILFLAT);
   }
   return TRUE;
 }
@@ -2408,7 +2408,7 @@ philflat_str lm_get_hilflat_lm_param(p3d_rob *robotPt)
   philflat_str resultPt=NULL;
 
   while (list_paramPt) {
-    if (list_paramPt->lpl_type != P3D_HILFLAT_PLANNER) {
+    if (list_paramPt->lpl_type != HILFLAT) {
       list_paramPt = list_paramPt->next;
     }
     else {

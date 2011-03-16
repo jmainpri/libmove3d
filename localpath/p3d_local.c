@@ -9,7 +9,7 @@ static int   SEARCH_VERBOSE=  FALSE;
 
 
 /* Array of pointers to localplanner functions. The indices of the array
-   are the elements of the p3d_localplanner_type enumeration. */
+   are the elements of the p3d_localpath_type enumeration. */
 ptr_to_localplanner array_localplanner[]=
   {
     (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_rsarm_localplanner),
@@ -48,7 +48,7 @@ int P3D_NB_LOCAL_PLANNER = 8;
  *  not forget to add a line in
  *  typedef enum {
  *      ...
- *    } p3d_localplanner_type;
+ *    } p3d_localpath_type;
  *
  *  in the file localpath.h
  */
@@ -107,17 +107,17 @@ p3d_localpath *p3d_local_planner_multisol(p3d_rob *robotPt, configPt q1, configP
 p3d_localpath *p3d_local_planner_array(p3d_rob *robotPt, configPt* q)
 {
   pp3d_localpath localpathPt;
-  p3d_localplanner_type lpl_type = robotPt->lpl_type;
+  p3d_localpath_type lpl_type = robotPt->lpl_type;
 
 #ifdef  MULTILOCALPATH
 
-  if (lpl_type == P3D_MULTILOCALPATH_PLANNER) {
+  if (lpl_type == MULTI_LOCALPATH) {
     int nblpGp = 0;
     nblpGp = robotPt->mlp->nblpGp;
     p3d_softMotion_data     *softMotion_data[nblpGp];
     for(int i=0; i<nblpGp;i++) {
       if( p3d_multiLocalPath_get_value_groupToPlan(robotPt, i)) {
-	if(robotPt->mlp->mlpJoints[i]->lplType == P3D_SOFT_MOTION_PLANNER) {
+	if(robotPt->mlp->mlpJoints[i]->lplType == SOFT_MOTION) {
 	  softMotion_data[i] = NULL;
 	  softMotion_data[i] = p3d_create_softMotion_data_multilocalpath(robotPt, i);
 	} else {
@@ -129,7 +129,7 @@ p3d_localpath *p3d_local_planner_array(p3d_rob *robotPt, configPt* q)
     }
     localpathPt = p3d_multiLocalPath_localplanner(robotPt, softMotion_data, q[0], q[1], q[1], NULL);
 
-  } else if (lpl_type == P3D_SOFT_MOTION_PLANNER) {
+  } else if (lpl_type == SOFT_MOTION) {
     PrintError(("You can't call Soft-Motion planner in this way, call Multi-Graph and set a group with Soft-Motion"));
   } else {
 #endif
@@ -152,17 +152,17 @@ p3d_localpath *p3d_local_planner_array(p3d_rob *robotPt, configPt* q)
 p3d_localpath *p3d_local_planner_array_multisol(p3d_rob *robotPt, configPt* q, int* ikSol)
 {
   pp3d_localpath localpathPt = NULL;
-  p3d_localplanner_type lpl_type = robotPt->lpl_type;
+  p3d_localpath_type lpl_type = robotPt->lpl_type;
 
 #ifdef  MULTILOCALPATH
 
-  if (lpl_type == P3D_MULTILOCALPATH_PLANNER) {
+  if (lpl_type == MULTI_LOCALPATH) {
     int nblpGp = 0;
     nblpGp = robotPt->mlp->nblpGp;
     pp3d_softMotion_data     softMotion_data[nblpGp];
     for(int i=0; i<nblpGp;i++) {
      if( p3d_multiLocalPath_get_value_groupToPlan(robotPt, i)) {
-      if(robotPt->mlp->mlpJoints[i]->lplType == P3D_SOFT_MOTION_PLANNER) {
+      if(robotPt->mlp->mlpJoints[i]->lplType == SOFT_MOTION) {
 	softMotion_data[i] = NULL;
 	softMotion_data[i] = p3d_create_softMotion_data_multilocalpath(robotPt, i);
       } else {
@@ -174,7 +174,7 @@ p3d_localpath *p3d_local_planner_array_multisol(p3d_rob *robotPt, configPt* q, i
     }
     localpathPt = p3d_multiLocalPath_localplanner(robotPt, softMotion_data, q[0], q[1], q[1], ikSol);
 
-  } else if (lpl_type == P3D_SOFT_MOTION_PLANNER) {
+  } else if (lpl_type == SOFT_MOTION) {
     PrintError(("You can't call Soft-Motion planner in this way, call Multi-Graph and set a group with Soft-Motion"));
   } else {
 #endif
@@ -195,17 +195,17 @@ p3d_localpath *p3d_local_planner_array_multisol(p3d_rob *robotPt, configPt* q, i
   return(localpathPt);
 }
 
-int p3d_local_set_planner(p3d_localplanner_type type)
+int p3d_local_set_planner(p3d_localpath_type type)
 {
   /* the local method of the current robot is changed */
   XYZ_ENV->cur_robot->lpl_type = type;
   return(type);
 }
 
-p3d_localplanner_type p3d_local_get_planner(void)
+p3d_localpath_type p3d_local_get_planner(void)
 {
   p3d_rob * robotPt = (p3d_rob *)p3d_get_desc_curid(P3D_ROBOT);
-  p3d_localplanner_type lpl_type;
+  p3d_localpath_type lpl_type;
 
   lpl_type = robotPt->lpl_type;
 
@@ -213,22 +213,22 @@ p3d_localplanner_type p3d_local_get_planner(void)
 }
 
 char *
-p3d_local_getname_planner(p3d_localplanner_type lpl_type)
+p3d_local_getname_planner(p3d_localpath_type lpl_type)
 {
   return(array_localplanner_name[lpl_type]);
 }
 
 /* D�ut modification Fabien */
-p3d_localplanner_type
+p3d_localpath_type
 p3d_local_getid_planner(const char * name)
 {
   int i;
 
   for(i=0; i<P3D_NB_LOCAL_PLANNER; i++) {
     if (strcmp(name, array_localplanner_name[i]) == 0)
-      { return (p3d_localplanner_type)i; }
+      { return (p3d_localpath_type)i; }
   }
-  return (p3d_localplanner_type)P3D_NULL_OBJ;
+  return (p3d_localpath_type)P3D_NULL_OBJ;
 }
 /* Fin modification Fabien */
 
@@ -300,7 +300,7 @@ double p3d_dist_q1_q2(p3d_rob *robotPt, configPt q1, configPt q2)
 {
   pp3d_localpath localpathPt;
   double length;
-  //  p3d_localplanner_type lpl_type = robotPt->lpl_type;
+  //  p3d_localpath_type lpl_type = robotPt->lpl_type;
 	
   localpathPt = p3d_local_planner(robotPt, q1, q2);
   //localpathPt = array_localplanner[lpl_type](robotPt, q1, q2, NULL);
@@ -434,32 +434,32 @@ void lm_destroy_one_params(p3d_rob *robotPt,
   void *paramPt = lm_list_paramPt->lm_param;
 
   switch(lm_list_paramPt->lpl_type) {
-  case P3D_DUBINS_PLANNER:
-  case P3D_RSARM_PLANNER:
+  case DUBINS:
+  case REEDS_SHEPP:
     lm_destroy_reeds_shepp_params(robotPt, paramPt);
     break;
-  case P3D_LINEAR_PLANNER:
+  case LINEAR:
     lm_destroy_linear_params(robotPt, paramPt);
     break;
-  case P3D_MANH_PLANNER:
+  case MANHATTAN:
     lm_destroy_manhattan_params(robotPt, paramPt);
     break;
-  case P3D_TRAILER_PLANNER:
+  case TRAILER:
     lm_destroy_trailer_params(robotPt, paramPt);
     break;
-  case P3D_HILFLAT_PLANNER:
+  case HILFLAT:
     lm_destroy_hilflat_params(robotPt, paramPt);
     break;
 #ifdef MULTILOCALPATH
-  case P3D_SOFT_MOTION_PLANNER:
+  case SOFT_MOTION:
     lm_destroy_softMotion_params(robotPt, paramPt);
     break;
 #endif
-  case P3D_NBLP_TYPE:
+  case NBLP_TYPE:
     break;
-  case P3D_TRAILER_FW_PLANNER:
+  case TRAILER_FORWARD:
     break;
-  case P3D_HILFLAT_FW_PLANNER:
+  case HILFLAT_FORWARD:
     break;
   }
   lm_list_paramPt->lm_param=NULL;
@@ -479,7 +479,7 @@ void lm_destroy_one_params(p3d_rob *robotPt,
  */
 
 lm_list_param_str *lm_append_to_list(lm_list_param_str *listPt, void* eltPt,
-				     p3d_localplanner_type lpl_type)
+				     p3d_localpath_type lpl_type)
 {
   lm_list_param_str *new_listPt = NULL;
   lm_list_param_str *end_of_listPt = listPt;

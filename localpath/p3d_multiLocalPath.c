@@ -620,7 +620,7 @@ p3d_localpath *p3d_simplify_multiLocalPath(p3d_rob *robotPt, p3d_localpath *loca
  */
 p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_data** softMotion_data,
     configPt qi, configPt qf, configPt qfp1, int* ikSol) {
-  p3d_localplanner_type lplType;
+  p3d_localpath_type lplType;
   int nblpGp = robotPt->mlp->nblpGp;
   p3d_localpath *localpathPt[nblpGp];
   p3d_localpath *localpathMg = NULL;
@@ -643,7 +643,7 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
     if (groupToPlan[i] == 1) {
       lplType = robotPt->mlp->mlpJoints[i]->lplType;
 
-      if (lplType == P3D_SOFT_MOTION_PLANNER) {
+      if (lplType == SOFT_MOTION) {
 
         localpathPt[i] = p3d_softMotion_localplanner(robotPt, i, softMotion_data[i], qi, qfTmp[i] , qfp1Tmp[i], NULL);
         if (localpathPt[i] != NULL) {

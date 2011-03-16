@@ -384,7 +384,7 @@ static void CB_robotcur_obj(FL_OBJECT *ob, long arg)
 {int val = fl_get_choice(ob) -1;
  int rcur= p3d_get_desc_curnum(P3D_ROBOT);
  float x,y;
- p3d_localplanner_type lpl_type;
+ p3d_localpath_type lpl_type;
  pp3d_rob robotPt;
 
  if(val >= 0 && rcur != val &&
@@ -1104,7 +1104,7 @@ void read_scenario_by_name(const char *file)
 {
   int  nrob, ir;
   //  pp3d_rob robotPt;
-  p3d_localplanner_type lpl_type;
+  p3d_localpath_type lpl_type;
   /* on lit le scenario */
   if (ROBOTS_FORM != NULL) { // if no form exist, we cannot update it
     if (file){
@@ -1438,7 +1438,7 @@ static void charge_scene(int env_num)
   //  else{XYZ_GRAPH = NULL;}
 
   p3d_set_env_dmax(saved_scene[env_num-1].pas_max);
-  p3d_local_set_planner((p3d_localplanner_type) saved_scene[env_num-1].local_planner);
+  p3d_local_set_planner((p3d_localpath_type) saved_scene[env_num-1].local_planner);
   p3d_set_MOTION_PLANNER(saved_scene[env_num-1].global_planner);
 
   p3d_set_SAMPLING_CHOICE(saved_scene[env_num-1].sampling);
@@ -1525,7 +1525,7 @@ static void g3d_create_robots_forms(int nr)
     /* on cree le menu robot du robot ir */
     g3d_create_robot_form(ir);
     /* on lui donne un planificateur local par defaut */
-    ROBOTS_FORM[ir].PLANNER_CHOICE=P3D_LINEAR_PLANNER;
+    ROBOTS_FORM[ir].PLANNER_CHOICE=LINEAR;
     /* on cree son menu filter box */
     // NOTE : FilterBox functions (create, delete) have been disabled\n");
     //g3d_create_filterbox_form(ir);

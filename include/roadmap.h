@@ -114,7 +114,7 @@ typedef struct list_node{
 typedef struct edge {
   p3d_node  *Ni, *Nf;
   p3d_localpath *path;
-  p3d_localplanner_type planner;
+  p3d_localpath_type planner;
   double     longueur;
   double cost;
   int sens_edge;

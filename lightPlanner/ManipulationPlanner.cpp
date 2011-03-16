@@ -132,6 +132,10 @@ void ManipulationPlanner::resetSmoothingMethod(){
   _smoothingMethod = optimiseTrajectory;
 }
 
+void ManipulationPlanner::setReplanningMethod(p3d_traj* (*funct)(p3d_rob* robotPt, p3d_traj* traj, p3d_vector3 target, int deformationViaPoint)) {
+  _replanningMethod = funct;
+}
+
 void ManipulationPlanner::setOptimizeSteps(int nbSteps) {
     if (nbSteps > 0) {
         _optimizeSteps = nbSteps;
@@ -504,6 +508,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armComputePRM(double ComputeTime)
     p3d_set_tmax(bakComputeTime);
     return MANIPULATION_TASK_OK;
 }
+
 
 //! Computes a trajectory between two configurations
 //! It first moves the qi and qf configuration to the ROBOT_POS and ROBOT_GOTO
@@ -1521,6 +1526,33 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armEscapeObject(int armId, config
 /* ******************************* */
 /* ******** Task Planning ******** */
 /* ******************************* */
+#ifdef MULTILOCALPATH
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armReplan(p3d_vector3 target, int qSwitchId, SM_TRAJ &smTraj) {
+  p3d_traj* traj = NULL;
+  MANIPULATION_TASK_MESSAGE returnMessage;
+  
+  if (!_robot) {
+    printf("%s: %d: ManipulationPlanner::armPlanTask(): No robot initialized.\n", __FILE__, __LINE__);
+    return MANIPULATION_TASK_NOT_INITIALIZED;
+  }
+  
+  p3d_multiLocalPath_disable_all_groupToPlan(_robot);
+  p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1);
+  
+  if ((traj = _replanningMethod(_robot, _robotPath, target, qSwitchId)) != NULL) 
+  { 
+    smTraj.clear();
+    /* COMPUTE THE SOFTMOTION TRAJECTORY */
+    MANPIPULATION_TRAJECTORY_CONF_STR conf;
+    computeSoftMotion(traj/*s.at(i)*/, conf, smTraj);
+  } 
+  else {
+    returnMessage = MANIPULATION_TASK_NO_TRAJ_FOUND;
+  }
+  
+  return returnMessage;
+}
+#endif
 
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName, const char* supportName, char* placementName, gpGrasp& grasp, std::vector <p3d_traj*> &trajs) {
   
@@ -1638,9 +1670,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
   return armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, placementName, trajs);
 }
 
-//! Computes a path for a specific task
-//! This function is an interface for the softmotion
-//! trajectory generation
+//! Replans a path form the variable _robotPath
 #ifdef MULTILOCALPATH
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName, const char* supportName, char* placementName, gpGrasp& grasp, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs) {
     std::vector <p3d_traj*> trajs;
@@ -1658,6 +1688,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     if ((returnMessage = armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, placementName, grasp, trajs)) == MANIPULATION_TASK_OK) {
       //concatene
       if (concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK) {
+        _robotPath = _robot->tcur; // Stores the robot path
         smTrajs.clear();
 //         for(unsigned i = 0; i < trajs.size(); i++){
         /* COMPUTE THE SOFTMOTION TRAJECTORY */

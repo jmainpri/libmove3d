@@ -51,33 +51,34 @@ typedef enum {
  TRAILER_FORWARD,
  HILFLAT,
  HILFLAT_FORWARD,
- DUBINS
+ DUBINS,
 #ifdef MULTILOCALPATH
- ,SOFT_MOTION  /* XB */
- ,MULTI_LOCALPATH
+ SOFT_MOTION,  /* XB */
+ MULTI_LOCALPATH,
 #endif
+  NBLP_TYPE
 } p3d_localpath_type;
 
-/* local planner type */
-typedef enum {
-  P3D_RSARM_PLANNER,
-  P3D_LINEAR_PLANNER,
-  P3D_MANH_PLANNER,
-  P3D_TRAILER_PLANNER,
-  P3D_TRAILER_FW_PLANNER,
-  P3D_HILFLAT_PLANNER,
-  P3D_HILFLAT_FW_PLANNER,
-  P3D_DUBINS_PLANNER,
-#ifdef MULTILOCALPATH
-  P3D_SOFT_MOTION_PLANNER,    /* XB */
-  P3D_MULTILOCALPATH_PLANNER,  // Call softMotion planner and softmotion call the specific planner ...
-#endif
-  P3D_NBLP_TYPE
-} p3d_localplanner_type;
+///* local planner type */
+//typedef enum {
+//  REEDS_SHEPP,
+//  LINEAR,
+//  MANHATTAN,
+//  TRAILER,
+//  TRAILER_FORWARD,
+//  HILFLAT,
+//  HILFLAT_FORWARD,
+//  DUBINS,
+//#ifdef MULTILOCALPATH
+//  SOFT_MOTION,    /* XB */
+//  MULTI_LOCALPATH,  // Call softMotion planner and softmotion call the specific planner ...
+//#endif
+//  NBLP_TYPE
+//} p3d_localpath_type;
 
 extern int P3D_NB_LOCAL_PLANNER;
 
-#define DEFAULT_LOCAL_PLANNER P3D_LINEAR_PLANNER
+#define DEFAULT_LOCAL_PLANNER LINEAR
 
 /* types of Reeds and Shepp curve parts */
 #define rs_type  int
@@ -233,6 +234,7 @@ typedef struct softMotion_data{
 	configPt q_end;       /* config end      */
 	configPt q_endp1;     /* config end+1    */
 	p3d_softMotion_data_specific* specific;
+  double kinematic_cost; /* cost in ]0 1] that controls speed, acceleration and jerk */ 
 } p3d_softMotion_data, *pp3d_softMotion_data;
 
 /* data relative to softMotion local method and stored in p3d_rob */
@@ -377,7 +379,7 @@ typedef pp3d_localpath (*ptr_to_localplanner)(struct rob*, configPt, configPt, i
 typedef pp3d_localpath (*ptr_to_softMotion_localplanner)(struct rob*, configPt, configPt, configPt, int*);
 
 /* Array of pointers to localplanner functions. The indices of the array
- are the elements of the p3d_localplanner_type enumeration. */
+ are the elements of the p3d_localpath_type enumeration. */
 
 extern ptr_to_localplanner array_localplanner[];
 

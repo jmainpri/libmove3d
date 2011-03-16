@@ -300,7 +300,7 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
 	p3d_multiLocalPath_disable_all_groupToPlan(robot);
     p3d_multiLocalPath_set_groupToPlan(robot, UpBodyMLP, 1) ;
 #else
-  p3d_local_set_planner((p3d_localplanner_type)1);
+  p3d_local_set_planner((p3d_localpath_type)1);
 #endif
   deleteAllGraphs();
   unFixAllJointsExceptBaseAndObject(robot);
@@ -322,10 +322,10 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
 	p3d_multiLocalPath_set_groupToPlan(robot, HeadMLP, 1);
 #else
   if(USE_LIN){
-    p3d_local_set_planner((p3d_localplanner_type)1);
+    p3d_local_set_planner((p3d_localpath_type)1);
   }
   else{
-    p3d_local_set_planner((p3d_localplanner_type)0);
+    p3d_local_set_planner((p3d_localpath_type)0);
   }
 #endif
   p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
@@ -423,7 +423,7 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
 	p3d_multiLocalPath_disable_all_groupToPlan(robot);
     p3d_multiLocalPath_set_groupToPlan(robot, UpBodyMLP, 1) ;
 #else
-  p3d_local_set_planner((p3d_localplanner_type)1);
+  p3d_local_set_planner((p3d_localpath_type)1);
 #endif
   //Select and activate the right graph
   XYZ_GRAPH = robot->preComputedGraphs[1];
@@ -496,7 +496,7 @@ p3d_traj* touchObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, config
 	p3d_multiLocalPath_disable_all_groupToPlan(robot);
   p3d_multiLocalPath_set_groupToPlan(robot, UpBodyMLP, 1) ;
 #else
-  p3d_local_set_planner((p3d_localplanner_type)1);
+  p3d_local_set_planner((p3d_localpath_type)1);
 #endif
   //Select and activate the right graph
   XYZ_GRAPH = NULL;
@@ -607,7 +607,7 @@ p3d_traj* carryObjectByConf(p3d_rob * robot, p3d_matrix4 objectGotoPos, configPt
 	p3d_multiLocalPath_set_groupToPlan(robot, ObjectMLP, 1);
 #else
   //   Linear
-  p3d_local_set_planner((p3d_localplanner_type)1);
+  p3d_local_set_planner((p3d_localpath_type)1);
 #endif
 //   deleteAllGraphs();
   //Select and activate the right graph
@@ -708,10 +708,10 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
 	p3d_multiLocalPath_set_groupToPlan(robot, ObjectMLP, 1);
 #else
   if(USE_LIN){
-    p3d_local_set_planner((p3d_localplanner_type)1);
+    p3d_local_set_planner((p3d_localpath_type)1);
   }
   else{
-    p3d_local_set_planner((p3d_localplanner_type)0);
+    p3d_local_set_planner((p3d_localpath_type)0);
   }
 #endif
   deleteAllGraphs();

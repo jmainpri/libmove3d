@@ -45,7 +45,7 @@ double bio_compute_localpath_validation_const_step(p3d_rob *robotPt,
   double umax = localpathPt->range_param;
 
   // WARNING : suppose that the localpath is linear
-  if(p3d_local_get_planner() != P3D_LINEAR_PLANNER) {
+  if(p3d_local_get_planner() != LINEAR) {
     printf("ERROR : bio_compute_localpath_validation_const_step : localpath must be LINEAR\n");
     return (0.0);
   }

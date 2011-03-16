@@ -14,10 +14,10 @@ extern p3d_localpath *p3d_local_planner ( p3d_rob *robotPt, configPt q1, configP
 extern p3d_localpath *p3d_local_planner_multisol(p3d_rob *robotPt, configPt q1, configPt q2, int* ikSol);
 extern p3d_localpath *p3d_local_planner_array ( p3d_rob *robotPt, configPt* q );
 extern p3d_localpath *p3d_local_planner_array_multisol ( p3d_rob *robotPt, configPt* q , int* ikSol);
-extern int p3d_local_set_planner ( p3d_localplanner_type type );
-extern p3d_localplanner_type p3d_local_get_planner ( void );
-extern char * p3d_local_getname_planner ( p3d_localplanner_type lpl_type );
-extern p3d_localplanner_type p3d_local_getid_planner ( const char * name );
+extern int p3d_local_set_planner ( p3d_localpath_type type );
+extern p3d_localpath_type p3d_local_get_planner ( void );
+extern char * p3d_local_getname_planner ( p3d_localpath_type lpl_type );
+extern p3d_localpath_type p3d_local_getid_planner ( const char * name );
 extern p3d_localpath* p3d_replace_traj_part ( p3d_localpath* start_trajPt, p3d_localpath* start_old_partPt, p3d_localpath* last_old_partPt, p3d_localpath* new_partPt );
 extern double p3d_dist_q1_q2 ( p3d_rob *robotPt, configPt q1, configPt q2 );
 extern double p3d_dist_q1_q2_multisol ( p3d_rob *robotPt, configPt q1, configPt q2, int* ikSol );
@@ -25,7 +25,7 @@ extern void destroy_list_localpath ( p3d_rob *robotPt, p3d_localpath *localpathP
 extern p3d_localpath *concat_liste_localpath ( p3d_localpath *list1Pt, p3d_localpath *list2Pt );
 extern void lm_destroy_params ( p3d_rob *robotPt, lm_list_param_str *lm_list_paramPt );
 extern void lm_destroy_one_params ( p3d_rob *robotPt, lm_list_param_str *lm_list_paramPt );
-extern lm_list_param_str *lm_append_to_list ( lm_list_param_str *listPt, void* eltPt, p3d_localplanner_type lpl_type );
+extern lm_list_param_str *lm_append_to_list ( lm_list_param_str *listPt, void* eltPt, p3d_localpath_type lpl_type );
 extern p3d_localpath *p3d_read_localpath ( p3d_rob *robotPt, FILE *file, char *type, double version );
 extern int p3d_unvalid_localpath_test ( p3d_rob *robotPt, p3d_localpath *localpathPt, int *ntest );
 extern int p3d_unvalid_localpath_classic_test ( p3d_rob *robotPt, p3d_localpath *localpathPt, int *ntest, double *Kpath, configPt *q_atKpath );

@@ -126,7 +126,7 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 	
 	switch ( (unsigned int) m_manipulation->robot()->lpl_type ) 
 	{
-		case P3D_LINEAR_PLANNER :
+		case LINEAR :
 		{
       gpGrasp grasp;
 			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, /* m_OBJECT_NAME.c_str() */ "", "", (char*)"", grasp, trajs);
@@ -143,13 +143,13 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 		}
 			
 			
-		case P3D_MULTILOCALPATH_PLANNER :{
+		case MULTI_LOCALPATH :{
       gpGrasp grasp;
 			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, /*m_OBJECT_NAME.c_str()*/ "", "", (char*)"", grasp, confs, smTrajs);
 			break;
     }
 			
-		case P3D_SOFT_MOTION_PLANNER:{
+		case SOFT_MOTION:{
 			cout << "Manipulation : localpath softmotion should not be called" << endl;
 			succeed = false;
 			break;

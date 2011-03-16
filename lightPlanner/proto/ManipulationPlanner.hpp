@@ -52,6 +52,8 @@ class  ManipulationPlanner {
   void resetPlanningMethod();
   void setSmoothingMethod(void (*funct)(p3d_rob* robot, p3d_traj* traj, int nbSteps, double maxTime));
   void resetSmoothingMethod();
+  void setReplanningMethod(p3d_traj* (*funct)(p3d_rob* robotPt, p3d_traj* traj, p3d_vector3 target, int deformationViaPoint));
+  //void resetReplanningMethod();
   
   
     void setOptimizeSteps(int nbSteps);
@@ -139,6 +141,9 @@ class  ManipulationPlanner {
   /* ******************************* */
   /* ******** Task Planning ******** */
   /* ******************************* */
+    /** Replan a trajectory to a given target **/
+    MANIPULATION_TASK_MESSAGE armReplan(p3d_vector3 target, int qSwitchId, SM_TRAJ &smTrajs);
+  
     /** Computes a path for a given manipulation elementary task. Generate a set of Trajectories */
     MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName,  const char* supportName, char* placementName, gpGrasp& grasp, std::vector <p3d_traj*> &trajs);
     
@@ -184,8 +189,16 @@ class  ManipulationPlanner {
   /* ******************************* */
   /* ** Motion Planning funtions *** */
   /* ******************************* */
+  
+  //! Last computed geometric path
+  p3d_traj* _robotPath;
+  
+  //! Basic Motion planning functions
   p3d_traj* (*_plannerMethod)(p3d_rob* robot, configPt qs, configPt qg);
   void (*_smoothingMethod)(p3d_rob* robot, p3d_traj* traj, int nbSteps, double maxTime);
+  
+  //! Replanning Function
+  p3d_traj* (*_replanningMethod)(p3d_rob* robotPt, p3d_traj* traj, p3d_vector3 target, int deformationViaPoint);
   
 };
 
