@@ -105,7 +105,7 @@ extern int update_human_pos_from_mocap_eye_glasses(point_co_ordi *mrkrs_pos, int
 extern int update_human_pos_from_mocap_rigid_hat(point_co_ordi *mrkrs_pos, int obj_index, char object_name[30], int is_primary_human);
 extern int init_mocap_data_run_file();
 extern int show_axis_of_FOV_from_mocap_eye_glass_data();
-extern int virtually_update_human_state_new(HRI_AGENT *human_agent,int state); //1 means sitting 0 means standing
+extern int virtually_update_human_state_new(p3d_rob* human_Pt,int state); //1 means sitting 0 means standing
 extern int virtually_update_non_primary_human_state(int state, int hum_index); //1 means sitting 0 means standing, hum_index is the index of robot in environment (envPt)
 extern int JIDO_make_obj_accessible_to_human ( char obj_to_manipulate[50] );
 extern int show_world_state_of_entire_plan(std::vector<HRI_task_node> &hri_task_list, int exec_path_configs);
@@ -180,5 +180,9 @@ extern int ececute_this_HRI_task_p3d_Traj_in_simu(char *for_robot, p3d_traj *tra
 extern int ececute_this_HRI_task_SM_Traj_in_simu(char *for_robot, SM_TRAJ &smTraj);
 extern int show_p3d_trajectories_for_plan_ID(int HRI_task_plan_id);
 extern int get_single_soft_motion_traj_for_SHARY(int HRI_task_plan_id, int sub_traj_st_index, int sub_traj_end_index, SM_TRAJ &smTraj );
+extern int g3d_is_object_visible_from_robot(p3d_matrix4 camera_frame, double camera_fov, p3d_rob *robot, p3d_rob *object, double *result);
+extern int init_manipulation_planner();
+extern int update_3d_grid_reachability_for_agent_MM(HRI_TASK_AGENT for_agent, MA_agent_hand_name for_hand, int for_state);
+
 #endif /* __CEXTRACT__ */
 

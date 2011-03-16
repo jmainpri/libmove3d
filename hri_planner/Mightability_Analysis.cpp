@@ -180,6 +180,7 @@ point_co_ordi agent_eye_pos;//To store the eye position for calculating visibili
 int NEED_CURRENT_VISIBILITY_UPDATE_AGENT[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
 int NEED_ALL_VISIBILITY_UPDATE_AGENT[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
 int NEED_ALL_REACHABILITY_UPDATE_AGENT[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
+int NEED_CURRENT_REACHABILITY_UPDATE_AGENT[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];//if condition has been implemented but this flag is not bein set now, TODO: Set the flag at appropriate place
 
 struct object_Symbolic_Mightability_Maps_Relation object_MM;
 
@@ -278,7 +279,7 @@ agent_state_task_constraint accepted_states_for_HRI_task[MAXI_NUM_OF_AGENT_FOR_H
 
 agent_state_task_constraint accepted_states_for_agent_obj_MA[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];//It will store the states which will be used for returning object is reachable and visible for requests from external modules 
 
-MA_state_tansition_cost agents_state_transition_cost;
+////MA_state_tansition_cost agents_state_transition_cost;
 flags_show_Mightability_Maps curr_flags_show_Mightability_Maps;
 
 ////static agents_for_MA agents_for_MA_obj2;
@@ -298,6 +299,7 @@ HRI_TASK_AGENT CURRENT_TASK_PERFORMED_FOR;
 int CONSIDER_OBJECT_DIMENSION_FOR_CANDIDATE_PTS=0;
 
 int CURR_VIS_STATE_INDEX_MA_AGENT[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
+int CURR_REACH_STATE_INDEX_MA_AGENT[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
 
 int PR2_Q_TORSO=12;
 double PR2_Q_TORSO_HIGH_VAL=M_PI/6.0;
@@ -529,7 +531,7 @@ g3d_states prev_state;
 g3d_win *curr_win_to_restore;
 GLint viewport[4];
 
-int show_humans_perspective(HRI_AGENT * agent, int save)//AKP WARNING: FOV is not taken from agent->perspective->fov; It is set as 120 degree in this function itself
+int show_humans_perspective(HRI_AGENT * agent, int save)//AKP WARNING: FOV is not taken from agent->perspective->fov; It is set  in this function itself
 {
   
   ////////g3d_states st;
@@ -550,7 +552,7 @@ int show_humans_perspective(HRI_AGENT * agent, int save)//AKP WARNING: FOV is no
   g3d_save_state(curr_win_to_restore, &prev_state);
   
   // only keep what is necessary:
-  curr_win_to_restore->vs.fov            = 80;//agent->perspective->fov;
+  curr_win_to_restore->vs.fov            = 120;//80;//agent->perspective->fov;
   curr_win_to_restore->vs.displayFrame   = FALSE;
   curr_win_to_restore->vs.displayJoints  = FALSE;
   curr_win_to_restore->vs.displayShadows = FALSE;
@@ -4106,126 +4108,46 @@ break;
   }
 }
 
-int update_state_transition_cost_for_human(HRI_TASK_AGENT for_agent)
+
+int init_current_reach_state_indices_for_MA_agents()
 {
-  for(int i=0;i<agents_for_MA_obj.for_agent[for_agent].maxi_num_vis_states;i++)
-  {
-   
-   agents_state_transition_cost.vis_tran_cost[for_agent][i][i]=0;
-   
-  }
-  
-  int agents_current_state;
-  switch(for_agent)
-  {
-    case HUMAN1_MA:
-      agents_current_state=HUMAN1_CURRENT_STATE_MM;
-      break;
-#ifdef HUMAN2_EXISTS_FOR_MA
-    case HUMAN2_MA:
-      agents_current_state=HUMAN2_CURRENT_STATE_MM;
-      break;
-#endif
-    
-  }
-  
-  ////if((for_agent==HUMAN1_MA&&HUMAN1_CURRENT_STATE_MM==HRI_SITTING)||(for_agent==HUMAN2_MA&&HUMAN2_CURRENT_STATE_MM==HRI_SITTING))
-  if(agents_current_state==HRI_SITTING)
-  {
-    agents_state_transition_cost.vis_tran_cost[for_agent][MM_CURRENT_STATE_HUM_VIS][MM_SITTING_STRAIGHT_HEAD_STATE_HUM_VIS]=1;
-    agents_state_transition_cost.vis_tran_cost[for_agent][MM_CURRENT_STATE_HUM_VIS][MM_SITTING_LOOK_AROUND_HEAD_STATE_HUM_VIS]=2;
-    agents_state_transition_cost.vis_tran_cost[for_agent][MM_CURRENT_STATE_HUM_VIS][MM_SITTING_LEAN_FORWARD_STATE_HUM_VIS]=3;
-    agents_state_transition_cost.vis_tran_cost[for_agent][MM_CURRENT_STATE_HUM_VIS][MM_STANDING_STRAIGHT_HEAD_STATE_HUM_VIS]=4;
-    agents_state_transition_cost.vis_tran_cost[for_agent][MM_CURRENT_STATE_HUM_VIS][MM_STANDING_LOOK_AROUND_HEAD_STATE_HUM_VIS]=5;
-    agents_state_transition_cost.vis_tran_cost[for_agent][MM_CURRENT_STATE_HUM_VIS][MM_STANDING_LEAN_FORWARD_STATE_HUM_VIS]=6;
-  }
-  
- //// if((for_agent==HUMAN1_MA&&HUMAN1_CURRENT_STATE_MM==HRI_STANDING)||(for_agent==HUMAN2_MA&&HUMAN2_CURRENT_STATE_MM==HRI_STANDING))
- if(agents_current_state==HRI_STANDING)
-  {
-    agents_state_transition_cost.vis_tran_cost[for_agent][MM_CURRENT_STATE_HUM_VIS][MM_STANDING_STRAIGHT_HEAD_STATE_HUM_VIS]=1;
-    agents_state_transition_cost.vis_tran_cost[for_agent][MM_CURRENT_STATE_HUM_VIS][MM_STANDING_LOOK_AROUND_HEAD_STATE_HUM_VIS]=2;
-    agents_state_transition_cost.vis_tran_cost[for_agent][MM_CURRENT_STATE_HUM_VIS][MM_STANDING_LEAN_FORWARD_STATE_HUM_VIS]=3;
-    agents_state_transition_cost.vis_tran_cost[for_agent][MM_CURRENT_STATE_HUM_VIS][MM_SITTING_STRAIGHT_HEAD_STATE_HUM_VIS]=4;
-    agents_state_transition_cost.vis_tran_cost[for_agent][MM_CURRENT_STATE_HUM_VIS][MM_SITTING_LOOK_AROUND_HEAD_STATE_HUM_VIS]=5;
-    agents_state_transition_cost.vis_tran_cost[for_agent][MM_CURRENT_STATE_HUM_VIS][MM_SITTING_LEAN_FORWARD_STATE_HUM_VIS]=6;
 
-  }
-  
-  
-  ///// Now for reach states
-  
-  for(int i=0;i<agents_for_MA_obj.for_agent[for_agent].maxi_num_reach_states;i++)
-  {
-   
-   agents_state_transition_cost.reach_tran_cost[for_agent][i][i]=0;
-   
-  }
-  
-  ////if((for_agent==HUMAN1_MA&&HUMAN1_CURRENT_STATE_MM==HRI_SITTING)||(for_agent==HUMAN2_MA&&HUMAN2_CURRENT_STATE_MM==HRI_SITTING))
-  if(agents_current_state==HRI_SITTING)
-  {
-    agents_state_transition_cost.reach_tran_cost[for_agent][MM_CURRENT_STATE_HUM_REACH][MM_SITTING_LEAN_FORWARD_STATE_HUM_REACH]=1;
-    agents_state_transition_cost.reach_tran_cost[for_agent][MM_CURRENT_STATE_HUM_REACH][MM_SITTING_TURN_AROUND_STATE_HUM_REACH]=2;
-    agents_state_transition_cost.reach_tran_cost[for_agent][MM_CURRENT_STATE_HUM_REACH][MM_SITTING_TURN_AROUND_LEAN_STATE_HUM_REACH]=3;
-    agents_state_transition_cost.reach_tran_cost[for_agent][MM_CURRENT_STATE_HUM_REACH][MM_STANDING_LEAN_FORWARD_STATE_HUM_REACH]=4;
-    agents_state_transition_cost.reach_tran_cost[for_agent][MM_CURRENT_STATE_HUM_REACH][MM_STANDING_TURN_AROUND_STATE_HUM_REACH]=5;
-    agents_state_transition_cost.reach_tran_cost[for_agent][MM_CURRENT_STATE_HUM_REACH][MM_STANDING_TURN_AROUND_LEAN_STATE_HUM_REACH]=6;
-  }
-  
-  //if((for_agent==HUMAN1_MA&&HUMAN1_CURRENT_STATE_MM==HRI_STANDING)||(for_agent==HUMAN2_MA&&HUMAN2_CURRENT_STATE_MM==HRI_STANDING))
-  if(agents_current_state==HRI_STANDING)
-  {
-    agents_state_transition_cost.reach_tran_cost[for_agent][MM_CURRENT_STATE_HUM_REACH][MM_STANDING_LEAN_FORWARD_STATE_HUM_REACH]=1;
-    agents_state_transition_cost.reach_tran_cost[for_agent][MM_CURRENT_STATE_HUM_REACH][MM_STANDING_TURN_AROUND_STATE_HUM_REACH]=2;
-    agents_state_transition_cost.reach_tran_cost[for_agent][MM_CURRENT_STATE_HUM_REACH][MM_STANDING_TURN_AROUND_LEAN_STATE_HUM_REACH]=3;
-    agents_state_transition_cost.reach_tran_cost[for_agent][MM_CURRENT_STATE_HUM_REACH][MM_SITTING_LEAN_FORWARD_STATE_HUM_REACH]=4;
-    agents_state_transition_cost.reach_tran_cost[for_agent][MM_CURRENT_STATE_HUM_REACH][MM_SITTING_TURN_AROUND_STATE_HUM_REACH]=5;
-    agents_state_transition_cost.reach_tran_cost[for_agent][MM_CURRENT_STATE_HUM_REACH][MM_SITTING_TURN_AROUND_LEAN_STATE_HUM_REACH]=6;
-
-  }
-  
-  
-}
-
-int init_agents_state_transition_costs()
-{
   for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
   {
     switch(i)
     {
       case HUMAN1_MA:
-	update_state_transition_cost_for_human((HRI_TASK_AGENT) i);
-	break;
-	
+   CURR_REACH_STATE_INDEX_MA_AGENT[i]=MM_CURRENT_STATE_HUM_REACH;
+   break;
 #ifdef HUMAN2_EXISTS_FOR_MA
-	case HUMAN2_MA:
-	update_state_transition_cost_for_human((HRI_TASK_AGENT) i);
-	break;
+      case HUMAN2_MA:
+	   CURR_REACH_STATE_INDEX_MA_AGENT[i]=MM_CURRENT_STATE_HUM_REACH;
+break;
 #endif
-	/*
+
 #ifdef JIDO_EXISTS_FOR_MA
-	case JIDO_MA:
-	update_state_transition_cost_for_JIDO(i);
-	break;
-#endif	
+      case JIDO_MA:
+	   CURR_REACH_STATE_INDEX_MA_AGENT[i]=MM_CURRENT_STATE_JIDO_REACH;
+	   break;
+#endif
+#ifdef HRP2_EXISTS_FOR_MA
+      case HRP2_MA:
+	   CURR_REACH_STATE_INDEX_MA_AGENT[i]=MM_CURRENT_STATE_HRP2_REACH;
+break;
+#endif
 
 #ifdef PR2_EXISTS_FOR_MA
-	case JIDO_MA:
-	update_state_transition_cost_for_PR2(i);
-	break;
-#endif	
+      case PR2_MA:
+	   CURR_REACH_STATE_INDEX_MA_AGENT[i]=MM_CURRENT_STATE_PR2_REACH;
+break;
+#endif
 
-#ifdef HRP2_EXISTS_FOR_MA
-	case JIDO_MA:
-	update_state_transition_cost_for_HRP2(i);
-	break;
-#endif	
-	*/
+
     }
-  
   }
 }
+
+
   
 int Create_and_init_Mightability_Maps()
 {
@@ -4241,13 +4163,14 @@ int Create_and_init_Mightability_Maps()
  
   init_visibility_acceptance_for_tasks();
   init_current_vis_state_indices_for_MA_agents();
+  init_current_reach_state_indices_for_MA_agents();
   /////for(int it=0;it<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;it++)
   /////printf("indices_of_MA_agents[%d]=%d\n",it,indices_of_MA_agents[it]);
   //////init_agents_head_info_for_MA();
   ////////get_horizontal_triangles(global_htris);
   ////////return 1;
 
-  init_agents_state_transition_costs();
+  //init_agents_state_transition_costs();
   
   printf(" Calling find_Mightability_Maps() \n");
   //////////////find_affordance_new();
@@ -6769,30 +6692,39 @@ int show_3d_grid_affordances_new()
   return 1;
 }
 
+int MA_deactivate_collision_between_non_torso_parts_and_env(p3d_rob * for_human)
+{
+  
+  for(int i=0; i<for_human->no; i++)
+  {
+   //// printf(" >>>> for_human->o[i]->name = %s \n", for_human->o[i]->name);
+    if(strcasestr(for_human->o[i]->name,"Humerus")||strcasestr(for_human->o[i]->name,"Radius")||strcasestr(for_human->o[i]->name,"Hand"))
+    {
+       p3d_col_deactivate_obj(for_human->o[i]);
+    }
+  }
+}
 
+int MA_activate_collision_between_non_torso_parts_and_env(p3d_rob * for_human)
+{
+  for(int i=0; i<for_human->no; i++)
+  {
+    ////printf(" >>>> for_human->o[i]->name = %s \n", for_human->o[i]->name);
+    if(strcasestr(for_human->o[i]->name,"Humerus")||strcasestr(for_human->o[i]->name,"Radius")||strcasestr(for_human->o[i]->name,"Hand"))
+    {
+       p3d_col_activate_obj(for_human->o[i]);
+    }
+  }
+}
 
-int update_3d_grid_reachability_for_human_MM(HRI_TASK_AGENT for_agent, int for_state) 
+int update_current_3d_grid_reachability_for_human_MM(HRI_TASK_AGENT for_agent) 
 {
 
-  /////printf("<<<<<*****>>>>> Inside update_3d_grid_reachability_for_human_MM for state=%d\n", for_state);
-  /////if(for_agent==HUMAN2_MA)
-  ////  {
-  ////    printf(" Updating reachability of Human2 \n");
-  /////  }
-
-  int update_curr_state=0;
   int hum_index;
   if(for_agent==HUMAN1_MA)
     {
-      hum_index=rob_indx.HUMAN;
-      if(HUMAN1_CURRENT_STATE_MM==for_state)
-      {
-	update_curr_state=1;
-      }
-      else
-      {
-          ////printf(" >>>>>> Reachability for Current state for Human will not be updates \n");
-      }
+     hum_index=indices_of_MA_agents[for_agent];
+     
     }
 #ifdef HUMAN2_EXISTS_FOR_MA
   else
@@ -6800,13 +6732,8 @@ int update_3d_grid_reachability_for_human_MM(HRI_TASK_AGENT for_agent, int for_s
       if(for_agent==HUMAN2_MA)
 	{
 	  ////printf(" Updating reachability of Human2 \n");
-	  hum_index=rob_indx.HUMAN2;
-	  if(HUMAN2_CURRENT_STATE_MM==for_state)
-          {
-	    
-	update_curr_state=1;
-          }
-          
+	  hum_index=indices_of_MA_agents[for_agent];
+	          
 	}
       else
 	{
@@ -6818,343 +6745,354 @@ int update_3d_grid_reachability_for_human_MM(HRI_TASK_AGENT for_agent, int for_s
   //////////printf("Inside update_3d_grid_reachability_for_human_new()\n");
 
   p3d_col_deactivate_rob_rob(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],envPt_MM->robot[hum_index]);
+  MA_deactivate_collision_between_non_torso_parts_and_env(envPt_MM->robot[hum_index]); 
+
+  point_co_ordi shoulder_pos;
+  ////point_co_ordi sphere_pt;
+  
+ 
+  double interval=grid_around_HRP2.GRID_SET->pace-0.005;///1.5;
+   int kcd_with_report=0;
+ 
+   int res = p3d_col_test_robot(envPt_MM->robot[hum_index],kcd_with_report);
+	    if(res>0)
+	      {
+// 		kcd_with_report=0;
+// 		res = p3d_col_test_self_collision(envPt_MM->robot[hum_index],kcd_with_report);
+// 		if(res>0)
+// 		  {
+// 		    printf(" There is self collision with human, res=%d \n", res);
+// 		    pqp_print_colliding_pair();
+// 		    //return 0;
+// 		  }
+// 		else
+// 		  {
+		    printf(" **** There is collision with human current position res=%d \n",  res);
+		    pqp_print_colliding_pair();
+		    
+		    p3d_col_activate_rob_rob(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],envPt_MM->robot[hum_index]);
+                    MA_activate_collision_between_non_torso_parts_and_env(envPt_MM->robot[hum_index]); 
+                    return 0;
+//		  }
+	      }
+	      else
+	      {
+	     
+	      update_3d_grid_reachability_for_agent_MM(for_agent, MA_LEFT_HAND, CURR_REACH_STATE_INDEX_MA_AGENT[for_agent]);
+	
+	      update_3d_grid_reachability_for_agent_MM(for_agent, MA_RIGHT_HAND, CURR_REACH_STATE_INDEX_MA_AGENT[for_agent]);
+	
+	      }
+	      
+	          p3d_col_activate_rob_rob(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],envPt_MM->robot[hum_index]);
+                    MA_activate_collision_between_non_torso_parts_and_env(envPt_MM->robot[hum_index]); 
+		    return 1;
+}
+
+int update_3d_grid_reachability_for_human_MM(HRI_TASK_AGENT for_agent, int for_posture_state) 
+{
+
+  int update_curr_state=0;
+  int hum_index;
+  if(for_agent==HUMAN1_MA)
+    {
+     hum_index=indices_of_MA_agents[for_agent];
+     
+    }
+#ifdef HUMAN2_EXISTS_FOR_MA
+  else
+    {
+      if(for_agent==HUMAN2_MA)
+	{
+	  ////printf(" Updating reachability of Human2 \n");
+	  hum_index=indices_of_MA_agents[for_agent];
+	          
+	}
+      else
+	{
+	  printf(" ******* AKP Warning: Not the correct type for_agent has been given for update_3d_grid_reachability_for_human_new(), So returning 0. >>>>>>\n");
+	  return 0;
+	}
+    }
+#endif 
+  //////////printf("Inside update_3d_grid_reachability_for_human_new()\n");
+
+  p3d_col_deactivate_rob_rob(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],envPt_MM->robot[hum_index]);
+  MA_deactivate_collision_between_non_torso_parts_and_env(envPt_MM->robot[hum_index]); 
 
   point_co_ordi shoulder_pos;
   ////point_co_ordi sphere_pt;
   configPt hum_tmp_pos=p3d_get_robot_config(envPt_MM->robot[hum_index]);
   //////////double yaw_ang=hum_tmp_pos[11]; 
-  double yaw_ang=hum_tmp_pos[HUMANq_TORSO_PAN]; 
-  double orig_yaw_ang=yaw_ang;
+   
+  double orig_yaw_ang=hum_tmp_pos[HUMANq_TORSO_PAN];
   //////////double pitch_ang=hum_tmp_pos[14]; 
-  double pitch_ang=hum_tmp_pos[HUMANq_TORSO_TILT]; 
-  double orig_pitch_ang=pitch_ang;
-
-  int for_actual_pitch=1;
-  int for_actual_yaw=1;
-
+  
+  double orig_pitch_ang=hum_tmp_pos[HUMANq_TORSO_TILT]; 
+  
   int turn_collision=0;
   //double yaw_
   ////for(;yaw_ang<2.0*M_PI&&turn_collision==0;yaw_ang+=0.5)
-  int turn_human=1;
-  double maxi_left_turn=M_PI/2.0;
-  double maxi_right_turn=M_PI/2.0;
-  double curr_left_turn=0.0;
-  double curr_right_turn=0.0;
 
-  int init_yaw=1;
 
   double interval=grid_around_HRP2.GRID_SET->pace-0.005;///1.5;
 
-  int curr_reach_type=MM_CURRENT_STATE_HUM_REACH;
+  
+  int straight_lean_type;
   int lean_reach_type;
+  int turn_reach_state;
   int turn_lean_reach_type;
 
-  if(for_state==HRI_SITTING)//sitting
+  if(for_posture_state==HRI_SITTING)//sitting
   {
+   straight_lean_type=MM_SITTING_STRAIGHT_STATE_HUM_REACH;
    lean_reach_type=MM_SITTING_LEAN_FORWARD_STATE_HUM_REACH;
+   turn_reach_state=MM_SITTING_TURN_AROUND_STATE_HUM_REACH;
    turn_lean_reach_type=MM_SITTING_TURN_AROUND_LEAN_STATE_HUM_REACH;
   }
   else
   {
-   if(for_state==HRI_STANDING)
+   if(for_posture_state==HRI_STANDING)
    {
+   straight_lean_type=MM_STANDING_STRAIGHT_STATE_HUM_REACH;
    lean_reach_type=MM_STANDING_LEAN_FORWARD_STATE_HUM_REACH;
+   turn_reach_state=MM_STANDING_TURN_AROUND_STATE_HUM_REACH;
    turn_lean_reach_type=MM_STANDING_TURN_AROUND_LEAN_STATE_HUM_REACH;
    }
   }
   
-    while(turn_human==1)
-      {
-	//////////printf(" **** yaw_ang = %lf\n",yaw_ang);
-
-	////pitch_ang=hum_tmp_pos[14]; 
-	////orig_pitch_ang=pitch_ang;
-	int collision=0;
-   
-	pitch_ang=orig_pitch_ang;
-	hum_tmp_pos[HUMANq_TORSO_TILT]=pitch_ang; // Around 5 degrees
-	p3d_set_and_update_this_robot_conf(envPt_MM->robot[hum_index], hum_tmp_pos);
-	////envPt_MM->robot[hum_index]->ROBOT_POS[HUMANq_TORSO_TILT]=hum_tmp_pos[HUMANq_TORSO_TILT];
+   int kcd_with_report=0;
+  double ref_yaw_ang=  0.0;//hum_tmp_pos[HUMANq_TORSO_PAN];
+  double ref_pitch_ang=0.0;//hum_tmp_pos[HUMANq_TORSO_TILT]; 
+  double maxi_left_turn=M_PI/2.0;
+  double mini_right_turn=-M_PI/2.0;
+  double maxi_lean_forward=M_PI/3.0;
   
-	for(;pitch_ang<0.785&&collision==0;pitch_ang+=0.25)
-	  {
-	    //////////printf(" **** for yaw_ang = %lf, pitch_ang = %lf\n",yaw_ang, pitch_ang);
+  double curr_pitch_ang= ref_pitch_ang;
+  double curr_yaw_ang= ref_yaw_ang;
 
-	    hum_tmp_pos[HUMANq_TORSO_TILT]=pitch_ang; // Around 5 degrees
-	    p3d_set_and_update_this_robot_conf(envPt_MM->robot[hum_index], hum_tmp_pos);
-	    ////envPt_MM->robot[hum_index]->ROBOT_POS[HUMANq_TORSO_TILT]=hum_tmp_pos[HUMANq_TORSO_TILT];
-
-	    int kcd_with_report=0;
-	    p3d_rob *human=envPt_MM->robot[hum_index];
-
-	    //////////g3d_draw_allwin_active();
-
-	    int res = p3d_col_test_robot(human,kcd_with_report);
+  hum_tmp_pos[HUMANq_TORSO_PAN]=0.0;
+  hum_tmp_pos[HUMANq_TORSO_TILT]=0.0;
+   
+  p3d_set_and_update_this_robot_conf(envPt_MM->robot[hum_index], hum_tmp_pos);
+      int collision_occured=0;
+      int res = p3d_col_test_robot(envPt_MM->robot[hum_index],kcd_with_report);
 	    if(res>0)
 	      {
-		kcd_with_report=0;
-		res = p3d_col_test_self_collision(human,kcd_with_report);
-		if(res>0)
-		  {
-		    //////////printf(" There is self collision with human, res=%d \n", res);
-		    //////////pqp_print_colliding_pair();
-		    //return 0;
-		  }
-		else
-		  {
-		    ////////////////////printf(" **** There is collision with human, for pitch_ang = %lf res=%d \n", pitch_ang, res);
+// 		kcd_with_report=0;
+// 		res = p3d_col_test_self_collision(envPt_MM->robot[hum_index],kcd_with_report);
+// 		if(res>0)
+// 		  {
+// 		    printf(" There is self collision with human, res=%d \n", res);
+// 		    pqp_print_colliding_pair();
+// 		    //return 0;
+// 		  }
+// 		else
+// 		  {
+		    printf(" **** There is collision with human, for pitch_ang = 0, res=%d \n",  res);
 		    pqp_print_colliding_pair();
-		    for_actual_pitch=0;
-		    collision=1;
-		    hum_tmp_pos[HUMANq_TORSO_TILT]=orig_pitch_ang; 
-		    pitch_ang=orig_pitch_ang;
-		    p3d_set_and_update_this_robot_conf(envPt_MM->robot[hum_index], hum_tmp_pos);
-		    ////envPt_MM->robot[hum_index]->ROBOT_POS[HUMANq_TORSO_TILT]=hum_tmp_pos[HUMANq_TORSO_TILT];
 
-		    break;
-		  }
+		    collision_occured=1;
+//		  }
 	      }
-
-	    shoulder_pos.x = envPt_MM->robot[hum_index]->joints[agents_for_MA_obj.for_agent[for_agent].hand_params.joint_indices[LSHOULDER]]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
-	    shoulder_pos.y = envPt_MM->robot[hum_index]->joints[agents_for_MA_obj.for_agent[for_agent].hand_params.joint_indices[LSHOULDER]]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
-	    shoulder_pos.z = envPt_MM->robot[hum_index]->joints[agents_for_MA_obj.for_agent[for_agent].hand_params.joint_indices[LSHOULDER]]->abs_pos[2][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
- 
-	    int for_hand=MA_LEFT_HAND;//1 for left, 2 for right
-	    no_sphere_surface_pts=0;
-	    int no_of_sph_surf_pts=find_reachable_sphere_surface(for_hand, for_agent);
-    
-	    ////double interval=grid_around_HRP2.GRID_SET->pace/1.5;
-	    for(int sp_ctr=0;sp_ctr<no_of_sph_surf_pts;sp_ctr++)
+	      if(collision_occured==0)
 	      {
-		double t=0;
-		for(;t<1;t+=interval) 
-		  { 
-      
-		    //g3d_drawDisc(x,y,z,grid_around_HRP2.GRID_SET->pace/4.0,2,NULL);
-
-		    double x2=(1-t)*shoulder_pos.x+t*sphere_surface_pts[sp_ctr].x;
-		    double y2=(1-t)*shoulder_pos.y+t*sphere_surface_pts[sp_ctr].y;
-		    double z2=(1-t)*shoulder_pos.z+t*sphere_surface_pts[sp_ctr].z; 
-      
-		    int cell_x=(x2- grid_around_HRP2.GRID_SET->realx)/grid_around_HRP2.GRID_SET->pace;  
-     
-		    if(cell_x<0||cell_x>=grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx)
-		      {
-			break;
-		      } 
- 
-		    int cell_y=(y2- grid_around_HRP2.GRID_SET->realy)/grid_around_HRP2.GRID_SET->pace; 
-      
-		    if(cell_y<0||cell_y>=grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny)
-		      {
-			break;
-		      } 
- 
-		    int cell_z=(z2- grid_around_HRP2.GRID_SET->realz)/grid_around_HRP2.GRID_SET->pace; 
- 
-		    if(cell_z<0||cell_z>=grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz)
-		      {
-			break;
-		      } 
- 
-   
-		    if(update_curr_state==1&&for_actual_pitch==1&&for_actual_yaw==1)
-		      {
-			
-			  
-			    grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable[for_agent][curr_reach_type][MA_LEFT_HAND]=1;
-			    grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable[for_agent][lean_reach_type][MA_LEFT_HAND]=1;  
-			    grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable[for_agent][turn_lean_reach_type][MA_LEFT_HAND]=1; 
-
-			////object_MM.object_indx[nr_ctr].
-		      }
-		    else
-		      {
-			if(for_actual_pitch==0&&for_actual_yaw==1)
-			  {
-			   
-				grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable[for_agent][lean_reach_type][MA_LEFT_HAND]=1;  
-			    grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable[for_agent][turn_lean_reach_type][MA_LEFT_HAND]=1; 
-			    
-			  }
-			else
-			  {
-			     grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable[for_agent][turn_lean_reach_type][MA_LEFT_HAND]=1; 
-			  }
-		      }
-		    ////g3d_drawDisc(x2, y2, z2, grid_around_HRP2.GRID_SET->pace/4.0, Green, NULL);
-		  }
-		//g3d_drawDisc(sphere_pts[sp_ctr].x, sphere_pts[sp_ctr].y, sphere_pts[sp_ctr].z, grid_around_HRP2.GRID_SET->pace/4.0, Red, NULL);
+	      MA_agent_hand_name for_hand=MA_LEFT_HAND;
+	      update_3d_grid_reachability_for_agent_MM(for_agent, for_hand, straight_lean_type);
+	      for_hand=MA_RIGHT_HAND;
+	      update_3d_grid_reachability_for_agent_MM(for_agent, for_hand, straight_lean_type);
+	
 	      }
-   
-    
-	    shoulder_pos.x = envPt_MM->robot[hum_index]->joints[agents_for_MA_obj.for_agent[for_agent].hand_params.joint_indices[RSHOULDER]]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
-	    shoulder_pos.y = envPt_MM->robot[hum_index]->joints[agents_for_MA_obj.for_agent[for_agent].hand_params.joint_indices[RSHOULDER]]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
-	    shoulder_pos.z = envPt_MM->robot[hum_index]->joints[agents_for_MA_obj.for_agent[for_agent].hand_params.joint_indices[RSHOULDER]]->abs_pos[2][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
-	    ////////////g3d_drawDisc(shoulder_pos.x, shoulder_pos.y, shoulder_pos.z, .1, Red, NULL);
-  
-	    for_hand=MA_RIGHT_HAND;//1 for left, 2 for right
-	    no_sphere_surface_pts=0;
-	    no_of_sph_surf_pts=find_reachable_sphere_surface(for_hand, for_agent);
-
-	    for(int sp_ctr=0;sp_ctr<no_of_sph_surf_pts;sp_ctr++)
-	      {
-		double t=0;
-		for(;t<1;t+=interval) 
-		  { 
+	     //// printf(" Straight reach calculated \n");
+	      
+	      int lean_forward=1;
+	      while(lean_forward==1)
+              {
+		curr_pitch_ang+=0.25;
+		if(curr_pitch_ang>maxi_lean_forward)
+		{
+		  break;
+		}
+		
+      hum_tmp_pos[HUMANq_TORSO_TILT]=curr_pitch_ang; 
+      p3d_set_and_update_this_robot_conf(envPt_MM->robot[hum_index], hum_tmp_pos);
+     //// g3d_draw_allwin_active();
       
-		    //g3d_drawDisc(x,y,z,grid_around_HRP2.GRID_SET->pace/4.0,2,NULL);
-
-		    double x2=(1-t)*shoulder_pos.x+t*sphere_surface_pts[sp_ctr].x;
-		    double y2=(1-t)*shoulder_pos.y+t*sphere_surface_pts[sp_ctr].y;
-		    double z2=(1-t)*shoulder_pos.z+t*sphere_surface_pts[sp_ctr].z; 
-
-		    int cell_x=(x2- grid_around_HRP2.GRID_SET->realx)/grid_around_HRP2.GRID_SET->pace;
-
-		    if(cell_x<0||cell_x>=grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx)
-		      {
-			break;
-		      } 
- 
-		    int cell_y=(y2- grid_around_HRP2.GRID_SET->realy)/grid_around_HRP2.GRID_SET->pace; 
-      
-		    if(cell_y<0||cell_y>=grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny)
-		      {
-			break;
-		      } 
- 
-		    int cell_z=(z2- grid_around_HRP2.GRID_SET->realz)/grid_around_HRP2.GRID_SET->pace; 
- 
-		    if(cell_z<0||cell_z>=grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz)
-		      {
-			break;
-		      } 
-
-        
-      
-      
-   
-		    if(update_curr_state==1&&for_actual_pitch==1&&for_actual_yaw==1)
-		      {
-			
-			    grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable[for_agent][curr_reach_type][MA_RIGHT_HAND]=1;
-			    grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable[for_agent][lean_reach_type][MA_RIGHT_HAND]=1;  
-			    grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable[for_agent][turn_lean_reach_type][MA_RIGHT_HAND]=1; 
-			  
-		      }
-		    else
-		      {
-			if(for_actual_pitch==0&&for_actual_yaw==1)
-			  {
-			     grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable[for_agent][lean_reach_type][MA_RIGHT_HAND]=1;  
-			    grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable[for_agent][turn_lean_reach_type][MA_RIGHT_HAND]=1; 
-			  }
-			else
-			  {
-			     grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable[for_agent][turn_lean_reach_type][MA_RIGHT_HAND]=1; 
-
-			  }
-		      }
-		    ////grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].affordances.reachable_by_human_RHand=1;   
-
-		    //g3d_drawDisc(x2, y2, z2, grid_around_HRP2.GRID_SET->pace/4.0, Red, NULL);
-		  }
-		//// g3d_drawDisc(sphere_pts[sp_ctr].x, sphere_pts[sp_ctr].y, sphere_pts[sp_ctr].z, grid_around_HRP2.GRID_SET->pace/4.0, Green, NULL);
-	      }
- 
- 
- 
-	    for_actual_pitch=0;
- 
-
-	  }//loop for pitch
-
- 
-	for_actual_yaw=0;
-	if(curr_left_turn<=maxi_left_turn)
-	  {
-  
-	    curr_left_turn+=0.5;
-	    //////////printf(" curr_left_turn = %lf\n",curr_left_turn);
-	    yaw_ang+=0.5;
-	  }
-	else
-	  {
-	    if(curr_left_turn>maxi_left_turn&&curr_right_turn<=maxi_right_turn)
-	      {
-   
-		curr_right_turn+=0.5;
-		//////////printf(" curr_right_turn = %lf\n",curr_right_turn);
-		if(init_yaw==1)
-		  {
-		    yaw_ang=orig_yaw_ang; 
-		    init_yaw=0;
-		  }
-		yaw_ang-=0.5;
-	      }
-	    else
-	      {
-		turn_human=0;
-	      }
-	  }
- 
-	hum_tmp_pos[HUMANq_TORSO_PAN]=yaw_ang; 
-	p3d_set_and_update_this_robot_conf(envPt_MM->robot[hum_index], hum_tmp_pos);
-	////envPt_MM->robot[hum_index]->ROBOT_POS[HUMANq_TORSO_PAN]=hum_tmp_pos[HUMANq_TORSO_PAN];
-   
-	hum_tmp_pos[HUMANq_TORSO_TILT]=orig_pitch_ang; 
-	p3d_set_and_update_this_robot_conf(envPt_MM->robot[hum_index], hum_tmp_pos);
-	////envPt_MM->robot[hum_index]->ROBOT_POS[HUMANq_TORSO_TILT]=hum_tmp_pos[HUMANq_TORSO_TILT];
-
-	////g3d_draw_allwin_active();
-
-	int kcd_with_report=0;
-	p3d_rob *human=envPt_MM->robot[hum_index];
-
-	int res = p3d_col_test_robot(human,kcd_with_report);
-	if(res>0)
-	  {
-	    kcd_with_report=0;
-	    res = p3d_col_test_self_collision(human,kcd_with_report);
+      ////printf(" Lean reach calculating for lean angle %lf\n",curr_pitch_ang);
+      int res = p3d_col_test_robot(envPt_MM->robot[hum_index],kcd_with_report);
 	    if(res>0)
 	      {
-		///////printf(" There is self collision with human, res=%d \n", res);
-		///////pqp_print_colliding_pair();
-		//return 0;
+		////printf("Collision found for %lf lean angle\n",curr_pitch_ang);
+//		pqp_print_colliding_pair();
+// 		kcd_with_report=0;
+// 		res = p3d_col_test_self_collision(envPt_MM->robot[hum_index],kcd_with_report);
+// 		if(res>0)
+// 		  {
+// 		    printf(" There is self collision with human, res=%d \n", res);
+// 		    pqp_print_colliding_pair();
+// 		    //return 0;
+// 		  }
+// 		else
+// 		  {
+		    printf(" **** There is collision with human, for pitch_ang = %lf res=%d \n", curr_pitch_ang, res);
+		    pqp_print_colliding_pair();
+                    lean_forward=0;
+		    break;
+//		  }
 	      }
-	    else
-	      { 
-		////////////////////printf(" There is collision with human, for yaw_ang = %lf and pitch_ang = %lf res=%d \n", yaw_ang, pitch_ang, res);
-		pqp_print_colliding_pair();
-		turn_collision=1;
-		turn_human=0;
-		break;
+	      MA_agent_hand_name for_hand=MA_LEFT_HAND;
+	      update_3d_grid_reachability_for_agent_MM(for_agent, for_hand, lean_reach_type);
+	      for_hand=MA_RIGHT_HAND;
+	      update_3d_grid_reachability_for_agent_MM(for_agent, for_hand, lean_reach_type);
+	  
+	       ////printf(" Lean reach calculated for curr_pitch_ang=%lf\n", curr_pitch_ang);
+             }
+             
+             	     
+ ////printf("Now calculating turn around and lean reach\n");
+  int turn_left=1;
+  
+  
+  
+  int curr_state_type;
+  curr_yaw_ang=ref_yaw_ang;
+  
+  while(turn_left==1)
+  {
+    curr_yaw_ang+= 0.25;
+    if(curr_yaw_ang>maxi_left_turn)
+    {
+    
+      break;
+    }
+    
+    curr_pitch_ang= ref_pitch_ang;
+    
+    hum_tmp_pos[HUMANq_TORSO_PAN]=curr_yaw_ang;
+   
+    curr_state_type=turn_reach_state;//This will change to turn_lean_reach_type for lean at the end of below while loop;
+  
+    int lean_forward=1;
+    
+    while(lean_forward==1)
+    {
+      hum_tmp_pos[HUMANq_TORSO_TILT]=curr_pitch_ang; 
+      p3d_set_and_update_this_robot_conf(envPt_MM->robot[hum_index], hum_tmp_pos);
+      
+      ////g3d_draw_allwin_active();
+      //printf(" **** testing, for yaw_angle= %lf, pitch_ang = %lf \n", curr_yaw_ang, curr_pitch_ang);
+      
+      int res = p3d_col_test_robot(envPt_MM->robot[hum_index],kcd_with_report);
+	    if(res>0)
+	      {
+// 		kcd_with_report=0;
+// 		res = p3d_col_test_self_collision(envPt_MM->robot[hum_index],kcd_with_report);
+// 		if(res>0)
+// 		  {
+// 		    printf(" There is self collision with human, res=%d \n", res);
+// 		    pqp_print_colliding_pair();
+// 		    //return 0;
+// 		  }
+// 		else
+// 		  {
+		    printf(" **** There is collision with human, for yaw_angle= %lf, pitch_ang = %lf res=%d \n", curr_yaw_ang, curr_pitch_ang, res);
+		    pqp_print_colliding_pair();
+                    lean_forward=0;
+		    break;
+//		  }
 	      }
-	  }
-
-
-
-
-
-      }//Loop for yaw 
- 
-    hum_tmp_pos[HUMANq_TORSO_PAN]=orig_yaw_ang; 
-    p3d_set_and_update_this_robot_conf(envPt_MM->robot[hum_index], hum_tmp_pos);
-    ////envPt_MM->robot[hum_index]->ROBOT_POS[HUMANq_TORSO_PAN]=hum_tmp_pos[HUMANq_TORSO_PAN];
-    ////p3d_destroy_config(ACBTSET->human[ACBTSET->actual_human]->HumanPt, hum_tmp_pos);
-
-    hum_tmp_pos[HUMANq_TORSO_TILT]=orig_pitch_ang; 
-    p3d_set_and_update_this_robot_conf(envPt_MM->robot[hum_index], hum_tmp_pos);
-   //// envPt_MM->robot[hum_index]->ROBOT_POS[HUMANq_TORSO_TILT]=hum_tmp_pos[HUMANq_TORSO_TILT];
-    p3d_destroy_config(envPt_MM->robot[hum_index], hum_tmp_pos);
-
+	      
+	      MA_agent_hand_name for_hand=MA_LEFT_HAND;
+	      update_3d_grid_reachability_for_agent_MM(for_agent, for_hand, curr_state_type);
+	      for_hand=MA_RIGHT_HAND;
+	      update_3d_grid_reachability_for_agent_MM(for_agent, for_hand, curr_state_type);
+	      
+	      curr_pitch_ang+=0.25;
+	      if(curr_pitch_ang>=maxi_lean_forward)
+		{
+		  lean_forward=0;
+		  break;
+		}
+		
+		curr_state_type=turn_lean_reach_type;
+	  
+      }//End while(lean_forward==1)
+    
+  }
+  
+  int turn_right=1;
+  curr_yaw_ang=ref_yaw_ang;
+  
+  while(turn_right==1)
+  {
+    curr_yaw_ang-= 0.25;
+    if(curr_yaw_ang<mini_right_turn)
+    {
+    
+      break;
+    }
+    
+    curr_pitch_ang= ref_pitch_ang;
+    
+    hum_tmp_pos[HUMANq_TORSO_PAN]=curr_yaw_ang;
+   
+    curr_state_type=turn_reach_state;//This will change to turn_lean_reach_type for lean at the end of below while loop;
+  
+    int lean_forward=1;
+    
+    while(lean_forward==1)
+    {
+      hum_tmp_pos[HUMANq_TORSO_TILT]=curr_pitch_ang; 
+      p3d_set_and_update_this_robot_conf(envPt_MM->robot[hum_index], hum_tmp_pos);
+      
+      ////g3d_draw_allwin_active();
+      ////printf(" **** testing, for yaw_angle= %lf, pitch_ang = %lf \n", curr_yaw_ang, curr_pitch_ang);
+      
+      int res = p3d_col_test_robot(envPt_MM->robot[hum_index],kcd_with_report);
+	    if(res>0)
+	      {
+// 		kcd_with_report=0;
+// 		res = p3d_col_test_self_collision(envPt_MM->robot[hum_index],kcd_with_report);
+// 		if(res>0)
+// 		  {
+// 		    printf(" There is self collision with human, res=%d \n", res);
+// 		    pqp_print_colliding_pair();
+// 		    //return 0;
+// 		  }
+// 		else
+// 		  {
+		    printf(" **** There is collision with human, for yaw_angle= %lf, pitch_ang = %lf res=%d \n", curr_yaw_ang, curr_pitch_ang, res);
+		    pqp_print_colliding_pair();
+                    lean_forward=0;
+		    break;
+//		  }
+	      }
+	      
+	      MA_agent_hand_name for_hand=MA_LEFT_HAND;
+	      update_3d_grid_reachability_for_agent_MM(for_agent, for_hand, curr_state_type);
+	      for_hand=MA_RIGHT_HAND;
+	      update_3d_grid_reachability_for_agent_MM(for_agent, for_hand, curr_state_type);
+	      
+	      curr_pitch_ang+=0.25;
+	      if(curr_pitch_ang>=maxi_lean_forward)
+		{
+		  lean_forward=0;
+		  break;
+		}
+		
+		curr_state_type=turn_lean_reach_type;
+	  
+      }//End while(lean_forward==1)
+    
+  }
+    p3d_destroy_config(envPt_MM->robot[hum_index],hum_tmp_pos);
     p3d_col_activate_rob_rob(envPt_MM->robot[rob_indx.VISBALL_MIGHTABILITY],envPt_MM->robot[hum_index]);
+    MA_activate_collision_between_non_torso_parts_and_env(envPt_MM->robot[hum_index]); 
     return 1;
 
  
 
 }
-
 
 
 
@@ -9352,7 +9290,7 @@ return 1;
 
 
 
-int virtually_update_human_state_new(HRI_AGENT *human_agent, int state) //1 means sitting 0 means standing
+int virtually_update_human_state_new(p3d_rob *for_agent, int state) //1 means sitting 0 means standing
 {
  
   //////////printf("Before updating human state, ACBTSET->human[ACBTSET->actual_human]->actual_state=%d\n",ACBTSET->human[ACBTSET->actual_human]->actual_state);
@@ -9363,7 +9301,7 @@ int virtually_update_human_state_new(HRI_AGENT *human_agent, int state) //1 mean
       //////////config = p3d_copy_config(ACBTSET->human[ACBTSET->actual_human]->HumanPt, ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS);
       ////ACBTSET->actual_human=0;
       ///////config = p3d_copy_config(human_agent->robotPt, human_agent->robotPt->ROBOT_POS);
-      p3d_get_robot_config_into(human_agent->robotPt,&HUMAN_curr_pos_for_state_change);
+      p3d_get_robot_config_into(for_agent,&HUMAN_curr_pos_for_state_change);
       ////////////hri_human * human=hri_bt_create_human(human_agent->robotPt);
       //////human->HumanPt=human_agent->robotPt;
       ////int state=1;
@@ -9403,7 +9341,7 @@ int virtually_update_human_state_new(HRI_AGENT *human_agent, int state) //1 mean
       ////hri_set_human_state_SICK(ACBTSET->human[ACBTSET->actual_human], 1, q, FALSE);
 
       //////////p3d_set_and_update_this_robot_conf(ACBTSET->human[ACBTSET->actual_human]->HumanPt,config);
-      p3d_set_and_update_this_robot_conf(human_agent->robotPt,HUMAN_curr_pos_for_state_change);
+      p3d_set_and_update_this_robot_conf(for_agent,HUMAN_curr_pos_for_state_change);
       //////////p3d_destroy_config(ACBTSET->human[ACBTSET->actual_human]->HumanPt,config);
       //////////p3d_destroy_config(human_agent->robotPt,config);
       ////////////hri_bt_destroy_human(human);
@@ -9539,7 +9477,7 @@ int find_human_all_visibilities_in_3D(HRI_AGENT *human_agent_MM, HRI_TASK_AGENT 
 {
   p3d_get_robot_config_into(human_agent_MM->robotPt,&HRI_AGENTS_FOR_MA_actual_pos[agent_type]);
   ////virtually_update_human_state_new(1);// Sitting
-
+  p3d_rob * human_Pt=envPt_MM->robot[indices_of_MA_agents[agent_type]];
   ////ChronoOn();
   
   ////printf("rob_indx.HUMAN=%d\n",rob_indx.HUMAN);
@@ -9662,7 +9600,7 @@ int find_human_all_visibilities_in_3D(HRI_AGENT *human_agent_MM, HRI_TASK_AGENT 
 
     if(agents_curr_state==HRI_SITTING)
    {
-  virtually_update_human_state_new(human_agent_MM,HRI_STANDING);// Standing
+  virtually_update_human_state_new(human_Pt,HRI_STANDING);// Standing
   visibility_type=MM_STANDING_STRAIGHT_HEAD_STATE_HUM_VIS;
   CURR_HUMAN_TEMP_STATE_MM=HRI_STANDING;
    }
@@ -9670,7 +9608,7 @@ int find_human_all_visibilities_in_3D(HRI_AGENT *human_agent_MM, HRI_TASK_AGENT 
    {
     if(agents_curr_state==HRI_STANDING)
     {
-     virtually_update_human_state_new(human_agent_MM,HRI_SITTING);// Sitting
+     virtually_update_human_state_new(human_Pt,HRI_SITTING);// Sitting
      visibility_type=MM_SITTING_STRAIGHT_HEAD_STATE_HUM_VIS;
      CURR_HUMAN_TEMP_STATE_MM=HRI_SITTING;
     }
@@ -9999,15 +9937,17 @@ int find_Mightability_Maps()
   p3d_get_robot_config_into(envPt_MM->robot[indices_of_MA_agents[agent_type]],&HRI_AGENTS_FOR_MA_running_pos[agent_type]);
   find_human_all_visibilities_in_3D(HRI_AGENTS_FOR_MA[agent_type], agent_type);
   ////update_3d_grid_reachability_for_human_new(1);//for human1
-  
+  p3d_rob * agent_Pt=envPt_MM->robot[indices_of_MA_agents[agent_type]];
   
   p3d_get_robot_config_into(envPt_MM->robot[indices_of_MA_agents[agent_type]],&HRI_AGENTS_FOR_MA_actual_pos[agent_type]);
+  
+  update_current_3d_grid_reachability_for_human_MM(agent_type);
   
   update_3d_grid_reachability_for_human_MM(agent_type,HUMAN1_CURRENT_STATE_MM);//for human1
   
   if(HUMAN1_CURRENT_STATE_MM==HRI_SITTING)
   {
-   virtually_update_human_state_new(HRI_AGENTS_FOR_MA[agent_type],HRI_STANDING);
+   virtually_update_human_state_new(agent_Pt,HRI_STANDING);
    update_3d_grid_reachability_for_human_MM(agent_type,HRI_STANDING);//for human1
    p3d_set_and_update_this_robot_conf(envPt_MM->robot[indices_of_MA_agents[agent_type]], HRI_AGENTS_FOR_MA_actual_pos[agent_type]);
    ////virtually_update_human_state_new(1);
@@ -10016,7 +9956,7 @@ int find_Mightability_Maps()
   {
    if(HUMAN1_CURRENT_STATE_MM==HRI_STANDING)
    {
-   virtually_update_human_state_new(HRI_AGENTS_FOR_MA[agent_type],HRI_SITTING);
+   virtually_update_human_state_new(agent_Pt,HRI_SITTING);
    update_3d_grid_reachability_for_human_MM(agent_type,HRI_SITTING);//for human1
    p3d_set_and_update_this_robot_conf(envPt_MM->robot[indices_of_MA_agents[agent_type]], HRI_AGENTS_FOR_MA_actual_pos[agent_type]);
    ////virtually_update_human_state_new(2);
@@ -10025,7 +9965,7 @@ int find_Mightability_Maps()
   
 #ifdef HUMAN2_EXISTS_FOR_MA
 agent_type=HUMAN2_MA;
-  
+  agent_Pt=envPt_MM->robot[indices_of_MA_agents[agent_type]];
   p3d_get_robot_config_into(envPt_MM->robot[indices_of_MA_agents[agent_type]],&HRI_AGENTS_FOR_MA_running_pos[agent_type]);
   find_human_all_visibilities_in_3D(HRI_AGENTS_FOR_MA[agent_type], agent_type);
   ////update_3d_grid_reachability_for_human_new(1);//for human1
@@ -10037,7 +9977,7 @@ agent_type=HUMAN2_MA;
   
   if(HUMAN2_CURRENT_STATE_MM==HRI_SITTING)
   {
-   virtually_update_human_state_new(HRI_AGENTS_FOR_MA[agent_type],HRI_STANDING);
+   virtually_update_human_state_new(agent_Pt,HRI_STANDING);
    update_3d_grid_reachability_for_human_MM(agent_type,HRI_STANDING);//for human1
    p3d_set_and_update_this_robot_conf(envPt_MM->robot[indices_of_MA_agents[agent_type]], HRI_AGENTS_FOR_MA_actual_pos[agent_type]);
    ////virtually_update_human_state_new(1);
@@ -10046,7 +9986,7 @@ agent_type=HUMAN2_MA;
   {
    if(HUMAN2_CURRENT_STATE_MM==HRI_STANDING)
    {
-   virtually_update_human_state_new(HRI_AGENTS_FOR_MA[agent_type],HRI_SITTING);
+   virtually_update_human_state_new(agent_Pt,HRI_SITTING);
    update_3d_grid_reachability_for_human_MM(agent_type,HRI_SITTING);//for human1
    p3d_set_and_update_this_robot_conf(envPt_MM->robot[indices_of_MA_agents[agent_type]], HRI_AGENTS_FOR_MA_actual_pos[agent_type]);
    ////virtually_update_human_state_new(2);
@@ -10962,6 +10902,13 @@ int update_Mightability_Maps_new()
 		  }
 		}
 	      
+	        if(NEED_CURRENT_REACHABILITY_UPDATE_AGENT[i]==1)
+		{
+		  for(int k=0;k<agents_for_MA_obj.for_agent[i].no_of_arms;k++)
+		    {
+		      grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[cell_x][cell_y][cell_z].Mightability_Map.reachable[i][CURR_REACH_STATE_INDEX_MA_AGENT[i]][k]=0;
+		    }
+		}
 	       
 	        if(NEED_ALL_REACHABILITY_UPDATE_AGENT[i]==1)
 		{  
@@ -10989,10 +10936,11 @@ int update_Mightability_Maps_new()
   ChronoOn();
 for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
  {
-  
+  p3d_rob *agent_Pt=envPt_MM->robot[indices_of_MA_agents[i]];
     switch(i)
     {
       case HUMAN1_MA:
+	
 	if(NEED_CURRENT_VISIBILITY_UPDATE_AGENT[i]==1)
         {
 	find_human_current_visibility_in_3D(HRI_AGENTS_FOR_MA[i],HRI_TASK_AGENT(i));
@@ -11005,16 +10953,23 @@ for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
         NEED_ALL_VISIBILITY_UPDATE_AGENT[i]=0;
 	}
 	
+	if(NEED_CURRENT_REACHABILITY_UPDATE_AGENT[i]==1)
+        {
+	////find_human_current_reachability_in_3D(HRI_AGENTS_FOR_MA[i],HRI_TASK_AGENT(i));
+	update_current_3d_grid_reachability_for_human_MM(HRI_TASK_AGENT(i));
+        NEED_CURRENT_REACHABILITY_UPDATE_AGENT[i]=0;
+	}
+	
 	if(NEED_ALL_REACHABILITY_UPDATE_AGENT[i]==1)
         {
       ////update_3d_grid_reachability_for_human_new(1);//1 for human1
       p3d_get_robot_config_into(envPt_MM->robot[indices_of_MA_agents[i]],&HRI_AGENTS_FOR_MA_actual_pos[i]);
-  
+      update_current_3d_grid_reachability_for_human_MM(HRI_TASK_AGENT(i));
       update_3d_grid_reachability_for_human_MM(HRI_TASK_AGENT(i),HUMAN1_CURRENT_STATE_MM);//for human1
   
 	if(HUMAN1_CURRENT_STATE_MM==HRI_SITTING)
 	  {
-      virtually_update_human_state_new(HRI_AGENTS_FOR_MA[i],HRI_STANDING);
+      virtually_update_human_state_new(agent_Pt,HRI_STANDING);
       update_3d_grid_reachability_for_human_MM(HRI_TASK_AGENT(i),HRI_STANDING);//for human1
       p3d_set_and_update_this_robot_conf(envPt_MM->robot[indices_of_MA_agents[i]],HRI_AGENTS_FOR_MA_actual_pos[i]);
       ////virtually_update_human_state_new(1);
@@ -11023,7 +10978,7 @@ for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
           {
       if(HUMAN1_CURRENT_STATE_MM==HRI_STANDING)
            {
-	virtually_update_human_state_new(HRI_AGENTS_FOR_MA[i],HRI_SITTING);
+	virtually_update_human_state_new(agent_Pt,HRI_SITTING);
 	update_3d_grid_reachability_for_human_MM(HRI_TASK_AGENT(i),HRI_SITTING);//for human1
 	p3d_set_and_update_this_robot_conf(envPt_MM->robot[indices_of_MA_agents[i]], HRI_AGENTS_FOR_MA_actual_pos[i]);
 	////virtually_update_human_state_new(2);
@@ -11037,6 +10992,7 @@ for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
 	
 #ifdef HUMAN2_EXISTS_FOR_MA
       case HUMAN2_MA:
+	
 	if(NEED_CURRENT_VISIBILITY_UPDATE_AGENT[i]==1)
         {
 	find_human_current_visibility_in_3D(HRI_AGENTS_FOR_MA[i],HRI_TASK_AGENT(i));
@@ -11049,16 +11005,23 @@ for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
         NEED_ALL_VISIBILITY_UPDATE_AGENT[i]=0;
 	}
 	
+	if(NEED_CURRENT_REACHABILITY_UPDATE_AGENT[i]==1)
+        {
+	////find_human_current_reachability_in_3D(HRI_AGENTS_FOR_MA[i],HRI_TASK_AGENT(i));
+	update_current_3d_grid_reachability_for_human_MM(HRI_TASK_AGENT(i));
+        NEED_CURRENT_REACHABILITY_UPDATE_AGENT[i]=0;
+	}
+	
 	if(NEED_ALL_REACHABILITY_UPDATE_AGENT[i]==1)
         {
       ////update_3d_grid_reachability_for_human_new(1);//1 for human1
       p3d_get_robot_config_into(envPt_MM->robot[indices_of_MA_agents[i]],&HRI_AGENTS_FOR_MA_actual_pos[i]);
-  
+      update_current_3d_grid_reachability_for_human_MM(HRI_TASK_AGENT(i));
       update_3d_grid_reachability_for_human_MM(HRI_TASK_AGENT(i),HUMAN1_CURRENT_STATE_MM);//for human1
   
 	if(HUMAN2_CURRENT_STATE_MM==HRI_SITTING)
 	  {
-      virtually_update_human_state_new(HRI_AGENTS_FOR_MA[i],HRI_STANDING);
+      virtually_update_human_state_new(agent_Pt,HRI_STANDING);
       update_3d_grid_reachability_for_human_MM(HRI_TASK_AGENT(i),HRI_STANDING);//for human1
       p3d_set_and_update_this_robot_conf(envPt_MM->robot[indices_of_MA_agents[i]],HRI_AGENTS_FOR_MA_actual_pos[i]);
       ////virtually_update_human_state_new(1);
@@ -11067,7 +11030,7 @@ for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
           {
       if(HUMAN2_CURRENT_STATE_MM==HRI_STANDING)
            {
-	virtually_update_human_state_new(HRI_AGENTS_FOR_MA[i],HRI_SITTING);
+	virtually_update_human_state_new(agent_Pt,HRI_SITTING);
 	update_3d_grid_reachability_for_human_MM(HRI_TASK_AGENT(i),HRI_SITTING);//for human1
 	p3d_set_and_update_this_robot_conf(envPt_MM->robot[indices_of_MA_agents[i]], HRI_AGENTS_FOR_MA_actual_pos[i]);
 	////virtually_update_human_state_new(2);
@@ -18368,6 +18331,7 @@ int find_symbolic_Mightability_Map_new()
 
   ////find_symbolic_MM_visibility();
   find_Object_Oriented_Mightabilities_vis_reach();
+return 1; //Tmp not calculating putintoability
 
   hri_bitmap* bitmap=grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP];
   ////envPt_MM= (p3d_env *) p3d_get_desc_curid(P3D_ENV);
@@ -19687,7 +19651,8 @@ int update_horizontal_surfaces()
 object_Symbolic_Mightability_Maps_Relation* create_object_oriented_Mightability_obj()
 {
   object_Symbolic_Mightability_Maps_Relation *OOM=MY_ALLOC(object_Symbolic_Mightability_Maps_Relation,1);
-  
+  ////return OOM;
+  ////object_Symbolic_Mightability_Maps_Relation *OOM;
   int nr=envPt_MM->nr;
   
    for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
@@ -19696,13 +19661,22 @@ object_Symbolic_Mightability_Maps_Relation* create_object_oriented_Mightability_
      {
      ////printf(" creating for object %s, for agent %d \n",envPt_MM->robot[j]->name,i);
      OOM->object[j].geo_MM.visible[i]=MY_ALLOC(int, agents_for_MA_obj.for_agent[i].maxi_num_vis_states);
+     for(int m=0;m<agents_for_MA_obj.for_agent[i].maxi_num_vis_states;m++)
+     {
+     OOM->object[j].geo_MM.visible[i][m]=-1;
+     }
     
      OOM->object[j].geo_MM.reachable[i]=MY_ALLOC(int*, agents_for_MA_obj.for_agent[i].maxi_num_reach_states);
      
      for(int k=0;k<agents_for_MA_obj.for_agent[i].maxi_num_reach_states;k++)
       {
      OOM->object[j].geo_MM.reachable[i][k]=MY_ALLOC(int, agents_for_MA_obj.for_agent[i].no_of_arms);
-      
+     
+       for(int m=0;m<agents_for_MA_obj.for_agent[i].no_of_arms;m++)
+       {
+       OOM->object[j].geo_MM.reachable[i][k][m]=-1;
+       }
+     
       }
     /// printf(" allocated memory for agent %d Mightability, agents_for_MA_obj.for_agent.maxi_num_vis_states=%d \n",i,agents_for_MA_obj.for_agent[i].maxi_num_vis_states);
      }
@@ -19867,7 +19841,7 @@ int print_object_oriented_Mightability_for_object_by_agent(object_Symbolic_Might
 	
      if(OOM->object[obj_index].geo_MM.visible[agent][k]>0)
        {
-	 printf(" is visible from state %d \n",k);
+	 printf(" is visible from state %d and visibility= %d\n",k,OOM->object[obj_index].geo_MM.visible[agent][k]);
        }
       }
      

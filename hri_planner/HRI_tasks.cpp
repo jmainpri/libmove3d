@@ -3663,6 +3663,7 @@ int g3d_is_object_visible_from_robot(p3d_matrix4 camera_frame, double camera_fov
 
   free(image);
 
+  
   glViewport(0,0,(GLint)viewport_original[2],(GLint)viewport_original[3]);
 
   return 0;

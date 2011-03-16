@@ -10,7 +10,7 @@
 
 
 #define MM_SHOW_DEBUG_MODE_BUTTONS
-//#define HUMAN2_EXISTS_FOR_MA
+////#define HUMAN2_EXISTS_FOR_MA
 #define HUMAN1_EXISTS_FOR_MA
 #define JIDO_EXISTS_FOR_MA
 //#define PR2_EXISTS_FOR_MA
@@ -96,9 +96,11 @@ typedef enum PR2_POSTURE_MA
 typedef enum MM_STATES_FOR_REACH_HUMAN
 {
  MM_CURRENT_STATE_HUM_REACH=0,
+ MM_SITTING_STRAIGHT_STATE_HUM_REACH,
  MM_SITTING_LEAN_FORWARD_STATE_HUM_REACH,
  MM_SITTING_TURN_AROUND_STATE_HUM_REACH,
  MM_SITTING_TURN_AROUND_LEAN_STATE_HUM_REACH,
+ MM_STANDING_STRAIGHT_STATE_HUM_REACH,
  MM_STANDING_LEAN_FORWARD_STATE_HUM_REACH,
  MM_STANDING_TURN_AROUND_STATE_HUM_REACH,
  MM_STANDING_TURN_AROUND_LEAN_STATE_HUM_REACH,
@@ -538,13 +540,19 @@ int visible_by_JIDO[MAXI_NUM_POSSIBLE_STATES_VIS_JIDO];
      
      
      visible[i]=MY_ALLOC(int, agents_for_MA_obj.for_agent[i].maxi_num_vis_states);
-    
+     for(int k=0; k<agents_for_MA_obj.for_agent[i].maxi_num_vis_states;k++)
+     {
+     visible[i][k]=-1;
+     }
      reachable[i]=MY_ALLOC(int*, agents_for_MA_obj.for_agent[i].maxi_num_reach_states);
      
      for(int j=0;j<agents_for_MA_obj.for_agent[i].maxi_num_reach_states;j++)
      {
      reachable[i][j]=MY_ALLOC(int, agents_for_MA_obj.for_agent[i].no_of_arms);
-      
+      for(int k=0;k< agents_for_MA_obj.for_agent[i].no_of_arms;k++)
+      {
+      reachable[i][j][k]=-1;
+      }
      }
     /// printf(" allocated memory for agent %d Mightability, agents_for_MA_obj.for_agent.maxi_num_vis_states=%d \n",i,agents_for_MA_obj.for_agent[i].maxi_num_vis_states);
    }
@@ -556,29 +564,7 @@ int visible_by_JIDO[MAXI_NUM_POSSIBLE_STATES_VIS_JIDO];
 
 }Mightability_Map_set;
 
-typedef struct MA_state_tansition_cost{
-  double **reach_tran_cost[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];//for agent [j] from state [j] to state [k]
-  double **vis_tran_cost[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];//for agent [j] from state [j] to state [k]
-  
-  MA_state_tansition_cost()
-  {
-    for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
-   {
-     
-     
-     reach_tran_cost[i]=MY_ALLOC(double*, agents_for_MA_obj.for_agent[i].maxi_num_reach_states);
-     for(int j=0;j<agents_for_MA_obj.for_agent[i].maxi_num_reach_states;j++)
-     reach_tran_cost[i][j]=MY_ALLOC(double, agents_for_MA_obj.for_agent[i].maxi_num_reach_states);
-     
-     vis_tran_cost[i]=MY_ALLOC(double*, agents_for_MA_obj.for_agent[i].maxi_num_vis_states);
-     for(int j=0;j<agents_for_MA_obj.for_agent[i].maxi_num_vis_states;j++)
-     vis_tran_cost[i][j]=MY_ALLOC(double, agents_for_MA_obj.for_agent[i].maxi_num_vis_states);
-     
-     
-    /// printf(" allocated memory for agent %d Mightability, agents_for_MA_obj.for_agent.maxi_num_vis_states=%d \n",i,agents_for_MA_obj.for_agent[i].maxi_num_vis_states);
-   }
-  }
-}MA_state_tansition_cost;
+
 
 typedef struct surface_grid_cell{
 
