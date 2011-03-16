@@ -76,9 +76,9 @@ void lm_set_and_get_motionTimes_FREEFLYER(p3d_softMotion_data* softMotion_data, 
 void 	lm_set_motion_softMotion_data_FREEFLYER(SM_TIMES localtimes[], double jerk[], int DirTransition_a[],
 																							int DirTransition_b[], p3d_softMotion_data* softMotion_data);
 
-
-
-
+// Function to externaly set the 
+// Cost of a localpath
+extern double (*ext_compute_localpath_kin_cost)(p3d_rob* robotPt,p3d_localpath* path);
 
 
 #endif /* __CEXTRACT__ */

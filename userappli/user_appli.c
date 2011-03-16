@@ -84,10 +84,10 @@ extern double USE_LIN;
 extern double SAFETY_DIST;
 void computeOfflineOpenChain(p3d_rob* robot, p3d_matrix4 objectInitPos){
   if(USE_LIN){
-    p3d_local_set_planner((p3d_localplanner_type)1);
+    p3d_local_set_planner((p3d_localpath_type)1);
   }
   else{
-    p3d_local_set_planner((p3d_localplanner_type)0);
+    p3d_local_set_planner((p3d_localpath_type)0);
   }
   CB_del_param_obj(NULL, 0);
   deactivateCcCntrts(robot, -1);

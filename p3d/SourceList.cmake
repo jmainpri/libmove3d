@@ -33,6 +33,8 @@ p3d_rw_env.c
 p3d_rw_jnt.c 
 p3d_rw_scenario.c 
 p3d_rw_traj.c 
+p3d_rwXmlBasics.c 
+p3d_rwXmlTraj.c 
 p3d_rw_util.c 
 p3d_set.c 
 p3d_setpos.c 

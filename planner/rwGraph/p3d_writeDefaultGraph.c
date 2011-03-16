@@ -5,14 +5,14 @@
 #include "Util-pkg.h"
 
 static void writeXmlComp(p3d_graph *g, p3d_compco * c, xmlNodePtr parent);
-static void writeXmlIkSol(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
-static void writeXmlConfig(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
+//static void writeXmlIkSol(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
+//static void writeXmlConfig(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
 static void writeXmlEdge(p3d_graph *graph, p3d_edge * edge, xmlNodePtr parent);
 static void writeXmlNodeEdges(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
 static void writeXmlNode(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
 static xmlNodePtr writeGraphRootNode(void * graph, xmlNodePtr root, const char* file);
 static void p3d_writeGraphComp(void *graph, xmlNodePtr parent);
-static void writeXmlLocalpath(p3d_graph *graph, p3d_edge * edge, xmlNodePtr xmlEdge);
+//static void writeXmlLocalpath(p3d_graph *graph, p3d_edge * edge, xmlNodePtr xmlEdge);
 
 void p3d_writeDefaultGraph(void * graph, const char* file, xmlNodePtr root){
   xmlNodePtr cur = NULL;
@@ -104,7 +104,7 @@ static void writeXmlIkSol(p3d_graph *graph, p3d_node * node, xmlNodePtr parent){
   }
 }
 
-static void writeXmlConfig(p3d_graph *graph, p3d_node * node, xmlNodePtr parent){
+static void writeXmlConfig(xmlNodePtr parent, p3d_graph *graph, p3d_node * node){
   xmlNodePtr config = NULL;
   char str[80];
   configPt q;
@@ -133,7 +133,7 @@ static void writeXmlEdge(p3d_graph *graph, p3d_edge * edge, xmlNodePtr parent){
   sprintf(str, "%d", edge->Nf->num);
   xmlNewProp(tmp, xmlCharStrdup("id"), xmlCharStrdup(str));
 
-  writeXmlLocalpath(graph, edge, xmlEdge);
+  writeXmlLocalpath(xmlEdge, graph->rob, edge->path);
 
 
 //   tmp = xmlNewChild(xmlEdge, NULL, xmlCharStrdup("localpath"),NULL);
@@ -141,7 +141,7 @@ static void writeXmlEdge(p3d_graph *graph, p3d_edge * edge, xmlNodePtr parent){
 //   sprintf(str, "%f", edge->longueur);
 //   xmlNewProp(tmp, xmlCharStrdup("size"), xmlCharStrdup(str));
 //
-//   if ((edge->planner == P3D_RSARM_PLANNER) || (edge->planner == P3D_DUBINS_PLANNER)) {
+//   if ((edge->planner == REEDS_SHEPP) || (edge->planner == DUBINS)) {
 //     plm_reeds_shepp_str rs_paramPt = lm_get_reeds_shepp_lm_param(graph->rob);
 //     double radius = 0;
 //     if (rs_paramPt == NULL) {
@@ -179,8 +179,8 @@ static void writeXmlNode(p3d_graph *graph, p3d_node * node, xmlNodePtr parent){
   sprintf(str, "%f", node->weight);
   xmlNewProp (cur, xmlCharStrdup("weight"), xmlCharStrdup(str));
 
-  writeXmlIkSol(graph, node, cur);
-  writeXmlConfig(graph, node, cur);
+  writeXmlIkSol(cur,graph->rob, node->iksol);
+  writeXmlConfig(cur, graph->rob, node->q );
 //   writeXmlNeighbor(graph, node, cur);
   writeXmlNodeEdges(graph, node, cur);
 }
@@ -194,7 +194,7 @@ static void writeXmlLocalpath(p3d_graph *graph, p3d_edge * edge, xmlNodePtr xmlE
   sprintf(str, "%f", edge->longueur);
 	xmlNewProp(xmlLocalpath, xmlCharStrdup("size"), xmlCharStrdup(str));
 #ifdef MULTILOCALPATH
-	if (edge->planner == P3D_MULTILOCALPATH_PLANNER) {
+	if (edge->planner == MULTI_LOCALPATH) {
 		sprintf(str, "%d", graph->rob->mlp->nblpGp);
 		xmlNewProp(xmlLocalpath, xmlCharStrdup("nbGroup"), xmlCharStrdup(str));
 		for(int i=0; i < graph->rob->mlp->nblpGp; i++){
@@ -202,7 +202,7 @@ static void writeXmlLocalpath(p3d_graph *graph, p3d_edge * edge, xmlNodePtr xmlE
 			sprintf(str, "%d", p3d_multiLocalPath_get_value_groupToPlan(graph->rob, i));
 			xmlNewProp(tmp, xmlCharStrdup("groupActivated"), xmlCharStrdup(str));
 			xmlNewProp(tmp, xmlCharStrdup("type"), xmlCharStrdup(p3d_local_getname_planner(graph->rob->mlp->mlpJoints[i]->lplType)));
-			if ((graph->rob->mlp->mlpJoints[i]->lplType == P3D_RSARM_PLANNER) || (graph->rob->mlp->mlpJoints[i]->lplType == P3D_DUBINS_PLANNER)) {
+			if ((graph->rob->mlp->mlpJoints[i]->lplType == REEDS_SHEPP) || (graph->rob->mlp->mlpJoints[i]->lplType == DUBINS)) {
 				plm_reeds_shepp_str rs_paramPt = lm_get_reeds_shepp_lm_param(graph->rob);
 				double radius = 0;
 				if (rs_paramPt == NULL) {
@@ -216,7 +216,7 @@ static void writeXmlLocalpath(p3d_graph *graph, p3d_edge * edge, xmlNodePtr xmlE
 		}
 	} else {
 #endif
-		if ((edge->planner == P3D_RSARM_PLANNER) || (edge->planner == P3D_DUBINS_PLANNER)) {
+		if ((edge->planner == REEDS_SHEPP) || (edge->planner == DUBINS)) {
 			plm_reeds_shepp_str rs_paramPt = lm_get_reeds_shepp_lm_param(graph->rob);
 			double radius = 0;
 			if (rs_paramPt == NULL) {
