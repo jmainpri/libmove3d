@@ -35,7 +35,7 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robot) :_robot(robot), _config
     _safetyDistanceValue = 0.0;
     setMaxNumberOfTryForIK(10000);
 
-    setDebugSoftMotionMode(false);
+    setDebugSoftMotionMode(true);
 
 #ifdef MULTILOCALPATH
     _BaseMLP = -1;

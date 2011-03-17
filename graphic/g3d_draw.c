@@ -78,6 +78,10 @@ void g3d_draw_text(char* string)
 {
 	GLint viewport[4];
 	
+  glDisable( GL_LIGHTING );
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	
 	glPushAttrib(GL_TRANSFORM_BIT);
@@ -91,13 +95,17 @@ void g3d_draw_text(char* string)
 	glOrtho(0, viewport[2], 0, viewport[3], -1, 1);
 	
 	glTranslatef(350,viewport[3]-150, 0);
-	glScalef(15.0, 15.0,1.0);
+	glScalef(20.0, 20.0,2.0);
+  
 	glColor3f(0.0,0.0,0.0);
 	YsDrawUglyFont(string, -1);
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glPopAttrib();
+  
+  glDisable(GL_BLEND);
+  glEnable( GL_LIGHTING );
 }
 
 /*******************************************************************************/
@@ -431,7 +439,6 @@ void g3d_drawSphere(double x,double y,double z, float r) {
   GLint circle_points = 8;
   double angle1=M_PI/circle_points, angle2=2*M_PI/circle_points;
   int i,j;
-
 
   for (i=0;i<=circle_points-2;i++) {
 
