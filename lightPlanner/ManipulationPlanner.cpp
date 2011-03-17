@@ -1545,6 +1545,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armReplan(p3d_vector3 target, int
     /* COMPUTE THE SOFTMOTION TRAJECTORY */
     MANPIPULATION_TRAJECTORY_CONF_STR conf;
     computeSoftMotion(traj/*s.at(i)*/, conf, smTraj);
+    returnMessage = MANIPULATION_TASK_OK;
   } 
   else {
     returnMessage = MANIPULATION_TASK_NO_TRAJ_FOUND;
