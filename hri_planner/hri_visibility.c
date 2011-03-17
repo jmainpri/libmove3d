@@ -478,7 +478,7 @@ int g3d_compute_visibility_in_fov_for_suspect_undetected_entity(HRI_ENTITIES * e
   int * entities_to_test_indexes;
   double * results;
   int o_i, e_i , visibility_processing_suspect_undetected_entity_index;
-  double visibility_processing_fov = 60; /// for opengl visibility processing we choose one fov different from agent fov. 
+  double visibility_processing_fov = 25; /// for opengl visibility processing we choose one fov different from agent fov. 
   double suspect_untedected_entity_real_visibility_score;
   /* double elevation, azimuth; */
   /* int vis_pl; */
