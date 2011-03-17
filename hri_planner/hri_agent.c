@@ -915,7 +915,7 @@ int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tas
       (*tasklist)[0].default_joints[2] = 8;
       (*tasklist)[0].default_joints[3] = 9;
       (*tasklist)[0].default_joints[4] = 10;
-      (*tasklist)[0].default_joints[5] = 11;
+      (*tasklist)[0].default_joints[5] = 12;
       (*tasklist)[0].default_joints[6] = 14;
       (*tasklist)[0].default_joints[7] = 15;
       (*tasklist)[0].default_joints[8] = 16;
