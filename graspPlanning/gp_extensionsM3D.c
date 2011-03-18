@@ -1468,16 +1468,17 @@ int gpExport_bodies_for_coldman(p3d_rob *robot, const std::string &folderName)
     fclose(file);
     file= NULL;
 
+
     // now, write the .mtl file:
     mtlName= folderName + "/" + bodyName + ".mtl";
-    printf("open %s\n",mtlName.c_str());
+
     file= fopen(mtlName.c_str(), "w");
     if(file==NULL)
     { 
       printf("%s: %d: gpExport_bodies_for_coldman(): can not open %s.\n", __FILE__,__LINE__,mtlName.c_str());
       return GP_ERROR;
     }
-
+    rewind (file);
     countM= 1;
     for(j=0; j<body->np; j++)
     {

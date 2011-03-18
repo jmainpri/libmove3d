@@ -1908,7 +1908,7 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &handProp, std::v
       qmin= fingerJoint->dof_data[0].vmin;
       qmax= fingerJoint->dof_data[0].vmax;
       q= config[0];
-      if( q<qmin || q>qmax )
+      if( (q<qmin-1e-6) || (q>qmax+1e-6) )
       {
          if(verbose)
          {

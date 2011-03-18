@@ -706,18 +706,20 @@ int gpGrasp_generation_pr2_gripper(p3d_polyhedre *polyhedron, gpHand_properties 
   }
 
 
-  unsigned int i, j, k;
+  unsigned int i, j, k, i1, i2;
+  bool remove;
   int result;
+  int face_edges[3];
   std::list<gpContact> contactList;
   std::list<gpContact>::iterator icontact;
   gpGrasp grasp;
   p3d_vector3 normal, intersection, diff;
-  p3d_vector3 p1, p2, p3, fingerpadNormal1, fingerpadNormal2;
+  p3d_vector3 p1, p2, p3, fingerpadNormal1, fingerpadNormal2, closestPoint;
   p3d_vector3 xAxis, yAxis, zAxis;
   p3d_vector3 inertiaX, inertiaY, inertiaZ, middlePoint;
   p3d_vector3 *points= NULL;
   unsigned int nb_faces;
-  double alpha, r, d, dot, minAngle, maxAngle, length;
+  double alpha, r, d, dot, minAngle, maxAngle, length, angle, distance;
   p3d_face *faces= NULL;
   p3d_matrix4 gFrame0, gFrame, Rx;
   gpContact contact1, contact2;
@@ -736,9 +738,56 @@ int gpGrasp_generation_pr2_gripper(p3d_polyhedre *polyhedron, gpHand_properties 
     inertiaZ[i]= polyhedron->inertia_axes[i][2];
   }
 
+  // compute the edges of the poly:
+  if(polyhedron->areEdgesAndNeighboursUpToDate==FALSE)
+  {
+    p3d_compute_edges_and_face_neighbours(polyhedron);
+  }
+
+
   points= polyhedron->the_points;
   nb_faces= ( unsigned int ) polyhedron->nb_faces;
   faces= polyhedron->the_faces;
+
+
+  // first remove contact too close to sharp edges:
+  icontact=contactList.begin();
+  while(icontact!=contactList.end())
+  {
+    remove= false;
+
+    face_edges[0]= polyhedron->the_faces[icontact->face].edges[0];
+    face_edges[1]= polyhedron->the_faces[icontact->face].edges[1];
+    face_edges[2]= polyhedron->the_faces[icontact->face].edges[2];
+    //for each edge:
+    for(j=0; j<3; ++j)
+    {
+      if(face_edges[j]==-1)
+      {  continue;  }
+      angle= polyhedron->the_edges[face_edges[j]].angle;
+
+      // if the edge is flat, skip the test
+      if( fabs(angle) < handProp.edgeAngleThreshold )
+      {  continue; }
+
+      i1= polyhedron->the_edges[face_edges[j]].point1 -1;
+      i2= polyhedron->the_edges[face_edges[j]].point2 -1;
+      p3d_vectCopy(polyhedron->the_points[i1], p1);
+      p3d_vectCopy(polyhedron->the_points[i2], p2);
+
+      distance= gpPoint_to_line_segment_distance(icontact->position, p1, p2, closestPoint);
+      if(distance < handProp.edgeDistanceThreshold) 
+      { 
+        remove= true;
+        break; 
+      }
+    }
+    if(remove==true)
+    { icontact= contactList.erase(icontact);  }
+    else
+    { ++icontact; }  
+  }
+
 
   for(icontact=contactList.begin(); icontact!=contactList.end(); ++icontact)
   {
@@ -1762,7 +1811,7 @@ int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, gpHand_properties &handP
 
 
   for ( igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++ )
-  {
+  { 
     if ( igrasp->object==NULL )
     {
       igrasp->object= object;
@@ -1815,15 +1864,6 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
   gpGet_fingertip_bodies(robot, hand, fingertipBodies);
 
   gpGet_non_fingertip_bodies(robot, hand, handBodies);
-
-//   for(i=0; i<handBodies.size(); ++i)
-//   {
-//     printf("hb: %s %d\n",handBodies[i]->name, pqp_is_pure_graphic(handBodies[i]));
-//   } 
-//   for(i=0; i<fingertipBodies.size(); ++i)
-//   {
-//     printf("fb: %s %d\n",fingertipBodies[i]->name, pqp_is_pure_graphic(fingertipBodies[i]));
-//   } 
 
   n= 50;
   dq=  0.1*DEGTORAD;
@@ -3152,13 +3192,14 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
 
     gpGrasp_generation(hand_robot, object, handProp, handProp.nb_positions, handProp.nb_directions, handProp.nb_rotations, graspList );
 
-    // printf("before stability %d\n",graspList.size());
     if( hand_type==GP_GRIPPER || hand_type==GP_PR2_GRIPPER ) {
       gpGrasp_collision_filter(graspList, hand_robot, object, handProp);
     }
 
     printf("Remove contacts close to edges (currently %d grasps).\n",graspList.size());
-//     gpRemove_edge_contacts(graspList, 80*DEGTORAD, 0.025);
+    if(hand_type!=GP_PR2_GRIPPER) {
+      gpRemove_edge_contacts(graspList,  handProp.edgeAngleThreshold, handProp.edgeDistanceThreshold);
+    }
     printf("after: Remove contacts close to edges (currently %d grasps).\n",graspList.size());
 
     if(hand_type!=GP_PR2_GRIPPER) {
@@ -3587,7 +3628,7 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
 //! @ingroup graspPlanning
 //! Reduces the number of elements of a grasp list.
 //! The criterion used to choose which grasps to remove is the distance between the grasp frame
-//! (see gpGrasp::gpGraspDistance()).
+//! (see gpGrasp::gpGraspDistance()). If there are too many elements, they are first remove at random.
 //! \param originalList the original grasp list
 //! \param reducedList the reduced grasp list
 //! \param maxSize the desired maximum number of elements in the grasp list
@@ -3617,9 +3658,24 @@ int gpReduce_grasp_list_size(const std::list<gpGrasp> &originalList, std::list<g
 
   i= 1;
   for(iter1=reducedList.begin(); iter1!=reducedList.end(); iter1++)
+  {  iter1->ID= i++;   }
+
+  while(reducedList.size() > 200)
   {
-    iter1->ID= i++; 
+    remove= p3d_random(1, reducedList.size()+1);
+    i= 1;
+    for(iter1=reducedList.begin(); iter1!=reducedList.end(); ++iter1)
+    {
+      if(i==remove)
+      {  break;   }
+      i++;
+    }
+    reducedList.erase(iter1);
   }
+
+  i= 1;
+  for(iter1=reducedList.begin(); iter1!=reducedList.end(); iter1++)
+  {  iter1->ID= i++;   }
 
   while(reducedList.size() > maxSize)
   {
@@ -3663,7 +3719,7 @@ int gpReduce_grasp_list_size(const std::list<gpGrasp> &originalList, std::list<g
 
 //! For each grasp of the list, removes all the contacts that are too close to the sharp edges of the object.
 //! \param graspList the grasp list list
-//! \param  angle angle if the angle at an edge is sharper than this value (in radians), the edge is considered as sharp
+//! \param  angle if the angle at an edge is sharper than this value (in radians), the edge is considered as sharp
 //! \param step a contact is considered as close to an edge if the distance to this edge is smaller than step
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpRemove_edge_contacts(std::list<gpGrasp> &graspList, double angle, double step)

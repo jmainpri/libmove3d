@@ -396,7 +396,7 @@ int gpGrasp::removeContactsTooCloseToEdge(double angleThreshold, double distance
     face_edges[1]= poly->the_faces[contacts[i].face].edges[1];
     face_edges[2]= poly->the_faces[contacts[i].face].edges[2];
 
-    //for each edges:
+    //for each edge:
     for(j=0; j<3; ++j)
     {
       if(face_edges[j]==-1)
@@ -855,15 +855,12 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        T[2][0]=  1.0;  T[2][1]=  0.0;  T[2][2]=  0.0;  T[2][3]= -0.007;
        T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
 
-       nb_positions= 2100;
-       nb_directions= 12;
-       nb_rotations= 6;
-       max_nb_grasp_frames= 160000;
-
        nb_positions= 100;
        nb_directions= 12;
-       nb_rotations= 2;
-       max_nb_grasp_frames= 5000;
+       nb_rotations= 8;
+       max_nb_grasp_frames= 160000;
+       edgeAngleThreshold= 80*DEGTORAD;
+       edgeDistanceThreshold= 0.025;
     break;
     case GP_PR2_GRIPPER:
        nb_fingers= 2;
@@ -885,10 +882,12 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        qrest[0]= qmax[0];
        qopen[0]= qmax[0];
 
-       nb_positions= 500;
+       nb_positions= 1000;
        nb_directions= 6;
-       nb_rotations= 6;
+       nb_rotations= 8;
        max_nb_grasp_frames= 5000;
+       edgeAngleThreshold= 80*DEGTORAD;
+       edgeDistanceThreshold= 0.01; // be very careful with this value for pr2: As the jaws are not parallel they can not be very far from the object's border
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
        nb_fingers= 4;
@@ -1209,6 +1208,8 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        nb_directions= 16;
        nb_rotations=16;
        max_nb_grasp_frames= 300000;
+       edgeAngleThreshold= 80*DEGTORAD;
+       edgeDistanceThreshold= 0.025;
     break;
     default:
        printf("%s: %d: gpHand_properties::initalize(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);

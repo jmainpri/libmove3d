@@ -582,8 +582,8 @@ void compute_object_border()
 
 static void CB_test(FL_OBJECT *obj, long arg)
 {
-p3d_export_as_OFF(XYZ_ENV->cur_robot->o[0]->pol[0]->poly);
-// gpExport_robot_for_coldman(XYZ_ENV->cur_robot);
+//p3d_export_as_OFF(XYZ_ENV->cur_robot->o[0]->pol[0]->poly);
+ gpExport_robot_for_coldman(XYZ_ENV->cur_robot);
 //  chull3d.setPoints(XYZ_ENV->cur_robot->o[0]->pol[0]->poly->the_points, XYZ_ENV->cur_robot->o[0]->pol[0]->poly->nb_points);
 //  chull3d.compute(false, -1.0, true); 
 // 
@@ -1128,6 +1128,7 @@ static void CB_browse_grasps(FL_OBJECT *obj, long arg)
   p3d_copy_config_into(HAND_ROBOT, p3d_get_robot_config(HAND_ROBOT), &HAND_ROBOT->ROBOT_POS);
 
   printf("Selected grasp: #%d\n",GRASP.ID);
+//   GRASP.print();
 
   redraw();
   return;

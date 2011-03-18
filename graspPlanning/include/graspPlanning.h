@@ -199,6 +199,9 @@ class gpHand_properties
   //! hand_frame*Thand_wrist  -->  arm's wrist frame
   p3d_matrix4 Thand_wrist;
 
+  //! values used to discard contacts close to sharp edges as unstable
+  double edgeAngleThreshold; /*!< if the angle at an edge is sharper than this value (in radians), the edge is considered as sharp */
+  double edgeDistanceThreshold; /*!< a contact is considered as close to an edge if the distance to this edge is smaller than this value */
 
   //! discretization parameters that will be given to the grasp generation function:
   unsigned int nb_positions, nb_directions, nb_rotations, max_nb_grasp_frames;
