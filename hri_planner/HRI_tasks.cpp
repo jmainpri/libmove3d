@@ -1033,7 +1033,7 @@ p3d_get_robot_config_into(envPt_MM->robot[obj_index],&obj_tmp_pos);
 #endif
 void fct_draw_loop()
 {
-#if defined(WITH_XFORM)
+#if defined(WITH_XFORMS)
   g3d_screenshot((char *)"Move3D");
 #endif
 }
@@ -1060,9 +1060,9 @@ static int
 default_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp)
 {
   g3d_draw_allwin_active();
-  #if defined(WITH_XFORM)
+ #if defined(WITH_XFORMS)
   fl_check_forms();
-#endif
+ #endif
   return(traj_play);
 }
 
@@ -1397,7 +1397,7 @@ if(PLAN_IN_CARTESIAN == 1)
                                 }
                                 else
                                 {
-                                if(task==HIDE_OBJECT||task==GIVE_OBJECT) //Need to set the robot at placement config to test the visibility of object while in robot's hand
+                                if(task==HIDE_OBJECT||task==MAKE_OBJECT_ACCESSIBLE) //Need to set the robot at rest config to test the visibility of object while in robot's hand
                                  {
                                 p3d_set_and_update_this_robot_conf ( manipulation->robot(), refConf );
                                  }
@@ -4089,7 +4089,7 @@ int show_world_state_of_entire_plan(std::vector<HRI_task_node> &hri_task_list, i
    
   }
   g3d_draw_allwin_active();
-    #if defined(WITH_XFORM)
+    #if defined(WITH_XFORMS)
   fl_check_forms();
 #endif  
   for(int k=0;k<hri_task_list[i].traj.sub_task_traj.size();k++)
@@ -4110,7 +4110,7 @@ int show_world_state_of_entire_plan(std::vector<HRI_task_node> &hri_task_list, i
    }
 
   g3d_draw_allwin_active();
-    #if defined(WITH_XFORM)
+    #if defined(WITH_XFORMS)
   fl_check_forms();
 #endif  
 //  printf(" Sub traj type=%d\n",for_task.traj.sub_task_traj[i].sub_task_type);
@@ -4125,7 +4125,7 @@ int show_world_state_of_entire_plan(std::vector<HRI_task_node> &hri_task_list, i
    
   }
 g3d_draw_allwin_active();
-  #if defined(WITH_XFORM)
+  #if defined(WITH_XFORMS)
 
   fl_check_forms();
 #endif
@@ -4158,7 +4158,7 @@ int show_plan_for_this_sub_task(HRI_task_node &for_task, traj_for_HRI_sub_task &
   }
 
   g3d_draw_allwin_active();
-    #if defined(WITH_XFORM)
+    #if defined(WITH_XFORMS)
 
   fl_check_forms();
 #endif  
@@ -4176,7 +4176,7 @@ int show_plan_for_this_sub_task(HRI_task_node &for_task, traj_for_HRI_sub_task &
    }
 
   g3d_draw_allwin_active();
-    #if defined(WITH_XFORM)
+    #if defined(WITH_XFORMS)
 
   fl_check_forms();
 #endif  

@@ -194,7 +194,7 @@ int show_obstacle_cells_belonging_to(int object_index);
 point_co_ordi point_to_put;
 int MM_RECORD_MOVIE_FRAMES=0;
 int AKP_RECORD_WINDOW_MOVEMENT=0;
-#if defined(WITH_XFORM)
+#if defined(WITH_XFORMS)
 int AKP_record_movie_frames();
 #endif
 point_co_ordi human1_curr_eye_pos; //To store the eye pos used in calculating the 3D grid visibility from the current head orientation
@@ -258,7 +258,7 @@ extern std::map<int,std::string > HRI_sub_task_NAME_ID_map;
 
 
 //TODO Put into proto file
-int get_current_FOV_vertices(HRI_AGENT *agent);
+int get_current_FOV_vertices(HRI_AGENT *agent, int camera_joint_index);
 int draw_current_FOV_vertices(); 
 int find_Mightability_Maps();
 int draw_all_current_points_on_FOV_screen();
@@ -297,6 +297,7 @@ int indices_of_MA_agents[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
 ////MA_agent_head_info agents_head_info[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
 HRI_TASK_AGENT CURRENT_TASK_PERFORMED_BY;
 HRI_TASK_AGENT CURRENT_TASK_PERFORMED_FOR;
+int indices_of_eye_joint_MA_agents[MAXI_NUM_OF_AGENT_FOR_HRI_TASK];
 
 int CONSIDER_OBJECT_DIMENSION_FOR_CANDIDATE_PTS=0;
 
@@ -342,6 +343,7 @@ int execute_Mightability_Map_functions()
       ////draw_all_current_points_on_FOV_screen();
       ////g3d_drawDisc(standing_human_eye_pos.x,standing_human_eye_pos.y,standing_human_eye_pos.z,.1,Green,NULL); 
       //follow_human_head_to_object(HUMAN2_MA, "YELLOW_BOTTLE");
+      ////g3d_drawDisc(agent_eye_pos.x,agent_eye_pos.y,agent_eye_pos.z,.1,Green,NULL); 
       //return 1;
      
 
@@ -447,7 +449,7 @@ int execute_Mightability_Map_functions()
 	g3d_drawDisc(hum_R_shoulder_pos[0], hum_R_shoulder_pos[1], hum_R_shoulder_pos[2], 0.05, 4, NULL);
       */ 
       ////g3d_drawDisc(point_to_look[0], point_to_look[1], point_to_look[2], 0.1, 4, NULL);
-#if defined(WITH_XFORM)
+#if defined(WITH_XFORMS)
       if(MM_RECORD_MOVIE_FRAMES==1)
 	{
 	  AKP_record_movie_frames();
@@ -638,10 +640,10 @@ int draw_all_current_points_on_FOV_screen()
     }
 }
 
-int get_all_points_on_FOV_screen(HRI_AGENT *agent)
+int get_all_points_on_FOV_screen(HRI_AGENT *agent, HRI_TASK_AGENT for_agent)
 {
   
-  get_current_FOV_vertices(agent); //It will store the result in FOV_left_up_abs,FOV_left_down_abs,FOV_right_up_abs,FOV_right_down_abs
+  get_current_FOV_vertices(agent, indices_of_eye_joint_MA_agents[for_agent]); //It will store the result in FOV_left_up_abs,FOV_left_down_abs,FOV_right_up_abs,FOV_right_down_abs
   p3d_vector3 left_boundary_points[1000];
   p3d_vector3 right_boundary_points[1000];
   p3d_vector3 top_boundary_points[1000];
@@ -685,13 +687,14 @@ int get_all_points_on_FOV_screen(HRI_AGENT *agent)
  
 }
 
-int get_current_FOV_vertices(HRI_AGENT *agent)
-{
-
+int get_current_FOV_vertices(HRI_AGENT *agent, int camera_joint_index)
+{ 
+ 
   p3d_matrix4 camera_frame;
   for(int i=0 ; i<=3 ; i++){
     for(int j=0 ; j<=3 ; j++){
-      camera_frame[i][j]=agent->perspective->camjoint->abs_pos[i][j];
+      ////camera_frame[i][j]=agent->perspective->camjoint->abs_pos[i][j];
+      camera_frame[i][j]=agent->robotPt->joints[camera_joint_index]->abs_pos[i][j];
     }
   }
 
@@ -751,7 +754,7 @@ static int movie_count = 0;
 static int image_rate = 1;
 static int image_compress = 100;
 
-#if defined(WITH_XFORM)
+#if defined(WITH_XFORMS)
 int AKP_record_movie_frames()
 {
   char str[512];
@@ -815,7 +818,7 @@ int move_object_on_a_path()
       p3d_set_and_update_this_robot_conf(envPt_MM->robot[obj_index_2], rob_cur_pos_2); 
       robots_status_for_Mightability_Maps[obj_index_2].has_moved=1;
   
-#if defined(WITH_XFORM)  
+#if defined(WITH_XFORMS)  
       fl_check_forms();
 #endif 
       g3d_draw_allwin_active();
@@ -3773,6 +3776,7 @@ int get_indices_for_MA_agents()
     {
       case JIDO_MA:
       indices_of_MA_agents[i]=get_index_of_robot_by_name("JIDOKUKA_ROBOT");
+      indices_of_eye_joint_MA_agents[i]=p3d_get_robot_jnt_index_by_name(envPt_MM->robot[indices_of_MA_agents[i]], (char*) "TopCameras");
       break;
 #ifdef HRP2_EXISTS_FOR_MA
       case HRP2_MA:
@@ -3782,17 +3786,20 @@ int get_indices_for_MA_agents()
 
       case HUMAN1_MA:
 	 indices_of_MA_agents[i]=get_index_of_robot_by_name("ACHILE_HUMAN1");
+	 indices_of_eye_joint_MA_agents[i]=p3d_get_robot_jnt_index_by_name(envPt_MM->robot[indices_of_MA_agents[i]], (char*) "Eyes");
       break;
 
 #ifdef HUMAN2_EXISTS_FOR_MA
       case HUMAN2_MA:
 	 indices_of_MA_agents[i]=get_index_of_robot_by_name("ACHILE_HUMAN2");
+	 indices_of_eye_joint_MA_agents[i]=p3d_get_robot_jnt_index_by_name(envPt_MM->robot[indices_of_MA_agents[i]], (char*) "Eyes");
       break;
 #endif
       
 #ifdef PR2_EXISTS_FOR_MA
       case PR2_MA:
 	 indices_of_MA_agents[i]=get_index_of_robot_by_name("PR2_ROBOT");
+	 indices_of_eye_joint_MA_agents[i]=p3d_get_robot_jnt_index_by_name(envPt_MM->robot[indices_of_MA_agents[i]], (char*) "Eyes");
       break;
 #endif
       
@@ -3805,7 +3812,7 @@ int get_indices_for_MA_agents()
 int assign_indices_of_robots()
 {
 
-  envPt_MM = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+ // envPt_MM = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
  
   int nr = envPt_MM->nr;
   int nr_ctr=0;
@@ -4169,8 +4176,9 @@ int Create_and_init_Mightability_Maps()
  
   ////p3d_init_robot_parameters(); //To remove the dependency on Watch button
   ////printf(" After p3d_init_robot_parameters()\n");
-   get_indices_for_MA_agents();
+  envPt_MM = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   assign_indices_of_robots();
+  get_indices_for_MA_agents();
   create_agents_for_Mightabilities();
   init_HRI_task_name_ID_map();
  
@@ -4497,7 +4505,7 @@ int get_set_of_points_to_give_object(char *object_name)
   }
 */
 /*
-  #if defined(WITH_XFORM)  
+  #if defined(WITH_XFORMS)  
   int get_points_on_FOV_screen(p3d_rob *r)
   {
   printf(">>>> get_points_on_FOV_screen, r->cam_body_index =%d\n",r->cam_body_index);
@@ -4610,7 +4618,7 @@ int check_inside_polygon(int no_vertices, point_co_ordi *vertices, point_co_ordi
 
 }
 
-#if defined(WITH_XFORM)
+#if defined(WITH_XFORMS)
 int is_point_in_fov(p3d_rob* robot, p3d_vector4 p)
 {
   
@@ -4625,7 +4633,7 @@ int is_point_in_fov(p3d_rob* robot, p3d_vector4 p)
   //robot->cam_v_angle = angleW;
   int plane;
   G3D_Window *win = g3d_get_win_by_name("Perspective");
-#if defined(WITH_XFORM)  
+#if defined(WITH_XFORMS)  
   g3d_refresh_win(win);
 #endif
   int is_in_FOV=0;
@@ -7563,19 +7571,23 @@ int find_3D_grid_visibility_for_MM(HRI_AGENT *agent,HRI_TASK_AGENT agent_type, i
   ////envPt_MM = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   
   int nr = envPt_MM->nr;
-
+  p3d_jnt *camera_joint=envPt_MM->robot[indices_of_MA_agents[agent_type]]->joints[indices_of_eye_joint_MA_agents[agent_type]];
   //////////printf(" Inside update_3d_grid_visibility(),  no_FOV_end_point_vertices=%d\n",no_FOV_end_point_vertices);
   point_co_ordi eye_pos;
-   
-  eye_pos.x=agent->perspective->camjoint->abs_pos[0][3];
-  eye_pos.y=agent->perspective->camjoint->abs_pos[1][3];
-  eye_pos.z=agent->perspective->camjoint->abs_pos[2][3];
-
-
+   ////printf(" Inside find_3D_grid_visibility_for_MM()\n");
+//   eye_pos.x=agent->perspective->camjoint->abs_pos[0][3];
+//   eye_pos.y=agent->perspective->camjoint->abs_pos[1][3];
+//   eye_pos.z=agent->perspective->camjoint->abs_pos[2][3];
+   eye_pos.x=camera_joint->abs_pos[0][3];
+   eye_pos.y=camera_joint->abs_pos[1][3];
+   eye_pos.z=camera_joint->abs_pos[2][3];
+   ////printf(" After getting eye pos\n");
+  if(agent_type==JIDO_MA)
+  {
   agent_eye_pos.x=eye_pos.x;       
   agent_eye_pos.y=eye_pos.y;
   agent_eye_pos.z=eye_pos.z;
-  
+  }
 
   double interval=grid_around_HRP2.GRID_SET->pace/2.0;
   ////double interval=grid_around_HRP2.GRID_SET->pace*3.0/4.0;
@@ -9480,7 +9492,7 @@ int find_human_current_visibility_in_3D(HRI_AGENT *human_agent_MM, HRI_TASK_AGEN
     agent_type=HUMAN2_MA;
   }   */
   
-   get_all_points_on_FOV_screen(human_agent_MM);
+   get_all_points_on_FOV_screen(human_agent_MM, agent_type);
   ////find_3D_grid_visibility(primary_human_MM,1,MM_CURRENT_STATE_HUM_VIS);
   find_3D_grid_visibility_for_MM(human_agent_MM,agent_type, visibility_type);//agent_type: 1 means human, 2 means HRP2, 3 means JIDO, 4 means second human
   ////ChronoPrint(" Time for getting points on HUMAN FOV screen");
@@ -9566,7 +9578,7 @@ int find_human_all_visibilities_in_3D(HRI_AGENT *human_agent_MM, HRI_TASK_AGENT 
     }
    }
   ///////get_all_points_on_FOV_screen(primary_human_MM);
-  get_all_points_on_FOV_screen(human_agent_MM);
+  get_all_points_on_FOV_screen(human_agent_MM, agent_type);
   ////find_3D_grid_straight_visibility(primary_human_MM,1);
   //////////find_3D_grid_visibility_for_MM(primary_human_MM,agent_type, visibility_type);
   find_3D_grid_visibility_for_MM(human_agent_MM,agent_type, visibility_type);
@@ -9590,7 +9602,7 @@ int find_human_all_visibilities_in_3D(HRI_AGENT *human_agent_MM, HRI_TASK_AGENT 
     }
    }
 
-  get_all_points_on_FOV_screen(human_agent_MM);
+  get_all_points_on_FOV_screen(human_agent_MM, agent_type);
   ////find_3D_grid_turn_head_visibility(primary_human_MM,1);
    find_3D_grid_visibility_for_MM(human_agent_MM,agent_type, visibility_type);
 
@@ -9600,7 +9612,7 @@ int find_human_all_visibilities_in_3D(HRI_AGENT *human_agent_MM, HRI_TASK_AGENT 
   p3d_set_and_update_this_robot_conf(human_agent_MM->robotPt, HRI_AGENTS_FOR_MA_running_pos[agent_type]);
   //////////envPt_MM->robot[rob_indx.HUMAN]->ROBOT_POS[HUMANq_PAN]=HUMAN1_running_pos_MM[HUMANq_PAN];
   //////////envPt_MM->robot[rob_indx.HUMAN]->ROBOT_POS[HUMANq_TILT]=HUMAN1_running_pos_MM[HUMANq_TILT];
-  get_all_points_on_FOV_screen(human_agent_MM);
+  get_all_points_on_FOV_screen(human_agent_MM, agent_type);
   ////find_3D_grid_turn_head_visibility(primary_human_MM,1);
   find_3D_grid_visibility_for_MM(human_agent_MM,agent_type, visibility_type);
 
@@ -9632,7 +9644,7 @@ int find_human_all_visibilities_in_3D(HRI_AGENT *human_agent_MM, HRI_TASK_AGENT 
    //// fl_check_forms();
    ////g3d_draw_allwin_active();
   ////////hri_update_agent_perspective_params(human_agent_MM);
-  get_all_points_on_FOV_screen(human_agent_MM);
+  get_all_points_on_FOV_screen(human_agent_MM, agent_type);
   ////find_3D_grid_straight_visibility(primary_human_MM,1);
   find_3D_grid_visibility_for_MM(human_agent_MM,agent_type, visibility_type);
   
@@ -9668,7 +9680,7 @@ int find_human_all_visibilities_in_3D(HRI_AGENT *human_agent_MM, HRI_TASK_AGENT 
    }
  
   
-  get_all_points_on_FOV_screen(human_agent_MM);
+  get_all_points_on_FOV_screen(human_agent_MM, agent_type);
   ////find_3D_grid_turn_head_visibility(primary_human_MM,1);
    find_3D_grid_visibility_for_MM(human_agent_MM,agent_type, visibility_type);
     
@@ -9681,7 +9693,7 @@ int find_human_all_visibilities_in_3D(HRI_AGENT *human_agent_MM, HRI_TASK_AGENT 
   p3d_set_and_update_this_robot_conf(human_agent_MM->robotPt, HRI_AGENTS_FOR_MA_running_pos[agent_type]);
   ////envPt_MM->robot[rob_indx.HUMAN]->ROBOT_POS[HUMANq_PAN]=HUMAN1_running_pos_MM[HUMANq_PAN];
   ////envPt_MM->robot[rob_indx.HUMAN]->ROBOT_POS[HUMANq_TILT]=HUMAN1_running_pos_MM[HUMANq_TILT];
-  get_all_points_on_FOV_screen(human_agent_MM);
+  get_all_points_on_FOV_screen(human_agent_MM, agent_type);
   ////find_3D_grid_turn_head_visibility(primary_human_MM,1);
   find_3D_grid_visibility_for_MM(human_agent_MM,agent_type, visibility_type);
   
@@ -9700,7 +9712,7 @@ int find_human_all_visibilities_in_3D(HRI_AGENT *human_agent_MM, HRI_TASK_AGENT 
 int find_JIDO_robot_current_visibility_in_3D()
 {
   int visibility_type=MM_CURRENT_STATE_JIDO_VIS;
-  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[JIDO_MA]);
+  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[JIDO_MA], JIDO_MA);
   find_3D_grid_visibility_for_MM(HRI_AGENTS_FOR_MA[JIDO_MA],JIDO_MA,visibility_type);
 }
 
@@ -9739,7 +9751,7 @@ int find_JIDO_robot_all_visibilities_in_3D()
   ////envPt_MM->robot[rob_indx.JIDO_ROBOT]->ROBOT_POS[ROBOTq_TILT]=JIDO_running_pos_MM[ROBOTq_TILT];
   
   visibility_type=MM_STRAIGHT_HEAD_STATE_JIDO_VIS;
-  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[agent_type]);
+  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[agent_type], agent_type);
   ////find_3D_grid_straight_visibility(jido_robot_MM,3);
   find_3D_grid_visibility_for_MM(HRI_AGENTS_FOR_MA[agent_type],agent_type,visibility_type);
 
@@ -9752,7 +9764,7 @@ int find_JIDO_robot_all_visibilities_in_3D()
   ////envPt_MM->robot[rob_indx.JIDO_ROBOT]->ROBOT_POS[ROBOTq_TILT]=JIDO_running_pos_MM[ROBOTq_TILT];
   
   visibility_type=MM_LOOK_AROUND_HEAD_STATE_JIDO_VIS;
-  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[agent_type]);
+  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[agent_type], agent_type);
   ////find_3D_grid_turn_head_visibility(jido_robot_MM,3);
   find_3D_grid_visibility_for_MM(HRI_AGENTS_FOR_MA[agent_type],agent_type,visibility_type);
 
@@ -9763,7 +9775,7 @@ int find_JIDO_robot_all_visibilities_in_3D()
   p3d_set_and_update_this_robot_conf(envPt_MM->robot[indices_of_MA_agents[agent_type]], HRI_AGENTS_FOR_MA_running_pos[agent_type]);
   /////envPt_MM->robot[rob_indx.JIDO_ROBOT]->ROBOT_POS[ROBOTq_PAN]=JIDO_running_pos_MM[ROBOTq_PAN];
   /////envPt_MM->robot[rob_indx.JIDO_ROBOT]->ROBOT_POS[ROBOTq_TILT]=JIDO_running_pos_MM[ROBOTq_TILT];
-  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[agent_type]);
+  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[agent_type], agent_type);
   ////find_3D_grid_turn_head_visibility(jido_robot_MM,3);
   find_3D_grid_visibility_for_MM(HRI_AGENTS_FOR_MA[agent_type],agent_type,visibility_type);
 
@@ -9789,7 +9801,7 @@ int find_JIDO_robot_all_visibilities_in_3D()
 int find_PR2_robot_current_visibility_in_3D()
 {
   int visibility_type=MM_CURRENT_STATE_PR2_VIS;
-  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[PR2_MA]);
+  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[PR2_MA],PR2_MA);
   find_3D_grid_visibility_for_MM(HRI_AGENTS_FOR_MA[PR2_MA],PR2_MA,visibility_type);
 }
 
@@ -9844,7 +9856,7 @@ int find_PR2_robot_all_visibilities_for_posture_in_3D(PR2_POSTURE_MA for_posture
       
   }
 
-  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[agent_type]);
+  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[agent_type],agent_type);
   ////find_3D_grid_straight_visibility(jido_robot_MM,3);
   find_3D_grid_visibility_for_MM(HRI_AGENTS_FOR_MA[agent_type],agent_type,visibility_type);
 
@@ -9872,7 +9884,7 @@ int find_PR2_robot_all_visibilities_for_posture_in_3D(PR2_POSTURE_MA for_posture
   }
   
   ////visibility_type=MM_LOW_LOOK_AROUND_HEAD_STATE_PR2_VIS;
-  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[agent_type]);
+  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[agent_type], agent_type);
   ////find_3D_grid_turn_head_visibility(jido_robot_MM,3);
   find_3D_grid_visibility_for_MM(HRI_AGENTS_FOR_MA[agent_type],agent_type,visibility_type);
 
@@ -9883,7 +9895,7 @@ int find_PR2_robot_all_visibilities_for_posture_in_3D(PR2_POSTURE_MA for_posture
   p3d_set_and_update_this_robot_conf(envPt_MM->robot[indices_of_MA_agents[agent_type]], HRI_AGENTS_FOR_MA_running_pos[agent_type]);
   /////envPt_MM->robot[rob_indx.JIDO_ROBOT]->ROBOT_POS[ROBOTq_PAN]=JIDO_running_pos_MM[ROBOTq_PAN];
   /////envPt_MM->robot[rob_indx.JIDO_ROBOT]->ROBOT_POS[ROBOTq_TILT]=JIDO_running_pos_MM[ROBOTq_TILT];
-  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[agent_type]);
+  get_all_points_on_FOV_screen(HRI_AGENTS_FOR_MA[agent_type], agent_type);
   ////find_3D_grid_turn_head_visibility(jido_robot_MM,3);
   find_3D_grid_visibility_for_MM(HRI_AGENTS_FOR_MA[agent_type],agent_type,visibility_type);
 
@@ -10016,6 +10028,7 @@ int for_state;
 #ifdef JIDO_EXISTS_FOR_MA
 agent_type=JIDO_MA;
   p3d_get_robot_config_into(envPt_MM->robot[indices_of_MA_agents[agent_type]],&HRI_AGENTS_FOR_MA_actual_pos[agent_type]);
+  printf("Calling find_JIDO_robot_all_visibilities_in_3D\n");
   find_JIDO_robot_all_visibilities_in_3D();
   ////update_3d_grid_reachability_for_JIDO_MM();
   for_state=MM_CURRENT_STATE_JIDO_REACH;
@@ -10080,7 +10093,7 @@ agent_type=JIDO_MA;
   return 1;
 }
 /*
-  #if defined(WITH_XFORM)  
+  #if defined(WITH_XFORMS)  
   int find_affordance_new()
   {
 
@@ -11145,7 +11158,7 @@ for(int i=0;i<MAXI_NUM_OF_AGENT_FOR_HRI_TASK;i++)
 
 }
 /*
-  #if defined(WITH_XFORM)  
+  #if defined(WITH_XFORMS)  
   int update_Mightability_Maps()
   {
   double total_time=0.0;
@@ -19383,7 +19396,7 @@ int is_object_visible_for_agent(HRI_AGENT * agent, p3d_rob *object, double thres
   /////g3d_draw_win(win);
     ////return 0;
     g3d_draw_allwin_active();
-#if defined(WITH_XFORM)
+#if defined(WITH_XFORMS)
     fl_check_forms();
 #endif
     //everything is ready now.
@@ -19406,7 +19419,7 @@ int is_object_visible_for_agent(HRI_AGENT * agent, p3d_rob *object, double thres
     //AKP
     ////////printf("  >>>>>>> result = %lf, visibility = %lf \n",result, 100.0*result);
     g3d_draw_allwin_active();
-#if defined(WITH_XFORM)
+#if defined(WITH_XFORMS)
     fl_check_forms();
 #endif
     if(100.0*result>=threshold)
