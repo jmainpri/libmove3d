@@ -178,7 +178,7 @@ xmlNodePtr writeXmlLocalpath(xmlNodePtr parent, p3d_rob* rob, p3d_localpath * lo
   }
   
   tmp = xmlNewChild(xmlLocalpath, NULL, xmlCharStrdup("Object"),NULL);
-  
+#ifdef LIGHT_PLANNER  
   sprintf(str, "%d", localpath->isCarryingObject);
   xmlNewProp(tmp, xmlCharStrdup("isCarryingObject"), xmlCharStrdup(str));
 
@@ -186,7 +186,7 @@ xmlNodePtr writeXmlLocalpath(xmlNodePtr parent, p3d_rob* rob, p3d_localpath * lo
   {
     xmlNewProp(tmp, xmlCharStrdup("ObjectName"), xmlCharStrdup(localpath->carriedObject[i]->name));
   }
-  
+#endif
 
   tmp = xmlNewChild(xmlLocalpath, NULL, xmlCharStrdup("Constraints"), NULL);
   
