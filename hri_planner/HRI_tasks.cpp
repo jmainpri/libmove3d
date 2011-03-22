@@ -89,6 +89,8 @@ int INDEX_CURRENT_HRI_TASK_SUB_PLAN_TO_SHOW;
 int SHOW_HRI_TASK_TRAJ_TYPE;
 int SHOW_HRI_PLAN_TYPE;
 
+int JIDO_HAND_TYPE=1;//1 for gripper, 2 for SAHAND
+
 //TODO : Put in HRI_tasks_Proto.h
 int get_placements_in_3D(char *obj_to_manipulate,  std::list<gpPlacement> &placementListOut);
 int get_ranking_based_on_view_point(p3d_matrix4 view_frame,point_co_ordi point,p3d_rob *object, p3d_rob *human, std::list<gpPlacement> &placementList);
@@ -377,7 +379,16 @@ switch(CURRENT_HRI_MANIPULATION_TASK)
  case GIVE_OBJECT:
   {
  
-  char* from_hand="SAHandRight";
+  char from_hand[50];
+  if(JIDO_HAND_TYPE==1)
+ {
+   strcpy(from_hand,"JIDO_GRIPPER");
+ }
+  if(JIDO_HAND_TYPE==2)
+ {
+   strcpy(from_hand,"SAHandRight");
+ }
+ 
   char* to_hand="SAHandRight2";
 
   reduce_grasp_list_for_hand_over_task(grasps_for_object, CURRENT_OBJECT_TO_MANIPULATE, from_hand, to_hand, candidate_grasps_for_task );
@@ -1058,6 +1069,17 @@ default_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp)
 
 int JIDO_perform_task ( char *obj_to_manipulate, HRI_TASK_TYPE task, HRI_TASK_AGENT by_agent, HRI_TASK_AGENT for_agent, candidate_poins_for_task *curr_candidate_points, std::list<gpGrasp> graspList, std::list<gpPlacement> placementList, traj_for_HRI_task &res_trajs)
 {
+  
+  char curr_robot_hand_name[50];
+  if(JIDO_HAND_TYPE==1)
+   {
+   strcpy(curr_robot_hand_name,"JIDO_GRIPPER");
+   }
+   if(JIDO_HAND_TYPE==2)
+   {
+   strcpy(curr_robot_hand_name,"SAHandRight");
+   }
+   
   float clock0, elapsedTime;
    int obj_index=get_index_of_robot_by_name ( obj_to_manipulate );
   
@@ -1151,9 +1173,11 @@ if(PLAN_IN_CARTESIAN == 1)
    int grasp_ctr=0;
    double orig_safety_dist=manipulation->getSafetyDistanceValue();
    manipulation->setSafetyDistanceValue ( 0.0 );
-
-   gpGrasp_context_collision_filter(graspList, ( p3d_rob* ) p3d_get_robot_by_name ( "SAHandRight" ), object, handProp);
-   p3d_set_freeflyer_pose2( ( p3d_rob* ) p3d_get_robot_by_name ( "SAHandRight" ),5,5,5,0,0,0);
+   
+   
+ 
+   gpGrasp_context_collision_filter(graspList, ( p3d_rob* ) p3d_get_robot_by_name ( curr_robot_hand_name ), object, handProp);
+   p3d_set_freeflyer_pose2( ( p3d_rob* ) p3d_get_robot_by_name ( curr_robot_hand_name ),5,5,5,0,0,0);
 
    for ( std::list<gpGrasp>::iterator igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp )
    {
