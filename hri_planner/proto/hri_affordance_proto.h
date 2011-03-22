@@ -183,6 +183,6 @@ extern int get_single_soft_motion_traj_for_SHARY(int HRI_task_plan_id, int sub_t
 extern int g3d_is_object_visible_from_robot(p3d_matrix4 camera_frame, double camera_fov, p3d_rob *robot, p3d_rob *object, double *result);
 extern int init_manipulation_planner();
 extern int update_3d_grid_reachability_for_agent_MM(HRI_TASK_AGENT for_agent, MA_agent_hand_name for_hand, int for_state);
-
+extern int get_human_head_relative_yaw_pitch_for(HRI_TASK_AGENT for_agent, point_co_ordi for_point, double &relative_yaw, double &relative_pitch);
 #endif /* __CEXTRACT__ */
 

@@ -14,7 +14,7 @@
 
 #define LOCAL_COMPUTATION_EPSILON (1e-9)
 
-//#define COMPILE_WITH_HTL
+////#define COMPILE_WITH_HTL
 #ifdef COMPILE_WITH_HTL
 #include "proto/FORM_Mocap_data_run_proto.h"
 #endif
@@ -1897,7 +1897,7 @@ void get_hri_task_performed_for_agent(FL_OBJECT *obj, long arg)
 {
 
   int val = fl_get_choice(obj);
-  printf(" Agent for =%d\n",val);
+  ////printf(" Agent for =%d\n",val);
   CURRENT_TASK_PERFORMED_FOR=HRI_TASK_AGENT( val-1);
 }
 
