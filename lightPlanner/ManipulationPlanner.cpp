@@ -396,7 +396,7 @@ void ManipulationPlanner::checkConfigForCartesianMode(configPt q, p3d_rob* objec
           p3d_update_virtual_object_config_for_arm_ik_constraint(_robot, i, q);
           activateCcCntrts(_robot, i, false);
           ManipulationUtils::unfixManipulationJoints(_robot, i);
-          armData.getManipulationJnt()->dist = _robot->joints[_robot->mlp->mlpJoints[armData.getHandGroup()]->joints[0]]->dist;
+          armData.getManipulationJnt()->dist = object->joints[1]->dist;
         } else {
           deactivateCcCntrts(_robot, i);
           if(object){
