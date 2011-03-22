@@ -1088,7 +1088,7 @@ p3d_rob* p3d_get_robot_by_name_containing(const char *name)
 //! \param robot pointer to the robot
 //! \param name name of the searched joint
 //! \return the index of the joint if it is found, 0 otherwise
-int get_robot_jnt_index_by_name(p3d_rob* robot, char *name)
+int p3d_get_robot_jnt_index_by_name(p3d_rob* robot, char *name)
 {
   if(robot==NULL)
   {
