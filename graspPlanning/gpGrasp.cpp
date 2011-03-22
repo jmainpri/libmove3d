@@ -402,6 +402,8 @@ int gpGrasp::removeContactsTooCloseToEdge(double angleThreshold, double distance
       if(face_edges[j]==-1)
       {  continue;  }
       angle= poly->the_edges[face_edges[j]].angle;
+      if(isnan(angle))
+      {  continue;  }
 
       // if the edge is flat, skip the test
       if( fabs(angle) < angleThreshold )
@@ -855,12 +857,12 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        T[2][0]=  1.0;  T[2][1]=  0.0;  T[2][2]=  0.0;  T[2][3]= -0.007;
        T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
 
-       nb_positions= 100;
-       nb_directions= 12;
-       nb_rotations= 8;
+       nb_positions= 150;
+       nb_directions= 24;
+       nb_rotations= 10;
        max_nb_grasp_frames= 160000;
        edgeAngleThreshold= 80*DEGTORAD;
-       edgeDistanceThreshold= 0.025;
+       edgeDistanceThreshold= 0.015;
     break;
     case GP_PR2_GRIPPER:
        nb_fingers= 2;
