@@ -12,7 +12,7 @@ extern int hri_destroy_agent_navig(HRI_NAVIG *navig);
 extern HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent, p3d_env *env);
 extern int hri_destroy_agent_perspective(HRI_PERSP *persp);
 extern int hri_fill_all_agents_default_tasks(HRI_AGENTS * agents);
-extern int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tasklist, int * tasklist_no, HRI_AGENT_TYPE type);
+extern int hri_create_fill_agent_default_manip_tasks(HRI_MANIP * manip, GIK_TASK ** tasklist, int * tasklist_no, HRI_AGENT_TYPE type, HRI_AGENT * agent);
 extern int hri_create_assign_default_manipulation(HRI_AGENTS * agents);
 extern int hri_agent_single_task_manip_move(HRI_AGENT * agent, HRI_GIK_TASK_TYPE type, p3d_vector3 * goalCoord, double approach_distance, configPt *q);
 extern int hri_agent_single_task_manip_move(HRI_AGENT * agent, HRI_GIK_TASK_TYPE type, p3d_rob * object, configPt *q);
