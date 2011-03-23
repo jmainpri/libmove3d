@@ -23,7 +23,7 @@ find_library (GSLCBLAS_LIBRARIES gslcblas
   PATHS ${GSL_LIB} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
   )
 SET(GSL_LIBRARIES ${GSL_LIBRARIES} ${GSLCBLAS_LIBRARIES})
-UNSET(GSLCBLAS_LIBRARIES CACHE)
+SET(GSLCBLAS_LIBRARIES)
 ## -----------------------------------------------------------------------------
 ## Actions taken when all components have been found
 
