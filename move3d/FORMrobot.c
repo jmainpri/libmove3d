@@ -128,6 +128,8 @@ static void CB_adapt_filterbox_obj(FL_OBJECT *ob, long arg);
 static void g3d_create_adapt_filterbox_obj(void);
 static void CB_kine_constraints_obj(FL_OBJECT *ob, long arg);
 static void g3d_create_kine_constraints_obj(void);
+static void CB_create_saveJntMap_obj(FL_OBJECT *ob, long arg);
+static void g3d_create_saveJntMap_obj(void);
 
 static void g3d_delete_goto_obj(void);
 static void g3d_delete_position_obj(void);
@@ -150,6 +152,7 @@ static void g3d_delete_kine_constraints_obj(void);
 static void g3d_delete_writepath_obj(void);
 static void g3d_delete_loadpath_obj(void);
 static void g3d_delete_movietraj_obj(void);
+static void g3d_delete_saveJntMap_obj(void);
 
 static int  default_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp);
 
@@ -262,6 +265,7 @@ void g3d_create_robot_form(int ir)
   g3d_create_radius_obj(); /* Cree le bouton Radius*/
   g3d_create_dmax_button_obj();/* Cree le bouton Pas max.*/
   g3d_create_dmax_obj(); /* Cree le slider Pas max.*/
+  g3d_create_saveJntMap_obj(); /* Cree le bouton de sauvegarde de joint map (fichier de liste de dof).*/
   fl_end_form();
 
   g3d_create_mpeg_form();  /* Cree la fenetre MPEG */
@@ -616,6 +620,7 @@ static void g3d_create_position_obj(void)
     
     fl_set_slider_value(ROBOTS_FORM[ir].POSITION_OBJ[k],
             robot_pos_deg[k]);
+    
     fl_set_call_back(ROBOTS_FORM[ir].POSITION_OBJ[k],CB_position_obj,k);
     if (robotPt->cntrt_manager->in_cntrt[k] == 2)
       { fl_set_slider_size(ROBOTS_FORM[ir].POSITION_OBJ[k],1.0); }
@@ -2094,7 +2099,7 @@ static void g3d_create_loadpath_obj(void)
   ROBOTS_FORM[ir].LOAD_PATH_OBJ = 
     fl_add_button(FL_PUSH_BUTTON,230.0,10.0,50.0,20.0,"Load traj");
   fl_set_object_callback(ROBOTS_FORM[ir].LOAD_PATH_OBJ,CB_loadpath_obj,0);
-} 
+}
 /* Fin modification Fabien */
 
 /*************************************************************/
@@ -2648,4 +2653,37 @@ void FORMrobot_update(int ir)
   p3d_sel_desc_num(P3D_ROBOT, rcur);
 }
 
+static void CB_create_saveJntMap_obj(FL_OBJECT *ob, long arg)
+{
+  p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+  int ir;
+  char * file;
+
+  char c_dir_name[200];
+  char fileName[200];
+  int  c_sz=0;
+
+  fl_check_forms();
+
+  p3d_get_directory(c_dir_name);
+  c_sz = (int) strlen(c_dir_name);
+  if(c_dir_name[c_sz-1] != '/'){strcat(c_dir_name,"/");}
+  strcat(c_dir_name,"PATH");
+
+  file = (char*) fl_show_fselector("JointMap File Name",c_dir_name,"*",
+           fileName);
+  if (file!=NULL) {
+    writeRobotDofNames(robotPt, file);
+    fl_set_button(ob,0);
+  }
+  fl_set_button(ob, 0);
+}
+
+static void g3d_create_saveJntMap_obj(void)
+{
+  int ir = p3d_get_desc_curnum(P3D_ROBOT), n = calc_real_dof();
+
+  ROBOTS_FORM[ir].SAVE_JOINTMAP_OBJ = fl_add_button(FL_PUSH_BUTTON,10.0,180+sliderHeight*(n+3),70.0,20.0,"Save Jnt Map");
+  fl_set_object_callback(ROBOTS_FORM[ir].SAVE_JOINTMAP_OBJ,CB_create_saveJntMap_obj,0);
+}
 
