@@ -26,6 +26,7 @@
 
 
 #include "ManipulationPlanner.hpp"
+#include "ManipulationViaConfPlanner.hpp"
 #include "ManipulationUtils.hpp"
 
 // #if defined(MULTILOCALPATH) && defined(GRASP_PLANNING) && defined(LIGHT_PLANNER)
@@ -85,6 +86,8 @@ static FL_OBJECT * BT_PICK_UP_TAKE_XYZ = NULL;
 static FL_OBJECT * BT_PLACE = NULL;
 static FL_OBJECT * BT_CONSTRUCTPRM = NULL;
 static FL_OBJECT * BT_ESCAPE_OBJECT = NULL;
+static FL_OBJECT * BT_PLANVIAPOINTS = NULL;
+
 #ifdef DPG
 static FL_OBJECT * BT_CHECKCOLONTRAJ = NULL;
 static FL_OBJECT * BT_REPLANCOLTRAJ = NULL;
@@ -117,6 +120,8 @@ static void CB_genomPickUp_takeObjectToXYZ(FL_OBJECT *obj, long arg);
 static void CB_genomTakeToPlace(FL_OBJECT *obj, long arg);
 static void CB_genomPlaceObject(FL_OBJECT *obj, long arg);
 static void CB_genomEscapeObject(FL_OBJECT *obj, long arg);
+
+static void CB_genomPlanTrajViaPoints(FL_OBJECT *obj, long arg);
 #ifdef DPG
 static void CB_checkColOnTraj(FL_OBJECT *obj, long arg);
 static void CB_replanColTraj(FL_OBJECT *obj, long arg);
@@ -241,9 +246,15 @@ static void g3d_create_genom_group(void) {
   y+= dy;
   BT_CONSTRUCTPRM =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Build PRM");
   fl_set_call_back(BT_CONSTRUCTPRM, CB_genomArmComputePRM_obj, 0);
+
+
+  y+= dy;
+  BT_PLANVIAPOINTS =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Plan Via Conf traj");
+  fl_set_call_back(BT_PLANVIAPOINTS, CB_genomPlanTrajViaPoints, 0);
+  
 #ifdef DPG
   y+= dy;
-  BT_CHECKCOLONTRAJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Check col Traj");
+  BT_CHECKCOLONTRAJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Check Col Traj");
   fl_set_call_back(BT_CHECKCOLONTRAJ, CB_checkColOnTraj, 0);
   y+= dy;
   BT_REPLANCOLTRAJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Replan Col Traj");
@@ -944,6 +955,25 @@ static void CB_genomEscapeObject(FL_OBJECT *obj, long arg) {
 
   return;
 }
+
+static void CB_genomPlanTrajViaPoints(FL_OBJECT *obj, long arg) {
+
+ p3d_rob * robotPt= XYZ_ROBOT;//p3d_get_robot_by_name("JIDOKUKA_ROBOT");//justin//JIDOKUKA_ROBOT
+ ManipulationViaConfPlanner m_viaConfPlan(robotPt);
+ std::vector<SM_TRAJ> smTrajs;
+ 
+ if(FORMGENOM_CARTESIAN == 1) {
+   for(int i=0; i<m_viaConfPlan.robot()->armManipulationData->size(); i++) {
+     m_viaConfPlan.setArmCartesian(i,true);
+   }
+ } else {
+   for(int i=0; i<m_viaConfPlan.robot()->armManipulationData->size(); i++) {
+     m_viaConfPlan.setArmCartesian(i,false);
+   }
+ }
+ m_viaConfPlan.planTrajFromConfigArrayInRobotTheForm(smTrajs);
+}
+
 // #endif
 
 

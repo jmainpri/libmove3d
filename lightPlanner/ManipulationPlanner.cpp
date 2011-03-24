@@ -36,7 +36,7 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robot) :_robot(robot), _config
     _safetyDistanceValue = 0.0;
     setMaxNumberOfTryForIK(10000);
 
-    setDebugSoftMotionMode(false);
+    setDebugSoftMotionMode(true);
 #ifdef MULTILOCALPATH
     setDebugSoftMotionMode(true);
     _BaseMLP = -1;
@@ -57,7 +57,7 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robot) :_robot(robot), _config
         }
     }
     if ((_UpBodyMLP == -1) || (_UpBodySmMLP == -1)/* || (_ObjectMLP==-1) || (_ObjectSmMLP==-1)*/) {
-        printf("%s: %d: ManipulationPlanner::ManipulationPlanner: cannot find all necessary multiLocalpth groups\n", __FILE__, __LINE__);
+        printf("%s: %d: ManipulationPlanner::ManipulationPlanner: cannot find all necessary multiLocalpth groups in robot %s\n", __FILE__, __LINE__, _robot->name);
         return;
     }
 #endif
@@ -1680,7 +1680,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
 
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName, const char* supportName, char* placementName, std::vector <p3d_traj*> &trajs){
   gpGrasp grasp;
-  return armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, placementName, trajs);
+  return armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, placementName, grasp, trajs);
 }
 
 //! Replans a path form the variable _robotPath

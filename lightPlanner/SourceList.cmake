@@ -18,8 +18,9 @@ IF(MULTILOCALPATH)
   BM3D_SRC_SUBDIR_PROCESS( 
 	ManipulationTestFunctions.cpp
 	ManipulationPlanner.cpp
-  ManipulationConfigs.cpp
+	ManipulationConfigs.cpp
 	ManipulationUtils.cpp
+	ManipulationViaConfPlanner.cpp
 	)
 ENDIF(MULTILOCALPATH)
 
