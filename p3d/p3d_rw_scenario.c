@@ -634,7 +634,7 @@ static int read_scenario(FILE *f)
       if (!robot) return(read_desc_error(fct));
 			//free( itab1 );
 			int itabTmp[7]; 
-      if ( !p3d_read_string_int(&pos, 7, itabTmp) ) return ( read_desc_error ( fct ) );
+      if ( !p3d_read_string_int(&pos, 3, itabTmp) ) return ( read_desc_error ( fct ) );
       if ( !p3d_set_arm_data (robot, itabTmp) ) return ( read_desc_error ( fct ) );//joint already declared
       continue;
     }
@@ -790,11 +790,6 @@ static void save_robot_data(FILE * fdest, pp3d_rob robotPt){
     for(int i = 0; i < (int) robotPt->armManipulationData->size(); i++){
       ArmManipulationData mData = (*robotPt->armManipulationData)[i];
       fprintf(fdest, "p3d_set_arm_data %d ", mData.getCcCntrt()->num);
-#ifdef MULTILOCALPATH
-      fprintf(fdest, "%d %d %d %d ", mData.getCartesianGroup(), mData.getCartesianSmGroup(), mData.getHandGroup() , mData.getHandSmGroup());
-#else
-      fprintf(fdest, "-1 -1 -1 -1 ");
-#endif
 #ifdef GRASP_PLANNING
       fprintf(fdest, "%d ", (int)mData.getHandProperties().type);
 #else

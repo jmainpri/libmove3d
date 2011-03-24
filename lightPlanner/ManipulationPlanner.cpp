@@ -59,12 +59,6 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robot) :_robot(robot), _config
         printf("%s: %d: ManipulationPlanner::ManipulationPlanner: cannot find all necessary multiLocalpth groups\n", __FILE__, __LINE__);
         return;
     }
-    for (uint i = 0; i < _robot->armManipulationData->size(); i++) {
-        if ((*_robot->armManipulationData)[i].getCartesianGroup() == -1) {
-            printf("%s: %d: ManipulationPlanner::ManipulationPlanner: the arm cartesian group is not setted.\n",__FILE__,__LINE__);
-            return;
-        }
-    }
 #endif
 }
 

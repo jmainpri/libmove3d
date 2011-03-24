@@ -2663,16 +2663,10 @@ int p3d_set_arm_data(p3d_rob* r, int *data){
 #ifdef FK_CNTRT
   armData.setFkCntrt(p3d_create_FK_cntrts(r, armData.getCcCntrt()));
 #endif
-#ifdef MULTILOCALPATH
-  armData.setCartesianGroup(data[1]);
-  armData.setCartesianSmGroup(data[2]);
-  armData.setHandGroup(data[3]);
-  armData.setHandSmGroup(data[4]);
-#endif
 #ifdef GRASP_PLANNING
-  armData.setHandProperties(data[5]);
+  armData.setHandProperties(data[1]);
 #endif
-  armData.setManipulationJnt(r, data[6]);
+  armData.setManipulationJnt(r, data[2]);
   r->armManipulationData->push_back(armData);
   return TRUE;
 }

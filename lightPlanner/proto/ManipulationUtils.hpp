@@ -77,12 +77,6 @@ class ArmManipulationData {
       }else{
         p3d_mat4Copy(_ccCntrt->Tatt, _tAtt);
       }
-#ifdef MULTILOCALPATH
-      _cartesianGroup = cartesianGroup;
-      _cartesianSmGroup = cartesianSmGroup;
-      _handGroup = handGroup;
-      _handSmGroup = handSmGroup;
-#endif
       _carriedObject = NULL;
       _placement = NULL;
       _human = NULL;
@@ -127,20 +121,6 @@ class ArmManipulationData {
     inline void setAttachFrame(p3d_matrix4 tAtt){
       p3d_mat4Copy(tAtt, _tAtt);
     }
-#ifdef MULTILOCALPATH
-    inline void setCartesianGroup(int cartesianGroup){
-      _cartesianGroup = cartesianGroup;
-    };
-    inline void setCartesianSmGroup(int cartesianSmGroup){
-      _cartesianSmGroup = cartesianSmGroup;
-    };
-    inline void setHandGroup(int handGroup){
-      _handGroup = handGroup;
-    };
-    inline void setHandSmGroup(int handSmGroup){
-      _handSmGroup = handSmGroup;
-    };
-#endif
 		inline void setCarriedObject(p3d_rob* carriedObject){
 			_carriedObject = carriedObject;
 		};
@@ -184,20 +164,6 @@ class ArmManipulationData {
     inline void getAttachFrame(p3d_matrix4 tAtt) const{
       p3d_mat4Copy((p3d_matrix_type(*)[4])_tAtt, tAtt);
     }
-#ifdef MULTILOCALPATH
-    inline int getCartesianGroup(void) const{
-      return _cartesianGroup;
-    };
-    inline int getCartesianSmGroup(void) const{
-      return _cartesianSmGroup;
-    };
-    inline int getHandGroup(void) const{
-      return _handGroup;
-    };
-    inline int getHandSmGroup(void) const{
-      return _handSmGroup;
-    };
-#endif
     inline p3d_rob* getCarriedObject(void) const{
       return _carriedObject;
     };
@@ -233,20 +199,6 @@ class ArmManipulationData {
 	p3d_jnt * _manipulationJnt;
 	/** < choose to plan the arm motion in cartesian space (for the end effector) or joint space  */
 	bool _cartesian;
-	
-#ifdef MULTILOCALPATH
-	/******************/
-	/* Multilocalpath */
-	/******************/
-	/** MultiLocal Path cartesian Linear Group id*/
-	int _cartesianGroup;
-	/** MultiLocal Path cartesian SoftMotion Group id*/
-	int _cartesianSmGroup;
-	/** MultiLocal Path hand Linear Group id*/
-	int _handGroup;
-	/** MultiLocal Path hand SoftMotion Group id*/
-	int _handSmGroup;
-#endif
 	
 	/************************/
 	/* Manipulation Objects */
