@@ -33,9 +33,9 @@ class  ManipulationPlanner {
   /* ******* (Ge)Setters *********** */
   /* ******************************* */
     void setDebugMode(bool value);
-    void setDebugSoftMotionMode(bool value);
-
 #ifdef MULTILOCALPATH
+    void setDebugSoftMotionMode(bool value);
+    
   /** Multilocalpath Id for the base */
   int getBaseMLP() { return _BaseMLP; } 
   /** Multilocalpath Id for the head */
@@ -55,6 +55,8 @@ class  ManipulationPlanner {
   void setReplanningMethod(p3d_traj* (*funct)(p3d_rob* robotPt, p3d_traj* traj, p3d_vector3 target, int deformationViaPoint));
   //void resetReplanningMethod();
   
+    void setPlanningTime(double time);
+    double getPlanningTime(void) const;
   
     void setOptimizeSteps(int nbSteps);
     int getOptimizeSteps(void) const;
@@ -173,6 +175,8 @@ class  ManipulationPlanner {
     /** Multilocalpath Id for the upper body (arms + torso) with softMotion localplanner */
     int _UpBodySmMLP;
 #endif
+    /** Time limit for the planning*/
+    double _planningTime;
     /** Number of steps for the optimisation*/
     int _optimizeSteps;
     /** Time limit for the optimisation*/

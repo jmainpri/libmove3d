@@ -52,6 +52,8 @@ configPt ManipulationConfigs::getGraspConf(p3d_rob* object, int armId, gpGrasp& 
   gpSet_grasp_configuration(_robot, grasp, armId);
   gpFix_hand_configuration(_robot, handProp, armId);
 
+  mData.deactivateManipulationCntrts(_robot);
+  
   gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
   configPt qGrasp = setRobotGraspPosWithoutBase(_robot, object->joints[1]->abs_pos, tAtt, false, false, armId, true);
   if(qGrasp){
@@ -68,13 +70,15 @@ configPt ManipulationConfigs::getGraspConf(p3d_rob* object, int armId, gpGrasp& 
   }else {
     confCost = -1;
   }
-  deactivateCcCntrts(_robot, armId);
+  mData.deactivateManipulationCntrts(_robot);
   gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
   return qGrasp;
 }
 
 configPt ManipulationConfigs::getOpenGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf) const {
   if (graspConf) {
+    ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
+    mData.deactivateManipulationCntrts(_robot);
     configPt q = p3d_copy_config(_robot, graspConf);
 
     //Check the open configuration of the hand
@@ -103,7 +107,8 @@ configPt ManipulationConfigs::getApproachFreeConf(p3d_rob* object, int armId, gp
     ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
     configPt q = p3d_copy_config(_robot, graspConf);
     gpHand_properties handProp = mData.getHandProperties();
-
+    mData.deactivateManipulationCntrts(_robot);
+    
     p3d_matrix4 objTmp;
     p3d_vector3 tAttY, tAttT;
     p3d_mat4Copy(object->joints[1]->abs_pos, objTmp);
@@ -165,7 +170,8 @@ configPt ManipulationConfigs::getApproachGraspConf(p3d_rob* object, int armId, g
 
     gpHand_properties handProp = mData.getHandProperties();
     configPt q = p3d_copy_config(_robot, graspConf);
-
+    mData.deactivateManipulationCntrts(_robot);
+    
     if(object){
       mData.setCarriedObject(object);
       _robot->isCarryingObject = TRUE;
@@ -189,7 +195,7 @@ configPt ManipulationConfigs::getApproachGraspConf(p3d_rob* object, int armId, g
       }
     }
     gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
-    deactivateCcCntrts(_robot, armId);
+    mData.deactivateManipulationCntrts(_robot);
     p3d_destroy_config(_robot, q);
     // Reset robot to the initial robot configuration
     p3d_set_and_update_this_robot_conf(_robot, graspConf);
@@ -225,7 +231,7 @@ configPt ManipulationConfigs::getFreeHoldingConf( p3d_rob* object, int armId, gp
     _robot->isCarryingObject = TRUE;
   }
   
-  deactivateCcCntrts(_robot, armId);
+  mData.deactivateManipulationCntrts(_robot);
   desactivateTwoJointsFixCntrt(_robot, mData.getManipulationJnt(), mData.getCcCntrt()->pasjnts[mData.getCcCntrt()->npasjnts -1]);
   
   // Set Manipulation joint and hand configuration
@@ -278,7 +284,7 @@ configPt ManipulationConfigs::getFreeHoldingConf( p3d_rob* object, int armId, gp
     p3d_set_and_update_this_robot_conf(object, objectConf);
     p3d_destroy_config(object, objectConf);
   }
-  deactivateCcCntrts(_robot, armId);
+  mData.deactivateManipulationCntrts(_robot);
   
   // Reset robot to the initial robot configuration
   p3d_set_and_update_this_robot_conf(_robot, tmpConf);
@@ -306,7 +312,7 @@ configPt ManipulationConfigs::getExtractConf(int armId, configPt currentConf, p3
 
     // Sample a configuration for the robot
     configPt extractConfig = NULL;
-    desactivateTwoJointsFixCntrt(_robot, mData.getManipulationJnt(), mData.getCcCntrt()->pasjnts[ mData.getCcCntrt()->npasjnts-1]);
+    mData.deactivateManipulationCntrts(_robot);
     for(int i = 0; !extractConfig && i < 5; i++){
       q[(*_robot->armManipulationData)[armId].getManipulationJnt()->index_dof + 2] += getApproachGraspOffset(); //Z axis of the manipulation joint
       p3d_set_and_update_this_robot_conf(_robot, q);
@@ -319,7 +325,7 @@ configPt ManipulationConfigs::getExtractConf(int armId, configPt currentConf, p3
         extractConfig = NULL;
       }
     }
-    deactivateCcCntrts(_robot, armId);
+    mData.deactivateManipulationCntrts(_robot);
     p3d_destroy_config(_robot, q);
     // Reset robot to the initial robot configuration
     p3d_set_and_update_this_robot_conf(_robot, currentConf);

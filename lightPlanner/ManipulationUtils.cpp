@@ -206,3 +206,8 @@ void ArmManipulationData::unFixHand(p3d_rob* robot) {
     gpUnFix_hand_configuration(robot, _handProp, this->getId());
     gpActivate_hand_selfcollisions(robot, this->getId());
 }
+
+void ArmManipulationData::deactivateManipulationCntrts(p3d_rob* robot){
+  deactivateCcCntrts(robot, _id);
+  desactivateTwoJointsFixCntrt(robot,getManipulationJnt(), getCcCntrt()->pasjnts[ getCcCntrt()->npasjnts-1 ]);
+}

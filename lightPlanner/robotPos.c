@@ -250,7 +250,7 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
       carriedObjectConf[objIdx + 5] = objPos._rz;
     }
     nbTry++;
-  }while(nbTry < MaxNumberOfTry/100 /*&& !((*robot->armManipulationData)[cntrtToActivate].getCarriedObject())*/ && !p3d_set_and_update_this_robot_conf_with_partial_reshoot(carriedObject, carriedObjectConf) && p3d_col_test());
+  }while(nbTry < MaxNumberOfTry/100 && !p3d_set_and_update_this_robot_conf_with_partial_reshoot(carriedObject, carriedObjectConf) && p3d_col_test());
   
   p3d_sel_desc_num(P3D_ROBOT,robot->num);
   
@@ -341,12 +341,12 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
             q[baseJnt->index_dof + i] = qInit[baseJnt->index_dof + i];
           }
         }
-        
+
         if(shootObjectPos || shootObjectRot)
         {
           sampleObjectConfiguration(robot,objPos,cntrtToActivate,q, shootObjectPos, shootObjectRot);
-        } 
-        else 
+        }
+        else
         {
           // Gets the free flyer DoFs of the robot
           int ffjntIndex = (*robot->armManipulationData)[cntrtToActivate].getManipulationJnt()->index_dof;
@@ -360,14 +360,12 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
           q[ffjntIndex + 4] = objPos._ry;
           q[ffjntIndex + 5] = objPos._rz;
         }
-        
         nbTry++;
-
       } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && nbTry < MaxNumberOfTry);
 //       g3d_draw_allwin_active();
       nbTryColliding++;
       collision = p3d_col_test();
-      
+
       if ( debugConfAroundTheObject && collision ) {
         p3d_print_col_pair();
       }

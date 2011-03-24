@@ -60,6 +60,7 @@ class  ManipulationUtils {
     static void fixManipulationJoints(p3d_rob* robot, int armId, configPt q, p3d_rob* object);
     /** UnFix the free flyers*/
     static void unfixManipulationJoints(p3d_rob* robot, int armId);
+
 };
 
 //! @ingroup manipulation
@@ -92,7 +93,8 @@ class ArmManipulationData {
     void fixHand(p3d_rob* robot, bool rest);
     /** Unfix hand dof, Enable autocollisions*/
     void unFixHand(p3d_rob* robot);
-
+    /** Deactivate the closed and direct kinematic constraints of an arm*/
+    void deactivateManipulationCntrts(p3d_rob* robot);
 
     /***********/
     /* Setters */

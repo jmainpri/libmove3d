@@ -30,14 +30,15 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robot) :_robot(robot), _config
     _smoothingMethod = optimiseTrajectory;
   
     // Manipulation planner
+    _planningTime = 30;
     _optimizeSteps = 100;
     _optimizeTime = 4.0; // 4 secondes
     _safetyDistanceValue = 0.0;
     setMaxNumberOfTryForIK(10000);
 
-    setDebugSoftMotionMode(true);
-
+    setDebugSoftMotionMode(false);
 #ifdef MULTILOCALPATH
+    setDebugSoftMotionMode(true);
     _BaseMLP = -1;
     _HeadMLP = -1;
     _UpBodyMLP = -1;
@@ -106,10 +107,11 @@ void ManipulationPlanner::setDebugMode(bool value){
   MPDEBUG = value;
 }
 
+#ifdef MULTILOCALPATH
 void ManipulationPlanner::setDebugSoftMotionMode(bool value){
   ENV.setBool(Env::writeSoftMotionFiles, value);
 }
-
+#endif
 void ManipulationPlanner::setPlanningMethod(p3d_traj* (*funct)(p3d_rob* robot, configPt qs, configPt qg)){
   _plannerMethod = funct;
 }
@@ -128,6 +130,18 @@ void ManipulationPlanner::resetSmoothingMethod(){
 
 void ManipulationPlanner::setReplanningMethod(p3d_traj* (*funct)(p3d_rob* robotPt, p3d_traj* traj, p3d_vector3 target, int deformationViaPoint)) {
   _replanningMethod = funct;
+}
+
+void ManipulationPlanner::setPlanningTime(double time){
+  if (time > 0) {
+      _planningTime = time;
+  } else {
+      printf("%s: %d: ManipulationPlanner::setPlanningTime() unvalid time.\n", __FILE__, __LINE__);
+      return;
+  }
+}
+double ManipulationPlanner::getPlanningTime(void) const{
+  return _planningTime;
 }
 
 void ManipulationPlanner::setOptimizeSteps(int nbSteps) {
@@ -303,6 +317,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(
     p3d_matrix4 handFrame;
     p3d_mat4Mult(grasp.frame, handProp.Tgrasp_frame_hand, handFrame);
     p3d_mat4Mult(handFrame, mData.getCcCntrt()->Tatt2, tAtt);
+    printf("Selected grasp Num = %d\n", grasp.ID);
     q = _manipConf.getGraspConf(object, armId, grasp, tAtt, confCost);
 
     if (q){
@@ -390,24 +405,21 @@ void ManipulationPlanner::checkConfigForCartesianMode(configPt q, p3d_rob* objec
           p3d_update_virtual_object_config_for_arm_ik_constraint(_robot, i, q);
           activateCcCntrts(_robot, i, false);
           ManipulationUtils::unfixManipulationJoints(_robot, i);
-          if (object) 
+          if(object){
             armData.getManipulationJnt()->dist = object->joints[1]->dist;
+          }
         } else {
           deactivateCcCntrts(_robot, i);
-          if(object){
-            ManipulationUtils::fixManipulationJoints(_robot, i, q, object);
-          }else{
-            p3d_update_virtual_object_config_for_arm_ik_constraint(_robot, i, q);
-            p3d_set_and_update_this_robot_conf(_robot, q);
-            setAndActivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(), armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
-          }
+          p3d_update_virtual_object_config_for_arm_ik_constraint(_robot, i, q);
+          p3d_set_and_update_this_robot_conf(_robot, q);
+          setAndActivateTwoJointsFixCntrt(_robot,armData.getManipulationJnt(), armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
         }
     }
     p3d_set_and_update_this_robot_conf(_robot, q);
     p3d_get_robot_config_into(_robot, &q);
     if (deleteConfig) {
-        p3d_destroy_config(_robot, q);
-        q = NULL;
+      p3d_destroy_config(_robot, q);
+      q = NULL;
     }
 }
 
@@ -444,7 +456,10 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::computeRRT(int smoothingSteps, do
   p3d_traj* traj = _plannerMethod(_robot,qs,qg);
 
   if(traj){
+    double planningTime = p3d_get_tmax();
+    p3d_set_tmax(_planningTime);
     _smoothingMethod(_robot, traj, smoothingSteps, smootingTime);
+    p3d_set_tmax(planningTime);
   }
 
   if (!traj) {
@@ -623,7 +638,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::concatTrajectories (std::vector<p
     }
     *concatTraj = p3d_create_traj_by_copy(trajs[0]);
     for (int i = 1; i < (int)trajs.size(); i++) {
+      if(trajs[i]){
         p3d_concat_traj(*concatTraj, trajs[i]);
+      }
     }
     _robot->tcur = (*concatTraj);
     g3d_add_traj((char*)"Task", (*concatTraj)->num, _robot, (*concatTraj) );
@@ -724,8 +741,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qSt
   ManipulationUtils::fixAllHands(_robot, qStart, false);
   fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
 
-  checkConfigForCartesianMode(qStart, NULL);
-  checkConfigForCartesianMode(qGoal, NULL);
+  checkConfigForCartesianMode(qStart, object);
+  checkConfigForCartesianMode(qGoal, object);
   p3d_set_and_update_this_robot_conf(_robot, qStart);
   if(object){
     gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
@@ -766,16 +783,15 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qSt
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt qStart, p3d_rob* object, gpGrasp& grasp, std::vector <p3d_traj*> &trajs){
   
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
-  
   status = computeManipulationData(armId,object, grasp);
-  
+   ManipulationUtils::copyConfigToFORM(_robot, qStart);
+    ManipulationUtils::copyConfigToFORM(_robot, _configs.getGraspConfig());
+     ManipulationUtils::copyConfigToFORM(_robot,  _configs.getOpenConfig());
+      ManipulationUtils::copyConfigToFORM(_robot, _configs.getApproachFreeConfig());
   if (status == MANIPULATION_TASK_OK)
   {
     //Compute the path between theses configurations
-    status = armPickGoto(armId, qStart, object, 
-                         _configs.getGraspConfig(), 
-                         _configs.getOpenConfig(), 
-                         _configs.getApproachFreeConfig(), trajs);
+    status = armPickGoto(armId, qStart, object, _configs.getGraspConfig(), _configs.getOpenConfig(), _configs.getApproachFreeConfig(), trajs);
   }
   else {
       cout << "Fail to findArmGraspsConfigs(armId,object,_configs)" << endl;
@@ -794,7 +810,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
     MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
     ManipulationUtils::fixAllHands(_robot, qStart, false);
     fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
-
+    
+    ManipulationUtils::copyConfigToFORM(_robot, qStart);
     checkConfigForCartesianMode(qStart, object);
     if(MPDEBUG){
        ManipulationUtils::copyConfigToFORM(_robot, qStart);
@@ -998,15 +1015,15 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, conf
       p3d_mat4Copy(tAtt, armData.getCcCntrt()->Tatt);
   }
 
-  checkConfigForCartesianMode(qStart, NULL);
+  checkConfigForCartesianMode(qStart, object);
   if(MPDEBUG){
       ManipulationUtils::copyConfigToFORM(_robot, qStart);
   }
-  checkConfigForCartesianMode(approachGraspConfig, NULL);
+  checkConfigForCartesianMode(approachGraspConfig, object);
   if(MPDEBUG){
       ManipulationUtils::copyConfigToFORM(_robot, approachGraspConfig);
   }
-  checkConfigForCartesianMode(qGoal, NULL);
+  checkConfigForCartesianMode(qGoal, object);
   if(MPDEBUG){
       ManipulationUtils::copyConfigToFORM(_robot, qGoal);
   }
@@ -1177,19 +1194,19 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armTakeToPlace(int armId, configP
       p3d_mat4Copy(tAtt, armData.getCcCntrt()->Tatt);
   }
 
-  checkConfigForCartesianMode(qStart, NULL);
+  checkConfigForCartesianMode(qStart, object);
   if(MPDEBUG){
       ManipulationUtils::copyConfigToFORM(_robot, qStart);
   }
-  checkConfigForCartesianMode(approachGraspConfig, NULL);
+  checkConfigForCartesianMode(approachGraspConfig, object);
   if(MPDEBUG){
       ManipulationUtils::copyConfigToFORM(_robot, approachGraspConfig);
   }
-  checkConfigForCartesianMode(approachGraspConfigPlacement, NULL);
+  checkConfigForCartesianMode(approachGraspConfigPlacement, object);
   if(MPDEBUG){
       ManipulationUtils::copyConfigToFORM(_robot, approachGraspConfigPlacement);
   }
-  checkConfigForCartesianMode(qGoal, NULL);
+  checkConfigForCartesianMode(qGoal, object);
   if(MPDEBUG){
       ManipulationUtils::copyConfigToFORM(_robot, qGoal);
   }
@@ -1352,15 +1369,15 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlaceFromFree(int armId, confi
        p3d_mat4Copy(tAtt, armData.getCcCntrt()->Tatt);
     }
     
-    checkConfigForCartesianMode(qStart, NULL);
+    checkConfigForCartesianMode(qStart, object);
     if(MPDEBUG){
        ManipulationUtils::copyConfigToFORM(_robot, qStart);
     }
-    checkConfigForCartesianMode(approachGraspConfig, NULL);
+    checkConfigForCartesianMode(approachGraspConfig, object);
     if(MPDEBUG){
        ManipulationUtils::copyConfigToFORM(_robot, approachGraspConfig);
     }
-    checkConfigForCartesianMode(depositConfig, NULL);
+    checkConfigForCartesianMode(depositConfig, object);
     if(MPDEBUG){
        ManipulationUtils::copyConfigToFORM(_robot, depositConfig);
     }
