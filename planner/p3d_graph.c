@@ -650,7 +650,7 @@ void p3d_loopSpecificLearn(p3d_rob *robotPt, configPt qs, configPt qg, char* fil
   int res = 0, *iksols = NULL, *iksolg = NULL;
   /* on construit un graph ou qs et qg seront dans la meme composante connexe */
 #ifndef USE_CXX_PLANNER
-    res = p3d_specific_learn(qs, qg, iksols, iksolg, fct_stop, NULL /*fct_draw*/ );
+    res = p3d_specific_learn(qs, qg, iksols, iksolg, fct_stop, fct_draw );
 #else
     res = p3d_specific_learn_cxx(qs, qg, iksols, iksolg, fct_stop, fct_draw);
 #endif
