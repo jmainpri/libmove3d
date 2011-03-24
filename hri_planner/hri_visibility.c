@@ -410,7 +410,10 @@ int g3d_compute_visibility_in_fov_for_given_entities(HRI_ENTITY ** ents, HRI_ENT
   double * results;
   int i, o_i;
   double visible_pixel_treshold = 0.001;
-  double visibility_processing_fov = 60; /// for opengl visibility processing we choose one fov different from agent fov. 
+  double visibility_processing_fov = 25; 
+  /// for opengl visibility processing we choose one fov different from agent fov.
+  /// Here it is greatly reduced to represent "actual" robot fov. It is based on this result that we will decide if object has disappeared.
+  /// It should be put as a constant
   double elevation, azimuth;
   int vis_pl;
   int save_images = FALSE;
