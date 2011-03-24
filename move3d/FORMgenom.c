@@ -37,9 +37,11 @@
 
 // #define OBJECT_NAME "GREY_TAPE"
 //#define OBJECT_NAME "YELLOW_BOTTLE"
-#define SUPPORT_NAME "HRP2TABLE"
+// #define SUPPORT_NAME "HRP2TABLE"
+#define SUPPORT_NAME "IKEA_SHELF"
 //#define SUPPORT_NAME "SHELF"
-#define PLACEMENT_NAME "IKEA_SHELF"
+// #define PLACEMENT_NAME "IKEA_SHELF"
+#define PLACEMENT_NAME "HRP2TABLE"
 #define HUMAN_NAME "ACHILE_HUMAN1"
 #define CAMERA_JNT_NAME "Tilt"
 #define CAMERA_FOV 80.0
@@ -141,7 +143,8 @@ void g3d_delete_genom_form(void) {
 /* -------------------- MAIN GROUP --------------------- */
 static void initManipulationGenom() {
   if (manipulation == NULL) {
-	p3d_rob * robotPt= p3d_get_robot_by_name("JIDOKUKA_ROBOT");//justin//JIDOKUKA_ROBOT
+// 	p3d_rob * robotPt= p3d_get_robot_by_name("JIDOKUKA_ROBOT");
+ p3d_rob * robotPt= p3d_get_robot_by_name("PR2_ROBOT");
 	manipulation= new ManipulationPlanner(robotPt);
 //         manipulation->setArmType(GP_LWR); // set the arm type
   }
@@ -483,7 +486,7 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	std::vector <SM_TRAJ> smTrajs;
   std::vector <double>  objStart, objGoto;
   gpGrasp grasp;
-	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, OBJECT_NAME , (char*)"", (char*)"", grasp, confs, smTrajs);
+	manipulation->armPlanTask(ARM_FREE,0,manipulation->robotStart(),manipulation->robotGoto(), objStart, objGoto, (char*)"" , (char*)"", (char*)"", grasp, confs, smTrajs);
         return;
 }
 
@@ -751,10 +754,14 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
 	if (manipulation== NULL) {
 	  initManipulationGenom();
 	}
-
+  int armId = 0;
   if(FORMGENOM_CARTESIAN == 1) {
     for(int i=0; i<manipulation->robot()->armManipulationData->size(); i++) {
-     manipulation->setArmCartesian(i,true);
+      if(armId == i){
+        manipulation->setArmCartesian(i,true);
+      }else{
+        manipulation->setArmCartesian(i,false);
+      }
     }
   } else {
     for(int i=0; i<manipulation->robot()->armManipulationData->size(); i++) {
@@ -895,9 +902,9 @@ static void CB_genomTakeToPlace(FL_OBJECT *obj, long arg) {
   std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> confs;
   std::vector <SM_TRAJ> smTrajs;
   std::vector<double> objStart, objGoto;
-  objGoto.push_back(4.32);
-  objGoto.push_back(-2.24);
-  objGoto.push_back(0.79);
+  objGoto.push_back(4.39);
+  objGoto.push_back(-2.14);
+  objGoto.push_back(0.74);
   objGoto.push_back(0.0);
   objGoto.push_back(0.0);
   objGoto.push_back(P3D_HUGE);

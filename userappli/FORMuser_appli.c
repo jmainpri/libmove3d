@@ -7,6 +7,7 @@
 #include "Util-pkg.h"
 #include "Move3d-pkg.h"
 #include <list>
+
 #ifdef LIGHT_PLANNER
   #include "../lightPlanner/proto/DlrPlanner.h"
   #include "../lightPlanner/proto/DlrParser.h"
@@ -407,17 +408,17 @@ static void callbacks(FL_OBJECT *ob, long arg){
 
 /** Manipulation Planner tests*/
 
-extern ManipulationTestFunctions* global_manipPlanTest;
-
-//       (*XYZ_ROBOT->armManipulationData)[0].setCarriedObject("Horse");
-//       XYZ_ROBOT->isCarryingObject = TRUE;
-ManipulationTestFunctions* tests = new ManipulationTestFunctions();
-global_manipPlanTest = tests;
-
-if(!tests->runTest(8))
-{
-   std::cout << "ManipulationTestFunctions::Fail" << std::endl;
-}
+// extern ManipulationTestFunctions* global_manipPlanTest;
+// 
+// //       (*XYZ_ROBOT->armManipulationData)[0].setCarriedObject("Horse");
+// //       XYZ_ROBOT->isCarryingObject = TRUE;
+// ManipulationTestFunctions* tests = new ManipulationTestFunctions();
+// global_manipPlanTest = tests;
+// 
+// if(!tests->runTest(8))
+// {
+//    std::cout << "ManipulationTestFunctions::Fail" << std::endl;
+// }
 
 /** Cost Test*/
 
@@ -446,6 +447,89 @@ if(!tests->runTest(8))
 //   }
 //   deactivateCcCntrts(XYZ_ROBOT, 0);
 //   std::cout << "Min cost = "<< minCost << ", Max cost = " << maxCost << std::endl;
+
+/** PR2 MGD test*/
+//   Gb_th th07;
+//   Gb_q7* Q = (Gb_q7*) malloc(sizeof(Gb_q7));
+//   Gb_jac7 jac7;
+// /*
+//   p3d_get_robot_jnt((*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->pasjnts[0]->num, &(Q->q1));
+//   p3d_get_robot_jnt((*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->pasjnts[1]->num, &(Q->q2));
+//   p3d_get_robot_jnt((*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->argu_i[0], &(Q->q3));
+//   p3d_get_robot_jnt((*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->pasjnts[2]->num, &(Q->q4));
+//   p3d_get_robot_jnt((*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->pasjnts[3]->num, &(Q->q5));
+//   p3d_get_robot_jnt((*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->pasjnts[4]->num, &(Q->q6));
+//   p3d_get_robot_jnt((*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->pasjnts[5]->num, &(Q->q7));*/
+//  
+//   Q->q1 = 0;
+//   Q->q2 = 0;
+//   Q->q3 = 0;
+//   Q->q4 = 0;
+//   Q->q5 = 0;
+//   Q->q6 = 0;
+//   Q->q7 = 0;
+// 
+//   gbmPr2_direct(Q, 0.1, 0.4, 0.321, &th07, jac7);
+// 
+//   p3d_matrix4 wristPose;
+// 
+//   wristPose[0][0] = th07.vx.x;
+//   wristPose[1][0] = th07.vx.y;
+//   wristPose[2][0] = th07.vx.z;
+//   wristPose[0][1] = th07.vy.x;
+//   wristPose[1][1] = th07.vy.y;
+//   wristPose[2][1] = th07.vy.z;
+//   wristPose[0][2] = th07.vz.x;
+//   wristPose[1][2] = th07.vz.y;
+//   wristPose[2][2] = th07.vz.z;
+//   wristPose[0][3] = th07.vp.x;
+//   wristPose[1][3] = th07.vp.y;
+//   wristPose[2][3] = th07.vp.z;
+// 
+//   p3d_mat4Print(wristPose, "gbM WristPose");
+//   p3d_matrix4 m3dArm, m3dWrist;
+//   p3d_matInvertXform((*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->pasjnts[0]->abs_pos, m3dArm);
+//   p3d_mat4Mult(m3dArm, (*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->pasjnts[5]->abs_pos, m3dWrist);
+//   p3d_mat4Print(m3dWrist, "M3d WristPose");
+/** Pr2 MGI Test*/
+
+// p3d_matrix4 mat, baseMat, tmp;
+// 
+// p3d_mat4Mult((*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->pasjnts[0]->prev_jnt->abs_pos, (*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->Tbase, mat);
+// p3d_matInvertXform(mat, baseMat);
+// 
+// p3d_mat4Mult((*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->actjnts[0]->abs_pos, (*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->Tatt, tmp);
+// 
+// p3d_mat4Mult(baseMat, tmp, mat);
+// 
+// 
+// // p3d_mat4Copy(p3d_mat4IDENTITY, mat);
+// // mat[0][3] = 0.550000;
+// // mat[1][3] = 0;
+// // mat[2][3] = 0.148821;
+// 
+// double fixedAngle = -1.510000, min[7], max[7], phiArray[7];
+// 
+// // p3d_get_robot_jnt_rad((*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->argu_i[0], &fixedAngle);
+// p3d_get_robot_jnt_bounds((*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->argu_i[0], &min[2], &max[2]);
+// for(int i = 0, j = 0; i < 6; i++,j++){
+//   if(i == 2){
+//     j++;
+//   }
+//   p3d_get_robot_jnt_bounds((*XYZ_ROBOT->armManipulationData)[0].getCcCntrt()->pasjnts[i]->num, &min[j], &max[j]);
+// }
+// ikPr2ArmSolverUnique(fixedAngle, min, max, mat, phiArray);
+// 
+// 
+// printf("############################\n");
+// for(int i = 0; i < 7; i++){
+//   printf("q[%d] = %f\n",i, phiArray[i]);
+//
+/** pr2Ik test object vs wrist abs_pos*/
+ArmManipulationData armData = (*XYZ_ROBOT->armManipulationData)[1];
+p3d_mat4Print(armData.getManipulationJnt()->abs_pos, "object");
+p3d_cntrt *ct = armData.getCcCntrt();
+p3d_mat4Print(ct->pasjnts[ct->npasjnts -1]->abs_pos, "wrist");
 
 #endif
       break;
