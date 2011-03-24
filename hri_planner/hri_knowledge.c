@@ -732,8 +732,10 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
   double visibility_percentage_threshold = 80;
 
   //Object moving and disappearance management.
+  agent=agents->all_agents[robotMyselfIndex];
 
   for(e_i=0; e_i<ents->entities_nb; e_i++) {
+
     if(ents->entities[e_i]->can_disappear_and_move){
       // Is object detected?
       if(ents->entities[e_i]->is_detected){
@@ -757,41 +759,16 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	    ents->entities[e_i]->is_pl_state_transition_new = TRUE;
 	    ents->entities[e_i]->pl_state_transition = HRI_APPEAR;
 	    printf("%s APPEARED\n",ents->entities[e_i]->name);
-	  }
-	  else {
-	    if((ents->entities[e_i]->last_ismoving_iter>0) && (ents->entities[e_i]->filtered_motion != HRI_MOVING)){
-	      //START MOVING
-	      ents->entities[e_i]->filtered_motion = HRI_MOVING;
-	      ents->eventsInTheWorld = TRUE;
-	      ents->entities[e_i]->is_pl_state_transition_new = TRUE;
-	      ents->entities[e_i]->pl_state_transition = HRI_START_MOVING;
-	      printf("%s START MOVING\n",ents->entities[e_i]->name); 
-	    }
-	    else if ((ents->entities[e_i]->last_ismoving_iter == 0 ) && (ents->entities[e_i]->filtered_motion != HRI_STATIC)){
-	      //STOP MOVING
-	      ents->entities[e_i]->filtered_motion = HRI_STATIC;
-	      ents->eventsInTheWorld = TRUE;
-	      ents->entities[e_i]->is_pl_state_transition_new = TRUE;
-	      ents->entities[e_i]->pl_state_transition = HRI_STOP_MOVING;
-	      printf("%s STOP MOVING\n",ents->entities[e_i]->name); 
-	    }	    
-	    else if ((ents->entities[e_i]->last_ismoving_iter == 0 ) && (ents->entities[e_i]->filtered_motion == HRI_STATIC)){
-	      //Static, Nothing to do
-	    }
-	    else if ((ents->entities[e_i]->last_ismoving_iter > 0 ) && (ents->entities[e_i]->filtered_motion == HRI_MOVING)){
-	      printf("%s IS MOVING\n",ents->entities[e_i]->name);  
-	    }
-	    else
-	      printf("Impossible motion state %s for entity %d\n",ents->entities[e_i]->name,ents->entities[e_i]->filtered_motion);  
-	  }
-	  // increment last is moving seen
-	  if(ents->entities[e_i]->last_ismoving_iter>0)
-	    ents->entities[e_i]->last_ismoving_iter--;	    
+	  }    
 	}
       }	
       else{
 	if( ents->entities[e_i]->undetection_status != HRI_NEVER_DETECTED){
-	  agent=agents->all_agents[robotMyselfIndex];
+
+
+
+
+
 	  kn_on_ent = &agent->knowledge->entities[e_i];	  
 	  if(!ents->entities[e_i]->disappeared && ((kn_on_ent->is_placed_from_visibility == HRI_FOV) || (kn_on_ent->is_placed_from_visibility == HRI_FOA)) && (kn_on_ent->visibility == HRI_VISIBLE)){
 	    if(ents->isWorldStatic){
@@ -853,6 +830,38 @@ void hri_manage_object_disappearance_and_move(HRI_AGENTS * agents, HRI_ENTITIES 
 	  }
 	}
       }
+      
+      //Is Moving Management	  
+      if(ents->entities[e_i]->is_present && !ents->entities[e_i]->disappeared){
+	if((ents->entities[e_i]->last_ismoving_iter>0) && (ents->entities[e_i]->filtered_motion != HRI_MOVING)){
+	  //START MOVING
+	  ents->entities[e_i]->filtered_motion = HRI_MOVING;
+	  ents->eventsInTheWorld = TRUE;
+	  ents->entities[e_i]->is_pl_state_transition_new = TRUE;
+	  ents->entities[e_i]->pl_state_transition = HRI_START_MOVING;
+	  printf("%s START MOVING\n",ents->entities[e_i]->name); 
+	}
+	else if ((ents->entities[e_i]->last_ismoving_iter == 0 ) && (ents->entities[e_i]->filtered_motion != HRI_STATIC)){
+	  //STOP MOVING
+	  ents->entities[e_i]->filtered_motion = HRI_STATIC;
+	  ents->eventsInTheWorld = TRUE;
+	  ents->entities[e_i]->is_pl_state_transition_new = TRUE;
+	  ents->entities[e_i]->pl_state_transition = HRI_STOP_MOVING;
+	  printf("%s STOP MOVING\n",ents->entities[e_i]->name); 
+	}	    
+	else if ((ents->entities[e_i]->last_ismoving_iter == 0 ) && (ents->entities[e_i]->filtered_motion == HRI_STATIC)){
+	  //Static, Nothing to do
+	}
+	else if ((ents->entities[e_i]->last_ismoving_iter > 0 ) && (ents->entities[e_i]->filtered_motion == HRI_MOVING)){
+	  printf("%s IS MOVING\n",ents->entities[e_i]->name);  
+	}
+	else
+	  printf("Impossible motion state %s for entity %d\n",ents->entities[e_i]->name,ents->entities[e_i]->filtered_motion);      
+	// increment last is moving seen
+	if(ents->entities[e_i]->last_ismoving_iter>0)
+	  ents->entities[e_i]->last_ismoving_iter--;	
+      }
+	
     }
   }
   
