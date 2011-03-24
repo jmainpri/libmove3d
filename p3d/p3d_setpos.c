@@ -1162,6 +1162,7 @@ int p3d_update_carried_object_pos(p3d_rob *robotPt)
   configPt q= NULL;
   p3d_rob* object = NULL;
   if(robotPt->isCarryingObject){
+    int hasObject = FALSE;
     for(int i = 0; i < (int) robotPt->armManipulationData->size(); i++){
       object = (*robotPt->armManipulationData)[i].getCarriedObject();
       if(object){
@@ -1175,11 +1176,11 @@ int p3d_update_carried_object_pos(p3d_rob *robotPt)
         p3d_mat4ExtractPosReverseOrder((*robotPt->armManipulationData)[i].getManipulationJnt()->abs_pos, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
         p3d_set_and_update_this_robot_conf(object, q);
         p3d_destroy_config(object, q);
+        hasObject = TRUE;
       }
-			else {
-				printf("Warning : Is carring object NULL\n");
-			}
-
+    }
+    if(!hasObject){
+      printf("Warning : Is carring object NULL\n");
     }
   }
 //   if(robotPt->carriedObject!=NULL && robotPt->isCarryingObject==TRUE)

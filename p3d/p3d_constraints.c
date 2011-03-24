@@ -445,10 +445,10 @@ void p3d_constraint_get_nb_param(const char *namecntrt, int *nb_Dofpasiv,
 #endif
 	} else if (strcmp(namecntrt, CNTRT_PR2_ARM_IK_NAME) == 0) {
 #if defined(USE_GBM)
-		*nb_Dofpasiv = 6;//1-2-4-5-6-7
+		*nb_Dofpasiv = 7;//1-2-4-5-6-7
 		*nb_Dofactiv = 1;//freeflyerDof
 		*nb_Dval = 0;
-		*nb_Ival = 2;//fixed joint, solution number 1-8   
+		*nb_Ival = 1;//fixed joint, solution number 1-8
 #else
 		printf("!!! Constraint %s not created !!! \n",CNTRT_PR2_ARM_IK_NAME);
 		printf("!!! Compile with GBM library !!! \n");
@@ -4932,26 +4932,21 @@ static int p3d_set_pr2_arm_ik(p3d_cntrt_management * cntrt_manager,
   
 	if (ct_num < 0) {
 		ct = p3d_create_generic_cntrts(cntrt_manager, CNTRT_PR2_ARM_IK_NAME,
-                                   6, pas_jntPt, pas_jnt_dof, pas_rob_dof, 1, act_jntPt,
+                                   7, pas_jntPt, pas_jnt_dof, pas_rob_dof, 1, act_jntPt,
                                    act_jnt_dof, act_rob_dof);
 		if (ct == NULL) {
 			return FALSE;
 		}
     
 		ct->fct_cntrt = p3d_fct_pr2_arm_ik;
-		ct->nival = 2;
+		ct->nival = 1;
 		ct->ndval = 0;
-		ct->nbSol = 8;//This constraint has a maximum of 8 solutions.
+		ct->nbSol = 1;//This constraint has 1 solution
 	} else {
 		ct = cntrt_manager->cntrts[ct_num];
 	}
   
 	ct->argu_i[0] = iVal[0]; //the fixed joint
-	ct->argu_i[1] = iVal[1]; //Ik solution
-  
-	if (iVal[1] > ct->nbSol) { //if the user don't put a valid solution number
-		return FALSE;
-	}
   
 	//Transformation between torso and the arm
 	p3d_matInvertXform(ct->pasjnts[0]->prev_jnt->pos0, r0Base); //inverse matrix R0->base
@@ -5474,48 +5469,7 @@ static int p3d_fct_pr2_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
   double minDoFs[7];
   double maxDoFs[7];
   
-  
-  // Left Arm
-//  minDoFs[0] = -41;
-//  minDoFs[1] = -30;
-//  minDoFs[2] = -45;
-//  minDoFs[3] = -133;
-//  minDoFs[4] = -45;
-//  minDoFs[5] = -119;
-//  minDoFs[6] = -180;
-//  
-//  maxDoFs[0] = 131;
-//  maxDoFs[1] = 80;
-//  maxDoFs[2] = 223;
-//  maxDoFs[3] = 0;
-//  maxDoFs[4] = 223;
-//  maxDoFs[5] = 0;
-//  maxDoFs[6] = 180;
-  
-  // Right Arm
-//  minDoFs[0] = -131;
-//  minDoFs[1] = -30;
-//  minDoFs[2] = -223;
-//  minDoFs[3] = -133;
-//  minDoFs[4] = -223;
-//  minDoFs[5] = -119;
-//  minDoFs[6] = -180;
-//  
-//  maxDoFs[0] = 41;
-//  maxDoFs[1] = 80;
-//  maxDoFs[2] = 45;
-//  maxDoFs[3] = 0;
-//  maxDoFs[4] = 45;
-//  maxDoFs[5] = 0;
-//  maxDoFs[6] = 180;
-//  
-//  for(unsigned int i=0;i<7;i++)
-//  {
-//    minDoFs[i] *= M_PI/180;
-//    maxDoFs[i] *= M_PI/180;
-//  }
-  
-  
+
   for(int i = 0, j = 0; i < 7; i++){
     if(i == 2){
       p3d_get_robot_jnt_bounds(ct->argu_i[0], &minDoFs[i], &maxDoFs[i]);
@@ -5536,26 +5490,14 @@ static int p3d_fct_pr2_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
 	p3d_matInvertXform(r0Arm, armR0);
 	p3d_mat4Mult(ct->actjnts[0]->abs_pos, ct->Tatt, tmp);
 	p3d_mat4Mult(armR0, tmp, armGrip);
-  
+
 	if (DEBUG_CNTRTS) {
 		p3d_mat4Print(armGrip, "armGrip");
 		printf("fixed joint value = %f\n", fixed->dof_data[0].v);
 	}
-  
-	if (iksol != -1) {
-		//ikChoice = IK_NORMAL;
-    ikChoice = IK_UNIQUE;
-	}
-	if (ikChoice == IK_NORMAL || ikChoice == IK_UNIQUE) {
-		
-    // Choose the IK solution class
-    if (ikChoice == IK_UNIQUE) {
-			iksol = p3d_get_random_ikSol(ct->cntrt_manager, ct->num);
-		} else if (ikChoice == IK_NORMAL) {
-			iksol = iksol != -1 ? iksol : ct->argu_i[2];
-		}
-    
-		switch (ikPr2ArmSolverUnique(fixed->dof_data[0].v, minDoFs, maxDoFs, armGrip, q, i)) 
+	
+	if (ikChoice == IK_NORMAL) {
+		switch (ikPr2ArmSolverUnique(fixed->dof_data[0].v, minDoFs, maxDoFs, armGrip, q))
     {		
       case 1: {
         if (DEBUG_CNTRTS)
@@ -5580,7 +5522,7 @@ static int p3d_fct_pr2_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
       }
       default: {
         if (DEBUG_CNTRTS) {
-          printf("jnt");
+          printf("jnt\n");
           for (i = 0; i < 7; i++) {
             printf("q[%d] = %f\n", i, q[i]);
           }
@@ -5600,7 +5542,7 @@ static int p3d_fct_pr2_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
             //             }
           }
           printf("Incorrect DoFs bounds\n");
-          return (FALSE);
+          //return (FALSE);
         }
         if (st_niksol) {
           st_niksol[ct->num] = 1;
@@ -5614,40 +5556,9 @@ static int p3d_fct_pr2_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
         }
         return (TRUE);
       }
-		}
-	} else if (ikChoice == IK_MULTISOL) {
-		ikPr2ArmSolver(fixed->dof_data[0].v, armGrip, qm, valid);
-		if (DEBUG_CNTRTS) {
-			for (i = 1; i <= 8; i++) {
-				printf("solution: %d, %d\n", i, ikPr2ArmSolverUnique(
-                                                             fixed->dof_data[0].v, minDoFs, maxDoFs, armGrip, q, i));
-			}
-		}
-		for (i = 0; i < 6; i++) {
-			p3d_jnt_get_dof_bounds(ct->pasjnts[i], ct->pas_jnt_dof[i],
-                             &minmax[i][0], &minmax[i][1]);
-		}
-		if ((nbSolutions = p3d_valid_solutions(ct, qm, valid, minmax, ct->num))
-				== 0)
-			return FALSE; //no solution found
-    
-		if (DEBUG_CNTRTS) {
-			printf("nbSolution = %d\n", nbSolutions);
-		}
-		//if there is a solution, put it into robot config
-		for (i = 0; i < 7; i++) {
-			if (i != 2) {
-				j = i < 2 ? i : i - 1;
-				q[i] = st_ikSolConfig[ct->num][0][j];
-			}
-		}
-		q[2] = qm[0][2];
-		if (!p3d_check_joints_bounds(q, ct, qp, dl)) {
-			return (FALSE);
-		}
-		return (TRUE);
-	}
-	return FALSE;
+    }
+  }
+  return FALSE;
 }
 #endif
 
@@ -6116,18 +6027,20 @@ int p3d_update_virtual_object_config_for_arm_ik_constraint( p3d_rob* robot, int 
 	q0 = p3d_get_robot_config(robot);
 
 	p3d_set_and_update_this_robot_conf(robot, q);
-  
+
 	p3d_mat4Copy(wristJnt->abs_pos, Twrist);
 	p3d_matInvertXform(cntrt_arm->Tatt, TattInv);
 	p3d_mat4Mult(Twrist, TattInv, TvirtObj);
+  g3d_draw_allwin_active();
 
 	p3d_mat4ExtractPosReverseOrder(TvirtObj, &q[virObjJnt->index_dof], &q[virObjJnt->index_dof+1], &q[virObjJnt->index_dof+2], &q[virObjJnt->index_dof+3], &q[virObjJnt->index_dof+4], &q[virObjJnt->index_dof+5]);
 
+//   p3d_set_and_update_this_robot_conf(robot, q);
+//   p3d_activateCntrt(robot, cntrt_arm);
   p3d_set_and_update_this_robot_conf(robot, q);
-  p3d_activateCntrt(robot, cntrt_arm);
- // p3d_set_and_update_this_robot_conf(robot, q);
+  g3d_draw_allwin_active();
   p3d_get_robot_config_into(robot, &q);
-  p3d_desactivateCntrt(robot, cntrt_arm);
+//   p3d_desactivateCntrt(robot, cntrt_arm);
   
   if(cntrtActive){
     p3d_activateCntrt(robot, cntrt_arm);
@@ -6137,75 +6050,75 @@ int p3d_update_virtual_object_config_for_arm_ik_constraint( p3d_rob* robot, int 
 	return 1;
 }
 
-/** \brief p3d_update_virtual_object_config
- * return 0 if there is an error
- */
-int p3d_update_virtual_object_config(p3d_rob* robot, int armId, configPt q) {
-	p3d_jnt *virObjJnt= NULL, *wristJnt= NULL;
-	p3d_matrix4 TattInv, Twrist, TvirtObj;
-	configPt q0= NULL;
-	p3d_cntrt* cntrt_arm = NULL;
-	int i=0;
-
-	for (i=0; i<=robot->njoints; i++) {
-		if (robot->joints[i]->name==NULL)
-			continue;
-
-		if (strcmp(robot->joints[i]->name, "virtual_object") == 0) {
-			virObjJnt = robot->joints[i];
-		}
-	}
-
-	for (i=0; i<=robot->njoints; i++) {
-		if (robot->joints[i]->name==NULL)
-			continue;
-
-		if (strcmp(robot->joints[i]->name, "wristJoint") == 0) {
-			wristJnt = robot->joints[i];
-		}
-	}
-
-	if (virObjJnt==NULL || wristJnt==NULL) {
-		printf("FATAL_ERROR: the virtual object does not exist\n");
-		return 0;
-	}
-
-	if(robot->nbCcCntrts <=0) {
-		printf("FATAL_ERROR : arm_IK constraint does not exist\n");
-		return 0;
-	}
-	if(armId >robot->nbCcCntrts) {
-		printf("FATAL_ERROR : wrong armId\n");
-		return 0;
-	}
-        cntrt_arm = robot->ccCntrts[armId];
-
-	if (cntrt_arm->active == 1) {
-		return 1;
-	}
-	q0= p3d_alloc_config(robot);
-	p3d_get_robot_config_into(robot, &q0);
-
-	p3d_set_and_update_this_robot_conf(robot, q);
-
-	p3d_mat4Copy(wristJnt->abs_pos, Twrist);
-	p3d_matInvertXform(cntrt_arm->Tatt, TattInv);
-	p3d_mat4Mult(Twrist, TattInv, TvirtObj);
-
-	p3d_mat4ExtractPosReverseOrder(TvirtObj, &q[virObjJnt->index_dof],
-                                 &q[virObjJnt->index_dof+1], &q[virObjJnt->index_dof+2],
-                                 &q[virObjJnt->index_dof+3], &q[virObjJnt->index_dof+4],
-                                 &q[virObjJnt->index_dof+5]);
-
-	p3d_activateCntrt(robot, cntrt_arm);
-	p3d_set_and_update_this_robot_conf(robot, q);
-
-	p3d_desactivateCntrt(robot, cntrt_arm);
-
-	p3d_set_and_update_this_robot_conf(robot, q0);
-	p3d_destroy_config(robot, q0);
-	return 1;
-}
+// /** \brief p3d_update_virtual_object_config
+//  * return 0 if there is an error
+//  */
+// int p3d_update_virtual_object_config(p3d_rob* robot, int armId, configPt q) {
+// 	p3d_jnt *virObjJnt= NULL, *wristJnt= NULL;
+// 	p3d_matrix4 TattInv, Twrist, TvirtObj;
+// 	configPt q0= NULL;
+// 	p3d_cntrt* cntrt_arm = NULL;
+// 	int i=0;
+// 
+// 	for (i=0; i<=robot->njoints; i++) {
+// 		if (robot->joints[i]->name==NULL)
+// 			continue;
+// 
+// 		if (strcmp(robot->joints[i]->name, "virtual_object") == 0) {
+// 			virObjJnt = robot->joints[i];
+// 		}
+// 	}
+// 
+// 	for (i=0; i<=robot->njoints; i++) {
+// 		if (robot->joints[i]->name==NULL)
+// 			continue;
+// 
+// 		if (strcmp(robot->joints[i]->name, "wristJoint") == 0) {
+// 			wristJnt = robot->joints[i];
+// 		}
+// 	}
+// 
+// 	if (virObjJnt==NULL || wristJnt==NULL) {
+// 		printf("FATAL_ERROR: the virtual object does not exist\n");
+// 		return 0;
+// 	}
+// 
+// 	if(robot->nbCcCntrts <=0) {
+// 		printf("FATAL_ERROR : arm_IK constraint does not exist\n");
+// 		return 0;
+// 	}
+// 	if(armId >robot->nbCcCntrts) {
+// 		printf("FATAL_ERROR : wrong armId\n");
+// 		return 0;
+// 	}
+//         cntrt_arm = robot->ccCntrts[armId];
+// 
+// 	if (cntrt_arm->active == 1) {
+// 		return 1;
+// 	}
+// 	q0= p3d_alloc_config(robot);
+// 	p3d_get_robot_config_into(robot, &q0);
+// 
+// 	p3d_set_and_update_this_robot_conf(robot, q);
+// 
+// 	p3d_mat4Copy(wristJnt->abs_pos, Twrist);
+// 	p3d_matInvertXform(cntrt_arm->Tatt, TattInv);
+// 	p3d_mat4Mult(Twrist, TattInv, TvirtObj);
+// 
+// 	p3d_mat4ExtractPosReverseOrder(TvirtObj, &q[virObjJnt->index_dof],
+//                                  &q[virObjJnt->index_dof+1], &q[virObjJnt->index_dof+2],
+//                                  &q[virObjJnt->index_dof+3], &q[virObjJnt->index_dof+4],
+//                                  &q[virObjJnt->index_dof+5]);
+// 
+// 	p3d_activateCntrt(robot, cntrt_arm);
+// 	p3d_set_and_update_this_robot_conf(robot, q);
+// 
+// 	p3d_desactivateCntrt(robot, cntrt_arm);
+// 
+// 	p3d_set_and_update_this_robot_conf(robot, q0);
+// 	p3d_destroy_config(robot, q0);
+// 	return 1;
+// }
 #endif
 
 /**  
@@ -6217,7 +6130,6 @@ void p3d_compute_Tatt(p3d_cntrt *ct) {
 	p3d_matrix4 TvirtObjInv;
 	p3d_matInvertXform(ct->actjnts[0]->abs_pos, TvirtObjInv);
 	p3d_mat4Mult(TvirtObjInv, Twrist, ct->Tatt);
-	p3d_mat4Print(ct->Tatt, "Tatt");
 }
 
 #ifdef LIGHT_PLANNER

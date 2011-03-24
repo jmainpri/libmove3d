@@ -3561,3 +3561,22 @@ int num_data_error ( char *msg )
 	return ( FALSE );
 }
 
+void writeRobotDofNames(p3d_rob* robot, char* fileName){
+  if(!fileName){
+    printf("File name error. Please give the name to save the joints");
+  }
+  FILE *file;
+  if((file = fopen(fileName, "w")) != NULL){
+    for(int i = 0; i < robot->njoints; i++){
+      p3d_jnt* jnt = robot->joints[i];
+      if(jnt->dof_equiv_nbr > 1){
+        for(int j = 0; j < jnt->dof_equiv_nbr; j++){
+          fprintf(file, "%s_%d\n",jnt->name, j);
+        }
+      }else{
+        fprintf(file, "%s\n", jnt->name);
+      }
+    }
+    fclose(file);
+  }
+}

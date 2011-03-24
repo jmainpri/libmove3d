@@ -28,5 +28,6 @@ extern int read_desc_line_int ( FILE *fd, int *n, int *itab );
 extern int read_desc_mat ( FILE *fd, p3d_matrix4 mat );
 extern int read_desc_mat_scaled ( FILE *fd, p3d_matrix4 mat, double scale );
 extern int read_desc_error ( char *msg );
+extern void writeRobotDofNames(p3d_rob* robot, char* fileName);
 
 #endif /* __CEXTRACT__ */
