@@ -40,6 +40,7 @@ class gpGrasp
 
   gpGrasp();
   gpGrasp(const gpGrasp &grasp);
+  gpGrasp(const gpHand_properties &handProp);
   ~gpGrasp();
   gpGrasp & operator = (const gpGrasp &grasp);
   bool operator == (const gpGrasp &grasp);

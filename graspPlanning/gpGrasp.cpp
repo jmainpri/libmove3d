@@ -53,6 +53,25 @@ gpGrasp::gpGrasp(const gpGrasp &grasp)
   recomPlacement= grasp.recomPlacement;
 }
 
+gpGrasp::gpGrasp(const gpHand_properties &handProp)
+{
+  autoGen         = true;
+  ID              = 0;
+  stability       = 0;
+  IKscore         = 0;
+  visibility      = 0;
+  quality         = 0;
+  p3d_mat4Copy(p3d_mat4IDENTITY, frame);
+  handID          = 0;
+  object          = NULL;
+  object_name     = "none";
+  hand_type       = handProp.type;
+  tested          = false;
+  
+  config.resize(handProp.nb_fingers);
+  openConfig.resize(handProp.nb_fingers);
+}
+
 gpGrasp::~gpGrasp()
 {
   contacts.clear();
