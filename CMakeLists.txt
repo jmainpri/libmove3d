@@ -130,11 +130,11 @@ BM3D_flag(P3D_LOCALPATH "Compilation with module Localpath" ON)
 BM3D_flag(P3D_PLANNER "Compilation with module Planner" ON)
 
 # Collision checking --
-BM3D_flag(KCD_CP_IS_SOLID "Convex polyhedron as a solid instead of as a collection of convex facets in KCD" OFF P3D_COLLISION_CHECKING)
-BM3D_flag(USE_P3D_BODY_AABB "test with AABB around body of robot" ON P3D_COLLISION_CHECKING)
-BM3D_flag(KCD_APPROX_ROBOT "KCD with volume" OFF P3D_COLLISION_CHECKING)
-BM3D_flag(GJK "Use gjk (just for debugging)" OFF P3D_COLLISION_CHECKING)
-BM3D_flag(OBB_EVAL "write a file with OBB tree information (just for debugging)" OFF P3D_COLLISION_CHECKING)
+BM3D_flag(KCD_CP_IS_SOLID "Convex polyhedron as a solid instead of as a collection of convex facets in KCD" OFF)
+BM3D_flag(USE_P3D_BODY_AABB "test with AABB around body of robot" ON)
+BM3D_flag(KCD_APPROX_ROBOT "KCD with volume" OFF)
+BM3D_flag(GJK "Use gjk (just for debugging)" OFF)
+BM3D_flag(OBB_EVAL "write a file with OBB tree information (just for debugging)" OFF)
 BM3D_flag(VCOLLIDE "Use vCollide Collision detector" OFF)
 
 # Bio-related ---
