@@ -317,7 +317,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(
     p3d_matrix4 handFrame;
     p3d_mat4Mult(grasp.frame, handProp.Tgrasp_frame_hand, handFrame);
     p3d_mat4Mult(handFrame, mData.getCcCntrt()->Tatt2, tAtt);
-    printf("Selected grasp Num = %d\n", grasp.ID);
     q = _manipConf.getGraspConf(object, armId, grasp, tAtt, confCost);
 
     if (q){

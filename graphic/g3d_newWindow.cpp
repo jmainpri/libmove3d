@@ -422,7 +422,8 @@ int fct_stop(void)
 
 void fct_draw(void)
 {
-	g3d_draw_allwin_active();
+  if (ENV.getBool(Env::drawGraph))
+    g3d_draw_allwin_active();
 }
 
 /**
