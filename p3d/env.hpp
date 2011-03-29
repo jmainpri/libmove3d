@@ -117,6 +117,10 @@ public:
 		costThresholdRRT,
 		costThresholdPlanner,
 		costStarRRT,
+
+		//OTP
+		FastComputingRobotBase,
+		DrawRobotBaseGridCosts,
 		
 		// Smoothing stage
 		withMaxIteration,
@@ -192,7 +196,10 @@ public:
 		tRrtNbtry,
 		cellToShow,
 		lineToShow,
-		nbCells
+		nbCells,
+
+		//OTP
+		typeRobotBaseGrid // 0, 1, 2 or 3 for all, dist only, robot dist only and visual field only
 	};
 	
 	enum doubleParameter {
@@ -253,7 +260,16 @@ public:
 		bestCost,
         minimalFinalExpansionGap,
         //Optimisation time
-        timeOptimize
+        timeOptimize,
+
+        //OTP
+        optimalDist,
+        robotMaximalDist,
+        gazeAngle,
+
+        optimalDistFactor,
+        robotMaximalDistFactor,
+        gazeAngleFactor
 	};
 	
 	enum stringParameter {

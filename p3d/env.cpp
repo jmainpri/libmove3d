@@ -76,6 +76,11 @@ Env::Env()
 	mBoolMap.insert(boolMap_t(Env::costThresholdRRT, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::costThresholdPlanner, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::costStarRRT, new boolContainer(false)));
+
+	//OTP
+	mBoolMap.insert(boolMap_t(Env::FastComputingRobotBase, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::DrawRobotBaseGridCosts, new boolContainer(false)));
+
 	
 	// Smoothing stage
 	mBoolMap.insert(boolMap_t(Env::trajCostRecompute, new boolContainer(false)));
@@ -144,6 +149,7 @@ Env::Env()
 	mIntMap.insert(intMap_t(Env::cellToShow, new intContainer(0)));
 	mIntMap.insert(intMap_t(Env::lineToShow, new intContainer(0)));
 	mIntMap.insert(intMap_t(Env::nbCells, new intContainer(30)));
+	mIntMap.insert(intMap_t(Env::typeRobotBaseGrid, new intContainer(0)));
 	
 	mDoubleMap.insert(doubleMap_t(Env::dmax, new doubleContainer(30.)));
 	mDoubleMap.insert(doubleMap_t(Env::FPS, new doubleContainer(30.)));
@@ -192,6 +198,16 @@ Env::Env()
 	mDoubleMap.insert(doubleMap_t(Env::minimalFinalExpansionGap, new doubleContainer(10.0)));
 	mDoubleMap.insert(doubleMap_t(Env::showTrajFPS, new doubleContainer(1.0)));
     mDoubleMap.insert(doubleMap_t(Env::timeOptimize, new doubleContainer(4.0)));
+
+    mDoubleMap.insert(doubleMap_t(Env::optimalDist, new doubleContainer(1.4)));
+    mDoubleMap.insert(doubleMap_t(Env::robotMaximalDist, new doubleContainer(3.0)));
+    mDoubleMap.insert(doubleMap_t(Env::gazeAngle, new doubleContainer(45.0)));
+
+
+    mDoubleMap.insert(doubleMap_t(Env::optimalDistFactor, new doubleContainer(0.33)));
+    mDoubleMap.insert(doubleMap_t(Env::robotMaximalDistFactor, new doubleContainer(0.33)));
+    mDoubleMap.insert(doubleMap_t(Env::gazeAngleFactor, new doubleContainer(0.33)));
+
 	
 #ifdef QT_LIBRARY
 	mStringMap.insert(stringMap_t(Env::nameOfFile, new stringContainer("CostStat")));
