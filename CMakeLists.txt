@@ -99,8 +99,6 @@ MACRO(BM3D_SetCompilationFlags)
 
   IF( GENERATE_LIBMOVE3D )
 	  MESSAGE("You are building the libmove3d library.")
-  ELSEIF( GENERATE_STUDIO )
-	  MESSAGE("You are building the stand-alone move3d-studio application.")
   ELSEIF( GENERATE_VIEWER_LIB )
 	  MESSAGE("You are building the libmove3d library for stand-alone move3d viewer.")
   ELSE ()
@@ -146,10 +144,6 @@ BM3D_flag(MULTIGRAPH "Compilation with module Multi-Graph" OFF P3D_PLANNER)
 BM3D_flag(LIGHT_PLANNER "Extern Mode (Use this mode to have a scriped functions for planning pick and place tasks)"  OFF P3D_PLANNER)
 BM3D_flag(DPG "Dynamic planning using grids" OFF CXX_PLANNER)
 
-BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module" OFF USE_GSL)
-BM3D_flag(USE_MIGHTABILITY_MAPS "Mightability Map Calculation and Planning" OFF)
-
-
 BM3D_flag(MULTILOCALPATH "Compilation avec le module Multi-Localpath" OFF USE_GBM)
 BM3D_flag(GRASP_PLANNING "Grasp planning module" OFF USE_GBM)
 
@@ -171,7 +165,6 @@ BM3D_flag(ENABLE_ANTIALIASING "Enables antialiasing to draw smooth lines" OFF)
 BM3D_flag(USE_SHADERS "Enables use of OpenGL shaders" OFF)
 
 BM3D_flag(MOVE3D_CORE "Enables compilation of Move3D-core" OFF)
-BM3D_flag(HRI_PLANNER_GUI "Xforms user interface OFF Human Robot Interaction planner module" OFF HRI_PLANNER WITH_XFORMS)
 
 # Utility libraries ---
 BM3D_flag(USE_GSL "Mathematic Library" OFF)
@@ -188,11 +181,9 @@ BM3D_flag(USE_GBM "Compilation with the gbM package" OFF)
 #------------------
 BM3D_flag(GENERATE_LIBMOVE3D "Set required options to compile the core libmove3d, without user interface" OFF MOVE3D_ROBOTICS USE_GLUT)
 
-BM3D_flag(GENERATE_STUDIO "Set required options to compile mov3d-studio, the stand-alone, xforms-based, dev environment" OFF MOVE3D_ROBOTICS HRI_PLANNER_GUI)
-
 BM3D_flag(GENERATE_VIEWER_LIB "Set the required options to compile the stand-alone move3d viewer (requires SPARK at run-time)" OFF MOVE3D_ROBOTICS MOVE3D_CORE QT_LIBRARY QT_GL)
 
-BM3D_flag(MOVE3D_ROBOTICS "Set all the standard options related to robotics" OFF HRI_PLANNER GRASP_PLANNING LIGHT_PLANNER MULTIGRAPH MULTILOCALPATH USE_GSL )
+BM3D_flag(MOVE3D_ROBOTICS "Set all the standard options related to robotics" OFF GRASP_PLANNING LIGHT_PLANNER MULTIGRAPH MULTILOCALPATH USE_GSL )
 
 # TODO : implement a proper search for the GSL and/or Lapack libraries, and add the relevant flags (USE_GSL and USE_CLAPACK)
 # It is necessary to link against either GSL or Lapack for protein loop sampling.
@@ -440,7 +431,6 @@ collision
 graphic 
 graspPlanning 
 groundHeight 
-hri_planner 
 lightPlanner 
 localpath 
 move3d 
