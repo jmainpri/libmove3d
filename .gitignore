@@ -9,10 +9,12 @@
 .DS_Store
 *grind*
 *.trj
-build/*
-other_libraries/*
+build/
+build.exec/
+other_libraries/
 *.traj
 *.dat
 *.log
 *.sce
-
+*.swp
+CMakeCache*

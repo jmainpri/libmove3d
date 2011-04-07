@@ -25,14 +25,15 @@ extern void g3d_add_traj ( char *name, int i , p3d_rob* rob = NULL , p3d_traj* t
 extern void g3d_add_config_to_ui( char *name, p3d_rob *robotPt , configPt q );
 
 #ifdef WITH_XFORMS
-//TODO: these prototypes belongs to move3d-studio. It corresponds to GUI code, and should
-// be removed from the libraries
+//TODO: these prototypes belongs to move3d-studio. They correspond to GUI code, and should
+// be removed from the move3d library
 extern void MovieDrawGraph(); // required by graphic/g3d_draw_graph.c
 extern void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg); // required by lightPlanner/lightPlanner.c
 extern void FORMrobot_update ( int ir ); // required by lightPlanner/ManipulationPlanner.cpp
 extern void CB_del_param_obj ( FL_OBJECT *ob, long arg ); // required by planner/p3d_graph.c
 extern void p3d_printTrajGraphContactPdbFiles(char* filePrefix, int index, p3d_rob *robotPt); // required by planner/p3d_graph.c
 extern int p3d_get_user_drawnjnt ( void ); // required by planner/p3d_NodeWeight.c
+
 #endif
 
 //#endif
