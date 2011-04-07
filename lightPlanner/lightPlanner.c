@@ -1,6 +1,5 @@
 #include "Collision-pkg.h"
 #include "Localpath-pkg.h"
-#include "Move3d-pkg.h"
 #include "P3d-pkg.h"
 #include "../lightPlanner/proto/lightPlanner.h"
 #include "../lightPlanner/proto/lightPlannerApi.h"
@@ -8,6 +7,7 @@
 #include "../graphic/proto/g3d_draw_traj_proto.h"
 
 #include "env.hpp"
+#include "move3d-headless.h"
 
 ///////////////////////////
 //// Static functions /////

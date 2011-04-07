@@ -1,6 +1,7 @@
 #include "P3d-pkg.h"
-#include "Move3d-pkg.h"
 #include "Bio-pkg.h"
+
+#include "move3d.h"
 
 #include <iostream>
 

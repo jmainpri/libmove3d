@@ -16,8 +16,9 @@
 #endif
 
 #include "Graphic-pkg.h"
-#include "Move3d-pkg.h"  // <- modif Juan
 #include "GroundHeight-pkg.h"
+
+#include "move3d-headless.h"  // <- modif Juan
 
 extern double ZminEnv;
 extern double ZmaxEnv;

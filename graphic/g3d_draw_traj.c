@@ -5,7 +5,7 @@
 
 #include "env.hpp"
 
-#include "Move3d-pkg.h"
+#include "move3d-headless.h"
 
 #ifdef P3D_PLANNER
 #include "Planner-pkg.h"

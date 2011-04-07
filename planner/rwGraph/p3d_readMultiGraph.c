@@ -1,6 +1,5 @@
 #ifdef MULTIGRAPH
 #include "Planner-pkg.h"
-#include "Move3d-pkg.h"
 
 static int checkGraphValidity(p3d_multiGraph * g, p3d_env* env, p3d_rob * robot, xmlNodePtr cur);
 static int readMgJoints(p3d_multiGraph * mg, xmlNodePtr parent);

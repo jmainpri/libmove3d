@@ -15,15 +15,7 @@ g3d_extensions.c
 )
 ENDIF(USE_SHADERS)
 
-#-------------------------------------------------
-IF(WITH_XFORMS) #---------------------------------
-BM3D_SRC_SUBDIR_PROCESS(
-g3d_draw_ui.c 
-g3d_window.c
-)
-
-#-------------------------------------------------
-ELSE(WITH_XFORMS) #-------------------------------
+IF (NOT WITH_XFORMS) #---------------------------------
 
 BM3D_SRC_SUBDIR_PROCESS(
 g3d_newWindow.cpp
@@ -42,8 +34,7 @@ IF(USE_GLUT AND NOT QT_GL_WIDGET)
   )
 ENDIF()
 
-#-------------------------------------------------
-ENDIF(WITH_XFORMS) #------------------------------
+ENDIF() 
 
 IF(P3D_COLLISION_CHECKING)
 BM3D_SRC_SUBDIR_PROCESS(

@@ -2,7 +2,7 @@
 #include "Graphic-pkg.h"
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
-#include "Move3d-pkg.h"
+#include "move3d-headless.h"
 #include "Planner-pkg.h"
 #include "Localpath-pkg.h"
 #include "GraspPlanning-pkg.h"

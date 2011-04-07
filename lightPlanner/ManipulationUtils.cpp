@@ -1,8 +1,9 @@
 
 #include "ManipulationUtils.hpp"
 
-#include "Move3d-pkg.h"
 #include "lightPlannerApi.h"
+
+#include "move3d-headless.h"
 
 /* Message gestion */
 

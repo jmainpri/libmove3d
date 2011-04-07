@@ -4,12 +4,12 @@
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
 #include "Bio-pkg.h"
-#include "Move3d-pkg.h"
 #include "Graphic-pkg.h"
 #ifdef ENERGY
 #include "../bio/BioEnergy/include/Energy-pkg.h"
 #endif
 
+#include "move3d-headless.h"
 #include "env.hpp"
 
 extern double ZminEnv;

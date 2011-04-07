@@ -7,6 +7,8 @@
  *
  */
 
+#include <iostream>
+
 #if defined(MACOSX) 
 #include <glut.h>
 #else
@@ -14,7 +16,9 @@
 #endif
 
 #include "Graphic-pkg.h"
-#include "Move3d-pkg.h"
+
+#include "move3d.h"
+#include "p3d/proto/p3d_matrix_proto.h"
 
 using namespace std;
 

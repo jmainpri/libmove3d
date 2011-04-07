@@ -5,7 +5,6 @@
 #include "GraspPlanning-pkg.h"
 
 #include "P3d-pkg.h"
-#include "Move3d-pkg.h"
 #include <list>
 
 #include "ManipulationStruct.h"

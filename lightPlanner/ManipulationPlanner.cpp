@@ -1,4 +1,6 @@
-#include "ManipulationPlanner.hpp"
+#include <list>
+#include <algorithm>
+
 
 #include "lightPlanner.h"
 #include "lightPlannerApi.h"
@@ -9,13 +11,13 @@
 
 #include "robotPos.h"
 
-#include "Move3d-pkg.h"
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
 #include "Util-pkg.h"
 
-#include <list>
-#include <algorithm>
+#include "move3d-headless.h"
+
+#include "ManipulationPlanner.hpp"
 
 static bool MPDEBUG=false;
 

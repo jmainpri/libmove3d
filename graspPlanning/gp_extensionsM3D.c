@@ -10,7 +10,6 @@
 #include "Planner-pkg.h"
 #include "Localpath-pkg.h"
 #include "Graphic-pkg.h"
-#include "Move3d-pkg.h"
 #include "GraspPlanning-pkg.h"
 #include <string.h>
 #include <string>

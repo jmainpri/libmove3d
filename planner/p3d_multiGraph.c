@@ -1,12 +1,13 @@
+#include <stdarg.h>
+#include <stdlib.h>
+
 #include "Util-pkg.h"
 #include "Planner-pkg.h"
-#include "Move3d-pkg.h"
 #include "P3d-pkg.h"
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
 #include "Localpath-pkg.h"
-#include <stdarg.h>
-#include <stdlib.h>
+#include "move3d-headless.h"
 
 #define DEBUGMULTIGRAPH 0
 

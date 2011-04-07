@@ -4,8 +4,6 @@
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"
 #include "Localpath-pkg.h"
-#include "Move3d-pkg.h"
-#include "UserAppli-pkg.h"
 #include "GraspPlanning-pkg.h"
 #include <list>
 

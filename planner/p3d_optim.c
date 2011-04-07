@@ -3,7 +3,6 @@
 #include "Planner-pkg.h"
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
-#include "Move3d-pkg.h"
 #include "Graphic-pkg.h"
 
 /*Warning : This variable is also defined in FORMOptim for elastic smoothing algorithm. This one concerns only random algorithm.*/

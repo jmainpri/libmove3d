@@ -1,7 +1,6 @@
 #include "P3d-pkg.h"
 #include "Move3d-pkg.h"
 #include "Graphic-pkg.h"
-#include "UserAppli-pkg.h"  
 #include "Localpath-pkg.h"
 #include "Planner-pkg.h"
 #include "Util-pkg.h"

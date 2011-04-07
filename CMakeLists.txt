@@ -433,10 +433,8 @@ graspPlanning
 groundHeight 
 lightPlanner 
 localpath 
-move3d 
 p3d 
 planner 
-userappli 
 util)
 
 MACRO(BM3D_SRC_SUBDIR_PROCESS)

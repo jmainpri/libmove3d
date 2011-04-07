@@ -1,14 +1,13 @@
-#include "P3d-pkg.h"
-#include "Util-pkg.h"
-#include "Graphic-pkg.h"
-#include "Move3d-pkg.h"
-#include "Planner-pkg.h"
-#ifdef HRI_PLANNER
-#include "Hri_planner-pkg.h"
-#endif
 
 #include <iostream>
 #include <string>
+
+#include "P3d-pkg.h"
+#include "Util-pkg.h"
+#include "Graphic-pkg.h"
+#include "Planner-pkg.h"
+
+#include "move3d.h"
 
 #if defined( CXX_PLANNER )
 #include "API/Roadmap/graph.hpp"
@@ -31,7 +30,7 @@ G3D_Window *G3D_WINDOW_LST = NULL;
 p3d_matrix4 Id = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};
 
 const string
-XformError("Error: Xform is not compiled, check your flags or make changes to the code");
+XformError("Error: Xforms is not compiled, check your flags or make changes to the code");
 
 
 // --------------------------------------------------------------------

@@ -3,7 +3,8 @@
 #include "Util-pkg.h"
 #include "Planner-pkg.h"
 #include "Collision-pkg.h"
-#include "Move3d-pkg.h"
+
+#include "move3d-headless.h"
 
 
 #define DEFAULT_SEED 1
