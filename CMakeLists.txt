@@ -226,10 +226,12 @@ FIND_PACKAGE(X11 REQUIRED)
 INCLUDE_directories(${X11_INCLUDE_DIR})
 SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${X11_INCLUDE_DIR})
 SET(LIBS ${LIBS} ${X11_LIBRARIES})
+
 FIND_PACKAGE(LibXml2 REQUIRED)
 INCLUDE_directories(${LIBXML2_INCLUDE_DIR})
 SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 SET(LIBS ${LIBS} ${LIBXML2_LIBRARIES})
+
 IF(APPLE)
 # FIND_PACKAGE(GLU REQUIRED)
 #  INCLUDE_directories(${GLU_INCLUDE_DIR})
@@ -410,7 +412,8 @@ STRING(REGEX REPLACE "(debug;[^;]*;)|optimized" "" MOVE3D_COMPILATION_LIBS "${LI
 STRING(REPLACE ";" " " MOVE3D_COMPILATION_LIBS "${MOVE3D_COMPILATION_LIBS}")
 add_subdirectory(pkgconfig)
 
-
+#message("PKG_CONFIG : " )
+#message(${pkgconfig})
 #----------------------------------------------------------
 
 
@@ -555,21 +558,6 @@ ELSEIF(GENERATE_LIBMOVE3D) # Only install the library and the headers
 	INSTALL(DIRECTORY ${BM3D_SOURCE_DIRECTORIES} ${BioMove3D_SOURCE_DIR}/include 
 			DESTINATION include/libmove3d 
 			FILES_MATCHING REGEX "\\.[h|hpp]")
-
-
-ELSE() # move3d-studio: Compiles a static libmove3d and only install the binary.
-
-	#MESSAGE("Debug: sources files:  ${BM3D_src}")
-
-	ADD_LIBRARY(move3d STATIC ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
-	TARGET_LINK_LIBRARIES(move3d ${LIBS} m)
-
-	ADD_EXECUTABLE(move3d-studio ${BioMove3D_SOURCE_DIR}/move3d/move3d.c ${BM3D_inc})
-	TARGET_LINK_LIBRARIES(move3d-studio move3d ${LIBS} m)
-
-	INSTALL(TARGETS move3d-studio
-        RUNTIME DESTINATION bin 
-		CONFIGURATIONS ${CMAKE_BUILD_TYPE})
 
 ENDIF()
 
