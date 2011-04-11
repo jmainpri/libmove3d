@@ -2,7 +2,9 @@
 #include "P3d-pkg.h"
 #include "Localpath-pkg.h"
 #include "Graphic-pkg.h"
-//#include "Collision-pkg.h"
+#ifdef LIGHT_PLANNER
+#include "ManipulationUtils.hpp"
+#endif
 
 #include <iostream> 
 using namespace std;
@@ -112,6 +114,7 @@ p3d_localpath * p3d_alloc_lin_localpath(p3d_rob *robotPt,
   //save the active constraints
   localpathPt->nbActiveCntrts = 0;
   localpathPt->activeCntrts = NULL;
+
 #ifdef LIGHT_PLANNER
   localpathPt->isCarryingObject = FALSE;
   for (int i = 0; i < MAX_CARRIED_OBJECTS; i++) {
@@ -411,6 +414,14 @@ p3d_localpath *p3d_copy_lin_localpath(p3d_rob* robotPt,
   for(int i = 0; i < lin_localpathPt->nbActiveCntrts; i++){
     lin_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
   }
+  
+#ifdef LIGHT_PLANNER
+  lin_localpathPt->isCarryingObject = localpathPt->isCarryingObject;
+  for (int i = 0; i < MAX_CARRIED_OBJECTS; i++) {
+    lin_localpathPt->carriedObject[i] = localpathPt->carriedObject[i];
+  }
+#endif
+  
   return lin_localpathPt;
 }
 
@@ -622,6 +633,17 @@ p3d_localpath *p3d_linear_localplanner(p3d_rob *robotPt, configPt qi,
 
   localpathPt->ikSol = ikSol;
   localpathPt->activeCntrts = p3d_getActiveCntrts(robotPt,&(localpathPt->nbActiveCntrts));
+  
+#if defined(LIGHT_PLANNER)
+  localpathPt->isCarryingObject = robotPt->isCarryingObject;
+  for (int i = 0; i < MAX_CARRIED_OBJECTS; i++){
+    if(i < robotPt->armManipulationData->size() ){
+      localpathPt->carriedObject[i] = (*robotPt->armManipulationData)[i].getCarriedObject(); /*!< pointer to the carried object (obstacle environment or robot body) */
+    }
+  }
+	//p3d_mat4Copy(robotPt->Tgrasp, localpathMg->Tgrasp);
+#endif
+  
   return(localpathPt);
 }
 
