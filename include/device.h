@@ -702,7 +702,12 @@ typedef struct rob
 
   p3d_rob_display_mode display_mode;  /*!< used to modify how the robot will be displayed (default display, red display,etc.)*/
 
-#ifdef HRI_PLANNER_GUI
+// TODO: Because of the removal of hri_planner from BioMove3D (to libhri), this flag is problematic:
+// - libmove3d p3d_rob struct is compiled without this part
+// - libhri/move3d-studio use this part, resulting in structs that have different sizes.
+//#ifdef HRI_PLANNER_GUI
+//
+
 /* Modif Luis */
 
   int show_pos_area;     // boolean show/hide semidisc of position area
@@ -730,7 +735,8 @@ typedef struct rob
   void *lookatpoint; //used later as a psp_obs_vertex* from perspective.h
 
   /* End Modif Luis */
-#endif
+
+//#endif
 
 #ifdef MULTIGRAPH
   struct multiGraph *mg;

@@ -184,13 +184,6 @@ void g3d_draw_allwin_active_back_buffer(void)
   ext_g3d_draw_allwin_active();
 }
 
-#ifdef HRI_PLANNER
-void g3d_draw_win_back_buffer(G3D_Window *win) 
-{
-  ext_g3d_draw_allwin_active_backbuffer();
-}
-#endif
-
 void g3d_add_traj ( char *name, int i , p3d_rob* rob , p3d_traj* traj  )
 {
 	cout << "g3d_add_traj ( char *name, int i )" << endl;

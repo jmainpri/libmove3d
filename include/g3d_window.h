@@ -24,11 +24,15 @@ struct g3d_win {
   //! pointer to another function that is called by pressing a key (see g3d_window.c)
   void (*fct_key2) ();
 
-#ifdef HRI_PLANNER_GUI
+// TODO: Because of the removal of hri_planner from BioMove3D (to libhri), this flag is problematic:
+// - libmove3d p3d_rob struct is compiled without this part
+// - libhri/move3d-studio use this part, resulting in structs that have different sizes.
+//#ifdef HRI_PLANNER_GUI
+//
   int point_of_view;                    /* Boolean for  another perspective */ 
   int win_perspective;                  /* Boolean to know if it is a perspective window */    
   g3d_window_draw_mode draw_mode;       /* Boolean to know if we'll draw only the objective or in a different color from obstacles */
-#endif
+//#endif
 
 };
 

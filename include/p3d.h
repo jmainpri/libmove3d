@@ -257,13 +257,17 @@ typedef struct obj {
 
   p3d_obj_display_mode display_mode;  /*!< used to modify how the object will be displayed (default display, red display,etc.)*/
 
-#ifdef HRI_PLANNER_GUI
+// TODO: Because of the removal of hri_planner from BioMove3D (to libhri), this flag is problematic:
+// - libmove3d p3d_rob struct is compiled without this part
+// - libhri/move3d-studio use this part, resulting in structs that have different sizes.
+//#ifdef HRI_PLANNER_GUI
+//
   int caption_selected; 
   int show_pos_area;     /* boolean show/hide disc of position area */
   double max_pos_range;  /* Max Range distance for the position area */
   double min_pos_range;  /* Min Range distance for the position area */
   int trans;  /* TRUE if the object is transparent  */  
-#endif
+//#endif
 
 #ifdef DPG
   unsigned int nbPointCloud;

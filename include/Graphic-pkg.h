@@ -26,11 +26,7 @@
 #include "g3d_states.h"
 #include "g3d_window.h"
 
-#ifdef WITH_XFORMS
-#include "forms.h"
-#endif
-
-#if !defined (WITH_XFORMS) && ( defined( QT_LIBRARY ) )
+#if defined( QT_LIBRARY  )
 #include "../graphic/proto/g3d_newWindow.hpp"
 #include <iostream>
 #endif

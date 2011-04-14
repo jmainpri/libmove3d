@@ -25,8 +25,8 @@
 extern ManipulationTestFunctions* global_manipPlanTest;
 #endif
 
+// TODO: see how to remove these declarations
 #ifdef HRI_PLANNER
-#include "Hri_planner-pkg.h"
 int HRI_DRAW_TRAJ;
 // Hri distance draw
 extern std::string hri_text_to_display;
@@ -1361,53 +1361,52 @@ void g3d_draw_env_custom()
 #endif
   
 #ifdef HRI_PLANNER
-  //hri_hri_inter_point_test();
-  g3d_hri_bt_draw_active_bitmaps(BTSET);
-  g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
-  g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
-  g3d_hri_bt_draw_targets(BTSET);
-  hri_exp_draw_ordered_points();
-  //g3d_hri_display_test();
-  g3d_draw_all_agents_fovs(GLOBAL_AGENTS);
-  g3d_hri_display_all_agents_sees(GLOBAL_AGENTS);
-  //g3d_hri_draw_kinect_state();
-  if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
-////#if defined(USE_MIGHTABILITY_MAPS) && !defined(COMPILE_ON_JIDO)
-#if defined(USE_MIGHTABILITY_MAPS)
-  ////printf("Inside g3d_draw_env_custom() \n");
-  execute_Mightability_Map_functions();
-#endif
-#endif
-  
-#ifdef HRI_PLANNER
-  if(FALSE) { 
-    // Writing text or anything else breaks visibility functions. 
-    // They should be enabled/disabled inside win->vs
-    // Display a string with text
-    char string[150]; 
-    //sprintf(string, "HRI cost = %2.2f", hri_cost_to_display );
-    sprintf(string,hri_text_to_display.c_str());
+	  //hri_hri_inter_point_test();
+	  g3d_hri_bt_draw_active_bitmaps(BTSET);
+	  g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
+	  g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
+	  g3d_hri_bt_draw_targets(BTSET);
+	  hri_exp_draw_ordered_points();
+	  //g3d_hri_display_test();
+	  g3d_draw_all_agents_fovs(GLOBAL_AGENTS);
+	  g3d_hri_display_all_agents_sees(GLOBAL_AGENTS);
+	  //g3d_hri_draw_kinect_state();
+	  if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
 
-    glColor3f(0.0,0.0,0.0);
-    g3d_draw_text(string);
-    
-/**
-    if (hri_draw_distance) {
-      glLineWidth(3.);
-      
-      for (unsigned int i = 0; i < hri_disp_dist.size() / 6; i++) 
-      {
-        g3d_drawOneLine(hri_disp_dist[0 + 6 * i], hri_disp_dist[1 + 6 * i],
-                        hri_disp_dist[2 + 6 * i], hri_disp_dist[3 + 6 * i],
-                        hri_disp_dist[4 + 6 * i], hri_disp_dist[5 + 6 * i], Blue, NULL);
-      }
-      glLineWidth(1.);
-    }
-*/
-  }
-
-  hri_draw_kinect_points();
+#ifdef USE_MIGHTABILITY_MAPS
+		  ////printf("Inside g3d_draw_env_custom() \n");
+		  execute_Mightability_Map_functions();
 #endif
+	  
+	  if(FALSE) { 
+		// Writing text or anything else breaks visibility functions. 
+		// They should be enabled/disabled inside win->vs
+		// Display a string with text
+		char string[150]; 
+		//sprintf(string, "HRI cost = %2.2f", hri_cost_to_display );
+		sprintf(string,hri_text_to_display.c_str());
+
+		glColor3f(0.0,0.0,0.0);
+		g3d_draw_text(string);
+		
+	/**
+		if (hri_draw_distance) {
+		  glLineWidth(3.);
+		  
+		  for (unsigned int i = 0; i < hri_disp_dist.size() / 6; i++) 
+		  {
+			g3d_drawOneLine(hri_disp_dist[0 + 6 * i], hri_disp_dist[1 + 6 * i],
+							hri_disp_dist[2 + 6 * i], hri_disp_dist[3 + 6 * i],
+							hri_disp_dist[4 + 6 * i], hri_disp_dist[5 + 6 * i], Blue, NULL);
+		  }
+		  glLineWidth(1.);
+		}
+	*/
+	  }
+
+	  hri_draw_kinect_points();
+#endif
+
 }
 
 
