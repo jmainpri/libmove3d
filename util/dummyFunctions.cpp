@@ -1,7 +1,6 @@
 #include "P3d-pkg.h"
 #include "Bio-pkg.h"
 
-#include "move3d.h"
 
 #include <iostream>
 
@@ -89,5 +88,6 @@ int bio_compute_ik_nopep ( p3d_cntrt *ct, double **sol_configs )
 }
 
 #ifdef WITH_XFORMS
+#include <forms.h>
 FL_FORM  *BIO_COLLISION_FORM = NULL;
 #endif

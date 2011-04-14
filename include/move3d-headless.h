@@ -7,9 +7,6 @@
 #ifndef MOVE3D_PKG_H
 #define MOVE3D_PKG_H
 
-/* struct */
-#include "move3d.h"
-
 // Compile without graphical interface
 //#ifndef WITH_XFORMS
 
@@ -27,6 +24,8 @@ extern void g3d_add_config_to_ui( char *name, p3d_rob *robotPt , configPt q );
 #ifdef WITH_XFORMS
 //TODO: these prototypes belongs to move3d-studio. They correspond to GUI code, and should
 // be removed from the move3d library
+//#include "move3d.h"
+
 extern void MovieDrawGraph(); // required by graphic/g3d_draw_graph.c
 extern void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg); // required by lightPlanner/lightPlanner.c
 extern void FORMrobot_update ( int ir ); // required by lightPlanner/ManipulationPlanner.cpp

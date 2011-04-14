@@ -2,12 +2,12 @@
 #include <iostream>
 #include <string>
 
-#include "P3d-pkg.h"
-#include "Util-pkg.h"
-#include "Graphic-pkg.h"
-#include "Planner-pkg.h"
+#include <P3d-pkg.h>
+#include <Util-pkg.h>
+#include <Graphic-pkg.h>
+#include <Planner-pkg.h>
 
-#include "move3d.h"
+#include "move3d-gui.h"
 
 #if defined( CXX_PLANNER )
 #include "API/Roadmap/graph.hpp"

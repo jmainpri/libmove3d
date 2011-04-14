@@ -2,7 +2,16 @@
 #define MOVE3D_H
 
 #ifndef PROTO
-#include "../graphic/proto/g3d_newWindow.hpp"
+
+//#include "glcanvas.h"
+#ifdef WITH_XFORMS
+	#include "forms.h"
+	#include "g3d_states.h"
+	#include "g3d_window.h"
+#else
+	#include "../graphic/proto/g3d_newWindow.hpp"
+#endif
+
 #endif
 
 /* taille fenetre graphique definie dans FORMmain.c */

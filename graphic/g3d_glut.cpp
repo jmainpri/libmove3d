@@ -17,7 +17,7 @@
 
 #include "Graphic-pkg.h"
 
-#include "move3d.h"
+#include "move3d-gui.h"
 #include "p3d/proto/p3d_matrix_proto.h"
 
 using namespace std;
