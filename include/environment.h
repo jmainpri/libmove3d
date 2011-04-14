@@ -2,6 +2,9 @@
 #ifndef _ENVIRONMENT_H
 #define _ENVIRONMENT_H
 
+#include "p3d.h"
+#include "device.h"
+
 /* Structure d'environnement */
 typedef struct env {
   char      *name;

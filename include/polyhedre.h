@@ -16,7 +16,8 @@
 #include <locale.h>
 #include <vector>
 
-/*#include "p3d_matrix.h" */
+#include "p3d_matrix.h"
+
 #ifdef _p3d_MATRIX_H
 
 #define  poly_type_de_base p3d_matrix_type
@@ -30,7 +31,6 @@ typedef poly_type_de_base  poly_vector3[3];
 
 typedef poly_type_de_base poly_matrix4[4][4];
 #endif
-
 
 #ifndef FALSE
 #define FALSE 0
