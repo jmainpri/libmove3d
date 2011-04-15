@@ -2711,7 +2711,7 @@ int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints, int act
 			nbDofs += r->joints[r->mlp->mlpJoints[r->mlp->nblpGp-1]->joints[i]]->user_dof_equiv_nbr;
     }
    (r->mlp->mlpJoints[r->mlp->nblpGp-1])->nbDofs = nbDofs;
-   p3d_multiLocalPath_set_groupToPlanForInit(r, r->mlp->nblpGp-1, 0);
+   p3d_multiLocalPath_set_groupToPlan(r, r->mlp->nblpGp-1, 0, FALSE);
   }else{
     return FALSE;
   }

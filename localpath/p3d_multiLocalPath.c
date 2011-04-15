@@ -748,12 +748,11 @@ int p3d_multiLocalPath_update_joint_sampling_activation(p3d_rob* robotPt) {
 
 /**
  * Activate or De-activate the specified group "mlpID" of multilocalpath
- * only used at the start-up of move3D
  * @param robotPt  The robot
  * @param mlpID The ID of the group
  * @param value The value => 0 : De-activated / 1 : Activated
  */
-void p3d_multiLocalPath_set_groupToPlanForInit(p3d_rob* robotPt, int mlpID, int value) {
+void p3d_multiLocalPath_set_groupToPlan(p3d_rob* robotPt, int mlpID, int value, int updateJointSampling) {
   if ((mlpID < 0) && (mlpID > (robotPt->mlp->nblpGp - 1))) {
     printf("p3d_multiLocalPath_set_groupToPlan : mgID out of nbGroups\n");
     return;
@@ -765,28 +764,9 @@ void p3d_multiLocalPath_set_groupToPlanForInit(p3d_rob* robotPt, int mlpID, int 
   } else {
     printf("p3d_multiLocalPath_set_groupToPlan : value %d is incompatible\n", value);
   }
-  return;
-}
-
-/**
- * Activate or De-activate the specified group "mlpID" of multilocalpath
- * @param robotPt  The robot
- * @param mlpID The ID of the group
- * @param value The value => 0 : De-activated / 1 : Activated
- */
-void p3d_multiLocalPath_set_groupToPlan(p3d_rob* robotPt, int mlpID, int value) {
-  if ((mlpID < 0) && (mlpID > (robotPt->mlp->nblpGp - 1))) {
-    printf("p3d_multiLocalPath_set_groupToPlan : mgID out of nbGroups\n");
-    return;
+  if(updateJointSampling){
+    p3d_multiLocalPath_update_joint_sampling_activation(robotPt);
   }
-  if (value == TRUE) {
-    groupToPlan[mlpID] = 1;
-  } else if (value == FALSE) {
-    groupToPlan[mlpID] = 0;
-  } else {
-    printf("p3d_multiLocalPath_set_groupToPlan : value %d is incompatible\n", value);
-  }
-  p3d_multiLocalPath_update_joint_sampling_activation(robotPt);
   return;
 }
 
@@ -849,11 +829,13 @@ int p3d_multilocapath_print_group_info(p3d_rob* robotPt) {
  *  Set to De-activated all the group of multilocalpath
  * @param robotPt The robot
  */
-void p3d_multiLocalPath_disable_all_groupToPlan(p3d_rob* robotPt) {
+void p3d_multiLocalPath_disable_all_groupToPlan(p3d_rob* robotPt, int updateJointSampling) {
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
     groupToPlan[i] = 0;
   }
-  p3d_multiLocalPath_update_joint_sampling_activation(robotPt);
+  if(updateJointSampling){
+    p3d_multiLocalPath_update_joint_sampling_activation(robotPt);
+  }
 }
 
 /**

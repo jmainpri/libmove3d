@@ -193,8 +193,6 @@ void ManipulationUtils::fixManipulationJoints(p3d_rob* robot, int armId, configP
     }
 }
 
-
-
 void ArmManipulationData::fixHand(p3d_rob* robot, bool rest) {
     if (rest) {
         gpSet_hand_rest_configuration(robot, _handProp, this->getId());

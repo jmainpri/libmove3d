@@ -38,7 +38,7 @@ int p3d_standard_shoot(p3d_rob *robotPt, configPt q, int sample_passive)
 			
 			if (p3d_jnt_get_dof_is_user(jntPt, j) && (sample_passive ||
 				 ((p3d_jnt_get_dof_is_active_for_planner(jntPt,j)) &&
-				(robotPt->cntrt_manager->in_cntrt[k] != 2))) ) 
+				(robotPt->cntrt_manager->in_cntrt[k] != 2))) )
 			{
 				p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
 				q[k] = p3d_random(vmin, vmax);
@@ -250,22 +250,23 @@ void p3d_gaussian_config2_specific(p3d_rob *r, configPt c1, configPt c2, double 
     jntPt = r->joints[ij];
     for(i=0; i<jntPt->dof_equiv_nbr; i++) {  
       k = jntPt->index_dof+i;
-      if (p3d_jnt_get_dof_is_user(jntPt, i) &&
-	  (p3d_jnt_get_dof_is_active_for_planner(jntPt,i) || sample_passive)) {
-	p3d_jnt_get_dof_rand_bounds(jntPt, i, &jmin, &jmax);
-	if (p3d_jnt_is_dof_angular(jntPt, i)) {
-    factor = rotationFactor;
-  } else {
-    factor = translationFactor;
-  }
-	if (fabs(jmax - jmin) > EPS6) {
-	  do {
-	    c2[k] = c1[k] + NormalRand(factor);
-	  } while((c2[k] < jmin) || (c2[k] > jmax));
-	}
+      if (p3d_jnt_get_dof_is_user(jntPt, i) && (sample_passive ||
+         ((p3d_jnt_get_dof_is_active_for_planner(jntPt,i)) &&
+        (r->cntrt_manager->in_cntrt[k] != 2))) ) {
+        p3d_jnt_get_dof_rand_bounds(jntPt, i, &jmin, &jmax);
+        if (p3d_jnt_is_dof_angular(jntPt, i)) {
+          factor = rotationFactor;
+        } else {
+          factor = translationFactor;
+        }
+        if (fabs(jmax - jmin) > EPS6) {
+          do {
+            c2[k] = c1[k] + NormalRand(factor);
+          } while((c2[k] < jmin) || (c2[k] > jmax));
+        }
       }
       else {
-	c2[k] = c1[k];
+        c2[k] = c1[k];
       }
     }
   }

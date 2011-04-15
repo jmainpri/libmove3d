@@ -485,7 +485,7 @@ configPt setTwoArmsRobotGraspApproachPosWithHold(p3d_rob* robot, p3d_matrix4 obj
     p3d_set_and_update_robot_conf(adaptedConf);
     p3d_destroy_config(robot, adaptedConf);
   }while (p3d_col_test());
-  MY_FREE(att, p3d_matrix4, 2);
+  MY_FREE(att, p3d_matrix4, 2); 
   setSafetyDistance(robot, 0);
 //  switchBBActivationForGrasp();
   return q;
@@ -626,7 +626,8 @@ configPt setRobotCloseToConfGraspApproachOrExtract(p3d_rob* robot, configPt refC
 #endif
   p3d_set_and_update_this_robot_conf(robot, refConf);
   // Fix all the robot for sampling
-  fixAllJointsExceptBaseAndObject(robot, refConf);
+  double ** jointSamplingState = saveJointSamplingState(robot); 
+ fixAllJointsExceptBaseAndObject(robot, refConf);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->abs_pos);
   p3d_matrix4* att = MY_ALLOC(p3d_matrix4, robot->armManipulationData->size());
   
@@ -664,6 +665,8 @@ configPt setRobotCloseToConfGraspApproachOrExtract(p3d_rob* robot, configPt refC
   for(int i = 0; i < (int)robot->armManipulationData->size(); i++){
     unFixJoint(robot, (*robot->armManipulationData)[i].getManipulationJnt());
   }
+  restoreJointSamplingState(robot, jointSamplingState);
+  destroyJointSamplingState(robot, jointSamplingState);
   MY_FREE(att, p3d_matrix4, robot->armManipulationData->size());
   return q;
 }

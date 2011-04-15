@@ -191,6 +191,68 @@ void activateObjectCol(p3d_rob* robot) {
   p3d_col_activate_obj_env(robot->curObjectJnt->o);
 }
 
+
+double** saveJointSamplingState(p3d_rob* robot){
+  double** jointSamplingState = (double**)malloc(sizeof(double*)*robot->njoints + 1);
+  for(int i = 0; i < robot->njoints + 1; i++){
+    jointSamplingState[i] = (double*)malloc(sizeof(double)*JNT_NB_DOF_MAX);
+    for(int j = 0; j < JNT_NB_DOF_MAX; j++){
+      jointSamplingState[i][j] = p3d_jnt_get_dof_is_user(robot->joints[i], j);
+    }
+  }
+  return jointSamplingState;
+}
+
+void restoreJointSamplingState(p3d_rob* robot, double** jointSamplingState){
+  if(jointSamplingState){
+    for(int i = 0; i < robot->njoints + 1; i++){
+      for(int j = 0; j < JNT_NB_DOF_MAX; j++){
+        p3d_jnt_set_dof_is_user(robot->joints[i], j, jointSamplingState[i][j]);
+      }
+    }
+  }else{
+    printf("in function restoreJointSamplingState, NULL pointer given");
+  }
+}
+
+void destroyJointSamplingState(p3d_rob* robot, double** jointSamplingState){
+  if(jointSamplingState){
+    for(int i = 0; i < robot->njoints + 1; i++){
+      free(jointSamplingState[i]);
+    }
+    free(jointSamplingState);
+  }else{
+    printf("in function restoreJointSamplingState, NULL pointer given");
+  }
+}
+
+/**
+ * @brief Fix all robot joints apart from the given arm Id
+ * @param robot The robot
+ * @param armId The id of the arm to sample
+ */
+void fixAllJointsWithoutArm(p3d_rob* robot, int armId){
+  for (int i = 0; i < robot->njoints + 1; i++) {
+    p3d_jnt * joint = robot->joints[i];
+    if (joint->type != P3D_BASE && joint->type != P3D_FIXED) {
+      fixJoint(robot, joint, joint->jnt_mat);
+    }
+  }
+  ArmManipulationData mData = (*robot->armManipulationData)[armId];
+  p3d_cntrt* ct = mData.getCcCntrt();
+  for(int i = 0; i < ct->npasjnts; i++){
+    p3d_jnt * joint = ct->pasjnts[i];
+    if(joint->type != P3D_FIXED){
+      unFixJoint(robot, joint);
+    }
+  }
+  if((!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")) || (!strcmp(ct->namecntrt, "p3d_lwr_arm_ik")) || (!strcmp(ct->namecntrt, "p3d_pr2_arm_ik"))){
+    p3d_jnt * joint = robot->joints[ct->argu_i[0]];
+    unFixJoint(robot, joint);
+  }
+  p3d_update_this_robot_pos(robot);
+}
+
 /**
  * @brief Set the robot at the given configuration and do not shoot all joints except those of the base and the object declared in the initialisation of the program (here in the p3d file). The fixed joints will not be planned.
  * @param robot The robot
@@ -603,7 +665,7 @@ int selectHandAndGetGraspApproachConfigs(p3d_rob* robot, p3d_matrix4 objectPos, 
           if (getBetterCollisionFreeGraspAndApproach(robot, objectPos, GP_SAHAND_LEFT , tAtt, graspConfig, approachConfig, grasp)){
             if (getBetterCollisionFreeGraspAndApproach(robot, objectPos, GP_SAHAND_RIGHT , tAtt, graspConfig, approachConfig, grasp)){
               printf("No valid Grasp Found\n");
-              return NULL;
+              return 1;
             }else{
               gpSet_hand_rest_configuration(robot, leftHand, 2);
               gpUnFix_hand_configuration(robot, rightHand, 1);

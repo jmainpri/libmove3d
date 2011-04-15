@@ -494,8 +494,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armComputePRM(double ComputeTime)
 
     checkConfigForCartesianMode(NULL, NULL);
 #ifdef MULTILOCALPATH
-    p3d_multiLocalPath_disable_all_groupToPlan(_robot);
-    p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1);
+    p3d_multiLocalPath_disable_all_groupToPlan(_robot, FALSE);
+    p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1, FALSE);
 #endif
     fixJoint(_robot, _robot->baseJnt,_robot->baseJnt->abs_pos);
     ManipulationUtils::fixAllHands(_robot, NULL, true);
@@ -846,9 +846,10 @@ printf("tSafetyDistance= %f\n", getSafetyDistanceValue());
 
         // Set the hand as group to plan
         (*_robot->armManipulationData)[armId].unFixHand(_robot);
-
-        p3d_multiLocalPath_disable_all_groupToPlan(_robot);
-        p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1);
+#ifdef MULTILOCALPATH
+        p3d_multiLocalPath_disable_all_groupToPlan(_robot, FALSE);
+        p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1, FALSE);
+#endif
         // Compute to Grasp Config
         gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
         gpDeactivate_object_fingertips_collisions(_robot, object->joints[1]->o, handProp, armId);
@@ -1549,8 +1550,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armReplan(p3d_vector3 target, int
     return MANIPULATION_TASK_NOT_INITIALIZED;
   }
   
-  p3d_multiLocalPath_disable_all_groupToPlan(_robot);
-  p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1);
+  p3d_multiLocalPath_disable_all_groupToPlan(_robot, FALSE);
+  p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1, FALSE);
   
   if ((traj = _replanningMethod(_robot, _robotPath, target, qSwitchId)) != NULL) 
   { 
@@ -1696,8 +1697,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
         return MANIPULATION_TASK_NOT_INITIALIZED;
     }
 
-    p3d_multiLocalPath_disable_all_groupToPlan(_robot);
-    p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1);
+    p3d_multiLocalPath_disable_all_groupToPlan(_robot, FALSE);
+    p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1, FALSE);
 
     if ((returnMessage = armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, placementName, grasp, trajs)) == MANIPULATION_TASK_OK) {
       //concatene

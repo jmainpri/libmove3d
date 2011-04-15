@@ -60,7 +60,6 @@ class  ManipulationUtils {
     static void fixManipulationJoints(p3d_rob* robot, int armId, configPt q, p3d_rob* object);
     /** UnFix the free flyers*/
     static void unfixManipulationJoints(p3d_rob* robot, int armId);
-
 };
 
 //! @ingroup manipulation
