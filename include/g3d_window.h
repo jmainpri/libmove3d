@@ -45,5 +45,6 @@ void dummy_void();
 extern void (*ext_g3d_export_cpp_graph)();
 extern void (*ext_g3d_draw_cost_features)();
 extern void (*ext_g3d_draw_allwin_active)();
+extern void (*ext_g3d_draw_hri_features)();
 
 #endif
