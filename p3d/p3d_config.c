@@ -969,6 +969,7 @@ int p3d_is_collision_free(p3d_rob* robotPt, configPt q)
  *          This function returns false if the configuration
  *					is valid regarding the joints bounds */
 int p3d_isOutOfBounds(p3d_rob* robot, configPt q){
+  int isOutOfBounds = FALSE;
   for(int i = 0; i < robot->njoints; i++){
     p3d_jnt* joint = robot->joints[i];
     for(int j = 0; j < joint->dof_equiv_nbr; j++){
@@ -976,9 +977,9 @@ int p3d_isOutOfBounds(p3d_rob* robot, configPt q){
       p3d_jnt_get_dof_bounds(joint, j, &vmin, &vmax);
       if ((q[joint->index_dof + j] < (vmin - EPS6) ) || (q[joint->index_dof + j] > (vmax + EPS6) )) {
         printf("The joint %s is outside the joint bounds. Vmin : %f, Value : %f, Vmax = %f\n", joint->name, vmin, q[joint->index_dof + j], vmax);
-        return TRUE;
+        isOutOfBounds = TRUE;
       }
     }
   }
-  return FALSE;
+  return isOutOfBounds;
 }
