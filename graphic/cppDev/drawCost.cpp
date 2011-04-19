@@ -181,7 +181,7 @@ void g3d_draw_hrics()
 		if( ENV.getBool(Env::HRIPlannerCS) && ENV.getBool(Env::drawTraj) )
 		{
 			//          printf("Draw 2d path\n");
-			dynamic_cast<HRICS::ConfigSpace*>(HRICS_MotionPL)->draw2dPath();
+			dynamic_cast<HRICS::ConfigSpace*>(HRICS_MotionPLConfig)->draw2dPath();
 		}
 		
 		if( ENV.getBool(Env::isCostSpace) )
