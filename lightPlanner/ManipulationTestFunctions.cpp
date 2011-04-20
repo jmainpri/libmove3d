@@ -9,6 +9,7 @@
 
 #include "proto/ManipulationTestFunctions.hpp"
 #include "proto/ManipulationPlanner.hpp"
+#include "proto/lightPlannerApi.h"
 
 #include "Planner-pkg.h"
 //#include "P3d-pkg.h"
@@ -123,10 +124,17 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
   cout << "Manipulation planning for " << m_OBJECT_NAME << endl;
 	
 	MANIPULATION_TASK_MESSAGE status;
-	
+  
+  string str = m_manipulation->robot()->name;
+  
+  if( str == "PR2_ROBOT" )
+  {
+    fixAllJointsWithoutArm(m_manipulation->robot(),0);
+  }
+  
 	switch ( (unsigned int) m_manipulation->robot()->lpl_type ) 
 	{
-		case LINEAR :
+    case LINEAR :
 		{
       gpGrasp grasp;
 			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, /* m_OBJECT_NAME.c_str() */ "", "", (char*)"", grasp, trajs);
@@ -138,6 +146,8 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 				for(unsigned int i = 1; i < trajs.size(); i++){
 					p3d_concat_traj(m_manipulation->robot()->tcur, trajs[i]);
 				}
+        
+        m_manipulation->setRobotPath(m_manipulation->robot()->tcur);
 			}
 			break;
 		}
