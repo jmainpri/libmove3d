@@ -67,6 +67,7 @@ public:
 		drawFrame,
 		drawGraph,
 		drawTraj,
+		drawOTPTraj,
 		drawTrajVector,
 		drawAll,
 		drawLightSource,
