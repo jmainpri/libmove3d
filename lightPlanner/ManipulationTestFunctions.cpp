@@ -147,7 +147,7 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 					p3d_concat_traj(m_manipulation->robot()->tcur, trajs[i]);
 				}
         
-        m_manipulation->setRobotPath(m_manipulation->robot()->tcur);
+        //m_manipulation->setRobotPath(m_manipulation->robot()->tcur);
 			}
 			break;
 		}
