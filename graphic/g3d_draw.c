@@ -1517,7 +1517,16 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
 *    => fill : type de rendu a effectuer              */
 void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
   GLdouble color_vect[4];
+  
   int blend = 0;  /* pour activer ou non la transparence */
+  bool set_hardcoded_blend = false;
+  
+  if ( (coll & 0x04) != 0x00 ) {
+    coll ^= 0x04;
+    //printf("BLEND , coll = %d, test = %d\n",coll);
+    blend = true;
+    set_hardcoded_blend = true;
+  }
 
   glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT);
   
@@ -1539,11 +1548,26 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
           color_vect[2]= p->color_vect[2];
           color_vect[3]= p->color_vect[3];
         }
-        blend = ( (color_vect[3]==1) ? 0 : 1);
+        
         if(blend==0)
-        {   color_vect[3]= 1.0;  }
+        {   
+          color_vect[3]= 1.0;  
+        }
         else
-        {   color_vect[3]= p->color_vect[3];  }
+        {   
+          if(!set_hardcoded_blend)
+          {
+            blend = ( (color_vect[3]==1) ? 0 : 1);
+            if (blend) 
+            {
+              color_vect[3]= p->color_vect[3];
+            }
+          }
+          else
+          {
+            color_vect[3]= 0.3;
+          }
+        }
       break;
     }
     glColor4dv(color_vect);

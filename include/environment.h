@@ -14,7 +14,8 @@ typedef struct env {
   int       nr; /* number of robots */
   p3d_obj   **o,*ocur;  /* the obstacles*/
   p3d_rob   **robot,    /* array of robots for multi-robot */
-    *cur_robot;         /* pointer to current robot */
+    *cur_robot,         /* pointer to current robot */
+    *active_robot;      /* pointer the active robot (this should not change durring env life)  */
   p3d_box   box;
   int INIT; /* environnement initialise graphiquement ou pas */
   double dmax; /* pas de discretisation maximal */

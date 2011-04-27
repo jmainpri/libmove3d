@@ -957,6 +957,9 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
   if ( r->draw_custom_color ) {
     coll = 2;
   }
+  if ( r->draw_transparent ) {
+    coll ^= 4;
+  }
   
   for (ib = 0;ib < nb;ib++) {
     p3d_sel_desc_num(P3D_BODY, ib);
@@ -1383,9 +1386,9 @@ void g3d_draw_env()
   g3d_draw_env_custom();
 	
   // check if there was no OpenGL errors:
-  char message[128];
-  sprintf(message,"%s: %d: ",__FILE__,__LINE__);
-  g3d_checkGLerrors(message);
+//  char message[128];
+//  sprintf(message,"%s: %d: ",__FILE__,__LINE__);
+//  g3d_checkGLerrors(message);
 	
 #ifdef P3D_COLLISION_CHECKING
 	
@@ -1430,7 +1433,7 @@ void g3d_draw_env()
     p3d_numcoll = p3d_col_test_all();
 #endif
     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
-    g3d_draw_robot(robotPt->num, win);
+    //g3d_draw_robot(robotPt->num, win);
     p3d_set_and_update_robot_conf(robotPt->ROBOT_GOTO);
     /* collision checking */
 #ifdef P3D_COLLISION_CHECKING
@@ -1439,7 +1442,7 @@ void g3d_draw_env()
     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robot(robotPt->num, win);
     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
-    g3d_draw_trace_all_tcur();
+    //g3d_draw_trace_all_tcur();
   }
 	
 	// // On dessine la source de lumière sous la forme d'une sphère:
@@ -1596,6 +1599,8 @@ void g3d_draw(void)
     glEnable(GL_CULL_FACE);
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
+    if (G3D_DRAW_TRACE) 
+      g3d_draw_trace();
     glDisable(GL_CULL_FACE);
   }
   else

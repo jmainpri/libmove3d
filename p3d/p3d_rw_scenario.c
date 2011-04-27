@@ -606,6 +606,19 @@ static int read_scenario(FILE *f)
       continue;
     }
 #endif
+    if ( strcmp ( fct,"p3d_set_active_robot" ) == 0 )
+		{
+			if(!p3d_read_string_name(&pos,&name))  return(READ_ERROR());
+      
+      p3d_rob* rob = p3d_get_robot_by_name( name );
+      if (rob) {
+        ((p3d_env *) p3d_get_desc_curid(P3D_ROBOT))->active_robot = rob;
+      }
+      else {
+        printf("Reading p3d_set_active_robot : No robot named %s yet in ENV\n",name);
+      }
+			continue;
+		}
 #ifdef LIGHT_PLANNER
     if (strcmp(fct, "p3d_set_object_base_and_arm_constraints") == 0) {
       p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);

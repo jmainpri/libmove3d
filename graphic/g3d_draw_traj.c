@@ -33,12 +33,14 @@
 #endif
 
 static void draw_trace(void);
+static void draw_trace_2(void);
 static int NB_KEY_FRAME = 500;
 extern double ZminEnv;
 extern double ZmaxEnv;
 extern void* GroundCostObj;
 
 void (*ext_compute_config_cost_along_traj)(p3d_rob* r,configPt q) = (void (*)(p3d_rob* r,configPt q))(dummy_void);
+void (*ext_g3d_traj_debug)() = NULL;
 
 // Warning Jim
 #ifndef P3D_PLANNER
@@ -71,7 +73,7 @@ void g3d_traj_set_NB_KEY_FRAME(int param) {
 void g3d_draw_trace() {
   g3d_set_light(g3d_get_cur_win()->vs);
   g3d_set_default_material();
-  draw_trace();
+  draw_trace_2();
 }
 
 static void draw_trace(void) {
@@ -89,6 +91,8 @@ static void draw_trace(void) {
     PrintInfo(("draw_trace : no current trajectory\n"));
     return;
   }
+  
+  robotPt->draw_transparent = true;
 
   win = g3d_get_cur_win();
   e = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
@@ -163,15 +167,15 @@ static void draw_trace(void) {
 					}
 				}
 				if(softMotion){
-					du = p3d_get_env_graphic_dmax();  //0.05;
+					du = 10*ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax();  //0.05;
 				}else{
-					du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
+					du = ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax()/3;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
 				}
 		} else if (localpathPt->type_lp == SOFT_MOTION){
-			du = p3d_get_env_graphic_dmax();  //0.05;
+			du = ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax()*3;  //0.05;
 		} else {
 #endif
-				du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
+				du = ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax();/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
 #ifdef MULTILOCALPATH
 			}
 #endif
@@ -193,9 +197,91 @@ static void draw_trace(void) {
     u = 0;
   }
   MY_FREE(distances, double, njnt + 1);
+  robotPt->draw_transparent = false;
 }
 
+static void draw_trace_2(void) 
+{
+  p3d_rob* robotPt = (pp3d_rob) p3d_get_desc_curid(P3D_ROBOT);
 
+  if (robotPt->tcur == NULL) 
+  {
+    PrintInfo(("draw_trace : no current trajectory\n"));
+    return;
+  }
+  
+  G3D_Window *win;
+  configPt q;
+  pp3d_localpath localpathPt;
+  int end = FALSE;
+  int njnt = robotPt->njoints;
+  double u = 0, du, umax; /* parameters along the local path */
+  
+  robotPt->draw_transparent = false;
+  
+  win = g3d_get_cur_win();
+  win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+  //g3d_draw_env_box();
+  g3d_draw_obstacles(win);
+#ifdef P3D_PLANNER
+  if(XYZ_GRAPH && ENV.getBool(Env::drawGraph)){g3d_draw_graph();}
+#endif
+  
+  umax = p3d_compute_traj_rangeparam(robotPt->tcur);
+  localpathPt = robotPt->tcur->courbePt;
+  
+  while (u < umax - EPS6) 
+  {
+    /* position of the robot corresponding to parameter u */
+    q = p3d_config_at_param_along_traj(robotPt->tcur,u);
+    p3d_set_and_update_robot_conf(q);
+    
+    /* collision checking */
+#ifdef P3D_COLLISION_CHECKING
+    p3d_numcoll = p3d_col_test_all();
+#endif
+    if(u!=0.)
+    {
+      robotPt->draw_transparent = true;
+    }
+    win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+    g3d_draw_robot(robotPt->num, win);
+    p3d_destroy_config(robotPt, q);
+      
+#ifdef MULTILOCALPATH
+			if (localpathPt->type_lp == MULTI_LOCALPATH){
+				//du = p3d_get_env_graphic_dmax()*10;//du = localpathPt->stay_within_dist(robotPt, localpathPt,u, FORWARD, distances);
+				int softMotion = FALSE;
+				for(int i = 0; i < robotPt->mlp->nblpGp; i++){
+					if(localpathPt->mlpLocalpath[i] != NULL) {
+						if(localpathPt->mlpLocalpath[i]->type_lp == SOFT_MOTION){
+							softMotion = TRUE;
+							break;
+						}
+					}
+				}
+				if(softMotion){
+					du = 10*ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax();  //0.05;
+				}else{
+					du = ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax()/3;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
+				}
+      } else if (localpathPt->type_lp == SOFT_MOTION){
+        du = ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax()*3;  //0.05;
+      } else {
+#endif
+				du = ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax();/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
+#ifdef MULTILOCALPATH
+			}
+#endif
+      
+      u += du;
+      if (u > umax - EPS6) {
+        u = umax;
+        end = TRUE;
+      }
+    }
+  robotPt->draw_transparent = false;
+}
 
 
 /*
@@ -423,28 +509,20 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 					}
         }
         if(softMotion){
-					du = p3d_get_env_graphic_dmax();  //0.05;
-        }else{
-#ifdef MOVE3D_CORE
-          du = ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax()/10;
-#else
-          du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
+					du = 10*ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax();  //0.05;
+				}else{
+					du = ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax()/3;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
+				}
+      } else if (localpathPt->type_lp == SOFT_MOTION){
+        du = ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax()*3;  //0.05;
+      } else {
 #endif
-        }
-			} else if (localpathPt->type_lp == SOFT_MOTION){
-#ifdef MOVE3D_CORE
-        du = ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax()/10;
-#else
-        du =  p3d_get_env_graphic_dmax();  //0.05;
-#endif
-			} else {
-#endif
-				du = ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
+        du = ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
 #ifdef MULTILOCALPATH
 			}
 #endif
-
       u += du;
+      
 //deb modif xav
 //    if (u > umax - EPS6) {
 //      u = umax;
@@ -488,9 +566,6 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 	
 	if (fct) if (((*fct)(robotPt, localpathPt)) == FALSE) return(count);
 
-//#if defined(LIGHT_PLANNER)
-//	p3d_release_object(robotPt);
-//#endif
   MY_FREE(distances, double, njnt + 1);
   return count;
 }
@@ -656,25 +731,10 @@ void g3d_draw_all_tcur(void) {
     }
     p3d_sel_desc_num(P3D_ROBOT, r);
   }
-	
-// TODO callback OOMOVE3D
-//#if defined( CXX_PLANNER )
-//	if( ENV.getBool(Env::debugCostOptim) || ENV.getBool(Env::drawTrajVector) )
-//	{
-//		//std::cout << "Should be drawing traj" << std::endl;
-//		for(unsigned i=0;i<trajToDraw.size();i++)
-//		{
-//			trajToDraw.at(i).draw(NB_KEY_FRAME);
-//			//std::cout << "Drawing traj" << std::endl;
-//		}
-//		p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-//		if (!robotPt->tcur)
-//		{
-//			trajToDraw.clear();
-//		}
-//	}	
-//#endif
-
+  
+  if (ext_g3d_traj_debug) {
+    ext_g3d_traj_debug();
+  }
 }
 
 /*--------------------------------------------------------------------------*/

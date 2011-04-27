@@ -709,7 +709,6 @@ typedef struct rob
 //
 
 /* Modif Luis */
-
   int show_pos_area;     // boolean show/hide semidisc of position area
   double max_pos_range;  // Max Range distance for the position area
   double min_pos_range;  // Min Range distance for the position area
@@ -773,6 +772,7 @@ typedef struct rob
   class DpgCell ** dpgCells;
 #endif
   int draw_custom_color;
+  int draw_transparent;
   int inhibitCollisionTolerance; /*!< used to un/authorize collision test for this robot with a threshold distance instead of exact collision test (only used if the chosen collision checker is PQP) */
 } p3d_rob, *pp3d_rob;
 

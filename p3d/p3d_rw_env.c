@@ -632,7 +632,25 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			p3d_end_desc();
 			continue;
 		}
-
+    
+//---------------------------------------------------------------
+// HRI and costspace
+//---------------------------------------------------------------
+    if ( strcmp ( fct,"p3d_set_active_robot" ) == 0 )
+		{
+			if ( !read_desc_name ( fd, name ) ) return ( read_desc_error ( fct ) );
+      
+      p3d_rob* rob = p3d_get_robot_by_name( name );
+      
+      if (rob) {
+        XYZ_ENV->active_robot = rob;
+      }
+      else {
+        printf("Reading p3d_set_active_robot : No robot named %s yet in ENV\n",name);
+      }
+			continue;
+		}
+    
 		if ( strcmp ( fct,"p3d_CostEnvironment" ) == 0 )
 		{
 			ENV.setBool ( Env::isCostSpace,true );

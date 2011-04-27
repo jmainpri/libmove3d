@@ -939,8 +939,8 @@ int poly_build_plane_face(poly_polyhedre *polyhedre,poly_index numero)
     }
   if (n==0.0)
     { if (poly_error_on_shell)
-        PrintInfo(("\n%s:Erreur normale nulle dans polyhedre.c: poly_build_plane_face\n",
-	       polyhedre->name));
+        //PrintInfo(("\n%s:Erreur normale nulle dans polyhedre.c: poly_build_plane_face\n",
+	      // polyhedre->name));
       poly_error_value=poly_error_normal_nulle;
       return FALSE;
     }

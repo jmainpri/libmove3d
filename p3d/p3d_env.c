@@ -2215,6 +2215,7 @@ static void *p3d_beg_rob(char* name) {
   robotPt->user_appli = NULL;/* Modification Fabien */
   robotPt->display_mode= P3D_ROB_DEFAULT_DISPLAY;
   robotPt->draw_custom_color=FALSE;
+  robotPt->draw_transparent=FALSE;
 
 #ifdef HRI_PLANNER_GUI
   /* Modification Luis */

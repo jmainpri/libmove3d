@@ -14,5 +14,5 @@ extern void g3d_draw_all_tcur ( void );
 extern void g3d_draw_trace_all_tcur(void);
 
 extern void (*ext_compute_config_cost_along_traj)(p3d_rob* r,configPt q);
-
+extern void (*ext_g3d_traj_debug)();
 #endif /* __CEXTRACT__ */
