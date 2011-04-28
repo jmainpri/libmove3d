@@ -1465,7 +1465,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armEscapeObject(int armId, config
     _configs.setGrasp(&grasp);
   }
 //   activateCcCntrts(_robot, armId, false);
-  
+  _robot->isCarryingObject = false;
   configPt openGraspConfig = _manipConf.getOpenGraspConf(object, armId, *_configs.getGrasp(), qStart);
   if (openGraspConfig) {
     _configs.setOpenConfig(openGraspConfig);
