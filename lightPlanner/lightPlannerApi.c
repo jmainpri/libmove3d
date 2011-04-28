@@ -193,7 +193,7 @@ void activateObjectCol(p3d_rob* robot) {
 
 
 double** saveJointSamplingState(p3d_rob* robot){
-  double** jointSamplingState = (double**)malloc(sizeof(double*)*robot->njoints + 1);
+  double** jointSamplingState = (double**)malloc(sizeof(double*)*(robot->njoints + 1));
   for(int i = 0; i < robot->njoints + 1; i++){
     jointSamplingState[i] = (double*)malloc(sizeof(double)*JNT_NB_DOF_MAX);
     for(int j = 0; j < JNT_NB_DOF_MAX; j++){
