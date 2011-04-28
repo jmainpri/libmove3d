@@ -215,6 +215,10 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
   p3d_sel_desc_num(P3D_ROBOT,carriedObject->num);
   p3d_set_and_update_this_robot_conf(carriedObject, carriedObjectConf);
   p3d_get_BB_rob_max_size(carriedObject, &robotSize);
+  if(robotSize >= P3D_HUGE || robotSize <= -P3D_HUGE){
+    printf("Warning in %s !! BB size of %s is not well intialized. Value : %f. Setting the size to 1\n", __func__, carriedObject->name, robotSize);
+    robotSize = 1;
+  }
   translationFactor = robotSize/5;
   rotationFactor = 1;
   
@@ -627,7 +631,7 @@ configPt setRobotCloseToConfGraspApproachOrExtract(p3d_rob* robot, configPt refC
   p3d_set_and_update_this_robot_conf(robot, refConf);
   // Fix all the robot for sampling
   double ** jointSamplingState = saveJointSamplingState(robot); 
- fixAllJointsExceptBaseAndObject(robot, refConf);
+  fixAllJointsExceptBaseAndObject(robot, refConf);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->abs_pos);
   p3d_matrix4* att = MY_ALLOC(p3d_matrix4, robot->armManipulationData->size());
   
