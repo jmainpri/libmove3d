@@ -109,14 +109,16 @@ configPt ManipulationConfigs::getApproachFreeConf(p3d_rob* object, int armId, gp
     gpHand_properties handProp = mData.getHandProperties();
     mData.deactivateManipulationCntrts(_robot);
     
-    p3d_matrix4 objTmp;
+    p3d_matrix4 objPos, objTmp;
     p3d_vector3 tAttY, tAttT;
-    p3d_mat4Copy(object->joints[1]->abs_pos, objTmp);
+    p3d_mat4Copy(object->joints[1]->abs_pos, objPos);
 
     if (!strcmp(mData.getCcCntrt()->namecntrt, "p3d_kuka_arm_ik")) {
       p3d_mat4ExtractColumnY(tAtt, tAttY);
     } else if (!strcmp(mData.getCcCntrt()->namecntrt, "p3d_lwr_arm_ik")) {
       p3d_mat4ExtractColumnZ(tAtt, tAttY);
+    } else if (!strcmp(mData.getCcCntrt()->namecntrt, "p3d_pr2_arm_ik")) {
+      p3d_mat4ExtractColumnX(tAtt, tAttY);
     }
 
     gpUnFix_hand_configuration(_robot, handProp, armId);
@@ -126,15 +128,15 @@ configPt ManipulationConfigs::getApproachFreeConf(p3d_rob* object, int armId, gp
     configPt qApproachFree = NULL;
 
     const unsigned int MaxDesc = 2 ;
-    for (unsigned int i=0; i<MaxDesc; i++)
+    for (unsigned int i=0; i<MaxDesc-1; i++)
     {
       double alpha = 1 - (double)i/(double)MaxDesc;
-
+      
+      p3d_mat4Copy(objPos, objTmp);
       p3d_xformVect(objTmp, tAttY, tAttT);
       objTmp[0][3] -= alpha * getApproachFreeOffset() * tAttT[0];
       objTmp[1][3] -= alpha * getApproachFreeOffset() * tAttT[1];
       objTmp[2][3] -= alpha * getApproachFreeOffset() * tAttT[2];
-
       //    q[mData.getManipulationJnt()->index_dof + 0] -= getApproachFreeOffset() * tAttT[0];
       //    q[mData.getManipulationJnt()->index_dof + 1] -= getApproachFreeOffset() * tAttT[1];
       //    q[mData.getManipulationJnt()->index_dof + 2] -= getApproachFreeOffset() * tAttT[2];
