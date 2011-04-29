@@ -262,7 +262,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::findArmGraspsConfigs(int armId, p
             if(data.getGraspConfigCost() < configs.getGraspConfigCost()){
               configs = data;
               validConf = true;
-              //             break;
+              cout << "Config Cost = " << data.getGraspConfigCost() << endl;
               if(data.getGraspConfigCost() < _robot->configCostThreshold){
                 break;
               }
