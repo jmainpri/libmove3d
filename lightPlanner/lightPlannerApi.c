@@ -324,58 +324,77 @@ void unFixJoint(p3d_rob * robot, p3d_jnt * joint) {
 double* getJntDofValue(p3d_rob * robot, p3d_jnt * joint, p3d_matrix4 initPos){
   double x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0;
   p3d_mat4ExtractPosReverseOrder(initPos, &x, &y, &z, &rx, &ry, &rz);
+  double * dVal = NULL;
   switch(joint->type){
     case P3D_BASE:{
-      double * dVal = MY_ALLOC(double, 6);
+      dVal = MY_ALLOC(double, joint->dof_equiv_nbr);
       dVal[0] = x;
       dVal[1] = y;
       dVal[2] = z;
       dVal[3] = rx;
       dVal[4] = ry;
       dVal[5] = rz;
-      return dVal;
+      break;
     }
     case P3D_ROTATE:{
-      double * dVal = MY_ALLOC(double, 1);
+      dVal = MY_ALLOC(double, joint->dof_equiv_nbr);
       dVal[0] = rz;
-      return dVal;
+      break;
     }
     case P3D_TRANSLATE:{
-      double * dVal = MY_ALLOC(double, 1);
+      dVal = MY_ALLOC(double, joint->dof_equiv_nbr);
       dVal[0] = z;
-      return dVal;
+      break;
     }
     case P3D_PLAN:{
-      double * dVal = MY_ALLOC(double, 3);
+      dVal = MY_ALLOC(double, joint->dof_equiv_nbr);
       dVal[0] = x;
       dVal[1] = y;
       dVal[2] = rz;
-      return dVal;
+      break;
     }
     case P3D_FREEFLYER:{
-      double * dVal = MY_ALLOC(double, 6);
+      dVal = MY_ALLOC(double, joint->dof_equiv_nbr);
       dVal[0] = x;
       dVal[1] = y;
       dVal[2] = z;
       dVal[3] = rx;
       dVal[4] = ry;
       dVal[5] = rz;
-      return dVal;
+      break;
     }
     case P3D_FIXED:{
-      return NULL;
+      break;
     }
     case P3D_KNEE:{
-      double * dVal = MY_ALLOC(double, 3);
+      dVal = MY_ALLOC(double, joint->dof_equiv_nbr);
       dVal[0] = rx;
       dVal[1] = ry;
       dVal[2] = rz;
-      return dVal;
+      break;
     }
     default:{
-      return NULL;
+      break;
     }
   }
+  //test the bounds (and threat circular)
+  double vmin, vmax;
+  for(int i = 0; i < joint->dof_equiv_nbr; i++){
+    p3d_jnt_get_dof_bounds(joint, i, &vmin, &vmax);
+    if(dVal[i] < vmin - EPS6 || dVal[i] > vmax + EPS6){
+      double newVal = dVal[i] < (vmin - EPS6) ? dVal[i] + 2 * M_PI : dVal[i] - 2 * M_PI;
+      if(p3d_jnt_get_dof_is_angular(joint->type, i)){
+        if(newVal > vmin - EPS6 && newVal < vmax + EPS6){
+          dVal[i] = newVal;
+        }else{
+          printf("WARNING : %s :Fix a joint %s out of bounds: min = %f, v = %f, max = %f!!\n", __FILE__, joint->name, vmin, dVal[i], vmax);
+        }
+      }else{
+        printf("WARNING : %s :Fix a joint %s out of bounds: min = %f, v = %f, max = %f!!\n", __FILE__, joint->name, vmin, dVal[i], vmax);
+      }
+    }
+  }
+  return dVal;
 }
 
 /**
