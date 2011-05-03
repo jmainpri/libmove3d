@@ -36,6 +36,7 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robot) :_robot(robot), _config
     _optimizeSteps = 100;
     _optimizeTime = 4.0; // 4 secondes
     _safetyDistanceValue = 0.0;
+    _placementTry = 5;
     setMaxNumberOfTryForIK(10000);
 
     setDebugSoftMotionMode(true);
@@ -175,6 +176,13 @@ void ManipulationPlanner::setSafetyDistanceValue(double value){
 }
 double ManipulationPlanner::getSafetyDistanceValue(void) const{
   return _safetyDistanceValue;
+}
+
+void ManipulationPlanner::setPlacementTry(int nbTry){
+  _placementTry = nbTry;
+}
+int ManipulationPlanner::getPlacementTry(void){
+  return _placementTry;
 }
 
 /* ******************************* */
@@ -361,7 +369,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(
           if( debug_configs || MPDEBUG ){
             cout << "FOUND Approach Free Config!!!!!" << endl;
           }
-          configs.setApproachFreeConfig( configs.getOpenConfig() );
+//           configs.setApproachFreeConfig( configs.getOpenConfig() );
           configs.setApproachFreeConfig(q);
           p3d_destroy_config(_robot, q);
           q = NULL;
@@ -528,11 +536,6 @@ p3d_traj* ManipulationPlanner::computeTrajBetweenTwoConfigs(configPt qi, configP
 
   
     if( p3d_equal_config(_robot, qi, qf) ){
-//        print_config(_robot, qi);
-//        print_config(_robot, qf);
-//        showConfig_2(qi);
-//        showConfig_2(qf);
-//        cout << "ManipulationPlanner::computeTrajBetweenTwoConfigs::p3d_equal_config(_robot, qi, qf)" << endl;
       *status = MANIPULATION_TASK_EQUAL_QSTART_QGOAL;
       ManipulationUtils::printManipulationMessage(*status);
       return NULL;
@@ -1122,42 +1125,51 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armTakeToPlace(int armId, configP
   }
   activateCcCntrts(_robot, armId, false);
   double confCost = -1;
-  qGoal = _manipConf.getFreeHoldingConf(object, armId, *_configs.getGrasp(), tAtt, confCost, objGoto, placement);
-  if(updateTatt){
-    _configs.setAttachFrame(tAtt);
-  }
-  if (qGoal) {
-    //Compute the approch grasp config for the placement grasp
-    p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
-    p3d_set_and_update_this_robot_conf(_robot, qGoal);
-    configPt approachGraspConfigPlacement = _manipConf.getApproachGraspConf(object, armId, *(_configs.getGrasp()), qGoal, tAtt);
-    p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
-    p3d_set_and_update_this_robot_conf(_robot, qStart);
-    armData.setCarriedObject((p3d_rob*) NULL);
-    _robot->isCarryingObject = FALSE;
-    if(approachGraspConfigPlacement){
-      //Compute the approch grasp config for the start config.
-      if(!_configs.getApproachGraspConfig()){
-        p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
-        p3d_set_and_update_this_robot_conf(_robot, qStart);
-        approachGraspConfig = _manipConf.getApproachGraspConf(object, armId, *(_configs.getGrasp()), qStart, tAtt);
-        p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
-        p3d_set_and_update_this_robot_conf(_robot, qStart);
-        armData.setCarriedObject((p3d_rob*) NULL);
-        _robot->isCarryingObject = FALSE;
-        if(!approachGraspConfig){
-          status = MANIPULATION_TASK_NO_GRASP;
-        }
-      }else{
-        approachGraspConfig = p3d_copy_config(_robot, _configs.getApproachGraspConfig());
-      }
-      _configs.setApproachGraspConfig(approachGraspConfigPlacement);
-      _configs.setGraspConfig(qGoal);
-    }else{
-      status = MANIPULATION_TASK_NO_PLACE;
+  
+  status = MANIPULATION_TASK_NO_PLACE;
+  int nbTry = 0;
+  while (status != MANIPULATION_TASK_OK && nbTry < _placementTry){
+    ++nbTry;
+    status = MANIPULATION_TASK_OK;
+    qGoal = _manipConf.getFreeHoldingConf(object, armId, *_configs.getGrasp(), tAtt, confCost, objGoto, placement);
+    if(updateTatt){
+      _configs.setAttachFrame(tAtt);
     }
-  } else {
-    status = MANIPULATION_TASK_NO_PLACE;
+    if (qGoal) {
+      //Compute the approch grasp config for the placement grasp
+      p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
+      p3d_set_and_update_this_robot_conf(_robot, qGoal);
+      configPt approachGraspConfigPlacement = _manipConf.getApproachGraspConf(object, armId, *(_configs.getGrasp()), qGoal, tAtt);
+      p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
+      p3d_set_and_update_this_robot_conf(_robot, qStart);
+      armData.setCarriedObject((p3d_rob*) NULL);
+      _robot->isCarryingObject = FALSE;
+      if(approachGraspConfigPlacement){
+        //Compute the approch grasp config for the start config.
+        if(!_configs.getApproachGraspConfig()){
+          p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
+          p3d_set_and_update_this_robot_conf(_robot, qStart);
+          approachGraspConfig = _manipConf.getApproachGraspConf(object, armId, *(_configs.getGrasp()), qStart, tAtt);
+          p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
+          p3d_set_and_update_this_robot_conf(_robot, qStart);
+          armData.setCarriedObject((p3d_rob*) NULL);
+          _robot->isCarryingObject = FALSE;
+          if(!approachGraspConfig){
+            status = MANIPULATION_TASK_NO_GRASP;
+            break;
+          }
+        }else{
+          approachGraspConfig = p3d_copy_config(_robot, _configs.getApproachGraspConfig());
+        }
+        _configs.setApproachGraspConfig(approachGraspConfigPlacement);
+        _configs.setGraspConfig(qGoal);
+      }else{
+        status = MANIPULATION_TASK_NO_PLACE;
+      }
+    } else {
+      status = MANIPULATION_TASK_NO_PLACE;
+      break;
+    }
   }
 
   if (status == MANIPULATION_TASK_OK){
@@ -1241,7 +1253,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armTakeToPlace(int armId, configP
       p3d_col_activate_pair_of_objects(object->joints[1]->o, support->joints[1]->o);
     }
     // Compute to Open config
-    print_config(_robot, approachGraspConfigPlacement);
+//     print_config(_robot, approachGraspConfigPlacement);
     if ((traj = computeTrajBetweenTwoConfigs(approachGraspConfig, approachGraspConfigPlacement, &status)) || (status == MANIPULATION_TASK_EQUAL_QSTART_QGOAL)){
       trajs.push_back(traj);
       if(placement){
@@ -1292,6 +1304,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlaceFromFree(int armId, confi
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlaceFromFree(int armId, configPt qStart, p3d_rob* object, std::vector<double> &objGoto, p3d_rob* placement, std::vector <p3d_traj*> &trajs) {
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   int updateTatt = false;
+  configPt qGoal = NULL;
 
   deactivateCcCntrts(_robot, armId);
   p3d_set_and_update_this_robot_conf(_robot, qStart);
@@ -1306,29 +1319,40 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlaceFromFree(int armId, confi
   }
   activateCcCntrts(_robot, armId, false);
   double confCost = -1;
-  configPt qGoal = _manipConf.getFreeHoldingConf(object, armId, *_configs.getGrasp(), tAtt, confCost, objGoto, placement);
   
-  if(updateTatt){
-    _configs.setAttachFrame(tAtt);
-  }
-  if (qGoal) {
-    (*_robot->armManipulationData)[armId].setCarriedObject(object);
-    _robot->isCarryingObject = TRUE;
-    p3d_set_and_update_this_robot_conf(_robot, qGoal);
-    configPt approachGraspConfig = _manipConf.getApproachGraspConf(object, armId, *(_configs.getGrasp()), qGoal, tAtt);
-    (*_robot->armManipulationData)[armId].setCarriedObject(object);
-    _robot->isCarryingObject = TRUE;
-    p3d_set_and_update_this_robot_conf(_robot, qStart);
-    (*_robot->armManipulationData)[armId].setCarriedObject((p3d_rob*) NULL);
-    _robot->isCarryingObject = FALSE;
-    if(approachGraspConfig){
-      _configs.setApproachGraspConfig(approachGraspConfig);
-      _configs.setGraspConfig(qGoal);
-    }else{
-      status = MANIPULATION_TASK_NO_PLACE;
+  
+  status = MANIPULATION_TASK_NO_PLACE;
+  int nbTry = 0;
+  
+  while(status != MANIPULATION_TASK_OK && nbTry < _placementTry){
+    ++nbTry;
+    status = MANIPULATION_TASK_OK;
+    
+    qGoal = _manipConf.getFreeHoldingConf(object, armId, *_configs.getGrasp(), tAtt, confCost, objGoto, placement);
+    
+    if(updateTatt){
+      _configs.setAttachFrame(tAtt);
     }
-  } else {
-    status = MANIPULATION_TASK_NO_PLACE;
+    if (qGoal) {
+      (*_robot->armManipulationData)[armId].setCarriedObject(object);
+      _robot->isCarryingObject = TRUE;
+      p3d_set_and_update_this_robot_conf(_robot, qGoal);
+      configPt approachGraspConfig = _manipConf.getApproachGraspConf(object, armId, *(_configs.getGrasp()), qGoal, tAtt);
+      (*_robot->armManipulationData)[armId].setCarriedObject(object);
+      _robot->isCarryingObject = TRUE;
+      p3d_set_and_update_this_robot_conf(_robot, qStart);
+      (*_robot->armManipulationData)[armId].setCarriedObject((p3d_rob*) NULL);
+      _robot->isCarryingObject = FALSE;
+      if(approachGraspConfig){
+        _configs.setApproachGraspConfig(approachGraspConfig);
+        _configs.setGraspConfig(qGoal);
+      }else{
+        status = MANIPULATION_TASK_NO_PLACE;
+      }
+    } else {
+      status = MANIPULATION_TASK_NO_PLACE;
+      break;
+    }
   }
 
   if (status == MANIPULATION_TASK_OK)

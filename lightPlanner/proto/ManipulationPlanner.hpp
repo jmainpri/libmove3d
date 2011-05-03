@@ -67,6 +67,9 @@ class  ManipulationPlanner {
     void setSafetyDistanceValue(double value);
     double getSafetyDistanceValue(void) const;
   
+    void setPlacementTry(int nbTry);
+    int getPlacementTry(void);
+    
     inline p3d_rob* robot()  const{return _robot;}
 
     inline configPt robotStart() const{if (_robot != NULL) {return _robot->ROBOT_POS;} else {return NULL;}}
@@ -183,6 +186,9 @@ class  ManipulationPlanner {
     double _optimizeTime;
     /** Offset to generate the approach configuration of a grasp (carrying an object)*/
     double _safetyDistanceValue;
+    
+    /** nbTry to find placement configuration and graspApproche*/
+    int _placementTry;
 	
   /* ******************************* */
   /* *******  Manipulation Data **** */
