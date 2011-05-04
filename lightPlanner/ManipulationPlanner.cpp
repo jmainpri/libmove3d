@@ -32,7 +32,7 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robot) :_robot(robot), _config
     _smoothingMethod = optimiseTrajectory;
   
     // Manipulation planner
-    _planningTime = 30;
+    _planningTime = 15;
     _optimizeSteps = 100;
     _optimizeTime = 4.0; // 4 secondes
     _safetyDistanceValue = 0.0;
@@ -461,14 +461,14 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::computeRRT(int smoothingSteps, do
 
   configPt qs = _robot->ROBOT_POS;
   configPt qg = _robot->ROBOT_GOTO;
-
+  
+  double planningTime = p3d_get_tmax();
+  p3d_set_tmax(_planningTime);
   p3d_traj* traj = _plannerMethod(_robot,qs,qg);
+  p3d_set_tmax(planningTime);
 
   if(traj){
-    double planningTime = p3d_get_tmax();
-    p3d_set_tmax(_planningTime);
     _smoothingMethod(_robot, traj, smoothingSteps, smootingTime);
-    p3d_set_tmax(planningTime);
   }
 
   if (!traj) {
