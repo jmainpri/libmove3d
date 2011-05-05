@@ -3852,6 +3852,20 @@ int pqp_colliding_pair(p3d_obj **o1, p3d_obj **o2)
    return PQP_OK;
 }
 
+int pqp_colliding_obj_name_pair(char obj_1_name[200], char obj_2_name[200])//AKP: A variation of the function above to get the names of the colliding objects
+{
+
+   if(pqp_COLLISION_PAIRS.colliding_body1==NULL || pqp_COLLISION_PAIRS.colliding_body2==NULL)
+   {
+     return PQP_ERROR;
+   }
+
+   strcpy(obj_1_name,pqp_COLLISION_PAIRS.colliding_body1->name);
+   strcpy(obj_2_name,pqp_COLLISION_PAIRS.colliding_body2->name);
+
+   return PQP_OK;
+}
+
 
 //! @ingroup pqp
 //! Prints the names the two objects that were reported as colliding during

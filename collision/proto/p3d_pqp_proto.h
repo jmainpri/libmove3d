@@ -143,6 +143,7 @@ extern int pqp_colliding_pair(p3d_obj **o1, p3d_obj **o2);
 
 extern int pqp_print_colliding_pair();
 
+extern int pqp_colliding_obj_name_pair(char obj_1_name[200], char obj_2_name[200]);//AKP
 #endif
 
 
