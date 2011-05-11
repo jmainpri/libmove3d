@@ -85,6 +85,7 @@ class  ManipulationPlanner {
     MANIPULATION_TASK_MESSAGE computeManipulationData(int armId,p3d_rob* object, gpGrasp& grasp);
     MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, gpGrasp& grasp, ManipulationData& configs);
     MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;
+    MANIPULATION_TASK_MESSAGE getHoldingOpenApproachExtractConfs(p3d_rob* object, std::vector<double> &objGoto, p3d_rob* placement, int armId, gpGrasp& grasp, p3d_matrix4 tAtt,  ManipulationData& configs) const;
 	/* ******************************* */
   /* ******* Planning Modes ******** */
   /* ******************************* */

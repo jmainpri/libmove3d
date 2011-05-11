@@ -397,6 +397,49 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::getGraspOpenApproachExtractConfs(
     return MANIPULATION_TASK_NO_GRASP;
 }
 
+
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::getHoldingOpenApproachExtractConfs(p3d_rob* object, std::vector<double> &objGoto, p3d_rob* placement, int armId, gpGrasp& grasp, p3d_matrix4 tAtt,  ManipulationData& configs) const {
+  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+  double confCost = -1;
+    
+  configPt qGoal = _manipConf.getFreeHoldingConf(object, armId, grasp, tAtt, confCost, objGoto, placement);
+  
+  if(tAtt[0][0] == 0 && tAtt[0][1] == 0 && tAtt[0][2] == 0 && tAtt[0][3] == 0){
+    configs.setAttachFrame(tAtt);
+  }
+  if (qGoal){
+    //Compute the approch grasp config for the placement grasp
+    configPt approachGraspConfigPlacement = _manipConf.getApproachGraspConf(object, armId, grasp, qGoal, tAtt);
+    if(approachGraspConfigPlacement){
+      configPt openConfigPlacement = _manipConf.getOpenGraspConf(object, armId, grasp, qGoal);
+      if(openConfigPlacement){
+        configPt approachFreeConfigPlacement = _manipConf.getApproachFreeConf(object, armId, grasp, qGoal, tAtt);
+        //Compute the approch grasp config for the start config.
+        if(approachFreeConfigPlacement){
+          configs.setApproachGraspConfig(approachGraspConfigPlacement);
+          configs.setOpenConfig(openConfigPlacement);
+          configs.setApproachFreeConfig(approachFreeConfigPlacement);
+          configs.setGraspConfig(qGoal);
+          configs.setGraspConfigCost(confCost);
+          configs.setGrasp(&grasp);
+          p3d_destroy_config(_robot, approachFreeConfigPlacement );
+        }else{
+          status = MANIPULATION_TASK_NO_PLACE;
+        }
+        p3d_destroy_config(_robot, openConfigPlacement );
+      }else{
+        status = MANIPULATION_TASK_NO_PLACE;
+      }
+      p3d_destroy_config(_robot, approachGraspConfigPlacement );
+    }else{
+      status = MANIPULATION_TASK_NO_PLACE;
+    }
+    p3d_destroy_config(_robot, qGoal );
+  } else {
+    status = MANIPULATION_TASK_NO_PLACE;
+  }
+  return status;
+}
 /* ******************************* */
 /* ******* Motion Planning Modes * */
 /* ******************************* */
@@ -1113,7 +1156,11 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armTakeToPlace(int armId, configP
   deactivateCcCntrts(_robot, armId);
   desactivateTwoJointsFixCntrt(_robot, armData.getManipulationJnt(), armData.getCcCntrt()->pasjnts[ armData.getCcCntrt()->npasjnts-1 ]);
   
+  (*_robot->armManipulationData)[armId].setCarriedObject(object);
+  _robot->isCarryingObject = TRUE;
   p3d_set_and_update_this_robot_conf(_robot, qStart);
+  (*_robot->armManipulationData)[armId].setCarriedObject((p3d_rob*) NULL);
+  _robot->isCarryingObject = FALSE;
 
   p3d_matrix4 tAtt;
   _configs.getAttachFrame(tAtt);
@@ -1130,56 +1177,32 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armTakeToPlace(int armId, configP
   int nbTry = 0;
   while (status != MANIPULATION_TASK_OK && nbTry < _placementTry){
     ++nbTry;
-    status = MANIPULATION_TASK_OK;
-    qGoal = _manipConf.getFreeHoldingConf(object, armId, *_configs.getGrasp(), tAtt, confCost, objGoto, placement);
-    if(updateTatt){
-      _configs.setAttachFrame(tAtt);
+    status = getHoldingOpenApproachExtractConfs(object, objGoto, placement, armId, *(_configs.getGrasp()), tAtt, _configs);
+  }
+
+//Compute the approch grasp config for the start config.
+  if(!_configs.getApproachGraspConfig()){
+    p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
+    p3d_set_and_update_this_robot_conf(_robot, qStart);
+    approachGraspConfig = _manipConf.getApproachGraspConf(object, armId, *(_configs.getGrasp()), qStart, tAtt);
+    p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
+    p3d_set_and_update_this_robot_conf(_robot, qStart);
+    armData.setCarriedObject((p3d_rob*) NULL);
+    _robot->isCarryingObject = FALSE;
+    if(!approachGraspConfig){
+      status = MANIPULATION_TASK_NO_GRASP;
     }
-    if (qGoal) {
-      //Compute the approch grasp config for the placement grasp
-      p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
-      p3d_set_and_update_this_robot_conf(_robot, qGoal);
-      configPt approachGraspConfigPlacement = _manipConf.getApproachGraspConf(object, armId, *(_configs.getGrasp()), qGoal, tAtt);
-      p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
-      p3d_set_and_update_this_robot_conf(_robot, qStart);
-      armData.setCarriedObject((p3d_rob*) NULL);
-      _robot->isCarryingObject = FALSE;
-      if(approachGraspConfigPlacement){
-        //Compute the approch grasp config for the start config.
-        if(!_configs.getApproachGraspConfig()){
-          p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
-          p3d_set_and_update_this_robot_conf(_robot, qStart);
-          approachGraspConfig = _manipConf.getApproachGraspConf(object, armId, *(_configs.getGrasp()), qStart, tAtt);
-          p3d_set_object_to_carry_to_arm(_robot, armId, object->name );
-          p3d_set_and_update_this_robot_conf(_robot, qStart);
-          armData.setCarriedObject((p3d_rob*) NULL);
-          _robot->isCarryingObject = FALSE;
-          if(!approachGraspConfig){
-            status = MANIPULATION_TASK_NO_GRASP;
-            break;
-          }
-        }else{
-          approachGraspConfig = p3d_copy_config(_robot, _configs.getApproachGraspConfig());
-        }
-        _configs.setApproachGraspConfig(approachGraspConfigPlacement);
-        _configs.setGraspConfig(qGoal);
-      }else{
-        status = MANIPULATION_TASK_NO_PLACE;
-      }
-    } else {
-      status = MANIPULATION_TASK_NO_PLACE;
-      break;
-    }
+  }else{
+    approachGraspConfig = p3d_copy_config(_robot, _configs.getApproachGraspConfig());
   }
 
   if (status == MANIPULATION_TASK_OK){
     //Compute the path between theses configurations
-    status = armTakeToPlace(armId, qStart, approachGraspConfig, _configs.getApproachGraspConfig(), qGoal, object, support, placement, trajs);
+    status = armTakeToPlace(armId, qStart, approachGraspConfig, _configs.getApproachGraspConfig(), _configs.getGraspConfig(), object, support, placement, trajs);
   }
   else {
       cout << "Fail to findArmGraspsConfigs(armId,object,_configs)" << endl;
   }
-
   return status;
 }
 
@@ -1320,39 +1343,18 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlaceFromFree(int armId, confi
   activateCcCntrts(_robot, armId, false);
   double confCost = -1;
   
+  (*_robot->armManipulationData)[armId].setCarriedObject(object);
+  _robot->isCarryingObject = TRUE;
+  p3d_set_and_update_this_robot_conf(_robot, qStart);
+  (*_robot->armManipulationData)[armId].setCarriedObject((p3d_rob*) NULL);
+  _robot->isCarryingObject = FALSE;
   
   status = MANIPULATION_TASK_NO_PLACE;
   int nbTry = 0;
   
   while(status != MANIPULATION_TASK_OK && nbTry < _placementTry){
     ++nbTry;
-    status = MANIPULATION_TASK_OK;
-    
-    qGoal = _manipConf.getFreeHoldingConf(object, armId, *_configs.getGrasp(), tAtt, confCost, objGoto, placement);
-    
-    if(updateTatt){
-      _configs.setAttachFrame(tAtt);
-    }
-    if (qGoal) {
-      (*_robot->armManipulationData)[armId].setCarriedObject(object);
-      _robot->isCarryingObject = TRUE;
-      p3d_set_and_update_this_robot_conf(_robot, qGoal);
-      configPt approachGraspConfig = _manipConf.getApproachGraspConf(object, armId, *(_configs.getGrasp()), qGoal, tAtt);
-      (*_robot->armManipulationData)[armId].setCarriedObject(object);
-      _robot->isCarryingObject = TRUE;
-      p3d_set_and_update_this_robot_conf(_robot, qStart);
-      (*_robot->armManipulationData)[armId].setCarriedObject((p3d_rob*) NULL);
-      _robot->isCarryingObject = FALSE;
-      if(approachGraspConfig){
-        _configs.setApproachGraspConfig(approachGraspConfig);
-        _configs.setGraspConfig(qGoal);
-      }else{
-        status = MANIPULATION_TASK_NO_PLACE;
-      }
-    } else {
-      status = MANIPULATION_TASK_NO_PLACE;
-      break;
-    }
+    status = getHoldingOpenApproachExtractConfs(object, objGoto, placement, armId, *(_configs.getGrasp()), tAtt, _configs);
   }
 
   if (status == MANIPULATION_TASK_OK)
