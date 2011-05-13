@@ -5472,9 +5472,13 @@ static int p3d_fct_pr2_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) 
 
   for(int i = 0, j = 0; i < 7; i++){
     if(i == 2){
-      p3d_get_robot_jnt_bounds(ct->argu_i[0], &minDoFs[i], &maxDoFs[i]);
+      minDoFs[i] = -3.14;
+      maxDoFs[i] = 3.14;
+      //p3d_jnt_get_dof_bounds(ct->argu_i[0], 0, &minDoFs[i], &maxDoFs[i]);
+      //p3d_get_robot_jnt_bounds(ct->argu_i[0], &minDoFs[i], &maxDoFs[i]);
     }else{
-      p3d_get_robot_jnt_bounds(ct->pasjnts[j]->num, &minDoFs[i], &maxDoFs[i]);
+      p3d_jnt_get_dof_bounds(ct->pasjnts[j], 0, &minDoFs[i], &maxDoFs[i]);
+//       p3d_get_robot_jnt_bounds(ct->pasjnts[j]->num, &minDoFs[i], &maxDoFs[i]);
       j++;
     }
   }
