@@ -110,6 +110,26 @@ p3d_localpath *p3d_local_planner_array(p3d_rob *robotPt, configPt* q)
   p3d_localpath_type lpl_type = robotPt->lpl_type;
 
 #ifdef  MULTILOCALPATH
+p3d_jnt * jntPt;
+  double vmin,vmax;
+ /* Fix the circular jnt */
+  int k, njnt = robotPt->njoints, angle =0.0;
+  /* translation parameters of main body */
+  for (int i=0; i<=njnt; i++) {
+	  jntPt = robotPt->joints[i];
+	  if(jntPt->type == P3D_ROTATE) {
+	     for (int j=0; j<jntPt->dof_equiv_nbr; j++) {
+		k = jntPt->index_dof+j;
+		if (p3d_jnt_is_dof_circular(jntPt, j)){
+		     q[1][k] = q[0][k] + diff_angle(q[0][k], q[1][k]);
+		}
+	     }
+	 }
+  }
+
+
+
+
 
   if (lpl_type == MULTI_LOCALPATH) {
     int nblpGp = 0;
@@ -155,6 +175,23 @@ p3d_localpath *p3d_local_planner_array_multisol(p3d_rob *robotPt, configPt* q, i
   p3d_localpath_type lpl_type = robotPt->lpl_type;
 
 #ifdef  MULTILOCALPATH
+p3d_jnt * jntPt;
+  double vmin,vmax;
+ /* Fix the circular jnt */
+  int k, njnt = robotPt->njoints, angle =0.0;
+  /* translation parameters of main body */
+  for (int i=0; i<=njnt; i++) {
+	  jntPt = robotPt->joints[i];
+	  if(jntPt->type == P3D_ROTATE) {
+	     for (int j=0; j<jntPt->dof_equiv_nbr; j++) {
+		k = jntPt->index_dof+j;
+		if (p3d_jnt_is_dof_circular(jntPt, j)){
+		     q[1][k] = q[0][k] + diff_angle(q[0][k], q[1][k]);
+		}
+	     }
+	 }
+  }
+
 
   if (lpl_type == MULTI_LOCALPATH) {
     int nblpGp = 0;
