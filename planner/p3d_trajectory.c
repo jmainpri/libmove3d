@@ -414,7 +414,7 @@ int p3d_concat_traj(p3d_traj *traj1Pt, p3d_traj *traj2Pt)
     for(int i = 0; i < robotPt->mlp->nblpGp; i++) {
       if (p3d_multiLocalPath_get_value_groupToPlan(robotPt, i)) {
 	if(strcmp(robotPt->mlp->mlpJoints[i]->gpName,"upBody")==0) {
-	   if(!p3d_equal_config_n_offset(robotPt->mlp->mlpJoints[i]->nbDofs, robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[0]]->index_dof, q1_end, q2_start)){
+	   if(!p3d_equal_config_n_offset(robotPt, robotPt->mlp->mlpJoints[i]->nbDofs, robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[0]]->index_dof, q1_end, q2_start)){
               PrintError(("concat: end of first trajectory different from beginning of second one\n"));
               printf("q1_end : \n");
 	      print_config(robotPt, q1_end);

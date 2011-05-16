@@ -511,15 +511,41 @@ int p3d_equal_config(p3d_rob *robotPt, configPt q_i, configPt q_f)
  * Check if two configs are equal without considering all the configPt
  *
  */
-int p3d_equal_config_n_offset(int nb_dof, int offset, configPt q_i, configPt q_f)
+int p3d_equal_config_n_offset(p3d_rob* robotPt, int nb_dof, int offset, configPt q_i, configPt q_f)
 {
-  int i;
-  for (i = offset;i < offset + nb_dof;i++) {
-    if (fabs(q_i[i] - q_f[i]) > EPS6) {
-      return(FALSE);
+  int i, j, k;
+  int njnt = robotPt->njoints;
+  p3d_jnt *jntPt;
+
+  k = 0;
+//     for (i = offset;i < offset + nb_dof;i++) {
+//       if (fabs(q_i[i] - q_f[i]) > EPS6) {
+//         return(FALSE);
+//       }
+//     }
+
+  for (i = 0; i <= njnt; i++) {
+    jntPt = robotPt->joints[i];
+
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+     if(j+jntPt->index_dof >= offset &&  j+jntPt->index_dof <  nb_dof+offset)
+      if (p3d_jnt_get_dof_is_user(jntPt, j)) {
+        if (p3d_jnt_is_dof_circular(jntPt, j) && jntPt->type == P3D_ROTATE) {
+          if (dist_circle(q_i[k], q_f[k]) > EPS6) {
+            return FALSE;
+          }
+        } else {
+          if (fabs(q_i[k] - q_f[k]) > EPS6) {
+            return FALSE;
+          }
+        }
+      }
+      k ++;
     }
-  }
-  return(TRUE);
+   }
+
+  
+   return(TRUE);
 }
 
 

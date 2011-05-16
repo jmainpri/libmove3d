@@ -150,11 +150,11 @@ p3d_localpath *p3d_softMotion_localplanner(p3d_rob *robotPt, int multiLocalpathI
 //     configPt qtest = NULL;
 //     qtest = p3d_copy_config(robotPt, qi);
 //     p3d_convert_config_va_to_ypr(robotPt,  softMotion_data->q_init, &qtest);
-//     if(p3d_equal_config_n_offset(6, robotPt->joints[34]->index_dof, qi, qtest) == FALSE) {
+//     if(p3d_equal_config_n_offset(robotPt, 6, robotPt->joints[34]->index_dof, qi, qtest) == FALSE) {
 //     printf("************** ERROR qinit ***************\n");
 //     }
 //     p3d_convert_config_va_to_ypr(robotPt,  softMotion_data->q_end, &qtest);
-//     if(p3d_equal_config_n_offset(6, robotPt->joints[34]->index_dof, qf, qtest) == FALSE) {
+//     if(p3d_equal_config_n_offset(robotPt, 6, robotPt->joints[34]->index_dof, qf, qtest) == FALSE) {
 //     printf("************** ERROR qend ***************\n");
 //     }
 //     p3d_destroy_config(robotPt, qtest);
@@ -207,7 +207,7 @@ int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int mlpId, p3d_group
   for(int v=0; v<nbJoints; v++) {
     nb_dof += robotPt->joints[robotPt->mlp->mlpJoints[mlpId]->joints[v]]->user_dof_equiv_nbr;
   }
-  equal = p3d_equal_config_n_offset(nb_dof, index_dof, softMotion_data->q_init, softMotion_data->q_end);
+  equal = p3d_equal_config_n_offset(robotPt, nb_dof, index_dof, softMotion_data->q_init, softMotion_data->q_end);
 
   if(equal && softMotion_data->isPTP == TRUE) {
     PrintInfo((("MP: p3d_softMotion_localplanner FREEFLYER: q_init = q_goal! \n")));
@@ -381,7 +381,7 @@ int p3d_softMotion_localplanner_JOINT(p3d_rob* robotPt, int mlpId, p3d_group_typ
   for(int v=0; v<nbJoints; v++) {
     nbDofs += robotPt->joints[robotPt->mlp->mlpJoints[mlpId]->joints[v]]->user_dof_equiv_nbr;
   }
-  equal = p3d_equal_config_n_offset(nbDofs, index_dof, softMotion_data->q_init, softMotion_data->q_end);
+  equal = p3d_equal_config_n_offset(robotPt, nbDofs, index_dof, softMotion_data->q_init, softMotion_data->q_end);
 
   if(equal && softMotion_data->isPTP == TRUE) {
     // 		PrintInfo((("MP: p3d_softMotion_localplanner JOINT: q_init = q_goal! \n")));
@@ -464,7 +464,7 @@ int p3d_softMotion_localplanner_UPBODY_CART(p3d_rob* robotPt, int mlpId, p3d_gro
   for(int v=0; v<nbJoints; v++) {
     nbDofs += robotPt->joints[robotPt->mlp->mlpJoints[mlpId]->joints[v]]->user_dof_equiv_nbr;
   }
-  equal = p3d_equal_config_n_offset(nbDofs, index_dof, softMotion_data->q_init, softMotion_data->q_end);
+  equal = p3d_equal_config_n_offset(robotPt, nbDofs, index_dof, softMotion_data->q_init, softMotion_data->q_end);
 
   if(equal && softMotion_data->isPTP == TRUE) {
     // 		PrintInfo((("MP: p3d_softMotion_localplanner JOINT: q_init = q_goal! \n")));

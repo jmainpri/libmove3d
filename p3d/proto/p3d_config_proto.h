@@ -35,7 +35,7 @@ extern void p3d_subConfig ( p3d_rob *rob, configPt q1, configPt q2, configPt dq 
 extern int p3d_equal_config_n ( int nb_dof, configPt q_i, configPt q_f );
 extern int p3d_equal_config ( p3d_rob *robotPt, configPt q_i, configPt q_f );
 
-extern int p3d_equal_config_n_offset(int nb_dof, int offset, configPt q_i, configPt q_f);
+extern int p3d_equal_config_n_offset(p3d_rob* robotPt, int nb_dof, int offset, configPt q_i, configPt q_f);
 
 extern double p3d_dist_config ( p3d_rob * robotPt, configPt q_i, configPt q_f );
 extern double p3d_dist_config_2 ( p3d_rob * robotPt, configPt q_i, configPt q_f );
