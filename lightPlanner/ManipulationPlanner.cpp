@@ -1360,7 +1360,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlaceFromFree(int armId, confi
   if (status == MANIPULATION_TASK_OK)
   {
     //Compute the path between theses configurations
-    status = armPlaceFromFree(armId, qStart, object, placement, _configs.getApproachGraspConfig(), qGoal,trajs);
+    status = armPlaceFromFree(armId, qStart, object, placement, _configs.getApproachGraspConfig(), _configs.getGraspConfig(),trajs);
   }
   else {
       cout << "Fail to findArmGraspsConfigs(armId,object,_configs)" << endl;

@@ -339,6 +339,9 @@ class ManipulationData{
     //Setters
 #ifdef GRASP_PLANNING
     inline void setGrasp(gpGrasp* grasp){
+      if(_grasp == grasp){
+        return;
+      }
 			if (!grasp) {
         if(_grasp){
           delete(_grasp);
