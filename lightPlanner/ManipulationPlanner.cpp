@@ -1492,19 +1492,25 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armEscapeObject(int armId, config
   }
 //   activateCcCntrts(_robot, armId, false);
   _robot->isCarryingObject = false;
-  configPt openGraspConfig = _manipConf.getOpenGraspConf(object, armId, *_configs.getGrasp(), qStart);
-  if (openGraspConfig) {
-    _configs.setOpenConfig(openGraspConfig);
-  }else{
+  if(!_configs.getOpenConfig()){
+    configPt openGraspConfig = _manipConf.getOpenGraspConf(object, armId, *_configs.getGrasp(), qStart);
+    if (openGraspConfig) {
+      _configs.setOpenConfig(openGraspConfig);
+      p3d_destroy_config(_robot, openGraspConfig);
+    }else{
       status = MANIPULATION_TASK_NO_GRASP;
+    }
   }
 
   if(status == MANIPULATION_TASK_OK){
-    configPt approachFreeConfig = _manipConf.getApproachFreeConf(object, armId, *(_configs.getGrasp()), qStart, tAtt);
-    if(approachFreeConfig){
-      _configs.setApproachFreeConfig(approachFreeConfig);
-    }else{
-        status = MANIPULATION_TASK_NO_GRASP;
+    if(!_configs.getApproachFreeConfig()){
+      configPt approachFreeConfig = _manipConf.getApproachFreeConf(object, armId, *(_configs.getGrasp()), qStart, tAtt);
+      if(approachFreeConfig){
+        _configs.setApproachFreeConfig(approachFreeConfig);
+        p3d_destroy_config(_robot, approachFreeConfig);
+      }else{
+          status = MANIPULATION_TASK_NO_GRASP;
+      }
     }
   }
   deactivateCcCntrts(_robot, armId);
