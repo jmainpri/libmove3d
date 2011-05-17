@@ -104,20 +104,24 @@ static void writeXmlIkSol(p3d_graph *graph, p3d_node * node, xmlNodePtr parent){
   }
 }
 
-static void writeXmlConfig(xmlNodePtr parent, p3d_graph *graph, p3d_node * node){
+static void writeXmlRobotConfig(xmlNodePtr parent, p3d_rob *robot, configPt q_back){
   xmlNodePtr config = NULL;
   char str[80];
   configPt q;
 
   config = xmlNewChild(parent, NULL, xmlCharStrdup("config"), NULL);
-  q = p3d_copy_config_rad_to_deg(graph->rob,node->q);
-  sprintf(str, "%d", graph->rob->nb_dof);
+  q = p3d_copy_config_rad_to_deg(robot,q_back);
+  sprintf(str, "%d", robot->nb_dof);
   xmlNewProp (config, xmlCharStrdup("num"), xmlCharStrdup(str));
-  for(int i=0; i < graph->rob->nb_dof; i++){
+  for(int i=0; i < robot->nb_dof; i++){
     sprintf(str, "%f", q[i]);
     xmlNewChild(config, NULL, xmlCharStrdup("dofVal"), xmlCharStrdup(str));
   }
-  p3d_destroy_config(graph->rob, q);
+  p3d_destroy_config(robot, q);
+}
+
+static void writeXmlConfig(xmlNodePtr parent, p3d_graph *graph, p3d_node * node){
+  writeXmlRobotConfig(parent, graph->rob, node->q);
 }
 
 static void writeXmlEdge(p3d_graph *graph, p3d_edge * edge, xmlNodePtr parent){
