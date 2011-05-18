@@ -110,22 +110,41 @@ p3d_localpath *p3d_local_planner_array(p3d_rob *robotPt, configPt* q)
   p3d_localpath_type lpl_type = robotPt->lpl_type;
 
 #ifdef  MULTILOCALPATH
-p3d_jnt * jntPt;
-  double vmin,vmax;
- /* Fix the circular jnt */
+  p3d_jnt * jntPt = NULL;
+  double vmin=0.0,vmax=0.0;
+  double diff=0.0;
+  /* Fix the circular jnt */
   int k, njnt = robotPt->njoints, angle =0.0;
   /* translation parameters of main body */
   for (int i=0; i<=njnt; i++) {
-	  jntPt = robotPt->joints[i];
-	  if(jntPt->type == P3D_ROTATE) {
-	     for (int j=0; j<jntPt->dof_equiv_nbr; j++) {
-		k = jntPt->index_dof+j;
-		if (p3d_jnt_is_dof_circular(jntPt, j)){
-		     q[1][k] = q[0][k] + diff_angle(q[0][k], q[1][k]);
-		}
-	     }
-	 }
+    jntPt = robotPt->joints[i];
+    if(jntPt->type == P3D_ROTATE) {
+      for (int j=0; j<jntPt->dof_equiv_nbr; j++) {
+        k = jntPt->index_dof+j;
+        if (p3d_jnt_is_dof_circular(jntPt, j)){
+         // printf("k %d q[0][k] %f q[1][k] %f",k, q[0][k], q[1][k]);
+         q[0][k] =  angle_limit_PI(q[0][k]);
+         // printf(" q[0][k]_modif %f",q[0][k]);
+         diff = diff_angle(q[0][k], q[1][k]);
+         q[1][k] = q[0][k] + diff_angle(q[0][k], q[1][k]);
+         // printf(" diff %f q[1][k] %f\n",diff, q[1][k] );
+        }
+      }
+    }
   }
+  //   printf("After\n");
+  //   p3d_set_and_update_this_robot_conf(robotPt, q[1]);
+  //   p3d_get_robot_config_into(robotPt, &q[1]);
+  //   //print_config(robotPt, q[1]); 
+  //   int indexfreeflyer = 37;
+  //   if(fabs(q[1][indexfreeflyer]-q1Tmp[indexfreeflyer]) > EPS6 ||
+  //      fabs(q[1][indexfreeflyer+1]-q1Tmp[indexfreeflyer+1]) > EPS6 ||
+  //      fabs(q[1][indexfreeflyer+2]-q1Tmp[indexfreeflyer+2]) > EPS6) { 
+  //      printf("config differs\n"); 
+  //   }
+  //   p3d_destroy_config(robotPt, q1Tmp);
+  //   p3d_set_and_update_this_robot_conf(robotPt, qTmp);
+  //   p3d_destroy_config(robotPt, qTmp);
 
 
 
@@ -175,23 +194,41 @@ p3d_localpath *p3d_local_planner_array_multisol(p3d_rob *robotPt, configPt* q, i
   p3d_localpath_type lpl_type = robotPt->lpl_type;
 
 #ifdef  MULTILOCALPATH
-p3d_jnt * jntPt;
-  double vmin,vmax;
- /* Fix the circular jnt */
+  p3d_jnt * jntPt = NULL;
+  double vmin=0.0,vmax=0.0;
+  double diff=0.0;
+  /* Fix the circular jnt */
   int k, njnt = robotPt->njoints, angle =0.0;
   /* translation parameters of main body */
   for (int i=0; i<=njnt; i++) {
-	  jntPt = robotPt->joints[i];
-	  if(jntPt->type == P3D_ROTATE) {
-	     for (int j=0; j<jntPt->dof_equiv_nbr; j++) {
-		k = jntPt->index_dof+j;
-		if (p3d_jnt_is_dof_circular(jntPt, j)){
-		     q[1][k] = q[0][k] + diff_angle(q[0][k], q[1][k]);
-		}
-	     }
-	 }
+    jntPt = robotPt->joints[i];
+    if(jntPt->type == P3D_ROTATE) {
+      for (int j=0; j<jntPt->dof_equiv_nbr; j++) {
+        k = jntPt->index_dof+j;
+        if (p3d_jnt_is_dof_circular(jntPt, j)){
+         // printf("k %d q[0][k] %f q[1][k] %f",k, q[0][k], q[1][k]);
+         q[0][k] =  angle_limit_PI(q[0][k]);
+         // printf(" q[0][k]_modif %f",q[0][k]);
+         diff = diff_angle(q[0][k], q[1][k]);
+         q[1][k] = q[0][k] + diff_angle(q[0][k], q[1][k]);
+         // printf(" diff %f q[1][k] %f\n",diff, q[1][k] );
+        }
+      }
+    }
   }
-
+  //   printf("After\n");
+  //   p3d_set_and_update_this_robot_conf(robotPt, q[1]);
+  //   p3d_get_robot_config_into(robotPt, &q[1]);
+  //   //print_config(robotPt, q[1]); 
+  //   int indexfreeflyer = 37;
+  //   if(fabs(q[1][indexfreeflyer]-q1Tmp[indexfreeflyer]) > EPS6 ||
+  //      fabs(q[1][indexfreeflyer+1]-q1Tmp[indexfreeflyer+1]) > EPS6 ||
+  //      fabs(q[1][indexfreeflyer+2]-q1Tmp[indexfreeflyer+2]) > EPS6) { 
+  //      printf("config differs\n"); 
+  //   }
+  //   p3d_destroy_config(robotPt, q1Tmp);
+  //   p3d_set_and_update_this_robot_conf(robotPt, qTmp);
+  //   p3d_destroy_config(robotPt, qTmp);
 
   if (lpl_type == MULTI_LOCALPATH) {
     int nblpGp = 0;
