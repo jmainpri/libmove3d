@@ -104,7 +104,7 @@ static void writeXmlIkSol(p3d_graph *graph, p3d_node * node, xmlNodePtr parent){
   }
 }
 
-static void writeXmlRobotConfig(xmlNodePtr parent, p3d_rob *robot, configPt q_back){
+void writeXmlRobotConfig(xmlNodePtr parent, p3d_rob *robot, configPt q_back){
   xmlNodePtr config = NULL;
   char str[80];
   configPt q;
