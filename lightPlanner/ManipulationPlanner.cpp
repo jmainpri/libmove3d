@@ -403,8 +403,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::getHoldingOpenApproachExtractConf
   double confCost = -1;
     
   configPt qGoal = _manipConf.getFreeHoldingConf(object, armId, grasp, tAtt, confCost, objGoto, placement);
-  
-  if(tAtt[0][0] == 0 && tAtt[0][1] == 0 && tAtt[0][2] == 0 && tAtt[0][3] == 0){
+  p3d_matrix4 tAttTmp;
+  configs.getAttachFrame(tAttTmp);
+  if(tAttTmp[0][0] == 0 && tAttTmp[0][1] == 0 && tAttTmp[0][2] == 0 && tAttTmp[0][3] == 0){
     configs.setAttachFrame(tAtt);
   }
   if (qGoal){
@@ -1175,9 +1176,10 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armTakeToPlace(int armId, configP
   
   status = MANIPULATION_TASK_NO_PLACE;
   int nbTry = 0;
+  ManipulationData manipData(_robot);
   while (status != MANIPULATION_TASK_OK && nbTry < _placementTry){
     ++nbTry;
-    status = getHoldingOpenApproachExtractConfs(object, objGoto, placement, armId, *(_configs.getGrasp()), tAtt, _configs);
+    status = getHoldingOpenApproachExtractConfs(object, objGoto, placement, armId, *(_configs.getGrasp()), tAtt, manipData);
   }
 
 //Compute the approch grasp config for the start config.
@@ -1195,7 +1197,11 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armTakeToPlace(int armId, configP
   }else{
     approachGraspConfig = p3d_copy_config(_robot, _configs.getApproachGraspConfig());
   }
-
+  
+  //set current _configs from manipData
+  _configs.clear();
+  _configs = manipData;
+  
   if (status == MANIPULATION_TASK_OK){
     //Compute the path between theses configurations
     status = armTakeToPlace(armId, qStart, approachGraspConfig, _configs.getApproachGraspConfig(), _configs.getGraspConfig(), object, support, placement, trajs);
@@ -1234,18 +1240,22 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armTakeToPlace(int armId, configP
   checkConfigForCartesianMode(qStart, object);
   if(MPDEBUG){
       ManipulationUtils::copyConfigToFORM(_robot, qStart);
+      showConfig_2(qStart);
   }
   checkConfigForCartesianMode(approachGraspConfig, object);
   if(MPDEBUG){
       ManipulationUtils::copyConfigToFORM(_robot, approachGraspConfig);
+      showConfig_2(approachGraspConfig);
   }
   checkConfigForCartesianMode(approachGraspConfigPlacement, object);
   if(MPDEBUG){
       ManipulationUtils::copyConfigToFORM(_robot, approachGraspConfigPlacement);
+      showConfig_2(approachGraspConfigPlacement);
   }
   checkConfigForCartesianMode(qGoal, object);
   if(MPDEBUG){
       ManipulationUtils::copyConfigToFORM(_robot, qGoal);
+      showConfig_2(qGoal);
   }
 
   p3d_set_and_update_this_robot_conf(_robot, qStart);
