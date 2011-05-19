@@ -35,6 +35,10 @@ void (*ext_g3d_draw_cost_features)();
 void (*ext_g3d_draw_hri_features)();
 
 // --------------------------------------------------------
+// These matrix are drawn in the 
+std::vector<p3d_matrix4*> global_FramesToDraw;
+
+// --------------------------------------------------------
 
 int G3D_DRAW_TRACE = FALSE;
 int G3D_DRAW_OCUR_SPECIAL;
@@ -1340,6 +1344,7 @@ void g3d_draw_env_custom()
   win = g3d_get_cur_win();
 	
   p3d_drawRobotMoveMeshs();
+  
   if(ext_g3d_draw_cost_features!=NULL){
    ext_g3d_draw_cost_features();
   } 
@@ -1358,7 +1363,12 @@ void g3d_draw_env_custom()
     if(ext_g3d_draw_hri_features!=NULL){
    ext_g3d_draw_hri_features();
   } 
-
+  
+  for ( unsigned int i=0; 
+       i<global_FramesToDraw.size(); i++ ) 
+  {
+    g3d_draw_frame( *global_FramesToDraw[i] , 0.30 );
+  }
 }
 
 

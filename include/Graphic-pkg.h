@@ -43,6 +43,7 @@ extern int G3D_DRAW_OCUR_SPECIAL;
 extern int boxlist;	/* liste opengl pour la boite materialisant
 			   l'environnment */
 extern int p3d_numcoll;	/* Variables externes pour le CC */
+extern std::vector<p3d_matrix4*> global_FramesToDraw;
 
 #if defined( QT_GL ) && defined( CXX_PLANNER )
 #include "../qtWindow/qtOpenGL/Widget.hpp"
