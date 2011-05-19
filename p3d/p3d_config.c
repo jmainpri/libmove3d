@@ -531,11 +531,11 @@ int p3d_equal_config_n_offset(p3d_rob* robotPt, int nb_dof, int offset, configPt
      if(j+jntPt->index_dof >= offset &&  j+jntPt->index_dof <  nb_dof+offset)
       if (p3d_jnt_get_dof_is_user(jntPt, j)) {
         if (p3d_jnt_is_dof_circular(jntPt, j) && jntPt->type == P3D_ROTATE) {
-          if (dist_circle(q_i[k], q_f[k]) > EPS6) {
+          if (dist_circle(q_i[k], q_f[k]) > EPS3) {
             return FALSE;
           }
         } else {
-          if (fabs(q_i[k] - q_f[k]) > EPS6) {
+          if (fabs(q_i[k] - q_f[k]) > EPS3) {
             return FALSE;
           }
         }
