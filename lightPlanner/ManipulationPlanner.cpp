@@ -990,14 +990,13 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFreePoint(int armId,
 //! @param object : pointer to the p3d_rob that represent the moving object
 //! @param trajs : the vector of trajector optained
  MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFree(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* support, std::vector <p3d_traj*> &trajs) {
-
     MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
 
   deactivateCcCntrts(_robot, armId);
   p3d_set_and_update_this_robot_conf(_robot, qStart);
 
   p3d_matrix4 tAtt, bakTatt;
-  bool updateTatt;
+  bool updateTatt = false;
   ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
   _configs.getAttachFrame(tAtt);
   if(tAtt[0][0] == 0 && tAtt[0][1] == 0 && tAtt[0][2] == 0 && tAtt[0][3] == 0){
@@ -1025,7 +1024,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFreePoint(int armId,
         status = MANIPULATION_TASK_NO_GRASP;
     }
   }
-
   if (status == MANIPULATION_TASK_OK) {
       //Compute the path between theses configurations
       status = armPickTakeToFree(armId, qStart, qGoal, object, support,
@@ -1617,7 +1615,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     printf("%s: %d: ManipulationPlanner::armPlanTask(): No robot initialized.\n", __FILE__, __LINE__);
     return MANIPULATION_TASK_NOT_INITIALIZED;
   }
-  
   configPt qi = p3d_copy_config(_robot, qStart), qf = p3d_copy_config(_robot, qGoal);
   p3d_rob* cur_robot = (p3d_rob*)p3d_get_desc_curid(P3D_ROBOT);
   p3d_rob* object = p3d_get_robot_by_name(objectName);
@@ -1634,7 +1631,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     ENV.setBool(Env::drawTraj, false);
     checkConfigForCartesianMode(qi, object);
     checkConfigForCartesianMode(qf, object);
-//     showConfig_2(qi);
     ManipulationUtils::fixAllHands(_robot, qi, false);
     ManipulationUtils::fixAllHands(_robot, qf, false);
     p3d_set_and_update_this_robot_conf(_robot, qi);
