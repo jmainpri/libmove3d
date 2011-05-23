@@ -1619,6 +1619,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
   p3d_rob* cur_robot = (p3d_rob*)p3d_get_desc_curid(P3D_ROBOT);
   p3d_rob* object = p3d_get_robot_by_name(objectName);
   if(!object && task != ARM_FREE && task != ARM_EXTRACT ){
+    p3d_destroy_config(_robot, qi);
+    p3d_destroy_config(_robot, qf);
     return MANIPULATION_TASK_UNKNOWN_OBJECT;
   }
   p3d_rob* support = p3d_get_robot_by_name(supportName);
@@ -1633,7 +1635,14 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     checkConfigForCartesianMode(qf, object);
     ManipulationUtils::fixAllHands(_robot, qi, false);
     ManipulationUtils::fixAllHands(_robot, qf, false);
-    p3d_set_and_update_this_robot_conf(_robot, qi);
+//     p3d_set_and_update_this_robot_conf(_robot, qi);
+    if(!p3d_is_collision_free(_robot, qi)){
+      p3d_destroy_config(_robot, qi);
+      p3d_destroy_config(_robot, qf);
+      cout << "qStart in collision" << endl;
+      p3d_print_col_pair();
+      return MANIPULATION_TASK_INVALID_QSTART;
+    }
     //Remove collision tolerence for the object
     if(object){
       p3d_set_collision_tolerance_inhibition(object, TRUE);
