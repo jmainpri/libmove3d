@@ -1635,7 +1635,26 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     checkConfigForCartesianMode(qf, object);
     ManipulationUtils::fixAllHands(_robot, qi, false);
     ManipulationUtils::fixAllHands(_robot, qf, false);
-    p3d_set_and_update_this_robot_conf(_robot, qi);
+//     p3d_set_and_update_this_robot_conf(_robot, qi);
+    if(object){
+      gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
+      gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
+    }
+    if(!p3d_is_collision_free(_robot, qi)){
+      p3d_destroy_config(_robot, qi);
+      p3d_destroy_config(_robot, qf);
+      cout << "qStart in collision" << endl;
+      p3d_print_col_pair();
+      if(object){
+        gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
+        gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
+      }
+      return MANIPULATION_TASK_INVALID_QSTART;
+    }
+    if(object){
+      gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
+      gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId);
+    }
     //Remove collision tolerence for the object
     if(object){
       p3d_set_collision_tolerance_inhibition(object, TRUE);
