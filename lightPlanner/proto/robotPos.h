@@ -3,37 +3,7 @@
 #include "P3d-pkg.h"
 
 #include <map>
-
-/**
- * @breif small class that takes a matrix and extracts the rotation for each axes
- */
-class p3d_objectPos {
-  
-public:
-  p3d_objectPos() { };
-  p3d_objectPos(p3d_matrix4 m) 
-  {
-    p3d_mat4ExtractPosReverseOrder(m, &_x, &_y, &_z, &_rx, &_ry, &_rz);
-  };
-  
-  void setFromMatrix(p3d_matrix4 m)
-  {
-    p3d_mat4ExtractPosReverseOrder(m, &_x, &_y, &_z, &_rx, &_ry, &_rz);
-  };
-  
-  void getMatrix(p3d_matrix4 m)
-  {
-    p3d_mat4PosReverseOrder( m, _x, _y, _z,
-                              _rx, _ry, _rz);
-  };  
-  
-  double _x;//! x the object x coordinate
-  double _y; //! y the object y coordinate
-  double _z; //! z the object z coordinate
-  double _rx; //! rx the object rotation around x axis
-  double _ry; //! ry the object rotation around y axis
-  double _rz; //! rz the object rotation around z axis
-};
+#include "lightPlannerApi.h"
 
 extern void setMaxNumberOfTryForIK(int value);
 extern int getMaxNumberOfTryForIK();
