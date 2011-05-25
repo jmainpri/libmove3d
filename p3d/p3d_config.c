@@ -1009,3 +1009,39 @@ int p3d_isOutOfBounds(p3d_rob* robot, configPt q){
   }
   return isOutOfBounds;
 }
+
+/*  p3d_adaptConfigsForCircularDofs
+ *
+ *  Input:  the robot,
+ *          the two configurations
+ *
+ *  Output: False OK
+ *
+ *
+ *  Description:
+ */
+int p3d_adaptConfigsForCircularDofs(p3d_rob* robotPt, configPt* qi, configPt *qf){
+  p3d_jnt * jntPt = NULL;
+  double vmin=0.0,vmax=0.0;
+  double diff=0.0;
+  /* Fix the circular jnt */
+  int k, njnt = robotPt->njoints, angle =0.0;
+  /* translation parameters of main body */
+  for (int i=0; i<=njnt; i++) {
+    jntPt = robotPt->joints[i];
+    if(jntPt->type == P3D_ROTATE) {
+      for (int j=0; j<jntPt->dof_equiv_nbr; j++) {
+        k = jntPt->index_dof+j;
+        if (p3d_jnt_is_dof_circular(jntPt, j)){
+         // printf("k %d (*qi)[k] %f (*qf)[k] %f",k, (*qi)[k], (*qf)[k]);
+	  (*qi)[k] =  angle_limit_PI((*qi)[k]);
+	  // printf(" (*qi)[k]_modif %f",(*qi)[k]);
+	  diff = diff_angle((*qi)[k], (*qf)[k]);
+	  (*qf)[k] = (*qi)[k] + diff_angle((*qi)[k], (*qf)[k]);
+	  // printf(" diff %f (*qf)[k] %f\n",diff, (*qf)[k] );
+        }
+      }
+    }
+  }
+  return 0;
+}

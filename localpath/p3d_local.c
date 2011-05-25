@@ -110,28 +110,32 @@ p3d_localpath *p3d_local_planner_array(p3d_rob *robotPt, configPt* q)
   p3d_localpath_type lpl_type = robotPt->lpl_type;
 
 #ifdef  MULTILOCALPATH
-  p3d_jnt * jntPt = NULL;
-  double vmin=0.0,vmax=0.0;
-  double diff=0.0;
-  /* Fix the circular jnt */
-  int k, njnt = robotPt->njoints, angle =0.0;
-  /* translation parameters of main body */
-  for (int i=0; i<=njnt; i++) {
-    jntPt = robotPt->joints[i];
-    if(jntPt->type == P3D_ROTATE) {
-      for (int j=0; j<jntPt->dof_equiv_nbr; j++) {
-        k = jntPt->index_dof+j;
-        if (p3d_jnt_is_dof_circular(jntPt, j)){
-         // printf("k %d q[0][k] %f q[1][k] %f",k, q[0][k], q[1][k]);
-         q[0][k] =  angle_limit_PI(q[0][k]);
-         // printf(" q[0][k]_modif %f",q[0][k]);
-         diff = diff_angle(q[0][k], q[1][k]);
-         q[1][k] = q[0][k] + diff_angle(q[0][k], q[1][k]);
-         // printf(" diff %f q[1][k] %f\n",diff, q[1][k] );
-        }
-      }
-    }
-  }
+  //  p3d_jnt * jntPt = NULL;
+  //  double vmin=0.0,vmax=0.0;
+  //  double diff=0.0;
+  //  /* Fix the circular jnt */
+  //  int k, njnt = robotPt->njoints, angle =0.0;
+  //  /* translation parameters of main body */
+  //  for (int i=0; i<=njnt; i++) {
+  //    jntPt = robotPt->joints[i];
+  //    if(jntPt->type == P3D_ROTATE) {
+  //      for (int j=0; j<jntPt->dof_equiv_nbr; j++) {
+  //        k = jntPt->index_dof+j;
+  //        if (p3d_jnt_is_dof_circular(jntPt, j)){
+  //         // printf("k %d q[0][k] %f q[1][k] %f",k, q[0][k], q[1][k]);
+  //         q[0][k] =  angle_limit_PI(q[0][k]);
+  //         // printf(" q[0][k]_modif %f",q[0][k]);
+  //         diff = diff_angle(q[0][k], q[1][k]);
+  //         q[1][k] = q[0][k] + diff_angle(q[0][k], q[1][k]);
+  //         // printf(" diff %f q[1][k] %f\n",diff, q[1][k] );
+  //        }
+  //      }
+  //    }
+  //  }
+
+  p3d_adaptConfigsForCircularDofs(robotPt, &(q[0]), &(q[1]));
+
+
   //   printf("After\n");
   //   p3d_set_and_update_this_robot_conf(robotPt, q[1]);
   //   p3d_get_robot_config_into(robotPt, &q[1]);
@@ -194,28 +198,11 @@ p3d_localpath *p3d_local_planner_array_multisol(p3d_rob *robotPt, configPt* q, i
   p3d_localpath_type lpl_type = robotPt->lpl_type;
 
 #ifdef  MULTILOCALPATH
-  p3d_jnt * jntPt = NULL;
-  double vmin=0.0,vmax=0.0;
-  double diff=0.0;
-  /* Fix the circular jnt */
-  int k, njnt = robotPt->njoints, angle =0.0;
-  /* translation parameters of main body */
-  for (int i=0; i<=njnt; i++) {
-    jntPt = robotPt->joints[i];
-    if(jntPt->type == P3D_ROTATE) {
-      for (int j=0; j<jntPt->dof_equiv_nbr; j++) {
-        k = jntPt->index_dof+j;
-        if (p3d_jnt_is_dof_circular(jntPt, j)){
-         // printf("k %d q[0][k] %f q[1][k] %f",k, q[0][k], q[1][k]);
-         q[0][k] =  angle_limit_PI(q[0][k]);
-         // printf(" q[0][k]_modif %f",q[0][k]);
-         diff = diff_angle(q[0][k], q[1][k]);
-         q[1][k] = q[0][k] + diff_angle(q[0][k], q[1][k]);
-         // printf(" diff %f q[1][k] %f\n",diff, q[1][k] );
-        }
-      }
-    }
-  }
+
+
+  p3d_adaptConfigsForCircularDofs(robotPt, &(q[0]), &(q[1]));
+
+
   //   printf("After\n");
   //   p3d_set_and_update_this_robot_conf(robotPt, q[1]);
   //   p3d_get_robot_config_into(robotPt, &q[1]);

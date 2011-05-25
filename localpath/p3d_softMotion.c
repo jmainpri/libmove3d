@@ -98,26 +98,29 @@ p3d_localpath *p3d_softMotion_localplanner(p3d_rob *robotPt, int multiLocalpathI
     p3d_set_search_status(P3D_ILLEGAL_GOAL);
     return(NULL);
   }
-  
-//  p3d_localpath *localpathCostPt=NULL;
-//
-//  if( ext_compute_localpath_kin_cost != constant_kin_cost )
-//  {
-//    localpathCostPt = p3d_linear_localplanner(robotPt, qi, qf, ikSol);
-//    softMotion_data->kinematic_cost = ext_compute_localpath_kin_cost( robotPt, localpathCostPt );
-//    localpathCostPt->destroy(robotPt,localpathCostPt);
-//  }
-//  else
-//  {
-//    softMotion_data->kinematic_cost = ext_compute_localpath_kin_cost( robotPt, localpathCostPt );
-//  }
-//  
-//  for( int i=0 ; i<softMotion_data->nbDofs; i++)
-//  {
-//    softMotion_data->specific->J_max[i] *=  softMotion_data->kinematic_cost;
-//    softMotion_data->specific->A_max[i] *=  softMotion_data->kinematic_cost;
-//    softMotion_data->specific->V_max[i] *=  softMotion_data->kinematic_cost;
-//  }
+
+  p3d_adaptConfigsForCircularDofs(robotPt, &qi, &qf);
+  p3d_copy_config_into(robotPt, qf, &qfp1);
+
+  //  p3d_localpath *localpathCostPt=NULL;
+  //
+  //  if( ext_compute_localpath_kin_cost != constant_kin_cost )
+  //  {
+  //    localpathCostPt = p3d_linear_localplanner(robotPt, qi, qf, ikSol);
+  //    softMotion_data->kinematic_cost = ext_compute_localpath_kin_cost( robotPt, localpathCostPt );
+  //    localpathCostPt->destroy(robotPt,localpathCostPt);
+  //  }
+  //  else
+  //  {
+  //    softMotion_data->kinematic_cost = ext_compute_localpath_kin_cost( robotPt, localpathCostPt );
+  //  }
+  //  
+  //  for( int i=0 ; i<softMotion_data->nbDofs; i++)
+  //  {
+  //    softMotion_data->specific->J_max[i] *=  softMotion_data->kinematic_cost;
+  //    softMotion_data->specific->A_max[i] *=  softMotion_data->kinematic_cost;
+  //    softMotion_data->specific->V_max[i] *=  softMotion_data->kinematic_cost;
+  //  }
   
   if(p3d_get_search_verbose()){
     PrintInfo(("MP: p3d_softMotion_localplanner : "));
