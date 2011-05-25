@@ -18,7 +18,6 @@
 #include "move3d-headless.h"
 
 #include "ManipulationPlanner.hpp"
-#include <build/install/include/libmove3d/graphic/proto/g3d_draw_env_proto.h>
 
 static bool MPDEBUG=false;
 
