@@ -750,8 +750,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFreePoint(int armId, configP
     }
     p3d_set_and_update_this_robot_conf(_robot, qStart);
     p3d_compute_Tatt(mData.getCcCntrt());
-    p3d_mat4Copy(mData.getCcCntrt()->Tatt, tAtt);
   }
+  p3d_mat4Copy(mData.getCcCntrt()->Tatt, tAtt);
   configPt qGoal = _manipConf.getFreeHoldingConf(object, armId, grasp, tAtt, confCost, objGoto, NULL);
   if(qGoal){
     status = armToFree(armId, qStart, qGoal, true, object ,trajs);
