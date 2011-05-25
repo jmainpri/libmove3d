@@ -18,6 +18,7 @@
 #include "move3d-headless.h"
 
 #include "ManipulationPlanner.hpp"
+#include <build/install/include/libmove3d/graphic/proto/g3d_draw_env_proto.h>
 
 static bool MPDEBUG=false;
 
@@ -740,11 +741,27 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFreePoint(int armId, configP
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   gpGrasp grasp;
   double confCost = -1;
-  configPt qGoal = _manipConf.getFreeHoldingConf(object, armId, grasp, (*_robot->armManipulationData)[armId].getCcCntrt()->Tatt, confCost, objGoto, NULL);
+  ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
+  p3d_matrix4 tAtt, bakTatt;
+  if(object){
+    p3d_mat4Copy(mData.getCcCntrt()->Tatt, bakTatt);
+    desactivateTwoJointsFixCntrt(_robot,mData.getManipulationJnt(), mData.getCcCntrt()->pasjnts[ mData.getCcCntrt()->npasjnts-1 ]);
+    for(int i = 0; i < mData.getManipulationJnt()->dof_equiv_nbr; i++){
+      qStart[mData.getManipulationJnt()->index_dof + i] = p3d_jnt_get_dof(object->joints[1], i);
+    }
+    p3d_set_and_update_this_robot_conf(_robot, qStart);
+    p3d_compute_Tatt(mData.getCcCntrt());
+    p3d_mat4Copy(mData.getCcCntrt()->Tatt, tAtt);
+  }
+  configPt qGoal = _manipConf.getFreeHoldingConf(object, armId, grasp, tAtt, confCost, objGoto, NULL);
   if(qGoal){
     status = armToFree(armId, qStart, qGoal, true, object ,trajs);
   }else{
     status = MANIPULATION_TASK_NO_TRAJ_FOUND;
+  }
+  
+  if(object){
+    p3d_mat4Copy(mData.getCcCntrt()->Tatt, bakTatt);
   }
   p3d_destroy_config(_robot, qGoal);
   return status;
