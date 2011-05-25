@@ -21,6 +21,12 @@ public:
     p3d_mat4ExtractPosReverseOrder(m, &_x, &_y, &_z, &_rx, &_ry, &_rz);
   };
   
+  void getMatrix(p3d_matrix4 m)
+  {
+    p3d_mat4PosReverseOrder( m, _x, _y, _z,
+                              _rx, _ry, _rz);
+  };  
+  
   double _x;//! x the object x coordinate
   double _y; //! y the object y coordinate
   double _z; //! z the object z coordinate
