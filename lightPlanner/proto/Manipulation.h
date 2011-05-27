@@ -1,7 +1,11 @@
 #ifndef __MANIPULATION_H__
 #define __MANIPULATION_H__
+
+#if defined (GRASP_PLANNING) && defined (LIGHT_PLANNER)
+
 #include <vector>
 #include <map>
+
 #include "GraspPlanning-pkg.h"
 
 #include "P3d-pkg.h"
@@ -232,5 +236,7 @@ class  Manipulation_JIDO {
      int computeRRT();
      int computeOptimTraj();
 };
+
+#endif
 
 #endif

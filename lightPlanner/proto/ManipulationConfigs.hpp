@@ -1,6 +1,8 @@
 #ifndef __MANIPULATIONCONFIGS_HPP__
 #define __MANIPULATIONCONFIGS_HPP__
 
+#if defined (LIGHT_PLANNER) && defined (GRASP_PLANNING)
+
 #include "P3d-pkg.h"
 #include "GraspPlanning-pkg.h"
 
@@ -62,4 +64,5 @@ class  ManipulationConfigs {
     double _approachGraspOffset;
 };
 
+#endif
 #endif

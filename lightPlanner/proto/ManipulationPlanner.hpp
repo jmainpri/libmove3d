@@ -1,6 +1,8 @@
 #ifndef __MANIPULATIONPLANNER_HPP__
 #define __MANIPULATIONPLANNER_HPP__
 
+#if defined (LIGHT_PLANNER) && defined (GRASP_PLANNING)
+
 #include "P3d-pkg.h"
 #include "Localpath-pkg.h"
 
@@ -214,3 +216,5 @@ class  ManipulationPlanner {
 };
 
 #endif
+
+#endif 

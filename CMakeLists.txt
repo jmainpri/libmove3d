@@ -12,7 +12,7 @@ set( CPACK_PACKAGE_VERSION_MAJOR 3)
 endif( NOT CPACK_PACKAGE_VERSION_MAJOR)
 
 if( NOT CPACK_PACKAGE_VERSION_MINOR)
-set( CPACK_PACKAGE_VERSION_MINOR 12)
+set( CPACK_PACKAGE_VERSION_MINOR 13)
 endif( NOT CPACK_PACKAGE_VERSION_MINOR)
 
 if( NOT CPACK_PACKAGE_VERSION_PATCH)
@@ -97,7 +97,7 @@ ENDMACRO(BM3D_ProcessCompilationFlags)
 
 MACRO(BM3D_SetCompilationFlags)
 
-  IF( GENERATE_LIBMOVE3D )
+  IF( GENERATE_LIBMOVE3D OR GENERATE_LIBCORE)
 	  MESSAGE("You are building the libmove3d library.")
   ELSEIF( GENERATE_VIEWER_LIB )
 	  MESSAGE("You are building the libmove3d library for stand-alone move3d viewer.")
@@ -179,7 +179,9 @@ BM3D_flag(USE_GBM "Compilation with the gbM package" OFF)
 
 # META flags ------
 #------------------
-BM3D_flag(GENERATE_LIBMOVE3D "Set required options to compile the core libmove3d, without user interface" OFF MOVE3D_ROBOTICS USE_GLUT)
+BM3D_flag(GENERATE_LIBCORE "Set required options to compile the core libmove3d, without user interface" OFF)
+
+BM3D_flag(GENERATE_LIBMOVE3D "Set required options to compile the core libmove3d for robotics, without user interface" OFF MOVE3D_ROBOTICS USE_GLUT)
 
 BM3D_flag(GENERATE_VIEWER_LIB "Set the required options to compile the stand-alone move3d viewer (requires SPARK at run-time)" OFF MOVE3D_ROBOTICS MOVE3D_CORE QT_LIBRARY QT_GL)
 
@@ -546,7 +548,7 @@ IF(GENERATE_VIEWER_LIB) #Install the move3d-viewer library + the headers
 			DESTINATION include/libmove3d-viewer 
 			FILES_MATCHING REGEX "\\.[h|hpp]")
 
-ELSEIF(GENERATE_LIBMOVE3D) # Only install the library and the headers
+ELSEIF(GENERATE_LIBMOVE3D OR GENERATE_LIBCORE) # Only install the library and the headers
 	
 	ADD_LIBRARY(move3d SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
 	TARGET_LINK_LIBRARIES(move3d ${LIBS} m)
