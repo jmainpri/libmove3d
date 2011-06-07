@@ -19,7 +19,7 @@
 #define GROUND_HEIGHT_H
 #ifdef __cplusplus
 
-
+#include <stddef.h>
 #include <vector>
 
 /*! \brief Computation of the intersection of a vertical straight line with the ground.
