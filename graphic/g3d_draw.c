@@ -972,6 +972,48 @@ void g3d_draw_simple_box(double x1,double x2,double y1,
   glPopAttrib();
 }
 
+void g3d_draw_complex_black_box(double p2[8][3])
+{
+  glDisable(GL_LIGHTING);
+  glColor3f(0.0, 0.0, 0.0);
+  glBegin(GL_LINES);
+  glVertex3dv(p2[0]);
+  glVertex3dv(p2[1]);
+  glVertex3dv(p2[0]);
+  glVertex3dv(p2[2]);
+  glVertex3dv(p2[0]);
+  glVertex3dv(p2[4]);
+  glVertex3dv(p2[1]);
+  glVertex3dv(p2[3]);
+  glVertex3dv(p2[1]);
+  glVertex3dv(p2[5]);
+  
+  glVertex3dv(p2[2]);
+  glVertex3dv(p2[3]);
+  glVertex3dv(p2[2]);
+  glVertex3dv(p2[6]);
+  glVertex3dv(p2[3]);
+  glVertex3dv(p2[7]);
+  glVertex3dv(p2[4]);
+  glVertex3dv(p2[5]);
+  glVertex3dv(p2[4]);
+  glVertex3dv(p2[6]);
+  
+  glVertex3dv(p2[3]);
+  glVertex3dv(p2[7]);
+  glVertex3dv(p2[4]);
+  glVertex3dv(p2[5]);
+  glVertex3dv(p2[4]);
+  glVertex3dv(p2[6]);
+  glVertex3dv(p2[5]);
+  glVertex3dv(p2[7]);
+  glVertex3dv(p2[6]);
+  glVertex3dv(p2[7]);
+  glEnd();
+  glEnable(GL_LIGHTING);
+}
+
+
 //! @ingroup graphic
 //! Fonction tracant une boite en couleur donnee
 void g3d_draw_a_box(double x1,double x2,double y1,

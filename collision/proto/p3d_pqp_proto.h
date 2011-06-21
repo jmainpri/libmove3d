@@ -95,6 +95,10 @@ extern int pqp_draw_model(p3d_obj *object, double red, double green, double blue
 
 extern void pqp_draw_all_models();
 
+extern int pqp_get_OBB_first_level(p3d_obj *object, double box[8][3] );
+
+extern void pqp_draw_OBB_first_level(p3d_obj *object );
+
 extern void pqp_draw_OBBs_recursive(p3d_obj *object, double M[4][4], int bn, int currentLevel, int level);
 
 extern int pqp_draw_OBBs(p3d_obj *object, int level);

@@ -14,6 +14,7 @@ extern void g3d_drawCircle ( double x, double y, double r, int color, double *co
 extern void g3d_drawOneLine ( double x1, double y1, double z1, double x2, double y2, double z2, int color, double *color_vect );
 extern void g3d_draw_rep_obj ( p3d_jnt *jnt, double a, int num );
 extern void g3d_draw_simple_box(double x1,double x2,double y1,double y2,double z1,double z2, int color, int fill, double width);
+extern void g3d_draw_complex_black_box(double p2[8][3]);
 extern void g3d_draw_a_box ( double x1, double x2, double y1, double y2, double z1, double z2, int c, int fill );
 extern void g3d_draw_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float z, float dimX, float dimY);
 extern void g3d_draw_tesselated_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float z, float dimX, float dimY, float delta);

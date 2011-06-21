@@ -2479,6 +2479,254 @@ void pqp_draw_all_models()
     }
 }
 
+int pqp_get_OBB_first_level(p3d_obj *object , double box[8][3] )
+{
+  if(pqp_is_pure_graphic(object))
+  {  return FALSE;  }
+  
+  int bn = 0;
+  int i, j;
+  p3d_matrix4 pose;
+  double M[4][4], M2[4][4], M3[4][4];
+  double p1[8][3];
+  double t1[3], t2[3], t3[3];
+  
+#ifdef PQP_DEBUG
+  if(object==NULL)
+  {
+    printf("%s: %d: pqp_draw_OBBs_first_level(): argument 1 (p3d_obj *) is NULL.\n", __FILE__, __LINE__);
+    return FALSE;
+  }
+  if(object->pqpModel==NULL)
+  {
+    printf("%s: %d: pqp_draw_OBBs_first_level(): the p3d_obj variable (%s) has no PQP model.\n", __FILE__, __LINE__, object->name);
+    return FALSE;
+  }
+#endif
+  
+  PQP_Model *pqpModel= (PQP_Model *) object->pqpModel;
+  
+  BV* bv= pqpModel->child(bn);
+  if(bv==NULL)
+    return FALSE;
+  
+  M2[0][0]= bv->R[0][0];
+  M2[0][1]= bv->R[0][1];
+  M2[0][2]= bv->R[0][2];
+  M2[0][3]= bv->To[0];
+  
+  M2[1][0]= bv->R[1][0];
+  M2[1][1]= bv->R[1][1];
+  M2[1][2]= bv->R[1][2];
+  M2[1][3]= bv->To[1];
+  
+  M2[2][0]= bv->R[2][0];
+  M2[2][1]= bv->R[2][1];
+  M2[2][2]= bv->R[2][2];
+  M2[2][3]= bv->To[2];
+  
+  M2[3][0]= 0;
+  M2[3][1]= 0;
+  M2[3][2]= 0;
+  M2[3][3]= 1;
+  
+//  for(i=0; i<4; i++)
+//  {
+//    for(j=0; j<4; j++)
+//    {
+//      M3[i][j] = M2[0][j] + M2[1][j] + M2[2][j] + M2[3][j];
+//    }
+//  }
+  
+  p1[0][0]=  bv->d[0];
+  p1[0][1]=  bv->d[1];
+  p1[0][2]=  bv->d[2];
+  
+  p1[1][0]=  bv->d[0];
+  p1[1][1]=  bv->d[1];
+  p1[1][2]= -bv->d[2];
+  
+  p1[2][0]=  bv->d[0];
+  p1[2][1]= -bv->d[1];
+  p1[2][2]=  bv->d[2];
+  
+  p1[3][0]=  bv->d[0];
+  p1[3][1]= -bv->d[1];
+  p1[3][2]= -bv->d[2];
+  
+  p1[4][0]= -bv->d[0];
+  p1[4][1]=  bv->d[1];
+  p1[4][2]=  bv->d[2];
+  
+  p1[5][0]= -bv->d[0];
+  p1[5][1]=  bv->d[1];
+  p1[5][2]= -bv->d[2];
+  
+  p1[6][0]= -bv->d[0];
+  p1[6][1]= -bv->d[1];
+  p1[6][2]=  bv->d[2];
+  
+  p1[7][0]= -bv->d[0];
+  p1[7][1]= -bv->d[1];
+  p1[7][2]= -bv->d[2];
+  
+  for(i=0; i<8; i++)
+  {
+    for(j=0; j<3; j++)
+    {
+      box[i][j]= M2[j][0]*p1[i][0] + M2[j][1]*p1[i][1] + M2[j][2]*p1[i][2] + M2[j][3];
+    }
+  }
+  
+  return TRUE;
+}
+
+//! Recursive function used by the function pqp_draw_OBBs (see below).
+void pqp_draw_OBB_first_level(p3d_obj *object)
+{
+  if(pqp_is_pure_graphic(object))
+  {  return;  }
+  
+  int bn = 0;
+  int i, j;
+  p3d_matrix4 pose;
+  double M[4][4], M2[4][4], M3[4][4];
+  double p1[8][3], p2[8][3];
+  double t1[3], t2[3], t3[3];
+  
+  pqp_get_obj_pos(object, pose);
+  
+  M[0][0]= pose[0][0];    M[0][1]= pose[0][1];    M[0][2]= pose[0][2];    M[0][3]= pose[0][3];
+  M[1][0]= pose[1][0];    M[1][1]= pose[1][1];    M[1][2]= pose[1][2];    M[1][3]= pose[1][3];
+  M[2][0]= pose[2][0];    M[2][1]= pose[2][1];    M[2][2]= pose[2][2];    M[2][3]= pose[2][3];
+  M[3][0]=          0;    M[3][1]=          0;    M[3][2]=          0;    M[3][3]=          1;
+  
+#ifdef PQP_DEBUG
+  if(object==NULL)
+  {
+    printf("%s: %d: pqp_draw_OBBs_first_level(): argument 1 (p3d_obj *) is NULL.\n", __FILE__, __LINE__);
+    return;
+  }
+  if(object->pqpModel==NULL)
+  {
+    printf("%s: %d: pqp_draw_OBBs_first_level(): the p3d_obj variable (%s) has no PQP model.\n", __FILE__, __LINE__, object->name);
+    return;
+  }
+#endif
+  
+  PQP_Model *pqpModel= (PQP_Model *) object->pqpModel;
+  
+  BV* bv= pqpModel->child(bn);
+  if(bv==NULL)
+    return;
+  
+  M2[0][0]= bv->R[0][0];
+  M2[0][1]= bv->R[0][1];
+  M2[0][2]= bv->R[0][2];
+  M2[0][3]= bv->To[0];
+  
+  M2[1][0]= bv->R[1][0];
+  M2[1][1]= bv->R[1][1];
+  M2[1][2]= bv->R[1][2];
+  M2[1][3]= bv->To[1];
+  
+  M2[2][0]= bv->R[2][0];
+  M2[2][1]= bv->R[2][1];
+  M2[2][2]= bv->R[2][2];
+  M2[2][3]= bv->To[2];
+  
+  M2[3][0]= 0;
+  M2[3][1]= 0;
+  M2[3][2]= 0;
+  M2[3][3]= 1;
+  
+  for(i=0; i<4; i++)
+  {
+    for(j=0; j<4; j++)
+    {
+      M3[i][j] = M[i][0]*M2[0][j] + M[i][1]*M2[1][j] + M[i][2]*M2[2][j] + M[i][3]*M2[3][j];
+    }
+  }
+  
+  p1[0][0]=  bv->d[0];
+  p1[0][1]=  bv->d[1];
+  p1[0][2]=  bv->d[2];
+  
+  p1[1][0]=  bv->d[0];
+  p1[1][1]=  bv->d[1];
+  p1[1][2]= -bv->d[2];
+  
+  p1[2][0]=  bv->d[0];
+  p1[2][1]= -bv->d[1];
+  p1[2][2]=  bv->d[2];
+  
+  p1[3][0]=  bv->d[0];
+  p1[3][1]= -bv->d[1];
+  p1[3][2]= -bv->d[2];
+  
+  p1[4][0]= -bv->d[0];
+  p1[4][1]=  bv->d[1];
+  p1[4][2]=  bv->d[2];
+  
+  p1[5][0]= -bv->d[0];
+  p1[5][1]=  bv->d[1];
+  p1[5][2]= -bv->d[2];
+  
+  p1[6][0]= -bv->d[0];
+  p1[6][1]= -bv->d[1];
+  p1[6][2]=  bv->d[2];
+  
+  p1[7][0]= -bv->d[0];
+  p1[7][1]= -bv->d[1];
+  p1[7][2]= -bv->d[2];
+  
+  for(i=0; i<8; i++)
+  {
+    for(j=0; j<3; j++)
+    {
+      p2[i][j]= M3[j][0]*p1[i][0] + M3[j][1]*p1[i][1] + M3[j][2]*p1[i][2] + M3[j][3];
+    }
+  }
+  
+  glDisable(GL_LIGHTING);
+  glColor3f(0.0, 0.0, 0.0);
+  glBegin(GL_LINES);
+  glVertex3dv(p2[0]);
+  glVertex3dv(p2[1]);
+  glVertex3dv(p2[0]);
+  glVertex3dv(p2[2]);
+  glVertex3dv(p2[0]);
+  glVertex3dv(p2[4]);
+  glVertex3dv(p2[1]);
+  glVertex3dv(p2[3]);
+  glVertex3dv(p2[1]);
+  glVertex3dv(p2[5]);
+  
+  glVertex3dv(p2[2]);
+  glVertex3dv(p2[3]);
+  glVertex3dv(p2[2]);
+  glVertex3dv(p2[6]);
+  glVertex3dv(p2[3]);
+  glVertex3dv(p2[7]);
+  glVertex3dv(p2[4]);
+  glVertex3dv(p2[5]);
+  glVertex3dv(p2[4]);
+  glVertex3dv(p2[6]);
+  
+  glVertex3dv(p2[3]);
+  glVertex3dv(p2[7]);
+  glVertex3dv(p2[4]);
+  glVertex3dv(p2[5]);
+  glVertex3dv(p2[4]);
+  glVertex3dv(p2[6]);
+  glVertex3dv(p2[5]);
+  glVertex3dv(p2[7]);
+  glVertex3dv(p2[6]);
+  glVertex3dv(p2[7]);
+  glEnd();
+  glEnable(GL_LIGHTING);
+}
+
 //! Recursive function used by the function pqp_draw_OBBs (see below).
 void pqp_draw_OBBs_recursive(p3d_obj *object, double M[4][4], int bn, int currentLevel, int level)
 {
@@ -2506,7 +2754,6 @@ void pqp_draw_OBBs_recursive(p3d_obj *object, double M[4][4], int bn, int curren
     }
 
     PQP_Model *pqpModel= (PQP_Model *) object->pqpModel;
-
 
     BV* bv= pqpModel->child(bn);
     if(bv==NULL)
@@ -2617,6 +2864,7 @@ void pqp_draw_OBBs_recursive(p3d_obj *object, double M[4][4], int bn, int curren
                 p2[i][j]= M3[j][0]*p1[i][0] + M3[j][1]*p1[i][1] + M3[j][2]*p1[i][2] + M3[j][3];
               }
             }
+            
             glDisable(GL_LIGHTING);
             glColor3f(0.0, 0.0, 0.0);
             glBegin(GL_LINES);
@@ -2691,7 +2939,7 @@ int pqp_draw_OBBs(p3d_obj *object, int level)
     M[2][0]= pose[2][0];    M[2][1]= pose[2][1];    M[2][2]= pose[2][2];    M[2][3]= pose[2][3];
     M[3][0]=          0;    M[3][1]=          0;    M[3][2]=          0;    M[3][3]=          1;
     pqp_draw_OBBs_recursive(object, M, 0, 0, level);
-return PQP_OK;
+    return PQP_OK;
    double p1[8][3], p2[8][3];
    BV *bv= NULL;
    bv= object->pqpModel->child(0);
@@ -2848,7 +3096,7 @@ int pqp_top_OBB(p3d_obj *object, double &tx, double &ty, double &tz, double &ax,
    pose[2][0]= bv->R[2][0];    pose[2][1]= bv->R[2][2];    pose[2][2]= bv->R[2][2];    pose[2][3]= bv->To[2];
    pose[3][0]= 0;              pose[3][1]= 0;              pose[3][2]= 0;              pose[3][3]= 1;
 
-p3d_mat4Print(pose,"pose");
+    p3d_mat4Print(pose,"pose");
     p3d_matInvertXform(pose, pose_inv);
 
    p3d_mat4Mult(pose, pose0, T);
