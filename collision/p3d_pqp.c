@@ -3739,6 +3739,78 @@ int pqp_obj_environment_collision_test(p3d_obj *obj)
 }
 
 //! @ingroup pqp
+//! Performs all the collision tests (robot-robot, robot-environment)
+//! for the given robot only.
+//! Returns 1 in case of collision, 0 otherwise.
+int pqp_robot_all_no_self_collision_test(p3d_rob *robot)
+{
+ #ifdef PQP_DEBUG
+  if(robot==NULL)
+  {
+    printf("%s: %d: pqp_robot_all_collision_test(): the input is NULL.\n",__FILE__,__LINE__);
+    return PQP_ERROR;
+  }
+ #endif
+
+  int i, nb_cols= 0;
+
+  //collisions against other robots:
+  for(i=0; i<XYZ_ENV->nr; i++)
+  {
+    if(XYZ_ENV->robot[i]==robot)
+    {  continue;  }
+
+//     #ifdef LIGHT_PLANNER
+//     if(XYZ_ENV->robot[i]==robot->carriedObject && robot->isCarryingObject==1)
+//     {
+//       nb_cols= pqp_robot_robot_collision_test_without_contact_surface(robot, robot->carriedObject);
+//       if(nb_cols!=0)
+//       {  return 1;  }
+//       continue;
+//     }
+//     #endif
+
+    nb_cols= pqp_robot_robot_collision_test(XYZ_ENV->robot[i], robot);
+    //std::cout << "Collision with robot : " << XYZ_ENV->robot[i]->name << " , is " << nb_cols << std::endl;
+    if(nb_cols!=0)
+    {  return 1;  }
+  }
+
+  //collisions against environment:
+  nb_cols= pqp_robot_environment_collision_test(robot);
+  if(nb_cols!=0)
+  {  return 1;  }
+
+ #ifdef LIGHT_PLANNER
+
+  if(robot->isCarryingObject==TRUE)
+  {
+    for(unsigned int i = 0; i < robot->armManipulationData->size(); i++){
+      p3d_rob* carriedObject = (*robot->armManipulationData)[i].getCarriedObject();
+      if(carriedObject != NULL){
+        //carried object vs environment:
+        nb_cols= pqp_robot_environment_collision_test(carriedObject);
+        if(nb_cols!=0){  return 1; }
+        //carried object vs other robots:
+        for(i=0; i<XYZ_ENV->nr; i++)
+        {
+          if(XYZ_ENV->robot[i]==robot || XYZ_ENV->robot[i]==carriedObject){  continue;  }
+          for(unsigned int j = 0; j < i; j++){
+            if(carriedObject == (*robot->armManipulationData)[j].getCarriedObject()){ continue; }
+          }
+
+          nb_cols= pqp_robot_robot_collision_test(XYZ_ENV->robot[i], carriedObject);
+          if(nb_cols!=0){  return 1;  }
+        }
+      }
+    }
+  }
+ #endif
+
+  return 0;
+}
+
+//! @ingroup pqp
 //! Performs all the collision tests (robot-robot, robot-environment and robot self-collisions)
 //! for the given robot only.
 //! Returns 1 in case of collision, 0 otherwise.

@@ -1363,12 +1363,12 @@ void g3d_draw_env_custom()
     if(ext_g3d_draw_hri_features!=NULL){
    ext_g3d_draw_hri_features();
   } 
-  
   for ( unsigned int i=0; 
        i<global_FramesToDraw.size(); i++ ) 
   {
     g3d_draw_frame( *global_FramesToDraw[i] , 0.30 );
   }
+
 }
 
 
@@ -1393,7 +1393,7 @@ void g3d_draw_env()
 	
   g3d_draw_collision_cloud();
 	
-  g3d_draw_env_custom();
+  //g3d_draw_env_custom();
 	
   // check if there was no OpenGL errors:
 //  char message[128];
@@ -1452,9 +1452,11 @@ void g3d_draw_env()
     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robot(robotPt->num, win);
     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
-    //g3d_draw_trace_all_tcur();
+    g3d_draw_trace_all_tcur();
   }
 	
+  //g3d_draw_env_custom();
+
 	// // On dessine la source de lumière sous la forme d'une sphère:
 	//   glDisable( GL_LIGHTING );
 	//   glColor3f(1.0, 1.0, 0.0);
@@ -1586,7 +1588,7 @@ void g3d_draw(void)
 		
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
-	  
+    g3d_draw_env_custom();
 		
 		//g3d_sky_box(win->vs.x, win->vs.y, win->vs.z);
 		
@@ -1609,6 +1611,8 @@ void g3d_draw(void)
     glEnable(GL_CULL_FACE);
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
+    g3d_draw_env_custom();
+
     if (G3D_DRAW_TRACE) 
       g3d_draw_trace();
     glDisable(GL_CULL_FACE);
@@ -1621,6 +1625,7 @@ void g3d_draw(void)
 		
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
+    g3d_draw_env_custom();
 		
     ///////////////////////////////
     // The following commented lines are to be used instead of the three previous ones
@@ -1670,6 +1675,7 @@ void g3d_draw(void)
     win->vs.allIsBlack= TRUE;
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
+    g3d_draw_env_custom();
     glPopMatrix();
     glColorMask(1,1,1,1);
 		
@@ -1719,6 +1725,7 @@ void g3d_draw(void)
         win->vs.allIsBlack= TRUE;
         g3d_draw_robots(win);
         g3d_draw_obstacles(win);
+        g3d_draw_env_custom();
         glPopMatrix();
         glColorMask(1,1,1,1);
         win->vs.allIsBlack= FALSE;
