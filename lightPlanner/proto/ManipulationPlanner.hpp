@@ -72,6 +72,8 @@ class  ManipulationPlanner {
     void setPlacementTry(int nbTry);
     int getPlacementTry(void);
     
+    void setRobotPath(p3d_traj* path) { _robotPath = _robot->tcur; } 
+  
     inline p3d_rob* robot()  const{return _robot;}
 
     inline configPt robotStart() const{if (_robot != NULL) {return _robot->ROBOT_POS;} else {return NULL;}}
