@@ -731,6 +731,8 @@ void g3d_set_shade_material()
 void g3d_draw_frame(void) {
 //   GLdouble mat_ambient_diffuse[4]= { 0., .0, .0, 1.0 };
   g3d_states vs  = g3d_get_cur_states();
+    
+  const bool black=false;
 
   double a= vs.size;
   double a1,a9;
@@ -745,10 +747,16 @@ void g3d_draw_frame(void) {
   glColor3d(0.,0.,0.);
   glLineWidth(2.0);
   glBegin(GL_LINES);
-  glVertex3d(.0, .0, .0);
+  if(!black)
+      glColor3d(0.,0.,1.);
+  glVertex3d(.0, .0, .0);    
   glVertex3d(.0, .0, a);
+  if(!black)  
+      glColor3d(1.,0.,0.);
   glVertex3d(.0, .0, .0);
   glVertex3d(a, .0, .0);
+  if(!black)    
+    glColor3d(0.,1.,0.);
   glVertex3d(.0, .0, .0);
   glVertex3d(.0, a, .0);
   glEnd();
@@ -757,19 +765,25 @@ void g3d_draw_frame(void) {
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
 
+  if(!black)
+      glColor3d(0.,0.,1.);
   glDisable(GL_CULL_FACE);
   glBegin(GL_POLYGON);
   glVertex3d(.0, .0, a);
   glVertex3d(-a1, .0, a9);
   glVertex3d(a1, .0, a9);
-  glEnd();
-
+  glEnd(); 
+  
+  if(!black)
+      glColor3d(1.,0.,0.);
   glBegin(GL_POLYGON);
   glVertex3d(a, .0, .0);
   glVertex3d(a9, .0, -a1);
   glVertex3d(a9, .0, a1);
   glEnd();
 
+  if(!black)
+      glColor3d(0.,1.,0.);
   glBegin(GL_POLYGON);
   glVertex3d(.0, a, .0);
   glVertex3d(.0, a9, -a1);
