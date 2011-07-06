@@ -24,7 +24,6 @@ IF(QT_GL_WIDGET)
   BM3D_SRC_SUBDIR_PROCESS(
   glwidget.cpp 
   )
-  include(${BioMove3D_SOURCE_DIR}/${BM3D_MODULE_NAME}/cppDev/SourceList.cmake)
   BM3D_QT_GENERATE_MOC(proto/glwidget.hpp)
 ENDIF()
 
