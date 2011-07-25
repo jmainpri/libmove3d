@@ -516,6 +516,16 @@ int p3d_del_env(pp3d_env e)
       free(e->name);
       e->name = NULL;
     }
+  
+    if (e->p3d_file_path != NULL){
+      free(e->p3d_file_path);
+      e->p3d_file_path = NULL;
+    }
+  
+    if (e->sce_file_path != NULL){
+      free(e->sce_file_path);
+      e->sce_file_path = NULL;
+    }
 
     /* liberation de tous les obstacles */
     no = e->no;

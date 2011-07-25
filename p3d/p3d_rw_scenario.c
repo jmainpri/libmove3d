@@ -148,6 +148,8 @@ static void save_scenario_name(const char * file){
     tmp_str[i] = '/';
     MY_STRFREE(tmp_str);
   }
+  
+  ((p3d_env *) p3d_get_desc_curid(P3D_ENV))->sce_file_path = strdup( file );
 }
 
 

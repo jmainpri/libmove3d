@@ -47,6 +47,7 @@ int p3d_read_desc ( char *file )
 	}
 	fseek ( fdc, 0, 0 );
 
+  // Saves the DATA Dir
 	ret = ( int ) strlen ( file );
 	strcpy ( DATA_DIR, file );
 	while ( file[--ret] != '/' && ret > 0 )
@@ -55,11 +56,13 @@ int p3d_read_desc ( char *file )
 		DATA_DIR[ret] = '\0';
 	else
 		DATA_DIR[++ret] = '\0';
+  
+  // Saves the DATA File
+  strcpy ( DATA_FILE, file );
 
 //   ret = read_desc(fdc);
 	ret = read_desc ( fdc, ( char* ) "", 1.0, 0 );
 
-	strcpy ( DATA_FILE, file );
 	fclose ( fdc );
 	p3d_BB_init_BB0();
 	return ( TRUE );
@@ -624,9 +627,15 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 				if ( !read_desc_name ( fd, namecompl ) )  return ( read_desc_error ( fct ) );
 			}
 			p3d_beg_desc ( type, namecompl );
-			continue;
+      
+      if ( type == P3D_ENV )
+      {
+        ((p3d_env *) p3d_get_desc_curid(P3D_ENV))->p3d_file_path = strdup( DATA_FILE );
+      }
+      
+      continue;
 		}
-
+    
 		if ( ( strcmp ( fct, "p3d_end_desc" ) == 0 ) || ( strcmp ( fct, "M3D_end_desc" ) == 0 ) )
 		{
 			p3d_end_desc();

@@ -1879,6 +1879,10 @@ void *p3d_beg_env(char* name) {
   memset(e, 0, sizeof(p3d_env));
 
   e->name    = strdup(name);
+  
+  e->p3d_file_path    = NULL;
+  e->sce_file_path    = NULL;
+  
   e->num     = XYZ_NUM_ENV;
   e->box.x1  = P3D_HUGE;
   e->box.y1 = P3D_HUGE;

@@ -8,6 +8,8 @@
 /* Structure d'environnement */
 typedef struct env {
   char      *name;
+  char      *p3d_file_path; /* path to the loaded p3d file */
+  char      *sce_file_path; /* path to the loaded sce file */
   int       num;
   int       nof_objs; /* total number of objects, both obstacles and robot bodies */
   int       no; /* number of obstacles */
