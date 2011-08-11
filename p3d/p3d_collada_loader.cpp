@@ -198,15 +198,9 @@ void p3d_collada_loader::extractAndFillGeometryPositionColor(const domNodeRef li
 		// Ajout de la position du littleNode
 		if(littleNode)
 		{
-			float x=0, y=0, z=0;
 			float rx=0, ry=0, rz=0;
-			// Translation
-			for(size_t n_translate=0; n_translate < littleNode->getTranslate_array().getCount(); n_translate++)
-			{
-				x+=littleNode->getTranslate_array()[n_translate]->getValue()[0];
-				y+=littleNode->getTranslate_array()[n_translate]->getValue()[1];
-				z+=littleNode->getTranslate_array()[n_translate]->getValue()[2];
-			}
+			p3d_poly* poly= p3d_poly_get_poly_by_name ((char*)littleNode->getID());
+
 			// Rotation
 			for(size_t n_rotate=0; n_rotate < littleNode->getRotate_array().getCount(); n_rotate++)
 			{
@@ -218,9 +212,33 @@ void p3d_collada_loader::extractAndFillGeometryPositionColor(const domNodeRef li
 					rz+=littleNode->getRotate_array()[n_rotate]->getValue()[3];
 			}
 
-			cout << "p3d_set_prim_pos " << littleNode->getID() << " " << x << " " << y << " " << z << " " << rx << " "<< ry << " " << rz << endl;
-			p3d_poly* poly= p3d_poly_get_poly_by_name ((char*)littleNode->getID());
-			p3d_set_prim_pos_deg(poly, x, y, z, rx, ry, rz);
+			// Translation
+			if(littleNode->getTranslate_array().getCount()!=0)
+			{
+				float x=0, y=0, z=0;
+				for(size_t n_translate=0; n_translate < littleNode->getTranslate_array().getCount(); n_translate++)
+				{
+					x+=littleNode->getTranslate_array()[n_translate]->getValue()[0];
+					y+=littleNode->getTranslate_array()[n_translate]->getValue()[1];
+					z+=littleNode->getTranslate_array()[n_translate]->getValue()[2];
+				}
+				p3d_set_prim_pos_deg(poly, x, y, z, rx, ry, rz);
+				cout << "p3d_set_prim_pos " << littleNode->getID() << " " << x << " " << y << " " << z << " " << rx << " "<< ry << " " << rz << endl;
+			}
+
+			// Matrix
+			if(littleNode->getMatrix_array().getCount() !=0)
+			{
+				p3d_matrix4 matrix =  {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
+				for(size_t n_matrix=0; n_matrix < littleNode->getMatrix_array().getCount(); n_matrix++)
+				{
+					for(int i=0; i<4; i++)
+						for(int j=0;j<4;j++)
+							matrix[i][j]+=littleNode->getMatrix_array()[n_matrix]->getValue()[i*4+j];
+				}
+				p3d_set_prim_pos_by_mat(poly, matrix);
+			}
+
 	        p3d_scale_prim(poly, scale);
 
 		}
@@ -253,7 +271,7 @@ void p3d_collada_loader::extractAndFillVertices(const domVerticesRef vertices)
             int vertexStride = 3;     //instead of hardcoded stride, should use the 'accessor'
             for(size_t m=0; m<float_array->getValue().getCount(); m=m+vertexStride)
             {
-            	cout << "p3d_add_desc_vert " << list_floats.get(m) << " " << list_floats.get(m+1) << " " << list_floats.get(m+2) << endl;
+            	//cout << "p3d_add_desc_vert " << list_floats.get(m) << " " << list_floats.get(m+1) << " " << list_floats.get(m+2) << endl;
             	p3d_add_desc_vert(list_floats.get(m), list_floats.get(m+1), list_floats.get(m+2) );
 
             }
@@ -284,7 +302,7 @@ void p3d_collada_loader::extractAndFillPolylist(const domPolylistRef polylist)
 	int * listeV = NULL;
 	for(size_t m=0; m<polylist->getVcount()->getValue().getCount(); m++)
 	{
-		cout << "p3d_add_desc_face ";
+		//cout << "p3d_add_desc_face ";
 
 		// Parcourt toutes les vertices des faces
 		size_t num_verts = polylist->getVcount()->getValue()[m];
@@ -292,10 +310,10 @@ void p3d_collada_loader::extractAndFillPolylist(const domPolylistRef polylist)
 		listeV = new int[num_verts];
 		for(size_t n=0; n<num_verts; n++)
 		{
-			cout << polylist->getP()->getValue().get(repere+vertexoffset+polylist_stride*n)+1 << " ";
+			//cout << polylist->getP()->getValue().get(repere+vertexoffset+polylist_stride*n)+1 << " ";
 			listeV[n]=polylist->getP()->getValue().get(repere+vertexoffset+polylist_stride*n)+1;
 		}
-		cout << endl;
+		//cout << endl;
 
 		p3d_add_desc_face(listeV, num_verts);
 		delete listeV;
@@ -328,17 +346,17 @@ void p3d_collada_loader::extractAndFillTriangles(const domTrianglesRef triangles
 	int * listeV = NULL;
 	for(size_t m=0; m<triangles->getCount(); m++)
 	{
-		cout << "p3d_add_desc_face ";
+		//cout << "p3d_add_desc_face ";
 
 		// Parcourt toutes les vertices des faces
 		size_t num_verts = 3; //comme c'est un triangle, il y a en a tj 3
 		listeV = new int[num_verts];
 		for(size_t n=0; n<num_verts; n++)
 		{
-			cout << triangles->getP()->getValue().get(repere+vertexoffset+triangles_stride*n)+1 << " ";
+			//cout << triangles->getP()->getValue().get(repere+vertexoffset+triangles_stride*n)+1 << " ";
 			listeV[n]=triangles->getP()->getValue().get(repere+vertexoffset+triangles_stride*n)+1 ;
 		}
-		cout << endl;
+		//cout << endl;
 
 		p3d_add_desc_face(listeV, num_verts);
 		delete listeV;
