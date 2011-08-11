@@ -220,7 +220,7 @@ void p3d_collada_loader::extractAndFillGeometryPositionColor(const domNodeRef li
 
 			cout << "p3d_set_prim_pos " << littleNode->getID() << " " << x << " " << y << " " << z << " " << rx << " "<< ry << " " << rz << endl;
 			p3d_poly* poly= p3d_poly_get_poly_by_name ((char*)littleNode->getID());
-			p3d_set_prim_pos(poly, x, y, z, rx, ry, rz);
+			p3d_set_prim_pos_deg(poly, x, y, z, rx, ry, rz);
 	        p3d_scale_prim(poly, scale);
 
 		}
