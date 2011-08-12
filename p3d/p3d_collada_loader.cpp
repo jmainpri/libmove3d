@@ -59,6 +59,33 @@ p3d_collada_loader::~p3d_collada_loader()
 	m_root=NULL;
 }
 
+bool p3d_collada_loader::p3d_read_collada(char* filename, char* rootName, double scale)
+{
+	bool chargement_reussi = true;
+
+	// Initialise les variables ColladaDom et ouvre le fichier
+	m_collada = new DAE;
+	m_root = m_collada->open(filename);
+
+	if(!m_root){
+		cout << "L'ouverture du fichier Collada a échoué" << endl;
+		return false;
+	}
+
+	// Récupère l'échelle de la scène
+	if( !!m_root->getAsset() ) {
+        if( !!m_root->getAsset()->getUnit() ) {
+        	this->scale = m_root->getAsset()->getUnit()->getMeter();
+        }
+    }
+	// On multiplie par l'échelle du fichier .p3d
+	this->scale = scale * this->scale;
+
+	chargement_reussi = extractAndFill(rootName);
+
+	return chargement_reussi;
+}
+
 bool p3d_collada_loader::load(const char* filename)
 {
 	bool chargement_reussi = true;
@@ -92,7 +119,7 @@ bool p3d_collada_loader::load(const char* filename)
 	cout << "p3d_end_desc" << endl;
 	p3d_end_desc();
 
-	chargement_reussi = extractAndFill();
+	chargement_reussi = extractAndFill((char *)"ObjetCollada");
 
 	cout << "p3d_end_desc" << endl;
 	p3d_end_desc();
@@ -101,7 +128,7 @@ bool p3d_collada_loader::load(const char* filename)
 }
 
 
-bool p3d_collada_loader::extractAndFill()
+bool p3d_collada_loader::extractAndFill(char* nomObjet)
 {
 	domCOLLADA::domSceneRef all_scene = m_root->getScene();
 	if(!all_scene)
@@ -121,12 +148,7 @@ bool p3d_collada_loader::extractAndFill()
 			domNodeRef node = visual_scene->getNode_array()[i];
 
 			cout << "p3d_beg_desc P3D_ROBOT" << endl;
-			p3d_beg_desc(P3D_ROBOT, (char*)"greiffer");
-
-			// TODO
-			// Ajout d'un FREEFLYER pour avoir un objet movable
-			//p3d_read_jnt_data * data;
-			//data = p3d_create_read_jnt_data(P3D_FREEFLYER);
+			p3d_beg_desc(P3D_ROBOT, nomObjet);
 
 			// Parcours tous les noeuds fils (sous-noeud, littleNode : node/node)
 			for(size_t j=0; j<node->getNode_array().getCount(); j++)

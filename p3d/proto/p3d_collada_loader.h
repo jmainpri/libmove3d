@@ -47,6 +47,15 @@ public :
      */
 	bool load(const char* filename);
 
+    /*!
+     *  \brief Charge un fichier Collada 1.5 dans un environnement P3D (P3D_env)
+     *
+     *  \param filename : le fichier Collada à charger
+     *  \return true si le fichier a correctement été parsé et chargé, false sinon
+     */
+	bool p3d_read_collada(char* filename, char* rootName, double scale);
+
+
 private :
 
 	DAE* m_collada; /*!< Accès vers la librairie ColladaDOM*/
@@ -60,7 +69,7 @@ private :
      *
      *  \return true si le fichier a correctement été parsé, false sinon
      */
-	bool extractAndFill();
+	bool extractAndFill(char* nomObjet);
 
     /*!
      *  \brief Extrait les informations utiles et remplit les structures p3d d'un sous-noeud
