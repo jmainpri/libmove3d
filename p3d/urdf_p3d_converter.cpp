@@ -20,6 +20,7 @@ void add_freeflyer()
 {
   // Ajout d'un FREEFLYER pour avoir un objet movable
   p3d_read_jnt_data * data = p3d_create_read_jnt_data(P3D_FREEFLYER);
+  //data->nb_dof=6;
 
   // p3d_set_prev_jnt
   data->flag_prev_jnt=0;
@@ -40,7 +41,6 @@ void add_freeflyer()
  data->flag_pos = TRUE;
 
   // p3d_set_dof
- data->nb_dof=6;
   for(int i=0; i<6; i++)
           data->v[i]=dtab[i];
   data->flag_v = TRUE;
@@ -57,6 +57,8 @@ void add_freeflyer()
           data->vmax[i]=dtab3[i];
   data->flag_vmax = TRUE;
 
+  data->scale=1;
+
   s_p3d_build_jnt_data(data);
 
   p3d_destroy_read_jnt_data(data);
@@ -66,7 +68,7 @@ void add_rotate()
 {
   // Ajout d'un FREEFLYER pour avoir un objet movable
   p3d_read_jnt_data * data = p3d_create_read_jnt_data(P3D_ROTATE);
-  data->nb_dof=1;
+  //data->nb_dof=1;
 
   // p3d_set_prev_jnt
   data->flag_prev_jnt=0;
@@ -90,6 +92,8 @@ void add_rotate()
   data->vmax[0]=10;
   data->flag_vmax = TRUE;
 
+  data->scale=1;
+
   s_p3d_build_jnt_data(data);
 
   p3d_destroy_read_jnt_data(data);
@@ -99,7 +103,7 @@ void add_translate()
 {
   // Ajout d'un FREEFLYER pour avoir un objet movable
   p3d_read_jnt_data * data = p3d_create_read_jnt_data(P3D_TRANSLATE);
-  data->nb_dof=1;
+  //data->nb_dof=1;
 
   // p3d_set_prev_jnt
   data->flag_prev_jnt=0;
@@ -122,6 +126,55 @@ void add_translate()
   // p3d_set_dof_vmin
   data->vmax[0]=10;
   data->flag_vmax = TRUE;
+
+  data->scale=1;
+
+  s_p3d_build_jnt_data(data);
+
+  p3d_destroy_read_jnt_data(data);
+}
+
+void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_prev_jnt)
+{
+  p3d_read_jnt_data * data;
+  // Ajoute la jointure enfant
+  switch(joint->type)
+  {
+    case Joint::REVOLUTE:
+    case Joint::CONTINUOUS:
+    cout << "p3d_beg_desc_jnt " << "P3D_ROTATE" << endl;
+    data = p3d_create_read_jnt_data(P3D_ROTATE);
+    data->vmin[0]=joint->limits->lower*180/3.14;
+    data->vmax[0]=joint->limits->upper*180/3.14;
+    break;
+    case Joint::PRISMATIC:
+    cout << "p3d_beg_desc_jnt " << "P3D_TRANSLATE" << endl;
+    data = p3d_create_read_jnt_data(P3D_TRANSLATE);
+    data->vmin[0]=joint->limits->lower;
+    data->vmax[0]=joint->limits->upper;
+    break;
+    default :
+    break;
+  }
+
+  // p3d_set_prev_jnt
+  data->flag_prev_jnt=num_prev_jnt;
+  data->flag_prev_jnt = TRUE;
+
+  cout << num_prev_jnt << endl;
+
+  // p3d_set_pos_axe
+  double dtab[6] = {pos_abs_jnt_enf.position.x,pos_abs_jnt_enf.position.y,pos_abs_jnt_enf.position.z,joint->axis.x,joint->axis.y,joint->axis.z};
+  p3d_convert_axe_to_mat(data->pos, dtab);
+  data->flag_pos = TRUE;
+
+  // p3d_set_dof_vmin
+  data->flag_vmin = TRUE;
+
+  // p3d_set_dof_vmax
+  data->flag_vmax = TRUE;
+
+  data->scale=1;
 
   s_p3d_build_jnt_data(data);
 
@@ -150,13 +203,13 @@ int p3d_load_collada(char* filename)
     cout << "p3d_end_desc" << endl;
 
     // Ajout freeflyer
-    //add_freeflyer();
+    add_freeflyer();
 
     // Ajout rotate
     //add_rotate();
 
     // Ajout TRANSLATE
-    add_translate();
+    //add_translate();
 
     cout << "p3d_beg_desc P3D_BODY " << root_link->name << endl;
     p3d_beg_desc(P3D_BODY, (char *)root_link->name.c_str());
@@ -215,39 +268,7 @@ void printTreeV3(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, in
         pos_abs_jnt_enf.position.y=pos_abs_jnt_parent.position.y+joint->parent_to_joint_origin_transform.position.y;
         pos_abs_jnt_enf.position.z=pos_abs_jnt_parent.position.z+joint->parent_to_joint_origin_transform.position.z;
 
-
-        // Ajoute la jointure enfant
-        switch(joint->type)
-        {
-          case Joint::REVOLUTE:
-          case Joint::CONTINUOUS:
-          cout << "p3d_beg_desc_jnt " << "P3D_ROTATE" << endl;
-          cout << "p3d_set_name " << joint->name << endl;
-          cout << "p3d_set_prev_jnt " << num_prev_jnt << endl;
-          cout << "p3d_set_pos_axe " << pos_abs_jnt_enf.position.x << " "<< pos_abs_jnt_enf.position.y << " "<< pos_abs_jnt_enf.position.z << " " << joint->axis.x << " " << joint->axis.y << " " << joint->axis.z << endl;
-          cout << "p3d_set_dof_vmin " << joint->limits->lower*180/3.14 << endl;
-          cout << "p3d_set_dof_vmax " << joint->limits->upper*180/3.14 << endl;
-          cout << "p3d_end_desc" << endl;
-          break;
-          case Joint::PRISMATIC:
-          cout << "p3d_beg_desc_jnt " << "P3D_TRANSLATE" << endl;
-          cout << "p3d_set_name " << joint->name << endl;
-          cout << "p3d_set_prev_jnt " << num_prev_jnt << endl;
-          cout << "p3d_set_pos_axe " << pos_abs_jnt_enf.position.x << " "<< pos_abs_jnt_enf.position.y << " "<< pos_abs_jnt_enf.position.z << " " << joint->axis.x << " " << joint->axis.y << " " << joint->axis.z << endl;
-          cout << "p3d_set_dof_vmin " << joint->limits->lower << endl;
-          cout << "p3d_set_dof_vmax " << joint->limits->upper << endl;
-          cout << "p3d_end_desc" << endl;
-          break;
-          default :
-          cout << "p3d_beg_desc_jnt " << joint->type << endl;
-          cout << "p3d_set_name " << joint->name << endl;
-          cout << "p3d_set_prev_jnt " << num_prev_jnt << endl;
-          cout << "p3d_set_pos_axe " << pos_abs_jnt_enf.position.x << " "<< pos_abs_jnt_enf.position.y << " "<< pos_abs_jnt_enf.position.z << " " << joint->axis.x << " " << joint->axis.y << " " << joint->axis.z << endl;
-          cout << "p3d_set_dof_vmin " << joint->limits->lower << endl;
-          cout << "p3d_set_dof_vmax " << joint->limits->upper << endl;
-          getchar();
-          break;
-        }
+        add_joint(joint,pos_abs_jnt_enf, num_prev_jnt);
       }
 
       // Récupère le mesh du lien
