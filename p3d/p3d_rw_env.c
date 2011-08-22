@@ -26,7 +26,7 @@
 #endif
 
 #ifdef USE_COLLADA15DOM
-#include "p3d/proto/p3d_collada_loader.h"
+#include "p3d/proto/urdf_p3d_converter.h"
 #endif
 
 extern void* GroundCostObj;
@@ -111,21 +111,20 @@ int p3d_read_macro ( char *namemac,char *nameobj,double scale )
 	return ( TRUE );
 }
 
-int p3d_read_collada( char *namemac,char *nameobj,double scale )
+int p3d_read_collada( char *namemac)
 {
-	char collada[200], collada2[200];
-	char c_dir_name[200];
-	int  c_sz=0;
+        char collada[200], collada2[200];
+        char c_dir_name[200];
+        int  c_sz=0;
 
-	strcpy ( c_dir_name, DATA_DIR );
-	c_sz = ( int ) strlen ( DATA_DIR );
-	if ( DATA_DIR[c_sz-1] != '/' ) {strcat ( c_dir_name,"/" );}
-	sprintf ( collada,"%sMACROS/",c_dir_name );
+        strcpy ( c_dir_name, DATA_DIR );
+        c_sz = ( int ) strlen ( DATA_DIR );
+        if ( DATA_DIR[c_sz-1] != '/' ) {strcat ( c_dir_name,"/" );}
+        sprintf ( collada,"%sMACROS/",c_dir_name );
 
-	strcat ( collada,namemac );
+        strcat ( collada,namemac );
 
-	p3d_collada_loader p3d_collada_loader;
-	return p3d_collada_loader.p3d_read_collada(collada, nameobj, scale);
+        return p3d_load_collada(collada);
 }
 
 void p3d_set_directory ( char *dir )
@@ -3501,21 +3500,21 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			if ( !read_desc_line_double ( fd, &n, dtab ) ) return ( read_desc_error ( fct ) );
 			if ( fileType )  //is a macro file
 			{
-				strcpy ( namecompl, nameobj );
-				strcat ( namecompl, "." );
-				strcat ( namecompl, name );
+                            strcpy ( namecompl, nameobj );
+                            strcat ( namecompl, "." );
+                            strcat ( namecompl, name );
 			}
 			else
 			{
-				strcpy ( namecompl, name );
+                            strcpy ( namecompl, name );
 			}
 			if ( n == 0 )
 			{
-				p3d_read_macro ( namemac, namecompl, 1 );
+                            p3d_read_macro ( namemac, namecompl, 1 );
 			}
 			else
 			{
-				p3d_read_macro ( namemac, namecompl, dtab[0] );
+                            p3d_read_macro ( namemac, namecompl, dtab[0] );
 			}
 			continue;
 		}
@@ -3523,27 +3522,27 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 		//##################### COLLADA ######################
 
 #ifdef USE_COLLADA15DOM
-		if ( ( strcmp ( fct, "p3d_read_collada" ) == 0 ))
-		{
-			if ( !read_desc_name ( fd, namemac ) ) return ( read_desc_error ( fct ) );
-			if ( !read_desc_name ( fd, name ) )  return ( read_desc_error ( fct ) );
-			if ( !read_desc_line_double ( fd, &n, dtab ) ) return ( read_desc_error ( fct ) );
-			if ( fileType )  //is a macro file
-			{
-				strcpy ( namecompl, nameobj );
-				strcat ( namecompl, "." );
-				strcat ( namecompl, name );
-			}
-			else
-			{
-				strcpy ( namecompl, name );
-			}
-			if ( n == 0 )
-				p3d_read_collada( namemac, namecompl, 1 );
-			else
-				p3d_read_collada( namemac, namecompl, dtab[0] );
-			continue;
-		}
+                if ( ( strcmp ( fct, "p3d_read_collada" ) == 0 ))
+                {
+                        if ( !read_desc_name ( fd, namemac ) ) return ( read_desc_error ( fct ) );
+                        if ( !read_desc_name ( fd, name ) )  return ( read_desc_error ( fct ) );
+                        if ( !read_desc_line_double ( fd, &n, dtab ) ) return ( read_desc_error ( fct ) );
+                        if ( fileType )  //is a macro file
+                        {
+                            strcpy ( namecompl, nameobj );
+                            strcat ( namecompl, "." );
+                            strcat ( namecompl, name );
+                        }
+                        else
+                        {
+                            strcpy ( namecompl, name );
+                        }
+                        if ( n == 0 )
+                             p3d_read_collada( namemac);
+                        else
+                             p3d_read_collada( namemac);
+                        continue;
+                }
 #endif
 
 		//##################### MULTI-GRAPH ##################

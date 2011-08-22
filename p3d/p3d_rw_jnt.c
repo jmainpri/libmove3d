@@ -391,7 +391,7 @@ static int s_p3d_check_data(p3d_read_jnt_data * data, int num_line)
  *
  *  \internal
  */
-static int s_p3d_build_jnt_data(p3d_read_jnt_data * data)
+int s_p3d_build_jnt_data(p3d_read_jnt_data * data)
 {
   double * dofs, * dofs_rand;
   double * velocity_max = NULL, * acceleration_max = NULL, * jerk_max = NULL;
