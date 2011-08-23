@@ -78,6 +78,10 @@ void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_pr
     break;
   }
 
+  // p3d_set_name
+  strcpy(data->name, joint->name.c_str());
+  data->flag_name = TRUE;
+
   // p3d_set_prev_jnt
   data->prev_jnt=num_prev_jnt;
   data->flag_prev_jnt = TRUE;
@@ -100,7 +104,7 @@ void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_pr
   p3d_destroy_read_jnt_data(data);
 }
 
-int p3d_load_collada(char* filename)
+int p3d_load_collada(char* filename, char* modelName)
 {
     boost::shared_ptr<ModelInterface> model;
     cout << filename << endl;
@@ -110,7 +114,7 @@ int p3d_load_collada(char* filename)
     root_link = model->root_link_;
 
     cout << "p3d_beg_desc P3D_ROBOT" << endl;
-    p3d_beg_desc(P3D_ROBOT, (char *)model->getName().c_str());
+    p3d_beg_desc(P3D_ROBOT, modelName);
 
     cout << "p3d_beg_desc_jnt P3D_FREEFLYER # J1" << endl;
     cout << "p3d_set_name root" << endl;
@@ -143,7 +147,7 @@ int p3d_load_collada(char* filename)
     cout << "p3d_end_desc_poly" << endl;
     p3d_end_desc_poly();
 
-    // Ajout de la position et de
+    // Ajout de la position du mesh
     Vector3 pos = root_link->visual->origin.position;
     cout << "p3d_set_prim_pos " << root_link->name  << " " << pos.x << " " << pos.y << " " << pos.z  << " " << 0  << " " << 0  << " " << 0  << endl;
     p3d_set_prim_pos_deg(p3d_poly_get_poly_by_name((char *)root_link->name.c_str()), pos.x, pos.y, pos.z, 0, 0, 0);

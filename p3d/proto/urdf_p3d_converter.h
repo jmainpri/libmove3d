@@ -1,1 +1,1 @@
-int p3d_load_collada(char* filename);
+int p3d_load_collada(char* filename, char* modelName);

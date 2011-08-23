@@ -111,7 +111,7 @@ int p3d_read_macro ( char *namemac,char *nameobj,double scale )
 	return ( TRUE );
 }
 
-int p3d_read_collada( char *namemac)
+int p3d_read_collada( char *namemac, char *nameobj)
 {
         char collada[200], collada2[200];
         char c_dir_name[200];
@@ -124,7 +124,7 @@ int p3d_read_collada( char *namemac)
 
         strcat ( collada,namemac );
 
-        return p3d_load_collada(collada);
+        return p3d_load_collada(collada, nameobj);
 }
 
 void p3d_set_directory ( char *dir )
@@ -3538,9 +3538,9 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
                             strcpy ( namecompl, name );
                         }
                         if ( n == 0 )
-                             p3d_read_collada( namemac);
+                             p3d_read_collada( namemac, namecompl);
                         else
-                             p3d_read_collada( namemac);
+                             p3d_read_collada( namemac, namecompl);
                         continue;
                 }
 #endif
