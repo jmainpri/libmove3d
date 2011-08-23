@@ -123,8 +123,10 @@ int p3d_read_collada( char *namemac, char *nameobj)
         sprintf ( collada,"%sMACROS/",c_dir_name );
 
         strcat ( collada,namemac );
-
+#ifdef USE_COLLADA15DOM
         return p3d_load_collada(collada, nameobj);
+#endif
+        return 0;
 }
 
 void p3d_set_directory ( char *dir )
@@ -3521,9 +3523,10 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 
 		//##################### COLLADA ######################
 
-#ifdef USE_COLLADA15DOM
+
                 if ( ( strcmp ( fct, "p3d_read_collada" ) == 0 ))
                 {
+#ifdef USE_COLLADA15DOM
                         if ( !read_desc_name ( fd, namemac ) ) return ( read_desc_error ( fct ) );
                         if ( !read_desc_name ( fd, name ) )  return ( read_desc_error ( fct ) );
                         if ( !read_desc_line_double ( fd, &n, dtab ) ) return ( read_desc_error ( fct ) );
@@ -3542,8 +3545,11 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
                         else
                              p3d_read_collada( namemac, namecompl);
                         continue;
-                }
 #endif
+                        PrintError ( ( "MP: If you want to load a collada file, compile with the flag USE_COLLADA15DOM" ) );
+                        return ( read_desc_error ( fct ) );
+                }
+
 
 		//##################### MULTI-GRAPH ##################
 #ifdef MULTIGRAPH

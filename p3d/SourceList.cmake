@@ -60,17 +60,17 @@ BM3D_SRC_SUBDIR_PROCESS(
 ENDIF(USE_GBM)
 
 IF(USE_COLLADA15DOM)
-BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME}/tinyxml)
+BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME}/urdf_interface/tinyxml)
 BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME}/urdf_interface)
 BM3D_SRC_SUBDIR_PROCESS(
 	collada_parser.h
 	collada_parser.cpp
 	./urdf_interface/joint.cpp
 	./urdf_interface/link.cpp
-	./tinyxml/tinystr.cpp
-	./tinyxml/tinyxml.cpp
-	./tinyxml/tinyxmlparser.cpp
-	./tinyxml/tinyxmlerror.cpp
+	./urdf_interface/tinyxml/tinystr.cpp
+	./urdf_interface/tinyxml/tinyxml.cpp
+	./urdf_interface/tinyxml/tinyxmlparser.cpp
+	./urdf_interface/tinyxml/tinyxmlerror.cpp
  	urdf_p3d_converter.cpp
 )
 ENDIF(USE_COLLADA15DOM)
