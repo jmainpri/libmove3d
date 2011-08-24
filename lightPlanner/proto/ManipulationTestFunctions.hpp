@@ -30,6 +30,12 @@ public:
   //! Sets the planner in debug mode
   void setDebugMode(bool value);
   
+  //! Sets the initial configuration
+  void setInitConfiguration(configPt q);
+  
+  //! Sets the goal configuration
+  void setGoalConfiguration(configPt q);
+  
   //! Creates a manipulation planner
   //! if it doesnot exists, if it does eares it
   void initManipulationGenom();

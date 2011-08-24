@@ -58,6 +58,22 @@ ManipulationTestFunctions::~ManipulationTestFunctions()
   p3d_destroy_config(m_Robot,m_qGoal);
 }
 
+//! Sets the initial configuration
+void ManipulationTestFunctions::setInitConfiguration(configPt q)
+{
+  p3d_destroy_config(m_Robot,m_qInit);
+  m_qInit = q;
+  
+  p3d_set_and_update_this_robot_conf(m_manipulation->robot(),m_qInit);
+}
+
+//! Sets the goal configuration
+void ManipulationTestFunctions::setGoalConfiguration(configPt q)
+{
+  p3d_destroy_config(m_Robot,m_qGoal);
+  m_qGoal = q;
+}
+
 void ManipulationTestFunctions::setDebugMode(bool value)
 {
   if( m_manipulation )
@@ -68,8 +84,7 @@ void ManipulationTestFunctions::setDebugMode(bool value)
 
 //! Initializes the manipulation
 //! A new manipulation planner is created 
-//! and the initial and goal configuration
-//! are created
+//! and the initial and goal configuration are created
 void ManipulationTestFunctions::initManipulationGenom() 
 {	
   if (m_manipulation == NULL) 
@@ -79,12 +94,9 @@ void ManipulationTestFunctions::initManipulationGenom()
 		m_manipulation= new ManipulationPlanner(m_Robot);
 		//         manipulation->setArmType(GP_LWR); // set the arm type
 		
-		p3d_destroy_config(m_Robot,m_qInit);
-		p3d_destroy_config(m_Robot,m_qGoal);
-		
-		m_qInit = p3d_copy_config(m_Robot,m_Robot->ROBOT_POS);
+		//m_qInit = p3d_copy_config(m_Robot,m_Robot->ROBOT_POS);
 		//m_qInit = p3d_get_robot_config(m_Robot);
-		m_qGoal = p3d_copy_config(m_Robot,m_Robot->ROBOT_GOTO);
+		//m_qGoal = p3d_copy_config(m_Robot,m_Robot->ROBOT_GOTO);
     
     // Warning SCENARIO dependant part, gsJidoKukaSAHand.p3d
     m_OBJECT_NAME = "GREY_TAPE";
@@ -103,6 +115,7 @@ void ManipulationTestFunctions::initManipulationGenom()
     m_objGoto[4] = P3D_HUGE;
     m_objGoto[5] = P3D_HUGE;
   }
+  
 	
   return;
 }
@@ -122,6 +135,9 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
   //	}
   
   cout << "Manipulation planning for " << m_OBJECT_NAME << endl;
+  
+  p3d_set_and_update_this_robot_conf(m_manipulation->robot(),m_qInit);
+  g3d_draw_allwin_active();
 	
 	MANIPULATION_TASK_MESSAGE status;
   
