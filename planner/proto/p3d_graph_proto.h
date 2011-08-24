@@ -7,6 +7,7 @@
 #ifndef __CEXTRACT__
 
 extern p3d_graph * p3d_create_graph ( void );
+extern p3d_graph * p3d_create_graph ( p3d_rob* r );
 extern p3d_node * p3d_create_node ( p3d_graph * G );
 extern void p3d_insert_node ( p3d_graph *G, p3d_node *nodePt );
 extern void p3d_merge_check ( p3d_graph * G );

@@ -41,16 +41,14 @@ extern void* GroundCostObj;
 /* In :                                        */
 /* Out : le graphe                             */
 /***********************************************/
-p3d_graph * p3d_create_graph(void) {
+p3d_graph *p3d_create_graph(p3d_rob* Robot)
+{
   p3d_graph * Graph;
-  p3d_rob   * Robot;
-
-  Robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-
+  
   Graph      = p3d_allocinit_graph();
   Graph->env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   Graph->rob = Robot;
-
+  
   if (Robot != NULL) {
     if (Robot->GRAPH != NULL) {
       p3d_del_graph(Robot->GRAPH);
@@ -69,7 +67,7 @@ p3d_graph * p3d_create_graph(void) {
       Graph->nbUsedIkSols = 0;
     }
   }
-
+  
 #ifdef MULTIGRAPH
   Graph->mgTime = 0.0;
 #endif
@@ -79,22 +77,27 @@ p3d_graph * p3d_create_graph(void) {
   }else {
     Graph->dpgGrid = NULL;
   }
-
+  
 #endif
-
+  
   if (STAT) {
     Graph->stat = createStat();
   } else {
     Graph->stat = NULL;
   }
-
+  
   if (STAT) {
     Graph->stat = createStat();
   } else {
     Graph->stat = NULL;
   }
-
+  
   return Graph;
+}
+
+p3d_graph * p3d_create_graph(void) {
+  p3d_rob   * Robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+  return p3d_create_graph(Robot);
 }
 
 /*******************************************/
