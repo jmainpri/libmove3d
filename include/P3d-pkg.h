@@ -10,6 +10,9 @@
 #ifdef UNIX
 #endif
 
+#ifdef WITH_XFORMS
+#include "forms.h"
+#endif
 
 /* struct */
 #include "p3d_sys.h"
@@ -30,6 +33,7 @@
 #include "roadmap.h"
 
 #include "collision_context.h"
+
 
 
 /* globals */
