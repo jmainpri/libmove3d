@@ -120,7 +120,7 @@ int p3d_read_collada( char *namemac, char *nameobj)
         strcpy ( c_dir_name, DATA_DIR );
         c_sz = ( int ) strlen ( DATA_DIR );
         if ( DATA_DIR[c_sz-1] != '/' ) {strcat ( c_dir_name,"/" );}
-        sprintf ( collada,"%sMACROS/",c_dir_name );
+        sprintf ( collada,"%sCOLLADA/",c_dir_name );
 
         strcat ( collada,namemac );
 #ifdef USE_COLLADA15DOM

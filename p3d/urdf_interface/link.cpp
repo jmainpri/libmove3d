@@ -445,10 +445,10 @@ bool Mesh::initXml(TiXmlElement *c)
 
   // check if filename exists, is this really necessary?
   if (!fileExists(filename))
-	  //TODO changé
-	  printf("filename referred by mesh [%s] does not appear to exist.");
+  {
+    printf("filename referred by mesh [%s] does not appear to exist. \n");
     //ROS_WARN("filename referred by mesh [%s] does not appear to exist.",filename.c_str());
-
+  }
   if (c->Attribute("scale"))
   {
     if (!this->scale.init(c->Attribute("scale")))
@@ -534,6 +534,7 @@ bool Link::initXml(TiXmlElement* config)
   else
   {
     if (default_visual->size() > 1)
+      printf("'default' visual group has %d visuals for Link '%s', taking the first one as default",(int)default_visual->size(), this->name.c_str());
     	//    ROS_WARN("'default' visual group has %d visuals for Link '%s', taking the first one as default",(int)default_visual->size(), this->name.c_str());
     this->visual = (*default_visual->begin());
   }
@@ -585,6 +586,7 @@ bool Link::initXml(TiXmlElement* config)
   else
   {
     if (default_collision->size() > 1)
+      printf("'default' collision group has %d collisions for Link '%s', taking the first one as default",(int)default_collision->size(), this->name.c_str());
     	//     ROS_WARN("'default' collision group has %d collisions for Link '%s', taking the first one as default",(int)default_collision->size(), this->name.c_str());
     this->collision = (*default_collision->begin());
   }
@@ -607,8 +609,8 @@ void Link::addVisual(std::string group_name, boost::shared_ptr<Visual> visual)
   // group exists, add Visual to the vector in the map
   std::vector<boost::shared_ptr<Visual > >::iterator vis_it = find(viss->begin(),viss->end(),visual);
   if (vis_it != viss->end())
-	  printf("attempted to add a visual that already exists under group name \n");
-	  //   ROS_WARN("attempted to add a visual that already exists under group name '%s', skipping.",group_name.c_str());
+    printf("attempted to add a visual that already exists under group name '%s', skipping.",group_name.c_str());
+    //   ROS_WARN("attempted to add a visual that already exists under group name '%s', skipping.",group_name.c_str());
   else
     viss->push_back(visual);
   // ROS_DEBUG("successfully added a new visual under group name '%s'",group_name.c_str());
@@ -641,9 +643,8 @@ void Link::addCollision(std::string group_name, boost::shared_ptr<Collision> col
   // group exists, add Collision to the vector in the map
   std::vector<boost::shared_ptr<Collision > >::iterator vis_it = find(viss->begin(),viss->end(),collision);
   if (vis_it != viss->end())
-	  //TODO ajouté
-	  printf("attempted to add a collision that already exists under group name");
-	  //   ROS_WARN("attempted to add a collision that already exists under group name '%s', skipping.",group_name.c_str());
+    printf("attempted to add a collision that already exists under group name '%s', skipping.",group_name.c_str());
+    //   ROS_WARN("attempted to add a collision that already exists under group name '%s', skipping.",group_name.c_str());
   else
     viss->push_back(collision);
   // ROS_DEBUG("successfully added a new collision under group name '%s'",group_name.c_str());

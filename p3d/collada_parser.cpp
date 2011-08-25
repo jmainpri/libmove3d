@@ -106,6 +106,8 @@ namespace urdf{
         
         if (!visualnode) {
           //ROS_WARN_STREAM(str(boost::format("couldn't find parent node of element id %s, sid %s\n")%pkinematicaxis->getID()%pkinematicaxis->getSid()));
+          cout << str(boost::format("couldn't find parent node of element id %s, sid %s\n")%pkinematicaxis->getID()%pkinematicaxis->getSid()) << endl;
+
         }
       }
         
@@ -146,12 +148,14 @@ namespace urdf{
             }
             if( !bfound ) {
             	//ROS_WARN_STREAM(str(boost::format("could not find binding for axis: %s, %s\n")%kinematics_axis_info->getAxis()%pelt->getAttribute("sid")));
-              return false;
+                cout << str(boost::format("could not find binding for axis: %s, %s\n")%kinematics_axis_info->getAxis()%pelt->getAttribute("sid")) << endl;
+                return false;
             }
             return true;
           }
         }
         //ROS_WARN_STREAM(str(boost::format("could not find kinematics axis target: %s\n")%kinematics_axis_info->getAxis()));
+        cout << str(boost::format("could not find kinematics axis target: %s\n")%kinematics_axis_info->getAxis()) << endl;
         return false;
       }
     };
@@ -405,8 +409,8 @@ namespace urdf{
     }
 
     bool InitFromFile(const std::string& filename) {
-    	//ROS_DEBUG_STREAM(str(boost::format("init COLLADA reader version: %s, namespace: %s, filename: %s\n")%COLLADA_VERSION%COLLADA_NAMESPACE%filename));
-      _collada.reset(new DAE);
+      //ROS_DEBUG_STREAM(str(boost::format("init COLLADA reader version: %s, namespace: %s, filename: %s\n")%COLLADA_VERSION%COLLADA_NAMESPACE%filename));
+        _collada.reset(new DAE);
       _dom = _collada->open(filename);
       if (!_dom) {
         return false;
@@ -424,12 +428,10 @@ namespace urdf{
     }
 
     bool InitFromData(const std::string& pdata) {
-    	cout << "init COLLADA reader version" << COLLADA_VERSION <<  ", " << COLLADA_NAMESPACE << endl;
-    	//ROS_DEBUG_STREAM(str(boost::format("init COLLADA reader version: %s, namespace: %s\n")%COLLADA_VERSION%COLLADA_NAMESPACE));
+      //ROS_DEBUG_STREAM(str(boost::format("init COLLADA reader version: %s, namespace: %s\n")%COLLADA_VERSION%COLLADA_NAMESPACE));
       _collada.reset(new DAE);
       _dom = _collada->openFromMemory(".",pdata.c_str());
       if (!_dom) {
-    	 cout << "j'ai pas réussi à ouvrir le document" <<endl;
         return false;
       }
 
@@ -439,7 +441,6 @@ namespace urdf{
 
       double dScale = 1.0;
       _processUserData(_dom, dScale);
-  	cout << "processed children:" << _vuserdata.size() <<  " " << maxchildren << endl;
       //ROS_DEBUG_STREAM(str(boost::format("processed children: %d/%d\n")%_vuserdata.size()%maxchildren));
       return _Extract();
     }
@@ -491,11 +492,13 @@ namespace urdf{
       std::map<std::string, std::string> parent_link_tree;
       // building tree: name mapping
       if (!_model->initTree(parent_link_tree)) {
+          cout << "failed to build tree" << endl;
     	  //ROS_ERROR("failed to build tree");
       }
 
       // find the root link
       if (!_model->initRoot(parent_link_tree)) {
+          cout << "failed to find root link" << endl;
     	  //ROS_ERROR("failed to find root link");
       }
     }
@@ -552,6 +555,7 @@ namespace urdf{
             }
             else {
             	//ROS_WARN_STREAM(str(boost::format("failed to find kinematics axis %s\n")%motion_axis_info->getAxis()));
+                cout << str(boost::format("failed to find kinematics axis %s\n")%motion_axis_info->getAxis()) << endl;
             }
           }
         }
@@ -561,8 +565,9 @@ namespace urdf{
       }
       else {
         if( !articulated_system->getKinematics() ) {
-        	//ROS_WARN_STREAM(str(boost::format("collada <kinematics> tag empty? instance_articulated_system=%s\n")%ias->getID()));
-          return true;
+            //ROS_WARN_STREAM(str(boost::format("collada <kinematics> tag empty? instance_articulated_system=%s\n")%ias->getID()));
+            cout << str(boost::format("collada <kinematics> tag empty? instance_articulated_system=%s\n")%ias->getID()) << endl;
+            return true;
         }
 
         if( !!articulated_system->getKinematics()->getTechnique_common() ) {
@@ -590,7 +595,8 @@ namespace urdf{
       domKinematics_modelRef kmodel = daeSafeCast<domKinematics_model> (ikm->getUrl().getElement().cast());
       if (!kmodel) {
     	  //ROS_WARN_STREAM(str(boost::format("%s does not reference valid kinematics\n")%ikm->getSid()));
-        return false;
+          cout << str(boost::format("%s does not reference valid kinematics\n")%ikm->getSid()) << endl;
+          return false;
       }
       domPhysics_modelRef pmodel;
       boost::shared_ptr<std::string> pinterface_type = _ExtractInterfaceType(ikm->getExtra_array());
@@ -599,6 +605,7 @@ namespace urdf{
       }
       if( !!pinterface_type ) {
     	  //ROS_DEBUG_STREAM(str(boost::format("kinbody interface type: %s")%(*pinterface_type)));
+
       }
 
       // find matching visual node
@@ -611,6 +618,7 @@ namespace urdf{
       }
       if( !pvisualnode ) {
     	  //ROS_WARN_STREAM(str(boost::format("failed to find visual node for instance kinematics model %s\n")%ikm->getSid()));
+          cout << str(boost::format("failed to find visual node for instance kinematics model %s\n")%ikm->getSid()) << endl;
         return false;
       }
 
@@ -623,6 +631,7 @@ namespace urdf{
 
       if (!_ExtractKinematicsModel(kmodel, pvisualnode, pmodel, bindings.listAxisBindings)) {
     	  //ROS_WARN_STREAM(str(boost::format("failed to load kinbody from kinematics model %s\n")%kmodel->getID()));
+          cout << str(boost::format("failed to load kinbody from kinematics model %s\n")%kmodel->getID()) << endl;
         return false;
       }
       return true;
@@ -633,6 +642,7 @@ namespace urdf{
     {
       std::vector<domJointRef> vdomjoints;
       //ROS_DEBUG_STREAM(str(boost::format("kinematics model: %s\n")%_model->name_));
+
       if( !!pnode ) {
     	  //ROS_DEBUG_STREAM(str(boost::format("node name: %s\n")%pnode->getId()));
       }
@@ -649,13 +659,13 @@ namespace urdf{
       for (size_t ijoint = 0; ijoint < ktec->getInstance_joint_array().getCount(); ++ijoint) {
         domJointRef pelt = daeSafeCast<domJoint> (ktec->getInstance_joint_array()[ijoint]->getUrl().getElement());
         if (!pelt) {
-        	//ROS_WARN_STREAM("failed to get joint from instance\n");
+            //ROS_WARN_STREAM("failed to get joint from instance\n");
+            cout << "failed to get joint from instance\n" << endl;
         }
         else {
           vdomjoints.push_back(pelt);
         }
       }
-
       //ROS_DEBUG_STREAM(str(boost::format("Number of root links in the kmodel %d\n")%ktec->getLink_array().getCount()));
       for (size_t ilink = 0; ilink < ktec->getLink_array().getCount(); ++ilink) {
         _ExtractLink(ktec->getLink_array()[ilink], ilink == 0 ? pnode : domNodeRef(), Pose(), Pose(), vdomjoints, listAxisBindings);
@@ -665,7 +675,8 @@ namespace urdf{
       for (size_t iform = 0; iform < ktec->getFormula_array().getCount(); ++iform) {
         domFormulaRef pf = ktec->getFormula_array()[iform];
         if (!pf->getTarget()) {
-        	//ROS_WARN_STREAM("formula target not valid\n");
+            //ROS_WARN_STREAM("formula target not valid\n");
+            cout << "formula target not valid\n" << endl;
           continue;
         }
 
@@ -686,6 +697,7 @@ namespace urdf{
             }
             else {
             	//ROS_WARN_STREAM(str(boost::format("unsupported formula element: %s\n")%pelt->getElementName()));
+                cout << str(boost::format("unsupported formula element: %s\n")%pelt->getElementName()) << endl;
             }
           }
           if (!!peltmath) {
@@ -761,6 +773,7 @@ namespace urdf{
       std::string linkname = _ExtractLinkName(pdomlink);
       if( linkname.size() == 0 ) {
     	  //ROS_WARN_STREAM("<link> has no name or id, falling back to <node>!\n");
+          cout << "<link> has no name or id, falling back to <node>!\n" << endl;
         if( !!pdomnode ) {
           if (!!pdomnode->getName()) {
             linkname = pdomnode->getName();
@@ -790,10 +803,11 @@ namespace urdf{
       std::list<GEOMPROPERTIES> listGeomProperties;
       if (!pdomlink) {
     	  //ROS_WARN_STREAM("Extract object NOT kinematics !!!\n");
+          cout << "Extract object NOT kinematics !!!\n" << endl;
         _ExtractGeometry(pdomnode,listGeomProperties,listAxisBindings,Pose());
       }
       else {
-    	  //ROS_DEBUG_STREAM(str(boost::format("Attachment link elements: %d\n")%pdomlink->getAttachment_full_array().getCount()));
+        //ROS_DEBUG_STREAM(str(boost::format("Attachment link elements: %d\n")%pdomlink->getAttachment_full_array().getCount()));
         Pose tlink = _poseFromMatrix(_ExtractFullTransform(pdomlink));
         plink->visual->origin = _poseMult(tParentLink, tlink); // use the kinematics coordinate system for each link
         //            ROS_INFO("link %s rot: %f %f %f %f",linkname.c_str(),plink->visual->origin.rotation.w, plink->visual->origin.rotation.x,plink->visual->origin.rotation.y,plink->visual->origin.rotation.z);
@@ -823,14 +837,15 @@ namespace urdf{
           }
 
           if (!pdomjoint || pdomjoint->typeID() != domJoint::ID()) {
-        	  // ROS_WARN_STREAM(str(boost::format("could not find attached joint %s!\n")%pattfull->getJoint()));
-            return boost::shared_ptr<Link>();
+              //ROS_DEBUG_STREAM(str(boost::format("After ExtractGeometry Attachment link elements: %d\n")%pdomlink->getAttachment_full_array().getCount()));
+              return boost::shared_ptr<Link>();
           }
 
           // get direct child link
           if (!pattfull->getLink()) {
-        	  //  ROS_WARN_STREAM(str(boost::format("joint %s needs to be attached to a valid link\n")%pdomjoint->getID()));
-            continue;
+              //  ROS_WARN_STREAM(str(boost::format("joint %s needs to be attached to a valid link\n")%pdomjoint->getID()));
+              cout << str(boost::format("joint %s needs to be attached to a valid link\n")%pdomjoint->getID()) << endl;
+              continue;
           }
 
           // find the correct joint in the bindings
@@ -851,7 +866,7 @@ namespace urdf{
             }
           }              
           if (!pchildnode) {
-        	  //ROS_DEBUG_STREAM(str(boost::format("joint %s has no visual binding\n")%pdomjoint->getID()));
+              //ROS_DEBUG_STREAM(str(boost::format("joint %s has no visual binding\n")%pdomjoint->getID()));
           }
 
           // create the joints before creating the child links
@@ -892,6 +907,7 @@ namespace urdf{
               pjoint->type = Joint::PRISMATIC;
             }
             else {
+                cout << str(boost::format("unsupported joint type: %s\n")%pdomaxis->getElementName()) << endl;
             	// ROS_WARN_STREAM(str(boost::format("unsupported joint type: %s\n")%pdomaxis->getElementName()));
             }
 
@@ -904,7 +920,8 @@ namespace urdf{
           boost::shared_ptr<Link> pchildlink = _ExtractLink(pattfull->getLink(), pchildnode, _poseMult(_poseMult(tParentWorldLink,tlink), tatt), tatt, vdomjoints, listAxisBindings);
 
           if (!pchildlink) {
-        	  //  ROS_WARN_STREAM(str(boost::format("Link has no child: %s\n")%plink->name));
+              cout << str(boost::format("Link has no child: %s\n")%plink->name) << endl;
+              //  ROS_WARN_STREAM(str(boost::format("Link has no child: %s\n")%plink->name));
             continue;
           }
 
@@ -926,6 +943,7 @@ namespace urdf{
               // create dummy child link
               // multiple axes can be easily done with "empty links"
             	//   ROS_WARN_STREAM(str(boost::format("creating dummy link %s, num joints %d\n")%plink->name%numjoints));
+                cout << str(boost::format("creating dummy link %s, num joints %d\n")%plink->name%numjoints) << endl;
 
               std::stringstream ss;
               ss << plink->name;
@@ -936,6 +954,7 @@ namespace urdf{
             }
 
             // ROS_DEBUG_STREAM(str(boost::format("Joint %s assigned %d \n")%vjoints[ic]->name%ic));
+
             boost::shared_ptr<Joint> pjoint = vjoints[ic];
             pjoint->child_link_name = pchildlink->name;
 
@@ -946,6 +965,8 @@ namespace urdf{
 
             if (!motion_axis_info) {
             	//    ROS_WARN_STREAM(str(boost::format("No motion axis info for joint %s\n")%pjoint->name));
+                cout << str(boost::format("No motion axis info for joint %s\n")%pjoint->name) << endl;
+
             }
 
             //  Sets the Speed and the Acceleration of the joint
@@ -970,7 +991,9 @@ namespace urdf{
                         
               if (joint_locked) { // If joint is locked set limits to the static value.
                 if( pjoint->type == Joint::REVOLUTE || pjoint->type ==Joint::PRISMATIC) {
-                	//     ROS_WARN_STREAM("lock joint!!\n");
+                    //     ROS_WARN_STREAM("lock joint!!\n");
+                    cout << "lock joint!!\n" << endl;
+
                   pjoint->limits->lower = 0;
                   pjoint->limits->upper = 0;
                 }
@@ -1001,7 +1024,7 @@ namespace urdf{
                 }
               }
               else {
-            	  //    ROS_DEBUG_STREAM(str(boost::format("There are LIMITS in joint %s ...\n")%pjoint->name));
+            	//    ROS_DEBUG_STREAM(str(boost::format("There are LIMITS in joint %s ...\n")%pjoint->name));
                 double fscale = (pjoint->type == Joint::REVOLUTE)?(M_PI/180.0f):_GetUnitScale(pdomaxis);
                 pjoint->limits->lower = (double)pdomaxis->getLimits()->getMin()->getValue()*fscale;
                 pjoint->limits->upper = (double)pdomaxis->getLimits()->getMax()->getValue()*fscale;
@@ -1019,9 +1042,12 @@ namespace urdf{
 
       if( pdomlink->getAttachment_start_array().getCount() > 0 ) {
     	  //   ROS_WARN("urdf collada reader does not support attachment_start\n");
+          cout << "urdf collada reader does not support attachment_start" << endl;
+
       }
       if( pdomlink->getAttachment_end_array().getCount() > 0 ) {
     	  //  ROS_WARN("urdf collada reader does not support attachment_end\n");
+          cout << "urdf collada reader does not support attachment_end" << endl;
       }
 
       plink->visual->geometry = _CreateGeometry(plink, listGeomProperties);
@@ -1287,8 +1313,8 @@ namespace urdf{
           itgeom->_t = Pose(); // reset back to identity
           break;
         default:
-        	break;
-        	//   ROS_WARN_STREAM(str(boost::format("unknown geometry type: %d\n")%itgeom->type));
+          //   ROS_WARN_STREAM(str(boost::format("unknown geometry type: %d\n")%itgeom->type));
+          cout << str(boost::format("unknown geometry type: %d\n")%itgeom->type) << endl;
         }
       }
     }
@@ -1392,13 +1418,17 @@ namespace urdf{
             }
           }
           else {
-        	  //   ROS_WARN_STREAM("float array not defined!\n");
+            //   ROS_WARN_STREAM("float array not defined!\n");
+            cout << "float array not defined!" << endl;
+
           }
           break;
         }
       }
       if( geom.indices.size() != 3*triRef->getCount() ) {
     	  //  ROS_WARN_STREAM("triangles declares wrong count!\n");
+          cout << "triangles declares wrong count!" << endl;
+
       }
       geom.InitCollisionMesh();
       return true;
@@ -1443,6 +1473,7 @@ namespace urdf{
       size_t primitivecount = triRef->getCount();
       if( primitivecount > triRef->getP_array().getCount() ) {
     	  //   ROS_WARN_STREAM("trifans has incorrect count\n");
+          cout << "trifans has incorrect count" << endl;
         primitivecount = triRef->getP_array().getCount();
       }
       for(size_t ip = 0; ip < primitivecount; ++ip) {
@@ -1485,6 +1516,7 @@ namespace urdf{
             }
             else {
             	//   ROS_WARN_STREAM("float array not defined!\n");
+                cout << "float array not defined!\n" << endl;
             }
             break;
           }
@@ -1533,6 +1565,7 @@ namespace urdf{
       size_t primitivecount = triRef->getCount();
       if( primitivecount > triRef->getP_array().getCount() ) {
     	  //   ROS_WARN_STREAM("tristrips has incorrect count\n");
+          cout << "tristrips has incorrect count\n" << endl;
         primitivecount = triRef->getP_array().getCount();
       }
       for(size_t ip = 0; ip < primitivecount; ++ip) {
@@ -1579,6 +1612,8 @@ namespace urdf{
             }
             else {
             	//   ROS_WARN_STREAM("float array not defined!\n");
+                cout << "float array not defined!\n" << endl;
+
             }
             break;
           }
@@ -1660,7 +1695,9 @@ namespace urdf{
             }
           }
           else {
-        	  //   ROS_WARN_STREAM("float array not defined!\n");
+            //   ROS_WARN_STREAM("float array not defined!\n");
+            cout << "float array not defined!" << endl;
+
           }
           break;
         }
@@ -1694,6 +1731,8 @@ namespace urdf{
         }
         if( meshRef->getPolygons_array().getCount()> 0 ) {
         	//   ROS_WARN_STREAM("openrave does not support collada polygons\n");
+               cout << "Parser does not support collada polygons" << endl;
+
         }
 
         //            if( alltrimesh.vertices.size() == 0 ) {
@@ -1734,10 +1773,13 @@ namespace urdf{
           if ( !!otherElemRef ) {
             domGeometryRef linkedGeom = *(domGeometryRef*)&otherElemRef;
             //  ROS_WARN_STREAM( "otherLinked\n");
+            cout << "otherLinked" << endl;
           }
           else {
-        	  //   ROS_WARN("convexMesh polyCount = %d\n",(int)convexRef->getPolygons_array().getCount());
-        	  //    ROS_WARN("convexMesh triCount = %d\n",(int)convexRef->getTriangles_array().getCount());
+              cout << "convexMesh polyCount = "<< (int)convexRef->getPolygons_array().getCount()<< endl;
+              cout << "convexMesh triCount = "<< (int)convexRef->getTriangles_array().getCount()<< endl;
+              //   ROS_WARN("convexMesh polyCount = %d\n",(int)convexRef->getPolygons_array().getCount());
+              //    ROS_WARN("convexMesh triCount = %d\n",(int)convexRef->getTriangles_array().getCount());
           }
         }
 
@@ -1921,10 +1963,13 @@ namespace urdf{
               return daeSidRef(newparam->getSIDREF()->getValue(),pbindelt).resolve().elt;
             }
             // ROS_WARN_STREAM(str(boost::format("newparam sid=%s does not have SIDREF\n")%newparam->getSid()));
+            cout << str(boost::format("newparam sid=%s does not have SIDREF\n")%newparam->getSid()) << endl;
+
           }
         }
       }
       // ROS_WARN_STREAM(str(boost::format("failed to get binding '%s' for element: %s\n")%ref%parent->getElementName()));
+      cout << str(boost::format("failed to get binding '%s' for element: %s\n")%ref%parent->getElementName()) << endl;
       return NULL;
     }
 
@@ -1956,6 +2001,8 @@ namespace urdf{
       }
       if( !paddr->getParam() ) {
     	  //  ROS_WARN_STREAM("param not specified, setting to 0\n");
+          cout << "param not specified, setting to 0" << endl;
+
         return false;
       }
       for(size_t iparam = 0; iparam < parent->getNewparam_array().getCount(); ++iparam) {
@@ -1968,6 +2015,7 @@ namespace urdf{
             domKinematics_newparam::domBoolRef ptarget = daeSafeCast<domKinematics_newparam::domBool>(daeSidRef(pnewparam->getSIDREF()->getValue(), pnewparam).resolve().elt);
             if( !ptarget ) {
             	//         ROS_WARN("failed to resolve %s from %s\n", pnewparam->getSIDREF()->getValue(), paddr->getID());
+                printf("failed to resolve %s from %s\n", pnewparam->getSIDREF()->getValue(), paddr->getID());
               continue;
             }
             return ptarget->getValue();
@@ -1975,6 +2023,7 @@ namespace urdf{
         }
       }
       // ROS_WARN_STREAM(str(boost::format("failed to resolve %s\n")%paddr->getParam()->getValue()));
+      cout << str(boost::format("failed to resolve %s\n")%paddr->getParam()->getValue()) << endl;
       return false;
     }
     template <typename U> static domFloat resolveFloat(domCommon_float_or_paramRef paddr, const U& parent) {
@@ -1983,6 +2032,7 @@ namespace urdf{
       }
       if( !paddr->getParam() ) {
     	  //   ROS_WARN_STREAM("param not specified, setting to 0\n");
+          cout << "param not specified, setting to 0" << endl;
         return 0;
       }
       for(size_t iparam = 0; iparam < parent->getNewparam_array().getCount(); ++iparam) {
@@ -1994,6 +2044,7 @@ namespace urdf{
           else if( !!pnewparam->getSIDREF() ) {
             domKinematics_newparam::domFloatRef ptarget = daeSafeCast<domKinematics_newparam::domFloat>(daeSidRef(pnewparam->getSIDREF()->getValue(), pnewparam).resolve().elt);
             if( !ptarget ) {
+                printf("failed to resolve %s from %s\n", pnewparam->getSIDREF()->getValue(), paddr->getID());
             	//    ROS_WARN("failed to resolve %s from %s\n", pnewparam->getSIDREF()->getValue(), paddr->getID());
               continue;
             }
@@ -2002,6 +2053,7 @@ namespace urdf{
         }
       }
       //  ROS_WARN_STREAM(str(boost::format("failed to resolve %s\n")%paddr->getParam()->getValue()));
+      cout << str(boost::format("failed to resolve %s\n")%paddr->getParam()->getValue()) << endl;
       return 0;
     }
 
@@ -2016,12 +2068,16 @@ namespace urdf{
       daeElement* pparam = pcommon->getChild("param");
       if( !!pparam ) {
         if( pparam->hasAttribute("ref") ) {
-        	//    ROS_WARN_STREAM("cannot process param ref\n");
+          //    ROS_WARN_STREAM("cannot process param ref\n");
+          cout << "cannot process param ref" << endl;
+
         }
         else {
           daeElement* pelt = daeSidRef(pparam->getCharData(),parent).resolve().elt;
           if( !!pelt ) {
-        	  //     ROS_WARN_STREAM(str(boost::format("found param ref: %s from %s\n")%pelt->getCharData()%pparam->getCharData()));
+            //     ROS_WARN_STREAM(str(boost::format("found param ref: %s from %s\n")%pelt->getCharData()%pparam->getCharData()));
+            cout << str(boost::format("found param ref: %s from %s\n")%pelt->getCharData()%pparam->getCharData()) << endl;
+
           }
         }
       }
@@ -2076,12 +2132,14 @@ namespace urdf{
       domLookatRef pcamera = daeSafeCast<domLookat>(pelt);
       if( pelt->typeID() == domLookat::ID() ) {
     	  //  ROS_ERROR_STREAM("look at transform not implemented\n");
+          cout << "look at transform not implemented" << endl;
         return m;
       }
 
       domSkewRef pskew = daeSafeCast<domSkew>(pelt);
       if( !!pskew ) {
     	  //   ROS_ERROR_STREAM("skew transform not implemented\n");
+          cout << "skew transform not implemented" << endl;
       }
 
       return m;
@@ -2125,12 +2183,14 @@ namespace urdf{
 
     virtual void handleError( daeString msg )
     {
-    	//  ROS_ERROR("COLLADA error: %s\n", msg);
+      //  ROS_ERROR("COLLADA error: %s\n", msg);
+      printf("COLLADA error: %s\n", msg);
     }
 
     virtual void handleWarning( daeString msg )
     {
-     // ROS_WARN("COLLADA warning: %s\n", msg);
+      // ROS_WARN("COLLADA warning: %s\n", msg);
+      printf("COLLADA warning: %s\n", msg);
     }
 
     inline static double _GetUnitScale(daeElement* pelt)
@@ -2204,12 +2264,15 @@ namespace urdf{
 
       if (!pdomjoint || pdomjoint->typeID() != domJoint::ID() || !pdomjoint->getName()) {
     	  //   ROS_WARN_STREAM(str(boost::format("could not find collada joint %s!\n")%targetref));
-        return boost::shared_ptr<Joint>();
+          cout << str(boost::format("could not find collada joint %s!\n")%targetref) << endl;
+          return boost::shared_ptr<Joint>();
       }
 
       boost::shared_ptr<Joint> pjoint = _model->joints_[std::string(pdomjoint->getName())];
       if(!pjoint) {
     	  //    ROS_WARN_STREAM(str(boost::format("could not find openrave joint %s!\n")%pdomjoint->getName()));
+          cout << str(boost::format("could not find openrave joint %s!\n")%pdomjoint->getName()) << endl;
+
       }
       return pjoint;
     }
@@ -2227,15 +2290,17 @@ namespace urdf{
         domArticulated_systemRef articulated_system; // if filled, contains robot-specific information, so create a robot
         domBind_kinematics_modelRef kbindmodel = kiscene->getBind_kinematics_model_array()[imodel];
         if (!kbindmodel->getNode()) {
-        	//      ROS_WARN_STREAM("do not support kinematics models without references to nodes\n");
-          continue;
+            //      ROS_WARN_STREAM("do not support kinematics models without references to nodes\n");
+            cout << "do not support kinematics models without references to nodes\n" << endl;
+            continue;
         }
        
         // visual information
         domNodeRef node = daeSafeCast<domNode>(daeSidRef(kbindmodel->getNode(), viscene->getUrl().getElement()).resolve().elt);
         if (!node) {
-        	//    ROS_WARN_STREAM(str(boost::format("bind_kinematics_model does not reference valid node %s\n")%kbindmodel->getNode()));
-          continue;
+            //    ROS_WARN_STREAM(str(boost::format("bind_kinematics_model does not reference valid node %s\n")%kbindmodel->getNode()));
+            cout << str(boost::format("bind_kinematics_model does not reference valid node %s\n")%kbindmodel->getNode()) << endl;
+            continue;
         }
 
         //  kinematics information
@@ -2243,10 +2308,14 @@ namespace urdf{
         domInstance_kinematics_modelRef kimodel = daeSafeCast<domInstance_kinematics_model>(pelt);
         if (!kimodel) {
           if( !pelt ) {
-        	  //       ROS_WARN_STREAM("bind_kinematics_model does not reference element\n");
+              //       ROS_WARN_STREAM("bind_kinematics_model does not reference element\n");
+              cout << "bind_kinematics_model does not reference element\n" << endl;
+
           }
           else {
-        	  //       ROS_WARN_STREAM(str(boost::format("bind_kinematics_model cannot find reference to %s:\n")%pelt->getElementName()));
+              //       ROS_WARN_STREAM(str(boost::format("bind_kinematics_model cannot find reference to %s:\n")%pelt->getElementName()));
+              cout << str(boost::format("bind_kinematics_model cannot find reference to %s:\n")%pelt->getElementName()) << endl;
+
           }
           continue;
         }
@@ -2257,8 +2326,9 @@ namespace urdf{
         domBind_joint_axisRef bindjoint = kiscene->getBind_joint_axis_array()[ijoint];
         daeElementRef pjtarget = daeSidRef(bindjoint->getTarget(), viscene->getUrl().getElement()).resolve().elt;
         if (!pjtarget) {
-        	//    ROS_ERROR_STREAM(str(boost::format("Target Node %s NOT found!!!\n")%bindjoint->getTarget()));
-          continue;
+            //    ROS_ERROR_STREAM(str(boost::format("Target Node %s NOT found!!!\n")%bindjoint->getTarget()));
+            cout << str(boost::format("Target Node %s NOT found!!!\n")%bindjoint->getTarget()) << endl;
+            continue;
         }
         daeElement* pelt = searchBinding(bindjoint->getAxis(),kscene);
         domAxis_constraintRef pjointaxis = daeSafeCast<domAxis_constraint>(pelt);
