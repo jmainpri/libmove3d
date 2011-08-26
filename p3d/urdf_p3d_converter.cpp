@@ -1,20 +1,5 @@
-/**
- * \file p3d_collada_loader.h
- * \brief Programme qui charge un fichier Collada 1.5 dans les structures p3d.
- * \author Francois L.
- * \version 0.1
- * \date 26 août 2011
- *
- * Programme qui charge un fichier Collada 1.5 dans les structures p3d.
- *      - Le modèle COLLADA 1.5 est parsé par la fonction parseCollada() de collada_parser.h.
- *      - Le parsing retourne un modèle URDF (qui décrit sous forme d'un arbre les links et joints du modèle).
- *      - La fonction p3d_load_collada() crée à l'aide de ce modèle, un modèle p3d.
- *
- */
-
 #include <iostream>
-#include "collada_parser.h"
-#include "urdf_interface/model.h"
+#include "urdf_p3d_converter.h"
 #include "urdf_interface/link.h"
 
 #include "P3d-pkg.h"
@@ -158,18 +143,8 @@ void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_pr
   p3d_destroy_read_jnt_data(data);
 }
 
-int p3d_load_collada(char* filename, char* modelName)
+int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName)
 {
-    boost::shared_ptr<ModelInterface> model;
-    cout << "Fichier " << filename << " en cours de traitement."<< endl;
-    model = parseCollada(filename);
-
-    if(!model)
-    {
-        std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
-        return -1;
-    }
-
     boost::shared_ptr<Link> root_link;
     root_link = model->root_link_;
     if(!root_link)

@@ -72,6 +72,7 @@ BM3D_SRC_SUBDIR_PROCESS(
 	./urdf_interface/tinyxml/tinyxmlparser.cpp
 	./urdf_interface/tinyxml/tinyxmlerror.cpp
  	urdf_p3d_converter.cpp
+ 	p3d_load_collada.cpp
 )
 ENDIF(USE_COLLADA15DOM)
 

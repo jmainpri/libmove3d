@@ -26,7 +26,7 @@
 #endif
 
 #ifdef USE_COLLADA15DOM
-#include "p3d/proto/urdf_p3d_converter.h"
+#include "p3d/proto/p3d_load_collada.h"
 #endif
 
 extern void* GroundCostObj;
