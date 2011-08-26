@@ -33,6 +33,30 @@
  *********************************************************************/
 
 /* Author: Rosen Diankov, used OpenRAVE files for reference  */
+
+
+/* Modif Francois L. (20/08/2011) :
+ *
+ * Error : ‘array’ in namespace ‘boost’ does not name a type
+ * Add iostream because using cout
+ *
+ */
+#include <boost/array.hpp>
+#include <iostream>
+
+using namespace std;
+
+/* Modif Francois L. (26/08/2011) :
+ *
+ * In the function _CreateGeometry(), instead of saving in a collada 1.4 files,
+ * vertices, indices and color are saving in a new structure of class Mesh (link.h)
+ *
+ *  std::vector<Vector3> vertices;
+ *  std::vector<int> indices;
+ *  Color diffuseColor;
+ *
+ */
+
 #include <vector>
 #include <list>
 #include <map>
@@ -53,12 +77,6 @@
 #include <boost/assert.hpp>
 #include <boost/format.hpp>
 #include <boost/shared_ptr.hpp>
-
-//TODO ajouté :  erreur: ‘array’ in namespace ‘boost’ does not name a type
-#include <boost/array.hpp>
-#include <iostream>
-
-using namespace std;
 
 #include "collada_parser.h"
 #include "urdf_interface/model.h"

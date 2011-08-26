@@ -20,7 +20,7 @@
 int p3d_load_collada(char* filename, char* modelName)
 {
     boost::shared_ptr<urdf::ModelInterface> model;
-    std::cout << "Fichier " << filename << " en cours de traitement."<< std::endl;
+    std::cout << "Fichier " << filename << " en cours de parsing."<< std::endl;
     model = urdf::parseCollada(filename);
 
     if(!model)
@@ -29,6 +29,7 @@ int p3d_load_collada(char* filename, char* modelName)
         return -1;
     }
 
+    std::cout << "Fichier " << filename << " en cours de conversion."<< std::endl;
     urdf_p3d_converter(model, modelName);
 
     return 0;

@@ -1,3 +1,22 @@
+/**
+ * \file urdf_p3d_converter.h
+ * \brief Programme qui parcourt une structure URDF C++ et crée un modèle p3d associé.
+ * \author Francois L.
+ * \version 0.1
+ * \date 26 août 2011
+ *
+ * Programme qui parcourt une structure URDF C++ et crée un modèle p3d associé.
+ * Le modèle URDF ne semble pas proposer de structures pour sauvegarder les vertices et indices.
+ *
+ * Une structure a donc été rajouté dans le modèle URDF pour sauvegarder les vertices, indices et couleurs.
+ *  Class Mesh (link.h)
+ *    std::vector<Vector3> vertices;
+ *    std::vector<int> indices;
+ *    Color diffuseColor;
+ *
+ * Ne peut donc fonctionner pour l'instant qu'avec un modèle URDF créé par le collada_parser qui remplit ces nouvelles structures
+ */
+
 #include <iostream>
 #include "urdf_p3d_converter.h"
 #include "urdf_interface/link.h"
@@ -258,7 +277,7 @@ void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, 
       urdf::Mesh* mesh = (urdf::Mesh*) (*child)->visual->geometry.get();
       if(mesh->vertices.size()==0)
       {
-        cout << "Un mesh ne contient aucune vertice" << endl;
+        //cout << "Un mesh ne contient aucune vertice" << endl;
       }
 
       /*
