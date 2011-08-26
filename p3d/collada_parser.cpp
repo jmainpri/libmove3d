@@ -1066,6 +1066,9 @@ namespace urdf{
 
       urdf::Mesh* urdf_mesh = (urdf::Mesh*) geometry.get();
       FOREACHC(it, listGeomProperties) {
+//        cout << name << endl;
+//        cout << it->_t.position.x << " " << it->_t.position.y << " " << it->_t.position.z << endl;
+//        cout << it->_t.rotation.x << " " << it->_t.rotation.y << " " << it->_t.rotation.z << " " << it->_t.rotation.w << endl;
         int voffset = urdf_mesh->vertices.size(), ioffset = urdf_mesh->indices.size();
         urdf_mesh->vertices.resize(urdf_mesh->vertices.size()+it->vertices.size());
         for(size_t i = 0; i < it->vertices.size(); ++i) {
@@ -2630,7 +2633,6 @@ namespace urdf{
     ColladaModelReader reader(model);
     if (!reader.InitFromFile(xml_str)) //avant : InitFromData
     {
-      printf("on reinitialise le model \n");
       model.reset();
     }
     return model;

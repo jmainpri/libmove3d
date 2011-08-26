@@ -1,3 +1,17 @@
+/**
+ * \file p3d_collada_loader.h
+ * \brief Programme qui charge un fichier Collada 1.5 dans les structures p3d.
+ * \author Francois L.
+ * \version 0.1
+ * \date 26 août 2011
+ *
+ * Programme qui charge un fichier Collada 1.5 dans les structures p3d.
+ *      - Le modèle COLLADA 1.5 est parsé par la fonction parseCollada() de collada_parser.h.
+ *      - Le parsing retourne un modèle URDF (qui décrit sous forme d'un arbre les links et joints du modèle).
+ *      - La fonction p3d_load_collada() crée à l'aide de ce modèle, un modèle p3d.
+ *
+ */
+
 #include <iostream>
 #include "collada_parser.h"
 #include "urdf_interface/model.h"
@@ -79,14 +93,14 @@ void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_pr
       data->vmax[0]=joint->limits->upper;
       break;
     case Joint::FLOATING:
-       cout << "La jointure de type 'floating' n'est pas traitée" << endl;
-       break;
+     cout << "La jointure de type 'floating' n'est pas traitée" << endl;
+     break;
     case Joint::PLANAR:
-        cout << "La jointure de type 'planar' n'est pas traitée" << endl;
-        break;
+      cout << "La jointure de type 'planar' n'est pas traitée" << endl;
+      break;
     case Joint::FIXED:
-        cout << "La jointure de type 'fixed' n'est pas traitée" << endl;
-        break;
+      cout << "La jointure de type 'fixed' n'est pas traitée" << endl;
+      break;
     default:
       cout << "La jointure est de type 'unknown'" << endl;
   }
@@ -150,11 +164,19 @@ int p3d_load_collada(char* filename, char* modelName)
     cout << "Fichier " << filename << " en cours de traitement."<< endl;
     model = parseCollada(filename);
 
+    if(!model)
+    {
+        std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
+        return -1;
+    }
+
     boost::shared_ptr<Link> root_link;
     root_link = model->root_link_;
-
     if(!root_link)
+    {
+        cout << "Le lien 'root' n'a pas été trouvé" << std::endl;
         return 0;
+    }
 
     p3d_beg_desc(P3D_ROBOT, modelName);
 
@@ -176,8 +198,13 @@ int p3d_load_collada(char* filename, char* modelName)
     p3d_end_desc_poly();
 
     // Ajout de la position du mesh
+    double r_root, p_root, y_root;
     Vector3 pos = root_link->visual->origin.position;
-    p3d_set_prim_pos_deg(p3d_poly_get_poly_by_name((char *)root_link->name.c_str()), pos.x, pos.y, pos.z, 0, 0, 0);
+    root_link->visual->origin.rotation.getRPY(r_root, p_root, y_root);
+    p3d_matrix4 posMatrixRoot;
+    p3d_mat4Pos(posMatrixRoot, pos.x*2.0, pos.y*2.0, pos.z*2.0, r_root, p_root, y_root);
+    p3d_set_prim_pos_by_mat(p3d_poly_get_poly_by_name((char*)root_link->name.c_str()), posMatrixRoot);
+    //p3d_set_prim_pos_deg(p3d_poly_get_poly_by_name((char *)root_link->name.c_str()), pos.x, pos.y, pos.z, 0, 0, 0);
 
     // Ajout de la couleur du mesh
     double color_vect[3]={mesh->diffuseColor.r,mesh->diffuseColor.g, mesh->diffuseColor.b};
@@ -257,7 +284,6 @@ void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, 
       if(mesh->vertices.size()==0)
       {
         cout << "Un mesh ne contient aucune vertice" << endl;
-        continue;
       }
 
       /*
