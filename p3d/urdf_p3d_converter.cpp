@@ -174,6 +174,11 @@ int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName)
 
     p3d_beg_desc(P3D_ROBOT, modelName);
 
+    /*
+     **********************************
+     ** CAS PARTICULIER DU LIEN ROOT **
+     **********************************
+     */
     add_root_freeflyer();
 
     p3d_beg_desc(P3D_BODY, (char *)root_link->name.c_str());
@@ -216,8 +221,8 @@ int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName)
 
 // link_parent : lien parent
 // num_prev_jnt : numéro de la jointure parent
-// pos_abs_jnt_parent : position aboslue de la jointure parent
 // num_last_jnt : numéro de la dernière jointure déclarée
+// pos_abs_jnt_parent : position aboslue de la jointure parent
 void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, int * num_last_jnt, Pose pos_abs_jnt_parent)
 {
   // Pour tous les enfants du lien
@@ -238,26 +243,26 @@ void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, 
       if(joint)
       {
         /*
-         *
-         * CALCUL DE LA POSITION ABSOLUE DE LA JOINTURE ENFANT
-         *
+         *********************************************************
+         ** CALCUL DE LA POSITION ABSOLUE DE LA JOINTURE ENFANT **
+         *********************************************************
          */
 
         // Récupère la jointure parent
         pos_abs_jnt_parent.rotation.getRPY(r_jnt_parent_abs, p_jnt_parent_abs, y_jnt_parent_abs);
 
-        // Récupère la position relative et son angle de la jointure par rapport à la jointure parente
+        // Récupère la position relative et son angle de la jointure enfant par rapport à la jointure parente
         Pose pos_rel_jnt;
         pos_rel_jnt.position.x=joint->parent_to_joint_origin_transform.position.x;
         pos_rel_jnt.position.y=joint->parent_to_joint_origin_transform.position.y;
         pos_rel_jnt.position.z=joint->parent_to_joint_origin_transform.position.z;
         joint->parent_to_joint_origin_transform.rotation.getRPY(r_jnt_rel, p_jnt_rel, y_jnt_rel);
 
-        // Remplit une premiere matrice de la situation de la jointure parent
+        // Remplit une premieère matrice de la situation de la jointure parent
         p3d_matrix4 posMatrix1;
         p3d_mat4Pos(posMatrix1, pos_abs_jnt_parent.position.x, pos_abs_jnt_parent.position.y, pos_abs_jnt_parent.position.z, r_jnt_parent_abs, p_jnt_parent_abs, y_jnt_parent_abs);
 
-        // Remplit une deuxieme matrice de la transformation relative entre les repères de la jointure parent et de la jointure enfant
+        // Remplit une deuxième matrice de la transformation relative entre les repères de la jointure parent et de la jointure enfant
         p3d_matrix4 posMatrix2;
         p3d_mat4Pos(posMatrix2, pos_rel_jnt.position.x, pos_rel_jnt.position.y, pos_rel_jnt.position.z, r_jnt_rel, p_jnt_rel, y_jnt_rel);
 
@@ -273,7 +278,6 @@ void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, 
       }
 
       // Récupère le mesh du lien
-      // TODO : traiter le cas des formes géométriques simples (si elles ne sont pas transformées en mesh lors du parsing)
       urdf::Mesh* mesh = (urdf::Mesh*) (*child)->visual->geometry.get();
       if(mesh->vertices.size()==0)
       {
@@ -281,9 +285,9 @@ void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, 
       }
 
       /*
-       *
-       * CALCUL DE LA POSITION ABOSLUE DU BODY
-       *
+       *******************************************
+       ** CALCUL DE LA POSITION ABOSLUE DU BODY **
+       *******************************************
        */
 
       // Récupère la position relative du lien par rapport à la jointure parente
