@@ -1,7 +1,7 @@
 /**
- * \file urdf_p3d_converter.h
- * \brief Programme qui charge un fichier Collada 1.5 dans les structures p3d.
- * \author Francois L.
+ * \file p3d_load_collada.cpp
+ * \brief Fonction qui charge un fichier Collada 1.5 dans les structures p3d.
+ * \author F. Lancelot
  * \version 0.1
  * \date 26 août 2011
  *
@@ -13,6 +13,7 @@
  */
 
 #include <iostream>
+#include "proto/p3d_load_collada.h"
 #include "collada_parser.h"
 #include "urdf_p3d_converter.h"
 #include "urdf_interface/model.h"

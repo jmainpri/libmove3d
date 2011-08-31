@@ -35,10 +35,10 @@
 /* Author: Rosen Diankov, used OpenRAVE files for reference  */
 
 
-/* Modif Francois L. (20/08/2011) :
+/* Modif F. Lancelot (20/08/2011) :
  *
  * Error : ‘array’ in namespace ‘boost’ does not name a type
- * Add iostream because using cout
+ * Add iostream because use "cout" for warning
  *
  */
 #include <boost/array.hpp>
@@ -46,7 +46,7 @@
 
 using namespace std;
 
-/* Modif Francois L. (26/08/2011) :
+/* Modif F. Lancelot (26/08/2011) :
  *
  * In the function _CreateGeometry(), instead of saving in a collada 1.4 files,
  * vertices, indices and color are saving in a new structure of class Mesh (link.h)
@@ -816,8 +816,6 @@ namespace urdf{
     	  //ROS_DEBUG_STREAM(str(boost::format("Node Id %s and Name %s\n")%pdomnode->getId()%pdomnode->getName()));
       }
 
-      // on crée un attribut listGeomProperties à chaque link
-      // et ici au lieu de passer listGeomProperties, on passe link.listGeomPre
       std::list<GEOMPROPERTIES> listGeomProperties;
       if (!pdomlink) {
     	  //ROS_WARN_STREAM("Extract object NOT kinematics !!!\n");

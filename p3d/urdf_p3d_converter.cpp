@@ -1,7 +1,7 @@
 /**
- * \file urdf_p3d_converter.h
- * \brief Programme qui parcourt une structure URDF C++ et crée un modèle p3d associé.
- * \author Francois L.
+ * \file urdf_p3d_converter.cpp
+ * \brief Fonctions pour parcourir une structure URDF C++ et créer un modèle p3d associé.
+ * \author F. Lancelot
  * \version 0.1
  * \date 26 août 2011
  *
@@ -9,18 +9,18 @@
  * Le modèle URDF ne semble pas proposer de structures pour sauvegarder les vertices et indices.
  *
  * Une structure a donc été rajouté dans le modèle URDF pour sauvegarder les vertices, indices et couleurs.
- *  Class Mesh (link.h)
- *    std::vector<Vector3> vertices;
- *    std::vector<int> indices;
- *    Color diffuseColor;
+ *  - Class Mesh (link.h)
+ *    - std::vector<Vector3> vertices;
+ *    - std::vector<int> indices;
+ *    - Color diffuseColor;
  *
  * Ne peut donc fonctionner pour l'instant qu'avec un modèle URDF créé par le collada_parser qui remplit ces nouvelles structures
  */
 
-#include <iostream>
-#include "urdf_p3d_converter.h"
-#include "urdf_interface/link.h"
 
+#include "proto/urdf_p3d_converter.h"
+#include <iostream>
+#include "urdf_interface/link.h"
 #include "P3d-pkg.h"
 
 #define FOREACH(it, v) for(typeof((v).begin()) it = (v).begin(); it != (v).end(); (it)++)
@@ -31,7 +31,11 @@ using namespace std;
 
 void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, int * num_last_jnt, Pose pos_abs_jnt_parent);
 
-// Ajout d'un FREEFLYER pour avoir un objet movable
+/**
+ * \fn void add_root_freeflyer()
+ * \brief Fonction qui ajoute 6 degrés de liberté au noeud root.
+ *
+ */
 void add_root_freeflyer()
 {
   p3d_read_jnt_data * data = p3d_create_read_jnt_data(P3D_FREEFLYER);
@@ -73,6 +77,13 @@ void add_root_freeflyer()
   p3d_destroy_read_jnt_data(data);
 }
 
+/**
+ * \fn void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_prev_jnt)
+ * \brief Fonction qui fixe une articulation au body en cours.
+ * \param joint Articulation URDF à ajouter
+ * \param pos_abs_jnt_enf Position de l'articulation à ajouter
+ * \param num_prev_jnt Numéro de l'articulation parente
+ */
 void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_prev_jnt)
 {
   p3d_read_jnt_data * data;
@@ -162,6 +173,14 @@ void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_pr
   p3d_destroy_read_jnt_data(data);
 }
 
+
+
+/**
+ * \fn int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName)
+ * \brief Fonction qui parcourt une structure URDF C++ et crée un modèle p3d associé
+ * \param model Modèle URDF à convertir
+ * \param modelName Nom du modèle
+ */
 int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName)
 {
     boost::shared_ptr<Link> root_link;
@@ -219,10 +238,14 @@ int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName)
     return 0;
 }
 
-// link_parent : lien parent
-// num_prev_jnt : numéro de la jointure parent
-// num_last_jnt : numéro de la dernière jointure déclarée
-// pos_abs_jnt_parent : position aboslue de la jointure parent
+/**
+ * \fn void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, int * num_last_jnt, Pose pos_abs_jnt_parent)
+ * \brief Fonction qui convertit un link URDF dans les structures p3d et fait de même pour tous ses enfants
+ * \param model link_parent lien à convertir
+ * \param num_prev_jnt Numéro de l'articulation parente
+ * \param num_last_jnt Dernier numéro utilisé par une articulation
+ * \param pos_abs_jnt_parent Position absolue de l'articulation parente
+ */
 void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, int * num_last_jnt, Pose pos_abs_jnt_parent)
 {
   // Pour tous les enfants du lien
@@ -258,7 +281,7 @@ void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, 
         pos_rel_jnt.position.z=joint->parent_to_joint_origin_transform.position.z;
         joint->parent_to_joint_origin_transform.rotation.getRPY(r_jnt_rel, p_jnt_rel, y_jnt_rel);
 
-        // Remplit une premieère matrice de la situation de la jointure parent
+        // Remplit une première matrice de la situation de la jointure parent
         p3d_matrix4 posMatrix1;
         p3d_mat4Pos(posMatrix1, pos_abs_jnt_parent.position.x, pos_abs_jnt_parent.position.y, pos_abs_jnt_parent.position.z, r_jnt_parent_abs, p_jnt_parent_abs, y_jnt_parent_abs);
 
