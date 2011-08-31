@@ -30,6 +30,209 @@ using namespace urdf;
 using namespace std;
 
 void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, int * num_last_jnt, Pose pos_abs_jnt_parent);
+void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_prev_jnt);
+void add_root_freeflyer();
+void calcul_pos_abs_link( struct Position * pos_abs_jnt_enf, const Pose * pos_rel_link, struct Position * pos_abs_link);
+void calcul_pos_abs_jnt_enf(const Pose * pos_abs_jnt_parent, const Pose * pos_rel_jnt_enfant, struct Position * position_abs_jnt_enf);
+
+/**
+ * \fn int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName)
+ * \brief Fonction qui parcourt une structure URDF C++ et crée un modèle p3d associé
+ * \param model Modèle URDF à convertir
+ * \param modelName Nom du modèle
+ */
+int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName)
+{
+    boost::shared_ptr<Link> root_link;
+    root_link = model->root_link_;
+    if(!root_link)
+    {
+        cout << "Le lien 'root' n'a pas été trouvé" << std::endl;
+        return 0;
+    }
+
+    p3d_beg_desc(P3D_ROBOT, modelName);
+
+    /*
+     **********************************
+     ** CAS PARTICULIER DU LIEN ROOT **
+     **********************************
+     */
+    add_root_freeflyer();
+
+    p3d_beg_desc(P3D_BODY, (char *)root_link->name.c_str());
+
+    p3d_add_desc_poly((char *)root_link->name.c_str(),P3D_GRAPHIC);
+
+    urdf::Mesh* mesh = (urdf::Mesh*) root_link->visual->geometry.get();
+    FOREACH(it,mesh->vertices){
+        p3d_add_desc_vert(it->x, it->y, it->z );
+    }
+    for(int i=0; i<mesh->indices.size(); i+=3){
+        int indices[3]={mesh->indices.at(i)+1, mesh->indices.at(i+1)+1 , mesh->indices.at(i+2)+1 };
+        p3d_add_desc_face(indices, 3);
+    }
+
+    p3d_end_desc_poly();
+
+    // Ajout de la position du mesh
+    double r_root, p_root, y_root;
+    Vector3 pos = root_link->visual->origin.position;
+    root_link->visual->origin.rotation.getRPY(r_root, p_root, y_root);
+    p3d_matrix4 posMatrixRoot;
+    p3d_mat4Pos(posMatrixRoot, pos.x*2.0, pos.y*2.0, pos.z*2.0, r_root, p_root, y_root);
+    p3d_set_prim_pos_by_mat(p3d_poly_get_poly_by_name((char*)root_link->name.c_str()), posMatrixRoot);
+    //p3d_set_prim_pos_deg(p3d_poly_get_poly_by_name((char *)root_link->name.c_str()), pos.x, pos.y, pos.z, 0, 0, 0);
+
+    // Ajout de la couleur du mesh
+    double color_vect[3]={mesh->diffuseColor.r,mesh->diffuseColor.g, mesh->diffuseColor.b};
+    p3d_poly_set_color(p3d_poly_get_poly_by_name((char*)root_link->name.c_str()), Any, color_vect);
+
+    p3d_end_desc();
+
+    int num_prev_jnt = 1;
+    int num_last_jnt = 1;
+
+    parcoursArbre(root_link, num_prev_jnt, &num_last_jnt, root_link->visual->origin);
+
+    return 0;
+}
+
+/**
+ * \struct Position
+ * \brief Contient la position sous forme de Pose ou de Matrix4
+ *
+ */
+
+struct Position
+{
+  Pose position_pose;
+  p3d_matrix4 position_matrix4;
+};
+
+/**
+ * \fn void calcul_pos_abs_jnt_enf(const Pose * pos_abs_jnt_parent, const Pose * pos_rel_jnt_enfant, struct Position * position)
+ * \brief Calcul la position absolue d'une articulation enfant connaissant sa position relative et la position absolue de l'articulation parente
+ * \param pos_abs_jnt_parent Position absolue de l'articulation parente
+ * \param pos_rel_jnt_enfant Position relative de l'articulation enfant
+ * \param position_abs_jnt_enf Position absolue de l'articulation enfant (résultat)
+ */
+void calcul_pos_abs_jnt_enf(const Pose * pos_abs_jnt_parent, const Pose * pos_rel_jnt_enfant, struct Position * position_abs_jnt_enf)
+{
+  double r_jnt_rel, p_jnt_rel, y_jnt_rel;
+  double r_jnt_parent_abs, p_jnt_parent_abs, y_jnt_parent_abs;
+
+  pos_abs_jnt_parent->rotation.getRPY(r_jnt_parent_abs, p_jnt_parent_abs, y_jnt_parent_abs);
+
+  // Récupère la position relative et son angle de la jointure enfant par rapport à la jointure parente
+  pos_rel_jnt_enfant->rotation.getRPY(r_jnt_rel, p_jnt_rel, y_jnt_rel);
+
+  // Remplit une première matrice de la situation de la jointure parent
+  p3d_matrix4 posMatrix1;
+  p3d_mat4Pos(posMatrix1, pos_abs_jnt_parent->position.x, pos_abs_jnt_parent->position.y, pos_abs_jnt_parent->position.z, r_jnt_parent_abs, p_jnt_parent_abs, y_jnt_parent_abs);
+
+  // Remplit une deuxième matrice de la transformation relative entre les repères de la jointure parent et de la jointure enfant
+  p3d_matrix4 posMatrix2;
+  p3d_mat4Pos(posMatrix2, pos_rel_jnt_enfant->position.x, pos_rel_jnt_enfant->position.y, pos_rel_jnt_enfant->position.z, r_jnt_rel, p_jnt_rel, y_jnt_rel);
+
+  // Par multiplication, obtient la matrice de situation de la jointure enfant
+  p3d_mat4Mult(posMatrix1, posMatrix2, position_abs_jnt_enf->position_matrix4);
+
+  // Remplit la structure spécifique (Pose) à partir de la matrix4 position_abs_jnt_enf
+  double Rx, Ry, Rz;
+  p3d_mat4ExtractPosReverseOrder(position_abs_jnt_enf->position_matrix4, &(position_abs_jnt_enf->position_pose.position.x), &(position_abs_jnt_enf->position_pose.position.y), &(position_abs_jnt_enf->position_pose.position.z), &Rx, &Ry, &Rz);
+  position_abs_jnt_enf->position_pose.rotation.setFromRPY(Rx,Ry,Rz);
+
+}
+/**
+ * \fn void calcul_pos_abs_link( struct Position * pos_abs_jnt_enf, const Pose * pos_rel_link, struct Position * pos_abs_link)
+ * \brief Calcul la position absolue d'un lien connaissant sa position relative et la position absolue de l'articulation parente
+ * \param pos_abs_jnt_enf Position absolue de l'articulation parente
+ * \param pos_rel_link Position relative du lien par rapport à l'articulation parente
+ * \param pos_abs_link Position absolue du lien (résultat)
+ */
+void calcul_pos_abs_link( struct Position * pos_abs_jnt_parent, const Pose * pos_rel_link, struct Position * pos_abs_link)
+{
+  //Récupère la position relative du lien par rapport à la jointure enfant
+  double r_rel_link, p_rel_link, y_rel_link;
+  pos_rel_link->rotation.getRPY(r_rel_link, p_rel_link, y_rel_link);
+
+  // Remplit une matrice de la transformation relative entre les repères de la jointure enfant et du body
+  p3d_matrix4 posMatrix3;
+  p3d_mat4Pos(posMatrix3, pos_rel_link->position.x,  pos_rel_link->position.y,  pos_rel_link->position.z, r_rel_link, p_rel_link, y_rel_link);
+
+  // Par multiplication, obtient la matrice de situation du lien
+  p3d_mat4Mult(pos_abs_jnt_parent->position_matrix4, posMatrix3, pos_abs_link->position_matrix4);
+}
+
+/**
+ * \fn void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, int * num_last_jnt, Pose pos_abs_jnt_parent)
+ * \brief Fonction qui convertit un link URDF dans les structures p3d et fait de même pour tous ses enfants
+ * \param model link_parent lien à convertir
+ * \param num_prev_jnt Numéro de l'articulation parente
+ * \param num_last_jnt Dernier numéro utilisé par une articulation
+ * \param pos_abs_jnt_parent Position absolue de l'articulation parente
+ */
+void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, int * num_last_jnt, Pose pos_abs_jnt_parent)
+{
+  // Pour tous les enfants du lien
+  for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link_parent->child_links.begin(); child != link_parent->child_links.end(); child++)
+  {
+    if (*child)
+    {
+      struct Position pos_abs_jnt_enf;
+      struct Position pos_abs_link;
+
+      // Caractérise la jointure par un id non encore utilisé
+      (*num_last_jnt)++;
+      int num_joint = *num_last_jnt;
+
+      boost::shared_ptr<Joint> joint = (*child)->parent_joint;
+      if(joint)
+      {
+        // Calcul de la position absolue de l'articulation enfant
+        calcul_pos_abs_jnt_enf(&pos_abs_jnt_parent, &(joint->parent_to_joint_origin_transform), &pos_abs_jnt_enf);
+        add_joint(joint,pos_abs_jnt_enf.position_pose, num_prev_jnt);
+      }
+
+      // Récupère le mesh du lien
+      urdf::Mesh* mesh = (urdf::Mesh*) (*child)->visual->geometry.get();
+
+      // Ajout dans le monde du lien
+      p3d_beg_desc(P3D_BODY, (char*)(*child)->name.c_str());
+      p3d_add_desc_poly((char*)(*child)->name.c_str(),P3D_GRAPHIC);
+
+      FOREACH(it,mesh->vertices) {
+        p3d_add_desc_vert(it->x, it->y, it->z );
+      }
+
+      for(int i=0; i<mesh->indices.size(); i+=3){
+        int indices[3]={mesh->indices.at(i)+1, mesh->indices.at(i+1)+1 , mesh->indices.at(i+2)+1 };
+        p3d_add_desc_face(indices, 3);
+      }
+      p3d_end_desc_poly();
+
+      // Calcul de la position absolue du body
+      calcul_pos_abs_link(&pos_abs_jnt_enf,  &((*child)->visual->origin), &pos_abs_link);
+
+      // Ajout de la position du mesh
+      p3d_set_prim_pos_by_mat(p3d_poly_get_poly_by_name((char*)(*child)->name.c_str()), pos_abs_link.position_matrix4);
+
+      // Ajout de la couleur du mesh
+      double color_vect[3]={mesh->diffuseColor.r,mesh->diffuseColor.g, mesh->diffuseColor.b};
+      p3d_poly_set_color(p3d_poly_get_poly_by_name((char*)(*child)->name.c_str()), Any, color_vect);
+
+      p3d_end_desc();
+
+      parcoursArbre(*child, num_joint, num_last_jnt,pos_abs_jnt_enf.position_pose);
+    }
+    else
+    {
+      std::cout << "link: " << link_parent->name << " has a null child!" << *child << std::endl;
+    }
+  }
+}
+
 
 /**
  * \fn void add_root_freeflyer()
@@ -81,7 +284,7 @@ void add_root_freeflyer()
  * \fn void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_prev_jnt)
  * \brief Fonction qui fixe une articulation au body en cours.
  * \param joint Articulation URDF à ajouter
- * \param pos_abs_jnt_enf Position de l'articulation à ajouter
+ * \param pos_abs_jnt_enf Position absolue de l'articulation à ajouter
  * \param num_prev_jnt Numéro de l'articulation parente
  */
 void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_prev_jnt)
@@ -171,191 +374,4 @@ void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_pr
   s_p3d_build_jnt_data(data);
 
   p3d_destroy_read_jnt_data(data);
-}
-
-
-
-/**
- * \fn int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName)
- * \brief Fonction qui parcourt une structure URDF C++ et crée un modèle p3d associé
- * \param model Modèle URDF à convertir
- * \param modelName Nom du modèle
- */
-int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName)
-{
-    boost::shared_ptr<Link> root_link;
-    root_link = model->root_link_;
-    if(!root_link)
-    {
-        cout << "Le lien 'root' n'a pas été trouvé" << std::endl;
-        return 0;
-    }
-
-    p3d_beg_desc(P3D_ROBOT, modelName);
-
-    /*
-     **********************************
-     ** CAS PARTICULIER DU LIEN ROOT **
-     **********************************
-     */
-    add_root_freeflyer();
-
-    p3d_beg_desc(P3D_BODY, (char *)root_link->name.c_str());
-
-    p3d_add_desc_poly((char *)root_link->name.c_str(),P3D_GRAPHIC);
-
-    urdf::Mesh* mesh = (urdf::Mesh*) root_link->visual->geometry.get();
-    FOREACH(it,mesh->vertices){
-        p3d_add_desc_vert(it->x, it->y, it->z );
-    }
-    for(int i=0; i<mesh->indices.size(); i+=3){
-    	int indices[3]={mesh->indices.at(i)+1, mesh->indices.at(i+1)+1 , mesh->indices.at(i+2)+1 };
-        p3d_add_desc_face(indices, 3);
-    }
-
-    p3d_end_desc_poly();
-
-    // Ajout de la position du mesh
-    double r_root, p_root, y_root;
-    Vector3 pos = root_link->visual->origin.position;
-    root_link->visual->origin.rotation.getRPY(r_root, p_root, y_root);
-    p3d_matrix4 posMatrixRoot;
-    p3d_mat4Pos(posMatrixRoot, pos.x*2.0, pos.y*2.0, pos.z*2.0, r_root, p_root, y_root);
-    p3d_set_prim_pos_by_mat(p3d_poly_get_poly_by_name((char*)root_link->name.c_str()), posMatrixRoot);
-    //p3d_set_prim_pos_deg(p3d_poly_get_poly_by_name((char *)root_link->name.c_str()), pos.x, pos.y, pos.z, 0, 0, 0);
-
-    // Ajout de la couleur du mesh
-    double color_vect[3]={mesh->diffuseColor.r,mesh->diffuseColor.g, mesh->diffuseColor.b};
-    p3d_poly_set_color(p3d_poly_get_poly_by_name((char*)root_link->name.c_str()), Any, color_vect);
-
-    p3d_end_desc();
-
-    int num_prev_jnt = 1;
-    int num_last_jnt = 1;
-
-    parcoursArbre(root_link, num_prev_jnt, &num_last_jnt, root_link->visual->origin);
-
-    return 0;
-}
-
-/**
- * \fn void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, int * num_last_jnt, Pose pos_abs_jnt_parent)
- * \brief Fonction qui convertit un link URDF dans les structures p3d et fait de même pour tous ses enfants
- * \param model link_parent lien à convertir
- * \param num_prev_jnt Numéro de l'articulation parente
- * \param num_last_jnt Dernier numéro utilisé par une articulation
- * \param pos_abs_jnt_parent Position absolue de l'articulation parente
- */
-void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, int * num_last_jnt, Pose pos_abs_jnt_parent)
-{
-  // Pour tous les enfants du lien
-  for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link_parent->child_links.begin(); child != link_parent->child_links.end(); child++)
-  {
-    if (*child)
-    {
-      double r_jnt_parent_abs, p_jnt_parent_abs, y_jnt_parent_abs;
-      double r_jnt_rel, p_jnt_rel, y_jnt_rel;
-      Pose pos_jnt_enf_abs;
-      p3d_matrix4 posJntEnf;
-
-      // Caractérise la jointure par un id non encore utilisé
-      (*num_last_jnt)++;
-      int num_joint = *num_last_jnt;
-
-      boost::shared_ptr<Joint> joint = (*child)->parent_joint;
-      if(joint)
-      {
-        /*
-         *********************************************************
-         ** CALCUL DE LA POSITION ABSOLUE DE LA JOINTURE ENFANT **
-         *********************************************************
-         */
-
-        // Récupère la jointure parent
-        pos_abs_jnt_parent.rotation.getRPY(r_jnt_parent_abs, p_jnt_parent_abs, y_jnt_parent_abs);
-
-        // Récupère la position relative et son angle de la jointure enfant par rapport à la jointure parente
-        Pose pos_rel_jnt;
-        pos_rel_jnt.position.x=joint->parent_to_joint_origin_transform.position.x;
-        pos_rel_jnt.position.y=joint->parent_to_joint_origin_transform.position.y;
-        pos_rel_jnt.position.z=joint->parent_to_joint_origin_transform.position.z;
-        joint->parent_to_joint_origin_transform.rotation.getRPY(r_jnt_rel, p_jnt_rel, y_jnt_rel);
-
-        // Remplit une première matrice de la situation de la jointure parent
-        p3d_matrix4 posMatrix1;
-        p3d_mat4Pos(posMatrix1, pos_abs_jnt_parent.position.x, pos_abs_jnt_parent.position.y, pos_abs_jnt_parent.position.z, r_jnt_parent_abs, p_jnt_parent_abs, y_jnt_parent_abs);
-
-        // Remplit une deuxième matrice de la transformation relative entre les repères de la jointure parent et de la jointure enfant
-        p3d_matrix4 posMatrix2;
-        p3d_mat4Pos(posMatrix2, pos_rel_jnt.position.x, pos_rel_jnt.position.y, pos_rel_jnt.position.z, r_jnt_rel, p_jnt_rel, y_jnt_rel);
-
-        // Par multiplication, obtient la matrice de situation de la jointure enfant
-        p3d_mat4Mult(posMatrix1, posMatrix2, posJntEnf);
-
-        // Remplit la structure spécifique (Pose) avec la matrice posJntEnf
-        double Rx, Ry, Rz;
-        p3d_mat4ExtractPosReverseOrder(posJntEnf, &(pos_jnt_enf_abs.position.x), &(pos_jnt_enf_abs.position.y), &(pos_jnt_enf_abs.position.z), &Rx, &Ry, &Rz);
-        pos_jnt_enf_abs.rotation.setFromRPY(Rx,Ry,Rz);
-
-        add_joint(joint,pos_jnt_enf_abs, num_prev_jnt);
-      }
-
-      // Récupère le mesh du lien
-      urdf::Mesh* mesh = (urdf::Mesh*) (*child)->visual->geometry.get();
-      if(mesh->vertices.size()==0)
-      {
-        //cout << "Un mesh ne contient aucune vertice" << endl;
-      }
-
-      /*
-       *******************************************
-       ** CALCUL DE LA POSITION ABOSLUE DU BODY **
-       *******************************************
-       */
-
-      // Récupère la position relative du lien par rapport à la jointure parente
-      double r_rel_link, p_rel_link, y_rel_link;
-      (*child)->visual->origin.rotation.getRPY(r_rel_link, p_rel_link, y_rel_link);
-
-      // Remplit une troisième matrice de la transformation relative entre les repères de la jointure enfant et du body
-      p3d_matrix4 posMatrix3;
-      p3d_mat4Pos(posMatrix3, (*child)->visual->origin.position.x, (*child)->visual->origin.position.y, (*child)->visual->origin.position.z, r_rel_link, p_rel_link, y_rel_link);
-
-      // Par multiplication, obtient la matrice de situation de la jointure enfant
-      p3d_matrix4 posLink;
-      p3d_mat4Mult(posJntEnf, posMatrix3, posLink);
-
-      double Tx, Ty, Tz, Rx, Ry, Rz;
-      p3d_mat4ExtractPosReverseOrder(posLink, &Tx, &Ty, &Tz, &Rx, &Ry, &Rz);
-
-      // Ajout dans le monde du lien
-      p3d_beg_desc(P3D_BODY, (char*)(*child)->name.c_str());
-      p3d_add_desc_poly((char*)(*child)->name.c_str(),P3D_GRAPHIC);
-
-      FOREACH(it,mesh->vertices) {
-        p3d_add_desc_vert(it->x, it->y, it->z );
-      }
-
-      for(int i=0; i<mesh->indices.size(); i+=3){
-        int indices[3]={mesh->indices.at(i)+1, mesh->indices.at(i+1)+1 , mesh->indices.at(i+2)+1 };
-        p3d_add_desc_face(indices, 3);
-      }
-      p3d_end_desc_poly();
-
-      // Ajout de la position du mesh
-      p3d_set_prim_pos_by_mat(p3d_poly_get_poly_by_name((char*)(*child)->name.c_str()), posLink);
-
-      // Ajout de la couleur du mesh
-      double color_vect[3]={mesh->diffuseColor.r,mesh->diffuseColor.g, mesh->diffuseColor.b};
-      p3d_poly_set_color(p3d_poly_get_poly_by_name((char*)(*child)->name.c_str()), Any, color_vect);
-
-      p3d_end_desc();
-
-      parcoursArbre(*child, num_joint, num_last_jnt,pos_jnt_enf_abs);
-    }
-    else
-    {
-      std::cout << "link: " << link_parent->name << " has a null child!" << *child << std::endl;
-    }
-  }
 }
