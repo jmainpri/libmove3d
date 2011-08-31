@@ -10,14 +10,14 @@
 ## Check for the header files
   
 find_path (COLLADA15DOM_INCLUDE_DIR dae.h
-  PATHS ${COLLADA15DOM_INC} /usr/local/include/collada-dom /usr/include /sw/include /opt/local/include
+  PATHS ${COLLADA15DOM_INC} /usr/local/include/collada-dom /usr/include /sw/include /opt/local/include $ENV{ROBOTPKG_BASE}/include
   )
   
 ## -----------------------------------------------------------------------------
 ## Check for the library
 
 find_library (COLLADA15DOM_LIBRARIES collada15dom
-  PATHS ${COLLADA15DOM_LIB} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
+  PATHS ${COLLADA15DOM_LIB} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib $ENV{ROBOTPKG_BASE}/lib
   )
 
 ## -----------------------------------------------------------------------------
