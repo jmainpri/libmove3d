@@ -80,6 +80,7 @@ int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName)
     Vector3 pos = root_link->visual->origin.position;
     root_link->visual->origin.rotation.getRPY(r_root, p_root, y_root);
     p3d_matrix4 posMatrixRoot;
+    // *2.0 car le centre dans le modèle URDF est le centre de l'objet alors que dans Move3d c'est le bas de l'objet
     p3d_mat4Pos(posMatrixRoot, pos.x*2.0, pos.y*2.0, pos.z*2.0, r_root, p_root, y_root);
     p3d_set_prim_pos_by_mat(p3d_poly_get_poly_by_name((char*)root_link->name.c_str()), posMatrixRoot);
     //p3d_set_prim_pos_deg(p3d_poly_get_poly_by_name((char *)root_link->name.c_str()), pos.x, pos.y, pos.z, 0, 0, 0);
