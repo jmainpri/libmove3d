@@ -9,8 +9,8 @@
 ## -----------------------------------------------------------------------------
 ## Check for the header files
   
-find_path (COLLADA15DOM_INCLUDE_DIR dae.h
-  PATHS ${COLLADA15DOM_INC} /usr/local/include/collada-dom /usr/include /sw/include /opt/local/include $ENV{ROBOTPKG_BASE}/include
+find_path (COLLADA15DOM_INCLUDE_DIR collada-dom/dae.h
+  PATHS ${COLLADA15DOM_INC} /usr/local/include /usr/include /sw/include /opt/local/include $ENV{ROBOTPKG_BASE}/include
   )
   
 ## -----------------------------------------------------------------------------
