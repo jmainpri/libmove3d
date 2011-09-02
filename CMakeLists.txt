@@ -176,6 +176,8 @@ BM3D_flag(USE_HRP2_GIK "HRP2 GIK Library" OFF)
 BM3D_flag(USE_HATP_LIBS "For including HATP libraries" OFF)
 BM3D_flag(USE_GBM "Compilation with the gbM package" OFF)
 
+BM3D_flag(USE_COLLADA15DOM "Compilation with ColladaDom1.5" OFF)
+
 
 # META flags ------
 #------------------
@@ -404,6 +406,17 @@ ENDIF(USE_HATP_LIBS)
 # FIND_PACKAGE(<Package> REQUIRED)
 # INCLUDE_directories(${<PACKAGE>_INCLUDE_DIR})
 # SET(LIBS ${LIBS} ${<PACKAGE>_LIBRARIES})
+
+#-------------- COLLADA15DOM ------------------------------
+#----------------------------------------------------------
+IF(USE_COLLADA15DOM)
+	FIND_PACKAGE(COLLADA15DOM REQUIRED)
+	INCLUDE_directories(${COLLADA15DOM_INCLUDE_DIR}/collada-dom)
+	INCLUDE_directories(${COLLADA15DOM_INCLUDE_DIR}/collada-dom/1.5)
+	SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${COLLADA15DOM_INCLUDE_DIR}/collada-dom)
+	SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${COLLADA15DOM_INCLUDE_DIR}/collada-dom/1.5)
+	#SET(LIBS ${LIBS} ${COLLADA15DOM_LIBRARIES})
+ENDIF(USE_COLLADA15DOM)
 
 #------------------- PKG_CONFIG ---------------------------
 #----------------------------------------------------------

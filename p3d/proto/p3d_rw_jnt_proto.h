@@ -17,5 +17,6 @@ extern void p3d_destroy_read_jnt_data ( p3d_read_jnt_data * data );
 extern int p3d_parse_jnt_desc ( FILE * f, char ** line, int * size, int * num_line, p3d_read_jnt_data * data );
 extern int p3d_env_beg_jnt_desc ( FILE * f, p3d_type_joint type, double scale );
 extern void p3d_rw_jnt_write_jnt_desc ( FILE * f, p3d_jnt * jntPt );
+extern int s_p3d_build_jnt_data(p3d_read_jnt_data * data);
 
 #endif /* __CEXTRACT__ */
