@@ -111,6 +111,7 @@ int p3d_read_macro ( char *namemac,char *nameobj,double scale )
 	return ( TRUE );
 }
 
+#ifdef USE_COLLADA15DOM
 int p3d_read_collada( char *namemac, char *nameobj)
 {
         char collada[200], collada2[200];
@@ -123,11 +124,10 @@ int p3d_read_collada( char *namemac, char *nameobj)
         sprintf ( collada,"%sCOLLADA/",c_dir_name );
 
         strcat ( collada,namemac );
-#ifdef USE_COLLADA15DOM
+
         return p3d_load_collada(collada, nameobj);
-#endif
-        return 0;
 }
+#endif
 
 void p3d_set_directory ( char *dir )
 {
@@ -3546,7 +3546,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
                              p3d_read_collada( namemac, namecompl);
                         continue;
 #endif
-                        PrintError ( ( "MP: If you want to load a collada file, compile with the flag USE_COLLADA15DOM" ) );
+                        PrintError ( ( "MP: ERROR flag USE_COLLADA15DOM is OFF" ) );
                         return ( read_desc_error ( fct ) );
                 }
 
