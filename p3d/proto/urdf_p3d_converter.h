@@ -20,4 +20,4 @@
  */
 
 
-int urdf_p3d_converter(boost::shared_ptr<urdf::ModelInterface> model, char* modelName);
+int urdf_p3d_converter(boost::shared_ptr<urdf::ModelInterface> model, char* modelName, double scale);

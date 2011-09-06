@@ -42,6 +42,7 @@
 #include <boost/function.hpp>
 #include "link.h"
 
+using namespace std;
 
 namespace urdf {
 
@@ -123,6 +124,7 @@ public:
       //ROS_DEBUG("build tree: joint: '%s' has parent link '%s' and child  link '%s'", joint->first.c_str(), parent_link_name.c_str(),child_link_name.c_str());
       if (parent_link_name.empty() || child_link_name.empty())
       {
+        cout << "Joint " << (joint->second)->name.c_str()<<" is missing a parent and/or child link specification." << endl;
         //ROS_ERROR("    Joint %s is missing a parent and/or child link specification.",(joint->second)->name.c_str());
         return false;
       }
@@ -133,12 +135,14 @@ public:
         this->getLink(child_link_name, child_link);
         if (!child_link)
         {
+          cout << "child link '" << child_link_name.c_str()<<"' of joint '"<<joint->first.c_str()<<"' not found" << endl;
           //ROS_ERROR("    child link '%s' of joint '%s' not found", child_link_name.c_str(), joint->first.c_str() );
           return false;
         }
         this->getLink(parent_link_name, parent_link);
         if (!parent_link)
         {
+          cout << "child link '" << child_link_name.c_str()<<"' of joint '"<<joint->first.c_str()<<"' not found" << endl;
           //ROS_ERROR("    parent link '%s' of joint '%s' not found.  The Boxturtle urdf parser used to automatically add this link for you, but this is not valid according to the URDF spec. Every link you refer to from a joint needs to be explicitly defined in the robot description. To fix this problem you can either remove this joint from your urdf file, or add \"<link name=\"%s\" />\" to your urdf file.", parent_link_name.c_str(), joint->first.c_str(), parent_link_name.c_str() );
           return false;
         }
@@ -157,7 +161,7 @@ public:
       
         // fill in child/parent string map
         parent_link_tree[child_link->name] = parent_link_name;
-      
+
         //ROS_DEBUG("    now Link '%s' has %i children ", parent_link->name.c_str(), (int)parent_link->child_links.size());
       }
     }
@@ -185,6 +189,7 @@ public:
         }
         // we already found a root link
         else{
+          cout << "Two root links found: '"<< this->root_link_->name.c_str() <<"' and '"<< l->first.c_str() << "'" << endl;
           //ROS_ERROR("Two root links found: '%s' and '%s'", this->root_link_->name.c_str(), l->first.c_str());
           return false;
         }
@@ -192,6 +197,7 @@ public:
     }
     if (!this->root_link_)
     {
+      cout << "No root link found. The robot xml is not a valid tree." << endl;
       //ROS_ERROR("No root link found. The robot xml is not a valid tree.");
       return false;
     }

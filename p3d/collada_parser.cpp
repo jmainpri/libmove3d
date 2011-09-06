@@ -502,6 +502,57 @@ namespace urdf{
         }
       }
 
+
+      /* Modif F. Lancelot (05/09/2011) :
+       *
+       * Permet de parser les fichiers collada sans cinématique
+       * Limitations : seul le premier noeud de la visual_scene est pris en compte
+       * car le modèle URDF ne possède qu'un noeud root
+       *
+       */
+
+      if (!!allscene->getInstance_visual_scene()) {
+        domVisual_sceneRef visual_scene = daeSafeCast<domVisual_scene>(allscene->getInstance_visual_scene()->getUrl().getElement().cast());
+        for (size_t node = 0; node < visual_scene->getNode_array().getCount(); node++) {
+          std::string linkname;
+          domNodeRef pdomnode = visual_scene->getNode_array()[node];
+
+          if(node == 0)
+          {
+
+            if(visual_scene->getNode_array().getCount()>1)
+              cout << "Warning : seul le premier noeud '"<< pdomnode->getName()<< "' de la 'visual_scene sera pris en compte car le modèle URDF ne possède qu'un noeud root" << endl;
+
+            if( !!pdomnode ) {
+              if (!!pdomnode->getName()) {
+                linkname = pdomnode->getName();
+              }
+              if( linkname.size() == 0 && !!pdomnode->getID()) {
+                linkname = pdomnode->getID();
+              }
+            }
+
+            boost::shared_ptr<Link> plink;
+            _model->getLink(linkname,plink);
+            if( !plink ) {
+              plink.reset(new Link());
+              plink->name = linkname;
+              plink->visual.reset(new Visual());
+              _model->links_.insert(std::make_pair(linkname,plink));
+            }
+
+            std::list<GEOMPROPERTIES> listGeomProperties;
+            std::list<JointAxisBinding> listAxisBindings;
+            _ExtractGeometry(pdomnode,listGeomProperties,listAxisBindings,Pose());
+            plink->visual->geometry = _CreateGeometry(plink, listGeomProperties);
+            _PostProcess();
+          }
+          else
+            cout << "Warning : le noeud '" << pdomnode->getName() << "' n'est pas pris en compte" << endl;
+        }
+        return true;
+      }
+
       return false;
     }
 
@@ -2209,7 +2260,7 @@ namespace urdf{
     virtual void handleWarning( daeString msg )
     {
       // ROS_WARN("COLLADA warning: %s\n", msg);
-      printf("COLLADA warning: %s\n", msg);
+      //printf("COLLADA warning: %s\n", msg);
     }
 
     inline static double _GetUnitScale(daeElement* pelt)

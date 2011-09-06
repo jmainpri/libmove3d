@@ -29,19 +29,20 @@
 using namespace urdf;
 using namespace std;
 
-void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, int * num_last_jnt, Pose pos_abs_jnt_parent);
-void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_prev_jnt);
+void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, int * num_last_jnt, Pose pos_abs_jnt_parent, double scale);
+void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_prev_jnt, double scale);
 void add_root_freeflyer();
 void calcul_pos_abs_link( struct Position * pos_abs_jnt_enf, const Pose * pos_rel_link, struct Position * pos_abs_link);
 void calcul_pos_abs_jnt_enf(const Pose * pos_abs_jnt_parent, const Pose * pos_rel_jnt_enfant, struct Position * position_abs_jnt_enf);
 
 /**
- * \fn int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName)
+ * \fn int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName, double scale)
  * \brief Fonction qui parcourt une structure URDF C++ et crée un modèle p3d associé
  * \param model Modèle URDF à convertir
  * \param modelName Nom du modèle
+ * \param scale Echelle du modèle
  */
-int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName)
+int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName, double scale)
 {
     boost::shared_ptr<Link> root_link;
     root_link = model->root_link_;
@@ -89,12 +90,15 @@ int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName)
     double color_vect[3]={mesh->diffuseColor.r,mesh->diffuseColor.g, mesh->diffuseColor.b};
     p3d_poly_set_color(p3d_poly_get_poly_by_name((char*)root_link->name.c_str()), Any, color_vect);
 
+    // Mise à l'échelle
+    p3d_scale_prim(p3d_poly_get_poly_by_name((char*)root_link->name.c_str()), scale);
+
     p3d_end_desc();
 
     int num_prev_jnt = 1;
     int num_last_jnt = 1;
 
-    parcoursArbre(root_link, num_prev_jnt, &num_last_jnt, root_link->visual->origin);
+    parcoursArbre(root_link, num_prev_jnt, &num_last_jnt, root_link->visual->origin, scale);
 
     return 0;
 }
@@ -173,8 +177,9 @@ void calcul_pos_abs_link( struct Position * pos_abs_jnt_parent, const Pose * pos
  * \param num_prev_jnt Numéro de l'articulation parente
  * \param num_last_jnt Dernier numéro utilisé par une articulation
  * \param pos_abs_jnt_parent Position absolue de l'articulation parente
+ * \param scale Echelle du modèle
  */
-void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, int * num_last_jnt, Pose pos_abs_jnt_parent)
+void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, int * num_last_jnt, Pose pos_abs_jnt_parent, double scale)
 {
   // Pour tous les enfants du lien
   for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link_parent->child_links.begin(); child != link_parent->child_links.end(); child++)
@@ -193,7 +198,7 @@ void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, 
       {
         // Calcul de la position absolue de l'articulation enfant
         calcul_pos_abs_jnt_enf(&pos_abs_jnt_parent, &(joint->parent_to_joint_origin_transform), &pos_abs_jnt_enf);
-        add_joint(joint,pos_abs_jnt_enf.position_pose, num_prev_jnt);
+        add_joint(joint,pos_abs_jnt_enf.position_pose, num_prev_jnt, scale);
       }
 
       // Récupère le mesh du lien
@@ -223,9 +228,12 @@ void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, 
       double color_vect[3]={mesh->diffuseColor.r,mesh->diffuseColor.g, mesh->diffuseColor.b};
       p3d_poly_set_color(p3d_poly_get_poly_by_name((char*)(*child)->name.c_str()), Any, color_vect);
 
+      // Mise à l'échelle
+      p3d_scale_prim(p3d_poly_get_poly_by_name((char*)(*child)->name.c_str()), scale);
+
       p3d_end_desc();
 
-      parcoursArbre(*child, num_joint, num_last_jnt,pos_abs_jnt_enf.position_pose);
+      parcoursArbre(*child, num_joint, num_last_jnt,pos_abs_jnt_enf.position_pose, scale);
     }
     else
     {
@@ -282,13 +290,14 @@ void add_root_freeflyer()
 }
 
 /**
- * \fn void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_prev_jnt)
+ * \fn void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_prev_jnt, double scale)
  * \brief Fonction qui fixe une articulation au body en cours.
  * \param joint Articulation URDF à ajouter
  * \param pos_abs_jnt_enf Position absolue de l'articulation à ajouter
  * \param num_prev_jnt Numéro de l'articulation parente
+ * \param scale Echelle du modèle
  */
-void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_prev_jnt)
+void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_prev_jnt, double scale)
 {
   p3d_read_jnt_data * data;
 
@@ -370,7 +379,7 @@ void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_pr
   // p3d_set_dof_vmax
   data->flag_vmax = TRUE;
 
-  data->scale=1;
+  data->scale=scale;
 
   s_p3d_build_jnt_data(data);
 

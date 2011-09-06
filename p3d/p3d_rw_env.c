@@ -112,7 +112,7 @@ int p3d_read_macro ( char *namemac,char *nameobj,double scale )
 }
 
 #ifdef USE_COLLADA15DOM
-int p3d_read_collada( char *namemac, char *nameobj)
+int p3d_read_collada( char *namemac, char *nameobj, double scale)
 {
         char collada[200], collada2[200];
         char c_dir_name[200];
@@ -125,7 +125,7 @@ int p3d_read_collada( char *namemac, char *nameobj)
 
         strcat ( collada,namemac );
 
-        return p3d_load_collada(collada, nameobj);
+        return p3d_load_collada(collada, nameobj,scale);
 }
 #endif
 
@@ -3541,9 +3541,9 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
                             strcpy ( namecompl, name );
                         }
                         if ( n == 0 )
-                             p3d_read_collada( namemac, namecompl);
+                             p3d_read_collada( namemac, namecompl, 1);
                         else
-                             p3d_read_collada( namemac, namecompl);
+                             p3d_read_collada( namemac, namecompl, dtab[0] );
                         continue;
 #endif
                         PrintError ( ( "MP: ERROR flag USE_COLLADA15DOM is OFF" ) );

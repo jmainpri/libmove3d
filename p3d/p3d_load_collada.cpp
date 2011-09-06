@@ -18,7 +18,7 @@
 #include "urdf_p3d_converter.h"
 #include "urdf_interface/model.h"
 
-int p3d_load_collada(char* filename, char* modelName)
+int p3d_load_collada(char* filename, char* modelName, double scale)
 {
     boost::shared_ptr<urdf::ModelInterface> model;
     std::cout << "Fichier " << filename << " en cours de parsing."<< std::endl;
@@ -31,7 +31,7 @@ int p3d_load_collada(char* filename, char* modelName)
     }
 
     std::cout << "Fichier " << filename << " en cours de conversion."<< std::endl;
-    urdf_p3d_converter(model, modelName);
+    urdf_p3d_converter(model, modelName, scale);
 
     return 0;
 }
