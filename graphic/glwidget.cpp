@@ -232,6 +232,7 @@ void GLWidget::initializeGL()
 	{
 		cout << "GroundCostObj, vs.displayFloor = false" << endl;
 		G3D_WIN->vs.displayFloor = false;
+                G3D_WIN->vs.displaySky = false;
 	}
 }
 

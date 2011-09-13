@@ -29,3 +29,4 @@ extern void g3d_draw_and_col_allwin_active(void);
 extern void showConfig(configPt conf);
 extern void showConfig_2(configPt conf);
 extern int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, double camera_fov, p3d_rob *robot, p3d_rob *object, double *result);
+extern void g3d_sky_box(double x, double y, double z);

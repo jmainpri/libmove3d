@@ -54,6 +54,7 @@ g3d_states g3d_init_viewer_state(double size)
     vs.displayShadows = 0;
     vs.displayWalls = 0;
     vs.displayFloor = 0;
+    vs.displaySky = 0;
     vs.displayTiles = 0;
     vs.enableAntialiasing = 0;
     #ifdef USE_SHADERS
@@ -854,6 +855,7 @@ int g3d_save_state(g3d_win *win, g3d_states *st)
   st->displayShadows     =  win->vs.displayShadows;
   st->displayWalls       =  win->vs.displayWalls;
   st->displayFloor       =  win->vs.displayFloor;
+   st->displaySky        =  win->vs.displaySky;
   st->enableAntialiasing =  win->vs.enableAntialiasing;
   st->enableShaders      =  win->vs.enableShaders;
   st->displayTiles       =  win->vs.displayTiles;
@@ -886,6 +888,7 @@ int g3d_load_state(g3d_win *win, g3d_states *st)
   win->vs.displayShadows  = st->displayShadows; 
   win->vs.displayWalls    = st->displayWalls; 
   win->vs.displayFloor    = st->displayFloor;
+  win->vs.displaySky      = st->displaySky;
   win->vs.enableAntialiasing = st->enableAntialiasing;
   win->vs.displayTiles    = st->displayTiles;
   win->vs.cullingEnabled  = st->cullingEnabled;

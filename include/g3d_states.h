@@ -143,6 +143,9 @@ typedef struct g3d_states
 //! flag to tell wether or not the LAAS logo will be displayed:
   unsigned int enableLogo; 
 
+  //! flag to tell wether or not the sky will be displayed:
+  unsigned int displaySky;
+
 } g3d_states;
 
 #endif

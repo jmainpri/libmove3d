@@ -98,6 +98,7 @@ void g3d_glut_initializeGL(int w,int h)
     {
       cout << "GroundCostObj, vs.displayFloor = false" << endl;
       G3D_WIN->vs.displayFloor = false;
+      G3D_WIN->vs.displaySky = false;
     }
 }
 

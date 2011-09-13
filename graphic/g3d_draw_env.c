@@ -1589,8 +1589,9 @@ void g3d_draw(void)
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
     g3d_draw_env_custom();
-		
-		//g3d_sky_box(win->vs.x, win->vs.y, win->vs.z);
+
+    if(win->vs.displaySky)
+    { g3d_sky_box(2.0*win->vs.x, 2.0*win->vs.y, 2.0*win->vs.z);}
 		
     if(win->vs.displayFloor)
     {  g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);   }
