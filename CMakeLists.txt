@@ -176,7 +176,7 @@ BM3D_flag(USE_HRP2_GIK "HRP2 GIK Library" OFF)
 BM3D_flag(USE_HATP_LIBS "For including HATP libraries" OFF)
 BM3D_flag(USE_GBM "Compilation with the gbM package" OFF)
 
-BM3D_flag(USE_COLLADA15DOM "Compilation with ColladaDom1.5" OFF)
+BM3D_flag(USE_ROBOTMODELPARSER "Compilation with RobotModelParser" OFF)
 
 
 # META flags ------
@@ -199,7 +199,7 @@ BM3D_SetCompilationFlags()
 #################################################################
 #### Add here a library to include (custom FindPackage.cmake ####
 #### are in BioMove3D/.cmakeScripts. Use the template to     ####
-#### create a custom one)                                    ####
+#### create a custom one)                                    ####
 #################################################################
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/script/CMake")
 
@@ -407,19 +407,25 @@ ENDIF(USE_HATP_LIBS)
 # INCLUDE_directories(${<PACKAGE>_INCLUDE_DIR})
 # SET(LIBS ${LIBS} ${<PACKAGE>_LIBRARIES})
 
-#-------------- COLLADA15DOM ------------------------------
+#-------------- ROBOTMODELPARSER ------------------------------
 #----------------------------------------------------------
-IF(USE_COLLADA15DOM)
-	FIND_PACKAGE(COLLADA15DOM REQUIRED)
-	INCLUDE_directories(${COLLADA15DOM_INCLUDE_DIR}/collada-dom)
-	INCLUDE_directories(${COLLADA15DOM_INCLUDE_DIR}/collada-dom/1.5)
-	SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${COLLADA15DOM_INCLUDE_DIR}/collada-dom)
-	SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${COLLADA15DOM_INCLUDE_DIR}/collada-dom/1.5)
-	SET(LIBS ${LIBS} ${COLLADA15DOM_LIBRARIES})
-	FIND_PACKAGE(BOOST_SYSTEM-MT REQUIRED)
-	SET(LIBS ${LIBS} ${BOOST_SYSTEM-MT_LIBRARIES})
-	ADD_DEFINITIONS(-pthread)
-ENDIF(USE_COLLADA15DOM)
+IF(USE_ROBOTMODELPARSER)
+    FIND_PACKAGE(ROBOTMODELPARSER REQUIRED)
+    INCLUDE_directories(${ROBOTMODELPARSER_INCLUDE_DIR})
+    SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${ROBOTMODELPARSER_INCLUDE_DIR})
+    SET(LIBS ${LIBS} ${ROBOTMODELPARSER_LIBRARIES})
+
+    MESSAGE("toto : ${LIBS}")
+
+#-------------------- ASSIMP ------------------------------
+#----------------------------------------------------------
+    FIND_PACKAGE(ASSIMP REQUIRED)
+    INCLUDE_directories(${ASSIMP_INCLUDE_DIR}/assimp)
+    SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIR}/assimp)
+    SET(LIBS ${LIBS} ${ASSIMP_LIBRARIES})
+ENDIF(USE_ROBOTMODELPARSER)
+
+MESSAGE(${LIBS})
 
 #------------------- PKG_CONFIG ---------------------------
 #----------------------------------------------------------
@@ -554,6 +560,7 @@ ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 IF(GENERATE_VIEWER_LIB) #Install the move3d-viewer library + the headers
 		
 	ADD_LIBRARY(move3d-viewer SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
+    #SET_TARGET_PROPERTIES(move3d-viewer PROPERTIES LINKER_LANGUAGE CXX)
 	TARGET_LINK_LIBRARIES(move3d-viewer ${LIBS} m)
 
 	INSTALL(TARGETS move3d-viewer
@@ -567,6 +574,7 @@ IF(GENERATE_VIEWER_LIB) #Install the move3d-viewer library + the headers
 ELSEIF(GENERATE_LIBMOVE3D OR GENERATE_LIBCORE) # Only install the library and the headers
 	
 	ADD_LIBRARY(move3d SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
+    #SET_TARGET_PROPERTIES(move3d PROPERTIES LINKER_LANGUAGE CXX)
 	TARGET_LINK_LIBRARIES(move3d ${LIBS} m)
 
 	INSTALL(TARGETS move3d 

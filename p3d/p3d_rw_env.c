@@ -25,8 +25,8 @@
 #include "lightPlanner/proto/ManipulationUtils.hpp"
 #endif
 
-#ifdef USE_COLLADA15DOM
-#include "p3d/proto/p3d_load_collada.h"
+#ifdef USE_ROBOTMODELPARSER
+#include "p3d/proto/p3d_load_model.h"
 #endif
 
 extern void* GroundCostObj;
@@ -111,21 +111,21 @@ int p3d_read_macro ( char *namemac,char *nameobj,double scale )
 	return ( TRUE );
 }
 
-#ifdef USE_COLLADA15DOM
-int p3d_read_collada( char *namemac, char *nameobj, double scale)
+#ifdef USE_ROBOTMODELPARSER
+int p3d_read_model( char *namemac, char *nameobj, double scale)
 {
-        char collada[200], collada2[200];
+        char model[200], model2[200];
         char c_dir_name[200];
         int  c_sz=0;
 
         strcpy ( c_dir_name, DATA_DIR );
         c_sz = ( int ) strlen ( DATA_DIR );
         if ( DATA_DIR[c_sz-1] != '/' ) {strcat ( c_dir_name,"/" );}
-        sprintf ( collada,"%sCOLLADA/",c_dir_name );
+        sprintf ( model,"%sCOLLADA/",c_dir_name );
 
-        strcat ( collada,namemac );
+        strcat ( model,namemac );
 
-        return p3d_load_collada(collada, nameobj,scale);
+        return p3d_load_model(model, nameobj,scale);
 }
 #endif
 
@@ -3524,31 +3524,31 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 		//##################### COLLADA ######################
 
 
-                if ( ( strcmp ( fct, "p3d_read_collada" ) == 0 ))
-                {
-#ifdef USE_COLLADA15DOM
-                        if ( !read_desc_name ( fd, namemac ) ) return ( read_desc_error ( fct ) );
-                        if ( !read_desc_name ( fd, name ) )  return ( read_desc_error ( fct ) );
-                        if ( !read_desc_line_double ( fd, &n, dtab ) ) return ( read_desc_error ( fct ) );
-                        if ( fileType )  //is a macro file
-                        {
-                            strcpy ( namecompl, nameobj );
-                            strcat ( namecompl, "." );
-                            strcat ( namecompl, name );
-                        }
-                        else
-                        {
-                            strcpy ( namecompl, name );
-                        }
-                        if ( n == 0 )
-                             p3d_read_collada( namemac, namecompl, 1);
-                        else
-                             p3d_read_collada( namemac, namecompl, dtab[0] );
-                        continue;
+        if ( ( strcmp ( fct, "p3d_read_collada" ) == 0 ))
+        {
+#ifdef USE_ROBOTMODELPARSER
+          if ( !read_desc_name ( fd, namemac ) ) return ( read_desc_error ( fct ) );
+          if ( !read_desc_name ( fd, name ) )  return ( read_desc_error ( fct ) );
+          if ( !read_desc_line_double ( fd, &n, dtab ) ) return ( read_desc_error ( fct ) );
+          if ( fileType )  //is a macro file
+          {
+              strcpy ( namecompl, nameobj );
+              strcat ( namecompl, "." );
+              strcat ( namecompl, name );
+          }
+          else
+          {
+              strcpy ( namecompl, name );
+          }
+          if ( n == 0 )
+               p3d_read_model( namemac, namecompl, 1);
+          else
+               p3d_read_model( namemac, namecompl, dtab[0] );
+          continue;
 #endif
-                        PrintError ( ( "MP: ERROR flag USE_COLLADA15DOM is OFF" ) );
-                        return ( read_desc_error ( fct ) );
-                }
+          PrintError ( ( "MP: ERROR flag USE_ROBOTMODELPARSER is OFF" ) );
+          return ( read_desc_error ( fct ) );
+        }
 
 
 		//##################### MULTI-GRAPH ##################
