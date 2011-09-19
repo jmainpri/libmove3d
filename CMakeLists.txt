@@ -410,12 +410,10 @@ ENDIF(USE_HATP_LIBS)
 #-------------- ROBOTMODELPARSER ------------------------------
 #----------------------------------------------------------
 IF(USE_ROBOTMODELPARSER)
-    FIND_PACKAGE(ROBOTMODELPARSER REQUIRED)
-    INCLUDE_directories(${ROBOTMODELPARSER_INCLUDE_DIR})
-    SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${ROBOTMODELPARSER_INCLUDE_DIR})
-    SET(LIBS ${LIBS} ${ROBOTMODELPARSER_LIBRARIES})
-
-    MESSAGE("toto : ${LIBS}")
+    FIND_PACKAGE(robotModelParser REQUIRED)
+    INCLUDE_directories(${robotModelParser_INCLUDE_DIR})
+    SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${robotModelParser_INCLUDE_DIR})
+    SET(LIBS ${LIBS} ${robotModelParser_LIBRARIES})
 
 #-------------------- ASSIMP ------------------------------
 #----------------------------------------------------------

@@ -1662,14 +1662,9 @@ void g3d_draw(void)
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
     g3d_draw_env_custom();
-<<<<<<< Updated upstream
 
     if(win->vs.displaySky)
     { g3d_sky_box(2.0*win->vs.x, 2.0*win->vs.y, 2.0*win->vs.z);}
-=======
-		
-        g3d_sky_box(win->vs.x, win->vs.y, win->vs.z);
->>>>>>> Stashed changes
 		
     if(win->vs.displayFloor)
     {  g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);   }
