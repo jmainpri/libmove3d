@@ -10,7 +10,6 @@
 #ifdef UNIX
 #endif
 
-
 /* struct */
 #include "p3d_sys.h"
 #include "p3d_type.h"

@@ -9,13 +9,14 @@
 
 #include <iostream>
 
+
+#include "Graphic-pkg.h"
+
 #if defined(MACOSX) 
 #include <glut.h>
 #else
 #include <GL/freeglut.h>
 #endif
-
-#include "Graphic-pkg.h"
 
 #include "move3d-gui.h"
 #include "p3d/proto/p3d_matrix_proto.h"
