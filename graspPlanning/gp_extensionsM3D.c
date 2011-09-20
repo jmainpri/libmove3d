@@ -1942,8 +1942,8 @@ int gpExport_robot_for_coldman(p3d_rob *robot)
       break;
       case P3D_FIXED:
        fprintf(file, "%s<type> revolute </type> <!--fixed-->\n", space.c_str());
-       fprintf(file, "%s<qmin> 0 </qmin>\n");
-       fprintf(file, "%s<qmax> 0 </qmax>\n");
+       fprintf(file, "<qmin> 0 </qmin>\n");
+       fprintf(file, "<qmax> 0 </qmax>\n");
       break;
       default:
          printf("unhandled joint type: %d\n", cur_jnt->jnt->type);
