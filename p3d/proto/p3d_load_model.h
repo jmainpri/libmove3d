@@ -12,4 +12,4 @@
  *
  */
 
-int p3d_load_collada(char* filename, char* modelName, double scale);
+int p3d_load_model(char* filename, char* modelName, double scale);

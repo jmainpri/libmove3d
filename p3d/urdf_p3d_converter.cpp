@@ -8,20 +8,19 @@
  * Programme qui parcourt une structure URDF C++ et crée un modèle p3d associé.
  * Le modèle URDF ne semble pas proposer de structures pour sauvegarder les vertices et indices.
  *
- * Une structure a donc été rajouté dans le modèle URDF pour sauvegarder les vertices, indices et couleurs.
- *  - Class Mesh (link.h)
- *    - std::vector<Vector3> vertices;
- *    - std::vector<int> indices;
- *    - Color diffuseColor;
- *
- * Ne peut donc fonctionner pour l'instant qu'avec un modèle URDF créé par le collada_parser qui remplit ces nouvelles structures
  */
 
 
 #include "proto/urdf_p3d_converter.h"
 #include <iostream>
-#include "urdf_interface/link.h"
+#include <RobotModelParser/urdf_interface/link.h>
 #include "P3d-pkg.h"
+
+#include <assimp/assimp.hpp>
+#include <assimp/aiScene.h>
+#include <assimp/aiPostProcess.h>
+#include <assimp/IOStream.h>
+#include <assimp/IOSystem.h>
 
 #define FOREACH(it, v) for(typeof((v).begin()) it = (v).begin(); it != (v).end(); (it)++)
 #define FOREACHC FOREACH
@@ -35,6 +34,13 @@ void add_root_freeflyer();
 void calcul_pos_abs_link( struct Position * pos_abs_jnt_enf, const Pose * pos_rel_link, struct Position * pos_abs_link);
 void calcul_pos_abs_jnt_enf(const Pose * pos_abs_jnt_parent, const Pose * pos_rel_jnt_enfant, struct Position * position_abs_jnt_enf);
 
+void loadMesh(std::string const& filename);
+void loadBox(urdf::Box * box, string name);
+void loadCylinder(urdf::Cylinder * cylinder, string name);
+void loadSphere(urdf::Sphere * sphere, string name);
+
+Assimp::Importer _importer;
+
 /**
  * \fn int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName, double scale)
  * \brief Fonction qui parcourt une structure URDF C++ et crée un modèle p3d associé
@@ -42,8 +48,10 @@ void calcul_pos_abs_jnt_enf(const Pose * pos_abs_jnt_parent, const Pose * pos_re
  * \param modelName Nom du modèle
  * \param scale Echelle du modèle
  */
-int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName, double scale)
+int urdf_p3d_converter(URDFModel* model, char* modelName, double scale)
 {
+    //_importer.SetIOHandler(new ResourceIOSystem);
+
     boost::shared_ptr<Link> root_link;
     root_link = model->root_link_;
     if(!root_link)
@@ -63,37 +71,60 @@ int urdf_p3d_converter(boost::shared_ptr<ModelInterface> model, char* modelName,
 
     p3d_beg_desc(P3D_BODY, (char *)root_link->name.c_str());
 
-    p3d_add_desc_poly((char *)root_link->name.c_str(),P3D_GRAPHIC);
+    if(root_link->visual)
+    {
+      Geometry* geom = root_link->visual->geometry.get();
+      urdf::Mesh* mesh = (urdf::Mesh*) root_link->visual->geometry.get();
+      double meshScale =1.0;
 
-    urdf::Mesh* mesh = (urdf::Mesh*) root_link->visual->geometry.get();
-    FOREACH(it,mesh->vertices){
-        p3d_add_desc_vert(it->x, it->y, it->z );
+      if(geom)
+      {
+      switch(geom->type)
+        {
+          case urdf::Geometry::MESH:
+            if(!mesh->filename.empty())
+            {
+              p3d_add_desc_poly((char *)root_link->name.c_str(),P3D_GRAPHIC);
+              loadMesh(mesh->filename);
+              p3d_end_desc_poly();
+              // Même échelle pour tous les axes
+              meshScale=mesh->scale.x;
+            }
+            break;
+          case urdf::Geometry::BOX:
+            loadBox((urdf::Box*)(geom), root_link->name);
+            break;
+          case urdf::Geometry::CYLINDER:
+            loadCylinder((urdf::Cylinder*)(geom), root_link->name);
+            break;
+          case urdf::Geometry::SPHERE:
+            loadSphere((urdf::Sphere*)(geom), root_link->name);
+            break;
+        }
+      }
+
+      // Ajout de la position du mesh
+      double r_root, p_root, y_root;
+      Vector3 pos = root_link->visual->origin.position;
+      root_link->visual->origin.rotation.getRPY(r_root, p_root, y_root);
+      p3d_matrix4 posMatrixRoot;
+      // *2.0 car le centre dans le modèle URDF est le centre de l'objet alors que dans Move3d c'est le bas de l'objet
+      p3d_mat4Pos(posMatrixRoot, pos.x*2.0, pos.y*2.0, pos.z*2.0, r_root, p_root, y_root);
+      p3d_set_prim_pos_by_mat(p3d_poly_get_poly_by_name((char*)root_link->name.c_str()), posMatrixRoot);
+      //p3d_set_prim_pos_deg(p3d_poly_get_poly_by_name((char *)root_link->name.c_str()), pos.x, pos.y, pos.z, 0, 0, 0);
+
+      // Ajout de la couleur du mesh
+      if(root_link->visual->material)
+      {
+        double color_vect[3]={root_link->visual->material->color.r,root_link->visual->material->color.g, root_link->visual->material->color.b};
+        p3d_poly_set_color(p3d_poly_get_poly_by_name((char*)root_link->name.c_str()), Any, color_vect);
+      }
+
+      // Mise à l'échelle
+      p3d_scale_prim(p3d_poly_get_poly_by_name((char*)root_link->name.c_str()), scale*meshScale);
     }
-    for(int i=0; i<mesh->indices.size(); i+=3){
-        int indices[3]={mesh->indices.at(i)+1, mesh->indices.at(i+1)+1 , mesh->indices.at(i+2)+1 };
-        p3d_add_desc_face(indices, 3);
-    }
-
-    p3d_end_desc_poly();
-
-    // Ajout de la position du mesh
-    double r_root, p_root, y_root;
-    Vector3 pos = root_link->visual->origin.position;
-    root_link->visual->origin.rotation.getRPY(r_root, p_root, y_root);
-    p3d_matrix4 posMatrixRoot;
-    // *2.0 car le centre dans le modèle URDF est le centre de l'objet alors que dans Move3d c'est le bas de l'objet
-    p3d_mat4Pos(posMatrixRoot, pos.x*2.0, pos.y*2.0, pos.z*2.0, r_root, p_root, y_root);
-    p3d_set_prim_pos_by_mat(p3d_poly_get_poly_by_name((char*)root_link->name.c_str()), posMatrixRoot);
-    //p3d_set_prim_pos_deg(p3d_poly_get_poly_by_name((char *)root_link->name.c_str()), pos.x, pos.y, pos.z, 0, 0, 0);
-
-    // Ajout de la couleur du mesh
-    double color_vect[3]={mesh->diffuseColor.r,mesh->diffuseColor.g, mesh->diffuseColor.b};
-    p3d_poly_set_color(p3d_poly_get_poly_by_name((char*)root_link->name.c_str()), Any, color_vect);
-
-    // Mise à l'échelle
-    p3d_scale_prim(p3d_poly_get_poly_by_name((char*)root_link->name.c_str()), scale);
-
     p3d_end_desc();
+
 
     int num_prev_jnt = 1;
     int num_last_jnt = 1;
@@ -127,6 +158,12 @@ void calcul_pos_abs_jnt_enf(const Pose * pos_abs_jnt_parent, const Pose * pos_re
   double r_jnt_rel, p_jnt_rel, y_jnt_rel;
   double r_jnt_parent_abs, p_jnt_parent_abs, y_jnt_parent_abs;
 
+  if(!pos_abs_jnt_parent || !pos_rel_jnt_enfant)
+  {
+    cout << "Calcul de la position impossible" << endl;
+    return;
+  }
+
   pos_abs_jnt_parent->rotation.getRPY(r_jnt_parent_abs, p_jnt_parent_abs, y_jnt_parent_abs);
 
   // Récupère la position relative et son angle de la jointure enfant par rapport à la jointure parente
@@ -158,6 +195,13 @@ void calcul_pos_abs_jnt_enf(const Pose * pos_abs_jnt_parent, const Pose * pos_re
  */
 void calcul_pos_abs_link( struct Position * pos_abs_jnt_parent, const Pose * pos_rel_link, struct Position * pos_abs_link)
 {
+
+  if(!pos_abs_jnt_parent || !pos_rel_link)
+  {
+    cout << "Calcul de la position impossible" << endl;
+    return;
+  }
+
   //Récupère la position relative du lien par rapport à la jointure enfant
   double r_rel_link, p_rel_link, y_rel_link;
   pos_rel_link->rotation.getRPY(r_rel_link, p_rel_link, y_rel_link);
@@ -201,35 +245,58 @@ void parcoursArbre(boost::shared_ptr<const Link> link_parent, int num_prev_jnt, 
         add_joint(joint,pos_abs_jnt_enf.position_pose, num_prev_jnt, scale);
       }
 
-      // Récupère le mesh du lien
-      urdf::Mesh* mesh = (urdf::Mesh*) (*child)->visual->geometry.get();
-
       // Ajout dans le monde du lien
       p3d_beg_desc(P3D_BODY, (char*)(*child)->name.c_str());
-      p3d_add_desc_poly((char*)(*child)->name.c_str(),P3D_GRAPHIC);
 
-      FOREACH(it,mesh->vertices) {
-        p3d_add_desc_vert(it->x, it->y, it->z );
+      if((*child)->visual)
+      {
+        Geometry* geom = (*child)->visual->geometry.get();
+        urdf::Mesh* mesh = (urdf::Mesh*) (*child)->visual->geometry.get();
+        double meshScale =1.0;
+
+        if(geom)
+        {
+          switch(geom->type)
+          {
+            case urdf::Geometry::MESH:
+              if(!mesh->filename.empty())
+              {
+                p3d_add_desc_poly((char *)(*child)->name.c_str(),P3D_GRAPHIC);
+                loadMesh(mesh->filename);
+                p3d_end_desc_poly();
+                // Même échelle pour tous les axes
+                meshScale=mesh->scale.x;
+              }
+              break;
+            case urdf::Geometry::BOX:
+              loadBox((urdf::Box*)(geom), (*child)->name);
+              break;
+            case urdf::Geometry::CYLINDER:
+              loadCylinder((urdf::Cylinder*)(geom), (*child)->name);
+              break;
+            case urdf::Geometry::SPHERE:
+              loadSphere((urdf::Sphere*)(geom), (*child)->name);
+              break;
+          }
+        }
+
+        // Calcul de la position absolue du body
+        calcul_pos_abs_link(&pos_abs_jnt_enf,  &((*child)->visual->origin), &pos_abs_link);
+
+        // Ajout de la position du mesh
+        p3d_set_prim_pos_by_mat(p3d_poly_get_poly_by_name((char*)(*child)->name.c_str()), pos_abs_link.position_matrix4);
+
+        // Ajout de la couleur du mesh
+        if((*child)->visual->material)
+        {
+          double color_vect[3]={(*child)->visual->material->color.r,(*child)->visual->material->color.g, (*child)->visual->material->color.b};
+          p3d_poly_set_color(p3d_poly_get_poly_by_name((char*)(*child)->name.c_str()), Any, color_vect);
+        }
+        // Mise à l'échelle
+        //cout << scale << " " << meshScale << endl;
+        p3d_scale_prim(p3d_poly_get_poly_by_name((char*)(*child)->name.c_str()), scale*meshScale);
+
       }
-
-      for(int i=0; i<mesh->indices.size(); i+=3){
-        int indices[3]={mesh->indices.at(i)+1, mesh->indices.at(i+1)+1 , mesh->indices.at(i+2)+1 };
-        p3d_add_desc_face(indices, 3);
-      }
-      p3d_end_desc_poly();
-
-      // Calcul de la position absolue du body
-      calcul_pos_abs_link(&pos_abs_jnt_enf,  &((*child)->visual->origin), &pos_abs_link);
-
-      // Ajout de la position du mesh
-      p3d_set_prim_pos_by_mat(p3d_poly_get_poly_by_name((char*)(*child)->name.c_str()), pos_abs_link.position_matrix4);
-
-      // Ajout de la couleur du mesh
-      double color_vect[3]={mesh->diffuseColor.r,mesh->diffuseColor.g, mesh->diffuseColor.b};
-      p3d_poly_set_color(p3d_poly_get_poly_by_name((char*)(*child)->name.c_str()), Any, color_vect);
-
-      // Mise à l'échelle
-      p3d_scale_prim(p3d_poly_get_poly_by_name((char*)(*child)->name.c_str()), scale);
 
       p3d_end_desc();
 
@@ -301,6 +368,12 @@ void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_pr
 {
   p3d_read_jnt_data * data;
 
+  if(!joint)
+  {
+    cout << "Impossible d'ajouter une articulation" << endl;
+    return;
+  }
+
   switch(joint->type)
   {
     case Joint::REVOLUTE:
@@ -308,17 +381,27 @@ void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_pr
       // p3d_beg_desc_jnt P3D_ROTATE
       data = p3d_create_read_jnt_data(P3D_ROTATE);
       // p3d_set_dof_vmin
-      data->vmin[0]=joint->limits->lower*180/3.14;
+      data->vmin[0]=-180;
       // p3d_set_dof_vmax
-      data->vmax[0]=joint->limits->upper*180/3.14;
+      data->vmax[0]=180;
+      if(joint->limits)
+      {
+        data->vmin[0]=joint->limits->lower*180/3.14;
+        data->vmax[0]=joint->limits->upper*180/3.14;
+      }
       break;
     case Joint::PRISMATIC:
       // p3d_beg_desc_jnt P3D_TRANSLATE
       data = p3d_create_read_jnt_data(P3D_TRANSLATE);
       // p3d_set_dof_vmin
-      data->vmin[0]=joint->limits->lower;
+      data->vmin[0]=-10;
       // p3d_set_dof_vmax
-      data->vmax[0]=joint->limits->upper;
+      data->vmax[0]=10;
+      if(joint->limits)
+      {
+        data->vmin[0]=joint->limits->lower;
+        data->vmax[0]=joint->limits->upper;
+      }
       break;
     case Joint::FLOATING:
      cout << "La jointure de type 'floating' n'est pas traitée" << endl;
@@ -327,7 +410,7 @@ void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_pr
       cout << "La jointure de type 'planar' n'est pas traitée" << endl;
       break;
     case Joint::FIXED:
-      cout << "La jointure de type 'fixed' n'est pas traitée" << endl;
+      data = p3d_create_read_jnt_data(P3D_FIXED);
       break;
     default:
       cout << "La jointure est de type 'unknown'" << endl;
@@ -384,4 +467,75 @@ void add_joint( boost::shared_ptr<Joint> joint, Pose pos_abs_jnt_enf, int num_pr
   s_p3d_build_jnt_data(data);
 
   p3d_destroy_read_jnt_data(data);
+}
+
+void traiterMesh(aiNode* node, const aiScene* scene)
+{
+    for(int i=0; i<node->mNumChildren; i++)
+    {
+        aiNode* mChildren =node->mChildren[i];
+        //cout << "nombre de meshs" << mChildren->mNumMeshes <<  endl;
+
+        for(unsigned int j=0; j< mChildren->mNumMeshes; j++)
+        {
+            aiMesh* input_mesh = scene->mMeshes[mChildren->mMeshes[j]];
+            // vertices
+            for(unsigned int k=0; k<input_mesh->mNumVertices; k++){
+                //cout << "parcourt des vertices" << endl;
+                aiVector3D p = input_mesh->mVertices[k];
+                p3d_add_desc_vert(p.x, p.y, p.z );
+            }
+            // faces
+            for(unsigned int k=0; k<input_mesh->mNumFaces; k++)
+            {
+                //cout << "parcourt des faces" << endl;
+                aiFace& face = input_mesh->mFaces[k];
+                if( face.mNumIndices == 3 ) {
+                    int indices[3]={face.mIndices[0]+1, face.mIndices[1]+1, face.mIndices[2]+1};
+                    p3d_add_desc_face(indices, 3);
+                }
+            }
+        }
+        traiterMesh(node->mChildren[i], scene);
+    }
+}
+
+void loadBox(urdf::Box * box, string name){
+p3d_beg_desc(P3D_BODY, (char *)name.c_str());
+p3d_add_desc_box((char *)name.c_str(), box->dim.x, box->dim.y, box->dim.z, P3D_REAL);
+}
+
+void loadCylinder(urdf::Cylinder * cylinder, string name)
+{
+p3d_beg_desc(P3D_BODY, (char *)name.c_str());
+p3d_add_desc_cylindre((char *)name.c_str(), cylinder->radius, cylinder->length, P3D_REAL);
+}
+
+void loadSphere(urdf::Sphere * sphere, string name)
+{
+p3d_beg_desc(P3D_BODY, (char *)name.c_str());
+p3d_add_desc_sphere((char *)name.c_str(), sphere->radius, P3D_REAL);
+
+}
+
+void loadMesh(std::string const& filename)
+{
+
+  //cout << "Chargement du mesh :" <<  filename.c_str() << endl;
+  const aiScene* scene = _importer.ReadFile(filename, aiProcess_SortByPType|aiProcess_Triangulate);
+  if(!scene){
+    cout << "failed to load " << filename.c_str() << endl;
+    return;
+  }
+  if(!scene->mRootNode){
+    cout << "resource " << filename.c_str() << " has no data" << endl;
+    return;
+  }
+  if(!scene->HasMeshes()){
+    cout << "no meshes found in file " << filename.c_str() << endl;
+  }
+
+  aiNode* node = scene->mRootNode;
+
+  traiterMesh(node, scene);
 }

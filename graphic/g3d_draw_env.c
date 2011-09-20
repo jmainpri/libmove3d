@@ -1370,7 +1370,78 @@ void g3d_draw_env_custom()
   }
 
 }
+GLubyte Texture[16] =
+{
+0,0,0,0, 0xFF,0xFF,0xFF,0xFF,
+0xFF,0xFF,0xFF,0xFF, 0,0,0,0
+};
+        //Image (2x2)
+GLuint Nom;
 
+void test_francois()
+{
+  glEnable(GL_TEXTURE_2D); 	//Active le texturing
+  glGenTextures(1,&Nom); 	//Génère un n° de texture
+  glBindTexture(GL_TEXTURE_2D,Nom); 	//Sélectionne ce n°
+  glTexImage2D (
+      GL_TEXTURE_2D, 	//Type : texture 2D
+  0, 	//Mipmap : aucun
+  4, 	//Couleurs : 4
+  2, 	//Largeur : 2
+  2, 	//Hauteur : 2
+  0, 	//Largeur du bord : 0
+  GL_RGBA, 	//Format : RGBA
+  GL_UNSIGNED_BYTE, 	//Type des couleurs
+  Texture 	//Addresse de l'image
+  );
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  glBegin(GL_QUADS); 	//Et c'est parti pour le cube !
+
+      glTexCoord2i(0,0);glVertex3i(-1,-1,-1);
+      glTexCoord2i(1,0);glVertex3i(+1,-1,-1);
+      glTexCoord2i(1,1);glVertex3i(+1,+1,-1);
+      glTexCoord2i(0,1);glVertex3i(-1,+1,-1);
+
+          //1 face
+
+      glTexCoord2i(0,0);glVertex3i(-1,-1,+1);
+      glTexCoord2i(1,0);glVertex3i(+1,-1,+1);
+      glTexCoord2i(1,1);glVertex3i(+1,+1,+1);
+      glTexCoord2i(0,1);glVertex3i(-1,+1,+1);
+
+          //2 faces
+
+      glTexCoord2i(0,0);glVertex3i(+1,-1,-1);
+      glTexCoord2i(1,0);glVertex3i(+1,-1,+1);
+      glTexCoord2i(1,1);glVertex3i(+1,+1,+1);
+      glTexCoord2i(0,1);glVertex3i(+1,+1,-1);
+
+          //3 faces
+
+      glTexCoord2i(0,0);glVertex3i(-1,-1,-1);
+      glTexCoord2i(1,0);glVertex3i(-1,-1,+1);
+      glTexCoord2i(1,1);glVertex3i(-1,+1,+1);
+      glTexCoord2i(0,1);glVertex3i(-1,+1,-1);
+
+          //4 faces
+
+      glTexCoord2i(1,0);glVertex3i(-1,+1,-1);
+      glTexCoord2i(1,1);glVertex3i(+1,+1,-1);
+      glTexCoord2i(0,1);glVertex3i(+1,+1,+1);
+      glTexCoord2i(0,0);glVertex3i(-1,+1,+1);
+
+          //5 faces
+
+      glTexCoord2i(1,0);glVertex3i(-1,-1,+1);
+      glTexCoord2i(1,1);glVertex3i(+1,-1,+1);
+      glTexCoord2i(0,1);glVertex3i(+1,-1,-1);
+      glTexCoord2i(0,0);glVertex3i(-1,-1,-1);
+  glEnd();
+
+ glDisable(GL_TEXTURE_2D); 	//Active le texturing
+}
 
 //! @ingroup graphic 
 void g3d_draw_env()
@@ -1384,6 +1455,8 @@ void g3d_draw_env()
   e = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 	
+  //win->fct_draw2=&(test_francois);
+
   if (win->fct_draw2 != NULL) win->fct_draw2();
 	
   if(win->vs.displayJoints) {
@@ -1457,17 +1530,17 @@ void g3d_draw_env()
 	
   //g3d_draw_env_custom();
 
-	// // On dessine la source de lumière sous la forme d'une sphère:
-	//   glDisable( GL_LIGHTING );
-	//   glColor3f(1.0, 1.0, 0.0);
-	//   glPushMatrix();
-	//   {
-	//    glLightdv( GL_LIGHT0, GL_POSITION, win->vs.lightPosition );
-	//    glTranslatef( win->vs.lightPosition[0], win->vs.lightPosition[1], win->vs.lightPosition[2] );
-	//    g3d_drawColorSphere(0, 0, 0, 50, Yellow, NULL);
-	//   }
-	//   glPopMatrix();
-	//   glEnable( GL_LIGHTING );
+    // // On dessine la source de lumière sous la forme d'une sphère:
+    //   glDisable( GL_LIGHTING );
+    //   glColor3f(1.0, 1.0, 0.0);
+    //   glPushMatrix();
+    //   {
+    //    glLightdv( GL_LIGHT0, GL_POSITION, win->vs.lightPosition );
+    //    glTranslatef( win->vs.lightPosition[0], win->vs.lightPosition[1], win->vs.lightPosition[2] );
+    //    g3d_drawColorSphere(0, 0, 0, 50, Yellow, NULL);
+    //   }
+    //   glPopMatrix();
+    //   glEnable( GL_LIGHTING );
 	
   if (G3D_MODIF_VIEW && win->vs.displayFrame) 
 	{

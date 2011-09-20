@@ -1885,7 +1885,7 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &handProp, std::v
 
   if(config.size()!=handProp.nb_dofs)
   {
-    printf("%s: %d: gpSet_hand_configuration(): the input configuration vector has a bad size (%d instead of %d).\n",__FILE__,__LINE__,config.size(), handProp.nb_dofs);
+    printf("%s: %d: gpSet_hand_configuration(): the input configuration vector has a bad size (%lu instead of %d).\n",__FILE__,__LINE__,config.size(), handProp.nb_dofs);
     return GP_ERROR;
   }
 //   verbose= true;
@@ -2068,7 +2068,7 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
 
   if(config.size()!=hand.nb_dofs)
   {
-    printf("%s: %d: gpSet_hand_configuration(): the input configuration vector has a bad size (%d instead of %d).\n",__FILE__,__LINE__,config.size(), hand.nb_dofs);
+    printf("%s: %d: gpSet_hand_configuration(): the input configuration vector has a bad size (%lu instead of %d).\n",__FILE__,__LINE__,config.size(), hand.nb_dofs);
     return GP_ERROR;
   }
 
