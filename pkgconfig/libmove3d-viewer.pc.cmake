@@ -10,4 +10,4 @@ Name: libmove3d-viewer
 Description: Motion Planning Platform - Viewer library (with Qt support)
 Version: @BIOMOVE3D_VERSION@
 Libs: ${BioMove3DLibs} -L${libdir} -lmove3d-viewer
-Cflags: -I${includedir}/libmove3d-viewer/include ${BioMove3DIncludes} ${BioMove3DFlags} 
+Cflags: -I${includedir}/libmove3d-viewer -I${includedir}/libmove3d-viewer/include ${BioMove3DIncludes} ${BioMove3DFlags} 
