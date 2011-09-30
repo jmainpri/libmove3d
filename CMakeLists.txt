@@ -103,13 +103,9 @@ MACRO(BM3D_SetCompilationFlags)
   LIST(REMOVE_DUPLICATES BM3D_ActiveFlags)
 
   FOREACH(flag ${BM3D_ActiveFlags})
-		SET(MOVE3D_COMPILATION_FLAGS ${MOVE3D_COMPILATION_FLAGS} ${flag})
-		MESSAGE("${flag}")
-		IF( QT_LIBRARY )
-			ADD_DEFINITIONS("-D${flag}")
-		ELSE( QT_LIBRARY )
-			ADD_DEFINITIONS(" -D${flag}")
-		ENDIF( QT_LIBRARY )
+    SET(MOVE3D_COMPILATION_FLAGS ${MOVE3D_COMPILATION_FLAGS} ${flag})
+    MESSAGE("${flag}")
+    ADD_DEFINITIONS(" -D${flag}")
   ENDFOREACH(flag)
  
 ENDMACRO(BM3D_SetCompilationFlags)
@@ -146,11 +142,11 @@ BM3D_flag(USE_CXX_PLANNER "Sets the planning API to be default in Move3D" OFF)
 BM3D_flag(LIST_OF_PLANNERS "Sets the planning API to be default in Move3D" OFF)
 
 ## User Interfaces ---
-BM3D_flag(QT_LIBRARY "Sets QtLibrary compiling mode" OFF)
-BM3D_flag(QT_GL "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
-BM3D_flag(QT_GL_WIDGET "Compile with the OpenGl widget" OFF QT_GL QT_LIBRARY)
+#BM3D_flag(QT_LIBRARY "Sets QtLibrary compiling mode" OFF)
+#BM3D_flag(QT_GL "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
+#BM3D_flag(QT_GL_WIDGET "Compile with the OpenGl widget" OFF QT_GL QT_LIBRARY)
 
-BM3D_flag(USE_GLUT "Compilation with a glut window" OFF)
+BM3D_flag(USE_GLUT "Compilation with a glut window" ON)
 
 BM3D_flag(WITH_XFORMS "Compile the Xform interface" OFF)
 
@@ -184,7 +180,7 @@ BM3D_flag(MOVE3D_ROBOTICS "Set all the standard options related to robotics" OFF
 BM3D_flag(MOVE3D_BIO "Set all the standard options related to bio motion planning" OFF BIO WITH_XFORMS)
 
 
-BM3D_flag(GENERATE_LIBMOVE3D "Set the required options to compile the stand-alone move3d viewer" ON MOVE3D_ROBOTICS MOVE3D_CORE QT_LIBRARY QT_GL USE_GLUT)
+BM3D_flag(GENERATE_LIBMOVE3D "Set the required options to compile the stand-alone move3d viewer" ON MOVE3D_ROBOTICS MOVE3D_CORE USE_GLUT)
 
 BM3D_ProcessCompilationFlags()
 BM3D_SetCompilationFlags()
@@ -201,23 +197,33 @@ INCLUDE("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
 
 #-------------- Qt Library --------------------------------
 #----------------------------------------------------------
-SET(GL_NATIVE FALSE)
 
-IF( QT_LIBRARY AND QT_GL OR USE_GLUT )
+#-------------- Qt Library -----------------------------------------------------
+FIND_PACKAGE(Qt4) #Qt4 is not required. If not found, set QT_LIBRARY to OFF.
+
 SET(GL_NATIVE TRUE)
-ENDIF()
 
-IF(QT_LIBRARY)
-  FIND_PACKAGE(Qt4 REQUIRED)
+IF(QT_INCLUDE_DIR)
+  MESSAGE("I've found Qt4 libraries. I will compile libmove3d with it.")
+  SET(QT_LIBRARY ON CACHE BOOL "" FORCE)
+  SET(QT_GL ON CACHE BOOL "" FORCE)
+  SET(QT_GL_WIDGET OFF CACHE BOOL "" FORCE)
+
   INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR})
   SET(INCLUDE_DIRS ${INCLUDE_DIRS}${QT_INCLUDE_DIR}) 
-  SET(MOVE3D_COMPILATION_INCLUDES ${MOVE3D_COMPILATION_INCLUDES} ${QT_INCLUDE_DIR})
-  IF(QT_GL)
-    SET(QT_USE_QTOPENGL TRUE)
-  ENDIF(QT_GL)
+  SET(MOVE3D_COMPILATION_INCLUDES ${MOVE3D_COMPILATION_INCLUDES} ${QT_INCLUDE_DIR}) 
+  SET(QT_USE_QTOPENGL TRUE)
   INCLUDE(${QT_USE_FILE})
-  SET(LIBS ${LIBS} ${QT_LIBRARIES})
-ENDIF(QT_LIBRARY)
+  SET(LIBS ${LIBS} ${QT_LIBRARIES})  
+
+ELSE()
+  MESSAGE("I've not found Qt4 libraries. I won't compile libmove3d with support for Qt.")
+  SET(QT_LIBRARY OFF CACHE BOOL "" FORCE)
+  SET(QT_GL OFF CACHE BOOL "" FORCE)
+  SET(QT_GL_WIDGET OFF CACHE BOOL "" FORCE)
+ENDIF()
+
+
 
 FIND_PACKAGE(X11 REQUIRED)
 INCLUDE_directories(${X11_INCLUDE_DIR})
