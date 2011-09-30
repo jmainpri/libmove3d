@@ -18,17 +18,11 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.6.2)
 
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  SET(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "BioMove3D install prefix" FORCE)
+  SET(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "libmove3d install prefix" FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
-IF(GENERATE_LIBMOVE3D)
 
-	configure_file (${CMAKE_SOURCE_DIR}/pkgconfig/libmove3d.pc.cmake ${CMAKE_BINARY_DIR}/pkgconfig/libmove3d.pc @ONLY)
-	INSTALL (FILES ${CMAKE_BINARY_DIR}/pkgconfig/libmove3d.pc DESTINATION lib/pkgconfig)
 
-ELSEIF(GENERATE_VIEWER_LIB)
+configure_file (${CMAKE_SOURCE_DIR}/pkgconfig/libmove3d.pc.cmake ${CMAKE_BINARY_DIR}/pkgconfig/libmove3d.pc @ONLY)
+INSTALL (FILES ${CMAKE_BINARY_DIR}/pkgconfig/libmove3d.pc DESTINATION lib/pkgconfig)
 
-	configure_file (${CMAKE_SOURCE_DIR}/pkgconfig/libmove3d-viewer.pc.cmake ${CMAKE_BINARY_DIR}/pkgconfig/libmove3d-viewer.pc @ONLY)
-	INSTALL (FILES ${CMAKE_BINARY_DIR}/pkgconfig/libmove3d-viewer.pc DESTINATION lib/pkgconfig)
-
-ENDIF()

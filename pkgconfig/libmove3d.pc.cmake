@@ -8,6 +8,6 @@ BioMove3DLibs=@MOVE3D_COMPILATION_LIBS@
  
 Name: libmove3d
 Description: Motion Planning Platform - Headless library
-Version: @BIOMOVE3D_VERSION@
+Version: @LIBMOVE3D_VERSION@
 Libs: ${BioMove3DLibs} -L${libdir} -lmove3d
-Cflags: -I${includedir}/libmove3d/include -I${includedir} ${BioMove3DIncludes} ${BioMove3DFlags} 
+Cflags: -I${includedir}/libmove3d -I${includedir}/libmove3d/include -I${includedir} ${BioMove3DIncludes} ${BioMove3DFlags} 

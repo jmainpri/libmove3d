@@ -97,14 +97,7 @@ ENDMACRO(BM3D_ProcessCompilationFlags)
 
 MACRO(BM3D_SetCompilationFlags)
 
-  IF( GENERATE_LIBMOVE3D OR GENERATE_LIBCORE)
-	  MESSAGE("You are building the libmove3d library.")
-  ELSEIF( GENERATE_VIEWER_LIB )
-	  MESSAGE("You are building the libmove3d library for stand-alone move3d viewer.")
-  ELSE ()
-	  MESSAGE("You did not select any target yet (choose one of the GENERATE_* options).")
-  ENDIF()
-
+  
   MESSAGE ("Active Flags :")
 
   LIST(REMOVE_DUPLICATES BM3D_ActiveFlags)
@@ -183,15 +176,15 @@ BM3D_flag(USE_ROBOTMODELPARSER "Compilation with RobotModelParser" OFF)
 #------------------
 BM3D_flag(GENERATE_LIBCORE "Set required options to compile the core libmove3d, without user interface" OFF)
 
-BM3D_flag(GENERATE_LIBMOVE3D "Set required options to compile the core libmove3d for robotics, without user interface" OFF MOVE3D_ROBOTICS USE_GLUT)
-
-BM3D_flag(GENERATE_VIEWER_LIB "Set the required options to compile the stand-alone move3d viewer (requires SPARK at run-time)" OFF MOVE3D_ROBOTICS MOVE3D_CORE QT_LIBRARY QT_GL)
 
 BM3D_flag(MOVE3D_ROBOTICS "Set all the standard options related to robotics" OFF GRASP_PLANNING LIGHT_PLANNER MULTIGRAPH MULTILOCALPATH USE_GSL )
 
 # TODO : implement a proper search for the GSL and/or Lapack libraries, and add the relevant flags (USE_GSL and USE_CLAPACK)
 # It is necessary to link against either GSL or Lapack for protein loop sampling.
 BM3D_flag(MOVE3D_BIO "Set all the standard options related to bio motion planning" OFF BIO WITH_XFORMS)
+
+
+BM3D_flag(GENERATE_LIBMOVE3D "Set the required options to compile the stand-alone move3d viewer" ON MOVE3D_ROBOTICS MOVE3D_CORE QT_LIBRARY QT_GL USE_GLUT)
 
 BM3D_ProcessCompilationFlags()
 BM3D_SetCompilationFlags()
@@ -555,35 +548,19 @@ IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   SET(CMAKE_INSTALL_PREFIX "${BioMove3D_BINARY_DIR}/install" CACHE PATH "BioMove3D install prefix" FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
-IF(GENERATE_VIEWER_LIB) #Install the move3d-viewer library + the headers
 		
-	ADD_LIBRARY(move3d-viewer SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
-    #SET_TARGET_PROPERTIES(move3d-viewer PROPERTIES LINKER_LANGUAGE CXX)
-	TARGET_LINK_LIBRARIES(move3d-viewer ${LIBS} m)
+ADD_LIBRARY(move3d SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
+#SET_TARGET_PROPERTIES(move3d PROPERTIES LINKER_LANGUAGE CXX)
+TARGET_LINK_LIBRARIES(move3d ${LIBS} m)
 
-	INSTALL(TARGETS move3d-viewer
-        LIBRARY DESTINATION lib
-		CONFIGURATIONS ${CMAKE_BUILD_TYPE})
-	
-	INSTALL(DIRECTORY ${BM3D_SOURCE_DIRECTORIES} ${BioMove3D_SOURCE_DIR}/include 
-			DESTINATION include/libmove3d-viewer 
-			FILES_MATCHING REGEX "\\.[h|hpp]")
+INSTALL(TARGETS move3d
+  LIBRARY DESTINATION lib
+  CONFIGURATIONS ${CMAKE_BUILD_TYPE})
 
-ELSEIF(GENERATE_LIBMOVE3D OR GENERATE_LIBCORE) # Only install the library and the headers
-	
-	ADD_LIBRARY(move3d SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
-    #SET_TARGET_PROPERTIES(move3d PROPERTIES LINKER_LANGUAGE CXX)
-	TARGET_LINK_LIBRARIES(move3d ${LIBS} m)
+INSTALL(DIRECTORY ${BM3D_SOURCE_DIRECTORIES} ${BioMove3D_SOURCE_DIR}/include 
+  DESTINATION include/libmove3d
+  FILES_MATCHING REGEX "\\.[h|hpp]")
 
-	INSTALL(TARGETS move3d 
-        LIBRARY DESTINATION lib
-		CONFIGURATIONS ${CMAKE_BUILD_TYPE})
-	
-	INSTALL(DIRECTORY ${BM3D_SOURCE_DIRECTORIES} ${BioMove3D_SOURCE_DIR}/include 
-			DESTINATION include/libmove3d 
-			FILES_MATCHING REGEX "\\.[h|hpp]")
-
-ENDIF()
 
 
 # -------------------------------------------------------------
