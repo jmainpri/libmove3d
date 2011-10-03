@@ -97,7 +97,6 @@ ENDMACRO(BM3D_ProcessCompilationFlags)
 
 MACRO(BM3D_SetCompilationFlags)
 
-  
   MESSAGE ("Active Flags :")
 
   LIST(REMOVE_DUPLICATES BM3D_ActiveFlags)
@@ -105,10 +104,44 @@ MACRO(BM3D_SetCompilationFlags)
   FOREACH(flag ${BM3D_ActiveFlags})
     SET(MOVE3D_COMPILATION_FLAGS ${MOVE3D_COMPILATION_FLAGS} ${flag})
     MESSAGE("${flag}")
-    ADD_DEFINITIONS(" -D${flag}")
+
+    IF( QT_LIBRARY )
+	ADD_DEFINITIONS("-D${flag}")
+    ELSE( QT_LIBRARY )
+	ADD_DEFINITIONS(" -D${flag}")
+    ENDIF( QT_LIBRARY )
+
   ENDFOREACH(flag)
  
 ENDMACRO(BM3D_SetCompilationFlags)
+
+#-------------- Qt Library -----------------------------------------------------
+FIND_PACKAGE(Qt4) #Qt4 is not required. If not found, set QT_LIBRARY to OFF.
+
+SET(GL_NATIVE TRUE)
+
+IF(QT_INCLUDE_DIR)
+  MESSAGE("I've found Qt4 libraries. I will compile libmove3d with it.")
+#  SET(QT_LIBRARY ON CACHE BOOL "" FORCE)
+#  SET(QT_GL ON CACHE BOOL "" FORCE)
+#  SET(QT_GL_WIDGET OFF CACHE BOOL "" FORCE)
+
+  BM3D_flag(QT_LIBRARY "Sets QtLibrary compiling mode" ON)
+  BM3D_flag(QT_GL "Sets QtLibrary compiling mode" ON QT_LIBRARY)
+
+  INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR})
+  SET(INCLUDE_DIRS ${INCLUDE_DIRS}${QT_INCLUDE_DIR}) 
+  SET(MOVE3D_COMPILATION_INCLUDES ${MOVE3D_COMPILATION_INCLUDES} ${QT_INCLUDE_DIR}) 
+  SET(QT_USE_QTOPENGL TRUE)
+  INCLUDE(${QT_USE_FILE})
+  SET(LIBS ${LIBS} ${QT_LIBRARIES})  
+
+ELSE()
+  MESSAGE("I've not found Qt4 libraries. I won't compile libmove3d with support for Qt.")
+  SET(QT_LIBRARY OFF CACHE BOOL "" FORCE)
+  SET(QT_GL OFF CACHE BOOL "" FORCE)
+  SET(QT_GL_WIDGET OFF CACHE BOOL "" FORCE)
+ENDIF()
 
 # P3D core ---
 BM3D_flag(P3D_CONSTRAINTS "Compilation with module Constraints" ON)
@@ -197,33 +230,6 @@ INCLUDE("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
 
 #-------------- Qt Library --------------------------------
 #----------------------------------------------------------
-
-#-------------- Qt Library -----------------------------------------------------
-FIND_PACKAGE(Qt4) #Qt4 is not required. If not found, set QT_LIBRARY to OFF.
-
-SET(GL_NATIVE TRUE)
-
-IF(QT_INCLUDE_DIR)
-  MESSAGE("I've found Qt4 libraries. I will compile libmove3d with it.")
-  SET(QT_LIBRARY ON CACHE BOOL "" FORCE)
-  SET(QT_GL ON CACHE BOOL "" FORCE)
-  SET(QT_GL_WIDGET OFF CACHE BOOL "" FORCE)
-
-  INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR})
-  SET(INCLUDE_DIRS ${INCLUDE_DIRS}${QT_INCLUDE_DIR}) 
-  SET(MOVE3D_COMPILATION_INCLUDES ${MOVE3D_COMPILATION_INCLUDES} ${QT_INCLUDE_DIR}) 
-  SET(QT_USE_QTOPENGL TRUE)
-  INCLUDE(${QT_USE_FILE})
-  SET(LIBS ${LIBS} ${QT_LIBRARIES})  
-
-ELSE()
-  MESSAGE("I've not found Qt4 libraries. I won't compile libmove3d with support for Qt.")
-  SET(QT_LIBRARY OFF CACHE BOOL "" FORCE)
-  SET(QT_GL OFF CACHE BOOL "" FORCE)
-  SET(QT_GL_WIDGET OFF CACHE BOOL "" FORCE)
-ENDIF()
-
-
 
 FIND_PACKAGE(X11 REQUIRED)
 INCLUDE_directories(${X11_INCLUDE_DIR})
@@ -513,6 +519,12 @@ IF(QT_LIBRARY)
   # generate the UI headers
   QT4_WRAP_UI(BM3D_QT_UI_HEADERS ${BM3D_QT_UI_FILES})
   # Qt4 files that need to be preprocessed
+  #BM3D_SetCompilationFlags()
+  add_definitions(-DFOO -DBAR)
+  get_directory_property(flags DEFINITIONS)
+  message("${flags}")
+  message("CMAKE_C_FLAGS = " ${CMAKE_C_FLAGS}) 
+  message("CMAKE_CXX_FLAGS ="  ${CMAKE_CXX_FLAGS})
   QT4_WRAP_CPP(BM3D_QT_MOC ${BM3D_QT_FILES_FOR_MOC})
 ENDIF(QT_LIBRARY)
 
