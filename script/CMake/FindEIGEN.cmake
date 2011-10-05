@@ -9,10 +9,15 @@
 ## -----------------------------------------------------------------------------
 ## Check for the header files
 
+find_package(PkgConfig)
+pkg_check_modules(PC_EIGEN QUIET eigen3)
+
 find_path (Eigen_INCLUDE_DIR Eigen/Cholesky
  PATHS /usr/local/include /usr/include /sw/include /opt/local/include /usr/local/motion ${CMAKE_CURRENT_SOURCE_DIR}/other_libraries/eigen/build/install/include
  PATH_SUFFIXES eigen2 eigen
- )
+ HINTS
+ ${PC_EIGEN_INCLUDEDIR} ${PC_EIGEN_INCLUDE_DIRS}
+)
 
 ## -----------------------------------------------------------------------------
 ## Actions taken when all components have been found
