@@ -480,7 +480,7 @@ void g3d_kcd_draw_obb_tree(int colour,kcd_bb *a_bb, int this_level, int *height,
 	/* PrintInfo(("\n")); */
 }
 
-void g3d_kcd_draw_all_obbs()
+void g3d_kcd_draw_all_obbs(int opengl_context)
 {
 	int i,height=0,nof_leafs=0;
 	int colour = Red;
@@ -494,7 +494,7 @@ void g3d_kcd_draw_all_obbs()
 		{
 			for(int i=0; i<2; i++)
 			{
-				pqp_draw_all_OBBs(i);
+                                pqp_draw_all_OBBs(i,opengl_context);
 			}
 			return;
 		}

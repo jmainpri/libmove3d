@@ -31,8 +31,8 @@
 #endif
 
 /* QT OpenGL*/
-extern void g3d_draw_env();
-extern void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win);
+extern void g3d_draw_env(int opengl_context);
+extern void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win, int opengl_context);
 
 
 /* globals */

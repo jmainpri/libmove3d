@@ -66,8 +66,8 @@ g3d_draw_env2(void)
   //  g3d_draw_robot_box(); db, cette fonction est statique dans
   //  g3d_draw_env.c...
 
-  g3d_draw_obstacles(win);
-  g3d_draw_robots(win);
+  g3d_draw_obstacles(win,opengl_context);
+  g3d_draw_robots(win,opengl_context);
   /* g3d_draw_MOVABLE_OBJECTS(); */
   g3d_draw();
   

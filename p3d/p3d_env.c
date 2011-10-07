@@ -2996,7 +2996,7 @@ int p3d_make_body_deformable(char *name) {
 //! Scales a body to make it fit the length of its associated "bone" (the segments between its joint and the next joint).
 //! \param name name of the body (as it will appear in the .macro file of the robot)
 //! \return 0 in case of success, 1 otherwise
-int p3d_adjust_deformable_body(p3d_obj *obj) {
+int p3d_adjust_deformable_body(p3d_obj *obj, int opengl_context) {
   if(obj==NULL) {
     printf("%s: %d: p3d_adjust_deformable_body(): input p3d_obj is NULL.\n", __FILE__, __LINE__);
     return 1;
@@ -3050,12 +3050,12 @@ int p3d_adjust_deformable_body(p3d_obj *obj) {
       obj->pol[i]->poly->the_points[j][1]= obj->pol[i]->poly->originalPoints[j][1] + d*(scale-1.0)*direction[1];
       obj->pol[i]->poly->the_points[j][2]= obj->pol[i]->poly->originalPoints[j][2] + d*(scale-1.0)*direction[2];
     }
-    g3d_delete_poly(obj->pol[i], 0);
-    g3d_delete_poly(obj->pol[i], 1);
-    g3d_delete_poly(obj->pol[i], 2);
-    g3d_init_poly(obj->pol[i], 0);
-    g3d_init_poly(obj->pol[i], 1);
-    g3d_init_poly(obj->pol[i], 2);
+    g3d_delete_poly(obj->pol[i],0,opengl_context);
+    g3d_delete_poly(obj->pol[i],1,opengl_context);
+    g3d_delete_poly(obj->pol[i],2,opengl_context);
+    g3d_init_poly(obj->pol[i],0,opengl_context);
+    g3d_init_poly(obj->pol[i],1,opengl_context);
+    g3d_init_poly(obj->pol[i],2,opengl_context);
   }
 
   return 0;

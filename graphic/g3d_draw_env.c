@@ -57,13 +57,13 @@ la position du joint par rapport au repere global (cf. g3d_"draw_object"_moved)*
 //static void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win);
 
 #if 0
-static void g3d_draw_obj_BB(p3d_obj *o);
+static void g3d_draw_obj_BB(p3d_obj *o,int opengl_context);
 #endif
 /* Debut Modification Thibaut */
-static void g3d_draw_ocur_special(G3D_Window *win);
+static void g3d_draw_ocur_special(G3D_Window *win, int opengl_context);
 /* Fin Modification Thibaut */
 
-static void g3d_draw_robot_box(void);
+static void g3d_draw_robot_box();
 // static void g3d_draw_rob_BB(p3d_rob *r);
 
 
@@ -73,13 +73,13 @@ void g3d_set_draw_coll(int n) {
   p3d_numcoll = n;
 }
 
-void g3d_reinit_graphics(void) {
+void g3d_reinit_graphics(int opengl_context) {
   pp3d_env env;
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-  g3d_delete_all_poly(-1);
+  g3d_delete_all_poly(-1,opengl_context);
 
   if (boxlist != -1) {
     glDeleteLists(boxlist, 1);
@@ -99,7 +99,78 @@ void g3d_reinit_graphics(void) {
   }
 }
 
+GLubyte Texture[16] =
+{
+0,0,0,0, 0xFF,0xFF,0xFF,0xFF,
+0xFF,0xFF,0xFF,0xFF, 0,0,0,0
+};
+        //Image (2x2)
+GLuint Nom;
 
+void test_francois()
+{
+  glEnable(GL_TEXTURE_2D); 	//Active le texturing
+  glGenTextures(1,&Nom); 	//Génère un n° de texture
+  glBindTexture(GL_TEXTURE_2D,Nom); 	//Sélectionne ce n°
+  glTexImage2D (
+      GL_TEXTURE_2D, 	//Type : texture 2D
+  0, 	//Mipmap : aucun
+  4, 	//Couleurs : 4
+  2, 	//Largeur : 2
+  2, 	//Hauteur : 2
+  0, 	//Largeur du bord : 0
+  GL_RGBA, 	//Format : RGBA
+  GL_UNSIGNED_BYTE, 	//Type des couleurs
+  Texture 	//Addresse de l'image
+  );
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  glBegin(GL_QUADS); 	//Et c'est parti pour le cube !
+
+      glTexCoord2i(0,0);glVertex3i(-1,-1,-1);
+      glTexCoord2i(1,0);glVertex3i(+1,-1,-1);
+      glTexCoord2i(1,1);glVertex3i(+1,+1,-1);
+      glTexCoord2i(0,1);glVertex3i(-1,+1,-1);
+
+          //1 face
+
+      glTexCoord2i(0,0);glVertex3i(-1,-1,+1);
+      glTexCoord2i(1,0);glVertex3i(+1,-1,+1);
+      glTexCoord2i(1,1);glVertex3i(+1,+1,+1);
+      glTexCoord2i(0,1);glVertex3i(-1,+1,+1);
+
+          //2 faces
+
+      glTexCoord2i(0,0);glVertex3i(+1,-1,-1);
+      glTexCoord2i(1,0);glVertex3i(+1,-1,+1);
+      glTexCoord2i(1,1);glVertex3i(+1,+1,+1);
+      glTexCoord2i(0,1);glVertex3i(+1,+1,-1);
+
+          //3 faces
+
+      glTexCoord2i(0,0);glVertex3i(-1,-1,-1);
+      glTexCoord2i(1,0);glVertex3i(-1,-1,+1);
+      glTexCoord2i(1,1);glVertex3i(-1,+1,+1);
+      glTexCoord2i(0,1);glVertex3i(-1,+1,-1);
+
+          //4 faces
+
+      glTexCoord2i(1,0);glVertex3i(-1,+1,-1);
+      glTexCoord2i(1,1);glVertex3i(+1,+1,-1);
+      glTexCoord2i(0,1);glVertex3i(+1,+1,+1);
+      glTexCoord2i(0,0);glVertex3i(-1,+1,+1);
+
+          //5 faces
+
+      glTexCoord2i(1,0);glVertex3i(-1,-1,+1);
+      glTexCoord2i(1,1);glVertex3i(+1,-1,+1);
+      glTexCoord2i(0,1);glVertex3i(+1,-1,-1);
+      glTexCoord2i(0,0);glVertex3i(-1,-1,-1);
+  glEnd();
+
+ glDisable(GL_TEXTURE_2D); 	//Active le texturing
+}
 
 // Fonction construisant la matrice de projection (pour OpenGL) des ombres sur le plan
 // d'équation fPlane (paramètres (a,b,c,d) tels que l'équation du plan soit a*x+b*y+c*z+d=0).
@@ -281,7 +352,6 @@ int g3d_draw_tiled_floor(GLdouble color[3], float dx, float dy, float xmin, floa
 
   return 1;
 }
-
 
 // Dessine un sol composé de dimension length*width, composé d'hexagones de "rayon" r,
 // le tout encadré par une boite de hauteur "height".
@@ -702,7 +772,8 @@ void g3d_sky_box(double x, double y, double z)
 /**********************************************************/
 /* Fonction tracant tous les obstacles d'un environnement */
 /**********************************************************/
-void g3d_draw_obstacles(G3D_Window* win) {
+void g3d_draw_obstacles(G3D_Window* win, int opengl_context) {
+
   int   no, o, i;
 
   /** Initialisation de la matrice OpenGL unite **/
@@ -730,23 +801,20 @@ void g3d_draw_obstacles(G3D_Window* win) {
       }
 
       /*  ChronoOn(); */
-      g3d_draw_obstacle(win);
+      g3d_draw_obstacle(win,opengl_context);
       /*  ChronoPrint(""); */
       /*  ChronoOff(); */
     }
     p3d_sel_desc_num(P3D_OBSTACLE, o);
   }
-
-
-
 }
 
 /*******************************************************/
 /* Fonction tracant tous les robots d'un environnement */
 /*******************************************************/
-void g3d_draw_robots(G3D_Window *win) {
-  int   r, nr, ir;
+void g3d_draw_robots(G3D_Window *win, int opengl_context) {
 
+  int   r, nr, ir;
   r = p3d_get_desc_curnum(P3D_ROBOT);
   nr = p3d_get_desc_number(P3D_ROBOT);
 
@@ -758,10 +826,10 @@ void g3d_draw_robots(G3D_Window *win) {
         continue;
       }
       //g3d_draw_rob_BB((p3d_rob *) p3d_get_desc_curid(P3D_ROBOT));
-	    g3d_draw_robot(ir, win);
+            g3d_draw_robot(ir, win, opengl_context);
     }
-    p3d_sel_desc_num(P3D_ROBOT, r);
 
+    p3d_sel_desc_num(P3D_ROBOT, r);
   }
 }
 
@@ -770,6 +838,7 @@ void g3d_draw_robots(G3D_Window *win) {
 /* les limites du robot                    */
 /*******************************************/
 static void g3d_draw_robot_box(void) {
+
   double x1, x2, y1, y2, z1, z2;
   /* double t1,t2,nampl,temp;*/
   /* int i,n=10;*/
@@ -842,6 +911,7 @@ static void g3d_draw_robot_box(void) {
 /* les limites de l'environnement          */
 /*******************************************/
 void g3d_draw_env_box(void) {
+
   double x1, x2, y1, y2, z1, z2, temp;
   int i, n = 10;
 
@@ -926,21 +996,20 @@ void g3d_draw_env_box(void) {
 /***************************************/
 /* Fonction tracant l'obstacle courant */
 /***************************************/
-void g3d_draw_obstacle(G3D_Window *win) {
+void g3d_draw_obstacle(G3D_Window *win, int opengl_context) {
+
   pp3d_obj o;
   o = (p3d_obj *) p3d_get_desc_curid(P3D_OBSTACLE);
 
-  g3d_draw_object(o, 0, win);
+  g3d_draw_object(o, 0, win, opengl_context);
 }
-
-
-
 
 /***********************************************/
 /* Fonction tracant le robot courant en tenant */
 /* compte de s'il a percute un obstacle ou non */
 /***********************************************/
-void g3d_draw_robot(int ir, G3D_Window* win) {
+void g3d_draw_robot(int ir, G3D_Window* win, int opengl_context) {
+
   int nb, b, ib, num;
   int coll = 0;
 
@@ -967,7 +1036,7 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
   
   for (ib = 0;ib < nb;ib++) {
     p3d_sel_desc_num(P3D_BODY, ib);
-    g3d_draw_body(coll, win);
+    g3d_draw_body(coll, win, opengl_context);
   }
   p3d_sel_desc_num(P3D_BODY,b);
   
@@ -981,6 +1050,7 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
 }
 
 void p3d_drawRobotMoveMeshs(void) {
+
   if (G3D_SELECTED_JOINT != -999) {
     p3d_rob* robot = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
     if (robot->num != G3D_SELECTED_ROBOT) {
@@ -1051,18 +1121,20 @@ void p3d_drawRobotMoveMeshs(void) {
 /******************************************************/
 /* Fonction tracant le corps courant du robot courant */
 /******************************************************/
-void g3d_draw_body(int coll, G3D_Window* win) {
+void g3d_draw_body(int coll, G3D_Window* win, int opengl_context) {
+
   pp3d_obj o;
 
   o = (p3d_obj *) p3d_get_desc_curid(P3D_BODY);
 
-  g3d_draw_object_moved(o, coll, win);
+  g3d_draw_object_moved(o, coll, win, opengl_context);
 }
 
 /*******************************************/
 /* Fonction dessinant un objet en position */
 /*******************************************/
-void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win) {
+void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win, int opengl_context) {
+
   int i, j;
 
   /* On cree une matrice compatible avec opengl */
@@ -1077,10 +1149,10 @@ void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win) {
   }
   glPushMatrix();
   glMultMatrixd(matrix_pos_absGL);
-  g3d_draw_object(o, coll, win);
+  g3d_draw_object(o, coll, win, opengl_context);
   glPopMatrix();
   if (win->vs.BB == TRUE) {
-    g3d_draw_obj_BB(o);
+    g3d_draw_obj_BB(o,opengl_context);
   }
 }
 
@@ -1088,7 +1160,8 @@ void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win) {
 /*******************************/
 /* Fonction dessinant un objet */
 /*******************************/
-void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
+void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win, int opengl_context) {
+
   int i, transparent;
   int black;
   glLoadName(o->o_id_in_env);
@@ -1108,19 +1181,19 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
 
       //flat shading display:
       if((!win->vs.FILAIRE)&&(!win->vs.GOURAUD))
-      {g3d_draw_poly(o->pol[i],win,coll,1);}
+      {g3d_draw_poly(o->pol[i],win,coll,1,opengl_context);}
       //smooth shading display:
       if((!win->vs.FILAIRE)&&(win->vs.GOURAUD))
-      {g3d_draw_poly(o->pol[i],win,coll,2);}
+      {g3d_draw_poly(o->pol[i],win,coll,2,opengl_context);}
       //wire display:
       if((win->vs.FILAIRE && !win->vs.CONTOUR))
-      {g3d_draw_poly(o->pol[i],win,coll,0);}
+      {g3d_draw_poly(o->pol[i],win,coll,0,opengl_context);}
       //contour display:
       if(win->vs.CONTOUR)
       {   
         black= win->vs.allIsBlack;
         win->vs.allIsBlack= TRUE;
-        g3d_draw_poly(o->pol[i],win,coll,0);
+        g3d_draw_poly(o->pol[i],win,coll,0,opengl_context);
         win->vs.allIsBlack= black;
       }
     }
@@ -1131,7 +1204,8 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
 /* Fonction tracant la boite englobante d'un objet */
 /***************************************************/
 
-void g3d_draw_obj_BB(p3d_obj *o) {
+void g3d_draw_obj_BB(p3d_obj *o, int opengl_context) {
+
   double x1, x2, y1, y2, z1, z2;
 
   p3d_get_BB_obj(o, &x1, &x2, &y1, &y2, &z1, &z2); /* new Carl 23052001 */
@@ -1143,7 +1217,8 @@ void g3d_draw_obj_BB(p3d_obj *o) {
 /*************************************************************/
 /* Fonction tracant la boite englobante de l'ostacle courant */
 /*************************************************************/
-static void g3d_draw_ocur_special(G3D_Window *win) {
+static void g3d_draw_ocur_special(G3D_Window *win, int opengl_context) {
+
   double x1, x2, y1, y2, z1, z2;
   int i;
   /*   G3D_Window *win; */
@@ -1163,7 +1238,7 @@ static void g3d_draw_ocur_special(G3D_Window *win) {
     g3d_draw_a_box(x1, x2, y1, y2, z1, z2, Red, 0);
   } else {
     for (i = 0;i < oc->np;i++)
-      g3d_draw_poly_special(oc->pol[i], win, Red);
+      g3d_draw_poly_special(oc->pol[i], win, Red, opengl_context);
   }
 }
 /* Fin Modification Thibaut */
@@ -1187,13 +1262,15 @@ static void g3d_draw_ocur_special(G3D_Window *win) {
 //             g3d_draw_a_box(x1, x2, y1, y2, z1, z2, Yellow, 0));
 // }
 
-void showConfig(configPt conf) {
+void showConfig(configPt conf)
+{
   p3d_set_and_update_this_robot_conf(XYZ_ROBOT,conf);
   g3d_refresh_allwin_active();
   sleep(1);
 }
 
-void showConfig_2(configPt conf) {
+void showConfig_2(configPt conf)
+{
   p3d_set_and_update_this_robot_conf(XYZ_ROBOT,conf);
   g3d_draw_allwin_active();
   sleep(2.5);
@@ -1370,81 +1447,10 @@ void g3d_draw_env_custom()
   }
 
 }
-GLubyte Texture[16] =
-{
-0,0,0,0, 0xFF,0xFF,0xFF,0xFF,
-0xFF,0xFF,0xFF,0xFF, 0,0,0,0
-};
-        //Image (2x2)
-GLuint Nom;
 
-void test_francois()
-{
-  glEnable(GL_TEXTURE_2D); 	//Active le texturing
-  glGenTextures(1,&Nom); 	//Génère un n° de texture
-  glBindTexture(GL_TEXTURE_2D,Nom); 	//Sélectionne ce n°
-  glTexImage2D (
-      GL_TEXTURE_2D, 	//Type : texture 2D
-  0, 	//Mipmap : aucun
-  4, 	//Couleurs : 4
-  2, 	//Largeur : 2
-  2, 	//Hauteur : 2
-  0, 	//Largeur du bord : 0
-  GL_RGBA, 	//Format : RGBA
-  GL_UNSIGNED_BYTE, 	//Type des couleurs
-  Texture 	//Addresse de l'image
-  );
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  glBegin(GL_QUADS); 	//Et c'est parti pour le cube !
-
-      glTexCoord2i(0,0);glVertex3i(-1,-1,-1);
-      glTexCoord2i(1,0);glVertex3i(+1,-1,-1);
-      glTexCoord2i(1,1);glVertex3i(+1,+1,-1);
-      glTexCoord2i(0,1);glVertex3i(-1,+1,-1);
-
-          //1 face
-
-      glTexCoord2i(0,0);glVertex3i(-1,-1,+1);
-      glTexCoord2i(1,0);glVertex3i(+1,-1,+1);
-      glTexCoord2i(1,1);glVertex3i(+1,+1,+1);
-      glTexCoord2i(0,1);glVertex3i(-1,+1,+1);
-
-          //2 faces
-
-      glTexCoord2i(0,0);glVertex3i(+1,-1,-1);
-      glTexCoord2i(1,0);glVertex3i(+1,-1,+1);
-      glTexCoord2i(1,1);glVertex3i(+1,+1,+1);
-      glTexCoord2i(0,1);glVertex3i(+1,+1,-1);
-
-          //3 faces
-
-      glTexCoord2i(0,0);glVertex3i(-1,-1,-1);
-      glTexCoord2i(1,0);glVertex3i(-1,-1,+1);
-      glTexCoord2i(1,1);glVertex3i(-1,+1,+1);
-      glTexCoord2i(0,1);glVertex3i(-1,+1,-1);
-
-          //4 faces
-
-      glTexCoord2i(1,0);glVertex3i(-1,+1,-1);
-      glTexCoord2i(1,1);glVertex3i(+1,+1,-1);
-      glTexCoord2i(0,1);glVertex3i(+1,+1,+1);
-      glTexCoord2i(0,0);glVertex3i(-1,+1,+1);
-
-          //5 faces
-
-      glTexCoord2i(1,0);glVertex3i(-1,-1,+1);
-      glTexCoord2i(1,1);glVertex3i(+1,-1,+1);
-      glTexCoord2i(0,1);glVertex3i(+1,-1,-1);
-      glTexCoord2i(0,0);glVertex3i(-1,-1,-1);
-  glEnd();
-
- glDisable(GL_TEXTURE_2D); 	//Active le texturing
-}
 
 //! @ingroup graphic 
-void g3d_draw_env()
+void g3d_draw_env(int opengl_context)
 {
   pp3d_env e;
   pp3d_rob robotPt;
@@ -1478,13 +1484,13 @@ void g3d_draw_env()
   g3d_kcd_draw_all_aabbs();     // draw AABBs around static primitives
   g3d_kcd_draw_aabb_hier();     // draw AABB tree on static objects
   g3d_kcd_draw_robot_obbs();    // draw all obbs of current robot
-  g3d_kcd_draw_all_obbs();      // draw all static obbs
+  g3d_kcd_draw_all_obbs(opengl_context);      // draw all static obbs
 	
   g3d_kcd_draw_closest_points();
 #endif
 	
   /* Debut Modification Thibaut */
-  if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win);
+  if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win,opengl_context);
   /* Fin Modification Thibaut */
 
 #ifdef P3D_PLANNER
@@ -1523,7 +1529,7 @@ void g3d_draw_env()
     p3d_numcoll = p3d_col_test_all();
 #endif
     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
-    g3d_draw_robot(robotPt->num, win);
+    g3d_draw_robot(robotPt->num, win, opengl_context);
     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_trace_all_tcur();
   }
@@ -1573,7 +1579,7 @@ void g3d_draw_env()
 //! KEEP ONLY WHAT IS NECESSARY INSIDE IT!!:
 //! DEFINE YOUR OWN win->fct_draw2() AND PUT YOUR ADDITIONAL DISPLAY INSIDE.
 //! OR USE g3d_draw_env() or g3d_draw_env_custom() defined just before this function.
-void g3d_draw(void) 
+void g3d_draw(int opengl_context)
 {
   static int firstTime= TRUE;
   pp3d_env e;
@@ -1589,7 +1595,7 @@ void g3d_draw(void)
 	
   if (e->INIT) {
     ChronoOn();
-    g3d_init_all_poly();
+    g3d_init_all_poly(opengl_context);
     boxlist = -1;
 #ifdef P3D_COLLISION_CHECKING
     p3d_reset_robotboxlist();
@@ -1601,7 +1607,7 @@ void g3d_draw(void)
 	
   if (win->vs.GOURAUD) {
     glShadeModel(GL_SMOOTH);
-    g3d_init_all_poly_gouraud();
+    g3d_init_all_poly_gouraud(opengl_context);
   }
   else {
     glShadeModel(GL_FLAT);
@@ -1659,8 +1665,8 @@ void g3d_draw(void)
       glDisable(GL_CULL_FACE);
     }
 		
-    g3d_draw_robots(win);
-    g3d_draw_obstacles(win);
+    g3d_draw_robots(win,opengl_context);
+    g3d_draw_obstacles(win,opengl_context);
     g3d_draw_env_custom();
 
     if(win->vs.displaySky)
@@ -1683,12 +1689,12 @@ void g3d_draw(void)
     //draw transparent objects to finish:
     win->vs.transparency_mode= G3D_TRANSPARENT;
     glEnable(GL_CULL_FACE);
-    g3d_draw_robots(win);
-    g3d_draw_obstacles(win);
+    g3d_draw_robots(win,opengl_context);
+    g3d_draw_obstacles(win,opengl_context);
     g3d_draw_env_custom();
 
     if (G3D_DRAW_TRACE) 
-      g3d_draw_trace();
+      g3d_draw_trace(opengl_context);
     glDisable(GL_CULL_FACE);
   }
   else
@@ -1697,8 +1703,8 @@ void g3d_draw(void)
 		
     win->vs.transparency_mode= G3D_NO_TRANSPARENCY;
 		
-    g3d_draw_robots(win);
-    g3d_draw_obstacles(win);
+    g3d_draw_robots(win,opengl_context);
+    g3d_draw_obstacles(win,opengl_context);
     g3d_draw_env_custom();
 		
     ///////////////////////////////
@@ -1747,8 +1753,8 @@ void g3d_draw(void)
     glPushMatrix();
     glMultMatrixd(projection_matrix);
     win->vs.allIsBlack= TRUE;
-    g3d_draw_robots(win);
-    g3d_draw_obstacles(win);
+    g3d_draw_robots(win,opengl_context);
+    g3d_draw_obstacles(win,opengl_context);
     g3d_draw_env_custom();
     glPopMatrix();
     glColorMask(1,1,1,1);
@@ -1797,8 +1803,8 @@ void g3d_draw(void)
         glPushMatrix();
         glMultMatrixd(projection_matrix);
         win->vs.allIsBlack= TRUE;
-        g3d_draw_robots(win);
-        g3d_draw_obstacles(win);
+        g3d_draw_robots(win,opengl_context);
+        g3d_draw_obstacles(win,opengl_context);
         g3d_draw_env_custom();
         glPopMatrix();
         glColorMask(1,1,1,1);
@@ -1825,7 +1831,7 @@ void g3d_draw(void)
   }
   glPopAttrib();
   
-  g3d_draw_env();
+  g3d_draw_env(opengl_context);
 
   if(win->vs.enableLogo==1) {
     g3d_display_logo(win->vs, 10.0, 10.0, 0.33);

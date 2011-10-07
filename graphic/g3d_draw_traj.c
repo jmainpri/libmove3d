@@ -33,7 +33,7 @@
 #endif
 
 static void draw_trace(void);
-static void draw_trace_2(void);
+static void draw_trace_2(int opengl_context);
 static int NB_KEY_FRAME = 500;
 extern double ZminEnv;
 extern double ZmaxEnv;
@@ -70,13 +70,13 @@ void g3d_traj_set_NB_KEY_FRAME(int param) {
 /* Fonction reglant les lumieres et affichant */
 /* une trace                                  */
 /**********************************************/
-void g3d_draw_trace() {
+void g3d_draw_trace(int opengl_context) {
   g3d_set_light(g3d_get_cur_win()->vs);
   g3d_set_default_material();
-  draw_trace_2();
+  draw_trace_2(opengl_context);
 }
 
-static void draw_trace(void) {
+static void draw_trace(int opengl_context) {
   double u = 0, du, umax, dmax; /* parameters along the local path */
   configPt q;
   pp3d_rob robotPt = (pp3d_rob) p3d_get_desc_curid(P3D_ROBOT);
@@ -97,7 +97,7 @@ static void draw_trace(void) {
   win = g3d_get_cur_win();
   e = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   if (e->INIT) {
-    g3d_init_all_poly();
+    g3d_init_all_poly(opengl_context);
     boxlist = -1;
 #ifdef P3D_COLLISION_CHECKING
     p3d_reset_robotboxlist();
@@ -116,7 +116,7 @@ static void draw_trace(void) {
 
   win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
 //g3d_draw_env_box();
-  g3d_draw_obstacles(win);
+  g3d_draw_obstacles(win,opengl_context);
 
 #ifdef P3D_PLANNER
   if(XYZ_GRAPH && ENV.getBool(Env::drawGraph)){g3d_draw_graph();}
@@ -141,7 +141,7 @@ static void draw_trace(void) {
       p3d_numcoll = p3d_col_test_all();
 #endif
       win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
-      g3d_draw_robot(robotPt->num, win);
+      g3d_draw_robot(robotPt->num, win, opengl_context);
 // 			int i;
 // 			for(i=0; i<=robotPt->njoints; i++)
 // 			{
@@ -200,7 +200,7 @@ static void draw_trace(void) {
   robotPt->draw_transparent = false;
 }
 
-static void draw_trace_2(void) 
+static void draw_trace_2(int opengl_context)
 {
   p3d_rob* robotPt = (pp3d_rob) p3d_get_desc_curid(P3D_ROBOT);
 
@@ -222,7 +222,7 @@ static void draw_trace_2(void)
   win = g3d_get_cur_win();
   win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
   //g3d_draw_env_box();
-  g3d_draw_obstacles(win);
+  g3d_draw_obstacles(win,opengl_context);
 #ifdef P3D_PLANNER
   if(XYZ_GRAPH && ENV.getBool(Env::drawGraph)){g3d_draw_graph();}
 #endif
@@ -245,7 +245,7 @@ static void draw_trace_2(void)
       robotPt->draw_transparent = true;
     }
     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
-    g3d_draw_robot(robotPt->num, win);
+    g3d_draw_robot(robotPt->num, win, opengl_context);
     p3d_destroy_config(robotPt, q);
       
 #ifdef MULTILOCALPATH

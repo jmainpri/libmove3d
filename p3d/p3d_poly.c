@@ -244,9 +244,13 @@ void p3d_poly_end_poly(p3d_poly *poly) { /* unsigned int nb_edges; */
   p3d_polymax=p3d_polymax+1;
   poly->MODIF=FALSE ;
   poly->color_vect = NULL;
-  poly->list = -1;
-  poly->listfil = -1;
-  poly->listgour = -1;
+
+  for(int i=0;i<P3D_NB_OPENGL_CONTEXT;i++)
+  {
+    poly->list[i] = -1;
+    poly->listfil[i] = -1;
+    poly->listgour[i] = -1;
+  }
 
   poly->is_used_in_object_flag = 1;
 }

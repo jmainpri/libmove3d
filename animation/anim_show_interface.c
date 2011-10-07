@@ -175,7 +175,7 @@ static void anim_show_CB (FL_OBJECT * obj, long arg)
     if (fl_get_button(SHOW_REVERSE) == 1) {
       if (ANIM_TRACE == 1) {
 	g3d_draw_env_box();
-	g3d_draw_obstacles(g3d_get_cur_win()); // Modif NIC pour Florent
+        g3d_draw_obstacles(g3d_get_cur_win(),opengl_context); // Modif NIC pour Florent
       }
       for (CurrentFrame = EndFrame; CurrentFrame >= InitFrame; CurrentFrame -= Ratio) {
 	anim_show_one_frame();

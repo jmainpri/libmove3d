@@ -7,18 +7,18 @@
 
 extern void g3d_set_draw_coll ( int n );
 extern void g3d_reinit_graphics ( void );
-extern void g3d_draw ( void );
-extern void g3d_draw_obstacles ( G3D_Window* win );
+extern void g3d_draw ( int opengl_context );
+extern void g3d_draw_obstacles ( G3D_Window* win , int opengl_context);
 extern void g3d_draw_robots ( G3D_Window *win );
 extern void g3d_draw_env_box ( void );
-extern void g3d_draw_robot ( int ir, G3D_Window* win );
-extern void g3d_draw_env(void);
+extern void g3d_draw_robot ( int ir, G3D_Window* win , int opengl_context);
+extern void g3d_draw_env(int opengl_context);
 extern void g3d_draw_env_custom(void);
-extern void g3d_draw_obstacle(G3D_Window *win);
-extern void g3d_draw_body(int coll, G3D_Window *win);
-extern void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win);
+extern void g3d_draw_obstacle(G3D_Window *win,int opengl_context);
+extern void g3d_draw_body(int coll, G3D_Window *win, int opengl_context);
+extern void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win, int opengl_context);
 extern void p3d_drawRobotMoveMeshs(void);
-extern void g3d_draw_obj_BB(p3d_obj *o);
+extern void g3d_draw_obj_BB(p3d_obj *o,int opengl_context);
 extern int compute_wall_dimensions(double *_size, double *_xmin, double *_xmax, double *_ymin, double *_ymax, double *_zmin, double *_zmax);
 extern void buildShadowMatrix( GLdouble fMatrix[16], GLfloat fLightPos[4], GLdouble fPlane[4] );
 extern int g3d_draw_tiled_floor(GLdouble color[3], float dx, float dy, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, float shadowContrast);

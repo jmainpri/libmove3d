@@ -103,7 +103,7 @@ extern void pqp_draw_OBBs_recursive(p3d_obj *object, double M[4][4], int bn, int
 
 extern int pqp_draw_OBBs(p3d_obj *object, int level);
 
-extern void pqp_draw_all_OBBs(int level);
+extern void pqp_draw_all_OBBs(int level, int opengl_context);
 
 extern int pqp_top_OBB(p3d_obj *object, double &tx, double &ty, double &tz, double &ax, double &ay, double &az, double &xmin, double &xmax, double &ymin, double &ymax, double &zmin, double &zmax);
 

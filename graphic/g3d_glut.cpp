@@ -135,6 +135,8 @@ void g3d_glut_ui_calc_param(g3d_cam_param& p)
 
 void g3d_glut_paintGL()
 {
+  int opengl_context = 0;
+
   if(m_init)
     {
       g3d_glut_initializeGL(800,600);
@@ -160,7 +162,7 @@ void g3d_glut_paintGL()
   G3D_WIN->vs.cameraPosition[2]= p.Xc[2];  
   
   //cout << "g3d_draw" << endl;
-  g3d_draw();
+  g3d_draw(opengl_context);
 	
   glPopMatrix();
 

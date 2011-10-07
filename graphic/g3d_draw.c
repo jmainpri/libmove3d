@@ -498,7 +498,6 @@ void g3d_drawCircle(double x,double y, double r, int color, double *color_vect, 
 
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
-
 }
 
 /********************************************************/
@@ -1443,7 +1442,7 @@ int g3d_calcule_resolution(G3D_Window *win,p3d_poly *p) {
 * IN => p : pointeur sur le polyhedre a dessiner      
 *    => fill : type de dessin a appliquer             
 *    => win : pointeur sur la structure fenetre       */
-void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
+void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill, int opengl_context) {
   GLfloat pos_rel_jnt_OGL[16];
   double x_box_length;
   double y_box_length;
@@ -1523,20 +1522,20 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
   switch (fill) {
 
     case 0: {
-        glCallList(p->listfil + resolution);
+        glCallList(p->listfil[opengl_context] + resolution);
         glEnable(GL_LIGHTING);
         glEnable(GL_LIGHT0);
         break;
       }
 
     case 1: {
-        glCallList(p->list + resolution);
+        glCallList(p->list[opengl_context] + resolution);
         break;
       }
 
     case 2: {
-        if(p->listgour !=-1) {
-          glCallList(p->listgour + resolution);
+        if(p->listgour[opengl_context] !=-1) {
+          glCallList(p->listgour[opengl_context] + resolution);
         }
         break;
       }
@@ -1557,7 +1556,7 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
 *    => win : pointeur sur la structure fenetre       
 *    => coll :                                        
 *    => fill : type de rendu a effectuer              */
-void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
+void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill, int opengl_context) {
   GLdouble color_vect[4];
   
   int blend = 0;  /* pour activer ou non la transparence */
@@ -1571,7 +1570,10 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
   }
 
   glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT);
-  
+
+  // Has to be investigated!!!!
+  glEnable(GL_COLOR_MATERIAL);
+
   if(fill && !win->vs.allIsBlack) {
     switch(coll) {
       case 2:
@@ -1596,7 +1598,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
           color_vect[3]= 1.0;  
         }
         else
-        {   
+        {
           if(!set_hardcoded_blend)
           {
             blend = ( (color_vect[3]==1) ? 0 : 1);
@@ -1612,6 +1614,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
         }
       break;
     }
+    //printf("Color : ( %f,%f,%f) , p = %p\n",color_vect[0],color_vect[1],color_vect[2],p);
     glColor4dv(color_vect);
     glEnable(GL_DEPTH_TEST);
 
@@ -1663,7 +1666,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
     glColor4d(0.0, 0.0, 0.0, 1.0);
   }
 
-  switch(p->display_mode) {
+  switch( p->display_mode ) {
     case POLY_DEFAULT_DISPLAY: 
     break;
     case POLY_NO_DISPLAY: 
@@ -1716,7 +1719,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
   if ((p->entity_type == SPHERE_ENTITY) || (p->entity_type == CUBE_ENTITY) || (p->entity_type == BOX_ENTITY) || (p->entity_type == CYLINDER_ENTITY)/*
         ||(p->entity_type == CONE_ENTITY)*/) {
 
-    g3d_draw_primitive(win,p,fill);
+    g3d_draw_primitive(win,p,fill,opengl_context);
 
   }
   else {
@@ -1730,21 +1733,20 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
 
       /* Cas d'un polyhedre quelconque */
 
-      glCallList(p->list);
+      glCallList(p->list[opengl_context]);
 
-    } else if(fill == 2 && p->listgour != -1) {
+    } else if(fill == 2 && p->listgour[opengl_context] != -1) {
 
       /* cas d'un polyhedre quelconque */
-
-      glCallList(p->listgour);
+//      printf("display %p in %d ",p,opengl_context);
+      glCallList(p->listgour[opengl_context]);
 
     }
     else {
-      glCallList(p->listfil);
+      glCallList(p->listfil[opengl_context]);
       glEnable(GL_LIGHTING);
       glEnable(GL_LIGHT0);
-    }
-		
+    }	
   }
 
 
@@ -1765,7 +1767,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
 *    => win : pointeur sur la structure fenetre       
 *    => coll :                                        
 *    => fill : type de rendu a effectuer              */
-void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,double color) {
+void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,double color , int opengl_context) {
  
   GLdouble color_vect[4];
   int colorint;
@@ -1906,7 +1908,7 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
   if ((p->entity_type == SPHERE_ENTITY) || (p->entity_type == CUBE_ENTITY) || (p->entity_type == BOX_ENTITY) || (p->entity_type == CYLINDER_ENTITY)/*
         ||(p->entity_type == CONE_ENTITY)*/) {
 
-    g3d_draw_primitive(win,p,fill);
+    g3d_draw_primitive(win,p,fill,opengl_context);
 
   }
   else {
@@ -1920,21 +1922,20 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
 
       /* Cas d'un polyhedre quelconque */
 
-      glCallList(p->list);
+      glCallList(p->list[opengl_context]);
 
-    } else if(fill == 2 && p->listgour != -1) {
+    } else if(fill == 2 && p->listgour[opengl_context] != -1) {
 
       /* cas d'un polyhedre quelconque */
 
-      glCallList(p->listgour);
+      glCallList(p->listgour[opengl_context]);
 
     }
     else {
-      glCallList(p->listfil);
+      glCallList(p->listfil[opengl_context]);
       glEnable(GL_LIGHTING);
       glEnable(GL_LIGHT0);
     }
-
   }
 
 
@@ -1958,7 +1959,7 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
 /*************************************************************/
 /* Fonction dessinant les contours d'un polyhedre en couleur */
 /*************************************************************/
-void g3d_draw_poly_special(p3d_poly *p,G3D_Window *win,int color) {
+void g3d_draw_poly_special(p3d_poly *p,G3D_Window *win,int color, int opengl_context) {
   int i,j,nvert,nface;
   double x,y,z;
 
@@ -1980,7 +1981,7 @@ void g3d_draw_poly_special(p3d_poly *p,G3D_Window *win,int color) {
       (p->entity_type == BOX_ENTITY) || (p->entity_type == CYLINDER_ENTITY)
       /*||(p->entity_type == CONE_ENTITY)*/) {
 
-    g3d_draw_primitive(win,p,0);
+    g3d_draw_primitive(win,p,0,opengl_context);
 
   }
   else {
@@ -2012,7 +2013,7 @@ void g3d_draw_poly_special(p3d_poly *p,G3D_Window *win,int color) {
 /* polyhedres d'un environnement (pour accelerer les   */
 /* affichages) en gouraud (fill = 2)                   */
 /*******************************************************/
-void g3d_init_all_poly_gouraud(void) {
+void g3d_init_all_poly_gouraud(int opengl_context) {
   p3d_poly *p;
 
 
@@ -2020,16 +2021,12 @@ void g3d_init_all_poly_gouraud(void) {
 
   int i_list_gourcylindre = -1;/* si != -1 alors une display list de cylindre a deja ete creee*/
 
-
   int i_list_gourbox = -1;/* si != -1 alors une display list de box ou cube a deja ete creee*/
-
-
-
 
   p=p3d_poly_get_first();
 
   /* si on n'a pas deja fait l'init gouraud d'aucun poly */
-  if (p->listgour == -1) {
+  if (p->listgour[opengl_context] == -1) {
 
     while(p!=NULL) {
 
@@ -2038,12 +2035,12 @@ void g3d_init_all_poly_gouraud(void) {
         case SPHERE_ENTITY: {
             /* si on a pas deja initialise de sphere, on la cree */
             if (i_list_goursphere == -1) {
-              g3d_init_poly(p,2);
-              i_list_goursphere = p->listgour;
+              g3d_init_poly(p,2,opengl_context);
+              i_list_goursphere = p->listgour[opengl_context];
             }
             /* sinon on va se baser sur celle deja existante*/
             else {
-              p->listgour = i_list_goursphere;
+              p->listgour[opengl_context] = i_list_goursphere;
             }
 
             break;
@@ -2052,13 +2049,13 @@ void g3d_init_all_poly_gouraud(void) {
         case CUBE_ENTITY: {
             /* si on a pas deja initialise de box, on la cree */
             if (i_list_gourbox == -1) {
-              g3d_init_poly(p,2);
-              i_list_gourbox = p->listgour;
+              g3d_init_poly(p,2,opengl_context);
+              i_list_gourbox = p->listgour[opengl_context];
             }
 
             /* sinon on va se baser sur celle deja existante*/
             else {
-              p->listgour = i_list_gourbox;
+              p->listgour[opengl_context] = i_list_gourbox;
             }
             break;
           }
@@ -2066,13 +2063,13 @@ void g3d_init_all_poly_gouraud(void) {
         case BOX_ENTITY: {
             /* si on a pas deja initialise de box, on la cree */
             if (i_list_gourbox == -1) {
-              g3d_init_poly(p,2);
-              i_list_gourbox = p->listgour;
+              g3d_init_poly(p,2,opengl_context);
+              i_list_gourbox = p->listgour[opengl_context];
             }
 
             /* sinon on va se baser sur celle deja existante*/
             else {
-              p->listgour = i_list_gourbox;
+              p->listgour[opengl_context] = i_list_gourbox;
             }
             break;
           }
@@ -2080,13 +2077,13 @@ void g3d_init_all_poly_gouraud(void) {
         case CYLINDER_ENTITY: {
             /* si on a pas deja initialise de cylindre, on le cree */
             if (i_list_gourcylindre == -1) {
-              g3d_init_poly(p,2);
-              i_list_gourcylindre = p->listgour;
+              g3d_init_poly(p,2,opengl_context);
+              i_list_gourcylindre = p->listgour[opengl_context];
             }
 
             /* sinon on va se baser sur celui deja existant*/
             else {
-              p->listgour = i_list_gourcylindre;
+              p->listgour[opengl_context] = i_list_gourcylindre;
             }
             break;
           }
@@ -2096,7 +2093,7 @@ void g3d_init_all_poly_gouraud(void) {
         default: {
             /***** CAS DU POLY QUELCONQUE ******/
 
-            g3d_init_poly(p,2);
+            g3d_init_poly(p,2,opengl_context);
 
             break;
           }
@@ -2116,7 +2113,7 @@ void g3d_init_all_poly_gouraud(void) {
 /* polyhedres d'un environnement (pour accelerer les   */
 /* affichages) en filaire et poly (fill = 0 et 1)      */
 /*******************************************************/
-void g3d_init_all_poly(void) {
+void g3d_init_all_poly(int opengl_context) {
   p3d_poly *p;
 
   int i_list_sphere = -1; /* si != -1 alors une display list de sphere a deja ete creee*/
@@ -2139,16 +2136,16 @@ void g3d_init_all_poly(void) {
       case SPHERE_ENTITY: {
           /* si on a pas deja initialise de sphere, on la cree */
           if (i_list_sphere == -1) {
-            g3d_init_poly(p,1);
-            g3d_init_poly(p,0);
-            i_list_sphere = p->list;
-            i_list_filsphere = p->listfil;
+            g3d_init_poly(p,1,opengl_context);
+            g3d_init_poly(p,0,opengl_context);
+            i_list_sphere = p->list[opengl_context];
+            i_list_filsphere = p->listfil[opengl_context];
           }
 
           /* sinon on va se baser sur celle deja existante*/
           else {
-            p->list = i_list_sphere;
-            p->listfil = i_list_filsphere;
+            p->list[opengl_context] = i_list_sphere;
+            p->listfil[opengl_context] = i_list_filsphere;
           }
           break;
         }
@@ -2156,16 +2153,16 @@ void g3d_init_all_poly(void) {
       case CUBE_ENTITY: {
           /* si on a pas deja initialise de box, on la cree */
           if (i_list_box == -1) {
-            g3d_init_poly(p,1);
-            g3d_init_poly(p,0);
-            i_list_box = p->list;
-            i_list_filbox = p->listfil;
+            g3d_init_poly(p,1,opengl_context);
+            g3d_init_poly(p,0,opengl_context);
+            i_list_box = p->list[opengl_context];
+            i_list_filbox = p->listfil[opengl_context];
           }
 
           /* sinon on va se baser sur celle deja existante*/
           else {
-            p->list = i_list_box;
-            p->listfil = i_list_filbox;
+            p->list[opengl_context] = i_list_box;
+            p->listfil[opengl_context] = i_list_filbox;
           }
           break;
         }
@@ -2173,16 +2170,16 @@ void g3d_init_all_poly(void) {
       case BOX_ENTITY: {
           /* si on a pas deja initialise de box, on la cree */
           if (i_list_box == -1) {
-            g3d_init_poly(p,1);
-            g3d_init_poly(p,0);
-            i_list_box = p->list;
-            i_list_filbox = p->listfil;
+            g3d_init_poly(p,1,opengl_context);
+            g3d_init_poly(p,0,opengl_context);
+            i_list_box = p->list[opengl_context];
+            i_list_filbox = p->listfil[opengl_context];
           }
 
           /* sinon on va se baser sur celle deja existante*/
           else {
-            p->list = i_list_box;
-            p->listfil = i_list_filbox;
+            p->list[opengl_context] = i_list_box;
+            p->listfil[opengl_context] = i_list_filbox;
           }
           break;
         }
@@ -2190,16 +2187,16 @@ void g3d_init_all_poly(void) {
       case CYLINDER_ENTITY: {
           /* si on a pas deja initialise de cylindre, on le cree */
           if (i_list_cylindre == -1) {
-            g3d_init_poly(p,1);
-            g3d_init_poly(p,0);
-            i_list_cylindre = p->list;
-            i_list_filcylindre = p->listfil;
+            g3d_init_poly(p,1,opengl_context);
+            g3d_init_poly(p,0,opengl_context);
+            i_list_cylindre = p->list[opengl_context];
+            i_list_filcylindre = p->listfil[opengl_context];
           }
 
           /* sinon on va se baser sur celui deja existant*/
           else {
-            p->list = i_list_cylindre;
-            p->listfil = i_list_filcylindre;
+            p->list[opengl_context] = i_list_cylindre;
+            p->listfil[opengl_context] = i_list_filcylindre;
           }
           break;
         }
@@ -2207,8 +2204,8 @@ void g3d_init_all_poly(void) {
 
       default: {
           /***** CAS DU POLY QUELCONQUE ******/
-          g3d_init_poly(p,1);
-          g3d_init_poly(p,0);
+          g3d_init_poly(p,1,opengl_context);
+          g3d_init_poly(p,0,opengl_context);
 
           break;
         }
@@ -2225,13 +2222,13 @@ void g3d_init_all_poly(void) {
 
   mode: - see g3d_delete_poly() -
 *******************************************************/
-void g3d_delete_all_poly(int mode) {
+void g3d_delete_all_poly(int mode,int opengl_context) {
   p3d_poly *p;
 
   p=p3d_poly_get_first();
 
   while(p!=NULL) {
-    g3d_delete_poly(p,mode);
+    g3d_delete_poly(p,mode,opengl_context);
     p=p3d_poly_get_next();
   }
 }
@@ -2270,7 +2267,7 @@ void GLUerrorCallback(GLenum errorCode) {
 
 
 
-void g3d_init_box2(p3d_poly *p, int fill) {
+void g3d_init_box2(p3d_poly *p, int fill, int opengl_context) {
 
   double a2=1./2.,b2=1./2.,c2=1./2.;
   p3d_poly *poly ;
@@ -2329,15 +2326,15 @@ void g3d_init_box2(p3d_poly *p, int fill) {
 
   p3d_poly_end_poly(poly);
 
-  g3d_init_polyquelconque(poly,fill);
+  g3d_init_polyquelconque(poly,fill,opengl_context);
 
   if (fill == 1) {
-    p->list = poly->list;
+    p->list[opengl_context] = poly->list[opengl_context];
   } else {
     if (fill == 2) {
-      p->listgour = poly->listgour;
+      p->listgour[opengl_context] = poly->listgour[opengl_context];
     } else {
-      p->listfil = poly->listfil;
+      p->listfil[opengl_context] = poly->listfil[opengl_context];
     }
   }
   p3d_poly_del_poly (poly);
@@ -2353,7 +2350,7 @@ void g3d_init_box2(p3d_poly *p, int fill) {
 /* IN => p : pointeur sur le polyhedre a dessiner       */
 /*    => fill : type de dessin a appliquer              */
 /********************************************************/
-void g3d_init_box(p3d_poly* p, int fill) {
+void g3d_init_box(p3d_poly* p, int fill, int opengl_context ) {
   static double length = 1.7320508; /*norme du vecteur normal moyen a un point du cube  = racine de 3*/
   double inv_length = 1./length;
 
@@ -2417,27 +2414,30 @@ void g3d_init_box(p3d_poly* p, int fill) {
   glNormalPointer(GL_DOUBLE,0,nrml_ptr);
   glIndexPointer(GL_UNSIGNED_BYTE,0,index_ptr);
 
-  if ((fill == 1) && (p->list == -1)) {
-    p->list = glGenLists(1);
+  if ((fill == 1) && (p->list[opengl_context] == -1)) {
+    p->list[opengl_context] = glGenLists(1);
 
 
-    glNewList(p->list, GL_COMPILE);
+    glNewList(p->list[opengl_context], GL_COMPILE);
     glDrawElements(GL_QUADS,24,GL_UNSIGNED_BYTE,index_ord);
   } else {
-    if ((fill == 2) && (p->listgour == -1)) {
-      p->listgour = glGenLists(1);
+    if ((fill == 2) && (p->listgour[opengl_context] == -1)) {
+      p->listgour[opengl_context] = glGenLists(1);
 
 
-      glNewList(p->listgour, GL_COMPILE);
+      glNewList(p->listgour[opengl_context], GL_COMPILE);
       glDrawElements(GL_QUADS,24,GL_UNSIGNED_BYTE,index_ord);
     } else {
-      if((!fill) && (p->listfil == -1)) {
-        p->listfil = glGenLists(1);
+      if((!fill) && (p->listfil[opengl_context] == -1)) {
+        p->listfil[opengl_context] = glGenLists(1);
 
-        glNewList(p->listfil, GL_COMPILE);
+        glNewList(p->listfil[opengl_context], GL_COMPILE);
         glDrawElements(GL_LINES,24,GL_UNSIGNED_BYTE,index_lin);
       } else {
-        PrintInfo(("erreur : fill : %d list : %d listfil : %d listgour : %d\n",fill,p->list,p->listfil,p->listgour));
+        PrintInfo(("erreur : fill : %d list : %d listfil : %d listgour : %d\n",fill,
+                   p->list[opengl_context],
+                   p->listfil[opengl_context],
+                   p->listgour[opengl_context]));
       }
     }
   }
@@ -2460,7 +2460,7 @@ void g3d_init_box(p3d_poly* p, int fill) {
 /*    => top_radius : rayon du haut du cylindre         */
 /*                                                      */
 /********************************************************/
-void g3d_init_cylindreGLU2(p3d_poly* p, int fill, float base_radius,float top_radius) {
+void g3d_init_cylindreGLU2(p3d_poly* p, int fill, float base_radius,float top_radius, int opengl_context) {
 
 
 
@@ -2503,15 +2503,15 @@ void g3d_init_cylindreGLU2(p3d_poly* p, int fill, float base_radius,float top_ra
 
   p3d_poly_end_poly(poly);
 
-  g3d_init_polyquelconque(poly,fill);
+  g3d_init_polyquelconque(poly,fill,opengl_context);
 
   if (fill == 1) {
-    p->list = poly->list;
+    p->list[opengl_context] = poly->list[opengl_context];
   } else {
     if (fill == 2) {
-      p->listgour = poly->listgour;
+      p->listgour[opengl_context] = poly->listgour[opengl_context];
     } else {
-      p->listfil = poly->listfil;
+      p->listfil[opengl_context] = poly->listfil[opengl_context];
     }
   }
   p3d_poly_del_poly(poly);
@@ -2540,7 +2540,7 @@ void g3d_init_cylindreGLU2(p3d_poly* p, int fill, float base_radius,float top_ra
 /*    => top_radius : rayon du haut du cylindre         */
 /*                                                      */
 /********************************************************/
-void g3d_init_cylindreGLU(p3d_poly* p, int fill, float base_radius,float top_radius) {
+void g3d_init_cylindreGLU(p3d_poly* p, int fill, float base_radius,float top_radius, int opengl_context) {
   GLUquadricObj *ps_gluqobj;
   GLUquadricObj *ps_gluqtop; /*** objet quadric pour disque du dessus ***/
   GLUquadricObj *ps_gluqbot; /*** objet quadric pour disque du dessous ***/
@@ -2558,8 +2558,8 @@ void g3d_init_cylindreGLU(p3d_poly* p, int fill, float base_radius,float top_rad
 
   gluQuadricOrientation(ps_gluqbot,GLU_INSIDE); /* les normales pointent vers z negatif */
 
-  if ((fill == 1) && (p->list == -1)) {
-    p->list = glGenLists(1);
+  if ((fill == 1) && (p->list[opengl_context] == -1)) {
+    p->list[opengl_context] = glGenLists(1);
     gluQuadricDrawStyle(ps_gluqobj, GLU_FILL);
     gluQuadricNormals(ps_gluqobj, GLU_FLAT);
 
@@ -2569,10 +2569,10 @@ void g3d_init_cylindreGLU(p3d_poly* p, int fill, float base_radius,float top_rad
     gluQuadricDrawStyle(ps_gluqbot, GLU_FILL);
     gluQuadricNormals(ps_gluqbot, GLU_FLAT);
 
-    glNewList(p->list, GL_COMPILE);
+    glNewList(p->list[opengl_context], GL_COMPILE);
   } else {
-    if ((fill == 2) && (p->listgour == -1)) {
-      p->listgour = glGenLists(1);
+    if ((fill == 2) && (p->listgour[opengl_context] == -1)) {
+      p->listgour[opengl_context] = glGenLists(1);
       gluQuadricDrawStyle(ps_gluqobj, GLU_FILL); /* smooth shaded */
       gluQuadricNormals(ps_gluqobj, GLU_SMOOTH);
 
@@ -2582,10 +2582,10 @@ void g3d_init_cylindreGLU(p3d_poly* p, int fill, float base_radius,float top_rad
       gluQuadricDrawStyle(ps_gluqbot, GLU_FILL); /* smooth shaded */
       gluQuadricNormals(ps_gluqbot, GLU_SMOOTH);
 
-      glNewList(p->listgour, GL_COMPILE);
+      glNewList(p->listgour[opengl_context], GL_COMPILE);
     } else {
-      if((!fill) && (p->listfil == -1)) {
-        p->listfil = glGenLists(1);
+      if((!fill) && (p->listfil[opengl_context] == -1)) {
+        p->listfil[opengl_context] = glGenLists(1);
         gluQuadricDrawStyle(ps_gluqobj, GLU_LINE); /* wireframe */
         gluQuadricNormals(ps_gluqobj, GLU_NONE);
 
@@ -2595,9 +2595,12 @@ void g3d_init_cylindreGLU(p3d_poly* p, int fill, float base_radius,float top_rad
         gluQuadricDrawStyle(ps_gluqbot, GLU_SILHOUETTE); /* wireframe */
         gluQuadricNormals(ps_gluqbot, GLU_NONE);
 
-        glNewList(p->listfil, GL_COMPILE);
+        glNewList(p->listfil[opengl_context], GL_COMPILE);
       } else {
-        PrintInfo(("erreur : fill : %d list : %d listfil : %d listgour : %d\n",fill,p->list,p->listfil,p->listgour));
+        PrintInfo(("erreur : fill : %d list : %d listfil : %d listgour : %d\n",fill,
+                   p->list[opengl_context],
+                   p->listfil[opengl_context],
+                   p->listgour[opengl_context]));
       }
     }
   }
@@ -2626,7 +2629,7 @@ void g3d_init_cylindreGLU(p3d_poly* p, int fill, float base_radius,float top_rad
 /*    => fill : type de dessin a appliquer              */
 /*                                                      */
 /********************************************************/
-void g3d_init_sphereGLU(p3d_poly* p, int fill) {
+void g3d_init_sphereGLU(p3d_poly* p, int fill, int opengl_context) {
   GLUquadricObj *ps_gluqobj;
 
 
@@ -2641,60 +2644,63 @@ void g3d_init_sphereGLU(p3d_poly* p, int fill) {
 
   gluQuadricCallback(ps_gluqobj, GLU_ERROR, (void (*)()) GLUerrorCallback);
 
-  if ((fill == 1) && (p->list == -1)) {
-    p->list = glGenLists(3);
+  if ((fill == 1) && (p->list[opengl_context] == -1)) {
+    p->list[opengl_context] = glGenLists(3);
     gluQuadricDrawStyle(ps_gluqobj, GLU_FILL);
     gluQuadricNormals(ps_gluqobj, GLU_FLAT);
 
-    glNewList(p->list, GL_COMPILE);
+    glNewList(p->list[opengl_context], GL_COMPILE);
     gluSphere(ps_gluqobj, 1.0, slices, stacks); /** sphere at MED RESOLUTION **/
     glEndList();
 
-    glNewList(p->list+1, GL_COMPILE);
+    glNewList(p->list[opengl_context]+1, GL_COMPILE);
     gluSphere(ps_gluqobj, 1.0, slices_lo, stacks_lo); /** sphere at LOW RESOLUTION **/
     glEndList();
 
-    glNewList(p->list+2, GL_COMPILE);
+    glNewList(p->list[opengl_context]+2, GL_COMPILE);
     gluSphere(ps_gluqobj, 1.0, slices_hi, stacks_hi); /** sphere at HIGH RESOLUTION **/
     glEndList();
 
   } else {
-    if ((fill == 2) && (p->listgour == -1)) {
-      p->listgour = glGenLists(3);
+    if ((fill == 2) && (p->listgour[opengl_context] == -1)) {
+      p->listgour[opengl_context] = glGenLists(3);
       gluQuadricDrawStyle(ps_gluqobj, GLU_FILL); /* smooth shaded */
       gluQuadricNormals(ps_gluqobj, GLU_SMOOTH);
 
-      glNewList(p->listgour, GL_COMPILE);
+      glNewList(p->listgour[opengl_context], GL_COMPILE);
       gluSphere(ps_gluqobj, 1.0, slices, stacks); /** sphere at MED RESOLUTION **/
       glEndList();
 
-      glNewList(p->listgour+1, GL_COMPILE);
+      glNewList(p->listgour[opengl_context]+1, GL_COMPILE);
       gluSphere(ps_gluqobj, 1.0, slices_lo, stacks_lo); /** sphere at LOW RESOLUTION **/
       glEndList();
 
-      glNewList(p->listgour+2, GL_COMPILE);
+      glNewList(p->listgour[opengl_context]+2, GL_COMPILE);
       gluSphere(ps_gluqobj, 1.0, slices_hi, stacks_hi); /** sphere at HIGH RESOLUTION **/
       glEndList();
     } else {
-      if((!fill) && (p->listfil == -1)) {
-        p->listfil = glGenLists(3);
+      if((!fill) && (p->listfil[opengl_context] == -1)) {
+        p->listfil[opengl_context] = glGenLists(3);
         gluQuadricDrawStyle(ps_gluqobj, GLU_LINE); /* wireframe */
         gluQuadricNormals(ps_gluqobj, GLU_NONE);
 
-        glNewList(p->listfil, GL_COMPILE);
+        glNewList(p->listfil[opengl_context], GL_COMPILE);
         gluSphere(ps_gluqobj, 1.0, slices, stacks);/** sphere at MED RESOLUTION **/
         glEndList();
 
-        glNewList(p->listfil+1, GL_COMPILE);
+        glNewList(p->listfil[opengl_context]+1, GL_COMPILE);
         gluSphere(ps_gluqobj, 1.0, slices_lo, stacks_lo);/** sphere at LOW RESOLUTION **/
         glEndList();
 
-        glNewList(p->listfil+2, GL_COMPILE);
+        glNewList(p->listfil[opengl_context]+2, GL_COMPILE);
         gluSphere(ps_gluqobj, 1.0, slices_hi, stacks_hi);/** sphere at HIGH RESOLUTION **/
         glEndList();
 
       } else {
-        PrintInfo(("erreur : fill : %d list : %d listfil : %d listgour : %d\n",fill,p->list,p->listfil,p->listgour));
+        PrintInfo(("erreur : fill : %d list : %d listfil : %d listgour : %d\n",fill,
+                   p->list[opengl_context],
+                   p->listfil[opengl_context],
+                   p->listgour[opengl_context]));
       }
     }
   }
@@ -2709,7 +2715,7 @@ void g3d_init_sphereGLU(p3d_poly* p, int fill) {
 /* IN => p : pointeur sur le polyhedre a dessiner       */
 /*    => fill : type de dessin a appliquer              */
 /********************************************************/
-void g3d_init_polyquelconque(p3d_poly *p, int fill) {
+void g3d_init_polyquelconque(p3d_poly *p, int fill, int opengl_context) {
   int i,j,nvert,nface;
   double x,y,z;
   int index;
@@ -2721,22 +2727,25 @@ void g3d_init_polyquelconque(p3d_poly *p, int fill) {
   nface = p3d_get_nb_faces(p->poly);
 
   /* Generation des tables de Display List OpenGL selon le type de shading */
-  if((fill == 1) && (p->list == -1)) {
-    p->list = glGenLists(1);
-    glNewList(p->list,GL_COMPILE);
+  if((fill == 1) && (p->list[opengl_context] == -1)) {
+    p->list[opengl_context] = glGenLists(1);
+    glNewList(p->list[opengl_context],GL_COMPILE);
   }
   else {
-    if((fill == 2) && (p->listgour == -1)) {
-      p->listgour = glGenLists(1);
-      glNewList(p->listgour,GL_COMPILE);
+    if((fill == 2) && (p->listgour[opengl_context] == -1)) {
+      p->listgour[opengl_context] = glGenLists(1);
+      glNewList(p->listgour[opengl_context],GL_COMPILE);
 
     } else {
-      if((!fill) && (p->listfil == -1)) {
-        p->listfil = glGenLists(1);
-        glNewList(p->listfil,GL_COMPILE);
+      if((!fill) && (p->listfil[opengl_context] == -1)) {
+        p->listfil[opengl_context] = glGenLists(1);
+        glNewList(p->listfil[opengl_context],GL_COMPILE);
 
       } else {
-        PrintInfo(("erreur : fill : %d list : %d listfil : %d listgour : %d\n",fill,p->list,p->listfil,p->listgour));
+        PrintInfo(("erreur : fill : %d list : %d listfil : %d listgour : %d\n",fill,
+                   p->list[opengl_context],
+                   p->listfil[opengl_context],
+                   p->listgour[opengl_context]));
       }
     }
   }
@@ -2811,7 +2820,7 @@ void g3d_init_polyquelconque(p3d_poly *p, int fill) {
 /* IN => p : pointeur sur le polyhedre a dessiner              */
 /*    => fill : type de rendu a appliquer                      */
 /***************************************************************/
-void g3d_init_poly(p3d_poly *p, int fill) {
+void g3d_init_poly(p3d_poly *p, int fill, int opengl_context) {
   /*******************************************************/
   /*  Debut modif Jean-Gerard utilisation des primitives */
   /*  de la GLU                                          */
@@ -2828,22 +2837,22 @@ void g3d_init_poly(p3d_poly *p, int fill) {
   switch(p->entity_type) {
 
     case SPHERE_ENTITY: {
-        g3d_init_sphereGLU(p,fill);
+        g3d_init_sphereGLU(p,fill,opengl_context);
         break;
       }
 
     case CUBE_ENTITY: {
-        g3d_init_box(p, fill);
+        g3d_init_box(p,fill,opengl_context);
         break;
       }
 
     case BOX_ENTITY: {
-        g3d_init_box2(p, fill);
+        g3d_init_box2(p,fill,opengl_context);
         break;
       }
 
     case CYLINDER_ENTITY: {
-        g3d_init_cylindreGLU2(p,fill,1.0,1.0);
+        g3d_init_cylindreGLU2(p,fill,1.0,1.0,opengl_context);
         break;
       }
 
@@ -2855,7 +2864,7 @@ void g3d_init_poly(p3d_poly *p, int fill) {
 
     default: {
         /****** CAS D'UN POLYHEDRE NON PRIMITIVE ******/
-        g3d_init_polyquelconque(p,fill);
+        g3d_init_polyquelconque(p,fill,opengl_context);
       }
 
   }
@@ -2873,34 +2882,34 @@ void g3d_init_poly(p3d_poly *p, int fill) {
    2: listgour (gouraud)
 
 ********************************************************/
-void g3d_delete_poly(p3d_poly *p, int mode) {
+void g3d_delete_poly(p3d_poly *p, int mode, int opengl_context) {
   switch(mode) {
     case -1:
 
-      if (p->listfil != -1)
-        glDeleteLists(p->listfil,1);
-      if (p->list != -1)
-        glDeleteLists(p->list,1);
-      if (p->listgour != -1)
-        glDeleteLists(p->listgour,1);
-      p->listfil = -1;
-      p->list = -1;
-      p->listgour = -1;
+      if (p->listfil[opengl_context] != -1)
+        glDeleteLists(p->listfil[opengl_context],1);
+      if (p->list[opengl_context] != -1)
+        glDeleteLists(p->list[opengl_context],1);
+      if (p->listgour[opengl_context] != -1)
+        glDeleteLists(p->listgour[opengl_context],1);
+      p->listfil[opengl_context] = -1;
+      p->list[opengl_context] = -1;
+      p->listgour[opengl_context] = -1;
       break;
     case 0:
-      if (p->listfil != -1)
-        glDeleteLists(p->listfil,1);
-      p->listfil = -1;
+      if (p->listfil[opengl_context] != -1)
+        glDeleteLists(p->listfil[opengl_context],1);
+      p->listfil[opengl_context] = -1;
       break;
     case 1:
-      if (p->list != -1)
-        glDeleteLists(p->list,1);
-      p->list = -1;
+      if (p->list[opengl_context] != -1)
+        glDeleteLists(p->list[opengl_context],1);
+      p->list[opengl_context] = -1;
       break;
     case 2:
-      if (p->listgour != -1)
-        glDeleteLists(p->listgour,1);
-      p->listgour = -1;
+      if (p->listgour[opengl_context] != -1)
+        glDeleteLists(p->listgour[opengl_context],1);
+      p->listgour[opengl_context] = -1;
       break;
   }
 }
@@ -3664,7 +3673,10 @@ int g3d_draw_body_normals(p3d_obj *obj, double length)
         if(faces[j].plane!=NULL)
         {
           glVertex3dv(faces[j].centroid);
-          glVertex3d(faces[j].centroid[0]+length*faces[j].plane->normale[0], faces[j].centroid[1]+length*faces[j].plane->normale[1], faces[j].centroid[2]+length*faces[j].plane->normale[2]);
+
+          glVertex3d(faces[j].centroid[0]+length*faces[j].plane->normale[0],
+                     faces[j].centroid[1]+length*faces[j].plane->normale[1],
+                     faces[j].centroid[2]+length*faces[j].plane->normale[2]);
         }
      }
      glEnd();
@@ -3864,7 +3876,6 @@ void g3d_draw_ellipsoid(double a, double b, double c, int nbSegments)
   delete [] sint2;
 }
 
-
 //! @ingroup graphic
 //! Draws a wireframe ellipsoid.
 //! \param a radius along X axis
@@ -3938,7 +3949,6 @@ void g3d_draw_wire_ellipsoid(double a, double b, double c)
    return;
 }
 
-
 //! Draws the collision cloud contained in XYZ_ENV.
 //! \return 0 in case of success, 1 otherwise
 int g3d_draw_collision_cloud()
@@ -3960,7 +3970,6 @@ int g3d_draw_collision_cloud()
 
   return 0;
 }
-
 
 //! Draws a p3d_polyhedre with colors corresponding to its local curvature that must have
 //! been computed before by calling with p3d_compute_mean_curvature().

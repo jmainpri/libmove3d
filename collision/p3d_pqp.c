@@ -200,7 +200,7 @@ int pqp_get_obj_pos(p3d_obj *obj, p3d_matrix4 pose)
 //! that Move3D will display the object with its new position (this update can take some time; 
 //! do it only when it is really needed)
 //! \return PQP_OK in case of success, PQP_ERROR otherwise 
-int pqp_set_obj_pos(p3d_obj *obj, p3d_matrix4 pose, unsigned int update_graphics)
+int pqp_set_obj_pos(p3d_obj *obj, p3d_matrix4 pose, unsigned int update_graphics, int opengl_context)
 {
    #ifdef PQP_DEBUG
     if(obj==NULL)
@@ -243,12 +243,12 @@ int pqp_set_obj_pos(p3d_obj *obj, p3d_matrix4 pose, unsigned int update_graphics
           p3d_mat4Copy(T, obj->pol[i]->pos_rel_jnt);
         }
     
-        g3d_delete_poly(obj->pol[i], 0);
-        g3d_delete_poly(obj->pol[i], 1);
-        g3d_delete_poly(obj->pol[i], 2);
-        g3d_init_poly(obj->pol[i], 0);
-        g3d_init_poly(obj->pol[i], 1);
-        g3d_init_poly(obj->pol[i], 2);
+        g3d_delete_poly(obj->pol[i],0,opengl_context);
+        g3d_delete_poly(obj->pol[i],1,opengl_context);
+        g3d_delete_poly(obj->pol[i],2,opengl_context);
+        g3d_init_poly(obj->pol[i],0,opengl_context);
+        g3d_init_poly(obj->pol[i],1,opengl_context);
+        g3d_init_poly(obj->pol[i],2,opengl_context);
       }
    }
 
@@ -3023,7 +3023,7 @@ int pqp_draw_OBBs(p3d_obj *object, int level)
 //! of all the environment objects (obstacles and robot bodies) at the given level
 //! in the OBB tree hierarchy.
 //! Use this function in an OpenGL display function.
-void pqp_draw_all_OBBs(int level)
+void pqp_draw_all_OBBs(int level, int opengl_context)
 {
     int i, ir;
 //     double x1, x2, y1, y2, z1, z2;
@@ -3042,7 +3042,7 @@ void pqp_draw_all_OBBs(int level)
       //draw Move3D BB:
 //       p3d_get_BB_obj(object, &x1, &x2, &y1, &y2, &z1, &z2); 
 //       g3d_draw_a_box(x1, x2, y1, y2, z1, z2, Red, 1);
-      g3d_draw_obj_BB(object);
+      g3d_draw_obj_BB(object,opengl_context);
     }
 
     for(ir=0; ir<XYZ_ENV->nr; ir++)
@@ -3058,7 +3058,7 @@ void pqp_draw_all_OBBs(int level)
           pqp_draw_OBBs(object, level);
 
           //draw Move3D BB:
-          g3d_draw_obj_BB(object);
+          g3d_draw_obj_BB(object,opengl_context);
         }
     }
 }

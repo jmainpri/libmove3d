@@ -139,6 +139,8 @@ typedef enum {
   POLY_UNLIT_CUSTOM_COLOR_DISPLAY /*!< will be displayed in custom color with no light */
 } poly_display_mode;
 
+#define P3D_NB_OPENGL_CONTEXT 20
+
 /* Structure de polyhedre permettant d'utiliser I_COLLIDE */
 typedef struct p3d_poly
 {
@@ -160,9 +162,12 @@ typedef struct p3d_poly
   int forceBBComputation;
   int color ; 
   double *color_vect;
-  int list;       /* liste opengl du polyhedre */
-  int listfil;    /* liste opengl du polyhedre filaire*/
-  int listgour;   /* liste opengl du polyedre gouraud ? */
+
+  // OpenGL Contexts
+  int nb_context;
+  int list[P3D_NB_OPENGL_CONTEXT];       /* liste opengl du polyhedre */
+  int listfil[P3D_NB_OPENGL_CONTEXT];    /* liste opengl du polyhedre filaire*/
+  int listgour[P3D_NB_OPENGL_CONTEXT];   /* liste opengl du polyedre gouraud ? */
   int MODIF ;
 
   poly_display_mode display_mode; /*!< used to modify how the poly will be displayed (default display, red display,etc.)*/

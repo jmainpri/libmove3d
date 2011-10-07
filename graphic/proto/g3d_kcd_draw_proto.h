@@ -14,7 +14,7 @@ extern void g3d_set_kcd_draw_all_aabbs ( int val );
 extern void g3d_kcd_draw_aabb_hier ( void );
 extern void g3d_kcd_draw_all_aabbs ( void );
 extern void g3d_kcd_draw_nearest_bbs ( void );
-extern void g3d_kcd_draw_all_obbs ( void );
+extern void g3d_kcd_draw_all_obbs ( int oprngl_context );
 extern void g3d_kcd_draw_robot_obbs ( void );
 extern void g3d_kcd_draw_closest_points ( void );
 

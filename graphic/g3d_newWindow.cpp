@@ -606,8 +606,9 @@ void qtG3DWindow::newG3dWindow()
 		x1 = .5*(x1+x2); y1 = .5*(y1+y2); z1 = .5*(z1+z2);
 	}
 	snprintf(G3D_WIN->name, sizeof(G3D_WIN->name), "%s", "Move3D");
-	G3D_WIN->vs = g3d_init_viewer_state(ampl);
-	
+
+        /*m_vs =*/ G3D_WIN->vs = g3d_init_viewer_state(ampl);
+
 	/* Les parametres de la fenetre */
 	G3D_WIN->fct_draw   = NULL;
 	G3D_WIN->next       = NULL;
