@@ -13,10 +13,8 @@ find_package(PkgConfig)
 pkg_check_modules(PC_EIGEN QUIET eigen3)
 
 find_path (Eigen_INCLUDE_DIR Eigen/Cholesky
- PATHS /usr/local/include /usr/include /sw/include /opt/local/include /usr/local/motion ${CMAKE_CURRENT_SOURCE_DIR}/other_libraries/eigen/build/install/include
+ PATHS $ENV{ROBOTPKG_BASE}/include /usr/local/include /usr/include /sw/include /opt/local/include /usr/local/motion ${CMAKE_CURRENT_SOURCE_DIR}/other_libraries/eigen/build/install/include ${PC_EIGEN_INCLUDEDIR} ${PC_EIGEN_INCLUDE_DIRS}
  PATH_SUFFIXES eigen2 eigen
- HINTS
- ${PC_EIGEN_INCLUDEDIR} ${PC_EIGEN_INCLUDE_DIRS}
 )
 
 ## -----------------------------------------------------------------------------
