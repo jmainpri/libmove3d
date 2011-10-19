@@ -1535,30 +1535,8 @@ void g3d_draw_env(int opengl_context)
   }
 	
   //g3d_draw_env_custom();
-
-    // // On dessine la source de lumière sous la forme d'une sphère:
-    //   glDisable( GL_LIGHTING );
-    //   glColor3f(1.0, 1.0, 0.0);
-    //   glPushMatrix();
-    //   {
-    //    glLightdv( GL_LIGHT0, GL_POSITION, win->vs.lightPosition );
-    //    glTranslatef( win->vs.lightPosition[0], win->vs.lightPosition[1], win->vs.lightPosition[2] );
-    //    g3d_drawColorSphere(0, 0, 0, 50, Yellow, NULL);
-    //   }
-    //   glPopMatrix();
-    //   glEnable( GL_LIGHTING );
 	
-  if (G3D_MODIF_VIEW && win->vs.displayFrame) 
-	{
-    glPushMatrix();
-    glTranslatef(win->vs.x, win->vs.y, win->vs.z);
-		if(ENV.getBool(Env::drawFrame))
-		{
-			g3d_draw_frame();
-		}
-    glPopMatrix();
-  }
-	
+  // On dessine la source de lumière sous la forme d'une sphère:
   if(ENV.getBool(Env::drawLightSource))
   {
 		glDisable( GL_LIGHTING );
@@ -1572,6 +1550,15 @@ void g3d_draw_env(int opengl_context)
 		glPopMatrix();
 		glEnable( GL_LIGHTING );
 	}
+  
+  // On dessine la repert move3d
+  if (ENV.getBool(Env::drawFrame) && G3D_MODIF_VIEW && win->vs.displayFrame ) 
+	{
+    glPushMatrix();
+    glTranslatef(win->vs.x, win->vs.y, win->vs.z);
+    g3d_draw_frame();
+    glPopMatrix();
+  }
 }	
 
 //! @ingroup graphic 

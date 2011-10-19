@@ -36,6 +36,10 @@ ManipulationTestFunctions::ManipulationTestFunctions()
 	m_manipulation = NULL;
   
   m_nbOrientations = 100;
+  
+  resetObject();
+  resetPlacement();
+  resetSupport();
 }
 
 //! Constructor
@@ -49,6 +53,10 @@ ManipulationTestFunctions::ManipulationTestFunctions(std::string RobotNameContai
 	m_manipulation = NULL;
   
   m_nbOrientations = 100;
+  
+  resetObject();
+  resetPlacement();
+  resetSupport();
 }
 
 //! Destructor
@@ -82,6 +90,48 @@ void ManipulationTestFunctions::setDebugMode(bool value)
   }
 }
 
+//! Sets the object to be grasped by name
+void ManipulationTestFunctions::setObject(std::string name)
+{
+  m_OBJECT_NAME = name;
+  cout << "Set object name to : " << m_OBJECT_NAME << endl; 
+}
+
+//! Reset the object to be grasped by name
+void ManipulationTestFunctions::resetObject()
+{
+  m_OBJECT_NAME = "";
+  cout << "Reset object name" << endl;
+}
+
+//! Sets the placement
+void ManipulationTestFunctions::setPlacement(std::string name)
+{
+  m_PLACEMENT_NAME = name;
+  cout << "Set placement name to : " << m_PLACEMENT_NAME << endl; 
+}
+
+//! Reset the placement
+void ManipulationTestFunctions::resetPlacement()
+{
+  m_PLACEMENT_NAME = "";
+  cout << "Reset placement name" << endl;
+}
+
+//! Sets the support
+void ManipulationTestFunctions::setSupport(std::string name)
+{
+  m_SUPPORT_NAME = name;
+  cout << "Set support name to : " << m_SUPPORT_NAME << endl; 
+}
+
+//! Reset the support
+void ManipulationTestFunctions::resetSupport()
+{
+  m_SUPPORT_NAME = "";
+  cout << "Reset support name" << endl;
+}
+
 //! Initializes the manipulation
 //! A new manipulation planner is created 
 //! and the initial and goal configuration are created
@@ -99,7 +149,7 @@ void ManipulationTestFunctions::initManipulationGenom()
 		//m_qGoal = p3d_copy_config(m_Robot,m_Robot->ROBOT_GOTO);
     
     // Warning SCENARIO dependant part, gsJidoKukaSAHand.p3d
-    m_OBJECT_NAME = "GREY_TAPE";
+    //setObject( "GREY_TAPE" );
     
     m_objGoto.resize(6);
     
@@ -115,7 +165,6 @@ void ManipulationTestFunctions::initManipulationGenom()
     m_objGoto[4] = P3D_HUGE;
     m_objGoto[5] = P3D_HUGE;
   }
-  
 	
   return;
 }
@@ -153,7 +202,10 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
     case LINEAR :
 		{
       gpGrasp grasp;
-			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, /* m_OBJECT_NAME.c_str() */ "", "", (char*)"", grasp, trajs);
+			status = m_manipulation->armPlanTask(type, 0, m_qInit, m_qGoal, 
+                                           m_objStart, m_objGoto, 
+                                           m_OBJECT_NAME.c_str(), m_SUPPORT_NAME.c_str(), m_PLACEMENT_NAME.c_str(), 
+                                           grasp, trajs);
 			
 			if(status == MANIPULATION_TASK_OK )
 			{
@@ -171,7 +223,10 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 			
 		case MULTI_LOCALPATH :{
       gpGrasp grasp;
-			status = m_manipulation->armPlanTask(type,0,m_qInit,m_qGoal, m_objStart, m_objGoto, /*m_OBJECT_NAME.c_str()*/ "", "", (char*)"", grasp, confs, smTrajs);
+			status = m_manipulation->armPlanTask(type, 0, m_qInit, m_qGoal, 
+                                           m_objStart, m_objGoto, 
+                                           m_OBJECT_NAME.c_str(), m_SUPPORT_NAME.c_str(), m_PLACEMENT_NAME.c_str(), 
+                                           grasp, confs, smTrajs);
 			break;
     }
 			
@@ -202,9 +257,9 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
 //! returns a successRate between 0 and 1
 bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations(bool rotate_only_around_z,double& successRate)
 {
-  MANIPULATION_TASK_MESSAGE status;
+  //MANIPULATION_TASK_MESSAGE status;
   
-  bool result =false;
+  //bool result =false;
   int n;
   p3d_rob *object;
   double x, y, z, rx, ry, rz;
@@ -220,7 +275,7 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
   m_manipulation->setDebugMode(false);
   
   n= 0;
-  for(int i=1; i<=m_nbOrientations; ++i)
+  for(int i=1; i<=int(m_nbOrientations); ++i)
   {
     printf("****************test %d/%d************************\n",i,m_nbOrientations);
     p3d_set_and_update_this_robot_conf(m_manipulation->robot(), m_qInit);
@@ -391,7 +446,7 @@ void ManipulationTestFunctions::drawEvalutedWorkspace()
 bool ManipulationTestFunctions::evaluateWorkspace()
 {
   p3d_rob* object= (p3d_rob*) p3d_get_robot_by_name((char*) m_OBJECT_NAME.c_str());
-  p3d_rob* plate= (p3d_rob*) p3d_get_robot_by_name((char*) "PLATE");
+  //p3d_rob* plate= (p3d_rob*) p3d_get_robot_by_name((char*) "PLATE");
   if(object==NULL)
   { 
     printf("%s: %d: there is no robot named \"%s\".\n",__FILE__,__LINE__,m_OBJECT_NAME.c_str());
@@ -531,6 +586,8 @@ bool ManipulationTestFunctions::computeTrajectories()
       }
     }
   }
+  
+  return true;
 }
 
 //! Main function that 

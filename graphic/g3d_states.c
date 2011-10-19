@@ -741,57 +741,85 @@ void g3d_draw_frame(void) {
   a1 = .1 * a;
   a9 = .9 * a;
 
-  glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT | GL_LINE_BIT);
-
+  glPushAttrib(GL_LIGHTING_BIT);
   glDisable(GL_LIGHTING);
   glDisable(GL_LIGHT0);
-  glColor3d(0.,0.,0.);
+
+  glColor3f(0.,0.,0.);
   glLineWidth(2.0);
-  glBegin(GL_LINES);
+  
   if(!black)
-      glColor3d(0.,0.,1.);
+    glColor3f(0.,0.,1.);
+  
+  glBegin(GL_LINES);
   glVertex3d(.0, .0, .0);    
   glVertex3d(.0, .0, a);
-  if(!black)  
-      glColor3d(1.,0.,0.);
+  glEnd();
+  
+  glPopAttrib();
+  glPushAttrib(GL_LIGHTING_BIT);
+  
+  if(!black) 
+    glColor3f(1.,0.,0.);
+  
+  glBegin(GL_LINES);
   glVertex3d(.0, .0, .0);
   glVertex3d(a, .0, .0);
+  glEnd();
+  
+  glPopAttrib();
+  glPushAttrib(GL_LIGHTING_BIT);
+  
   if(!black)    
-    glColor3d(0.,1.,0.);
+    glColor3f(0.,1.,0.);
+  
+  glBegin(GL_LINES);
   glVertex3d(.0, .0, .0);
   glVertex3d(.0, a, .0);
   glEnd();
+  
+  glPopAttrib();
+  glPushAttrib(GL_LIGHTING_BIT);
+  
   glLineWidth(1.0);
-
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
 
   if(!black)
       glColor3d(0.,0.,1.);
-  glDisable(GL_CULL_FACE);
+//  glDisable(GL_CULL_FACE);
   glBegin(GL_POLYGON);
   glVertex3d(.0, .0, a);
   glVertex3d(-a1, .0, a9);
   glVertex3d(a1, .0, a9);
   glEnd(); 
   
+  glPopAttrib();
+  glPushAttrib(GL_LIGHTING_BIT);
+  
   if(!black)
       glColor3d(1.,0.,0.);
+  
   glBegin(GL_POLYGON);
   glVertex3d(a, .0, .0);
   glVertex3d(a9, .0, -a1);
   glVertex3d(a9, .0, a1);
   glEnd();
+  
+  glPopAttrib();
+  glPushAttrib(GL_LIGHTING_BIT);
 
   if(!black)
       glColor3d(0.,1.,0.);
+  
   glBegin(GL_POLYGON);
   glVertex3d(.0, a, .0);
   glVertex3d(.0, a9, -a1);
   glVertex3d(.0, a9, a1);
   glEnd();
+  
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
 
- glPopAttrib();
+  glPopAttrib();
 }
 
 //! @ingroup graphic
@@ -810,7 +838,6 @@ int g3d_set_camera_parameters_from_frame(p3d_matrix4 frame, g3d_states &vs)
   position[0]= frame[0][3];
   position[1]= frame[1][3];
   position[2]= frame[2][3];
-
 
   focus[0]= position[0] + d*frame[0][0];
   focus[1]= position[1] + d*frame[1][0];

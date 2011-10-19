@@ -26,15 +26,21 @@ public:
 	virtual ~ManipulationTestFunctions();
 	
 	bool runTest(int i);
-  
-  //! Sets the planner in debug mode
+
   void setDebugMode(bool value);
   
-  //! Sets the initial configuration
   void setInitConfiguration(configPt q);
-  
-  //! Sets the goal configuration
   void setGoalConfiguration(configPt q);
+  
+
+  void setObject(std::string name);
+  void resetObject();
+  
+  void setPlacement(std::string name);
+  void resetPlacement();
+  
+  void setSupport(std::string name);
+  void resetSupport();
   
   //! Creates a manipulation planner
   //! if it doesnot exists, if it does eares it
@@ -76,6 +82,8 @@ private:
 	configPt m_qGoal;
 	
 	std::string m_OBJECT_NAME;
+  std::string m_SUPPORT_NAME;
+  std::string m_PLACEMENT_NAME;
   
   std::vector<double> m_objStart, m_objGoto;
   

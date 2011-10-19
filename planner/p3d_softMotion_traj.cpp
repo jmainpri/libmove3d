@@ -24,8 +24,7 @@ static configPt TRAJPTP_CONFIG[200];
 #define SAMPLING_TIME 0.01
 using namespace std;
 
-//! returns the vector of the end 
-//! of the Constant Velocity Segments
+//! returns the vector of the end of the Constant Velocity Segments
 //! The end of the CVS are stored as parameters
 //! first :   time for the smoothed softmotion trajectory
 //! second :  geometric param along traj (distance)
