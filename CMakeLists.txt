@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.6.2)
 
-PROJECT (BioMove3D C CXX)
+PROJECT (libmove3d C CXX)
 
 
 #--------- Set the project version
@@ -501,9 +501,9 @@ MACRO(BM3D_QT_GENERATE_UI_HEADERS)
   ENDFOREACH(file ${ARGV})
 ENDMACRO(BM3D_QT_GENERATE_UI_HEADERS)
 
-MESSAGE(BioMove3D_SOURCE_DIR : ${BioMove3D_SOURCE_DIR})
+MESSAGE(libmove3d_SOURCE_DIR : ${libmove3d_SOURCE_DIR})
 FOREACH(srcDir ${BM3D_SOURCE_DIRECTORIES})
-  INCLUDE(${BioMove3D_SOURCE_DIR}/${srcDir}/SourceList.cmake)
+  INCLUDE(${libmove3d_SOURCE_DIR}/${srcDir}/SourceList.cmake)
 ENDFOREACH(srcDir)
 
 #MESSAGE("bm3dsrc : ${BM3D_src}") #Uncomment to print the included file by Cmake
@@ -511,8 +511,8 @@ ENDFOREACH(srcDir)
 # -------------------------------------------------------------
 # --- Directories to include ----------------------------------
 # -------------------------------------------------------------
-BM3D_INC_DIR_PROCESS(${BioMove3D_SOURCE_DIR}/include)
-BM3D_INC_DIR_PROCESS(${BioMove3D_SOURCE_DIR})
+BM3D_INC_DIR_PROCESS(${libmove3d_SOURCE_DIR}/include)
+BM3D_INC_DIR_PROCESS(${libmove3d_SOURCE_DIR})
 IF(QT_LIBRARY)
   # necessary for the UI headers
   BM3D_INC_DIR_PROCESS(${CMAKE_CURRENT_BINARY_DIR})
@@ -553,8 +553,8 @@ IF(NOT CMAKE_BUILD_TYPE)
       FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
-SET(EXECUTABLE_OUTPUT_PATH "${BioMove3D_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin/$ENV{HOSTTYPE}")
-SET(LIBRARY_OUTPUT_PATH "${BioMove3D_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib/$ENV{HOSTTYPE}")
+SET(EXECUTABLE_OUTPUT_PATH "${libmove3d_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin/$ENV{HOSTTYPE}")
+SET(LIBRARY_OUTPUT_PATH "${libmove3d_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib/$ENV{HOSTTYPE}")
 
 #Default Flags
 ADD_DEFINITIONS(-DKCD_MOVE3D -DPRINT_ERROR -DPRINT_INFO)
@@ -563,8 +563,8 @@ ADD_DEFINITIONS(-DKCD_MOVE3D -DPRINT_ERROR -DPRINT_INFO)
 # --- Compilation and Installation ----------------------------
 # -------------------------------------------------------------
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-#  SET(CMAKE_INSTALL_PREFIX "${BioMove3D_BINARY_DIR}/install" CACHE PATH "BioMove3D install prefix" FORCE)
-   SET(CMAKE_INSTALL_PREFIX "$ENV{ROBOTPKG_BASE}" CACHE PATH "BioMove3D install prefix" FORCE)
+#  SET(CMAKE_INSTALL_PREFIX "${libmove3d_BINARY_DIR}/install" CACHE PATH "libmove3d install prefix" FORCE)
+   SET(CMAKE_INSTALL_PREFIX "$ENV{ROBOTPKG_BASE}" CACHE PATH "libmove3d install prefix" FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 		
@@ -576,7 +576,7 @@ INSTALL(TARGETS move3d
   LIBRARY DESTINATION lib
   CONFIGURATIONS ${CMAKE_BUILD_TYPE})
 
-INSTALL(DIRECTORY ${BM3D_SOURCE_DIRECTORIES} ${BioMove3D_SOURCE_DIR}/include 
+INSTALL(DIRECTORY ${BM3D_SOURCE_DIRECTORIES} ${libmove3d_SOURCE_DIR}/include 
   DESTINATION include/libmove3d
   FILES_MATCHING REGEX "\\.[h|hpp]")
 
@@ -601,7 +601,9 @@ ENABLE_TESTING()
 MESSAGE("CMAKE_BINARY_DIR = " ${CMAKE_BINARY_DIR})
 
 ADD_TEST(NAME ArmFreeTest
-        COMMAND move3d 	-f ../../BioMove3DDemos-JidoSAHand/GS/gsJidoKukaSAHandSM.p3d -sc ../../BioMove3DDemos-JidoSAHand/GS/SCENARIO/ManipulationTestSAHand.sce -test 1)
+        COMMAND move3d 	-f ../../libmove3dDemos-JidoSAHand/GS/gsJidoKukaSAHandSM.p3d -sc ../../libmove3dDemos-JidoSAHand/GS/SCENARIO/ManipulationTestSAHand.sce -test 1)
 	
 ADD_TEST(NAME ArmGotoTest
-        COMMAND move3d 	-f ../../BioMove3DDemos-JidoSAHand/GS/gsJidoKukaSAHandSM.p3d -sc ../../BioMove3DDemos-JidoSAHand/GS/SCENARIO/ManipulationTestSAHand.sce -test 2)
+        COMMAND move3d 	-f
+        ../../libmove3dDemos-JidoSAHand/GS/gsJidoKukaSAHandSM.p3d -sc
+        ../../libmove3dDemos-JidoSAHand/GS/SCENARIO/ManipulationTestSAHand.sce -test 2)

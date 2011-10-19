@@ -15,5 +15,5 @@ rs_dist.c
 IF(MULTILOCALPATH)
 BM3D_SRC_SUBDIR_PROCESS(p3d_softMotion.c p3d_multiLocalPath.c)
 ENDIF(MULTILOCALPATH)
-include(${BioMove3D_SOURCE_DIR}/${BM3D_MODULE_NAME}/flat/SourceList.cmake)
+include(${libmove3d_SOURCE_DIR}/${BM3D_MODULE_NAME}/flat/SourceList.cmake)
 ENDIF(P3D_LOCALPATH)
