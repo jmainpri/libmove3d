@@ -6,7 +6,7 @@
 
 
 extern void g3d_set_draw_coll ( int n );
-extern void g3d_reinit_graphics ( void );
+extern void g3d_reinit_graphics ( int opengl_context );
 extern void g3d_draw ( int opengl_context );
 extern void g3d_draw_obstacles ( G3D_Window* win , int opengl_context);
 extern void g3d_draw_robots ( G3D_Window *win );

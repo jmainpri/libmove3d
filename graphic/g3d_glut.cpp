@@ -181,7 +181,7 @@ void g3d_glut_paintGL()
 GlutWindowDisplay::GlutWindowDisplay(int argc, char *argv[])
 {
   int argc2 = 0;
-  char* argv2 = "";
+  char* argv2 = { (char*)"" };
 	
   m_swap = true;
 

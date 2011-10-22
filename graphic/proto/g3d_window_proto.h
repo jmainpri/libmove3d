@@ -30,7 +30,7 @@ extern void g3d_resize_allwin_active ( float w, float h, float size );
 //extern void g3d_save_win_camera ( G3D_Window *win );
 extern void g3d_set_win_fct_mobcam ( G3D_Window *win, pp3d_matrix4 (*fct)(void) );
 extern void g3d_set_mobile_camera_activate ( G3D_Window *win, int mode );
-extern void g3d_set_win_drawer ( G3D_Window *win, void (*fct)(void) );
+extern void g3d_set_win_drawer ( G3D_Window *win, void (*fct)(int) );
 extern void g3d_init_allwin_booleans ( void );
 extern void g3d_beg_poly ( void );
 extern void g3d_end_poly ( void );

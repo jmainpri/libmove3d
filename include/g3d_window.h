@@ -8,7 +8,7 @@ struct g3d_win {
   void       *form;
   void       *canvas;
   void       *mcamera_but;
-  void       (*fct_draw)(void);
+  void       (*fct_draw)(int);
   pp3d_matrix4 cam_frame;
   pp3d_matrix4 (*fct_mobcam)(void);
 

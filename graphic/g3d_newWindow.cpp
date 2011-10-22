@@ -577,7 +577,7 @@ g3d_set_win_fct_mobcam(G3D_Window *win, pp3d_matrix4 (*fct)(void)) {
 
 
 void
-g3d_set_win_drawer(G3D_Window *win, void (*fct)(void)) {
+g3d_set_win_drawer(G3D_Window *win, void (*fct)(int)) {
 	win->fct_draw = fct;
 }
 
