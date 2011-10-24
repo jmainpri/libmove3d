@@ -1,0 +1,53 @@
+/****************************************************************************/
+/*!
+ *  \file files.dox
+ *
+ *       \brief Files
+ *
+ *       Documentation of the structure based on the collision context idea.
+ */
+
+
+/****************************************************************************
+ *  Documentation
+ */
+/*! \page Features 
+
+\section core Core Features :
+- \link device.h Robot Kinematic \endlink
+- \link cntrt.h Constraints \endlink
+- \link p3d_BB.c Bounding boxes \endlink
+
+\section joints Joints :
+- \link p3d_joints.c Main API \endlink
+- \link p3d_jnt_base.c Base Joints \endlink
+- \link p3d_jnt_fixed.c Fixed Joints \endlink
+- \link p3d_jnt_freeflyer.c Free Flyer Joints \endlink
+- \link p3d_jnt_plan.c Plan Joints \endlink
+- \link p3d_jnt_rotate.c Rotate Joints \endlink
+- \link p3d_jnt_translate.c Translate Joints \endlink
+- \link p3d_rw_jnt.c Parsing Joints \endlink
+- \link group.h Group of Localpaths \endlink
+
+\section coll_check Collision Checking :
+- \link collision_context.h Collison Context \endlink
+- \link p3d_col_env.c Collision Environment \endlink
+- \link p3d_col_traj.c Collision Trajectory \endlink
+- \link kcd_api.c KCD API \endlink
+- \link kcd_api_report.c KCD Report \endlink
+- \link kcd_dist.c KDC Dist \endlink
+- \link kcd_obb_api_gjk.c KCD API GJK \endlink
+
+\section utlis Utils :
+- \link bio.h  Bio\endlink
+- \link dyna_list.c Dynamic List Functions \endlink
+- \link dyna_list.h Dynamic List Header \endlink
+- \link elastic.h Elastic Strips head \endlink
+- \link p3d_elastic.c Elastic strips functions \endlink
+- \link p3d_halton.c Halton Sequence \endlink
+- \link p3d_jacobian.c Jacobians \endlink
+- \link p3d_potential.c Gradient Descent \endlink
+- \link string_util.c String Utils \endlink
+- \link urdf_p3d_converter.cpp URDF converter \endlink
+
+ */

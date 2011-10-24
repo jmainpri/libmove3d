@@ -13,7 +13,7 @@
 
 /*! \mainpage
 
-libmove3d is a library for geometrical reasoning and motion planning (\link overview OVERVIEW\endlink). It itegrates OpenGl primitives to display a 3D scene of the internal state and a file format called p3d to load the scene. The configuration space representation is the core feature of the library, the idea inside libmove3d is to divide the world between movable articulated objects (p3d_rob) and static objects (p3d_obj). The software provides collision checking, localpath and trajectory strucutres and a large variaty of kinematic constraints.
+libmove3d is a library for geometrical reasoning and motion planning (\link overview OVERVIEW\endlink). It itegrates OpenGl primitives to display a 3D scene of the internal state and a file format called p3d to load the scene. The configuration space representation is the core feature of the library, the idea inside libmove3d is to divide the world between movable articulated objects (p3d_rob) and static objects (p3d_obj) (\link features FEATURES\endlink). The software provides collision checking, localpath and trajectory strucutres and a large variaty of kinematic constraints.
 
 \image html piano.png "The piano mover's problem instantiated in libmove3d using closed-chain kinematic constraints"
 
