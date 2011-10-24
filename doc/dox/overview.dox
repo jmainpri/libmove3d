@@ -1,0 +1,38 @@
+/****************************************************************************/
+/*!
+ *  \file overview.dox
+ *
+ *       \brief Documentation
+ *
+ *       Documentation of the structure based on the collision context idea.
+ */
+
+
+/****************************************************************************
+ *  Documentation
+ */
+/*! \page overview Overview
+
+'''Motion planning''' (a.k.a., the "navigation problem", the "piano mover's problem") is a term used in robotics for the process of detailing a task into atomic motions.
+
+For example, consider navigating a mobile robot inside a building to a distant waypoint. It should execute this task while avoiding walls and not falling down stairs. A motion planning algorithm would take a description of these tasks as input, and produce the speed and turning commands sent to the robot's wheels. Motion planning algorithms might address robots with a larger number of joints (e.g., industrial manipulators), more complex tasks (e.g. manipulation of objects), different constraints (e.g., a car that can only drive forward), and uncertainty (e.g. imperfect models of the environment or robot).
+
+this definition is taken out of the <a href="http://en.wikipedia.org/wiki/Motion_planning">motion planning</a> wikipedia page.
+
+Motion planning methods developed inside BioMove3D rely on different aproachs such as random sampling of the configuration space, inverse kinematics or grids. Most of the technology has been transfered to <a href="http://www.kineocam.com">Kineo</a> which sells and continues to add features to thier software and distributes it closed source for labs and as a plugin for the manufacturing industry.
+
+The main workflow with BioMove3D is as follows, a scene description containing the robots structures and the environement description containing static obstacle is first loaded into the program  from a p3d file. Then a scenario has to be selected (initial configuration and final configurations  for robots). p3d is also the name for the core of BioMove3D. PRM and RRT which are the tow main variants of probabilistic motion planners and have been shown very efficient to solve high DoFs problems are available in the planner module. They benefit the fast collision checking methods for single configuration insied KCD, PQP or the other collision checkers that are available. The localpath module specifies linear interpolation in configuration space and other local method between any tow configuration such as Reeds and Shepp. The kinematic constraint module permits planning with closed chains and inverse kinematics. Finaly scenarios, graphs and trajectories can be saved and loaded in a text format.
+
+\image html GUI_XForms.jpg "The old XForms based UI"
+
+The UI and 3D viewer relie on <a href="http://en.wikipedia.org/wiki/XForms_(toolkit)">XForms</a> and <a href="http://en.wikipedia.org/wiki/OpenGL">OpenGL</a>
+
+Recently new modules have been added :
+
+ - 'HAMP (human-aware motion planning)'
+ - 'Soft Motion'
+ - 'Grasp Planner'
+ - 'Manipulation Planning'
+
+ */
+
