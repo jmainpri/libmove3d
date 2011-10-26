@@ -254,6 +254,20 @@ void fixAllJointsWithoutArm(p3d_rob* robot, int armId){
 }
 
 /**
+ * @brief Do not shoot all joints except those of the base 
+ * @param robot The robot
+ */
+void fixAllJointsExceptBase(p3d_rob * robot)
+{
+  for (int i = 0; i < robot->njoints + 1; i++) {
+    p3d_jnt * joint = robot->joints[i];
+    if (joint->type != P3D_BASE && joint->type != P3D_FIXED && joint != robot->baseJnt) {
+      fixJoint(robot, joint, joint->jnt_mat);
+    }
+  }
+}
+
+/**
  * @brief Set the robot at the given configuration and do not shoot all joints except those of the base and the object declared in the initialisation of the program (here in the p3d file). The fixed joints will not be planned.
  * @param robot The robot
  * @param conf The configuration to fix the joints

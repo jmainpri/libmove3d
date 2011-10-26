@@ -48,6 +48,7 @@ extern double** saveJointSamplingState(p3d_rob* robot);
 extern void restoreJointSamplingState(p3d_rob* robot, double** jointSamplingState);
 extern void destroyJointSamplingState(p3d_rob* robot, double** jointSamplingState);
 extern void fixAllJointsWithoutArm(p3d_rob* robot, int armId);
+extern void fixAllJointsExceptBase(p3d_rob * robot);
 extern void fixAllJointsExceptBaseAndObject(p3d_rob * robot, configPt conf);
 extern void unFixAllJointsExceptBaseAndObject(p3d_rob * robot);
 extern void fixJoint(p3d_rob * robot, p3d_jnt * joint, p3d_matrix4 initPos);
