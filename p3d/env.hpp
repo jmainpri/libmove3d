@@ -26,6 +26,12 @@ public:
 	
 #ifdef QT_LIBRARY
 	Q_OBJECT;
+  Q_ENUMS(boolParameter);
+  Q_ENUMS(intParameter);
+  Q_ENUMS(doubleParameter);
+  Q_ENUMS(stringParameter);
+  Q_ENUMS(vectorParameter);
+  Q_ENUMS(expansionMethod);
 #endif
 	
 public:
@@ -168,6 +174,7 @@ public:
 		// - Set the temperature in the MONTE_CARLO_SEARCH
 		PRMType,
 		nbOfSeeds,
+    jntToDraw,
 		maxCostOptimFailures,
 		nbQRand,
 		nbCostTransFailed,

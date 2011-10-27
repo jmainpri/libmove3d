@@ -120,6 +120,7 @@ Env::Env()
 	
 	mIntMap.insert(intMap_t(Env::PRMType, new intContainer(0)));
 	mIntMap.insert(intMap_t(Env::nbOfSeeds, new intContainer(3)));
+  mIntMap.insert(intMap_t(Env::jntToDraw, new intContainer(1)));
 	mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));
 	mIntMap.insert(intMap_t(Env::maxNode, new intContainer(10000)));
 	mIntMap.insert(intMap_t(Env::maxConnect, new intContainer(100)));
@@ -154,7 +155,7 @@ Env::Env()
 	
 	mDoubleMap.insert(doubleMap_t(Env::dmax, new doubleContainer(30.)));
 	mDoubleMap.insert(doubleMap_t(Env::FPS, new doubleContainer(30.)));
-	mDoubleMap.insert(doubleMap_t(Env::extensionStep, new doubleContainer(3.0)));
+	mDoubleMap.insert(doubleMap_t(Env::extensionStep, new doubleContainer(6.0)));
 	mDoubleMap.insert(doubleMap_t(Env::manhatRatio, new doubleContainer(1.0)));
 	mDoubleMap.insert(doubleMap_t(Env::dist, new doubleContainer(0.0)));
 	mDoubleMap.insert(doubleMap_t(Env::temperatureStart, new doubleContainer(0.000001)));
