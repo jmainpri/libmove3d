@@ -1760,6 +1760,45 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
   return armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, placementName, grasp, trajs);
 }
 
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, configPt qGoal, std::vector <p3d_traj*> &trajs){
+
+    MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+    p3d_traj* traj = NULL;
+
+    bool fixAllArm = true;
+
+    if (!_robot) {
+      printf("%s: %d: ManipulationPlanner::planNavigation(): No robot initialized.\n", __FILE__, __LINE__);
+      return MANIPULATION_TASK_NOT_INITIALIZED;
+    }
+    configPt qi = p3d_copy_config(_robot, qStart), qf = p3d_copy_config(_robot, qGoal);
+    p3d_rob* cur_robot = (p3d_rob*)p3d_get_desc_curid(P3D_ROBOT);
+
+
+    p3d_set_and_update_robot_conf(qStart);
+    for (int i = 2; i < _robot->njoints + 1; i++) {
+      p3d_jnt * joint = _robot->joints[i];
+
+      fixJoint(_robot, joint, joint->jnt_mat);
+      p3d_update_this_robot_pos(_robot);
+    }
+
+    //Clear the graph
+    cleanRoadmap();
+
+
+    for (uint i = 0; i < (*_robot->armManipulationData).size(); i++) {
+        deactivateCcCntrts(_robot, i);
+    }
+
+    if((traj = computeTrajBetweenTwoConfigs(qStart, qGoal, &status))){
+      trajs.push_back(traj);
+    }
+
+  return status;
+}
+
+
 //! Replans a path form the variable _robotPath
 #ifdef MULTILOCALPATH
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName, const char* supportName, const char* placementName, gpGrasp& grasp, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs) {
@@ -1802,5 +1841,43 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
   gpGrasp grasp;
   return armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, placementName, grasp, confs, smTrajs);
 }
+
+
+
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, configPt qGoal, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs){
+    std::vector <p3d_traj*> trajs;
+    p3d_traj* traj = NULL;
+    MANIPULATION_TASK_MESSAGE returnMessage;
+
+    if (!_robot) {
+        printf("%s: %d: ManipulationPlanner::armPlanTask(): No robot initialized.\n", __FILE__, __LINE__);
+        return MANIPULATION_TASK_NOT_INITIALIZED;
+    }
+
+    p3d_multiLocalPath_disable_all_groupToPlan(_robot, FALSE);
+    p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1, FALSE);
+
+    if ((returnMessage = planNavigation(qStart, qGoal, trajs)) == MANIPULATION_TASK_OK) {
+      //concatene
+      if (concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK) {
+        _robotPath = _robot->tcur; // Stores the robot path
+        smTrajs.clear();
+
+        /* COMPUTE THE SOFTMOTION TRAJECTORY */
+          MANPIPULATION_TRAJECTORY_CONF_STR conf;
+          SM_TRAJ smTraj;
+          computeSoftMotion(traj, conf, smTraj);
+          confs.push_back(conf);
+          smTrajs.push_back(smTraj);
+
+          std::cout << " SoftMotion trajectory OK" << endl;
+
+      } else {
+        returnMessage = MANIPULATION_TASK_NO_TRAJ_FOUND;
+      }
+    }
+    return returnMessage;
+}
+
 
 #endif

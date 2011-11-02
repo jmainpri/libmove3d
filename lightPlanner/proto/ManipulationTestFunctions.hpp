@@ -58,7 +58,7 @@ public:
   bool readWorkspaceFromFile(std::string fileName);
   
   //! Generic function to test the genom requests
-	bool manipTest(MANIPULATION_TASK_TYPE_STR type);
+  bool manipTest(MANIPULATION_TASK_TYPE_STR type);
   
   //! Returns the manipulation planner
   ManipulationPlanner* getManipPlanner() { return m_manipulation; }

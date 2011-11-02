@@ -817,7 +817,7 @@ int p3d_multilocapath_print_group_info(p3d_rob* robotPt) {
    int i=0;
    int id;
    printf("**********************************\n");
-   printf(" multilocalpath info\n");
+   std::cout << " multilocalpath info\n" << std::endl;
    for( i=0; i<robotPt->mlp->nblpGp; i++) {
 
      id = p3d_multiLocalPath_get_group_by_name(robotPt, robotPt->mlp->mlpJoints[i]->gpName);
