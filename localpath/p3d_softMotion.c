@@ -2846,13 +2846,26 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
   j=0;
   smTraj.qStart.clear();
   smTraj.qStart.resize(nb_armDof);
+  smTraj.jmax.clear();
+  smTraj.jmax.resize(nb_armDof);
+  smTraj.amax.clear();
+  smTraj.amax.resize(nb_armDof);
+  smTraj.vmax.clear();
+  smTraj.vmax.resize(nb_armDof);
   q = traj->courbePt->config_at_param(robotPt, traj->courbePt, 0.0);
   for(int v=0; v<nbGpJnt; v++) {
    if(dofsToExport[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof] == 1){
    nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_equiv_nbr;
     for(int k=0; k<nb_dof; k++) {
+
      smTraj.traj[j][0].IC.x = q[robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->index_dof + k];
+
      smTraj.qStart[j] = smTraj.traj[j][0].IC.x;
+
+     smTraj.jmax[j] = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_data[k].jerk_max;
+     smTraj.amax[j] = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_data[k].acceleration_max;
+     smTraj.vmax[j] = robotPt->joints[robotPt->mlp->mlpJoints[upBodySm_mlpID]->joints[v]]->dof_data[k].velocity_max;
+
      j++;
     }
    }

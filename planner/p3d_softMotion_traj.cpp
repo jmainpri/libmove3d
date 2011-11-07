@@ -678,8 +678,11 @@ if(approximate == true) {
     }
    }
 
+   std::vector<double> jmax = smTraj.jmax;
+   std::vector<double> amax = smTraj.amax;
+   std::vector<double> vmax = smTraj.vmax;
 
-    smTraj.clear();
+   smTraj.clear();
     /* function approximate :
      *  PARAMETER:
      * std::vector< std::vector<SM_COND> > discTraj,
@@ -689,7 +692,10 @@ if(approximate == true) {
      * int trajId
      * RETURN SM_TRAJ
      */
-    smTraj.approximate(discTraj, SAMPLING_TIME, 0.01, 0.1, 36, true);
+   smTraj.approximate(discTraj, SAMPLING_TIME, 0.01, 0.1, 36, true);
+   smTraj.jmax = jmax;
+   smTraj.amax = amax; 
+   smTraj.vmax = vmax;  
    if(ENV.getBool (Env::writeSoftMotionFiles)) {
     smTraj.save((char*)"move3dSoftMotion_Seg.traj");
    }
