@@ -337,10 +337,6 @@ ENDIF(USE_SHADERS)
 #-------------- CXX_PLANNER -------------------------------
 #----------------------------------------------------------
 IF(QT_GL)
-  FIND_PACKAGE(EIGEN REQUIRED)
-  INCLUDE_directories(${Eigen_INCLUDE_DIR})
-  SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${Eigen_INCLUDE_DIR})
-  
 # boost is used e.g. for managing the cost functions (T-RRT).
   FIND_PACKAGE(Boost REQUIRED)
   INCLUDE_directories(${BOOST_INCLUDE_DIR})
