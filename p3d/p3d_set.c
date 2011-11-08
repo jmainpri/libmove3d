@@ -457,9 +457,9 @@ void p3d_pushRobotTransitionsDegToRad(configPt q_deg, int position)
  * Add a new configuration to the current robot after config or 
  * at the begining if config == NULL
  */
-int p3d_set_new_robot_config(const char * name, const configPt q, int* ikSol, config_namePt config)
+int p3d_set_new_robot_config(p3d_rob* r, const char * name, const configPt q, int* ikSol, config_namePt config)
 {
-  pp3d_rob r = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
+//  pp3d_rob r = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
   int i, num;  
   config_namePt * new_conf;
   num = -1;
@@ -553,7 +553,7 @@ void p3d_set_robot_config_deg_to_rad(const char * name, configPt q_deg)
   configPt q=NULL;
   
   q = p3d_copy_config_deg_to_rad(r, q_deg);
-  p3d_set_new_robot_config(name, q, r->ikSol, r->confcur);
+  p3d_set_new_robot_config(r, name, q, r->ikSol, r->confcur);
   p3d_destroy_config(r, q);
 }
 

@@ -128,7 +128,7 @@ int ManipulationUtils::copyConfigToFORM(p3d_rob* robot, configPt q) {
   char name[128];
   
   sprintf(name, "configTraj_%d", robot->nconf);
-  p3d_set_new_robot_config(name, q, robot->ikSol, robot->confcur);
+  p3d_set_new_robot_config(robot, name, q, robot->ikSol, robot->confcur);
   robot->confcur = robot->conf[0];
 #ifdef WITH_XFORMS
   FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));

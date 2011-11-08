@@ -20,7 +20,7 @@ extern void p3d_set_ROBOT_GOTO ( configPt q );
 extern void p3d_set_ROBOT_START ( configPt q );
 extern void p3d_set_ROBOT_GOTO_deg_to_rad ( configPt q_deg );
 extern void p3d_set_ROBOT_START_deg_to_rad ( configPt q_deg );
-extern int p3d_set_new_robot_config ( const char * name, const configPt q, int * ikSol, config_namePt config );
+extern int p3d_set_new_robot_config ( p3d_rob* r, const char * name, const configPt q, int * ikSol, config_namePt config );
 extern void p3d_set_robot_config_deg_to_rad ( const char * name, configPt q_deg );
 extern void p3d_set_robot_steering_method ( const char * name );
 extern void p3d_set_robot_singularty(p3d_rob *robotPt);
