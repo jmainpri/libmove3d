@@ -763,11 +763,11 @@ if(approximate == true) {
   m_lastLinTraj = trajPt;
 
 
-      if (fct_draw){(*fct_draw)();}
- g3d_win *win= NULL;
- win= g3d_get_cur_win();
- win->fct_draw2 = &(draw_trajectory_ptp);
- g3d_draw_allwin_active();
+//      if (fct_draw){(*fct_draw)();}
+// g3d_win *win= NULL;
+// win= g3d_get_cur_win();
+// win->fct_draw2 = &(draw_trajectory_ptp);
+// g3d_draw_allwin_active();
   return FALSE;
 }
 

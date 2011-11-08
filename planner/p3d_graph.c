@@ -1024,7 +1024,7 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
   }
 
   p3d_set_robot_config(robotPt, Ns->q);
-  p3d_update_this_robot_pos_without_cntrt_and_obj(robotPt);
+//  p3d_update_this_robot_pos_without_cntrt_and_obj(robotPt);
 
 
   /* Initialize some data in the graph for the A* graph search */

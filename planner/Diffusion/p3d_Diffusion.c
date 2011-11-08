@@ -472,7 +472,7 @@ or ComponantsPt NULL\n"));
                                                        GraphPt->last_node->N,
                                                        Comp2Pt);
         }
-        if (DrawFunction) (*DrawFunction)();
+//        if (DrawFunction) (*DrawFunction)();
       }
       else {
         NTryCreateNode += 1;
