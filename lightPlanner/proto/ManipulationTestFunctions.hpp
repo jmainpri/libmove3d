@@ -42,6 +42,12 @@ public:
   void setSupport(std::string name);
   void resetSupport();
   
+  void addTraj(std::string name, p3d_traj* traj);
+  void addConf(std::string name, configPt q);
+  
+  std::vector< std::pair<std::string, p3d_traj*> > getTrajVector();
+  std::vector< std::pair<std::string, configPt> > getConfVector();
+  
   //! Creates a manipulation planner
   //! if it doesnot exists, if it does eares it
   void initManipulationGenom();
@@ -62,6 +68,7 @@ public:
   
   //! Returns the manipulation planner
   ManipulationPlanner* getManipPlanner() { return m_manipulation; }
+  
   
 private:
   //! evaluates the number of grasp succes over 
@@ -86,6 +93,9 @@ private:
   std::string m_PLACEMENT_NAME;
   
   std::vector<double> m_objStart, m_objGoto;
+  
+  std::vector< std::pair<std::string,p3d_traj*> > m_trajvector;
+  std::vector< std::pair<std::string,configPt> > m_confvector;
   
   unsigned int m_nbOrientations;
   

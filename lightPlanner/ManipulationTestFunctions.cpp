@@ -132,6 +132,30 @@ void ManipulationTestFunctions::resetSupport()
   cout << "Reset support name" << endl;
 }
 
+//! Add a trajectory to the stored vector
+void ManipulationTestFunctions::addTraj(std::string name,p3d_traj* traj)
+{
+  m_trajvector.push_back( make_pair(name,traj) );
+}
+
+//! Add a config to the stored vector
+void ManipulationTestFunctions::addConf(std::string name,configPt q)
+{
+  m_confvector.push_back( make_pair(name,q) );
+}
+
+//! Get vector of stored pair of traj and names
+std::vector< std::pair<std::string,p3d_traj*> > ManipulationTestFunctions::getTrajVector()
+{
+  return m_trajvector;
+}
+
+//! Get vector of stored pair of configuration and their name
+std::vector< std::pair<std::string,configPt> > ManipulationTestFunctions::getConfVector()
+{
+  return m_confvector;
+}
+
 //! Initializes the manipulation
 //! A new manipulation planner is created 
 //! and the initial and goal configuration are created
@@ -195,6 +219,15 @@ bool ManipulationTestFunctions::manipTest(MANIPULATION_TASK_TYPE_STR type)
   if( str == "PR2_ROBOT" )
   {
     fixAllJointsWithoutArm(m_manipulation->robot(),0);
+  }
+  
+  if (m_PLACEMENT_NAME != "") {
+    double x, y, z, rx, ry, rz;
+    p3d_rob* object = p3d_get_robot_by_name(m_PLACEMENT_NAME.c_str());
+    p3d_get_freeflyer_pose2(object, &x, &y, &z, &rx, &ry, &rz);
+    m_objGoto[0] = x;
+    m_objGoto[1] = y;
+    m_objGoto[2] = z;
   }
   
 	switch ( (unsigned int) m_manipulation->robot()->lpl_type ) 
@@ -590,6 +623,13 @@ bool ManipulationTestFunctions::computeTrajectories()
   return true;
 }
 
+//ARM_FREE = 1, /*!< move the arm from a free configuration (in the air) to another free configuration */
+//ARM_PICK_GOTO = 2,  /*!< move the arm from a free configuration to a grasping configuration of the object placed on a support */
+//ARM_TAKE_TO_FREE = 3,  /*!< move the arm from a grasping configuration (of the object placed on a support) to a free configuration */
+//ARM_TAKE_TO_PLACE = 4,  /*!< move the arm from a grasping configuration to a configuration with the same grasp but a different object placement */
+//ARM_PLACE_FROM_FREE = 5, /*!< move the arm from a free configuration to a placement configuration */
+//ARM_EXTRACT = 6, /*!< move the arm over Z axis to escape from collision */
+//ARM_ESCAPE_OBJECT = 7 /*!< move the arm to escape from a placed object */
 //! Main function that 
 //!
 bool ManipulationTestFunctions::runTest(int id)
@@ -600,36 +640,51 @@ bool ManipulationTestFunctions::runTest(int id)
   {
     return manipTest(ARM_FREE);
   }
-  
   if (id == 2) 
   {
     return manipTest(ARM_PICK_GOTO);
   }
-  
+  if (id == 3) 
+  {
+    return manipTest(ARM_TAKE_TO_FREE);
+  }
   if (id == 4) 
+  {
+    return manipTest(ARM_TAKE_TO_PLACE);
+  }
+  if (id == 5) 
+  {
+    return manipTest(ARM_PLACE_FROM_FREE);
+  }
+  if (id == 6) 
+  {
+    return manipTest(ARM_EXTRACT);
+  }
+  
+  if (id == 7) 
   {
     manipTest(ARM_PICK_GOTO);
     return manipTest(ARM_TAKE_TO_FREE);
   }
   
-  if (id == 6) 
+  if (id == 8) 
   {
     double succesRate=0;
     return this->manipTestGraspingWithDifferentObjectOrientations(false,succesRate);
   }
   
-  if (id == 7) 
+  if (id == 9) 
   {
     double succesRate=0;
     return this->manipTestGraspingWithDifferentObjectOrientations(true,succesRate);
   }
   
-  if (id == 8) 
+  if (id == 10) 
   {
 //     global_manipPlanTest = this;
     return this->evaluateWorkspace();
   }
-  if (id == 9) 
+  if (id == 11) 
   {
     //     global_manipPlanTest = this;
     return this->computeTrajectories();
