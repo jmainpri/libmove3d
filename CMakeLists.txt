@@ -2,6 +2,7 @@ CMAKE_MINIMUM_REQUIRED (VERSION 2.6.2)
 
 PROJECT (libmove3d C CXX)
 
+MESSAGE("test git post-update")
 
 #--------- Set the project version
 
