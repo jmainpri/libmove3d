@@ -32,9 +32,9 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robot) :_robot(robot), _config
     _smoothingMethod = optimiseTrajectory;
   
     // Manipulation planner
-    _planningTime = 15;
-    _optimizeSteps = 100;
-    _optimizeTime = 4.0; // 4 secondes
+    _planningTime = 60; // 15
+    _optimizeSteps = 200;
+    _optimizeTime = 15.0; // 4 secondes
     _safetyDistanceValue = 0.0;
     _placementTry = 5;
     setMaxNumberOfTryForIK(10000);
@@ -804,6 +804,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qSt
 
   ManipulationUtils::fixAllHands(_robot, qStart, false);
   fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
+
+  
 
   checkConfigForCartesianMode(qStart, object);
   checkConfigForCartesianMode(qGoal, object);
@@ -1760,12 +1762,17 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
   return armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, placementName, grasp, trajs);
 }
 
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, configPt qGoal, std::vector <p3d_traj*> &trajs){
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, configPt qGoal, bool fixAllArm, std::vector <p3d_traj*> &trajs){
 
     MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
     p3d_traj* traj = NULL;
 
-    bool fixAllArm = true;
+    if(fixAllArm) {
+      cout << "planNavigation: arms are fixed "<< endl;
+    } else {
+      cout << "planNavigation: arms are not fixed "<< endl;
+    }
+    //bool fixAllArm = true;
 
     if (!_robot) {
       printf("%s: %d: ManipulationPlanner::planNavigation(): No robot initialized.\n", __FILE__, __LINE__);
@@ -1776,12 +1783,24 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, c
 
 
     p3d_set_and_update_robot_conf(qStart);
+    if(fixAllArm == true) {
+      for (int i = 2; i < _robot->njoints + 1; i++) {
+	p3d_jnt * joint = _robot->joints[i];
+	
+	fixJoint(_robot, joint, joint->jnt_mat);
+	p3d_update_this_robot_pos(_robot);
+      }
+    }
     for (int i = 2; i < _robot->njoints + 1; i++) {
       p3d_jnt * joint = _robot->joints[i];
-
-      fixJoint(_robot, joint, joint->jnt_mat);
+      
+      if(strcmp(joint->name, "Torso") == 0) {
+	fixJoint(_robot, joint, joint->jnt_mat);
+	   cout << "planNavigation: Torso joint are  fixed "<< endl;
+      }
       p3d_update_this_robot_pos(_robot);
     }
+    p3d_update_this_robot_pos(_robot);
 
     //Clear the graph
     cleanRoadmap();
@@ -1844,7 +1863,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
 
 
 
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, configPt qGoal, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs){
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, configPt qGoal,  bool fixAllArm, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs){
     std::vector <p3d_traj*> trajs;
     p3d_traj* traj = NULL;
     MANIPULATION_TASK_MESSAGE returnMessage;
@@ -1857,7 +1876,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, c
     p3d_multiLocalPath_disable_all_groupToPlan(_robot, FALSE);
     p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1, FALSE);
 
-    if ((returnMessage = planNavigation(qStart, qGoal, trajs)) == MANIPULATION_TASK_OK) {
+    if ((returnMessage = planNavigation(qStart, qGoal, fixAllArm, trajs)) == MANIPULATION_TASK_OK) {
       //concatene
       if (concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK) {
         _robotPath = _robot->tcur; // Stores the robot path
