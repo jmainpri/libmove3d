@@ -507,7 +507,7 @@ or ComponantsPt NULL\n"));
                                                         Comp1Pt); 
           
         }
-        if (DrawFunction) (*DrawFunction)();
+//        if (DrawFunction) (*DrawFunction)();
       }
       else {
         NTryCreateNode += 1;

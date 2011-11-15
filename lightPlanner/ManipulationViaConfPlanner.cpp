@@ -35,7 +35,8 @@ MANIPULATION_TASK_MESSAGE ManipulationViaConfPlanner::planTrajFromConfigArrayInR
   for(int i=(_robot->nconf-1) ; i>0; i--) {
 
     trajs.clear();
-    res = armPlanTask(ARM_FREE,0, _robot->conf[i]->q, _robot->conf[i-1]->q, objStart, objGoto,  (char*)"", (char*)"", (char*)"",  trajs);
+//    res = armPlanTask(ARM_FREE,0, _robot->conf[i]->q, _robot->conf[i-1]->q, objStart, objGoto,  (char*)"", (char*)"", (char*)"",  trajs);
+    res = planNavigation(_robot->conf[i]->q, _robot->conf[i-1]->q, true, trajs);
     if(res!=MANIPULATION_TASK_OK) {
      printf("ERROR plan armFree on path %d\n",i);
      return res;
