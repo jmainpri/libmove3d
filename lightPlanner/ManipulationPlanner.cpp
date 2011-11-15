@@ -47,7 +47,6 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robot) :_robot(robot), _config
     _UpBodyMLP = -1;
     _UpBodySmMLP = -1;
 
-
     for (int i = 0; _robot && i < _robot->mlp->nblpGp; i++) {
         if (!strcmp(_robot->mlp->mlpJoints[i]->gpName, "base")) {
             _BaseMLP = i;
@@ -1811,6 +1810,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, c
     MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
     p3d_traj* traj = NULL;
 
+    setNavigationPlanner();
+
     if(fixAllArm) {
       cout << "planNavigation: arms are fixed "<< endl;
     } else {
@@ -1858,6 +1859,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, c
       trajs.push_back(traj);
     }
 
+    setDefaultPlanner();
   return status;
 }
 
