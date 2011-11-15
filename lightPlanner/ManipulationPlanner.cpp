@@ -77,6 +77,50 @@ void ManipulationPlanner::clear() {
     _robot = NULL;
 }
 
+void ManipulationPlanner::setDefaultPlanner()
+{
+    _plannerMethod = rrtQuerry;
+    _smoothingMethod = optimiseTrajectory;
+
+    // Manipulation planner
+    _planningTime = 15; // 15
+    _optimizeSteps = 200;
+    _optimizeTime = 4.0; // 4 secondes
+    _safetyDistanceValue = 0.0;
+    _placementTry = 5;
+    setMaxNumberOfTryForIK(10000);
+
+    ENV.setExpansionMethodSlot(0);
+
+    if (_robot)
+    {
+        p3d_jnt_set_dof_bounds_deg ( _robot->joints[1], 1, -6, 0 );
+        p3d_jnt_set_dof_rand_bounds_deg ( _robot->joints[1], 1, -6, 0 );
+    }
+}
+
+void ManipulationPlanner::setNavigationPlanner()
+{
+    _plannerMethod = rrtQuerry;
+    _smoothingMethod = optimiseTrajectory;
+
+    // Manipulation planner
+    _planningTime = 60; // 15
+    _optimizeSteps = 200;
+    _optimizeTime = 15.0; // 4 secondes
+    _safetyDistanceValue = 0.0;
+    _placementTry = 5;
+    setMaxNumberOfTryForIK(10000);
+
+    ENV.setExpansionMethodSlot(2);
+
+    if (_robot)
+    {
+        p3d_jnt_set_dof_bounds_deg ( _robot->joints[1], 1, -5, -2 );
+        p3d_jnt_set_dof_rand_bounds_deg ( _robot->joints[1], 1, -5, -2 );
+    }
+}
+
 int ManipulationPlanner::cleanRoadmap() {
     if (_robot != NULL) {
         XYZ_ENV->cur_robot = _robot;

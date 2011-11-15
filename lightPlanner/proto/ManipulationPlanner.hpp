@@ -26,6 +26,10 @@ class  ManipulationPlanner {
   /* ******************************* */
     /** Clean the class */
     void clear();
+    /** set variable value for default use */
+    void setDefaultPlanner();
+    /** set variable value for navigation use */
+    void setNavigationPlanner();
     /** Delete the current roadmaps */
     int cleanRoadmap();
     /** Delete class robot trajectory list */
