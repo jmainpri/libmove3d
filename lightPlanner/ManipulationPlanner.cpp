@@ -93,8 +93,8 @@ void ManipulationPlanner::setDefaultPlanner()
 
     if (_robot)
     {
-        p3d_jnt_set_dof_bounds_deg ( _robot->joints[1], 1, -6, 0 );
-        p3d_jnt_set_dof_rand_bounds_deg ( _robot->joints[1], 1, -6, 0 );
+        p3d_jnt_set_dof_bounds_deg ( _robot->joints[1], 1, -6, 2 );
+        p3d_jnt_set_dof_rand_bounds_deg ( _robot->joints[1], 1, -6, 2 );
     }
 }
 
@@ -115,8 +115,8 @@ void ManipulationPlanner::setNavigationPlanner()
 
     if (_robot)
     {
-        p3d_jnt_set_dof_bounds_deg ( _robot->joints[1], 1, -5, -2 );
-        p3d_jnt_set_dof_rand_bounds_deg ( _robot->joints[1], 1, -5, -2 );
+//        p3d_jnt_set_dof_bounds_deg ( _robot->joints[1], 1, -5, -2 );
+//        p3d_jnt_set_dof_rand_bounds_deg ( _robot->joints[1], 1, -5, -2 );
     }
 }
 
