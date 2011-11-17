@@ -36,7 +36,7 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robot) :_robot(robot), _config
     _optimizeSteps = 200;
     _optimizeTime = 15.0; // 4 secondes
     _safetyDistanceValue = 0.0;
-    _placementTry = 5;
+    _placementTry = 15;
     setMaxNumberOfTryForIK(10000);
 
     setDebugSoftMotionMode(true);
