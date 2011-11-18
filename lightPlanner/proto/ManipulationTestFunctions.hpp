@@ -71,9 +71,12 @@ public:
   
   
 private:
+  bool saveObjectAndRobotState(configPt q,std::string ObjectName);
+  bool restoreObjectAndRobotState();
+
   //! evaluates the number of grasp succes over 
   //! a series of gradomly selected targets
-	bool manipTestGraspingWithDifferentObjectOrientations(bool rotate_only_around_z, double& successRate);
+  bool manipTestGraspingWithDifferentObjectOrientations(bool rotate_only_around_z, double& successRate);
   
   //! Compute workspace of with partiular 
   //! manipulation planner parameters
@@ -96,6 +99,7 @@ private:
   
   std::vector< std::pair<std::string,p3d_traj*> > m_trajvector;
   std::vector< std::pair<std::string,configPt> > m_confvector;
+  std::vector< std::pair<std::string,configPt> > m_worldState;
   
   unsigned int m_nbOrientations;
   
