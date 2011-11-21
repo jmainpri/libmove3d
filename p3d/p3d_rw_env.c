@@ -681,7 +681,29 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
       }
 			continue;
 		}
-    
+    if ( strcmp ( fct,"p3d_set_ff_limits_in_env_box" ) == 0 )
+		{
+      double limit_tab[6];
+      
+      p3d_get_env_box(&limit_tab[0],&limit_tab[1],
+                      &limit_tab[2],&limit_tab[3],
+                      &limit_tab[4],&limit_tab[5]);
+      
+      for ( int i = 0; i < XYZ_ENV->nr; i++ )
+			{
+        robotPt = XYZ_ENV->robot[i];
+        
+        if( robotPt->joints[1]->type == P3D_FREEFLYER )
+        {
+          for ( int j = 0; j<3; j++ )
+          {
+            p3d_jnt_set_dof_bounds_deg ( robotPt->joints[1], j, limit_tab[2*j], limit_tab[2*j+1] );
+            p3d_jnt_set_dof_rand_bounds_deg ( robotPt->joints[1], j, limit_tab[2*j], limit_tab[2*j+1] );
+          }
+        }
+      }
+			continue;
+		}
 		if ( strcmp ( fct,"p3d_CostEnvironment" ) == 0 )
 		{
 			ENV.setBool ( Env::isCostSpace,true );
