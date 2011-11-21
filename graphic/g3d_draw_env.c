@@ -33,6 +33,7 @@ extern ManipulationTestFunctions* global_manipPlanTest;
 void (*ext_g3d_export_cpp_graph)();
 void (*ext_g3d_draw_cost_features)();
 void (*ext_g3d_draw_hri_features)();
+void (*ext_g3d_draw_remote)();
 
 // --------------------------------------------------------
 // These matrix are drawn in the 
@@ -1424,7 +1425,11 @@ void g3d_draw_env_custom()
   
   if(ext_g3d_draw_cost_features!=NULL){
    ext_g3d_draw_cost_features();
-  } 
+  }
+
+ if(ext_g3d_draw_remote!=NULL){
+  ext_g3d_draw_remote();
+ }
 #ifdef DPG
   if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
     XYZ_GRAPH->dpgGrid->draw();
