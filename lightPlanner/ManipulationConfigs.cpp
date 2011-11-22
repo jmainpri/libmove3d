@@ -13,8 +13,8 @@ using namespace std;
 ManipulationConfigs::ManipulationConfigs(p3d_rob* robot):_robot(robot)
 {
   _optimizeRedundentSteps = 50;
-  _approachFreeOffset = 0.10; //0.1 meters
-  _approachGraspOffset = 0.02; //0.1 meters
+  _approachFreeOffset = 0.10; //0.10 meters
+  _approachGraspOffset = 0.10; //0.02 meters
   _safetyDistanceValue = 0.0;
   
   setMaxNumberOfTryForIK( 10000 );

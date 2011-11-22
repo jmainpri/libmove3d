@@ -221,7 +221,7 @@ p3d_traj* rrtQuerry(p3d_rob* robot, configPt qs, configPt qg)
   ENV.setInt(Env::MaxExpandNodeFail, 10000);
   ENV.setInt(Env::maxNodeCompco, 10000);
   ENV.setExpansionMethod(Env::Extend);
-//  ENV.setDouble(Env::extensionStep, 6.0);
+  ENV.setDouble(Env::extensionStep, 3.0);
   
   if( p3d_specific_search((char*)"") )
     return robot->tcur;
