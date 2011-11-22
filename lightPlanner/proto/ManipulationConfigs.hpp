@@ -6,22 +6,19 @@
 #include "P3d-pkg.h"
 #include "GraspPlanning-pkg.h"
 
-#include "ManipulationStruct.h"
+#include "ManipulationStruct.hpp"
 #include "ManipulationUtils.hpp"
+#include "ManipulationData.hpp"
 
 #include <vector>
 
 //! @ingroup manipulation
-class  ManipulationConfigs {
+class  ManipulationConfigs 
+{
   public:
-  /* ******************************* */
-  /* ******* (Con)Destructor ******* */
-  /* ******************************* */
     ManipulationConfigs(p3d_rob * robot);
     virtual ~ManipulationConfigs();
-  /* ******************************* */
-  /* ******* (Ge)Setters *********** */
-  /* ******************************* */
+  
     void setDebugMode(bool value);
   
     void setOptimizeRedundentSteps(int nbSteps);
@@ -32,36 +29,37 @@ class  ManipulationConfigs {
 
     void setApproachGraspOffset(double offset);
     double getApproachGraspOffset(void) const;
+  
+    void setSafetyDistanceValue(double value);
+    double getSafetyDistanceValue(void) const ;
 
     inline p3d_rob* robot()  const{return _robot;}
-  /* ******************************* */
-  /* *********** Methods *********** */
-  /* ******************************* */
-    /** Generate the grasp configuration given the grasp the arm and the object.
-    @return the attach matrix computed given the grasp and Tatt2 from the p3d file
-    @return the configuration cost
-    @return the grasp configuration */
+  
+    // Primitive generating configurations
     configPt getGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, double& confCost) const;
-    /** Generate the open configuration given the grasp configuration, the grasp, the arm and the object.*/
     configPt getOpenGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf) const;
-    /** Generate the open approach configuration given the grasp configuration, the grasp, the arm, the attach matrix and the object.*/
     configPt getApproachFreeConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const;
-    /** Generate the grasp approach configuration given the grasp configuration, the grasp, the arm, the attach matrix and the object.*/
     configPt getApproachGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const;
-    /** Generates a free configuration from a worspace point and a grasp*/
     configPt getFreeHoldingConf( p3d_rob* obj, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, double& confCost, std::vector<double> &objGoto, p3d_rob* support = NULL ) const;
-    /** Generate the extract configuration by moving the arm over Z axis until we have a collision free or passing 5 * offset */
     configPt getExtractConf(int armId, configPt currentConf, p3d_matrix4 tAtt) const;
+  
+    // Compound of the function above
+    MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, gpGrasp& grasp, ManipulationData& configs) const;
+    MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;
+    MANIPULATION_TASK_MESSAGE getHoldingOpenApproachExtractConfs(p3d_rob* object, std::vector<double> &objGoto, p3d_rob* placement, int armId, gpGrasp& grasp, p3d_matrix4 tAtt,  ManipulationData& configs) const;
     
   private:
     /*!< pointer to the robot */
     p3d_rob * _robot;
+    /** uses the base degrees of freedom for generatiing configuration **/
+    bool _useMobileBase;
     /** Number of steps when optimizing the redundent joint*/
     int _optimizeRedundentSteps;
     /** Offset to generate the approach configuration of a grasp (not carrying an object)*/
     double _approachFreeOffset;
     /** Offset to generate the approach configuration of a grasp (carrying an object)*/
     double _approachGraspOffset;
+    double _safetyDistanceValue;
 };
 
 #endif

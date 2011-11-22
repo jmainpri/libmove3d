@@ -7,7 +7,7 @@
 #include <../collision/PQP/include/PQP.h>
 #include <../collision/PQP/include/p3d_pqp.h>
 #ifdef LIGHT_PLANNER
-#include "ManipulationUtils.hpp"
+#include "ManipulationArmData.hpp"
 #endif
 
 // Define to enable/disable some debug checkings

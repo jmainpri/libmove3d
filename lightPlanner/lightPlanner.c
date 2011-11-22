@@ -221,7 +221,7 @@ p3d_traj* rrtQuerry(p3d_rob* robot, configPt qs, configPt qg)
   ENV.setInt(Env::MaxExpandNodeFail, 10000);
   ENV.setInt(Env::maxNodeCompco, 10000);
   ENV.setExpansionMethod(Env::Extend);
-  ENV.setDouble(Env::extensionStep, 3.0);
+//  ENV.setDouble(Env::extensionStep, 6.0);
   
   if( p3d_specific_search((char*)"") )
     return robot->tcur;
@@ -270,8 +270,8 @@ p3d_traj* platformGotoObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p
 #endif
   //try to reach the object without moving the base.
   p3d_set_and_update_this_robot_conf_without_cntrt(robot, robot->ROBOT_POS);
-  if(!setTwoArmsRobotGraspApproachPosWithoutBase(robot, objectStartPos, att1, att2, cntrtToActivate, true)){
-    configPt conf = setTwoArmsRobotGraspApproachPosWithHold(robot, objectStartPos, att1, att2, cntrtToActivate);
+  if(!sampleTwoArmsRobotGraspApproachPosWithoutBase(robot, objectStartPos, att1, att2, cntrtToActivate, true)){
+    configPt conf = sampleTwoArmsRobotGraspApproachPosWithHold(robot, objectStartPos, att1, att2, cntrtToActivate);
     if(conf == NULL){
       printf("no position found\n");
       return NULL;
@@ -376,7 +376,7 @@ traj* pickObject(p3d_rob* robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p
   //try to reach the object without moving the base.
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
   configPt conf = NULL;
-  if(!(conf = setTwoArmsRobotGraspApproachPosWithoutBase(robot, objectStartPos, att1, att2, cntrtToActivate, true))){
+  if(!(conf = sampleTwoArmsRobotGraspApproachPosWithoutBase(robot, objectStartPos, att1, att2, cntrtToActivate, true))){
     return platformGotoObjectByMat(robot, objectStartPos, att1, att2);
   }else{
     return gotoObjectByConf(robot, objectStartPos, conf, true);
@@ -403,7 +403,7 @@ p3d_traj* gotoObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matri
   p3d_multiLocalPath_enable_all_groupToPlan(robot);
 #endif
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
-  configPt conf = setTwoArmsRobotGraspApproachPosWithoutBase(robot, objectStartPos, att1, att2, cntrtToActivate, true);
+  configPt conf = sampleTwoArmsRobotGraspApproachPosWithoutBase(robot, objectStartPos, att1, att2, cntrtToActivate, true);
   if(conf == NULL){
     printf("No position found\n");
     return NULL;
@@ -475,7 +475,7 @@ p3d_traj* touchObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matr
   p3d_multiLocalPath_enable_all_groupToPlan(robot);
 #endif
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
-  configPt conf = setTwoArmsRobotGraspPosWithoutBase(robot, objectStartPos, att1, att2, FALSE, cntrtToActivate, true);
+  configPt conf = sampleTwoArmsRobotGraspPosWithoutBase(robot, objectStartPos, att1, att2, FALSE, cntrtToActivate, true);
   if(conf == NULL){
     printf("No position found\n");
     return NULL;
@@ -545,8 +545,8 @@ traj* carryObject(p3d_rob* robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p
   //try to reach the object without moving the base.
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
   configPt conf = NULL;
-  if(!(conf = setTwoArmsRobotGraspPosWithoutBase(robot, objectGotoPos, att1, att2, FALSE, cntrtToActivate, true))){
-    configPt conf = setTwoArmsRobotGraspPosWithHold(robot, objectGotoPos, att1, att2, cntrtToActivate);
+  if(!(conf = sampleTwoArmsRobotGraspPosWithoutBase(robot, objectGotoPos, att1, att2, FALSE, cntrtToActivate, true))){
+    configPt conf = sampleTwoArmsRobotGraspPosWithHold(robot, objectGotoPos, att1, att2, cntrtToActivate);
     if(conf == NULL){
       printf("No position found\n");
       return NULL;
@@ -583,7 +583,7 @@ p3d_traj* carryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p3d_matri
   p3d_multiLocalPath_enable_all_groupToPlan(robot);
 #endif
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
-  configPt conf = setTwoArmsRobotGraspPosWithoutBase(robot, objectGotoPos, att1, att2, FALSE, cntrtToActivate, true);
+  configPt conf = sampleTwoArmsRobotGraspPosWithoutBase(robot, objectGotoPos, att1, att2, FALSE, cntrtToActivate, true);
   if(conf == NULL){
     printf("No position found\n");
     return NULL;
@@ -672,7 +672,7 @@ p3d_traj* platformCarryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p
   p3d_multiLocalPath_disable_all_groupToPlan(robot);
   p3d_multiLocalPath_enable_all_groupToPlan(robot);
 #endif
-  configPt conf = setTwoArmsRobotGraspPosWithHold(robot, objectGotoPos, att1, att2, cntrtToActivate);
+  configPt conf = sampleTwoArmsRobotGraspPosWithHold(robot, objectGotoPos, att1, att2, cntrtToActivate);
   if(conf == NULL){
     printf("No position found\n");
     return NULL;
@@ -1312,3 +1312,320 @@ int findBestExchangePosition2(p3d_rob *object, p3d_matrix4 Oi, p3d_matrix4 Of, p
 
   return 0;
 }
+
+std::map<double, configPt, std::less<double> > * searchForLowCostNode(p3d_rob* robot, configPt startConfig, int whichArm){
+  switch(whichArm){
+    case 0:{
+      deactivateCcCntrts(robot, -1);
+      break;
+    }
+    case 1:{
+      activateCcCntrts(robot, 0, true);
+      break;
+    }
+    case 2:{
+      activateCcCntrts(robot, 1, true);
+      break;
+    }
+    case 3:{
+      activateCcCntrts(robot, -1, true);
+      break;
+    }
+  }
+  p3d_copy_config_into(robot, startConfig, &robot->ROBOT_POS);
+  deleteAllGraphs();
+  p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
+  p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
+  p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+  ENV.setBool(Env::isCostSpace,true);
+  double oldExtensionStep = ENV.getDouble(Env::extensionStep);
+  ENV.setDouble(Env::extensionStep,20);
+  ENV.setBool(Env::biDir,false);
+  ENV.setBool(Env::expandToGoal,false);
+  ENV.setBool(Env::findLowCostConf,true);
+  ENV.setInt(Env::tRrtNbtry, 0);
+  ENV.setDouble(Env::bestCost, P3D_HUGE);
+  ENV.setDouble(Env::findLowCostThreshold, 0.05);
+  p3d_specific_search((char*)"");
+  ENV.setBool(Env::findLowCostConf,false);
+  ENV.setBool(Env::isCostSpace,false);
+  ENV.setDouble(Env::extensionStep,oldExtensionStep);
+  ENV.setBool(Env::biDir,true);
+  ENV.setBool(Env::expandToGoal,true);
+  std::map<double, configPt, std::less<double> > * configs = new std::map<double, configPt, std::less<double> >();
+  for(p3d_list_node *cur = XYZ_GRAPH->nodes; cur->next; cur = cur->next){
+    configs->insert(std::pair<double, configPt>(cur->N->cost, cur->N->q));
+  }
+  deleteAllGraphs();
+  return configs;
+}
+
+void correctGraphForNewFixedJoints(p3d_graph* graph, configPt refConf, int nbJoints, p3d_jnt** joints){
+  if(!graph || nbJoints == 0){
+    return;
+  }
+  //remove all edge from graph
+  for(p3d_list_edge* lEdge = graph->edges, *tmp = NULL; lEdge; lEdge = tmp){
+    tmp = lEdge->next;
+    MY_FREE(lEdge->E, p3d_edge, 1);
+    lEdge->E = NULL;
+    MY_FREE(lEdge, p3d_list_edge, 1);
+    if(tmp){
+      tmp->prev = NULL;
+    }
+  }
+  graph->nedge = 0;
+  graph->edges = NULL;
+  graph->last_edge = NULL;
+  //correct all nodes
+  for(p3d_list_node* lNode = graph->nodes; lNode; lNode = lNode->next){
+    for(int i = 0; i < nbJoints; i++){
+      for(int j = 0; j < joints[i]->dof_equiv_nbr; j++){
+        lNode->N->q[joints[i]->index_dof + j] = refConf[joints[i]->index_dof + j];
+      }
+    }
+    //Delete this node's edges list
+    for(p3d_list_edge* lEdge = lNode->N->edges, *tmp = NULL; lEdge; lEdge = tmp){
+      tmp = lEdge->next;
+      lEdge->E = NULL;
+      MY_FREE(lEdge, p3d_list_edge, 1);
+      if(tmp){
+        tmp->prev = NULL;
+      }
+    }
+    lNode->N->nedge = 0;
+    lNode->N->edges = NULL;
+    //reconstruct the edges using the nodes neigbours
+    p3d_list_node* lNeig = lNode->N->neighb, *save = lNode->N->neighb;
+    lNode->N->neighb = NULL;
+    lNode->N->nneighb = 0;
+    for(; lNeig; lNeig = lNeig->next){
+      p3d_create_one_edge(graph, lNode->N, lNeig->N, -1);
+    }
+    //destroy the neighbor list
+    lNeig = save;
+    for(p3d_list_node* tmp = NULL; lNeig; lNeig = tmp){
+      tmp = lNeig->next;
+      MY_FREE(lNeig, p3d_list_node, 1);
+      if(tmp){
+        tmp->prev = NULL;
+      }
+    }
+  }
+}
+
+void validateColGraph(p3d_graph* graph){
+  int nbUNodes = 0, nbUEdges = 0, nbVEdges = 0;
+  if(!graph){
+    return;
+  }
+  
+  p3d_edge* unvalidatedEdges[graph->nedge];
+  int nbUnvalidatedEdges = 0;
+  //Check all nodes and tag the invalid edges
+  for(p3d_list_node* lNode = graph->nodes; lNode; lNode = lNode->next){
+    p3d_set_and_update_this_robot_conf_multisol(graph->rob, lNode->N->q, NULL, 0, lNode->N->iksol);
+    if(p3d_col_test()){//there is collision => set the edges invalid and store them
+      nbUNodes++;
+      //look if its necessary to add a flag valid in the node structure
+      for(p3d_list_edge* lEdge = lNode->N->edges; lEdge; lEdge = lEdge->next){
+        nbUEdges++;
+        p3d_unvalid_edge(graph, lEdge->E);
+        unvalidatedEdges[nbUnvalidatedEdges] = lEdge->E;
+        nbUnvalidatedEdges++;
+      }
+    }
+  }
+  //Check all edges execpt
+  int ntests = 0;
+  for(p3d_list_edge* lEdge = graph->edges; lEdge; lEdge = lEdge->next){
+    int i = 0;
+    for(; i < nbUnvalidatedEdges; i++){
+      if(unvalidatedEdges[i] == lEdge->E){
+        break;
+      }
+    }
+    if (i != nbUnvalidatedEdges && p3d_unvalid_localpath_test(graph->rob, lEdge->E->path, &ntests)){
+      p3d_unvalid_edge(graph, lEdge->E);
+    }else if (lEdge->E->unvalid == 0){
+      nbVEdges++;
+      p3d_valid_edge(graph, lEdge->E);
+    }
+  }
+  p3d_separate_graph_for_unvalid_edges(graph);
+}
+
+void removeAloneNodesInGraph(p3d_rob* robot, p3d_graph* graph){
+  for(p3d_compco* compco = graph->comp ; compco; compco = compco->suiv){
+    if (compco->nnode == 1) {
+      if(compco->nodes)
+        p3d_del_node(compco->nodes->N, graph);
+      else {
+        p3d_del_node(compco->dist_nodes->N, graph);
+      }
+      //      p3d_remove_compco(graph, compco);
+    }
+  }
+}
+
+#ifdef GRASP_PLANNING
+// HandStatus 0 = grasp, 1 = open, 2 = rest
+void correctGraphForHandsAndObject (p3d_rob * robot, p3d_graph * graph,
+                                    int rightHandStatus, gpGrasp rightGrasp,
+                                    int leftHandStatus, gpGrasp leftGrasp,
+                                    bool carryobject, int whichArm)
+{
+  if (!graph)
+  {
+    return;
+  }
+  //remove all edge from graph
+  for (p3d_list_edge * lEdge = graph->edges, *tmp = NULL; lEdge; lEdge = tmp)
+  {
+    tmp = lEdge->next;
+    MY_FREE (lEdge->E, p3d_edge, 1);
+    lEdge->E = NULL;
+    MY_FREE (lEdge, p3d_list_edge, 1);
+    if (tmp)
+    {
+      tmp->prev = NULL;
+    }
+  }
+  graph->nedge = 0;
+  graph->edges = NULL;
+  graph->last_edge = NULL;
+  gpHand_properties leftHand, rightHand;
+  leftHand.initialize (GP_SAHAND_LEFT);
+  rightHand.initialize (GP_SAHAND_RIGHT);
+  bool updatedObject = true;
+  if (carryobject)
+  {
+    setAndActivateTwoJointsFixCntrt (robot, robot->curObjectJnt,
+                                     robot->ccCntrts[whichArm -
+                                                     1]->pasjnts[robot->
+                                                                 ccCntrts
+                                                                 [whichArm -
+                                                                  1]->
+                                                                 npasjnts -
+                                                                 1]);
+  }
+  //correct all nodes
+  for (p3d_list_node * lNode = graph->nodes; lNode; lNode = lNode->next)
+  {
+    switch (rightHandStatus)
+    {
+      case 0:
+      {
+        gpSet_grasp_configuration (robot, rightGrasp, lNode->N->q, 1);
+        break;
+      }
+      case 1:
+      {
+        gpSet_grasp_open_configuration (robot, rightGrasp, lNode->N->q,
+                                        1);
+        break;
+      }
+      case 2:
+      {
+        gpSet_hand_rest_configuration (robot, rightHand, lNode->N->q, 1);
+        break;
+      }
+    }
+    switch (leftHandStatus)
+    {
+      case 0:
+      {
+        gpSet_grasp_configuration (robot, leftGrasp, lNode->N->q, 2);
+        break;
+      }
+      case 1:
+      {
+        gpSet_grasp_open_configuration (robot, leftGrasp, lNode->N->q, 2);
+        break;
+      }
+      case 2:
+      {
+        gpSet_hand_rest_configuration (robot, leftHand, lNode->N->q, 2);
+        break;
+      }
+    }
+    if (carryobject)
+    {
+      updatedObject = true;
+      if (p3d_set_and_update_this_robot_conf (robot, lNode->N->q))
+      {
+        p3d_get_robot_config_into (robot, &lNode->N->q);
+      }
+      else
+      {
+        printf
+        ("Can not update this configuration : The carried object is out of bounds\n");
+        updatedObject = false;
+        break;
+      }
+    }
+    //Delete this node's edges list
+    for (p3d_list_edge * lEdge = lNode->N->edges, *tmp = NULL; lEdge;
+         lEdge = tmp)
+    {
+      tmp = lEdge->next;
+      lEdge->E = NULL;
+      MY_FREE (lEdge, p3d_list_edge, 1);
+      if (tmp)
+      {
+        tmp->prev = NULL;
+      }
+    }
+    lNode->N->nedge = 0;
+    lNode->N->edges = NULL;
+    lNode->N->IsDiscarded = false;
+    if (!updatedObject)
+    {
+      //remove the node from the graph
+      lNode->N->IsDiscarded = true;
+      break;
+    }
+  }
+  for (p3d_list_node * lNode = graph->nodes; lNode; lNode = lNode->next)
+  {
+    if (lNode->N->IsDiscarded)
+    {
+      break;
+    }
+    //reconstruct the edges using the nodes neigbours
+    p3d_list_node *lNeig = lNode->N->neighb, *save = lNode->N->neighb;
+    lNode->N->neighb = NULL;
+    lNode->N->nneighb = 0;
+    for (; lNeig; lNeig = lNeig->next)
+    {
+      if (!lNeig->N->IsDiscarded)
+      {
+        p3d_create_one_edge (graph, lNode->N, lNeig->N, -1);
+      }
+    }
+    //destroy the neighbor list
+    lNeig = save;
+    for (p3d_list_node * tmp = NULL; lNeig; lNeig = tmp)
+    {
+      tmp = lNeig->next;
+      MY_FREE (lNeig, p3d_list_node, 1);
+      if (tmp)
+      {
+        tmp->prev = NULL;
+      }
+    }
+  }
+  if (carryobject)
+  {
+    desactivateTwoJointsFixCntrt (robot, robot->curObjectJnt,
+                                  robot->ccCntrts[whichArm -
+                                                  1]->pasjnts[robot->
+                                                              ccCntrts
+                                                              [whichArm -
+                                                               1]->
+                                                              npasjnts -
+                                                              1]);
+  }
+}
+
+#endif

@@ -19,6 +19,7 @@ IF(MULTILOCALPATH)
 	ManipulationTestFunctions.cpp
 	ManipulationPlanner.cpp
 	ManipulationConfigs.cpp
+  ManipulationArmData.cpp
 	ManipulationUtils.cpp
 	ManipulationViaConfPlanner.cpp
 	)

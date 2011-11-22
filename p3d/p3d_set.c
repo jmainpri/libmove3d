@@ -11,7 +11,7 @@
 
 #ifdef LIGHT_PLANNER
 #include "lightPlanner/proto/lightPlannerApi.h"
-#include "lightPlanner/proto/ManipulationUtils.hpp"
+#include "lightPlanner/proto/ManipulationArmData.hpp"
 #endif
 
 /*******************************************************************/

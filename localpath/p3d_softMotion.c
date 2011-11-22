@@ -3,7 +3,7 @@
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
-#include "../lightPlanner/proto/ManipulationStruct.h"
+#include "../lightPlanner/proto/ManipulationStruct.hpp"
 #include <stdio.h>
 #include <iostream>
 

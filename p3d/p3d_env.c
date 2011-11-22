@@ -15,7 +15,7 @@
 #define sqr(x) ((x) * (x))
 
 #ifdef LIGHT_PLANNER
-#include "ManipulationUtils.hpp"
+#include "ManipulationArmData.hpp"
 #endif
 
 extern double ZminEnv;

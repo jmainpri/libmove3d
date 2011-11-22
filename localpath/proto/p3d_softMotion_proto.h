@@ -5,7 +5,7 @@
  *   Created: Thu Apr 24 14:01:25 2008
  */
 #ifdef MULTILOCALPATH
-#include "../../lightPlanner/proto/ManipulationStruct.h"
+#include "../../lightPlanner/proto/ManipulationStruct.hpp"
 
 #ifndef __CEXTRACT__
 extern void lm_convert_p3dMatrix_To_GbTh(const p3d_matrix4 M ,Gb_th* th);

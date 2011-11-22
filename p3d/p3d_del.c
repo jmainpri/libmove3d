@@ -21,7 +21,7 @@ static void p3d_del_multiGraphJoint(p3d_multiGraphJoint * mgJoint);
 #endif
 
 #ifdef LIGHT_PLANNER
-#include "ManipulationUtils.hpp"
+#include "ManipulationArmData.hpp"
 #endif
 
 /*************************************************************************************/

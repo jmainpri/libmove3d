@@ -202,7 +202,12 @@ bool ManipulationTestFunctions::saveObjectAndRobotState( configPt q, std::string
     m_worldState.clear();
 
     m_worldState.push_back( make_pair( string(m_manipulation->robot()->name), p3d_get_robot_config(m_manipulation->robot())));
-    m_worldState.push_back( make_pair( ObjectName, p3d_get_robot_config(p3d_get_robot_by_name(ObjectName.c_str()))));
+  
+    if( p3d_get_robot_by_name(ObjectName.c_str()) != NULL )
+    {
+      m_worldState.push_back( make_pair( ObjectName, 
+                                        p3d_get_robot_config(p3d_get_robot_by_name(ObjectName.c_str()))));
+    }
 
     return true;
 }
@@ -370,7 +375,7 @@ bool ManipulationTestFunctions::manipTestGraspingWithDifferentObjectOrientations
         p3d_set_collision_tolerance_inhibition(object, TRUE);
         ManipulationData data(m_Robot);
         gpGrasp grasp;
-        if ( m_manipulation->findArmGraspsConfigs(0, object, grasp, data) == MANIPULATION_TASK_OK)
+        if ( m_manipulation->getManipulationConfigs().findArmGraspsConfigs(0, object, grasp, data) == MANIPULATION_TASK_OK )
         {
             n++;
             cout << "!!! OK =-) !!!" << endl;
@@ -729,6 +734,12 @@ bool ManipulationTestFunctions::runTest(int id)
     {
         //     global_manipPlanTest = this;
         return this->computeTrajectories();
+    }
+    if (id == 13)
+    {
+       gpGrasp grasp;
+      p3d_rob* object = p3d_get_robot_by_name(m_OBJECT_NAME.c_str());
+      return m_manipulation->computeManipulationData(0,object,grasp);
     }
     else {
         cout << "Test : " << id << " not defined " << endl;

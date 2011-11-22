@@ -1,13 +1,18 @@
-#include "Manipulation.h"
-#include <iostream>
-#include "lightPlanner.h"
-#include "lightPlannerApi.h"
-#include "robotPos.h"
 #include "Collision-pkg.h"
 #include "Util-pkg.h"
 #ifdef DPG
 #include "p3d_chanEnv_proto.h"
 #endif
+
+#include "lightPlanner.h"
+#include "lightPlannerApi.h"
+#include "robotPos.h"
+#include "Manipulation.h"
+#include "ManipulationData.hpp"
+#include "ManipulationArmData.hpp"
+
+#include <iostream>
+
 using namespace std;
 
 Manipulation::Manipulation(p3d_rob * robot){
@@ -813,12 +818,12 @@ double Manipulation::getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpH
 //   gpSet_robot_hand_grasp_configuration(hand, object, grasp);
 //   g3d_draw_allwin_active();
   if(whichArm == 0){
-    q = setTwoArmsRobotGraspPosWithoutBase(_robot, objectPos, tAtt, fictive, FALSE, whichArm, true);
+    q = sampleTwoArmsRobotGraspPosWithoutBase(_robot, objectPos, tAtt, fictive, FALSE, whichArm, true);
   }else if(whichArm == 1){
-    q = setTwoArmsRobotGraspPosWithoutBase(_robot, objectPos, fictive, tAtt, FALSE, whichArm, true);
+    q = sampleTwoArmsRobotGraspPosWithoutBase(_robot, objectPos, fictive, tAtt, FALSE, whichArm, true);
   }
   if(q){
-    double restArmCost = setRobotArmsRest(_robot, objectPos, whichArm, tAtt, _robot->openChainConf, q);
+    double restArmCost = sampleRobotArmsRest(_robot, objectPos, whichArm, tAtt, _robot->openChainConf, q);
     double graspArmCost = getRobotGraspArmCost(grasp, q);
     double confCost = (restArmCost + graspArmCost) / 2;
     p3d_desactivateCntrt(_robot, _robot->ccCntrts[whichArm]);
@@ -949,7 +954,7 @@ int Manipulation::getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, 
   gpFix_hand_configuration(_robot, handProp[0], 0);
   gpSet_grasp_configuration(_robot, doubleGrasp.grasp2, 1);
   gpFix_hand_configuration(_robot, handProp[1], 1);
-  q = setTwoArmsRobotGraspPosWithoutBase(_robot, exchangeMat, rTatt, lTatt, TRUE, -1, true);
+  q = sampleTwoArmsRobotGraspPosWithoutBase(_robot, exchangeMat, rTatt, lTatt, TRUE, -1, true);
   if(q){
     //Test the collisions with open hands
     gpActivate_hand_selfcollisions(_robot, handProp[0].type);

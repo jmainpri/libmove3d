@@ -11,8 +11,9 @@
 #include "P3d-pkg.h"
 #include <list>
 
-#include "ManipulationStruct.h"
+#include "ManipulationStruct.hpp"
 #include "ManipulationUtils.hpp"
+#include "ManipulationData.hpp"
 
 //! @ingroup manipulation 
 class DoubleGraspData{

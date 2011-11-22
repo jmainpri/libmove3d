@@ -12,7 +12,7 @@
 #endif
 #ifdef LIGHT_PLANNER
   #include "lightPlannerApi.h"
-  #include "ManipulationUtils.hpp"
+  #include "ManipulationArmData.hpp"
 #endif
 #include <iostream>
 

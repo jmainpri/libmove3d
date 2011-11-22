@@ -1,7 +1,7 @@
 #ifndef P3D_SOFTMOTION_TRAJ_PROTO_H
 #define P3D_SOFTMOTION_TRAJ_PROTO_H
 
-#include "../lightPlanner/proto/ManipulationStruct.h"
+#include "../lightPlanner/proto/ManipulationStruct.hpp"
 #include "Localpath-pkg.h"
 
 #include <utility>

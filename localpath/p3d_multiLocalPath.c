@@ -4,7 +4,7 @@
 #include "Collision-pkg.h"
 #include "Planner-pkg.h"
 #ifdef LIGHT_PLANNER
-#include "ManipulationUtils.hpp"
+#include "ManipulationArmData.hpp"
 #endif
 
 #define VELOCITY_BASE_JIDO 200

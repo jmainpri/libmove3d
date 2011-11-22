@@ -10,7 +10,7 @@
 #include "Planner-pkg.h"
 #endif
 #ifdef LIGHT_PLANNER
-  #include "ManipulationUtils.hpp"
+#include "ManipulationArmData.hpp"
 #endif
 
 static void save_scenario_name(const char * file);

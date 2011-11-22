@@ -1,7 +1,8 @@
 #ifndef __MANIPULATIONDYNAMIC_HPP__
 #define __MANIPULATIONDYNAMIC_HPP__
 
-class  ManipulationDynamic: public ManipulationPlanner {
+class  ManipulationDynamic : public ManipulationPlanner 
+{
   public:
   /* ******************************* */
   /* ******* (Con)Destructor ******* */

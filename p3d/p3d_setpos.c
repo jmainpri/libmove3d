@@ -15,7 +15,7 @@
 #include "../planner/dpg/proto/DpgGrid.h"
 #endif
 #ifdef LIGHT_PLANNER
-#include "ManipulationUtils.hpp"
+#include "ManipulationArmData.hpp"
 #endif
 
 #define DEBUG_SETPOS 0
@@ -217,9 +217,25 @@ void p3d_set_robot_config(p3d_rob *robotPt, configPt config) {
   int i, j;
   int njnt = robotPt->njoints;
   p3d_jnt * jntPt;
-
+  
   for(i=0; i<=njnt; i++) {
     jntPt = robotPt->joints[i];
+    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
+      p3d_jnt_set_dof(jntPt, j, config[jntPt->index_dof+j]); }
+  }
+}
+
+void p3d_set_robot_config_without_free_flyers(p3d_rob *robotPt, configPt config) {
+  int i, j;
+  int njnt = robotPt->njoints;
+  p3d_jnt * jntPt;
+  
+  for(i=0; i<=njnt; i++) {
+    jntPt = robotPt->joints[i];
+    
+    if( jntPt->type == P3D_FREEFLYER)
+      continue;
+    
     for(j=0; j<jntPt->dof_equiv_nbr; j++) {
       p3d_jnt_set_dof(jntPt, j, config[jntPt->index_dof+j]); }
   }

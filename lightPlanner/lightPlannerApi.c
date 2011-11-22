@@ -4,6 +4,7 @@
 #include "Collision-pkg.h"
 
 #include "ManipulationUtils.hpp"
+#include "ManipulationArmData.hpp"
 
 ///////////////////////////
 //// Static functions /////

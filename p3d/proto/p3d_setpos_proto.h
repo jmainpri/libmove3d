@@ -16,6 +16,7 @@ extern void p3d_set_robot_jnt_deg ( int i, double v );
 extern void p3d_set_robot_dof ( p3d_rob *robotPt, int i, double v );
 extern void p3d_set_robot_dof_deg ( p3d_rob *robotPt, int i, double v );
 extern void p3d_set_robot_config ( p3d_rob *robotPt, configPt config );
+extern void p3d_set_robot_config_without_free_flyers ( p3d_rob *robotPt, configPt config );
 extern void p3d_set_robot_config_deg ( p3d_rob *robotPt, configPt config );
 extern void p3d_update_this_robot_pos_without_cntrt_and_obj ( p3d_rob *robotPt );
 extern void p3d_update_this_robot_pos_without_cntrt ( p3d_rob *robotPt );

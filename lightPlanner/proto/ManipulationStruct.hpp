@@ -1,5 +1,5 @@
-#ifndef __MANIPULATIONSTRUCT_H__
-#define __MANIPULATIONSTRUCT_H__
+#ifndef __ManipulationStruct_H__
+#define __ManipulationStruct_H__
 
 #include <vector>
 

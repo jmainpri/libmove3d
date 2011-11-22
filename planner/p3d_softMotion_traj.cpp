@@ -11,10 +11,10 @@
 #include <string>
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/lightPlanner.h"
-#include "../lightPlanner/proto/ManipulationStruct.h"
+#include "../lightPlanner/proto/ManipulationStruct.hpp"
 #include "../lightPlanner/proto/Manipulation.h"
 #include "../lightPlanner/proto/ManipulationPlanner.hpp"
-#include "../lightPlanner/proto/ManipulationUtils.hpp"
+#include "../lightPlanner/proto/ManipulationArmData.hpp"
 
 #include "softMotion/softMotionStruct.h"
 static int NB_TRAJPTP_CONFIG = 0;

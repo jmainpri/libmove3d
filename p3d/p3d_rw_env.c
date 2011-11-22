@@ -22,7 +22,6 @@
 
 #if defined(LIGHT_PLANNER)
 #include "lightPlanner/proto/lightPlannerApi.h"
-#include "lightPlanner/proto/ManipulationUtils.hpp"
 #endif
 
 #ifdef USE_ROBOTMODELPARSER

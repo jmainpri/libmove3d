@@ -3,7 +3,7 @@
 #include "Localpath-pkg.h"
 #include "Graphic-pkg.h"
 #ifdef LIGHT_PLANNER
-#include "ManipulationUtils.hpp"
+#include "ManipulationArmData.hpp"
 #endif
 
 #include <iostream> 

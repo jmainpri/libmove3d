@@ -17,6 +17,7 @@
 
 #ifdef LIGHT_PLANNER
 #include "ManipulationUtils.hpp"
+#include "ManipulationArmData.hpp"
 #endif
 
 #include "GroundHeight-pkg.h"
@@ -468,8 +469,8 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 			
       p3d_set_and_update_this_robot_conf_multisol(robotPt, q, NULL, 0, localpathPt->ikSol);
 
-      // The callback funcion
-      // can be defined outside libmove3d
+      // The callback function
+      // is defined outside libmove3d
       ext_compute_config_cost_along_traj(robotPt,q);
   
 #ifndef WITH_XFORMS
@@ -686,6 +687,10 @@ void g3d_draw_tcur(p3d_rob *robotPt, int indexjnt, int NbKeyFrames) {
         g3d_drawOneLine(pi[0], pi[1], Cost1 + (ZmaxEnv - ZminEnv)*0.02, pf[0], pf[1], Cost2 + (ZmaxEnv - ZminEnv)*0.02, Red, NULL);
 #endif
         glLineWidth(3.);
+        
+        if (u == 0.0 ) {
+          g3d_drawSphere(pf[0],pf[1], Cost2 + (ZmaxEnv - ZminEnv)*0.02, 1.);
+        }
       }
       p3d_vectCopy(pf, pi);
 
