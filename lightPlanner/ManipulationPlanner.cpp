@@ -1635,7 +1635,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, c
 	p3d_update_this_robot_pos(_robot);
       }
     }
-  }
+
   for (int i = 2; i < _robot->njoints + 1; i++) {
     p3d_jnt * joint = _robot->joints[i];
     
