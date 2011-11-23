@@ -86,15 +86,15 @@ void ManipulationPlanner::setDefaultPlanner()
 
     if (_robot)
     {
-        p3d_jnt_set_dof_bounds_deg ( _robot->joints[1], 1, -6, 2 );
-        p3d_jnt_set_dof_rand_bounds_deg ( _robot->joints[1], 1, -6, 2 );
+//        p3d_jnt_set_dof_bounds_deg ( _robot->joints[1], 1, -6, 2 );
+//        p3d_jnt_set_dof_rand_bounds_deg ( _robot->joints[1], 1, -6, 2 );
     }
 }
 
 void ManipulationPlanner::setNavigationPlanner()
 {
-    _plannerMethod = rrtQuerry;
-    _smoothingMethod = optimiseTrajectory;
+//    _plannerMethod = rrtQuerry;
+//    _smoothingMethod = optimiseTrajectory;
 
     // Manipulation planner
     _planningTime = 60; // 15
@@ -1605,32 +1605,35 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
 
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, configPt qGoal, bool fixAllArm, std::vector <p3d_traj*> &trajs){
   
-  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
-  p3d_traj* traj = NULL;
   
-  setNavigationPlanner();
+    MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+    p3d_traj* traj = NULL;
 
-  if(fixAllArm) {
-    cout << "planNavigation: arms are fixed "<< endl;
-  } else {
-    cout << "planNavigation: arms are not fixed "<< endl;
-  }
-  //bool fixAllArm = true;
-  
-  if (!_robot) {
-    printf("%s: %d: ManipulationPlanner::planNavigation(): No robot initialized.\n", __FILE__, __LINE__);
-    return MANIPULATION_TASK_NOT_INITIALIZED;
-  }
-  configPt qi = p3d_copy_config(_robot, qStart);
-  configPt qf = p3d_copy_config(_robot, qGoal);
-  
-  p3d_set_and_update_robot_conf(qStart);
-  
-  if(fixAllArm == true) {
-    for (int i = 2; i < _robot->njoints + 1; i++) {
-      p3d_jnt * joint = _robot->joints[i];
-      fixJoint(_robot, joint, joint->jnt_mat);
-      p3d_update_this_robot_pos(_robot);
+    setNavigationPlanner();
+
+    if(fixAllArm) {
+      cout << "planNavigation: arms are fixed "<< endl;
+    } else {
+      cout << "planNavigation: arms are not fixed "<< endl;
+    }
+    //bool fixAllArm = true;
+
+    if (!_robot) {
+      printf("%s: %d: ManipulationPlanner::planNavigation(): No robot initialized.\n", __FILE__, __LINE__);
+      return MANIPULATION_TASK_NOT_INITIALIZED;
+    }
+    configPt qi = p3d_copy_config(_robot, qStart), qf = p3d_copy_config(_robot, qGoal);
+    p3d_rob* cur_robot = (p3d_rob*)p3d_get_desc_curid(P3D_ROBOT);
+
+
+    p3d_set_and_update_robot_conf(qStart);
+    if(fixAllArm == true) {
+      for (int i = 2; i < _robot->njoints + 1; i++) {
+	p3d_jnt * joint = _robot->joints[i];
+	
+	fixJoint(_robot, joint, joint->jnt_mat);
+	p3d_update_this_robot_pos(_robot);
+      }
     }
   }
   for (int i = 2; i < _robot->njoints + 1; i++) {
@@ -1642,20 +1645,21 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, c
     }
     p3d_update_this_robot_pos(_robot);
   }
-  p3d_update_this_robot_pos(_robot);
-  
-  //Clear the graph
-  cleanRoadmap();
-  
-  for (uint i = 0; i < (*_robot->armManipulationData).size(); i++) {
-    deactivateCcCntrts(_robot, i);
-  }
-  
-  if((traj = computeTrajBetweenTwoConfigs(qStart, qGoal, &status))){
-    trajs.push_back(traj);
-  }
-  
-  setDefaultPlanner();
+    p3d_update_this_robot_pos(_robot);
+
+    //Clear the graph
+//    cleanRoadmap();
+
+
+    for (uint i = 0; i < (*_robot->armManipulationData).size(); i++) {
+        deactivateCcCntrts(_robot, i);
+    }
+
+    if((traj = computeTrajBetweenTwoConfigs(qStart, qGoal, &status))){
+      trajs.push_back(traj);
+    }
+
+//    setDefaultPlanner();
   return status;
 }
 
