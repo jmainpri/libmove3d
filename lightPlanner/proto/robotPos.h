@@ -6,6 +6,35 @@
 #include <map>
 #include "lightPlannerApi.h"
 
+//! @breif small class to go from eulers angls to matrix representation,
+//! the p3d_matrix is extracted the rotation for each axes with convention (X,Y,Z)
+class p3d_objectPos 
+{  
+public:
+  p3d_objectPos() { };
+  p3d_objectPos(p3d_matrix4 m) 
+  {
+    p3d_mat4ExtractPosReverseOrder(m, &_x, &_y, &_z, &_rx, &_ry, &_rz);
+  };
+  
+  void setFromMatrix(p3d_matrix4 m)
+  {
+    p3d_mat4ExtractPosReverseOrder(m, &_x, &_y, &_z, &_rx, &_ry, &_rz);
+  };
+  
+  void getMatrix(p3d_matrix4 m)
+  {
+    p3d_mat4PosReverseOrder( m, _x, _y, _z, _rx, _ry, _rz);
+  };  
+  
+  double _x;//! x the object x coordinate
+  double _y; //! y the object y coordinate
+  double _z; //! z the object z coordinate
+  double _rx; //! rx the object rotation around x axis
+  double _ry; //! ry the object rotation around y axis
+  double _rz; //! rz the object rotation around z axis
+};  
+
 void setMaxNumberOfTryForIK(int value);
 int getMaxNumberOfTryForIK();
 void setDebugConfAroundTheObject(bool value);

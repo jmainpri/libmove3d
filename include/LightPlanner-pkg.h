@@ -5,5 +5,6 @@
 #include "../lightPlanner/proto/ManipulationPlanner.hpp"
 #include "../lightPlanner/proto/ManipulationTestFunctions.hpp"
 #include "../lightPlanner/proto/ManipulationArmData.hpp"
+#include "../lightPlanner/proto/robotPos.h" 
 
 #endif // LIGHTPLANNERPKG_H
