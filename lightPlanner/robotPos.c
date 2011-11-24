@@ -11,17 +11,46 @@
 
 #include "env.hpp"
 
-static configPt sampleRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 *att, int shootBase, int shootObjectPosition, int shootObjectRotation, int cntrtToActivate, bool nonUsedCntrtDesactivation,bool gaussianShoot=false);
+using namespace std;
+
+//! @breif small class to go from eulers angls to matrix representation,
+//! the p3d_matrix is extracted the rotation for each axes with convention (X,Y,Z)
+class p3d_objectPos 
+{  
+public:
+  p3d_objectPos() { };
+  p3d_objectPos(p3d_matrix4 m) 
+  {
+    p3d_mat4ExtractPosReverseOrder(m, &_x, &_y, &_z, &_rx, &_ry, &_rz);
+  };
+  
+  void setFromMatrix(p3d_matrix4 m)
+  {
+    p3d_mat4ExtractPosReverseOrder(m, &_x, &_y, &_z, &_rx, &_ry, &_rz);
+  };
+  
+  void getMatrix(p3d_matrix4 m)
+  {
+    p3d_mat4PosReverseOrder( m, _x, _y, _z, _rx, _ry, _rz);
+  };  
+  
+  double _x;//! x the object x coordinate
+  double _y; //! y the object y coordinate
+  double _z; //! z the object z coordinate
+  double _rx; //! rx the object rotation around x axis
+  double _ry; //! ry the object rotation around y axis
+  double _rz; //! rz the object rotation around z axis
+};
 
 extern double SAFETY_DIST;
 extern double APROACH_OFFSET;
 extern double ROBOT_MAX_LENGTH;
 
-using namespace std;
-
-/** @brief The maximal number of shoot to try before returning false*/
+//! @brief The maximal number of shoot to try before returning false
 static int MaxNumberOfTry = 10000;
 
+//! @brief Helps debugging configuration generation
+static bool debugConfAroundTheObject = false;
 
 void setMaxNumberOfTryForIK(int value)
 {
@@ -33,6 +62,15 @@ int getMaxNumberOfTryForIK()
   return  MaxNumberOfTry;
 }
 
+void setDebugConfAroundTheObject(bool value)
+{
+  debugConfAroundTheObject = value;
+}
+
+int getDebugConfAroundTheObject()
+{
+  return  debugConfAroundTheObject;
+}
 
 /**
  * @brief compute a configuration for the whole robot according the configuration of the base, the object and the rest of the robot. The configuration of the base and the object are given in the param baseConfig and the rest of the robot in the param bodyConfig.
@@ -110,40 +148,6 @@ void adaptClosedChainConfigToBasePos(p3d_rob* robot, p3d_matrix4 base, configPt 
   p3d_get_robot_config_into(robot, &refConf);
 }
 
-// @brief Computes the Min and Max Base sampling radius
-//! If not given in input
-//! Compute the radius for base sampling
-//! Given the Bounding box of the base and the object
-// @param robot the robot
-// @param baseJnt the robot base jnt
-// @param objectJnt the object jnt
-// @param minRadius the minimum radius to shoot the base. If = -1 compute it automatically
-// @param maxRadius the maximum radius to shoot the base. If = -1 compute it automatically
-void setBaseMinAndMaxSamplingRadius(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt,int cntrtToActivate,double& minRadius, double& maxRadius)
-{
-  if(maxRadius == -1){
-    if(!robot->isCarryingObject && objectJnt->o){
-      maxRadius = MAX(baseJnt->o->BB0.xmax - baseJnt->o->BB0.xmin, baseJnt->o->BB0.ymax - baseJnt->o->BB0.ymin) + MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
-    }else{
-      if(!(*robot->armManipulationData)[cntrtToActivate].getCarriedObject()){
-        printf("sampleRobotConfigAroundTheObject : Error, No object loaded");
-      }else{
-        maxRadius = MAX(baseJnt->o->BB0.xmax - baseJnt->o->BB0.xmin, baseJnt->o->BB0.ymax - baseJnt->o->BB0.ymin) + MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
-      }
-    }
-  }
-  if(minRadius == -1){
-    if(!robot->isCarryingObject && objectJnt->o){
-      minRadius = MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
-    }else{
-      if(!(*robot->armManipulationData)[cntrtToActivate].getCarriedObject()){
-        printf("sampleRobotConfigAroundTheObject : Error, No object loaded");
-      }else{
-        minRadius = MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
-      }
-    }
-  }
-}
 #ifdef GRASP_PLANNING
 double costConst = 1;
 /**
@@ -454,25 +458,67 @@ double computeForwardCostSpecificArm(p3d_rob* robot, int whichArm)
   return (p3d_vectDotProd(plane.normale, wrist) + plane.d)/0.79;
 }
 
-//! @brief Sample the base joint
+//! @brief Sample the base joint in a semi circle
 //! @param robot the robot
 //! @param minRadius the minimum radius to shoot the base
 //! @param maxRadius the maximum radius to shoot the base
 //! @return the configuration
 void sampleBaseJoint(p3d_rob* robot, p3d_jnt* baseJnt, double minRadius, double maxRadius, p3d_objectPos& objectPos, configPt q)
 {
-  const double nominalRadius = 0.17; // 10 Deg
+  if( baseJnt->type != P3D_PLAN && baseJnt->type != P3D_FREEFLYER )
+  {
+    cout << "Error in " << __func__ << endl;
+    return;
+  }
   
-  double randX = p3d_random(minRadius , maxRadius);
-  double randY = p3d_random(-(maxRadius * tan(nominalRadius)), (maxRadius * tan(nominalRadius)));
+  int index_dof_rz;
+  
+  if( baseJnt->type == P3D_PLAN )
+    index_dof_rz = 2;
+  else
+    index_dof_rz = 5;
+  
+  const bool allAround = true;
   
   double x = objectPos._x;
   double y = objectPos._y;
-  double rz = objectPos._z;
+  double rz = objectPos._rz;
   
-  q[baseJnt->index_dof] = x - cos(rz)*(randX) + sin(rz)*(randY);
-  q[baseJnt->index_dof + 1] = y - sin(rz)*(randX) + cos(rz)*(randY) ;
+  double randX, randY, randRZ;
   
+  if(allAround)
+  {
+    const double margin = 0.10;
+   
+    // Samples a point within a croun
+    double l =  p3d_random( minRadius , maxRadius );
+    double r =  p3d_random( 0 , 2*M_PI );
+    randX = l*cos(r);
+    randY = l*sin(r);
+    
+    // Orientation is chosen toward the object
+    randRZ = p3d_random( angle_limit_2PI(M_PI+r-margin) , 
+                         angle_limit_2PI(M_PI+r+margin) );
+    
+    q[baseJnt->index_dof + 0] = x + randX;
+    q[baseJnt->index_dof + 1] = y + randY;
+    q[baseJnt->index_dof + index_dof_rz] = angle_limit_PI(randRZ);
+  }
+  else
+  {
+    const double nominalRadius = 0.17; // 10 Deg
+    
+    randX =  p3d_random( minRadius , maxRadius );
+    randY =  p3d_random(-(maxRadius * tan(nominalRadius)), (maxRadius * tan(nominalRadius)));
+    randRZ = p3d_random(rz + robot->relativeZRotationBaseObject - nominalRadius, 
+                        rz + robot->relativeZRotationBaseObject + nominalRadius);
+    
+    q[baseJnt->index_dof + 0] = x - cos(rz)*(randX) + sin(rz)*(randY);
+    q[baseJnt->index_dof + 1] = y - sin(rz)*(randX) + cos(rz)*(randY);
+    q[baseJnt->index_dof + index_dof_rz] = randRZ;
+  }
+
+  // Check X,Y DoFs limits
   if(baseJnt->dof_data[0].vmin > q[baseJnt->index_dof]){
     q[baseJnt->index_dof] = baseJnt->dof_data[0].vmin;
   }
@@ -485,8 +531,6 @@ void sampleBaseJoint(p3d_rob* robot, p3d_jnt* baseJnt, double minRadius, double 
   if(baseJnt->dof_data[1].vmax < q[baseJnt->index_dof + 1]){
     q[baseJnt->index_dof + 1] = baseJnt->dof_data[1].vmax;
   }
-  double randRZ = p3d_random(rz + robot->relativeZRotationBaseObject - nominalRadius, rz + robot->relativeZRotationBaseObject + nominalRadius);
-  q[baseJnt->index_dof + 2] = randRZ;
 }
 
 //! When the robot is carrying an object
@@ -514,10 +558,10 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
   configPt carriedObjectRefConf = p3d_alloc_config(carriedObject);
   configPt carriedObjectConf = p3d_get_robot_config(carriedObject);
   
-  carriedObjectRefConf[objIdx]  = objPos._x;
-  carriedObjectRefConf[objIdx + 1]  = objPos._y;
-  carriedObjectRefConf[objIdx + 2]  = objPos._z;
-  carriedObjectRefConf[objIdx + 3]  = objPos._rx;
+  carriedObjectRefConf[objIdx + 0] = objPos._x;
+  carriedObjectRefConf[objIdx + 1] = objPos._y;
+  carriedObjectRefConf[objIdx + 2] = objPos._z;
+  carriedObjectRefConf[objIdx + 3] = objPos._rx;
   carriedObjectRefConf[objIdx + 4] = objPos._ry;
   carriedObjectRefConf[objIdx + 5] = objPos._rz;
   
@@ -540,10 +584,10 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
     }else{
       p3d_gaussian_config2_Joint_specific(robot, (*robot->armManipulationData)[cntrtToActivate].getManipulationJnt(), carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, true);
     }
-//Bit computation to get the positions and rotations to sample.
-//When the Bit = 1 the corresponding position or rotation has to be sampled
+    //Bit computation to get the positions and rotations to sample.
+    //When the Bit = 1 the corresponding position or rotation has to be sampled
     if(~shootObjectPos & 1){
-      carriedObjectConf[objIdx]  = objPos._x;
+      carriedObjectConf[objIdx + 0]  = objPos._x;
     }
     if(~shootObjectPos & 2){
       carriedObjectConf[objIdx + 1]  = objPos._y;
@@ -551,7 +595,6 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
     if(~shootObjectPos & 4){
       carriedObjectConf[objIdx + 2]  = objPos._z;
     }
-    
     if(~shootObjectRot & 1){
       carriedObjectConf[objIdx + 3]  = objPos._rx;
     }
@@ -579,7 +622,63 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
   p3d_destroy_config(carriedObject, carriedObjectConf);
 }
 
-bool debugConfAroundTheObject = false;
+//! @brief Computes the Min and Max Base sampling radius
+//! If not given in input compute the radius for base sampling
+//! Given the Bounding box of the base and the object
+//! @param robot the robot
+//! @param baseJnt the robot base jnt
+//! @param objectJnt the object jnt
+//! @param minRadius the minimum radius to shoot the base. If = -1 compute it automatically
+//! @param maxRadius the maximum radius to shoot the base. If = -1 compute it automatically
+void setBaseMinAndMaxSamplingRadius(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt,int cntrtToActivate,double& minRadius, double& maxRadius)
+{
+  if(maxRadius == -1){
+    if(!robot->isCarryingObject && objectJnt->o){
+      maxRadius = MAX(baseJnt->o->BB0.xmax - baseJnt->o->BB0.xmin, 
+                      baseJnt->o->BB0.ymax - baseJnt->o->BB0.ymin) + 
+                  MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, 
+                      objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
+    }else{
+      if(!(*robot->armManipulationData)[cntrtToActivate].getCarriedObject()){
+        printf("sampleRobotConfigAroundTheObject : Error, No object loaded");
+      }else{
+        maxRadius = MAX(baseJnt->o->BB0.xmax - baseJnt->o->BB0.xmin, 
+                        baseJnt->o->BB0.ymax - baseJnt->o->BB0.ymin) + 
+        MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, 
+            objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
+      }
+    }
+  }
+  if(minRadius == -1){
+    if(!robot->isCarryingObject && objectJnt->o){
+      minRadius = MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, 
+                      objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
+    }else{
+      if(!(*robot->armManipulationData)[cntrtToActivate].getCarriedObject()){
+        printf("sampleRobotConfigAroundTheObject : Error, No object loaded");
+      }else{
+        minRadius = MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, 
+                        objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
+      }
+    }
+  }
+  
+  if( debugConfAroundTheObject )
+  {
+    cout << "shoot base : " << minRadius << " , " << maxRadius << endl;
+    cout << "objectJnt->name : " << objectJnt->name << endl;
+    cout << "objectJnt->o->BB0.xmax : " << objectJnt->o->BB0.xmax << endl;
+    cout << "objectJnt->o->BB0.xmin : " << objectJnt->o->BB0.xmin << endl;
+    cout << "objectJnt->o->BB0.ymax : " << objectJnt->o->BB0.ymax << endl;
+    cout << "objectJnt->o->BB0.ymin : " << objectJnt->o->BB0.ymin << endl;
+    cout << "baseJnt->name : " << baseJnt->name << endl;
+    cout << "baseJnt->o->BB0.xmax : " << baseJnt->o->BB0.xmax << endl;
+    cout << "baseJnt->o->BB0.xmin : " << baseJnt->o->BB0.xmin << endl;
+    cout << "baseJnt->o->BB0.ymax : " << baseJnt->o->BB0.ymax << endl;
+    cout << "baseJnt->o->BB0.ymin : " << baseJnt->o->BB0.ymin << endl;
+  }
+}
+
 //! @brief Function for sampling a valid robot configuration given an object position. 
 //! We assume that the center of the object is the center of object Joint.
 //! @param robot the robot
@@ -600,7 +699,8 @@ configPt sampleRobotConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_
   configPt q = NULL;
   
   // Safe test that robot, oject and base exist
-  if(robot && objectJnt && baseJnt){
+  if(robot && objectJnt && baseJnt)
+  {
     q = p3d_alloc_config(robot);
     configPt qInit = p3d_get_robot_config(robot);
     
@@ -622,6 +722,10 @@ configPt sampleRobotConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_
         nbTry += MaxNumberOfTry*5/100;
       }
       do {
+//        if ( debugConfAroundTheObject ) {
+//          g3d_draw_allwin_active();
+//        }
+        
         // Continues until a configuration
         // that respects kinematic constraints is found
         if(!gaussianShoot)
@@ -639,17 +743,24 @@ configPt sampleRobotConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_
           p3d_gaussian_config2_specific(robot, qInit, q , translationFactor, rotationFactor, true);
         }
         
-        if(shootBase == TRUE)
+        if(shootBase == true)
         {
-          // Sample the base joint 
-          // within a circle of minRadius and maxRadius
+          // Sample the base joint within a circle
+          // of minRadius and maxRadius
           sampleBaseJoint(robot, baseJnt, minRadius, maxRadius, objPos, q);
           
+          if ( debugConfAroundTheObject ) {
+            cout << "baseJnt->index_dof = " << baseJnt->index_dof << endl;
+            for(int i=0; i<baseJnt->dof_equiv_nbr; i++) {
+              cout << "q[baseJnt->index_dof+" <<i<< "] = " << q[baseJnt->index_dof+i] << endl;
+            }
+          }
         }
         else if (baseJnt->type != P3D_ROTATE)
         {
-          for(int i = 0; i < baseJnt->dof_equiv_nbr; i++){
-            q[baseJnt->index_dof + i] = qInit[baseJnt->index_dof + i];
+          for(int i = 0; i<baseJnt->dof_equiv_nbr; i++)
+          {
+            q[baseJnt->index_dof+i] = qInit[baseJnt->index_dof+i];
           }
         }
         
@@ -663,8 +774,8 @@ configPt sampleRobotConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_
           int ffjntIndex = (*robot->armManipulationData)[cntrtToActivate].getManipulationJnt()->index_dof;
           
           // When not sampling the object confguration
-          // The free flyer DoFs are set to the argument parameters (objPos)
-          q[ffjntIndex] = objPos._x;
+          // the free flyer DoFs are set to the argument parameters (objPos)
+          q[ffjntIndex + 0] = objPos._x;
           q[ffjntIndex + 1] = objPos._y;
           q[ffjntIndex + 2] = objPos._z;
           q[ffjntIndex + 3] = objPos._rx;
@@ -672,13 +783,18 @@ configPt sampleRobotConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_
           q[ffjntIndex + 5] = objPos._rz;
         }
         nbTry++;
+        // The update function re-sample the robot configuration
+        // to get a valid configuration regarding the kinematic constraints
       } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && nbTry < MaxNumberOfTry);
-      //       g3d_draw_allwin_active();
+  
       nbTryColliding++;
       collision = p3d_col_test();
       
-      if ( debugConfAroundTheObject && collision ) {
+      if ( debugConfAroundTheObject ) {
+        //g3d_draw_allwin_active();
+        if( collision ) {
         p3d_print_col_pair();
+        }
       }
     } while ( collision && ( nbTry < MaxNumberOfTry ) );
     
@@ -706,24 +822,48 @@ configPt sampleRobotConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_
 //! @param objectPos the object position matrix
 //! @param att the attach matrix. The number of matrix is robot->nbCcCntrts
 //! @return the robot config
-static configPt sampleRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 *att, int shootBase, int shootObjectPosition, int shootObjectRotation, int cntrtToActivate, bool nonUsedCntrtDesactivation, bool gaussianShoot) 
+static configPt sampleRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 *att, 
+                                     int shootBase, int shootObjectPosition, int shootObjectRotation, 
+                                     int cntrtToActivate, bool nonUsedCntrtDesactivation, bool gaussianShoot) 
 {
   configPt q = NULL;
-  
   p3d_objectPos objPos(objectPos);
   
   // Backup and set the attach matrix
   p3d_matrix4 bakTatt[(int)robot->armManipulationData->size()];
 	
-  for (int i = 0; i < (int)robot->armManipulationData->size(); i++) {
+  for (int i = 0; i < (int)robot->armManipulationData->size(); i++) 
+  {
     p3d_mat4Copy((*robot->armManipulationData)[i].getCcCntrt()->Tatt, bakTatt[i]);
     p3d_mat4Copy(att[i], (*robot->armManipulationData)[i].getCcCntrt()->Tatt);
   }
   
-	q = sampleRobotConfigAroundTheObject(robot, robot->baseJnt, robot->curObjectJnt, objPos, -1, ROBOT_MAX_LENGTH, shootBase, shootObjectPosition, shootObjectRotation, cntrtToActivate, nonUsedCntrtDesactivation, gaussianShoot);
+  // Compute the min and max values of the base circle
+  // when sampling the base joint (fifty centimeters
+  p3d_jnt* baseJnt = robot->baseJnt;
+  double maxRadius = -1;
+  double minRadius = -1;
+  
+  if( shootBase )
+  {
+    // Two times the size of the base
+    maxRadius = std::max(baseJnt->o->BB0.xmax - baseJnt->o->BB0.xmin, 
+                         baseJnt->o->BB0.ymax - baseJnt->o->BB0.ymin) * 1.5;
+    
+    // Half the size of the base
+    minRadius = std::max(baseJnt->o->BB0.xmax - baseJnt->o->BB0.xmin, 
+                         baseJnt->o->BB0.ymax - baseJnt->o->BB0.ymin) / 2;
+  }
+    
+  // Main function to sample a robot configuration 
+	q = sampleRobotConfigAroundTheObject(robot, baseJnt, robot->curObjectJnt, objPos, 
+                                       minRadius, maxRadius, 
+                                       shootBase, shootObjectPosition, shootObjectRotation, 
+                                       cntrtToActivate, nonUsedCntrtDesactivation, gaussianShoot);
   
 	// Restore the attach matrix
-  for (int i = 0; i < (int)robot->armManipulationData->size(); i++) {
+  for (int i = 0; i < (int)robot->armManipulationData->size(); i++) 
+  {
     p3d_mat4Copy(bakTatt[i], (*robot->armManipulationData)[i].getCcCntrt()->Tatt);
   }
   return q;
@@ -752,7 +892,7 @@ void sampleTwoArmsRobotGraspAndApproachPosWithHold(p3d_rob* robot, p3d_matrix4 o
     do{
       p3d_col_activate_obj_env(robot->curObjectJnt->o);
       setSafetyDistance(robot, 0);
-      *graspConf = sampleRobotGraspConf(robot, objectPos, att, TRUE, FALSE, FALSE, -1, true);
+      *graspConf = sampleRobotGraspConf(robot, objectPos, att, TRUE, FALSE, FALSE, -1, true, false);
       if(graspConf == NULL){
         return;
       }
@@ -776,7 +916,7 @@ void sampleTwoArmsRobotGraspAndApproachPosWithHold(p3d_rob* robot, p3d_matrix4 o
   att[0][1][3] += -APROACH_OFFSET;
   att[1][1][3] += APROACH_OFFSET;
   p3d_set_and_update_robot_conf(*graspConf);
-  *approachConf = sampleRobotGraspConf(robot, objectPos, att, FALSE, FALSE, FALSE, -1, true);
+  *approachConf = sampleRobotGraspConf(robot, objectPos, att, FALSE, FALSE, FALSE, -1, true, false);
   MY_FREE(att, p3d_matrix4, 2);
   switchBBActivationForGrasp();
   return;
@@ -808,7 +948,7 @@ configPt sampleTwoArmsRobotGraspApproachPosWithHold(p3d_rob* robot, p3d_matrix4 
     do{
       p3d_col_activate_obj_env(robot->curObjectJnt->o);
       setSafetyDistance(robot, 0);
-      q = sampleRobotGraspConf(robot, objectPos, att, TRUE, FALSE, FALSE, cntrtToActivate, true);
+      q = sampleRobotGraspConf(robot, objectPos, att, TRUE, FALSE, FALSE, cntrtToActivate, true, false);
       if(q == NULL){
         return NULL;
       }
@@ -855,7 +995,7 @@ configPt sampleTwoArmsRobotGraspPosWithHold(p3d_rob* robot, p3d_matrix4 objectPo
   do{
 //     p3d_col_activate_obj_env(robot->curObjectJnt->o);
     setSafetyDistance(robot, 0);
-    q = sampleRobotGraspConf(robot, objectPos, att, TRUE, FALSE, FALSE, -1, true);
+    q = sampleRobotGraspConf(robot, objectPos, att, true, false, false, -1, true, false);
     if(q == NULL){
       //  switchBBActivationForGrasp();
 //       activateHandsVsObjectCol(robot);
@@ -901,7 +1041,7 @@ configPt sampleTwoArmsRobotGraspPosWithoutBase(p3d_rob* robot, p3d_matrix4 objec
     shootObjectPos = true;
     shootObjectRot = true;
   }
-  configPt q = sampleRobotGraspConf(robot, objectPos, att, FALSE, shootObjectPos, shootObjectRot, cntrtToActivate, nonUsedCntrtDesactivation);
+  configPt q = sampleRobotGraspConf(robot, objectPos, att, FALSE, shootObjectPos, shootObjectRot, cntrtToActivate, nonUsedCntrtDesactivation, false);
 #ifndef GRASP_PLANNING
   activateHandsVsObjectCol(robot);
 #endif
@@ -918,33 +1058,76 @@ configPt sampleTwoArmsRobotGraspApproachPosWithoutBase(p3d_rob* robot, p3d_matri
   p3d_matrix4 * att = MY_ALLOC(p3d_matrix4, 2);
   p3d_mat4Copy(att1, att[0]);
   p3d_mat4Copy(att2, att[1]);
-  configPt q = sampleRobotGraspConf(robot, objectPos, att, FALSE, FALSE, FALSE, cntrtToActivate, nonUsedCntrtDesactivation);
+  configPt q = sampleRobotGraspConf(robot, objectPos, att, FALSE, FALSE, FALSE, cntrtToActivate, nonUsedCntrtDesactivation, false);
   MY_FREE(att, p3d_matrix4, 2);
   return q;
 }
 
-/**
- * @brief Samples the robot grasp without reshooting the base configuration given an attach matrix for each arm and the object position
- * @param robot the robot
- * @param objectPos the object position matrix
- * @param att1 array of attach matrix for the arm
- * @return the robot config
- */
-configPt sampleRobotGraspPosWithoutBase(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 tAtt, int shootObjectPos, int shootObjectRot, int armId, bool nonUsedCntrtDesactivation) 
+//! @brief Samples the robot grasp reshooting the base configuration 
+//! given an attach matrix for each arm and the object position
+//! @param robot the robot
+//! @param objectPos the object position matrix
+//! @param att1 array of attach matrix for the arm
+//! @return the robot config
+configPt sampleRobotGraspPosWithBase(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 tAtt, int shootObjectPos, int shootObjectRot, int armId, bool nonUsedCntrtDesactivation) 
 {
+  const int shootBase = true;
+  
 #ifndef GRASP_PLANNING
   deactivateHandsVsObjectCol(robot);
 #endif
   p3d_matrix4* att = MY_ALLOC(p3d_matrix4, robot->armManipulationData->size());
-  for(int i = 0; i < (int)robot->armManipulationData->size(); i++){
+  
+  // Get the Attach Matrix in the armManipulationData
+  for(int i = 0; i < (int)robot->armManipulationData->size(); i++)
+  {
     if(i == armId){
       p3d_mat4Copy(tAtt, att[i]);
     }else{
       att[i][0][0] = att[i][0][1] = att[i][0][2] = 0;
     }
   }
+  
   // Get a robot grasp config from the object Pos
-  configPt q = sampleRobotGraspConf(robot, objectPos, att, FALSE, shootObjectPos, shootObjectRot, armId, nonUsedCntrtDesactivation);
+  configPt q = sampleRobotGraspConf(robot, objectPos, att, 
+                                    shootBase, shootObjectPos, shootObjectRot,
+                                    armId, nonUsedCntrtDesactivation, false);
+  
+#ifndef GRASP_PLANNING
+  activateHandsVsObjectCol(robot);
+#endif
+  MY_FREE(att, p3d_matrix4, robot->armManipulationData->size());
+  return q;
+}
+
+//! @brief Samples the robot grasp without reshooting the base configuration 
+//! given an attach matrix for each arm and the object position
+//! @param robot the robot
+//! @param objectPos the object position matrix
+//! @param att1 array of attach matrix for the arm
+//! @return the robot config
+configPt sampleRobotGraspPosWithoutBase(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 tAtt, int shootObjectPos, int shootObjectRot, int armId, bool nonUsedCntrtDesactivation) 
+{
+#ifndef GRASP_PLANNING
+  deactivateHandsVsObjectCol(robot);
+#endif
+  p3d_matrix4* att = MY_ALLOC(p3d_matrix4, robot->armManipulationData->size());
+  
+  // Get the Attach Matrix in the armManipulationData
+  for(int i = 0; i < (int)robot->armManipulationData->size(); i++)
+  {
+    if(i == armId){
+      p3d_mat4Copy(tAtt, att[i]);
+    }else{
+      att[i][0][0] = att[i][0][1] = att[i][0][2] = 0;
+    }
+  }
+  
+  // Get a robot grasp config from the object Pos
+  configPt q = sampleRobotGraspConf(robot, objectPos, att, 
+                                    false, shootObjectPos, shootObjectRot, 
+                                    armId, nonUsedCntrtDesactivation, false);
+  
 #ifndef GRASP_PLANNING
   activateHandsVsObjectCol(robot);
 #endif
@@ -1002,6 +1185,7 @@ configPt sampleRobotCloseToConfGraspApproachOrExtract(p3d_rob* robot, configPt r
   }
   
   configPt q = sampleRobotGraspConf(robot, objectPos, att, false, shootObjectPos, shootObjectRot, armId, nonUsedCntrtDesactivation,true);
+  
 #ifndef GRASP_PLANNING
   activateHandsVsObjectCol(robot);
 #endif
@@ -1016,7 +1200,7 @@ configPt sampleRobotCloseToConfGraspApproachOrExtract(p3d_rob* robot, configPt r
   return q;
 }
 
-//! @brief Compute The free Arms configuration given a reference one
+//! @brief Compute The free Arms configuration given a reference configuration
 //! @param robot the robot
 //! @param objectPos the object position matrix
 //! @param att the attach matrix. The number of matrix is robot->nbCcCntrts
