@@ -130,6 +130,17 @@ void dummy_add_config_to_ui(char* name,p3d_rob* robot, double* q)
 
 extern void g3d_export_cpp_graph();
 
+void init_all_draw_functions_dummy()
+{
+  ext_g3d_draw_cost_features = (void (*)())(dummy_g3d_draw_all_win_active);
+	ext_g3d_export_cpp_graph = (void (*)())(dummy_g3d_draw_all_win_active);
+	ext_g3d_get_win_mouse = (void (*) (int*,int*))(dummy_g3d_draw_all_win_active);
+	ext_g3d_draw_allwin_active = (void (*)())(dummy_g3d_draw_all_win_active);
+	ext_g3d_calc_cam_param = (void (*)(g3d_cam_param& p))(dummy_g3d_draw_all_win_active);
+	ext_g3d_add_traj_to_ui = (void (*)(char* name,int i, p3d_rob* rob , p3d_traj* traj ))(dummy_g3d_draw_all_win_active);
+	ext_g3d_add_config_to_ui = (void (*)(char* name,p3d_rob* rob,double* q))(dummy_g3d_draw_all_win_active);
+}
+
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
 qtG3DWindow::qtG3DWindow()
@@ -186,14 +197,18 @@ void g3d_draw_allwin_active_back_buffer(void)
 
 void g3d_add_traj ( char *name, int i , p3d_rob* rob , p3d_traj* traj  )
 {
-	cout << "g3d_add_traj ( char *name, int i )" << endl;
-	ext_g3d_add_traj_to_ui(name,i,rob,traj);
+	cout << "g3d_add_traj ( char *name, int i )" << ext_g3d_add_traj_to_ui << endl;
+  
+  if( ext_g3d_add_traj_to_ui )
+    ext_g3d_add_traj_to_ui(name,i,rob,traj);
 }
 
 void g3d_add_config_to_ui(char* name,p3d_rob* rob,double* q)
 {
-  cout << "add_configuration_to_ui" << endl;
-  ext_g3d_add_config_to_ui(name,rob,q);
+  cout << "add_configuration_to_ui : " << ext_g3d_add_config_to_ui << endl;
+  
+  if( ext_g3d_add_config_to_ui )
+    ext_g3d_add_config_to_ui(name,rob,q);
 }
 
 void qt_canvas_viewing(int mouse_press, int button)
