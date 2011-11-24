@@ -26,20 +26,25 @@ ManipulationTestFunctions* global_manipPlanTest = NULL;
 //! Constructor
 ManipulationTestFunctions::ManipulationTestFunctions()
 {
-    m_Robot = p3d_get_robot_by_name_containing("JIDOKUKA_ROBOT");
+  string str("PR2_ROBOT");
+  m_Robot = p3d_get_robot_by_name_containing(str.c_str());
+  
+  if (m_Robot == NULL) {
+    cout << "No robot named " << str << endl;
+    return;
+  }
+  
+  cout << "Manipulation planner robot is : " << m_Robot->name << endl;
 
-    cout << "Manipulation planner robot is : " << m_Robot->name << endl;
-
-    m_qInit = NULL;
-    m_qGoal = NULL;
-
-    m_manipulation = NULL;
-
-    m_nbOrientations = 100;
-
-    resetObject();
-    resetPlacement();
-    resetSupport();
+  m_qInit = p3d_copy_config(m_Robot,m_Robot->ROBOT_POS);
+  m_qGoal = p3d_copy_config(m_Robot,m_Robot->ROBOT_GOTO);
+  
+  setObject( "GREY_TAPE" );
+  resetPlacement();
+  resetSupport();
+  
+  m_nbOrientations = 100;
+  m_manipulation = NULL;
 }
 
 //! Constructor
@@ -49,9 +54,7 @@ ManipulationTestFunctions::ManipulationTestFunctions(std::string RobotNameContai
 
     m_qInit = NULL;
     m_qGoal = NULL;
-
     m_manipulation = NULL;
-
     m_nbOrientations = 100;
 
     resetObject();
@@ -161,36 +164,36 @@ std::vector< std::pair<std::string,configPt> > ManipulationTestFunctions::getCon
 //! and the initial and goal configuration are created
 void ManipulationTestFunctions::initManipulationGenom() 
 {	
-    if (m_manipulation == NULL)
-    {
-        cout << "ManipulationTestFunctions::newManipulationPlanner" << endl;
-
-        m_manipulation= new ManipulationPlanner(m_Robot);
-        //         manipulation->setArmType(GP_LWR); // set the arm type
-
-        //m_qInit = p3d_copy_config(m_Robot,m_Robot->ROBOT_POS);
-        //m_qInit = p3d_get_robot_config(m_Robot);
-        //m_qGoal = p3d_copy_config(m_Robot,m_Robot->ROBOT_GOTO);
-
-        // Warning SCENARIO dependant part, gsJidoKukaSAHand.p3d
-        //setObject( "GREY_TAPE" );
-
-        m_objGoto.resize(6);
-
-        //    m_objGoto[0] = 4.23;
-        //    m_objGoto[1] = -2.22;
-        //    m_objGoto[2] = 1.00;
-
-        m_objGoto[0] = P3D_HUGE;
-        m_objGoto[1] = P3D_HUGE;
-        m_objGoto[2] = P3D_HUGE;
-
-        m_objGoto[3] = P3D_HUGE;
-        m_objGoto[4] = P3D_HUGE;
-        m_objGoto[5] = P3D_HUGE;
-    }
-
-    return;
+  if (m_manipulation == NULL)
+  {
+    cout << "ManipulationTestFunctions::newManipulationPlanner" << endl;
+    
+    m_manipulation= new ManipulationPlanner(m_Robot);
+    //         manipulation->setArmType(GP_LWR); // set the arm type
+    
+    //m_qInit = p3d_copy_config(m_Robot,m_Robot->ROBOT_POS);
+    //m_qInit = p3d_get_robot_config(m_Robot);
+    //m_qGoal = p3d_copy_config(m_Robot,m_Robot->ROBOT_GOTO);
+    
+    // Warning SCENARIO dependant part, gsJidoKukaSAHand.p3d
+    //setObject( "GREY_TAPE" );
+    
+    m_objGoto.resize(6);
+    
+    //    m_objGoto[0] = 4.23;
+    //    m_objGoto[1] = -2.22;
+    //    m_objGoto[2] = 1.00;
+    
+    m_objGoto[0] = P3D_HUGE;
+    m_objGoto[1] = P3D_HUGE;
+    m_objGoto[2] = P3D_HUGE;
+    
+    m_objGoto[3] = P3D_HUGE;
+    m_objGoto[4] = P3D_HUGE;
+    m_objGoto[5] = P3D_HUGE;
+  }
+  
+  return;
 }
 
 bool ManipulationTestFunctions::saveObjectAndRobotState( configPt q, std::string ObjectName )
