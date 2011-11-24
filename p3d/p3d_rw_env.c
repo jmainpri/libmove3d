@@ -38,7 +38,7 @@ int START_READ = FALSE;
 /***************************************************************/
 int num_data_error ( char *msg );
 
-int p3d_read_desc ( char *file )
+int p3d_read_desc ( const char *file )
 {
 	FILE *fdc;
 	int ret;
@@ -688,16 +688,19 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
                       &limit_tab[2],&limit_tab[3],
                       &limit_tab[4],&limit_tab[5]);
       
-      for ( int i = 0; i < XYZ_ENV->nr; i++ )
+      for ( int i =0; i<XYZ_ENV->nr; i++ )
 			{
         robotPt = XYZ_ENV->robot[i];
         
-        if( robotPt->joints[1]->type == P3D_FREEFLYER )
+        for ( int j =0; j<robotPt->njoints; j++ )
         {
-          for ( int j = 0; j<3; j++ )
+          if( robotPt->joints[j]->type == P3D_FREEFLYER )
           {
-            p3d_jnt_set_dof_bounds_deg ( robotPt->joints[1], j, limit_tab[2*j], limit_tab[2*j+1] );
-            p3d_jnt_set_dof_rand_bounds_deg ( robotPt->joints[1], j, limit_tab[2*j], limit_tab[2*j+1] );
+            for ( int k = 0; k<3; k++ )
+            {
+              p3d_jnt_set_dof_bounds_deg ( robotPt->joints[j], k, limit_tab[2*k], limit_tab[2*k+1] );
+              p3d_jnt_set_dof_rand_bounds_deg ( robotPt->joints[j], k, limit_tab[2*k], limit_tab[2*k+1] );
+            }
           }
         }
       }

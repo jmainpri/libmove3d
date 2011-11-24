@@ -6,7 +6,7 @@
  */
 #ifndef __CEXTRACT__
 
-extern int p3d_read_desc ( char *file );
+extern int p3d_read_desc ( const char *file );
 extern void p3d_set_directory ( char *dir );
 extern void p3d_get_directory ( char *dir );
 extern void p3d_get_filename ( char *fullname );
