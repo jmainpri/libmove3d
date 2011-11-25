@@ -79,22 +79,31 @@ bool p3d_test_middle_of_CVS( p3d_traj * trajPt,
 {
   bool res = true;
   p3d_rob* rob = trajPt->rob;
-  for(unsigned int i=0;i<m_vectOfCVS.size();i++){
-    configPt q1 = p3d_config_at_distance_along_traj(trajSmPt, m_vectOfCVS[i].second.tau) ;   
+  
+  for(unsigned int i=0;i<m_vectOfCVS.size();i++)
+  {
+    configPt q1 = p3d_config_at_distance_along_traj(trajSmPt, m_vectOfCVS[i].second.tau);   
      p3d_set_and_update_this_robot_conf_multisol(rob, q1, NULL, 0, trajSmPt->courbePt->ikSol);
      p3d_get_robot_config_into(rob, &q1);
  
-    configPt q2 = p3d_config_at_distance_along_traj(trajPt,   m_vectOfCVS[i].second.s) ;  
+    configPt q2 = p3d_config_at_distance_along_traj(trajPt, m_vectOfCVS[i].second.s);  
     p3d_set_and_update_this_robot_conf_multisol(rob, q2, NULL, 0, trajPt->courbePt->ikSol);
     p3d_get_robot_config_into(rob, &q2);
-
-
 
     if( !p3d_equal_config( rob, q1, q2) ){
       printf("config differ in p3d_test_middle_of_CVS\n");    
       printf("s= %f tau = %f ith CVS : %d lpId %d \n", m_vectOfCVS[i].second.s, m_vectOfCVS[i].second.tau, i,  m_vectOfCVS[i].first);    
       //print_config(rob, q1);
       //print_config(rob, q2);
+      for (int j=0; j<rob->nb_dof; j++) {
+        if(fabs(q1[j] - q2[j]) > EPS6)
+        {
+          int i_joint=0;
+          p3d_jnt* dof_jnt = p3d_robot_dof_to_jnt(rob,j,&i_joint);
+          printf("config differ for dof : %d of joint : %s",j,dof_jnt->name);
+          printf(" , q1[j] : %f, q2[j] : %f\n",q1[j],q2[j]);
+        }
+      }
       res = false;
     }
     else {
