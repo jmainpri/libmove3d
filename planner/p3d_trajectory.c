@@ -414,12 +414,25 @@ int p3d_concat_traj(p3d_traj *traj1Pt, p3d_traj *traj2Pt)
     for(int i = 0; i < robotPt->mlp->nblpGp; i++) {
       if (p3d_multiLocalPath_get_value_groupToPlan(robotPt, i)) {
 	if(strcmp(robotPt->mlp->mlpJoints[i]->gpName,"upBody")==0) {
-	   if(!p3d_equal_config_n_offset(robotPt, robotPt->mlp->mlpJoints[i]->nbDofs, robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[0]]->index_dof, q1_end, q2_start)){
+           if(!p3d_equal_config_n_offset(robotPt, robotPt->mlp->mlpJoints[i]->nbDofs,
+                                         robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[0]]->index_dof,
+                                         q1_end, q2_start)){
               PrintError(("concat: end of first trajectory different from beginning of second one\n"));
-              printf("q1_end : \n");
-	      print_config(robotPt, q1_end);
-	      printf("q2_start : \n");
-	      print_config(robotPt, q2_start);
+              //printf("q1_end : \n");
+              //print_config(robotPt, q1_end);
+              //printf("q2_start : \n");
+              //print_config(robotPt, q2_start);
+              for(int k=0;k<robotPt->nb_dof;k++)
+              {
+                  if(fabs(q1_end[k] - q2_start[k]) > EPS6)
+                  {
+                      int i_joint;
+                      printf("joint %s differ ", p3d_robot_dof_to_jnt(robotPt, k,&i_joint)->name );
+                      printf("q1 = %f, q2 = %f ", q1_end[k],q2_start[k]);
+                      printf("k = %d ",k );
+                  }
+              }
+              printf("\n");
 	      p3d_destroy_config(robotPt, q1_end);
 	      p3d_destroy_config(robotPt, q2_start);
 	      return TRUE;
