@@ -159,7 +159,8 @@ public:
 		showOneCell
 #ifdef MULTILOCALPATH
 		,plotSoftMotionCurve,
-		writeSoftMotionFiles
+                writeSoftMotionFiles,
+                smoothSoftMotionTraj
 #endif
 	};
 	

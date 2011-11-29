@@ -115,6 +115,7 @@ Env::Env()
 #ifdef MULTILOCALPATH
 	mBoolMap.insert(boolMap_t(Env::plotSoftMotionCurve, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::writeSoftMotionFiles, new boolContainer(false)));
+        mBoolMap.insert(boolMap_t(Env::smoothSoftMotionTraj, new boolContainer(true)));
 #endif
 	mBoolMap.insert(boolMap_t(Env::startWithFKCntrt, new boolContainer(false)));
 	

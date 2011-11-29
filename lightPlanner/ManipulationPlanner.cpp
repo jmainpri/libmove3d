@@ -149,6 +149,13 @@ void ManipulationPlanner::setDebugMode(bool value){
 void ManipulationPlanner::setDebugSoftMotionMode(bool value){
   ENV.setBool(Env::writeSoftMotionFiles, value);
 }
+void ManipulationPlanner::setSmoothingSoftMotionMode(bool value){
+   ENV.setBool(Env::smoothSoftMotionTraj, value);
+}
+bool ManipulationPlanner::getSmoothingSoftMotionMode(){
+   ENV.getBool(Env::smoothSoftMotionTraj);
+}
+
 #endif
 void ManipulationPlanner::setPlanningMethod(p3d_traj* (*funct)(p3d_rob* robot, configPt qs, configPt qg)){
   _plannerMethod = funct;
@@ -539,7 +546,7 @@ int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECT
           approximate = true;
 	}
     }
-    if (p3d_convert_traj_to_softMotion(traj, true, approximate,confs.first, confs.second, smTraj) == 1) {
+    if (p3d_convert_traj_to_softMotion(traj, ENV.getBool(Env::smoothSoftMotionTraj), true, approximate,confs.first, confs.second, smTraj) == 1) {
         printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
         return MANIPULATION_TASK_ERROR_UNKNOWN;
     }
@@ -626,8 +633,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qSt
 
   ManipulationUtils::fixAllHands(_robot, qStart, false);
   fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
-
-  
 
   checkConfigForCartesianMode(qStart, object);
   checkConfigForCartesianMode(qGoal, object);

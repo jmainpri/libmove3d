@@ -42,7 +42,9 @@ public:
   void setDebugMode(bool value);
 #ifdef MULTILOCALPATH
   void setDebugSoftMotionMode(bool value);
-  
+  void setSmoothingSoftMotionMode(bool value);
+  bool getSmoothingSoftMotionMode();
+
   /** Multilocalpath Id for the base */
   int getBaseMLP() { return _BaseMLP; } 
   /** Multilocalpath Id for the head */

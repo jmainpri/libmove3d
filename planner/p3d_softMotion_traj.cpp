@@ -527,7 +527,7 @@ p3d_convert_ptpTraj_to_smoothedTraj (double *gain, int *ntest,
 }
 
 int
-p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file, bool approximate,
+p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool smooth, bool param_write_file, bool approximate,
                                 std::vector < int >&lp,
                                 std::vector < std::vector <
                                 double > > &positions, SM_TRAJ & smTraj)
@@ -640,6 +640,20 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file, bool a
 //    }
 
 
+if(smooth == false)
+  {
+    robotPt->tcur = trajSmPTPPt;
+    if (param_write_file == true) {
+      smTraj.clear ();
+      p3d_softMotion_export_traj (robotPt, trajSmPTPPt, 0,
+                                  (char *) "softMotion_PTP_Q.traj",
+                                  (char *) "softMotion_PTP_Seg.traj",ENV.getBool (Env::writeSoftMotionFiles),
+                                  ENV.getBool (Env::plotSoftMotionCurve), SAMPLING_TIME, lp,
+                                  positions, smTraj);
+    }
+
+} else {
+
 
   ///////////////////////////////////////////////////////////////////////////
   ////  COMPUTE THE SOFTMOTION SMOOTHED TRAJECTORY                        ///
@@ -657,7 +671,7 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool param_write_file, bool a
                                 positions, smTraj);
   }
   
-  
+}
 ///////////////////////////////////////////////////
 
 
@@ -755,10 +769,15 @@ if(approximate == true) {
 
 /////////////////////////////////////////////////////
 
-  // smTraj.print();
-//  print_MiddleOfCVS();
-  p3d_test_middle_of_CVS( trajPt , trajSmPt );
+//  smTraj.plot();
 
+//  print_MiddleOfCVS();
+if(smooth == true) {
+  p3d_test_middle_of_CVS( trajPt , trajSmPt );
+} else {
+     p3d_test_middle_of_CVS( trajPt ,  trajSmPTPPt);
+
+}
 
   //// HERE THE EXAMPLE TO USE THE FUNCTION THAT DETERMINE THE INDEX OF Q_SWITCH
   int id=0;
