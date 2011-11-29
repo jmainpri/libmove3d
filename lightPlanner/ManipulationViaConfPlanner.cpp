@@ -52,5 +52,9 @@ MANIPULATION_TASK_MESSAGE ManipulationViaConfPlanner::planTrajFromConfigArrayInR
     confs.push_back(conf);
     smTrajs.push_back(smTraj);
   }
+  else
+  {
+      return MANIPULATION_TASK_NO_TRAJ_FOUND;
+  }
   return MANIPULATION_TASK_OK;
 }

@@ -516,7 +516,10 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::concatTrajectories (std::vector<p
     *concatTraj = p3d_create_traj_by_copy(trajs[0]);
     for (int i = 1; i < (int)trajs.size(); i++) {
       if(trajs[i]){
-        p3d_concat_traj(*concatTraj, trajs[i]);
+        if (p3d_concat_traj(*concatTraj, trajs[i]) == TRUE)
+        {
+            return MANIPULATION_TASK_NO_TRAJ_FOUND;
+        }
       }
     }
     _robot->tcur = (*concatTraj);
