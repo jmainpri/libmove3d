@@ -672,7 +672,7 @@ int gpGrasp::print()
   printf("\t          %f %f %f %f \n", frame[1][0], frame[1][1], frame[1][2], frame[1][3]);
   printf("\t          %f %f %f %f \n", frame[2][0], frame[2][1], frame[2][2], frame[2][3]);
   printf("\t          %f %f %f %f ] \n", frame[3][0], frame[3][1], frame[3][2], frame[3][3]);
-  printf("\t nb_contacts: %lu \n", contacts.size());
+  printf("\t nb_contacts: %lu \n", (unsigned long int)contacts.size());
   printf("\t contacts:\n");
 
   for(i=0; i<contacts.size(); i++)
@@ -684,7 +684,7 @@ int gpGrasp::print()
     printf("\t\t\t finger: %d\n", contacts[i].fingerID);
   }
 
-  printf("\t nb_dofs: %lu \n", config.size());
+  printf("\t nb_dofs: %lu \n", (unsigned long int)config.size());
   printf("\t configuration:\n");
 
   for(i=0; i<config.size(); i++)
@@ -743,7 +743,7 @@ int gpGrasp::printInFile(const char *filename)
   fprintf(file, "\t          %f %f %f %f \n", frame[2][0], frame[2][1], frame[2][2], frame[2][3]);
   fprintf(file, "\t          %f %f %f %f ] \n",frame[3][0], frame[3][1], frame[3][2], frame[3][3]);
 
-  fprintf(file, "\t nb_contacts: %lu \n", contacts.size());
+  fprintf(file, "\t nb_contacts: %lu \n", (unsigned long int)contacts.size());
   fprintf(file, "\t contacts:\n");
 
   for(i=0; i<contacts.size(); i++)
@@ -755,7 +755,7 @@ int gpGrasp::printInFile(const char *filename)
     fprintf(file, "\t\t\t finger: %d\n", contacts[i].fingerID);
   }
 
-  fprintf(file, "\t nb_dofs: %lu \n", config.size());
+  fprintf(file, "\t nb_dofs: %lu \n", (unsigned long int)config.size());
   fprintf(file, "\t configuration:\n");
 
   for(i=0; i<config.size(); i++)

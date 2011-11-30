@@ -1767,7 +1767,7 @@ int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, gpHand_properties &handP
     return GP_ERROR;
   }
 
-  printf("Grasp computation for object \"%s\": %lu grasp frames will be used.\n", object->name, gframes.size() );
+  printf("Grasp computation for object \"%s\": %lu grasp frames will be used.\n", object->name, (unsigned long int)gframes.size() );
 
   switch ( handProp.type )
   {
@@ -1795,7 +1795,7 @@ int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, gpHand_properties &handP
       }
 
       kdtree.build(contactList);
-      printf("%lu samples on object surface \n",contactList.size() );
+      printf("%lu samples on object surface \n",(unsigned long int)contactList.size() );
       for(i=0; i<gframes.size(); ++i)
       {
         gframes[i].copyIn_p3d_matrix4(frame);
@@ -3195,23 +3195,23 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
       gpGrasp_collision_filter(graspList, hand_robot, object, handProp);
     }
 
-    printf("Remove contacts close to edges (currently %lu grasps).\n",graspList.size());
+    printf("Remove contacts close to edges (currently %lu grasps).\n",(unsigned long int)graspList.size());
     if(hand_type!=GP_PR2_GRIPPER) {
       gpRemove_edge_contacts(graspList,  handProp.edgeAngleThreshold, handProp.edgeDistanceThreshold);
     }
-    printf("after: Remove contacts close to edges (currently %lu grasps).\n",graspList.size());
+    printf("after: Remove contacts close to edges (currently %lu grasps).\n",(unsigned long int)graspList.size());
 
     if(hand_type!=GP_PR2_GRIPPER) {
       gpGrasp_stability_filter(graspList);
     }
 
-    printf("Reduce grasp list size (currently %lu grasps).\n",graspList.size());
+    printf("Reduce grasp list size (currently %lu grasps).\n",(unsigned long int)graspList.size());
     tmpList= graspList;
     gpReduce_grasp_list_size(tmpList, graspList, 80);
 
     elapsedTime= ( clock()-clock0 ) /CLOCKS_PER_SEC;
 
-    printf("%lu grasps were computed.\n",graspList.size() );
+    printf("%lu grasps were computed.\n",(unsigned long int)graspList.size() );
     printf("Computation time: %2.1fs= %dmin%ds\n",elapsedTime, ( int ) ( elapsedTime/60.0 ), ( int ) ( elapsedTime - 60* ( ( int ) ( elapsedTime/60.0 ) ) ) );
 
     printf("Now, compute open configurations.\n");
@@ -3231,7 +3231,7 @@ int gpGet_grasp_list(const std::string &object_to_grasp, gpHand_type hand_type, 
     else
     {
       printf("%s: %d: gpGet_grasp_list(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str() );
-      printf("It contains %lu grasps.\n",graspList.size() );
+      printf("It contains %lu grasps.\n",(unsigned long int)graspList.size() );
     }
 //     printf("Now, compute open configs.\n");
 //     for(igrasp=graspList.begin(); igrasp!=graspList.end(); ++igrasp)  {
@@ -3344,7 +3344,7 @@ int gpExpand_grasp_list ( p3d_rob *robot, std::list<class gpGrasp> &graspList, i
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
         gpSample_obj_surface(object->o[0], 0.005, handProp.fingertip_radius, contactList);
         kdtree.build ( contactList );
-        printf("%lu samples on object surface \n", contactList.size() );
+        printf("%lu samples on object surface \n", (unsigned long int)contactList.size() );
         for ( i=0; i<nbTries; ++i )
         {
           p3d_random_quaternion ( quat );

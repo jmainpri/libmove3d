@@ -252,9 +252,9 @@ PQP_Model::MemUsage(int msg)
   {
     fprintf(stderr,"Total for model %p: %d bytes\n", this, total_mem);
     fprintf(stderr,"BVs: %d alloced, take %lu bytes each\n", 
-            num_bvs, sizeof(BV));
+            num_bvs, (unsigned long int)sizeof(BV));
     fprintf(stderr,"Tris: %d alloced, take %lu bytes each\n", 
-            num_tris, sizeof(Tri));
+            num_tris, (unsigned long int)sizeof(Tri));
   }
   
   return total_mem;

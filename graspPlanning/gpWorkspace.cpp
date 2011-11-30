@@ -1010,7 +1010,7 @@ int gpDraw_reachable_points(p3d_rob *robot, p3d_rob *object, gpHand_properties &
 
     kdtree.build(contactList);
     firstTime= false;
-printf("contacts %lu\n",contactList.size());
+printf("contacts %lu\n",(unsigned long int)contactList.size());
   }
 
 

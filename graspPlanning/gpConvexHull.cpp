@@ -96,7 +96,7 @@ unsigned int& gpRidge::operator [] (const unsigned int i)
 {
   if(i > vertices_.size()-1)
   {
-    printf("%s: %d: gpRidge::operator []: index (%d) exceeds the ridge's size (%lu).\n",__FILE__,__LINE__,i,vertices_.size());
+    printf("%s: %d: gpRidge::operator []: index (%d) exceeds the ridge's size (%lu).\n",__FILE__,__LINE__,i,(unsigned long int)vertices_.size());
     return vertices_[0];
   }
 
@@ -155,7 +155,7 @@ unsigned int gpFace::operator [] (const unsigned int i) const
 {
   if(i > vertices_.size()-1)
   {
-    printf("%s: %d: gpFace::operator []: index (%d) exceeds the face's size (%lu).\n",__FILE__,__LINE__,i,vertices_.size());
+    printf("%s: %d: gpFace::operator []: index (%d) exceeds the face's size (%lu).\n",__FILE__,__LINE__,i,(unsigned long int)vertices_.size());
     return 0;
   }
 
@@ -170,7 +170,7 @@ unsigned int& gpFace::operator [] (const unsigned int i)
 {
   if(i > vertices_.size()-1)
   {
-    printf("%s: %d: gpFace::operator []: index (%d) exceeds the face's size (%lu).\n",__FILE__,__LINE__,i,vertices_.size());
+    printf("%s: %d: gpFace::operator []: index (%d) exceeds the face's size (%lu).\n",__FILE__,__LINE__,i,(unsigned long int)vertices_.size());
     return vertices_[0];
   }
 
@@ -246,14 +246,14 @@ int gpFace::print()
   }
   printf(" ]\n");
 
-  printf("    %lu vertices: [", vertices_.size());
+  printf("    %lu vertices: [", (unsigned long int)vertices_.size());
   for(i=0; i<vertices_.size(); i++)
   {
     printf("  %d ", vertices_[i]);
   }
   printf(" ]\n");
 
-  printf("    %lu ridges: \n", ridges_.size());
+  printf("    %lu ridges: \n", (unsigned long int)ridges_.size());
   for(i=0; i<ridges_.size(); i++)
   {
     printf("              [");
@@ -574,7 +574,7 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
   {
     if(points_[i].size()!=dimension_)
     {
-      printf("%s: %d: ConvexHull::compute(): an input point has an incorrect dimension (dimension is %lu instead of %d).\n",__FILE__,__LINE__,points_[i].size(),dimension_); 
+      printf("%s: %d: ConvexHull::compute(): an input point has an incorrect dimension (dimension is %lu instead of %d).\n",__FILE__,__LINE__,(unsigned long int)points_[i].size(),dimension_);
       if(!verbose) {  fclose(errfile);  }
       return GP_ERROR;
     }
@@ -776,7 +776,7 @@ int gpConvexHull::voronoi(bool verbose)
   {
     if(points_[i].size()!=dimension_)
     {
-      printf("%s: %d: gpConvexHull::voronoi(): an input point has an incorrect dimension (dimension is %lu instead of %d).\n",__FILE__,__LINE__,points_[i].size(),dimension_); 
+      printf("%s: %d: gpConvexHull::voronoi(): an input point has an incorrect dimension (dimension is %lu instead of %d).\n",__FILE__,__LINE__,(unsigned long int)points_[i].size(),dimension_);
       if(!verbose) {  fclose(errfile);  }
       return GP_ERROR;
     }
@@ -1011,7 +1011,7 @@ int gpConvexHull::pointCoordinates(unsigned int i, std::vector<double> &coord)
 {
   if(i > points_.size()-1)
   {
-    printf("%s: %d: gpConvexHull::pointCoordinates: index (%d) exceeds the hull's number of vertices (%lu).\n",__FILE__,__LINE__,i,hull_vertices.size());
+    printf("%s: %d: gpConvexHull::pointCoordinates: index (%d) exceeds the hull's number of vertices (%lu).\n",__FILE__,__LINE__,i,(unsigned long int)hull_vertices.size());
     return GP_ERROR;
   }
   
@@ -1029,7 +1029,7 @@ int gpConvexHull::print()
 
   printf("dimension= %d \n", dimension_); 
 
-  printf("%lu points \n", points_.size()); 
+  printf("%lu points \n", (unsigned long int)points_.size());
 
   if(up_to_date_)
   {
@@ -1049,8 +1049,8 @@ int gpConvexHull::print()
     }
   }
   
-  printf("convex hull: %lu vertices\n", hull_vertices.size());
-  printf("             %lu faces (%lu simplicial, %d non simplicial)\n", hull_faces.size(), hull_faces.size()-count,count);
+  printf("convex hull: %lu vertices\n", (unsigned long int)hull_vertices.size());
+  printf("             %lu faces (%lu simplicial, %d non simplicial)\n", (unsigned long int)hull_faces.size(), (unsigned long int)hull_faces.size()-count,count);
 
 //   printf("input points: \n"); 
 //   for(i=0; i<points_.size(); i++)
@@ -1395,7 +1395,7 @@ int gpConvexHull3D::drawFace(unsigned int face_index)
 
   if(face_index > hull_faces.size())
   {
-    printf("%s: %d: gpConvexHull3D::drawFace(): input face index (%d) exceeds the hull's number of faces (%lu).\n",__FILE__,__LINE__,face_index,hull_faces.size());
+    printf("%s: %d: gpConvexHull3D::drawFace(): input face index (%d) exceeds the hull's number of faces (%lu).\n",__FILE__,__LINE__,face_index,(unsigned long int)hull_faces.size());
     return GP_ERROR;
   }
 
@@ -1473,7 +1473,7 @@ int gpConvexHull3D::voronoi(bool verbose)
 
     if( isnan(voronoi_ridges_.at(i).normal_.at(0)) || isnan(voronoi_ridges_.at(i).normal_.at(1)) || isnan(voronoi_ridges_.at(i).normal_.at(2)) )
     {
-      printf("ridge #%d, %lu vertices\n",i,voronoi_ridges_.at(i).vertices_.size());
+      printf("ridge #%d, %lu vertices\n",i,(unsigned long int)voronoi_ridges_.at(i).vertices_.size());
       printf("p1 %f %f %f\n", p1.at(0),p1.at(1),p1.at(2));
       printf("p2 %f %f %f\n", p2.at(0),p2.at(1),p2.at(2));
       printf("op1 %f %f %f\n", op1.at(0),op1.at(1),op1.at(2));
