@@ -419,11 +419,15 @@ double* getJntDofValue(p3d_rob * robot, p3d_jnt * joint, p3d_matrix4 initPos){
  * @param activeJnt The active joint in the constraint
  * @return The constraint if found, NULL otherwise
  */
-p3d_cntrt * findTwoJointsFixCntrt(p3d_rob* robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt){
+p3d_cntrt * findTwoJointsFixCntrt(p3d_rob* robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt)
+{
   for (int i = 0; i < robot->cntrt_manager->ncntrts; i++) {
     //Check if the constraint is already created
     p3d_cntrt *cntrt = robot->cntrt_manager->cntrts[i];
-    if (cntrt->npasjnts == 1 && cntrt->nactjnts == 1 && cntrt->pasjnts[0]->num == passiveJnt->num && cntrt->actjnts[0]->num == activeJnt->num) {
+    if (cntrt->npasjnts == 1 && 
+        cntrt->nactjnts == 1 && 
+        cntrt->pasjnts[0]->num == passiveJnt->num && 
+        cntrt->actjnts[0]->num == activeJnt->num) {
       return cntrt;
     }
   }
@@ -437,7 +441,8 @@ p3d_cntrt * findTwoJointsFixCntrt(p3d_rob* robot, p3d_jnt* passiveJnt, p3d_jnt* 
  * @param activeJnt The active joint in the constraint
  * @return the constraint
  */
-p3d_cntrt* setAndActivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt) {
+p3d_cntrt* setAndActivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt) 
+{
   int passiveJntId[1] = {passiveJnt->num}, activeJntId[1] = {activeJnt->num};
   p3d_cntrt * cntrt = findTwoJointsFixCntrt(robot, passiveJnt, activeJnt);
   //If the constraint is already created

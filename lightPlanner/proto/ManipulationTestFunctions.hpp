@@ -32,7 +32,6 @@ public:
   void setInitConfiguration(configPt q);
   void setGoalConfiguration(configPt q);
   
-
   void setObject(std::string name);
   void resetObject();
   
@@ -41,6 +40,9 @@ public:
   
   void setSupport(std::string name);
   void resetSupport();
+
+  void setToPoint(std::vector<double> point);
+  void resetToPoint();
   
   void addTraj(std::string name, p3d_traj* traj);
   void addConf(std::string name, configPt q);
@@ -90,6 +92,8 @@ private:
 	
 	configPt m_qInit;
 	configPt m_qGoal;
+  
+  bool m_ToFreePoint;
 	
 	std::string m_OBJECT_NAME;
   std::string m_SUPPORT_NAME;

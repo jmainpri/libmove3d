@@ -20,6 +20,7 @@ class  ManipulationConfigs
     virtual ~ManipulationConfigs();
   
     void setDebugMode(bool value);
+    void setMobileBaseMode(bool value);
   
     void setOptimizeRedundentSteps(int nbSteps);
     int getOptimizeRedundentSteps(void) const;
@@ -44,9 +45,9 @@ class  ManipulationConfigs
     configPt getExtractConf(int armId, configPt currentConf, p3d_matrix4 tAtt) const;
   
     // Compound of the function above
-    MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, gpGrasp& grasp, ManipulationData& configs) const;
     MANIPULATION_TASK_MESSAGE getGraspOpenApproachExtractConfs(p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, ManipulationData& configs) const;
     MANIPULATION_TASK_MESSAGE getHoldingOpenApproachExtractConfs(p3d_rob* object, std::vector<double> &objGoto, p3d_rob* placement, int armId, gpGrasp& grasp, p3d_matrix4 tAtt,  ManipulationData& configs) const;
+    MANIPULATION_TASK_MESSAGE findArmGraspsConfigs(int armId, p3d_rob* object, gpGrasp& grasp, ManipulationData& configs) const;
     
   private:
     /*!< pointer to the robot */

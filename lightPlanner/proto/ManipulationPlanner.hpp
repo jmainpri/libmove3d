@@ -81,6 +81,9 @@ public:
   void setPlacementTry(int nbTry);
   int getPlacementTry(void);
   
+  void setUseBaseMotion(bool useBase);
+  bool getUseBaseMotion(void);
+  
   void setRobotPath(p3d_traj* path) { _robotPath = _robot->tcur; } 
   
   inline p3d_rob* robot()  const{return _robot;}
@@ -136,6 +139,7 @@ public:
   MANIPULATION_TASK_MESSAGE armPickGoto(int armId, configPt qStart, p3d_rob* object, configPt graspConfig, configPt openConfig, configPt approachFreeConfig, std::vector <p3d_traj*> &trajs);
   
   /** Move the arm from a grasping configuration (of the object placed on a support) to a free configuration */
+  MANIPULATION_TASK_MESSAGE armPickTakeToFreePointCheckEscape(int armId, configPt qStart, std::vector<double> &objGoto , p3d_rob* object, p3d_rob* support, std::vector <p3d_traj*> &trajs);
   MANIPULATION_TASK_MESSAGE armPickTakeToFreePoint(int armId, configPt qStart, std::vector<double> &objGoto, p3d_rob* object, p3d_rob* support, std::vector <p3d_traj*> &trajs);
   MANIPULATION_TASK_MESSAGE armPickTakeToFree(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* support, std::vector <p3d_traj*> &trajs);
   MANIPULATION_TASK_MESSAGE armPickTakeToFree(int armId, configPt qStart, configPt qGoal, p3d_rob* object, p3d_rob* support, configPt approachGraspConfig, gpGrasp &grasp, std::vector <p3d_traj*> &trajs);
@@ -201,6 +205,9 @@ private:
   
   /** nbTry to find placement configuration and graspApproche*/
   int _placementTry;
+  
+  /** use base motion to compute pick and place */
+  bool _useBaseMotion;
 	
   /* ******************************* */
   /* *******  Manipulation Data **** */
