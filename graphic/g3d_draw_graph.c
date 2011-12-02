@@ -26,6 +26,7 @@ static void draw_joints(p3d_rob *r, double *q, int num);
 static void draw_joint_j(pp3d_jnt j, double *xi, double *yi, double *zi, double ray, int color);
 extern void* GroundCostObj;
 extern int IsGraphMovie;
+
 /*******************************************************************************/
 
 static
@@ -240,13 +241,11 @@ void g3d_draw_graph(void) {
 	
   p3d_set_and_update_robot_conf(qsave);
   p3d_destroy_config(robotPt,qsave);
-  if(IsGraphMovie == TRUE) {
 #ifdef WITH_XFORMS
+  if(IsGraphMovie == TRUE) {
     MovieDrawGraph();
-#endif
   }
-
-
+#endif
 }
 // fmodif Juan
 
