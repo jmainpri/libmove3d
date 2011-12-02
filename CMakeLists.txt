@@ -613,10 +613,12 @@ ENABLE_TESTING()
 
 MESSAGE("CMAKE_BINARY_DIR = " ${CMAKE_BINARY_DIR})
 
-ADD_TEST(NAME ArmFreeTest
-        COMMAND move3d 	-f ../../libmove3dDemos-JidoSAHand/GS/gsJidoKukaSAHandSM.p3d -sc ../../libmove3dDemos-JidoSAHand/GS/SCENARIO/ManipulationTestSAHand.sce -test 1)
+ADD_TEST(NAME basic COMMAND move3dtest)
+
+#ADD_TEST(NAME ArmFreeTest
+#        COMMAND move3d 	-f ../../libmove3dDemos-JidoSAHand/GS/gsJidoKukaSAHandSM.p3d -sc ../../libmove3dDemos-JidoSAHand/GS/SCENARIO/ManipulationTestSAHand.sce -test 1)
 	
-ADD_TEST(NAME ArmGotoTest
-        COMMAND move3d 	-f
-        ../../libmove3dDemos-JidoSAHand/GS/gsJidoKukaSAHandSM.p3d -sc
-        ../../libmove3dDemos-JidoSAHand/GS/SCENARIO/ManipulationTestSAHand.sce -test 2)
+#ADD_TEST(NAME ArmGotoTest
+#        COMMAND move3d 	-f
+#        ../../libmove3dDemos-JidoSAHand/GS/gsJidoKukaSAHandSM.p3d -sc
+#        ../../libmove3dDemos-JidoSAHand/GS/SCENARIO/ManipulationTestSAHand.sce -test 2)
