@@ -688,15 +688,16 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
                       &limit_tab[2],&limit_tab[3],
                       &limit_tab[4],&limit_tab[5]);
       
-      for ( int i =0; i<XYZ_ENV->nr; i++ )
+      for ( int i=0; i<XYZ_ENV->nr; i++ )
 			{
         robotPt = XYZ_ENV->robot[i];
         
-        for ( int j =0; j<robotPt->njoints; j++ )
+        for ( int j=1; j<=robotPt->njoints; j++ )
         {
           if( robotPt->joints[j]->type == P3D_FREEFLYER )
           {
-            for ( int k = 0; k<3; k++ )
+            //std::cout << "Set limit of " << robotPt->name << std::endl; 
+            for ( int k=0; k<2; k++ )
             {
               p3d_jnt_set_dof_bounds_deg ( robotPt->joints[j], k, limit_tab[2*k], limit_tab[2*k+1] );
               p3d_jnt_set_dof_rand_bounds_deg ( robotPt->joints[j], k, limit_tab[2*k], limit_tab[2*k+1] );
