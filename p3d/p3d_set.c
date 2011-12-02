@@ -817,3 +817,90 @@ int p3d_set_collision_tolerance_inhibition(p3d_rob *robotPt, int value)
 
   return 0;
 }
+
+/*  p3d_saveConfigTofile
+ *
+ *  Input:  the robot,
+ *          the configuration,
+ *          the filename
+ *
+ *  Output: 0 OK
+ *
+ *
+ *  Description:
+ */
+int p3d_saveConfigTofile(p3d_rob* robotPt, configPt q,char* filename)
+{
+
+
+    //Creating the file Variable version 1.0
+    xmlDocPtr doc = xmlNewDoc(xmlCharStrdup("1.0"));
+
+
+    //Writing the root node
+    xmlNodePtr root = xmlNewNode (NULL, xmlCharStrdup(robotPt->name));
+
+
+    writeXmlRobotConfig(root, robotPt, q);
+
+    xmlDocSetRootElement(doc, root);
+
+
+    //Writing the file on HD
+    xmlSaveFormatFile (filename, doc, 1);
+    xmlFreeDoc(doc);
+    return 0;
+}
+
+
+/*  p3d_loadConfigFromfile
+ *
+ *  Input:  the robot,
+ *          the configuration,
+ *          the filename
+ *
+ *  Output: 0 OK
+ *
+ *
+ *  Description:
+ */
+configPt p3d_loadConfigFromfile(p3d_rob* robotPt, char* filename)
+{
+
+    configPt q_hum;
+
+    xmlDocPtr doc;
+    xmlNodePtr root;
+
+    doc = xmlParseFile(filename);
+
+    if(doc==NULL)
+    {
+        printf("Document not parsed successfully (doc==NULL)");
+        return q_hum;
+    }
+
+    root = xmlDocGetRootElement(doc);
+
+    if (root == NULL)
+    {
+        printf("Document not parsed successfully");
+        xmlFreeDoc(doc);
+        return q_hum;
+    }
+
+    if (xmlStrcmp(root->name, xmlCharStrdup(robotPt->name)))
+    {
+        printf("The XML conf is not for the robot given as input.");
+        xmlFreeDoc(doc);
+        return q_hum;
+    }
+
+
+    xmlNodePtr ptrTmp = root;
+    q_hum = readXmlConfig(robotPt,ptrTmp->xmlChildrenNode->next);
+
+    return q_hum;
+
+
+}
