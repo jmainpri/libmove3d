@@ -173,6 +173,7 @@ public:
   /** Computes a path for a given manipulation elementary task. Generate a set of SoftMotion Paths */
   MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName,  const char* supportName, const char* placementName, gpGrasp& grasp, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs);
   MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName, const char* supportName, const char* placementName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs);
+  MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName, const char* supportName, const char* placementName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, SM_TRAJ &smTraj_q, SM_TRAJ &smTraj_x, Gb_th th_Rrob_Robj, Gb_th th_Robj_R7);
   MANIPULATION_TASK_MESSAGE planNavigation(configPt qStart, configPt qGoal,  bool fixAllArm, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs);
 #endif
 	

@@ -1808,10 +1808,80 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     return returnMessage;
 }
 
+// return 0 if OK
+// generate the discretised evolution of the specified jnt 
+// in the robot frame at the rate sampling_time
+//int ManipulationPlanner::getEvolutionOfSpecificJntInRobotFrame(p3d_jnt* jnt, double sampling_time, std::vector< std::vector<SM_COND> > discTraj)
+//{
+////  configPt conf;
+////  p3d_matrix4 r7mat4;
+////
+////  for(double time=0.0; time < _robot->tcur->
+////  conf = p3d_config_at_param_along_traj(_robot->tcur , time);
+////  p3d_set_and_update_this_robot_conf(_robot, conf);
+//// 
+////  base = _robot->baseJnt->abs_pos; //base dans monde
+////  r7mat4 = jnt->abs_pos; // r7 dans monde
+////  // compute the pose of the jnt int the base frame of the robot
+////  
+////
+//// for(unsigned int i=0; i<discTraj.size(); i++) {
+////   discTraj[i].resize(positions.size());
+//// }
+//// 
+//// // j is axis id
+//// // i is the time
+//// for(unsigned int i=0; i< positions.size(); i++) {
+////   for(unsigned int j=0; j<positions[0].size(); j++) {
+////     discTraj[j][i].x = positions[i][j];
+////     if(i>0) {
+////       discTraj[j][i].v = (discTraj[j][i].x - discTraj[j][i-1].x)/sampling_time;
+////       if(i>1) {
+////	 discTraj[j][i].a = (discTraj[j][i].v - discTraj[j][i-1].v)/sampling_time;
+////       } else {
+////	 discTraj[j][i].a = 0.0;
+////       }
+////     } else {
+////       discTraj[j][i].v = 0.0;
+////       discTraj[j][i].a = 0.0;
+////     }
+////   }
+//// }
+//  return 0;
+//}
+
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName, const char* supportName, const char* placementName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs) 
 {
   gpGrasp grasp;
   return armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, placementName, grasp, confs, smTrajs);
+}
+
+
+//
+// New Function to generate traje
+//
+MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName, const char* supportName, const char* placementName, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, SM_TRAJ &smTraj_q, SM_TRAJ &smTraj_x, Gb_th th_Rrob_Robj, Gb_th th_Robj_R7)
+{
+// gpGrasp grasp;
+// std::vector<SM_TRAJ> smTrajs;
+// MANIPULATION_TASK_MESSAGE resp = armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, placementName, grasp, confs, smTrajs);
+// smTraj_q = smTrajs[0];
+//
+// //TODO
+// // fill  SM_TRAJ &smTraj_x, Gb_th th_Rrob_Robj, Gb_th th_Robj_R7
+// std::vector< std::vector<SM_COND> > discTraj;
+// p3d_jnt * r7_jnt = p3d_get_robot_jnt_by_name(_robot, "armJoint7");
+// if(r7_jnt == NULL) {
+//   printf(" well, the unknown error is ............... that the %s joint is not inside your robot ! I can not generate the cartesian trajectory but I have setted the articular one \n");
+//   return MANIPULATION_TASK_ERROR_UNKNOWN;
+// }
+// double sampling_time = 0.01;
+// getEvolutionOfSpecificJntInRobotFrame(r7_jnt, sampling_time, discTraj);
+//
+//
+// smTraj.approximate(discTraj, SAMPLING_TIME, 0.01, 0.1, 36, true);
+//
+// return resp;
 }
 
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, configPt qGoal, bool fixAllArm, std::vector <p3d_traj*> &trajs){
