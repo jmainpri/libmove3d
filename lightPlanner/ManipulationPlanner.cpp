@@ -37,6 +37,7 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robot) : _robot(robot), _manip
     _useBaseMotion = false;
   
     ENV.setBool(Env::smoothSoftMotionTraj,true);
+    ENV.setBool(Env::drawExploration,false);
 
     setDebugSoftMotionMode(true);
 #ifdef MULTILOCALPATH
@@ -592,6 +593,58 @@ int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECT
 /* ******************************* */
 /* ******* Manipulation Planning * */
 /* ******************************* */
+
+//! The arm to free point method takes a goto configuration
+//! and then computes a trajectory from the start configuration of the specified arm
+//
+//! @param armId : which arm is planned
+//! @param qStart : the configuration from which to start
+//! @param objGoto : the Cartesian goal pose
+//! @param trajs : the vector of trajector optained
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qStart, configPt qGoal, bool useSafetyDistance, p3d_rob* object, std::vector <p3d_traj*> &trajs){
+  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+  p3d_traj* traj = NULL;
+  
+  ManipulationUtils::fixAllHands(_robot, qStart, false);
+  
+  if(!_useBaseMotion) {
+    fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
+  }
+  else {
+    unFixJoint(_robot, _robot->baseJnt);
+  }
+  checkConfigForCartesianMode(qStart, object);
+  checkConfigForCartesianMode(qGoal, object);
+  
+  p3d_set_and_update_this_robot_conf(_robot, qStart);
+  if(object){
+    gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
+    gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId); 
+    
+    p3d_set_object_to_carry_to_arm(_robot, armId, object->name);
+  }
+  if (MPDEBUG) {
+    ManipulationUtils::copyConfigToFORM(_robot, qStart);
+    ManipulationUtils::copyConfigToFORM(_robot, qGoal);
+  }
+  if(useSafetyDistance){
+    setSafetyDistance(_robot, getSafetyDistanceValue());
+  }
+  if((traj = computeTrajBetweenTwoConfigs(qStart, qGoal, &status))){
+    trajs.push_back(traj);
+  }
+  if(useSafetyDistance){
+    setSafetyDistance(_robot, 0);
+  }
+  if(object){
+    gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
+    gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId); //the hand name is hand1 for arm0 and hand 2 for arm1
+    (*_robot->armManipulationData)[armId].setCarriedObject((p3d_rob*) NULL);
+    _robot->isCarryingObject = FALSE;
+  }
+  return status;
+}
+
 //! The arm to free point method takes a goto cartesian pose
 //! and then computes a trajectory from the start configuration of the specified arm
 //! A configuration is computed using the current CCntrt Tatt of the arm
@@ -652,57 +705,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armExtract(int armId, configPt qS
     status = armToFree(armId, qStart, qGoal, false, NULL, trajs);
   }
 
-  return status;
-}
-
-//! The arm to free point method takes a goto configuration
-//! and then computes a trajectory from the start configuration of the specified arm
-//
-//! @param armId : which arm is planned
-//! @param qStart : the configuration from which to start
-//! @param objGoto : the Cartesian goal pose
-//! @param trajs : the vector of trajector optained
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qStart, configPt qGoal, bool useSafetyDistance, p3d_rob* object, std::vector <p3d_traj*> &trajs){
-  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
-  p3d_traj* traj = NULL;
-
-  ManipulationUtils::fixAllHands(_robot, qStart, false);
-  
-  if(!_useBaseMotion) {
-    fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
-  }
-  else {
-    unFixJoint(_robot, _robot->baseJnt);
-  }
-  checkConfigForCartesianMode(qStart, object);
-  checkConfigForCartesianMode(qGoal, object);
-  
-  p3d_set_and_update_this_robot_conf(_robot, qStart);
-  if(object){
-    gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
-    gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId); 
-
-    p3d_set_object_to_carry_to_arm(_robot, armId, object->name);
-  }
-  if (MPDEBUG) {
-      ManipulationUtils::copyConfigToFORM(_robot, qStart);
-      ManipulationUtils::copyConfigToFORM(_robot, qGoal);
-  }
-  if(useSafetyDistance){
-    setSafetyDistance(_robot, getSafetyDistanceValue());
-  }
-  if((traj = computeTrajBetweenTwoConfigs(qStart, qGoal, &status))){
-    trajs.push_back(traj);
-  }
-  if(useSafetyDistance){
-    setSafetyDistance(_robot, 0);
-  }
-  if(object){
-    gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
-    gpActivate_object_collisions(_robot, object->joints[1]->o, handProp, armId); //the hand name is hand1 for arm0 and hand 2 for arm1
-    (*_robot->armManipulationData)[armId].setCarriedObject((p3d_rob*) NULL);
-    _robot->isCarryingObject = FALSE;
-  }
   return status;
 }
 
@@ -1600,7 +1602,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armEscapeObject(int armId, config
 /* ******** Task Planning ******** */
 /* ******************************* */
 #ifdef MULTILOCALPATH
-MANIPULATION_TASK_MESSAGE ManipulationPlanner::armReplan(p3d_vector3 target, int qSwitchId, SM_TRAJ &smTraj) {
+MANIPULATION_TASK_MESSAGE ManipulationPlanner::armReplan(p3d_vector3 target, int qSwitchId, SM_TRAJ &smTraj) 
+{
   p3d_traj* traj = NULL;
   MANIPULATION_TASK_MESSAGE returnMessage;
   
