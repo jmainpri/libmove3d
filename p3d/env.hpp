@@ -71,6 +71,7 @@ public:
 		isMultiRRT,
 		drawDisabled,
 		drawFrame,
+    drawExploration,
 		drawGraph,
 		drawTraj,
 		drawOTPTraj,
