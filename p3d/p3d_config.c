@@ -524,29 +524,49 @@ int p3d_equal_config_n_offset(p3d_rob* robotPt, int nb_dof, int offset, configPt
 //       }
 //     }
 
-  for (i = 0; i <= njnt; i++)
-  {
-      jntPt = robotPt->joints[i];
-
-      for (j = 0; j < jntPt->dof_equiv_nbr; j++)
-      {
-          if(j+jntPt->index_dof >= offset &&  j+jntPt->index_dof <  nb_dof+offset)
-              if (p3d_jnt_get_dof_is_user(jntPt, j))
-              {
-              if (p3d_jnt_is_dof_angular(jntPt, j)) {
-                  if(p3d_jnt_is_dof_circular(jntPt, j)) {
-                      if (dist_circle(q_i[k], q_f[k]) > EPS3) {
-                          return FALSE;
-                      }
-                  }
-              } else {
-                  if (fabs(q_i[k] - q_f[k]) > EPS3) {
-                      return FALSE;
-                  }
-              }
+//  for (i = 0; i <= njnt; i++)
+//  {
+//      jntPt = robotPt->joints[i];
+//
+//      for (j = 0; j < jntPt->dof_equiv_nbr; j++)
+//      {
+//          if(j+jntPt->index_dof >= offset &&  j+jntPt->index_dof <  nb_dof+offset)
+//              if (p3d_jnt_get_dof_is_user(jntPt, j))
+//              {
+//              if (p3d_jnt_is_dof_angular(jntPt, j)) {
+//                  if(p3d_jnt_is_dof_circular(jntPt, j)) {
+//                      if (dist_circle(q_i[k], q_f[k]) > EPS3) {
+//                          return FALSE;
+//                      }
+//                  }
+//              } else {
+//                  if (fabs(q_i[k] - q_f[k]) > EPS3) {
+//                      return FALSE;
+//                  }
+//              }
+//          }
+//          k ++;
+//      }
+//  }
+  
+  for (i = 0; i <= njnt; i++) {
+    jntPt = robotPt->joints[i];
+    
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+      if(j+jntPt->index_dof >= offset &&  j+jntPt->index_dof <  nb_dof+offset)
+        if (p3d_jnt_get_dof_is_user(jntPt, j)) {
+          if ((p3d_jnt_is_dof_circular(jntPt, j) && jntPt->type == P3D_ROTATE)){
+            if (dist_circle(q_i[k], q_f[k]) > EPS3) {
+              return FALSE;
+            }
+          } else {
+            if (fabs(q_i[k] - q_f[k]) > EPS3) {
+              return FALSE;
+            }
           }
-          k ++;
-      }
+        }
+      k ++;
+    }
   }
 
   
@@ -1038,12 +1058,12 @@ int p3d_adaptConfigsForCircularDofs(p3d_rob* robotPt, configPt* qi, configPt *qf
       for (int j=0; j<jntPt->dof_equiv_nbr; j++) {
         k = jntPt->index_dof+j;
         if (p3d_jnt_is_dof_circular(jntPt, j)){
-         // printf("k %d (*qi)[k] %f (*qf)[k] %f",k, (*qi)[k], (*qf)[k]);
-	  (*qi)[k] =  angle_limit_PI((*qi)[k]);
-	  // printf(" (*qi)[k]_modif %f",(*qi)[k]);
-	  diff = diff_angle((*qi)[k], (*qf)[k]);
-	  (*qf)[k] = (*qi)[k] + diff_angle((*qi)[k], (*qf)[k]);
-	  // printf(" diff %f (*qf)[k] %f\n",diff, (*qf)[k] );
+          // printf("k %d (*qi)[k] %f (*qf)[k] %f",k, (*qi)[k], (*qf)[k]);
+          (*qi)[k] =  angle_limit_PI((*qi)[k]);
+          // printf(" (*qi)[k]_modif %f",(*qi)[k]);
+          diff = diff_angle((*qi)[k], (*qf)[k]);
+          (*qf)[k] = (*qi)[k] + diff_angle((*qi)[k], (*qf)[k]);
+          // printf(" diff %f (*qf)[k] %f\n",diff, (*qf)[k] );
         }
       }
     }
