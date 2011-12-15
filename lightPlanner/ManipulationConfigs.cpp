@@ -14,7 +14,7 @@ ManipulationConfigs::ManipulationConfigs(p3d_rob* robot):_robot(robot)
 {
   _optimizeRedundentSteps = 50;
   _approachFreeOffset = 0.10; //0.10 meters
-  _approachGraspOffset = 0.02; //0.02 meters
+  _approachGraspOffset = 0.10; //0.02 meters
   _safetyDistanceValue = 0.0;
   _useMobileBase = false;
   
@@ -124,8 +124,9 @@ configPt ManipulationConfigs::getGraspConf(p3d_rob* object, int armId, gpGrasp& 
   return qGrasp;
 }
 
-//! Generate the open configuration given 
-//! the grasp configuration, the grasp, the arm and the object
+//! Generate the open configuration 
+//! given the grasp configuration, the grasp, the arm and the object
+//! the open config is the same as the grasp config with an open hand
 configPt ManipulationConfigs::getOpenGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf) const 
 {
   if (graspConf) 
@@ -224,8 +225,9 @@ configPt ManipulationConfigs::getApproachFreeConf(p3d_rob* object, int armId, gp
   return NULL;
 }
 
-//! Generate the grasp approach configuration given the grasp configuration, 
-//! the grasp, the arm, the attach matrix and the object
+//! Generate the grasp approach configuration 
+//! given the grasp configuration, the grasp, the arm, the attach matrix and the object
+//! this configuration is away from the object with an open hand
 configPt ManipulationConfigs::getApproachGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const{
   
   if(graspConf){
