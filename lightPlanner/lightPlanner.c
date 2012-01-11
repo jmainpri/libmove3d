@@ -18,7 +18,7 @@ static void rrtOptions(void);
 static int findPath(void);
 
 extern bool USE_PLANNING_TIME_LIMIT=false;
-extern double PLANNING_TIME_LIMIT;
+extern double PLANNING_TIME_LIMIT=0.0;
 extern double SAFETY_DIST;
 extern double USE_LIN;
 #define OPTIMSTEP 200

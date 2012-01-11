@@ -18,6 +18,7 @@ FCT:
 #include "Util-pkg.h"
 
 #if defined UNIX
+#include <sys/time.h>
 #include <sys/times.h>
 #include <sys/resource.h>
 #include <limits.h>
@@ -50,6 +51,22 @@ static clock_t  beg_s[NCHRONO], beg_u[NCHRONO];
 static struct timeval begm_s[NCHRONO], begm_u[NCHRONO];
 static int     counter = -1;
 static int     print_flag   = TRUE;
+
+// Get Time Of Day Chrono
+static double t_init;
+
+double ChronoGetTime(bool is_first_call)
+{
+  timeval tim;
+  gettimeofday(&tim, NULL);
+  double tu=tim.tv_sec+(tim.tv_usec/1000000.0);
+  
+  if (is_first_call) {
+    t_init = tu;
+  }
+  
+  return tu - t_init;
+}
 
 //
 int ChronoOn ( void )
@@ -378,21 +395,6 @@ unsigned long  ChronoGet ( void )
   return ( msec );
 }
 //////////////////////
-
-static double t_init;
-
-double ChronoGetTime(bool is_first_call)
-{
-  timeval tim;
-  gettimeofday(&tim, NULL);
-  double tu=tim.tv_sec+(tim.tv_usec/1000000.0);
-  
-  if (is_first_call) {
-    t_init = tu;
-  }
-  
-  return tu - t_init;
-}
 
 #else
 #error Platform definition needed like UNIX, WIN32 etc...
