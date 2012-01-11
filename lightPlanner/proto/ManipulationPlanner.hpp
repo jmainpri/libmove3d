@@ -84,6 +84,8 @@ public:
   void setUseBaseMotion(bool useBase);
   bool getUseBaseMotion(void);
   
+  void stopPlanning();
+  
   void setRobotPath(p3d_traj* path) { _robotPath = _robot->tcur; } 
   
   inline p3d_rob* robot()  const{return _robot;}

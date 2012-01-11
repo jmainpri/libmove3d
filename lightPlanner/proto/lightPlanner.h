@@ -8,6 +8,9 @@ void initLightPlannerForMLP(p3d_rob* robot);
 void saveTrajInFile(const char* fileName, p3d_traj* traj, int smallIntervals,double dmax);
 p3d_traj* rrtQuerry(p3d_rob* robot, configPt qs, configPt qg);
 void optimiseTrajectory(p3d_rob* robot, p3d_traj* traj, int nbSteps, double maxTime);
+void setUseTimeLimit(bool enable);
+bool hasReachedTimeLimit(bool firt_call = false);
+
 p3d_traj* platformGotoObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2);
 p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configPt conf);
 traj* pickObject(p3d_rob* robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2);

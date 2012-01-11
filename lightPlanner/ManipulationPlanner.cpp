@@ -243,6 +243,11 @@ bool ManipulationPlanner::getUseBaseMotion(void)
   return _useBaseMotion;
 }
 
+void ManipulationPlanner::stopPlanning()
+{
+  p3d_SetStopValue(TRUE);
+}
+
 /* ******************************* */
 /* ******* Hands / Grasping ****** */
 /* ******************************* */
@@ -366,7 +371,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::computeRRT(int smoothingSteps, do
   p3d_set_tmax(planningTime);
 
   if(traj){
-    _smoothingMethod(_robot, traj, smoothingSteps, smootingTime);
+    _smoothingMethod( _robot, traj, smoothingSteps, smootingTime );
   }
 
   if (!traj) {
@@ -1774,6 +1779,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
 //! Replans a path form the variable _robotPath
 #ifdef MULTILOCALPATH
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName, const char* supportName, const char* placementName, gpGrasp& grasp, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs) {
+    
     std::vector <p3d_traj*> trajs;
     p3d_traj* traj = NULL;
     MANIPULATION_TASK_MESSAGE returnMessage;
@@ -1913,10 +1919,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, c
     p3d_set_and_update_robot_conf(qStart);
     if(fixAllArm == true) {
       for (int i = 2; i < _robot->njoints + 1; i++) {
-	p3d_jnt * joint = _robot->joints[i];
-	
-	fixJoint(_robot, joint, joint->jnt_mat);
-	p3d_update_this_robot_pos(_robot);
+        p3d_jnt * joint = _robot->joints[i];
+        fixJoint(_robot, joint, joint->jnt_mat);
+        p3d_update_this_robot_pos(_robot);
       }
     }
 

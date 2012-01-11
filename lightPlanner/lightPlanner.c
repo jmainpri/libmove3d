@@ -17,6 +17,8 @@ static int saveSpecifiedConfigInFile(configPt conf);
 static void rrtOptions(void);
 static int findPath(void);
 
+extern bool USE_PLANNING_TIME_LIMIT=false;
+extern double PLANNING_TIME_LIMIT;
 extern double SAFETY_DIST;
 extern double USE_LIN;
 #define OPTIMSTEP 200
@@ -244,6 +246,27 @@ void optimiseTrajectory(p3d_rob* robot, p3d_traj* traj, int nbSteps, double maxT
   }
   p3d_optimize_traj(robot, traj, true, false, true, NULL);
 }
+
+//! Planning time limit
+void setUseTimeLimit(bool enable)
+{
+  USE_PLANNING_TIME_LIMIT = enable;
+}
+
+
+//! Planning time limit
+bool hasReachedTimeLimit(bool firt_call)
+{
+  if( !USE_PLANNING_TIME_LIMIT )
+    return false;
+  
+  if( ChronoGetTime(firt_call) < PLANNING_TIME_LIMIT )
+  {
+    return false;
+  }
+  return true;
+}
+
 /** ////////////////////////////////////////////
  * ////////////// Query functions //////////////
  * //////////////////////////////////////////*/
