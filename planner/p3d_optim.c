@@ -4,6 +4,7 @@
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
+#include "LightPlanner-pkg.h"
 
 /*Warning : This variable is also defined in FORMOptim for elastic smoothing algorithm. This one concerns only random algorithm.*/
 #define MAX_NB_TRY_OPTIM  20
@@ -671,6 +672,13 @@ int fct_stop_optim(void) {
   if (p3d_get_use_optimization_time() && tu >= tmax) {
     printf("Optimization stoped by counter.\n");
     return FALSE;
+  }
+  if (hasReachedTimeLimit()) {
+    printf("Optimization has reached time limit.\n");
+    return FALSE;
+  }
+  if (p3d_GetStopValue()) {
+    printf("Optimization stoped by user.\n");
   }
   if (STOP_OPTIM) {
     STOP_OPTIM = FALSE;
