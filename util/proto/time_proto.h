@@ -12,4 +12,5 @@ extern void ChronoPrint ( const char *msg );
 extern void ChronoPrinter ( int flag );
 extern unsigned long ChronoGet ( void );
 extern int ChronoMicroTimes ( double *tu, double *ts );
+extern double ChronoGetTime(bool is_first_call);
 #endif /* __CEXTRACT__ */

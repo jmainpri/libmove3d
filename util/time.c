@@ -378,6 +378,22 @@ unsigned long  ChronoGet ( void )
   return ( msec );
 }
 //////////////////////
+
+static double t_init;
+
+double ChronoGetTime(bool is_first_call)
+{
+  timeval tim;
+  gettimeofday(&tim, NULL);
+  double tu=tim.tv_sec+(tim.tv_usec/1000000.0);
+  
+  if (is_first_call) {
+    t_init = tu;
+  }
+  
+  return tu - t_init;
+}
+
 #else
 #error Platform definition needed like UNIX, WIN32 etc...
 #endif
