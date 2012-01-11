@@ -1637,6 +1637,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armReplan(p3d_vector3 target, int
 #endif
 
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName, const char* supportName, const char* placementName, gpGrasp& grasp, std::vector <p3d_traj*> &trajs) {
+
+  ChronoGetTime( true );
   
   if (!_robot) {
     printf("%s: %d: ManipulationPlanner::armPlanTask(): No robot initialized.\n", __FILE__, __LINE__);
