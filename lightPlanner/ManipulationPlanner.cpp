@@ -1638,6 +1638,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armReplan(p3d_vector3 target, int
 
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName, const char* supportName, const char* placementName, gpGrasp& grasp, std::vector <p3d_traj*> &trajs) {
 
+  setUseTimeLimit( true );
+  setPlanningTimeLimit( _planningTime + _optimizeTime );
+
   ChronoGetTime( true );
   
   if (!_robot) {

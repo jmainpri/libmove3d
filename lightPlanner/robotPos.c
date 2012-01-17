@@ -19,9 +19,10 @@ extern double ROBOT_MAX_LENGTH;
 
 //! @brief The maximal number of shoot to try before returning false
 static int MaxNumberOfTry = 10000;
+static int MaxNumberOfCollision = 10;
 
 //! @brief Helps debugging configuration generation
-static bool debugConfAroundTheObject = false;
+static bool debugConfAroundTheObject = true;
 
 void setMaxNumberOfTryForIK(int value)
 {
@@ -689,9 +690,9 @@ configPt sampleRobotConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_
     do { 
       // Continues until there is a 
       // collision free configuration
-      if (nbTry != 0) { //there is a collision
-        nbTry += MaxNumberOfTry*5/100;
-      }
+      //if (nbTry != 0) { //there is a collision
+      //  nbTry += MaxNumberOfTry*5/100;
+      //}
       do {
 //        if ( debugConfAroundTheObject ) {
 //          g3d_draw_allwin_active();
@@ -754,9 +755,10 @@ configPt sampleRobotConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_
           q[ffjntIndex + 5] = objPos._rz;
         }
         nbTry++;
+	//printf("NbTry : %d and Max %d\n", nbTry, MaxNumberOfTry );
         // The update function re-sample the robot configuration
         // to get a valid configuration regarding the kinematic constraints
-      } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && nbTry < MaxNumberOfTry);
+      } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && (nbTry < MaxNumberOfTry));
   
       nbTryColliding++;
       collision = p3d_col_test();
@@ -764,10 +766,10 @@ configPt sampleRobotConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_
       if ( debugConfAroundTheObject ) {
         //g3d_draw_allwin_active();
         if( collision ) {
-        p3d_print_col_pair();
+	  p3d_print_col_pair();
         }
       }
-    } while ( collision && ( nbTry < MaxNumberOfTry ) );
+    } while ( collision && ( nbTry < MaxNumberOfCollision ) );
     
     if(nbTry >= MaxNumberOfTry)
     {

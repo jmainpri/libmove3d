@@ -19,7 +19,7 @@ ManipulationConfigs::ManipulationConfigs(p3d_rob* robot):_robot(robot)
   _useMobileBase = false;
   
   // Robot Pos options
-  setMaxNumberOfTryForIK( 20000 );
+  setMaxNumberOfTryForIK( 300 );
   setDebugConfAroundTheObject( false );
 }
 

@@ -253,6 +253,11 @@ void setUseTimeLimit(bool enable)
   USE_PLANNING_TIME_LIMIT = enable;
 }
 
+//! Planning time limit
+void setPlanningTimeLimit(double time)
+{
+  PLANNING_TIME_LIMIT = time;
+}
 
 //! Planning time limit
 bool hasReachedTimeLimit(bool firt_call)

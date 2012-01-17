@@ -679,6 +679,7 @@ int fct_stop_optim(void) {
   }
   if (p3d_GetStopValue()) {
     printf("Optimization stoped by user.\n");
+    return FALSE;
   }
   if (STOP_OPTIM) {
     STOP_OPTIM = FALSE;

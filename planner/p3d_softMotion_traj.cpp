@@ -630,7 +630,13 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool smooth, bool param_write
   trajSmPTPPt->rob->tcur = trajSmPTPPt;
   g3d_add_traj ( (char *) "traj_SoftMotion_PTP", trajSmPTPPt->num , trajSmPTPPt->rob , trajSmPTPPt );
   printf ("BioMove3D: softMotion point-to-point trajectory OK\n");
+
+  //check the length of the trajectory 
   printf("ltot = %f\n",ltot);
+  if(ltot < 0.01) {
+    smooth = false;
+  }
+ 
   //  printf("nlp = ");
 //  if (param_write_file == true) {
 //    p3d_softMotion_export_traj (robotPt, trajSmPTPPt, 0,
