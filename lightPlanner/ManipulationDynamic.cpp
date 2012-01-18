@@ -90,7 +90,7 @@ MANIPULATION_TASK_MESSAGE ManipulationDynamic::replanCollidingTraj(int currentLp
     }
     p3d_traj* replanTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
     if (optimized || j > 1) {
-        optimiseTrajectory(_robot, replanTraj, _optimizeSteps, _optimizeTime);
+        optimiseTrajectory(_robot, replanTraj, _optimizeSteps, _optimizeTimeLimit);
     }
     trajs.push_back(replanTraj);
     return MANIPULATION_TASK_OK;

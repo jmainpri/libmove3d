@@ -84,6 +84,9 @@ public:
   void setUseBaseMotion(bool useBase);
   bool getUseBaseMotion(void);
   
+  void resetTimers();
+  void printTimers();
+  
   void stopPlanning();
   
   void setRobotPath(p3d_traj* path) { _robotPath = _robot->tcur; } 
@@ -198,11 +201,11 @@ private:
   int _UpBodySmMLP;
 #endif
   /** Time limit for the planning*/
-  double _planningTime;
+  double _planningTimeLimit;
   /** Number of steps for the optimisation*/
   int _optimizeSteps;
   /** Time limit for the optimisation*/
-  double _optimizeTime;
+  double _optimizeTimeLimit;
   /** Offset to generate the approach configuration of a grasp (carrying an object)*/
   double _safetyDistanceValue;
   
@@ -211,6 +214,15 @@ private:
   
   /** use base motion to compute pick and place */
   bool _useBaseMotion;
+  
+  /* ******************************* */
+  /* ******* Timing Data *********** */
+  /* ******************************* */
+  double _configurationTime;
+  double _plannerTime;
+  double _smootherTime;
+  double _motionLawTime;
+  double _totalTime;
 	
   /* ******************************* */
   /* *******  Manipulation Data **** */

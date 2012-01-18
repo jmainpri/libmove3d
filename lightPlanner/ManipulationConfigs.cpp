@@ -10,6 +10,15 @@
 static bool MCDEBUG=false;
 using namespace std;
 
+//! Pointer to manipulation config
+ManipulationConfigs* global_ManipulationConfigs = NULL;
+
+//! get free holding config
+configPt manipulation_get_free_holding_config()
+{
+  global_ManipulationConfigs->getFreeHoldingConf();
+}
+
 ManipulationConfigs::ManipulationConfigs(p3d_rob* robot):_robot(robot)
 {
   _optimizeRedundentSteps = 50;
@@ -21,6 +30,10 @@ ManipulationConfigs::ManipulationConfigs(p3d_rob* robot):_robot(robot)
   // Robot Pos options
   setMaxNumberOfTryForIK( 300 );
   setDebugConfAroundTheObject( false );
+  
+  _IKData = new ManipIKConfigData();
+  
+  global_ManipulationConfigs = this;
 }
 
 ManipulationConfigs::~ManipulationConfigs()
@@ -273,9 +286,29 @@ configPt ManipulationConfigs::getApproachGraspConf(p3d_rob* object, int armId, g
 }
 
 //! Generates a free configuration from a worspace point and a grasp
+//! using the stored IK data
+configPt ManipulationConfigs::getFreeHoldingConf() const 
+{
+  getFreeHoldingConf(_IKData->object, _IKData->armId, 
+                     _IKData->grasp, _IKData->tAtt, 
+                     _IKData->confCost, _IKData->objGoto, 
+                     _IKData->support);
+}
+
+//! Generates a free configuration from a worspace point and a grasp
+//! also store the IK data
 configPt ManipulationConfigs::getFreeHoldingConf( p3d_rob* object, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, double& confCost, std::vector<double> &objGoto, p3d_rob* support) const 
 {
   cout << " ManipulationConfigs::getFreeHoldingConf" << endl;
+  
+  // Store the configData
+  _IKData->object = object;
+  _IKData->armId = armId;
+  _IKData->grasp = grasp;
+  _IKData->confCost = confCost;
+  _IKData->objGoto = objGoto;
+  _IKData->support = support;
+  p3d_mat4Copy(_IKData->tAtt, tAtt);
   
   configPt tmpConf = p3d_get_robot_config(_robot);
   configPt objectConf = NULL;
@@ -306,7 +339,6 @@ configPt ManipulationConfigs::getFreeHoldingConf( p3d_rob* object, int armId, gp
                                mData.getCcCntrt()->pasjnts[mData.getCcCntrt()->npasjnts -1]);
   
   // Set Manipulation joint and hand configuration
-  
   int idManipIndexDof = mData.getManipulationJnt()->index_dof;
   q[ idManipIndexDof + 0 ] = objGoto.at(0);
   q[ idManipIndexDof + 1 ] = objGoto.at(1);

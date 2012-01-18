@@ -29,9 +29,9 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robot) : _robot(robot), _manip
     _smoothingMethod = optimiseTrajectory;
   
     // Manipulation planner
-    _planningTime = 60; // 15
+    _planningTimeLimit = 60; // 15
     _optimizeSteps = 200;
-    _optimizeTime = 15.0; // 4 secondes
+    _optimizeTimeLimit = 15.0; // 4 secondes
     _safetyDistanceValue = 0.0;
     _placementTry = 15;
     _useBaseMotion = false;
@@ -82,9 +82,9 @@ void ManipulationPlanner::setDefaultPlanner()
     _smoothingMethod = optimiseTrajectory;
 
     // Manipulation planner
-    _planningTime = 15; // 15
+    _planningTimeLimit = 15; // 15
     _optimizeSteps = 200;
-    _optimizeTime = 4.0; // 4 secondes
+    _optimizeTimeLimit = 4.0; // 4 secondes
     _safetyDistanceValue = 0.0;
     _placementTry = 5;
 
@@ -103,9 +103,9 @@ void ManipulationPlanner::setNavigationPlanner()
 //    _smoothingMethod = optimiseTrajectory;
 
     // Manipulation planner
-    _planningTime = 60; // 15
+    _planningTimeLimit = 60; // 15
     _optimizeSteps = 200;
-    _optimizeTime = 15.0; // 4 secondes
+    _optimizeTimeLimit = 15.0; // 4 secondes
     _safetyDistanceValue = 0.0;
     _placementTry = 5;
 
@@ -185,14 +185,14 @@ void ManipulationPlanner::setReplanningMethod(p3d_traj* (*funct)(p3d_rob* robotP
 
 void ManipulationPlanner::setPlanningTime(double time){
   if (time > 0) {
-      _planningTime = time;
+      _planningTimeLimit = time;
   } else {
       printf("%s: %d: ManipulationPlanner::setPlanningTime() unvalid time.\n", __FILE__, __LINE__);
       return;
   }
 }
 double ManipulationPlanner::getPlanningTime(void) const{
-  return _planningTime;
+  return _planningTimeLimit;
 }
 
 void ManipulationPlanner::setOptimizeSteps(int nbSteps) {
@@ -209,14 +209,14 @@ int ManipulationPlanner::getOptimizeSteps(void) const {
 
 void ManipulationPlanner::setOptimizeTime(double time) {
     if (time > 0) {
-        _optimizeTime = time;
+        _optimizeTimeLimit = time;
     } else {
         printf("%s: %d: ManipulationPlanner::setOptimizeTime() unvalid time.\n", __FILE__, __LINE__);
         return;
     }
 }
 double ManipulationPlanner::getOptimizeTime(void) const {
-    return _optimizeTime;
+    return _optimizeTimeLimit;
 }
 
 void ManipulationPlanner::setSafetyDistanceValue(double value){
@@ -246,6 +246,24 @@ bool ManipulationPlanner::getUseBaseMotion(void)
 void ManipulationPlanner::stopPlanning()
 {
   p3d_SetStopValue(TRUE);
+}
+
+
+void ManipulationPlanner::resetTimers()
+{
+  _configurationTime = 0.0;
+  _plannerTime = 0.0;
+  _smootherTime = 0.0;
+}
+
+void ManipulationPlanner::printTimers()
+{
+  cout << "------------------------------------------------------" << endl;
+  cout << "Configuration Time (IK) : " << _configurationTime << " sec" << endl;
+  cout << "Planner Time (RRT) : " << _plannerTime << " sec" << endl;
+  cout << "Smoother Time (Shortcut) : " << _smootherTime << " sec" << endl;
+  cout << "Motion Law Time (SM) : " <<  _motionLawTime << " sec" << endl;
+  cout << "------------------------------------------------------" << endl;
 }
 
 /* ******************************* */
@@ -361,14 +379,22 @@ bool ManipulationPlanner::getArmCartesian(int armId) const {
 //! @param biDir : is the RRT bidirectional
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::computeRRT(int smoothingSteps, double smootingTime, bool biDir) {
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
+  
+  double plannerTime,smootherTime;
+  
+  ChronoTimeOfDayOn();
 
   configPt qs = _robot->ROBOT_POS;
   configPt qg = _robot->ROBOT_GOTO;
   
   double planningTime = p3d_get_tmax();
-  p3d_set_tmax(_planningTime);
+  p3d_set_tmax(_planningTimeLimit);
   p3d_traj* traj = _plannerMethod(_robot,qs,qg);
   p3d_set_tmax(planningTime);
+  
+  ChronoTimeOfDayTimes(&plannerTime);
+  ChronoTimeOfDayOff();
+  _plannerTime += plannerTime;
 
   if(traj){
     _smoothingMethod( _robot, traj, smoothingSteps, smootingTime );
@@ -391,8 +417,14 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::computeRRT(int smoothingSteps, do
       status = MANIPULATION_TASK_NO_TRAJ_FOUND;
       ManipulationUtils::printManipulationMessage(status);
     }
+    ChronoTimeOfDayTimes(&smootherTime);
+    ChronoTimeOfDayOff();
+    _smootherTime += smootherTime;
     return status;
   }
+  ChronoTimeOfDayTimes(&smootherTime);
+  ChronoTimeOfDayOff();
+  _smootherTime += smootherTime;
   return status;
 }
 
@@ -436,7 +468,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armComputePRM(double ComputeTime)
 //! It first moves the qi and qf configuration to the ROBOT_POS and ROBOT_GOTO
 //! This method calls the compute RRT method from this class
 p3d_traj* ManipulationPlanner::computeTrajBetweenTwoConfigs(configPt qi, configPt qf, MANIPULATION_TASK_MESSAGE* status) {
-
   
     if( p3d_equal_config(_robot, qi, qf) ){
       *status = MANIPULATION_TASK_EQUAL_QSTART_QGOAL;
@@ -451,7 +482,7 @@ p3d_traj* ManipulationPlanner::computeTrajBetweenTwoConfigs(configPt qi, configP
 
     /* RRT */
 
-    if (( *status = this->computeRRT(_optimizeSteps, _optimizeTime, 1)) != MANIPULATION_TASK_OK) {
+    if (( *status = this->computeRRT(_optimizeSteps, _optimizeTimeLimit, 1)) != MANIPULATION_TASK_OK) {
         ManipulationUtils::allowWindowEvents();
         return NULL;
     }
@@ -607,6 +638,9 @@ int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECT
 //! @param objGoto : the Cartesian goal pose
 //! @param trajs : the vector of trajector optained
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qStart, configPt qGoal, bool useSafetyDistance, p3d_rob* object, std::vector <p3d_traj*> &trajs){
+  
+  ChronoTimeOfDayOn();
+  
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   p3d_traj* traj = NULL;
   
@@ -625,7 +659,6 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qSt
   if(object){
     gpHand_properties handProp = (*_robot->armManipulationData)[armId].getHandProperties();
     gpDeactivate_object_collisions(_robot, object->joints[1]->o, handProp, armId); 
-    
     p3d_set_object_to_carry_to_arm(_robot, armId, object->name);
   }
   if (MPDEBUG) {
@@ -635,9 +668,14 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qSt
   if(useSafetyDistance){
     setSafetyDistance(_robot, getSafetyDistanceValue());
   }
+  
+  ChronoTimeOfDayTimes(&_configurationTime);
+  ChronoTimeOfDayOff();
+  
   if((traj = computeTrajBetweenTwoConfigs(qStart, qGoal, &status))){
     trajs.push_back(traj);
   }
+  
   if(useSafetyDistance){
     setSafetyDistance(_robot, 0);
   }
@@ -650,6 +688,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qSt
   return status;
 }
 
+
 //! The arm to free point method takes a goto cartesian pose
 //! and then computes a trajectory from the start configuration of the specified arm
 //! A configuration is computed using the current CCntrt Tatt of the arm
@@ -661,6 +700,11 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFree(int armId, configPt qSt
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFreePoint(int armId, configPt qStart, std::vector<double> &objGoto, p3d_rob* object, std::vector <p3d_traj*> &trajs){
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   gpGrasp grasp;
+  
+  double configTime;
+  
+  ChronoTimeOfDayOn();
+  
   double confCost = -1;
   ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
   p3d_matrix4 tAtt, bakTatt;
@@ -674,12 +718,19 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFreePoint(int armId, configP
     p3d_compute_Tatt(mData.getCcCntrt());
   }
   p3d_mat4Copy(mData.getCcCntrt()->Tatt, tAtt);
+  
   configPt qGoal = _manipConf.getFreeHoldingConf(object, armId, grasp, tAtt, confCost, objGoto, NULL);
+  
+  ChronoTimeOfDayTimes(&configTime);
+  ChronoTimeOfDayOff();
+  
   if(qGoal){
     status = armToFree(armId, qStart, qGoal, true, object ,trajs);
   }else{
     status = MANIPULATION_TASK_NO_TRAJ_FOUND;
   }
+  
+  _configurationTime = configTime;
   
   if(object){
     p3d_mat4Copy(mData.getCcCntrt()->Tatt, bakTatt);
@@ -691,6 +742,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFreePoint(int armId, configP
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armExtract(int armId, configPt qStart, p3d_rob* object, std::vector <p3d_traj*> &trajs) {
  MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   int updateTatt = false;
+  
+  double configTime;
+  ChronoTimeOfDayOn();
 
   deactivateCcCntrts(_robot, armId);
   p3d_set_and_update_this_robot_conf(_robot, qStart);
@@ -699,6 +753,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armExtract(int armId, configPt qS
   g3d_draw_allwin_active();
   configPt qGoal = _manipConf.getExtractConf(armId, qStart, (*_robot->armManipulationData)[armId].getCcCntrt()->Tatt);
 
+  ChronoTimeOfDayTimes(&configTime);
+  ChronoTimeOfDayOff();
+  
   if (!qGoal) {
     status = MANIPULATION_TASK_NO_GRASP;
   }else{
@@ -723,6 +780,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armExtract(int armId, configPt qS
 //! @param trajs : the vector of trajector optained
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt qStart, p3d_rob* object, gpGrasp& grasp, std::vector <p3d_traj*> &trajs){
   
+  ChronoTimeOfDayOn();
+  
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   status = computeManipulationData(armId,object, grasp);
   ManipulationUtils::copyConfigToFORM(_robot, qStart);
@@ -744,6 +803,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
     }
   }
   
+  ChronoTimeOfDayTimes(&_configurationTime);
+  ChronoTimeOfDayOff();
+  
   if (status == MANIPULATION_TASK_OK)
   {
     //Compute the path between theses configurations
@@ -762,7 +824,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt q
 //! @param configPt openConfig : the configuration with the open hand
 //! @param configPt approachFreeConfig : an aproaching configuration
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt qStart, p3d_rob* object, configPt graspConfig, configPt openConfig, configPt approachFreeConfig, std::vector <p3d_traj*> &trajs) {
-
+  
     p3d_traj* traj = NULL;
     MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
     ManipulationUtils::fixAllHands(_robot, qStart, false);
@@ -934,6 +996,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFreePoint(int armId,
                                                                       p3d_rob* object, p3d_rob* support, 
                                                                       std::vector <p3d_traj*> &trajs){
   
+  double configTime;
+  ChronoTimeOfDayOn();
+  
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   int updateTatt = false;
   
@@ -971,12 +1036,16 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickTakeToFreePoint(int armId,
     status = MANIPULATION_TASK_NO_GRASP;
   }
   
+  ChronoTimeOfDayTimes(&configTime);
+  ChronoTimeOfDayOff();
+  
   if (status == MANIPULATION_TASK_OK){
     //Compute the path between theses configurations
     status = armPickTakeToFree(armId, qStart, qGoal, object, support, 
                                _manipData.getApproachGraspConfig(), *_manipData.getGrasp(), trajs);
   }
-
+  
+  _configurationTime = configTime;
   return status;
 }
 
@@ -1637,9 +1706,11 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armReplan(p3d_vector3 target, int
 #endif
 
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName, const char* supportName, const char* placementName, gpGrasp& grasp, std::vector <p3d_traj*> &trajs) {
+  
+  resetTimers();
 
   setUseTimeLimit( true );
-  setPlanningTimeLimit( _planningTime + _optimizeTime );
+  setPlanningTimeLimit( _planningTimeLimit + _optimizeTimeLimit );
 
   ChronoGetTime( true );
   
@@ -1768,6 +1839,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       printf("BioMove3D: armPlanTask Fail\n");
     }
   }
+  
   if(object){
     p3d_set_collision_tolerance_inhibition(object, FALSE);
   }
@@ -1784,6 +1856,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
 //! Replans a path form the variable _robotPath
 #ifdef MULTILOCALPATH
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYPE_STR task, int armId, configPt qStart, configPt qGoal, std::vector<double> &objStart, std::vector<double> &objGoto, const char* objectName, const char* supportName, const char* placementName, gpGrasp& grasp, std::vector <MANPIPULATION_TRAJECTORY_CONF_STR> &confs, std::vector <SM_TRAJ> &smTrajs) {
+  
+    ChronoTimeOfDayOn();
     
     std::vector <p3d_traj*> trajs;
     p3d_traj* traj = NULL;
@@ -1798,6 +1872,9 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
     p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1, FALSE);
 
     if ((returnMessage = armPlanTask(task, armId, qStart, qGoal, objStart, objGoto, objectName, supportName, placementName, grasp, trajs)) == MANIPULATION_TASK_OK) {
+      
+      ChronoTimeOfDayOn();
+      
       //concatene
       if (concatTrajectories(trajs, &traj) == MANIPULATION_TASK_OK) {
           cout << "Copy path to _robotPath" << endl;
@@ -1818,7 +1895,15 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
       } else {
         returnMessage = MANIPULATION_TASK_NO_TRAJ_FOUND;
       }
+      
+      ChronoTimeOfDayTimes(&_motionLawTime);
+      ChronoTimeOfDayOff();
     }
+  
+    ChronoTimeOfDayTimes(&_totalTime);
+    ChronoTimeOfDayOff();
+  
+    printTimers();
     return returnMessage;
 }
 

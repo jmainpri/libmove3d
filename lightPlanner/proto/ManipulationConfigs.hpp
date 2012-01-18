@@ -12,6 +12,22 @@
 
 #include <vector>
 
+configPt manipulation_get_free_holding_config();
+
+//! @ingroup manipulation
+//! Free Holding Config Data
+class ManipIKConfigData
+{
+public: 
+  p3d_rob* object;
+  int armId;
+  gpGrasp grasp;
+  p3d_matrix4 tAtt;
+  double confCost;
+  std::vector<double> objGoto;
+  p3d_rob* support;
+};
+
 //! @ingroup manipulation
 class  ManipulationConfigs 
 {
@@ -41,6 +57,7 @@ class  ManipulationConfigs
     configPt getOpenGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf) const;
     configPt getApproachFreeConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const;
     configPt getApproachGraspConf(p3d_rob* object, int armId, gpGrasp& grasp, configPt graspConf, p3d_matrix4 tAtt) const;
+  configPt getFreeHoldingConf() const;
     configPt getFreeHoldingConf( p3d_rob* obj, int armId, gpGrasp& grasp, p3d_matrix4 tAtt, double& confCost, std::vector<double> &objGoto, p3d_rob* support = NULL ) const;
     configPt getExtractConf(int armId, configPt currentConf, p3d_matrix4 tAtt) const;
   
@@ -61,6 +78,8 @@ class  ManipulationConfigs
     /** Offset to generate the approach configuration of a grasp (carrying an object)*/
     double _approachGraspOffset;
     double _safetyDistanceValue;
+    /** Manipulation Data IK **/
+    ManipIKConfigData* _IKData;
 };
 
 #endif

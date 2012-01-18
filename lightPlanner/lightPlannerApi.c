@@ -228,11 +228,44 @@ void destroyJointSamplingState(p3d_rob* robot, double** jointSamplingState){
 }
 
 /**
+ * @brief Set the robot jiont at the given position and do not shoot it. The fixed joints will not be planned.
+ * @param robot The robot
+ * @param joint The joint to fix
+ * @param initPos The position or the value of the joint
+ */
+void fixJoint(p3d_rob * robot, p3d_jnt * joint, p3d_matrix4 initPos) {
+  double * dVal = getJntDofValue(robot, joint, initPos);
+  for (int i = 0; i < joint->dof_equiv_nbr; i++) {
+    if (robot->isUserDof[joint->index_dof + i]) {
+      p3d_jnt_set_dof(joint, i, dVal[i]);
+      joint->dof_data[i].is_user = FALSE;
+    }
+  }
+  p3d_jnt_set_is_active_for_planner(joint, FALSE);
+  MY_FREE(dVal, double, joint->dof_equiv_nbr);
+}
+
+/**
+ * @brief Unfix the given joint. The joint will be sampled in the next planning step
+ * @param robot The robot
+ * @param joint The joint to unfix
+ */
+void unFixJoint(p3d_rob * robot, p3d_jnt * joint) {
+  for (int i = 0; i < joint->dof_equiv_nbr; i++) {
+    if (robot->isUserDof[joint->index_dof + i]) {
+      joint->dof_data[i].is_user = TRUE;
+    }
+  }
+  p3d_jnt_set_is_active_for_planner(joint, TRUE);
+}
+
+/**
  * @brief Fix all robot joints apart from the given arm Id
  * @param robot The robot
  * @param armId The id of the arm to sample
  */
-void fixAllJointsWithoutArm(p3d_rob* robot, int armId){
+void fixAllJointsWithoutArm(p3d_rob* robot, int armId)
+{
   for (int i = 0; i < robot->njoints + 1; i++) {
     p3d_jnt * joint = robot->joints[i];
     if (joint->type != P3D_BASE && joint->type != P3D_FIXED) {
@@ -247,7 +280,9 @@ void fixAllJointsWithoutArm(p3d_rob* robot, int armId){
       unFixJoint(robot, joint);
     }
   }
-  if((!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")) || (!strcmp(ct->namecntrt, "p3d_lwr_arm_ik")) || (!strcmp(ct->namecntrt, "p3d_pr2_arm_ik"))){
+  if((!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")) || 
+     (!strcmp(ct->namecntrt, "p3d_lwr_arm_ik")) || 
+     (!strcmp(ct->namecntrt, "p3d_pr2_arm_ik"))){
     p3d_jnt * joint = robot->joints[ct->argu_i[0]];
     unFixJoint(robot, joint);
   }
@@ -295,38 +330,6 @@ void unFixAllJointsExceptBaseAndObject(p3d_rob * robot) {
       unFixJoint(robot, joint);
     }
   }
-}
-
-/**
- * @brief Set the robot jiont at the given position and do not shoot it. The fixed joints will not be planned.
- * @param robot The robot
- * @param joint The joint to fix
- * @param initPos The position or the value of the joint
- */
-void fixJoint(p3d_rob * robot, p3d_jnt * joint, p3d_matrix4 initPos) {
-  double * dVal = getJntDofValue(robot, joint, initPos);
-  for (int i = 0; i < joint->dof_equiv_nbr; i++) {
-    if (robot->isUserDof[joint->index_dof + i]) {
-      p3d_jnt_set_dof(joint, i, dVal[i]);
-      joint->dof_data[i].is_user = FALSE;
-    }
-  }
-  p3d_jnt_set_is_active_for_planner(joint, FALSE);
-  MY_FREE(dVal, double, joint->dof_equiv_nbr);
-}
-
-/**
- * @brief Unfix the given joint. The joint will be sampled in the next planning step
- * @param robot The robot
- * @param joint The joint to unfix
- */
-void unFixJoint(p3d_rob * robot, p3d_jnt * joint) {
-  for (int i = 0; i < joint->dof_equiv_nbr; i++) {
-    if (robot->isUserDof[joint->index_dof + i]) {
-      joint->dof_data[i].is_user = TRUE;
-    }
-  }
-  p3d_jnt_set_is_active_for_planner(joint, TRUE);
 }
 
 /**

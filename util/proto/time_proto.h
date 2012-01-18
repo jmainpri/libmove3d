@@ -18,6 +18,7 @@ extern double ChronoGetTime( bool is_first_call = false );
 extern int ChronoTimeOfDayOn ( void );
 extern int ChronoTimeOfDayOff ( void );
 extern int ChronoTimeOfDayTimes ( double *tu, double *ts );
+extern int ChronoTimeOfDayTimes ( double *ts );
 extern void ChronoTimeOfDayPrint ( const char *msg );
 extern void ChronoTimeOfDayPrinter ( int flag );
 #endif
