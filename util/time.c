@@ -34,9 +34,6 @@ FCT:
 #else
 #error Platform definition needed, like UNIX, WIN32 etc...
 #endif
-#ifdef HRI_COSTSPACE
-#include <iostream>
-#endif
 
 #if !defined(TRUE) || (TRUE!=1)
 #define     TRUE            1
@@ -153,9 +150,6 @@ void ChronoPrint ( const char *msg )
     fprintf(stdout,"Clock[%2d]: Utime=%6.3f sec , Stime=%6.3f sec : %s\n",
         counter,tu,ts,msg);
         */
-#ifdef HRI_COSTSPACE
-    std::cout << "Clock = " <<tu<<"  sec"<<std::endl;
-#endif
     fprintf ( stdout,"Clock = %6.3f sec : ",tu );
     //calcul en microsecondes
     ChronoMicroTimes ( &tu, &ts );
@@ -181,6 +175,95 @@ unsigned long  ChronoGet ( void )
   return ( msec );
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+static struct timeval beg_tod[NCHRONO];
+static int counter_tod = -1;
+static int print_flag_tod = -1;
+//
+int ChronoTimeOfDayOn ( void )
+{
+  if ( ++counter_tod >= NCHRONO )
+  {
+    fprintf ( stderr, "ChronoTimeOfDayOn : Warning: Chrono stack overflow\n" );
+    return ( --counter_tod );
+  }
+  
+  gettimeofday(&beg_tod[counter_tod],NULL);
+  return ( counter_tod );
+}
+
+
+int ChronoTimeOfDayOff ( void )
+{
+  if ( counter_tod == -1 )
+  {
+    fprintf ( stderr, "ChronoOff : Warning: Chrono stack underflow\n" );
+    return ( -1 );
+  }
+  return ( counter_tod-- );
+}
+
+int ChronoTimeOfDayTimes ( double *tu, double *ts )
+{
+  if ( ( counter_tod == -1 ) || ( counter_tod >= NCHRONO ) )
+  {
+    *tu = 0.0;
+    *ts = 0.0;
+    return ( -1 );
+  }
+  
+  timeval tim;
+  gettimeofday(&tim,NULL);
+  
+  *tu  = double( tim.tv_usec - beg_tod[counter_tod].tv_usec );
+  *ts  = double( tim.tv_sec  - beg_tod[counter_tod].tv_sec );
+  
+  return ( counter );
+}
+
+int ChronoTimeOfDayTimes ( double *ts )
+{
+  if ( ( counter_tod == -1 ) || ( counter_tod >= NCHRONO ) )
+  {
+    *ts = 0.0;
+    return ( -1 );
+  }
+  
+  timeval tim;
+  gettimeofday(&tim,NULL);
+  
+  double tu;
+  
+  tu  = double( tim.tv_usec - beg_tod[counter_tod].tv_usec );
+  *ts = double( tim.tv_sec  - beg_tod[counter_tod].tv_sec ); 
+  
+  *ts = *ts + tu/1000000.0;
+  
+  return ( counter );
+}
+
+void ChronoTimeOfDayPrint ( const char *msg )
+{
+  double ts;
+  int    i;
+  if ( print_flag )
+  {
+    for ( i=0;i<counter_tod;i++ ) 
+    {
+      ChronoTimeOfDayTimes ( &ts );
+      fprintf ( stdout,"Clock = %6.3f sec : ", ts );
+      fprintf ( stdout,"  " );
+      fprintf ( stdout,"[%d] %s\n", counter_tod, msg );
+    }
+    
+  }
+}
+
+void ChronoTimeOfDayPrinter ( int flag )
+{
+  print_flag_tod = flag;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 #elif defined WIN32

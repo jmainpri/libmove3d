@@ -13,4 +13,13 @@ extern void ChronoPrinter ( int flag );
 extern unsigned long ChronoGet ( void );
 extern int ChronoMicroTimes ( double *tu, double *ts );
 extern double ChronoGetTime( bool is_first_call = false );
+
+#if defined UNIX
+extern int ChronoTimeOfDayOn ( void );
+extern int ChronoTimeOfDayOff ( void );
+extern int ChronoTimeOfDayTimes ( double *tu, double *ts );
+extern void ChronoTimeOfDayPrint ( const char *msg );
+extern void ChronoTimeOfDayPrinter ( int flag );
+#endif
+
 #endif /* __CEXTRACT__ */
