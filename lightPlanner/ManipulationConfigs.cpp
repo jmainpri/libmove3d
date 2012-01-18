@@ -21,6 +21,7 @@ configPt manipulation_get_free_holding_config()
 
 ManipulationConfigs::ManipulationConfigs(p3d_rob* robot):_robot(robot)
 {
+  // Basic parameters
   _optimizeRedundentSteps = 50;
   _approachFreeOffset = 0.10; //0.10 meters
   _approachGraspOffset = 0.10; //0.02 meters
@@ -28,20 +29,23 @@ ManipulationConfigs::ManipulationConfigs(p3d_rob* robot):_robot(robot)
   _useMobileBase = false;
   
   // Robot Pos options
-  setMaxNumberOfTryForIK( 300 );
+  setMaxNumberOfTryForIK( 500 );
   setDebugConfAroundTheObject( false );
   
+  // Data to be stored for FreeHoldingConf funct
   _IKData = new ManipIKConfigData();
   
+  // Pointer to the class
   global_ManipulationConfigs = this;
 }
 
 ManipulationConfigs::~ManipulationConfigs()
 {
-  //Nothing to do
+  delete _IKData;
+  global_ManipulationConfigs = NULL;
 }
 
-void ManipulationConfigs::setDebugMode(bool value)
+void ManipulationConfigs::setDebugMode(bool value) const
 {
   MCDEBUG = value;
   setDebugConfAroundTheObject(value);
@@ -308,7 +312,8 @@ configPt ManipulationConfigs::getFreeHoldingConf( p3d_rob* object, int armId, gp
   _IKData->confCost = confCost;
   _IKData->objGoto = objGoto;
   _IKData->support = support;
-  p3d_mat4Copy(_IKData->tAtt, tAtt);
+  // Carefull mat4Copy : source -> destination
+  p3d_mat4Copy( tAtt, _IKData->tAtt );
   
   configPt tmpConf = p3d_get_robot_config(_robot);
   configPt objectConf = NULL;

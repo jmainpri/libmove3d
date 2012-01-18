@@ -710,6 +710,13 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armToFreePoint(int armId, configP
   
   ChronoTimeOfDayOn();
   
+  if(!_useBaseMotion) {
+    fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
+  }
+  else {
+    unFixJoint(_robot, _robot->baseJnt);
+  }
+  
   double confCost = -1;
   ArmManipulationData& mData = (*_robot->armManipulationData)[armId];
   p3d_matrix4 tAtt, bakTatt;
@@ -750,6 +757,13 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armExtract(int armId, configPt qS
   
   double configTime;
   ChronoTimeOfDayOn();
+  
+  if(!_useBaseMotion) {
+    fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
+  }
+  else {
+    unFixJoint(_robot, _robot->baseJnt);
+  }
 
   deactivateCcCntrts(_robot, armId);
   p3d_set_and_update_this_robot_conf(_robot, qStart);
@@ -786,6 +800,13 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armExtract(int armId, configPt qS
 MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPickGoto(int armId, configPt qStart, p3d_rob* object, gpGrasp& grasp, std::vector <p3d_traj*> &trajs){
   
   ChronoTimeOfDayOn();
+  
+  if(!_useBaseMotion) {
+    fixJoint(_robot, _robot->baseJnt, _robot->baseJnt->abs_pos);
+  }
+  else {
+    unFixJoint(_robot, _robot->baseJnt);
+  }
   
   MANIPULATION_TASK_MESSAGE status = MANIPULATION_TASK_OK;
   status = computeManipulationData(armId,object, grasp);

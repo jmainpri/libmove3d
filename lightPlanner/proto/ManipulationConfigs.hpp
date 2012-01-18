@@ -35,7 +35,7 @@ class  ManipulationConfigs
     ManipulationConfigs(p3d_rob * robot);
     virtual ~ManipulationConfigs();
   
-    void setDebugMode(bool value);
+    void setDebugMode(bool value) const;
     void setMobileBaseMode(bool value);
   
     void setOptimizeRedundentSteps(int nbSteps);

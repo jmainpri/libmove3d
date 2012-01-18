@@ -78,6 +78,8 @@ void ManipulationTestFunctions::setToPoint(vector<double> point)
 {
   m_ToFreePoint = true;
   
+  m_objGoto.resize( 6 );
+  
   m_objGoto[0] = point[0];
   m_objGoto[1] = point[1];
   m_objGoto[2] = point[2];
@@ -94,6 +96,8 @@ void ManipulationTestFunctions::setToPoint(vector<double> point)
 void ManipulationTestFunctions::resetToPoint()
 {
   m_ToFreePoint = false;
+  
+  m_objGoto.resize( 6 );
   
   m_objGoto[0] = P3D_HUGE;
   m_objGoto[1] = P3D_HUGE;
@@ -128,6 +132,7 @@ void ManipulationTestFunctions::setDebugMode(bool value)
   if( m_manipulation )
   {
     m_manipulation->setDebugMode(value);
+    m_manipulation->getManipulationConfigs().setDebugMode(value);
   }
 }
 

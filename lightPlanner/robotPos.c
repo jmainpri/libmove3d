@@ -511,24 +511,28 @@ void sampleBaseJoint(p3d_rob* robot, p3d_jnt* baseJnt, double minRadius, double 
 //! and it loops until a configuration is found collision free for the object
 //! @param objectPos the object translation parameter for each axis
 //! @return q the robot configuration
-void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrtToActivate, configPt q, int shootObjectPos, int shootObjectRot)
+int sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrtToActivate, configPt q, int shootObjectPos, int shootObjectRot)
 {
   double robotSize = 0;
   double translationFactor = 0;
   double rotationFactor = 0;
   int nbTry = 0, objIdx = 6;
+  bool collision = false;
+  
+  int nbFailedUpdate=0, nbFailedCollision=0;
   
   if(cntrtToActivate == -1){
     cntrtToActivate = 0;
   }
   
+  // Carried object is robot when not carrying object
   p3d_rob* carriedObject = (*robot->armManipulationData)[cntrtToActivate].getCarriedObject();
   if(!carriedObject){
     carriedObject = robot;
     objIdx = (*robot->armManipulationData)[cntrtToActivate].getManipulationJnt()->index_dof;
   }
-  configPt carriedObjectRefConf = p3d_alloc_config(carriedObject);
-  configPt carriedObjectConf = p3d_get_robot_config(carriedObject);
+  configPt carriedObjectConf = p3d_alloc_config( carriedObject );
+  configPt carriedObjectRefConf = p3d_get_robot_config( carriedObject );
   
   carriedObjectRefConf[objIdx + 0] = objPos._x;
   carriedObjectRefConf[objIdx + 1] = objPos._y;
@@ -539,36 +543,47 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
   
   p3d_sel_desc_num(P3D_ROBOT,carriedObject->num);
   p3d_set_and_update_this_robot_conf(carriedObject, carriedObjectConf);
-  p3d_get_BB_rob_max_size(carriedObject, &robotSize);
-  if(robotSize >= P3D_HUGE || robotSize <= -P3D_HUGE){
+  p3d_get_BB_rob_max_size( carriedObject, &robotSize );
+  
+  if( robotSize >= P3D_HUGE || robotSize <= -P3D_HUGE ) {
     printf("Warning in %s !! BB size of %s is not well intialized. Value : %f. Setting the size to 1\n", __func__, carriedObject->name, robotSize);
     robotSize = 1;
   }
   translationFactor = robotSize/5;
   rotationFactor = 1;
   
-  do{
-    // This loop continues 
-    // until a configuration is found collision free for the carried object
-//     g3d_draw_allwin_active();
-    if(carriedObject){
-      p3d_gaussian_config2_specific(carriedObject, carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, true);
-    }else{
-      p3d_gaussian_config2_Joint_specific(robot, (*robot->armManipulationData)[cntrtToActivate].getManipulationJnt(), carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, true);
+  do
+  {
+    // This loop continues until a configuration is found collision free for the carried object
+    if( carriedObject != robot )
+    {
+      p3d_gaussian_config2_specific( carriedObject, carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, false);
     }
-    //Bit computation to get the positions and rotations to sample.
-    //When the Bit = 1 the corresponding position or rotation has to be sampled
+    else
+    {
+      //p3d_gaussian_config2_Joint_specific( robot, (*robot->armManipulationData)[cntrtToActivate].getManipulationJnt(), carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, false);
+      p3d_jnt* jntPt = (*robot->armManipulationData)[cntrtToActivate].getManipulationJnt();
+      double vmin,vmax;
+      for(int j=0; j<jntPt->dof_equiv_nbr; j++) 
+      {
+        p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+        carriedObjectConf[jntPt->index_dof+j] = p3d_random( vmin, vmax);
+      }
+    }
+    
+    // Bit computation to get the positions and rotations to sample.
+    // When the Bit = 1 the corresponding position is not sampled
     if(~shootObjectPos & 1){
-      carriedObjectConf[objIdx + 0]  = objPos._x;
+      carriedObjectConf[objIdx + 0] = objPos._x;
     }
     if(~shootObjectPos & 2){
-      carriedObjectConf[objIdx + 1]  = objPos._y;
+      carriedObjectConf[objIdx + 1] = objPos._y;
     }
     if(~shootObjectPos & 4){
-      carriedObjectConf[objIdx + 2]  = objPos._z;
+      carriedObjectConf[objIdx + 2] = objPos._z;
     }
     if(~shootObjectRot & 1){
-      carriedObjectConf[objIdx + 3]  = objPos._rx;
+      carriedObjectConf[objIdx + 3] = objPos._rx;
     }
     if(~shootObjectRot & 2){
       carriedObjectConf[objIdx + 4] = objPos._ry;
@@ -577,21 +592,87 @@ void sampleObjectConfiguration( p3d_rob* robot, p3d_objectPos& objPos, int cntrt
       carriedObjectConf[objIdx + 5] = objPos._rz;
     }
     nbTry++;
-  }while(nbTry < MaxNumberOfTry/100 && !p3d_set_and_update_this_robot_conf_with_partial_reshoot(carriedObject, carriedObjectConf) && p3d_col_test());
+    
+    // No collision test when the robot is not 
+    // carrying an object
+    if( carriedObject != robot )
+    {
+      collision = true;
+      
+      if( p3d_set_and_update_this_robot_conf(carriedObject, carriedObjectConf) )
+      {
+        collision = p3d_col_test();
+        nbFailedCollision++;
+      }
+      else {
+        nbFailedUpdate++;
+      }
+    }
+    else {
+      collision = false;
+    }
+    
+    if( debugConfAroundTheObject )
+    {
+      //      printf("carriedObjectRefConf\n");
+      //      print_config( robot, carriedObjectRefConf );
+      //      printf("carriedObjectConf\n");
+      //      print_config( robot, carriedObjectConf );
+      
+      p3d_rob* visball = p3d_get_robot_by_name("VISBALL_INTERNAL");
+      if( visball != NULL )
+      {
+        configPt carriedObjectConfDebug = p3d_get_robot_config( visball );
+        
+        carriedObjectConfDebug[6 + 0] = carriedObjectConf[objIdx + 0];
+        carriedObjectConfDebug[6 + 1] = carriedObjectConf[objIdx + 1];
+        carriedObjectConfDebug[6 + 2] = carriedObjectConf[objIdx + 2];
+        carriedObjectConfDebug[6 + 3] = carriedObjectConf[objIdx + 3];
+        carriedObjectConfDebug[6 + 4] = carriedObjectConf[objIdx + 4];
+        carriedObjectConfDebug[6 + 5] = carriedObjectConf[objIdx + 5];
+        
+        p3d_set_and_update_this_robot_conf( visball, carriedObjectConfDebug );
+        p3d_destroy_config( visball, carriedObjectConfDebug );
+        
+        p3d_sel_desc_num(P3D_ROBOT,carriedObject->num);
+        
+        //g3d_draw_allwin_active();
+      }
+    }
+    
+  } while(collision && (nbTry < MaxNumberOfTry));
+  
+  if( debugConfAroundTheObject )
+  {
+    cout << "nbTry in sampleObjectConfiguration : " << nbTry << endl;
+    cout << "nbFailedUpdate : " << nbFailedUpdate << endl;
+    cout << "nbFailedCollision : " << nbFailedCollision << endl;
+  }
   
   p3d_sel_desc_num(P3D_ROBOT,robot->num);
   
   int ffjntIndex = (*robot->armManipulationData)[cntrtToActivate].getManipulationJnt()->index_dof;
   
-  q[ffjntIndex] = carriedObjectConf[objIdx];
+  q[ffjntIndex + 0] = carriedObjectConf[objIdx + 0];
   q[ffjntIndex + 1] = carriedObjectConf[objIdx + 1];
   q[ffjntIndex + 2] = carriedObjectConf[objIdx + 2];
   q[ffjntIndex + 3] = carriedObjectConf[objIdx + 3];
   q[ffjntIndex + 4] = carriedObjectConf[objIdx + 4];
   q[ffjntIndex + 5] = carriedObjectConf[objIdx + 5];
   
+  if( debugConfAroundTheObject )
+  {
+    cout << "q[ffjntIndex + 0] : " << q[ffjntIndex + 0] << endl;
+    cout << "q[ffjntIndex + 1] : " << q[ffjntIndex + 1] << endl;
+    cout << "q[ffjntIndex + 2] : " << q[ffjntIndex + 2] << endl;
+    cout << "q[ffjntIndex + 3] : " << q[ffjntIndex + 3] << endl;
+    cout << "q[ffjntIndex + 4] : " << q[ffjntIndex + 4] << endl;
+    cout << "q[ffjntIndex + 5] : " << q[ffjntIndex + 5] << endl;
+  }
+  
   p3d_destroy_config(carriedObject, carriedObjectRefConf);
   p3d_destroy_config(carriedObject, carriedObjectConf);
+  return nbTry;
 }
 
 //! @brief Computes the Min and Max Base sampling radius
@@ -673,36 +754,48 @@ configPt sampleRobotConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_
   // Safe test that robot, oject and base exist
   if(robot && objectJnt && baseJnt)
   {
-    q = p3d_alloc_config(robot);
+    q =  p3d_get_robot_config(robot);
     configPt qInit = p3d_get_robot_config(robot);
     
     // Computes the Min and Max sampling raduis of the base joint
     // According to bounding boxes radius
-    setBaseMinAndMaxSamplingRadius(robot, baseJnt, objectJnt, cntrtToActivate, minRadius, maxRadius);
+    setBaseMinAndMaxSamplingRadius( robot, baseJnt, objectJnt, cntrtToActivate, minRadius, maxRadius );
     
     // Activate arms constraints
-    activateCcCntrts(robot, cntrtToActivate, nonUsedCntrtDesactivation);
+    activateCcCntrts( robot, cntrtToActivate, nonUsedCntrtDesactivation);
+    
+    // Get the free flyer DoFs of the robot
+    int ffjntIndex = (*robot->armManipulationData)[cntrtToActivate].getManipulationJnt()->index_dof;
     
     int nbTry = 0;
     int nbTryColliding = 0;
     bool collision = false;
     bool isKukaBoundOff = false;
-    do { 
-      // Continues until there is a 
-      // collision free configuration
-      //if (nbTry != 0) { //there is a collision
-      //  nbTry += MaxNumberOfTry*5/100;
-      //}
-      do {
-//        if ( debugConfAroundTheObject ) {
-//          g3d_draw_allwin_active();
-//        }
-        
-        // Continues until a configuration
-        // that respects kinematic constraints is found
-        if(!gaussianShoot)
+    bool i_can = false;
+    
+    if ( debugConfAroundTheObject ) 
+    {
+      cout << "gaussianShoot : " << gaussianShoot << endl;
+      cout << "shootBase : " << shootBase << endl;
+      cout << "shootObjectPos : " << shootObjectPos << endl;
+      cout << "shootObjectRot : " << shootObjectRot << endl;
+    }
+    
+    // Continues until a collision free configuration is found
+    do 
+    { 
+      // Continues until a configuration
+      // that respects kinematic constraints is found
+      do 
+      {
+        if ( debugConfAroundTheObject ) 
         {
-          p3d_shoot(robot, q, 0);
+          g3d_draw_allwin_active();
+        }
+
+        if( !gaussianShoot )
+        {
+          p3d_shoot( robot, q, 0);
         }
         else 
         {
@@ -715,7 +808,7 @@ configPt sampleRobotConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_
           p3d_gaussian_config2_specific(robot, qInit, q , translationFactor, rotationFactor, true);
         }
         
-        if(shootBase == true)
+        if( shootBase == true )
         {
           // Sample the base joint within a circle
           // of minRadius and maxRadius
@@ -728,23 +821,21 @@ configPt sampleRobotConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_
             }
           }
         }
-        else if (baseJnt->type != P3D_ROTATE)
+        else if ( baseJnt->type != P3D_ROTATE )
         {
-          for(int i = 0; i<baseJnt->dof_equiv_nbr; i++)
+          for(int i=0; i<baseJnt->dof_equiv_nbr; i++)
           {
             q[baseJnt->index_dof+i] = qInit[baseJnt->index_dof+i];
           }
         }
-        
-        if(shootObjectPos || shootObjectRot)
+                
+        if( shootObjectPos || shootObjectRot )
         {
-          sampleObjectConfiguration(robot,objPos,cntrtToActivate,q, shootObjectPos, shootObjectRot);
+          // Find a collision free pose for the object
+          nbTry += sampleObjectConfiguration( robot, objPos, cntrtToActivate, q, shootObjectPos, shootObjectRot );
         }
         else
-        {
-          // Gets the free flyer DoFs of the robot
-          int ffjntIndex = (*robot->armManipulationData)[cntrtToActivate].getManipulationJnt()->index_dof;
-          
+        {          
           // When not sampling the object confguration
           // the free flyer DoFs are set to the argument parameters (objPos)
           q[ffjntIndex + 0] = objPos._x;
@@ -754,38 +845,45 @@ configPt sampleRobotConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_
           q[ffjntIndex + 4] = objPos._ry;
           q[ffjntIndex + 5] = objPos._rz;
         }
+        
         nbTry++;
-	//printf("NbTry : %d and Max %d\n", nbTry, MaxNumberOfTry );
-        // The update function re-sample the robot configuration
+        // printf("NbTry : %d and Max %d\n", nbTry, MaxNumberOfTry );
+        int *ikSol = NULL;
+        p3d_set_robot_config( robot, q );
+        i_can = p3d_update_this_robot_pos_multisol( robot, NULL, 0, ikSol );
+        // When using RLG, the update function re-samples the robot configuration
         // to get a valid configuration regarding the kinematic constraints
-      } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && (nbTry < MaxNumberOfTry));
+        //i_can = p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q)
+        
+      } while ( (!i_can) && (nbTry <= MaxNumberOfTry));
   
       nbTryColliding++;
       collision = p3d_col_test();
       
       if ( debugConfAroundTheObject ) {
-        //g3d_draw_allwin_active();
+        g3d_draw_allwin_active();
         if( collision ) {
-	  p3d_print_col_pair();
+          p3d_print_col_pair();
         }
       }
-    } while ( collision && ( nbTry < MaxNumberOfCollision ) );
+    } while ( collision && (nbTry <= MaxNumberOfTry));
     
-    if(nbTry >= MaxNumberOfTry)
+    if ( debugConfAroundTheObject ) {
+      cout << "NbTry = " << nbTry << endl;
+      cout << "nbTryColliding = " << nbTryColliding << endl;
+    }
+    
+    if( nbTry >= MaxNumberOfTry )
     {
-      if (debugConfAroundTheObject) {
-        cout << "NbTry = " << nbTry << endl;
-        cout << "nbTryColliding = " << nbTryColliding << endl;
-      }
-      p3d_destroy_config(robot, qInit);
-      p3d_destroy_config(robot, q);
-      deactivateCcCntrts(robot, cntrtToActivate);
+      p3d_destroy_config( robot, qInit );
+      p3d_destroy_config( robot, q );
+      deactivateCcCntrts( robot, cntrtToActivate );
       return NULL;
     }
     
     p3d_get_robot_config_into( robot, &q );
-    p3d_destroy_config(robot, qInit);
-    deactivateCcCntrts(robot, cntrtToActivate);
+    p3d_destroy_config( robot, qInit );
+    deactivateCcCntrts( robot, cntrtToActivate );
   }
   return q;
 }
