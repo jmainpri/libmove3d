@@ -254,6 +254,8 @@ void ManipulationPlanner::resetTimers()
   _configurationTime = 0.0;
   _plannerTime = 0.0;
   _smootherTime = 0.0;
+  _motionLawTime = 0.0;
+  _totalTime = 0.0;
 }
 
 void ManipulationPlanner::printTimers()
@@ -263,6 +265,7 @@ void ManipulationPlanner::printTimers()
   cout << "Planner Time (RRT) : " << _plannerTime << " sec" << endl;
   cout << "Smoother Time (Shortcut) : " << _smootherTime << " sec" << endl;
   cout << "Motion Law Time (SM) : " <<  _motionLawTime << " sec" << endl;
+  cout << "TOTAL Time (SM) : " <<  _totalTime << " sec" << endl;
   cout << "------------------------------------------------------" << endl;
 }
 
@@ -396,6 +399,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::computeRRT(int smoothingSteps, do
   ChronoTimeOfDayOff();
   _plannerTime += plannerTime;
 
+  ChronoTimeOfDayOn();
+  
   if(traj){
     _smoothingMethod( _robot, traj, smoothingSteps, smootingTime );
   }

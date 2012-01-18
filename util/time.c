@@ -198,7 +198,7 @@ int ChronoTimeOfDayOff ( void )
 {
   if ( counter_tod == -1 )
   {
-    fprintf ( stderr, "ChronoOff : Warning: Chrono stack underflow\n" );
+    fprintf ( stderr, "ChronoTimeOfDayOff : Warning: Chrono stack underflow\n" );
     return ( -1 );
   }
   return ( counter_tod-- );
