@@ -47,5 +47,6 @@ extern void (*ext_g3d_draw_cost_features)();
 extern void (*ext_g3d_draw_allwin_active)();
 extern void (*ext_g3d_draw_hri_features)();
 extern void (*ext_g3d_draw_remote)();
+extern void (*ext_g3d_draw_multi_thread)();
 
 #endif

@@ -29,11 +29,11 @@ extern ManipulationTestFunctions* global_manipPlanTest;
 // --------------------------------------------------------
 // External function pointers used by linked libraries
 // to define draw functions outside of Move3D 
-
-void (*ext_g3d_export_cpp_graph)();
-void (*ext_g3d_draw_cost_features)();
-void (*ext_g3d_draw_hri_features)();
-void (*ext_g3d_draw_remote)();
+void (*ext_g3d_export_cpp_graph)() = NULL;
+void (*ext_g3d_draw_cost_features)() = NULL;
+void (*ext_g3d_draw_hri_features)() = NULL;
+void (*ext_g3d_draw_remote)() = NULL;
+void (*ext_g3d_draw_multi_thread)() = NULL;
 
 // --------------------------------------------------------
 // These matrix are drawn in the 
@@ -41,6 +41,7 @@ std::vector<p3d_matrix4*> global_FramesToDraw;
 
 // --------------------------------------------------------
 
+int G3D_MULTI_THREAD=FALSE;
 int G3D_DRAW_TRACE = FALSE;
 int G3D_DRAW_OCUR_SPECIAL;
 int G3D_SELECTED_JOINT = -999;
@@ -72,6 +73,10 @@ static void g3d_draw_robot_box();
 
 void g3d_set_draw_coll(int n) {
   p3d_numcoll = n;
+}
+
+void g3d_set_multi_thread_mode(int mode) {
+  G3D_MULTI_THREAD = mode;
 }
 
 void g3d_reinit_graphics(int opengl_context) {
@@ -791,7 +796,6 @@ void g3d_draw_obstacles(G3D_Window* win, int opengl_context) {
   o = p3d_get_desc_curnum(P3D_OBSTACLE);
   no = p3d_get_desc_number(P3D_OBSTACLE);
 
-
   if (no) {
     for (i = 0;i < no;i++) {
       p3d_sel_desc_num(P3D_OBSTACLE, i);
@@ -810,11 +814,99 @@ void g3d_draw_obstacles(G3D_Window* win, int opengl_context) {
   }
 }
 
+void g3d_draw_obstacles_thread(G3D_Window* win, int opengl_context) {
+  
+  /** Initialisation de la matrice OpenGL unite **/
+  /** IMPORTANT pour le calcul de resolution de primitive **/
+  for (int i = 0 ; i < 16; i++) {
+    matrix_pos_absGL[i] = 0.;
+  }
+  
+  matrix_pos_absGL[0] = 1.;
+  matrix_pos_absGL[5] = 1.;
+  matrix_pos_absGL[10] = 1.;
+  matrix_pos_absGL[15] = 1.;
+  
+  for (int i = 0;i < XYZ_ENV->no;i++) 
+  {
+    p3d_obj *obstacle = XYZ_ENV->o[i];
+    if(obstacle->display_mode==P3D_OBJ_NO_DISPLAY) {
+      continue;
+    }
+    
+    g3d_draw_object(obstacle, 0, win, opengl_context);
+    //g3d_draw_obstacle_thread(obstacle,win,opengl_context);
+  }
+}
+
+/***********************************************/
+/* Fonction tracant le robot courant en tenant */
+/* compte de s'il a percute un obstacle ou non */
+/***********************************************/
+void g3d_draw_robot(int ir, G3D_Window* win, int opengl_context) {
+  
+  int nb, b, ib, num;
+  int coll = 0;
+  
+  b = p3d_get_desc_curnum(P3D_BODY);
+  nb = p3d_get_desc_number(P3D_BODY);
+  
+  num = p3d_get_desc_curnum(P3D_ROBOT);
+  
+  p3d_rob *r;
+  r=(p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+  
+#ifdef P3D_COLLISION_CHECKING
+  if (p3d_numcoll) {
+    coll = p3d_col_does_robot_collide(ir, p3d_numcoll);
+  }
+#endif
+	
+  if ( r->draw_custom_color ) {
+    coll = 2;
+  }
+  if ( r->draw_transparent ) {
+    coll ^= 4;
+  }
+  
+  for (ib = 0;ib < nb;ib++) {
+    p3d_sel_desc_num(P3D_BODY, ib);
+    g3d_draw_body(coll, win, opengl_context);
+  }
+  p3d_sel_desc_num(P3D_BODY,b);
+  
+#ifdef DPG
+  if(ENV.getBool(Env::drawGrid) && r->GRAPH && r->GRAPH->dpgGrid){
+    for(int i = 0; i < r->nbDpgCells; i++){
+      r->dpgCells[i]->draw(Green, 2);
+    }
+  }
+#endif
+}
+
+void g3d_draw_robot_thread(p3d_rob* rob, G3D_Window* win, int opengl_context) {
+  
+  int coll =0;
+	
+  if ( rob->draw_custom_color ) {
+    coll = 2;
+  }
+  if ( rob->draw_transparent ) {
+    coll ^= 4;
+  }
+  
+  for (int ib = 0;ib<rob->no;ib++) 
+  {
+    g3d_draw_object_moved(rob->o[ib], coll, win, opengl_context);
+    //g3d_draw_body_thread(rob->o[ib],coll, win, opengl_context);
+  }
+}
+
 /*******************************************************/
 /* Fonction tracant tous les robots d'un environnement */
 /*******************************************************/
-void g3d_draw_robots(G3D_Window *win, int opengl_context) {
-
+void g3d_draw_robots(G3D_Window *win, int opengl_context) 
+{
   int   r, nr, ir;
   r = p3d_get_desc_curnum(P3D_ROBOT);
   nr = p3d_get_desc_number(P3D_ROBOT);
@@ -823,14 +915,31 @@ void g3d_draw_robots(G3D_Window *win, int opengl_context) {
     for (ir = 0;ir < nr;ir++) {
       p3d_sel_desc_num(P3D_ROBOT, ir);
       p3d_rob *rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-      if(rob->display_mode==P3D_ROB_NO_DISPLAY) {
+      
+      if(rob->display_mode==P3D_ROB_NO_DISPLAY || 
+         ((rob->draw_transparent==TRUE)&&(win->vs.transparency_mode!=G3D_TRANSPARENT)) ) {
         continue;
       }
       //g3d_draw_rob_BB((p3d_rob *) p3d_get_desc_curid(P3D_ROBOT));
-            g3d_draw_robot(ir, win, opengl_context);
+      g3d_draw_robot(ir, win, opengl_context);
     }
 
     p3d_sel_desc_num(P3D_ROBOT, r);
+  }
+}
+
+void g3d_draw_robots_thread(G3D_Window *win, int opengl_context) 
+{
+  for (int ir = 0;ir < XYZ_ENV->nr;ir++) 
+  {
+    p3d_rob *rob = XYZ_ENV->robot[ir];
+    
+    if(rob->display_mode==P3D_ROB_NO_DISPLAY || 
+       ((rob->draw_transparent==TRUE)&&(win->vs.transparency_mode!=G3D_TRANSPARENT)) ) {
+      continue;
+    }
+    
+    g3d_draw_robot_thread(rob, win, opengl_context);
   }
 }
 
@@ -1005,51 +1114,6 @@ void g3d_draw_obstacle(G3D_Window *win, int opengl_context) {
   g3d_draw_object(o, 0, win, opengl_context);
 }
 
-/***********************************************/
-/* Fonction tracant le robot courant en tenant */
-/* compte de s'il a percute un obstacle ou non */
-/***********************************************/
-void g3d_draw_robot(int ir, G3D_Window* win, int opengl_context) {
-
-  int nb, b, ib, num;
-  int coll = 0;
-
-  b = p3d_get_desc_curnum(P3D_BODY);
-  nb = p3d_get_desc_number(P3D_BODY);
-
-  num = p3d_get_desc_curnum(P3D_ROBOT);
-  
-  p3d_rob *r;
-  r=(p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-
-#ifdef P3D_COLLISION_CHECKING
-  if (p3d_numcoll) {
-    coll = p3d_col_does_robot_collide(ir, p3d_numcoll);
-  }
-#endif
-	
-  if ( r->draw_custom_color ) {
-    coll = 2;
-  }
-  if ( r->draw_transparent ) {
-    coll ^= 4;
-  }
-  
-  for (ib = 0;ib < nb;ib++) {
-    p3d_sel_desc_num(P3D_BODY, ib);
-    g3d_draw_body(coll, win, opengl_context);
-  }
-  p3d_sel_desc_num(P3D_BODY,b);
-  
-#ifdef DPG
-  if(ENV.getBool(Env::drawGrid) && r->GRAPH && r->GRAPH->dpgGrid){
-    for(int i = 0; i < r->nbDpgCells; i++){
-      r->dpgCells[i]->draw(Green, 2);
-    }
-  }
-#endif
-}
-
 void p3d_drawRobotMoveMeshs(void) {
 
   if (G3D_SELECTED_JOINT != -999) {
@@ -1127,7 +1191,6 @@ void g3d_draw_body(int coll, G3D_Window* win, int opengl_context) {
   pp3d_obj o;
 
   o = (p3d_obj *) p3d_get_desc_curid(P3D_BODY);
-
   g3d_draw_object_moved(o, coll, win, opengl_context);
 }
 
@@ -1170,11 +1233,20 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win, int opengl_context) 
   for(i=0;i<o->np;i++){
     if (o->pol[i]->TYPE != P3D_GHOST || win->vs.GHOST == TRUE){
 
-      //check if the poly is transparent or not to know if we have to display it:
+      // Check if the poly is transparent or not to know if we have to display it:
+      // case 2: g3d_get_custom_color_vect(color_vect);
+      // case 1: g3d_get_color_vect(Red, color_vect);
+      // case 0: g3d_get_color_vect(p->color, color_vect);
       if(coll!=0)
-      { transparent= 0;   }
+      {
+        if((coll & 0x04) != 0x00 )
+          transparent = true;
+        else
+          transparent= 0;
+      }
       else
-      {  transparent= g3d_is_poly_transparent(o->pol[i]);   }
+        transparent= g3d_is_poly_transparent(o->pol[i]);
+      
       if(!transparent && win->vs.transparency_mode==G3D_TRANSPARENT)
       {  continue; }
       if(transparent && win->vs.transparency_mode==G3D_OPAQUE)
@@ -1424,12 +1496,24 @@ void g3d_draw_env_custom()
   p3d_drawRobotMoveMeshs();
   
   if(ext_g3d_draw_cost_features!=NULL){
-   ext_g3d_draw_cost_features();
+    ext_g3d_draw_cost_features();
   }
-
- if(ext_g3d_draw_remote!=NULL){
-  ext_g3d_draw_remote();
- }
+  
+  if(ext_g3d_draw_remote!=NULL){
+    ext_g3d_draw_remote();
+  }
+  
+#ifdef P3D_PLANNER
+	//std::cout << "XYZ_GRAPH : " << XYZ_GRAPH << std::endl;
+  if(ENV.getBool(Env::drawGraph)) 
+  {
+    if(ext_g3d_export_cpp_graph!=NULL)
+      ext_g3d_export_cpp_graph();
+    
+    if( XYZ_GRAPH )
+      g3d_draw_graph();
+  }
+#endif
 #ifdef DPG
   if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
     XYZ_GRAPH->dpgGrid->draw();
@@ -1437,22 +1521,19 @@ void g3d_draw_env_custom()
 #endif
   
 #if defined( LIGHT_PLANNER ) && defined( MULTILOCALPATH ) && defined( GRASP_PLANNING )
-  if(global_manipPlanTest)
-  {
+  if(global_manipPlanTest!=NULL) {
     global_manipPlanTest->drawEvalutedWorkspace();
   }
 #endif
-    if(ext_g3d_draw_hri_features!=NULL){
-   ext_g3d_draw_hri_features();
+  
+  if(ext_g3d_draw_hri_features!=NULL){
+    ext_g3d_draw_hri_features();
   } 
-  for ( unsigned int i=0; 
-       i<global_FramesToDraw.size(); i++ ) 
-  {
+  
+  for ( int i=0; i<int(global_FramesToDraw.size()); i++ ){
     g3d_draw_frame( *global_FramesToDraw[i] , 0.30 );
   }
-
 }
-
 
 //! @ingroup graphic 
 void g3d_draw_env(int opengl_context)
@@ -1497,23 +1578,6 @@ void g3d_draw_env(int opengl_context)
   /* Debut Modification Thibaut */
   if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win,opengl_context);
   /* Fin Modification Thibaut */
-
-#ifdef P3D_PLANNER
-	//std::cout << "XYZ_GRAPH : " << XYZ_GRAPH << std::endl;
-  
-  if(ENV.getBool(Env::drawGraph)) 
-  {
-    if(ext_g3d_export_cpp_graph!=NULL)
-    {
-      ext_g3d_export_cpp_graph();
-    }
-  
-    if( XYZ_GRAPH )
-    {
-      g3d_draw_graph();
-    }
-  }
-#endif
 	
   if (ENV.getBool(Env::drawTraj)) 
 	{
@@ -1575,14 +1639,13 @@ void g3d_draw(int opengl_context)
 {
   static int firstTime= TRUE;
   pp3d_env e;
-  pp3d_rob robotPt;
   G3D_Window *win;
   GLdouble *projection_matrix;
 	
   win = g3d_get_cur_win();
-  e = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-  robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-	
+  //e = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+	e = XYZ_ENV;
+  
 	g3d_extract_frustum(win);
 	
   if (e->INIT) {
@@ -1656,10 +1719,16 @@ void g3d_draw(int opengl_context)
     else {
       glDisable(GL_CULL_FACE);
     }
-		
-    g3d_draw_robots(win,opengl_context);
-    g3d_draw_obstacles(win,opengl_context);
-    g3d_draw_env_custom();
+    if (!G3D_MULTI_THREAD) {
+      g3d_draw_robots(win,opengl_context);
+      g3d_draw_obstacles(win,opengl_context);
+      g3d_draw_env_custom();
+    }
+    else {
+      g3d_draw_robots_thread(win,opengl_context);
+      g3d_draw_obstacles_thread(win,opengl_context);
+      ext_g3d_draw_multi_thread();
+    }
 
     if(win->vs.displaySky)
     { g3d_sky_box(2.0*win->vs.x, 2.0*win->vs.y, 2.0*win->vs.z);}
@@ -1681,23 +1750,52 @@ void g3d_draw(int opengl_context)
     //draw transparent objects to finish:
     win->vs.transparency_mode= G3D_TRANSPARENT;
     glEnable(GL_CULL_FACE);
-    g3d_draw_robots(win,opengl_context);
-    g3d_draw_obstacles(win,opengl_context);
-    g3d_draw_env_custom();
+    if (!G3D_MULTI_THREAD) {
+      g3d_draw_robots(win,opengl_context);
+      g3d_draw_obstacles(win,opengl_context);
+      g3d_draw_env_custom();
+    }
+    else {
+      g3d_draw_robots_thread(win,opengl_context);
+      g3d_draw_obstacles_thread(win,opengl_context);
+    }
 
     if (G3D_DRAW_TRACE) 
       g3d_draw_trace(opengl_context);
-    glDisable(GL_CULL_FACE);
+      glDisable(GL_CULL_FACE);
   }
   else
   {
     glDisable(GL_STENCIL_TEST);
-		
-    win->vs.transparency_mode= G3D_NO_TRANSPARENCY;
-		
-    g3d_draw_robots(win,opengl_context);
-    g3d_draw_obstacles(win,opengl_context);
-    g3d_draw_env_custom();
+    
+    if (!G3D_MULTI_THREAD) {
+      win->vs.transparency_mode= G3D_NO_TRANSPARENCY;
+      g3d_draw_robots(win,opengl_context);
+      g3d_draw_obstacles(win,opengl_context);
+      g3d_draw_env_custom();
+    }
+    
+//    win->vs.transparency_mode= G3D_OPAQUE;
+//    if (!G3D_MULTI_THREAD) {
+//      g3d_draw_robots(win,opengl_context);
+//      g3d_draw_obstacles(win,opengl_context);
+//      g3d_draw_env_custom();
+//    }
+//    else {
+//      g3d_draw_robots_thread(win,opengl_context);
+//      g3d_draw_obstacles_thread(win,opengl_context);
+//      ext_g3d_draw_multi_thread();
+//    }
+    
+//    win->vs.transparency_mode= G3D_TRANSPARENT;
+//    if (!G3D_MULTI_THREAD) {
+//      g3d_draw_robots(win,opengl_context);
+//      g3d_draw_obstacles(win,opengl_context);
+//    }
+//    else {
+//      g3d_draw_robots_thread(win,opengl_context);
+//      g3d_draw_obstacles_thread(win,opengl_context);
+//    }
 		
     ///////////////////////////////
     // The following commented lines are to be used instead of the three previous ones
@@ -1745,9 +1843,18 @@ void g3d_draw(int opengl_context)
     glPushMatrix();
     glMultMatrixd(projection_matrix);
     win->vs.allIsBlack= TRUE;
-    g3d_draw_robots(win,opengl_context);
-    g3d_draw_obstacles(win,opengl_context);
-    g3d_draw_env_custom();
+    
+    if(!G3D_MULTI_THREAD){
+      g3d_draw_robots(win,opengl_context);
+      g3d_draw_obstacles(win,opengl_context);
+      g3d_draw_env_custom();
+    }
+    else {
+      g3d_draw_robots_thread(win,opengl_context);
+      g3d_draw_obstacles_thread(win,opengl_context);
+      ext_g3d_draw_multi_thread();
+    }
+    
     glPopMatrix();
     glColorMask(1,1,1,1);
 		
@@ -1795,9 +1902,18 @@ void g3d_draw(int opengl_context)
         glPushMatrix();
         glMultMatrixd(projection_matrix);
         win->vs.allIsBlack= TRUE;
-        g3d_draw_robots(win,opengl_context);
-        g3d_draw_obstacles(win,opengl_context);
-        g3d_draw_env_custom();
+        
+        if(!G3D_MULTI_THREAD){
+          g3d_draw_robots(win,opengl_context);
+          g3d_draw_obstacles(win,opengl_context);
+          g3d_draw_env_custom();
+        }
+        else {
+          g3d_draw_robots_thread(win,opengl_context);
+          g3d_draw_obstacles_thread(win,opengl_context);
+          ext_g3d_draw_multi_thread();
+        }
+        
         glPopMatrix();
         glColorMask(1,1,1,1);
         win->vs.allIsBlack= FALSE;
@@ -1817,13 +1933,14 @@ void g3d_draw(int opengl_context)
       g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
     }
 		
-		
     glEnable(GL_DEPTH_TEST); 
     glDisable(GL_STENCIL_TEST);
   }
   glPopAttrib();
   
-  g3d_draw_env(opengl_context);
+  if(!G3D_MULTI_THREAD){
+    g3d_draw_env(opengl_context);
+  }
 
   if(win->vs.enableLogo==1) {
     g3d_display_logo(win->vs, 10.0, 10.0, 0.33);
