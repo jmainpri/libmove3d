@@ -23,5 +23,6 @@ extern int p3d_convert_traj_to_softMotion(p3d_traj *trajPt, bool smooth, bool pa
 extern void draw_trajectory_ptp();
 
 extern int p3d_getQSwitchIDFromMidCVS(double tau, double t_rep, int* id);
+extern bool p3d_getMidCVSTimeOnTraj(int id, double& time);
 
 #endif

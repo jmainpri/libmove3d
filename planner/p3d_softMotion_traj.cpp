@@ -25,16 +25,6 @@ static configPt TRAJPTP_CONFIG[200];
 #define SAMPLING_TIME 0.01
 using namespace std;
 
-//! returns the vector of the end of the Constant Velocity Segments
-//! The end of the CVS are stored as parameters
-//! first :   time for the smoothed softmotion trajectory
-//! second :  geometric param along traj (distance)
-std::vector< middleOfCVS > m_vectOfCVS;
-std::vector< middleOfCVS > getCVS()
-{
-  return m_vectOfCVS;
-}
-
 void p3d_addConfigToArrayToDraw(p3d_rob* r, configPt q) {
   TRAJPTP_CONFIG[NB_TRAJPTP_CONFIG] = p3d_copy_config (r, q);
   NB_TRAJPTP_CONFIG++;
@@ -42,11 +32,43 @@ void p3d_addConfigToArrayToDraw(p3d_rob* r, configPt q) {
 }
 
 void p3d_clearConfigArrayToDraw(p3d_rob* r) {
- for(int i=0; i<NB_TRAJPTP_CONFIG; i++) {
-   p3d_destroy_config(r, TRAJPTP_CONFIG[i]);
- }
- NB_TRAJPTP_CONFIG = 0;
- return;
+  for(int i=0; i<NB_TRAJPTP_CONFIG; i++) {
+    p3d_destroy_config(r, TRAJPTP_CONFIG[i]);
+  }
+  NB_TRAJPTP_CONFIG = 0;
+  return;
+}
+
+//! get las linear traj
+p3d_traj* m_lastLinTraj=NULL;
+p3d_traj* p3d_get_last_linear_traj()
+{
+  return m_lastLinTraj;
+}
+
+
+//! returns the vector of the end of the Constant Velocity Segments
+//! The end of the CVS are stored as parameters
+//! first :   time for the smoothed softmotion trajectory
+//! second :  geometric param along traj (distance)
+std::vector< middleOfCVS > m_vectOfCVS;
+
+std::vector< middleOfCVS > p3d_getCVS()
+{
+  return m_vectOfCVS;
+}
+
+bool p3d_getMidCVSTimeOnTraj(int id, double& time)
+{
+  if( (id >= 0) && (id < m_vectOfCVS.size()) )
+  {
+    time = m_vectOfCVS[id].second.tau;
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 //! prints the vector of paramteters
@@ -59,8 +81,7 @@ void print_MiddleOfCVS(void)
   }
 }
 
-//! compute the End of The CSV for the 
-//! geometric path
+//! fill the middle of CVS structure the End of The CSV for the geometric path
 void p3d_computeMiddleOfCVSParam(int lpId, p3d_localpath* smPath, p3d_localpath* linPath, double trajLength )
 {
   middleOfCVS pairTmp;
@@ -68,13 +89,12 @@ void p3d_computeMiddleOfCVSParam(int lpId, p3d_localpath* smPath, p3d_localpath*
     return;
   }
   pairTmp.first = lpId;
-  pairTmp.second.tau = 0.5 * smPath->length_lp;
   pairTmp.second.s =  0.5 * linPath->length_lp + trajLength;
+  pairTmp.second.tau = 0.5 * smPath->length_lp;
   m_vectOfCVS.push_back( pairTmp );
 }
 
-//! Test the two trajs
-//! each configuration
+//! Test the two trajs each configuration
 bool p3d_test_middle_of_CVS( p3d_traj * trajPt,
                           p3d_traj * trajSmPt)
 {
@@ -116,9 +136,9 @@ bool p3d_test_middle_of_CVS( p3d_traj * trajPt,
   return res;
 }
 
-
-int p3d_getQSwitchIDFromMidCVS(double tau, double t_rep, int* id) {
-  
+//! Returns the middle of CVS id
+int p3d_getQSwitchIDFromMidCVS(double tau, double t_rep, int* id) 
+{  
   int i = 0;
   if(m_vectOfCVS.empty()) {
     printf("m_vectOfCVS is empty\n");
@@ -135,13 +155,6 @@ int p3d_getQSwitchIDFromMidCVS(double tau, double t_rep, int* id) {
   }
   *id =  m_vectOfCVS[i].first;
   return 0;
-}
-
-//! get las linear traj
-p3d_traj* m_lastLinTraj=NULL;
-p3d_traj* p3d_get_last_linear_traj()
-{
-  return m_lastLinTraj;
 }
 
 void
@@ -785,12 +798,11 @@ if(approximate == true) {
 //  smTraj.plot();
 
 //  print_MiddleOfCVS();
-if(smooth == true) {
-  p3d_test_middle_of_CVS( trajPt , trajSmPt );
-} else {
+  if(smooth == true) {
+     p3d_test_middle_of_CVS( trajPt , trajSmPt );
+  } else {
      p3d_test_middle_of_CVS( trajPt ,  trajSmPTPPt);
-
-}
+  }
 
   //// HERE THE EXAMPLE TO USE THE FUNCTION THAT DETERMINE THE INDEX OF Q_SWITCH
   int id=0;
@@ -801,9 +813,7 @@ if(smooth == true) {
   printf("the index of the q_switch is %d\n", id);
 #endif
 
-
   m_lastLinTraj = trajPt;
-
 
 //      if (fct_draw){(*fct_draw)();}
 // g3d_win *win= NULL;
