@@ -2898,7 +2898,9 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
 
   if(flagSaveFile) {
     smTraj.save(fileNameSeg);
+#ifdef DEBUG_STATUS
     printf("File %s created\n", fileNameSeg);
+#endif
   }
 
   
@@ -2988,7 +2990,9 @@ void p3d_softMotion_export_traj(p3d_rob* robotPt, p3d_traj* traj, int trajType, 
 
   if(filepTrajtr != NULL) {
     fclose(filepTrajtr);
+#ifdef DEBUG_STATUS
     printf("File %s created\n", fileName);
+#endif
   }
 	
   if(flagPlot == true) {

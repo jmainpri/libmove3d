@@ -755,7 +755,9 @@ int p3d_multiLocalPath_update_joint_sampling_activation(p3d_rob* robotPt) {
 void p3d_multiLocalPath_set_groupToPlan(p3d_rob* robotPt, int mlpID, int value, int updateJointSampling) {
   
   if ((mlpID < 0) || (mlpID > (robotPt->mlp->nblpGp - 1))) {
+#ifdef DEBUG_STATUS
     printf("p3d_multiLocalPath_set_groupToPlan : mgID out of nbGroups\n");
+#endif
     return;
   }
   

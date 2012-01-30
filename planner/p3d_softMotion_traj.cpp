@@ -108,7 +108,9 @@ bool p3d_test_middle_of_CVS( p3d_traj * trajPt,
       res = false;
     }
     else {
+#ifdef DEBUG_STATUS
       printf("Ith (%d): OK lpId= %d s= %f tau %f\n",i, m_vectOfCVS[i].first, m_vectOfCVS[i].second.s, m_vectOfCVS[i].second.tau );
+#endif
     }
   }
   return res;
@@ -629,10 +631,14 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool smooth, bool param_write
   trajSmPTPPt->range_param = p3d_compute_traj_rangeparam (trajSmPTPPt);
   trajSmPTPPt->rob->tcur = trajSmPTPPt;
   g3d_add_traj ( (char *) "traj_SoftMotion_PTP", trajSmPTPPt->num , trajSmPTPPt->rob , trajSmPTPPt );
+  #ifdef DEBUG_STATUS
   printf ("BioMove3D: softMotion point-to-point trajectory OK\n");
+#endif
 
   //check the length of the trajectory 
+#ifdef DEBUG_STATUS
   printf("ltot = %f\n",ltot);
+#endif
   if(ltot < 0.01) {
     smooth = false;
   }
@@ -791,8 +797,9 @@ if(smooth == true) {
   double tau =  m_vectOfCVS[m_vectOfCVS.size()-1].second.tau /3.0; 
   double t_rep = 2.0; // in second
   p3d_getQSwitchIDFromMidCVS(tau, t_rep, &id); 
+#ifdef DEBUG_STATUS
   printf("the index of the q_switch is %d\n", id);
-
+#endif
 
 
   m_lastLinTraj = trajPt;

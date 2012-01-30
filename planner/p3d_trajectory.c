@@ -418,10 +418,10 @@ int p3d_concat_traj(p3d_traj *traj1Pt, p3d_traj *traj2Pt)
                                          robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[0]]->index_dof,
                                          q1_end, q2_start)){
               PrintError(("concat: end of first trajectory different from beginning of second one\n"));
-              //printf("q1_end : \n");
-              //print_config(robotPt, q1_end);
-              //printf("q2_start : \n");
-              //print_config(robotPt, q2_start);
+              printf("q1_end : \n");
+              print_config(robotPt, q1_end);
+              printf("q2_start : \n");
+              print_config(robotPt, q2_start);
               for(int k=0;k<robotPt->nb_dof;k++)
               {
                   if(fabs(q1_end[k] - q2_start[k]) > EPS6)

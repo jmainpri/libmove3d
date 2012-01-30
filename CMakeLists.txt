@@ -208,7 +208,7 @@ BM3D_flag(MOVE3D_ROBOTICS "Set all the standard options related to robotics" OFF
 # TODO : implement a proper search for the GSL and/or Lapack libraries, and add the relevant flags (USE_GSL and USE_CLAPACK)
 # It is necessary to link against either GSL or Lapack for protein loop sampling.
 BM3D_flag(MOVE3D_BIO "Set all the standard options related to bio motion planning" OFF BIO WITH_XFORMS)
-
+BM3D_flag(DEBUG_STATUS "Writting for debugs" ON)
 
 BM3D_flag(GENERATE_LIBMOVE3D "Set the required options to compile the stand-alone move3d viewer" ON MOVE3D_ROBOTICS MOVE3D_CORE USE_GLUT)
 

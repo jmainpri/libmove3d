@@ -197,7 +197,9 @@ void g3d_draw_allwin_active_back_buffer(void)
 
 void g3d_add_traj ( char *name, int i , p3d_rob* rob , p3d_traj* traj  )
 {
-	cout << "g3d_add_traj ( char *name, int i )" << ext_g3d_add_traj_to_ui << endl;
+#ifdef DEBUG_STATUS
+        cout << "g3d_add_traj ( char *name, int i )" << ext_g3d_add_traj_to_ui << endl;
+#endif
   
   if( ext_g3d_add_traj_to_ui )
     ext_g3d_add_traj_to_ui(name,i,rob,traj);
