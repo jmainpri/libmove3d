@@ -10,8 +10,12 @@
 // link to the move3d-assets ManipulationPlanner
 
 #include <iostream>
-#include "lightPlanner/proto/ManipulationTestFunctions.hpp"
 
+#ifdef LIGHT_PLANNER
+#include "lightPlanner/proto/ManipulationTestFunctions.hpp"
+#endif
+
+#include "P3d-pkg.h"
 #include "Collision-pkg.h"
 
 using namespace std;
@@ -59,11 +63,15 @@ int main(int argc, char *argv[])
       p3d_set_and_update_this_robot_conf(XYZ_ENV->robot[i], XYZ_ENV->robot[i]->ROBOT_POS);
     }
   }
-  
+
+#ifdef LIGHT_PLANNER  
   ManipulationTestFunctions tests;
   if(!tests.runTest(2))
   {
     cout << "ManipulationTestFunctions::Fail" << endl;
     return 0;
   }
+#endif
+
+  return 0;
 }

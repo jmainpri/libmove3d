@@ -5,7 +5,10 @@
 #include "Collision-pkg.h"
 #include "Bio-pkg.h"
 #include "Graphic-pkg.h"
+
+#ifdef LIGHT_PLANNER
 #include "LightPlanner-pkg.h"
+#endif
 
 #include "move3d-headless.h"
 #include "env.hpp"
@@ -1117,8 +1120,11 @@ int p3d_specific_learn(double *qs, double *qg, int *iksols, int *iksolg, int (*f
     /* While solution does not exists, insert new nodes with basic PRM or Visibility or RRT */
     while ((Ns->numcomp != Ng->numcomp) && 
            !p3d_compco_linked_to_compco(Ns->comp, Ng->comp) && 
-           ADDED &&
-           !hasReachedTimeLimit() ) {
+           ADDED
+#ifdef LIGHT_PLANNER 
+	   && !hasReachedTimeLimit() 
+#endif
+	   ) {
       switch (p3d_get_MOTION_PLANNER()) {
         case P3D_BASIC:
           ADDED = p3d_add_basic_node(G, fct_stop, &fail);
