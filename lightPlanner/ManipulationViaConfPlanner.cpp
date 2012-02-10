@@ -48,13 +48,14 @@ MANIPULATION_TASK_MESSAGE ManipulationViaConfPlanner::planTrajFromConfigArrayInR
     viaPointTrajs.push_back(trajs.at(0));
   }
 
+
   if (concatTrajectories(viaPointTrajs, &traj) == MANIPULATION_TASK_OK) {
-    smTrajs.clear();
-    MANPIPULATION_TRAJECTORY_CONF_STR conf;
-    /* COMPUTE THE SOFTMOTION TRAJECTORY */
-    computeSoftMotion(traj, conf, smTraj);
-    confs.push_back(conf);
-    smTrajs.push_back(smTraj);
+      smTrajs.clear();
+      MANPIPULATION_TRAJECTORY_CONF_STR conf;
+      /* COMPUTE THE SOFTMOTION TRAJECTORY */
+      computeSoftMotion(traj, conf, smTraj);
+      confs.push_back(conf);
+      smTrajs.push_back(smTraj);
   }
   else
   {
