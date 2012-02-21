@@ -66,6 +66,8 @@ public:
   void setReplanningMethod(p3d_traj* (*funct)(p3d_rob* robotPt, p3d_traj* traj, p3d_vector3 target, int deformationViaPoint));
   //void resetReplanningMethod();
   
+  void setCleanningRoadmaps(bool clean);
+  
   void setPlanningTime(double time);
   double getPlanningTime(void) const;
   
@@ -112,7 +114,6 @@ public:
   void setArmCartesian(int armId, bool cartesian);
   /** Get if the Arm will be planned in cartesian or not */
   bool getArmCartesian(int armId) const;
-  
   
   /* ******************************* */
   /* ******* Motion Planning ******* */
@@ -233,6 +234,8 @@ private:
   /* ******************************* */
   /* ** Motion Planning funtions *** */
   /* ******************************* */
+  
+  bool _cleanRoadmap;
   
   //! Last computed geometric path
   p3d_traj* _robotPath;

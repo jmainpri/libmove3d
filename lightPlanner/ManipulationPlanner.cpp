@@ -46,6 +46,7 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robot) : _robot(robot), _manip
     _HeadMLP = -1;
     _UpBodyMLP = -1;
     _UpBodySmMLP = -1;
+    _cleanRoadmap = false;
 
     for (int i = 0; _robot && i < _robot->mlp->nblpGp; i++) {
         if (!strcmp(_robot->mlp->mlpJoints[i]->gpName, "base")) {
@@ -149,6 +150,10 @@ int ManipulationPlanner::cleanTraj() {
 /* ******************************* */
 void ManipulationPlanner::setDebugMode(bool value){
     MPDEBUG = value;
+}
+
+void ManipulationPlanner::setCleanningRoadmaps(bool clean){
+  _cleanRoadmap = clean;
 }
 
 #ifdef MULTILOCALPATH
@@ -1810,7 +1815,8 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
             p3d_set_collision_tolerance_inhibition(object, TRUE);
         }
         //Clear the graph
-        cleanRoadmap();
+        if( _cleanRoadmap )
+          cleanRoadmap();
 
         // Change wither the manip. conf. planner uses mobile base
         // degree of freedom
