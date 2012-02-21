@@ -497,7 +497,7 @@ p3d_traj* ManipulationPlanner::computeTrajBetweenTwoConfigs(configPt qi, configP
         return NULL;
     }
 #ifdef DEBUG_STATUS
-    //    printf("End RRT\n");
+        printf("End RRT\n");
 #endif
     ManipulationUtils::allowWindowEvents();
     return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
@@ -635,12 +635,19 @@ int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECT
         ArmManipulationData& armData  = (*_robot->armManipulationData)[i];
         if (armData.getCartesian()) {
             approximate = true;
-	}
+        }
     }
-    if (p3d_convert_traj_to_softMotion(traj, ENV.getBool(Env::smoothSoftMotionTraj), true, approximate,confs.first, confs.second, smTraj) == 1) {
+#ifdef DEBUG_STATUS
+    clock_t start = clock();
+#endif
+    if (p3d_convert_traj_to_softMotion(traj, ENV.getBool(Env::smoothSoftMotionTraj),  ENV.getBool(Env::writeSoftMotionFiles), approximate,confs.first, confs.second, smTraj) == 1) {
         printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
         return MANIPULATION_TASK_ERROR_UNKNOWN;
     }
+#ifdef DEBUG_STATUS
+    clock_t end = clock();
+    cout << "SM = " << ((double)end - start) / CLOCKS_PER_SEC << " s ##########################"<< endl;
+#endif
     return 0;
 }
 #endif
@@ -2109,13 +2116,13 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::planNavigation(configPt qStart, c
     p3d_traj* traj = NULL;
     MANIPULATION_TASK_MESSAGE returnMessage;
 
-    if (!_robot) {
-        printf("%s: %d: ManipulationPlanner::armPlanTask(): No robot initialized.\n", __FILE__, __LINE__);
-        return MANIPULATION_TASK_NOT_INITIALIZED;
-    }
-
-    p3d_multiLocalPath_disable_all_groupToPlan(_robot, FALSE);
-    p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1, FALSE);
+//    if (!_robot) {
+//        printf("%s: %d: ManipulationPlanner::armPlanTask(): No robot initialized.\n", __FILE__, __LINE__);
+//        return MANIPULATION_TASK_NOT_INITIALIZED;
+//    }
+//
+//    p3d_multiLocalPath_disable_all_groupToPlan(_robot, FALSE);
+//    p3d_multiLocalPath_set_groupToPlan(_robot, _UpBodyMLP, 1, FALSE);
 
     if ((returnMessage = planNavigation(qStart, qGoal, fixAllArm, trajs)) == MANIPULATION_TASK_OK) {
         //concatene

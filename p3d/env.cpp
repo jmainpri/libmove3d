@@ -114,9 +114,10 @@ Env::Env()
 	mBoolMap.insert(boolMap_t(Env::UseDPGGrids, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::showOneCell, new boolContainer(false)));
 #ifdef MULTILOCALPATH
-	mBoolMap.insert(boolMap_t(Env::plotSoftMotionCurve, new boolContainer(false)));
-	mBoolMap.insert(boolMap_t(Env::writeSoftMotionFiles, new boolContainer(false)));
+        mBoolMap.insert(boolMap_t(Env::plotSoftMotionCurve, new boolContainer(false))); // activate exportSoftMotionTrajAsArrayOfConf before
+        mBoolMap.insert(boolMap_t(Env::writeSoftMotionFiles, new boolContainer(true)));
         mBoolMap.insert(boolMap_t(Env::smoothSoftMotionTraj, new boolContainer(true)));
+        mBoolMap.insert(boolMap_t(Env::exportSoftMotionTrajAsArrayOfConf, new boolContainer(true)));
 #endif
 	mBoolMap.insert(boolMap_t(Env::startWithFKCntrt, new boolContainer(false)));
 	
