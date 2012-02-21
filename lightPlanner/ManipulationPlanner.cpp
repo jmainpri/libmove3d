@@ -46,7 +46,7 @@ ManipulationPlanner::ManipulationPlanner(p3d_rob *robot) : _robot(robot), _manip
     _HeadMLP = -1;
     _UpBodyMLP = -1;
     _UpBodySmMLP = -1;
-    _cleanRoadmap = false;
+    _cleanRoadmap = true;
 
     for (int i = 0; _robot && i < _robot->mlp->nblpGp; i++) {
         if (!strcmp(_robot->mlp->mlpJoints[i]->gpName, "base")) {
