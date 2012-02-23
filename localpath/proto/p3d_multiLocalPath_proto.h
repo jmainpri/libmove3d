@@ -18,7 +18,7 @@ extern int p3d_write_multiLocalPath(FILE* filePtr, p3d_rob* robotPt, p3d_localpa
 extern int p3d_multiLocalPath_get_value_groupToPlan(p3d_rob* robotPt, const int mgID);
 extern void p3d_multiLocalPath_set_groupToPlan(p3d_rob* robotPt, int mgID, int value, int updateJointSampling = TRUE) ;
 extern configPt p3d_separateMultiLocalPathConfig(p3d_rob *r, configPt refConfig, configPt config, int mlpID, p3d_multiLocalPathJoint ** mlpJoints);
-extern void p3d_multiLocalPath_set_groupToPlan_by_name(p3d_rob* robotPt, char* name, int flag, int updateJointSampling = TRUE) ;
+extern void p3d_multiLocalPath_set_groupToPlan_by_name(p3d_rob* robotPt, char* name, int flag) ;
 extern void p3d_multiLocalPath_disable_all_groupToPlan(p3d_rob* robotPt, int updateJointSampling = TRUE);
 extern int p3d_multiLocalPath_get_group_by_name(p3d_rob* robotPt, char* name);
 

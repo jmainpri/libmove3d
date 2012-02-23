@@ -161,8 +161,7 @@ public:
 #ifdef MULTILOCALPATH
 		,plotSoftMotionCurve,
                 writeSoftMotionFiles,
-                smoothSoftMotionTraj,
-                exportSoftMotionTrajAsArrayOfConf
+                smoothSoftMotionTraj
 #endif
 	};
 	

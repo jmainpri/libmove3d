@@ -774,7 +774,7 @@ void p3d_multiLocalPath_set_groupToPlan(p3d_rob* robotPt, int mlpID, int value, 
   return;
 }
 
-void p3d_multiLocalPath_set_groupToPlan_by_name(p3d_rob* robotPt, char* name, int flag, int updateJointSampling ) {
+void p3d_multiLocalPath_set_groupToPlan_by_name(p3d_rob* robotPt, char* name, int flag) {
 int i=0;
 	for( i=0; i<robotPt->mlp->nblpGp; i++) {
 		if(strcmp(name, robotPt->mlp->mlpJoints[i]->gpName) == 0) {
@@ -785,9 +785,7 @@ int i=0;
 	if(i==robotPt->mlp->nblpGp) {
 		printf("p3d_multiLocalPath_set_groupToPlan_by_name can not fing the group %s\n",name);
 	}
-        if(updateJointSampling){
-            p3d_multiLocalPath_update_joint_sampling_activation(robotPt);
-        }
+	p3d_multiLocalPath_update_joint_sampling_activation(robotPt);
 
 }
 
