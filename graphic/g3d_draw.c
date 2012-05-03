@@ -1556,7 +1556,7 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill, int opengl_contex
 *    => win : pointeur sur la structure fenetre       
 *    => coll :                                        
 *    => fill : type de rendu a effectuer              */
-void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill, int opengl_context) {
+void g3d_draw_poly(p3d_poly *p, G3D_Window *win, int coll, int fill, int opengl_context) {
   GLdouble color_vect[4];
   
   int blend = 0;  /* pour activer ou non la transparence */
@@ -1591,26 +1591,18 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill, int opengl_co
           color_vect[1]= p->color_vect[1];
           color_vect[2]= p->color_vect[2];
           color_vect[3]= p->color_vect[3];
+          blend = true;
         }
         
-        if(blend==0)
-        {   
-          color_vect[3]= 1.0;  
-        }
-        else
+        if(!set_hardcoded_blend)
         {
-          if(!set_hardcoded_blend)
-          {
-            blend = ( (color_vect[3]==1) ? 0 : 1);
-            if (blend) 
-            {
-              color_vect[3]= p->color_vect[3];
-            }
+          blend = ( (color_vect[3]==1) ? 0 : 1);
+          if (blend) {
+            color_vect[3] = p->color_vect[3];
           }
-          else
-          {
-            color_vect[3]= 0.3;
-          }
+        }
+        else {
+          color_vect[3] = 0.3;
         }
       break;
     }
@@ -1619,7 +1611,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill, int opengl_co
     glEnable(GL_DEPTH_TEST);
 
     if(win->vs.transparency_mode==G3D_NO_TRANSPARENCY) {
-      blend= 0;
+      blend = 0;
       color_vect[3]= 1.0;
     }
 

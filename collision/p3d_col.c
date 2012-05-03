@@ -1546,17 +1546,16 @@ double p3d_GetMinDistCost(p3d_rob* robotPt)
 	    return(0);
 	}
 	
-	
 	std::string name(robotPt->name);
 	double factor;
 	
 	// Pour le manipulateur mettre 7 (dernier corps)
 	if ( name.compare("gt6ag") == 0 )
-	{
-		i=7; factor=1000.0;
+  {
+    if( p3d_col_mode == p3d_col_mode_kcd ) i=7; 
+    factor=1000.0;
 	}
-	else 
-	{
+	else {
 		factor = 2000.0;
 	}
 
@@ -2344,7 +2343,8 @@ void p3d_col_start_current(void)
       PrintInfo(("\nCollision checker=KCD\n"));
       p3d_col_pair_start();
       p3d_col_env_start();
-      p3d_col_activate_env();p3d_col_activate_robots(); /* Modif Bio */
+      p3d_col_activate_env();
+      p3d_col_activate_robots(); /* Modif Bio */
       break;
     }
   

@@ -45,6 +45,10 @@ int main(int argc, char *argv[])
     return 0;
   }
   
+  // The collision checking by object is set to false
+  // to initialize the bounding boxes correclty
+  set_collision_by_object(FALSE);
+  
   // Read scenarion (initial and final positions)
   p3d_col_set_mode(p3d_col_mode_pqp);
   p3d_col_start(p3d_col_mode_pqp);

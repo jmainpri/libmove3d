@@ -9,11 +9,6 @@
 #include "Planner-pkg.h"
 #endif
 
-#if defined( CXX_PLANNER )
-//#include "API/Roadmap/graph.hpp"
-#include "API/planningAPI.hpp"
-#endif
-
 #include "Graphic-pkg.h"
 
 #ifdef DPG
@@ -1221,9 +1216,9 @@ void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win, int opengl_con
 }
 
 
-/*******************************/
-/* Fonction dessinant un objet */
-/*******************************/
+//! Fonction dessinant un objet 
+//! The coll input is used when different from 0 to specify a color
+//! when the 3rd bit is equal to 1 the poly is draw only in transparant mode
 void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win, int opengl_context) {
 
   int i, transparent;
@@ -1231,6 +1226,7 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win, int opengl_context) 
   glLoadName(o->o_id_in_env);
 
   for(i=0;i<o->np;i++){
+    
     if (o->pol[i]->TYPE != P3D_GHOST || win->vs.GHOST == TRUE){
 
       // Check if the poly is transparent or not to know if we have to display it:
@@ -1242,10 +1238,11 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win, int opengl_context) 
         if((coll & 0x04) != 0x00 )
           transparent = true;
         else
-          transparent= 0;
+          transparent = 0;
       }
-      else
-        transparent= g3d_is_poly_transparent(o->pol[i]);
+      else {
+        transparent = g3d_is_poly_transparent(o->pol[i]);
+      }
       
       if(!transparent && win->vs.transparency_mode==G3D_TRANSPARENT)
       {  continue; }
@@ -1254,13 +1251,19 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win, int opengl_context) 
 
       //flat shading display:
       if((!win->vs.FILAIRE)&&(!win->vs.GOURAUD))
-      {g3d_draw_poly(o->pol[i],win,coll,1,opengl_context);}
+      {
+        g3d_draw_poly(o->pol[i],win,coll,1,opengl_context);
+      }
       //smooth shading display:
       if((!win->vs.FILAIRE)&&(win->vs.GOURAUD))
-      {g3d_draw_poly(o->pol[i],win,coll,2,opengl_context);}
+      {
+        g3d_draw_poly(o->pol[i],win,coll,2,opengl_context);
+      }
       //wire display:
       if((win->vs.FILAIRE && !win->vs.CONTOUR))
-      {g3d_draw_poly(o->pol[i],win,coll,0,opengl_context);}
+      {
+        g3d_draw_poly(o->pol[i],win,coll,0,opengl_context);
+      }
       //contour display:
       if(win->vs.CONTOUR)
       {   
@@ -1504,7 +1507,6 @@ void g3d_draw_env_custom()
   }
   
 #ifdef P3D_PLANNER
-	//std::cout << "XYZ_GRAPH : " << XYZ_GRAPH << std::endl;
   if(ENV.getBool(Env::drawGraph)) 
   {
     if(ext_g3d_export_cpp_graph!=NULL)
@@ -1786,7 +1788,7 @@ void g3d_draw(int opengl_context)
 //      g3d_draw_obstacles_thread(win,opengl_context);
 //      ext_g3d_draw_multi_thread();
 //    }
-    
+//    
 //    win->vs.transparency_mode= G3D_TRANSPARENT;
 //    if (!G3D_MULTI_THREAD) {
 //      g3d_draw_robots(win,opengl_context);

@@ -624,7 +624,7 @@ int ManipulationPlanner::computeSoftMotion(p3d_traj* traj, MANPIPULATION_TRAJECT
         return MANIPULATION_TASK_ERROR_UNKNOWN;
     }
     if (!traj || traj->nlp < 1) {
-        printf("Optimization with softMotion not possible: current trajectory contains one or zero local path\n");
+        printf("Optimization with softMotion not possible: current trajectory contains zero local path\n");
         return MANIPULATION_TASK_ERROR_UNKNOWN;
     }
     if (p3d_local_get_planner() != 9) {

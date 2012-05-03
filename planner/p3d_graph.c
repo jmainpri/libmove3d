@@ -54,11 +54,12 @@ p3d_graph *p3d_create_graph(p3d_rob* Robot)
   Graph->rob = Robot;
   
   if (Robot != NULL) {
-    if (Robot->GRAPH != NULL) {
-      p3d_del_graph(Robot->GRAPH);
-    }
-    Robot->GRAPH = Graph;
-    XYZ_GRAPH    = Graph;
+// Problem de la copy de graph
+//    if (Robot->GRAPH != NULL) {
+//      p3d_del_graph(Robot->GRAPH);
+//    }
+//    Robot->GRAPH = Graph;
+//    XYZ_GRAPH    = Graph;
     int nbSols;
     if (p3d_is_multisol(Robot->cntrt_manager, &nbSols)) {
       Graph->usedIkSols = MY_ALLOC(int *, nbSols);

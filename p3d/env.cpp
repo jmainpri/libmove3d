@@ -88,7 +88,6 @@ Env::Env()
 	mBoolMap.insert(boolMap_t(Env::trajCostRecompute, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::withMaxIteration, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::withGainLimit, new boolContainer(true)));
-	mBoolMap.insert(boolMap_t(Env::withTimeLimit, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::withSmoothing, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::withShortCut, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::withDeformation, new boolContainer(false)));
@@ -179,7 +178,6 @@ Env::Env()
 	mDoubleMap.insert(doubleMap_t(Env::refiRadius, new doubleContainer(2.0)));
 	
 	// Optimization Variables
-	mDoubleMap.insert(doubleMap_t(Env::optimTimeLimit, new doubleContainer(1.0)));
 	mDoubleMap.insert(doubleMap_t(Env::MaxFactor, new doubleContainer(1.0)));
 	mDoubleMap.insert(doubleMap_t(Env::MinStep, new doubleContainer(2.0)));
 	

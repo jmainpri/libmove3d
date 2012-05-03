@@ -133,7 +133,6 @@ public:
 		// Smoothing stage
 		withMaxIteration,
 		withGainLimit,
-		withTimeLimit,
 		withSmoothing,
 		withShortCut,
 		withDeformation,
@@ -251,7 +250,6 @@ public:
 		KlengthWeight,
 		
 		// Optimization Variables
-		optimTimeLimit,
 		MaxFactor,
 		MinStep,
 		
