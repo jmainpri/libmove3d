@@ -1107,6 +1107,9 @@ int p3d_specific_learn(double *qs, double *qg, int *iksols, int *iksolg, int (*f
   ChronoOn();
   if (!XYZ_GRAPH)  G = p3d_create_graph();
   else            G = XYZ_GRAPH;
+  
+  robotPt->GRAPH = G;
+  
   /* Nodes QS and QG exist ?*/
   p3d_node ** nodetab = p3d_addStartAndGoalNodeToGraph(qs, qg, iksols, iksolg, G, robotPt);
   if(nodetab == NULL){//une des deux configuration initiale ou finale est en collision.
