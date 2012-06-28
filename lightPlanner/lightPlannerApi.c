@@ -24,6 +24,38 @@ int USE_LIN = 0;
 
 
 /**
+ * Change free flyer bounds
+ * xmin, xmax. ymin, ymax, zmin. zmax
+ */
+
+void p3d_change_ff_translation_bounds( p3d_rob* robotPt, double limits[6] )
+{
+  // double limit_tab[6];
+  
+  //p3d_get_env_box(&limit_tab[0],&limit_tab[1],
+  //                &limit_tab[2],&limit_tab[3],
+  //                &limit_tab[4],&limit_tab[5]);
+  
+  for ( int i=0; i<XYZ_ENV->nr; i++ )
+  {
+    robotPt = XYZ_ENV->robot[i];
+    
+    for ( int j=1; j<=robotPt->njoints; j++ )
+    {
+      if( robotPt->joints[j]->type == P3D_FREEFLYER )
+      {
+        //std::cout << "Set limit of " << robotPt->name << std::endl; 
+        for ( int k=0; k<2; k++ )
+        {
+          p3d_jnt_set_dof_bounds_deg (      robotPt->joints[j], k, limits[2*k], limits[2*k+1] );
+          p3d_jnt_set_dof_rand_bounds_deg ( robotPt->joints[j], k, limits[2*k], limits[2*k+1] );
+        }
+      }
+    }
+  }
+}
+
+/**
  * @brief Activate the constraints declared in the initialisation to grasp the objects.
  * @param robot The robot to which the constraints are attached
  * @param armId the Arm id in robot->ArmManipulationData. If -1 activate all constraints

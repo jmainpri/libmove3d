@@ -3,7 +3,7 @@
 #include "Planner-pkg.h"
 #include "P3d-pkg.h"
 
-
+void p3d_change_ff_translation_bounds( p3d_rob* robotPt, double limits[6] );
 void deactivateCcCntrts(p3d_rob * robot, int cntrtNum);
 void activateCcCntrts(p3d_rob * robot, int cntrtNum, bool nonUsedCntrtDesactivation);
 void switchBBActivationForGrasp(void);
