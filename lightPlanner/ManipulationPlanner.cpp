@@ -1947,7 +1947,7 @@ MANIPULATION_TASK_MESSAGE ManipulationPlanner::armPlanTask(MANIPULATION_TASK_TYP
             confs.push_back(conf);
             smTrajs.push_back(smTraj);
 
-            ManipPlannerLastTraj = smTraj;
+            //ManipPlannerLastTraj = smTraj;
             //         }
         } else {
             returnMessage = MANIPULATION_TASK_NO_TRAJ_FOUND;
