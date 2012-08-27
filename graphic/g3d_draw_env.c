@@ -1602,7 +1602,6 @@ void g3d_draw_env(int opengl_context)
     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robot(robotPt->num, win, opengl_context);
     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
-    g3d_draw_trace_all_tcur();
   }
 	
   //g3d_draw_env_custom();
