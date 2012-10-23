@@ -23,7 +23,7 @@ extern void g3d_draw_obj_BB(p3d_obj *o,int opengl_context);
 extern int compute_wall_dimensions(double *_size, double *_xmin, double *_xmax, double *_ymin, double *_ymax, double *_zmin, double *_zmax);
 extern void buildShadowMatrix( GLdouble fMatrix[16], GLfloat fLightPos[4], GLdouble fPlane[4] );
 extern int g3d_draw_tiled_floor(GLdouble color[3], float dx, float dy, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, float shadowContrast);
-extern void g3d_draw_floor(GLdouble color[3], int tiles) ;
+extern void g3d_draw_floor(GLdouble color[3], int tiles, bool flatFloor) ;
 extern void g3d_draw_wall(int wall, GLdouble color[3], int quadsPerEdge) ;
 extern void g3d_draw_backwall(int wall);
 extern void g3d_draw_and_col_allwin_active(void);

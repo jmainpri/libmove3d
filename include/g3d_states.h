@@ -133,6 +133,9 @@ typedef struct g3d_states
   //! flag to tell wether or not shaders will be activated:
   unsigned int enableShaders;
 
+  //! flag to tell wether or not to draw flat box as floor or not
+  unsigned int flatBoxFloor;
+
   //! this flag is used when planar shadows are enabled to indicate that all bodies must be drawn in black
   //! with no lighting:
   unsigned int allIsBlack; 
