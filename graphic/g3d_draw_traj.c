@@ -241,13 +241,25 @@ static void draw_trace_2(int opengl_context)
 #ifdef P3D_COLLISION_CHECKING
     p3d_numcoll = p3d_col_test_all();
 #endif
-    if(u!=0.)
-    {
-      robotPt->draw_transparent = true;
-    }
+//    if(u!=0.)
+//    {
+//      robotPt->draw_transparent = true;
+//    }
     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robot(robotPt->num, win, opengl_context);
     p3d_destroy_config(robotPt, q);
+    
+#if  defined(LIGHT_PLANNER)
+    if( (*robotPt->armManipulationData).size() > 0 ) 
+    {
+      p3d_rob* object = (*robotPt->armManipulationData)[0].getCarriedObject();
+      if( object != NULL ) {
+        p3d_sel_desc_num(P3D_ROBOT,object->num);
+        g3d_draw_robot( object->num, win, opengl_context);
+        p3d_sel_desc_num(P3D_ROBOT,robotPt->num);
+      }
+    }
+#endif
       
 #ifdef MULTILOCALPATH
 			if (localpathPt->type_lp == MULTI_LOCALPATH){
