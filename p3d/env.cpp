@@ -105,7 +105,7 @@ Env::Env()
 	mBoolMap.insert(boolMap_t(Env::isInverseKinematics, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::isWeightedRotation, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::randomConnectionToGoal, new boolContainer(false)));
-	mBoolMap.insert(boolMap_t(Env::tryClosest, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::tryClosest, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::StopMultiRun, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::FKShoot, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::FKDistance, new boolContainer(false)));
