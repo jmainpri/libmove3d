@@ -633,6 +633,8 @@ double p3d_dist_config(p3d_rob * robotPt, configPt q_i, configPt q_f)
   double l = 0., ljnt = 0.;
   int i, j, njnt = robotPt->njoints;
   p3d_jnt * jntPt;
+  
+//  printf("\n");
 
   for (i = 0; i <= njnt; i++) {
     jntPt = robotPt->joints[i];
@@ -643,7 +645,7 @@ double p3d_dist_config(p3d_rob * robotPt, configPt q_i, configPt q_f)
           printf("Distance computation error !!!\n");
           return P3D_HUGE;
         }
-				//printf(" dist[%d] = %f\n",jntPt->index_dof + j,dist);
+//				printf(" dist[%d] = %f\n",jntPt->index_dof + j,dist);
         ljnt += dist;
       }
     }
