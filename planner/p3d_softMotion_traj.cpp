@@ -591,6 +591,9 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool smooth, bool param_write
 
   p3d_multilocalpath_switch_to_softMotion_groups (robotPt);
   trajSmPTPPt->courbePt = p3d_local_planner_multisol (robotPt, q_init, q_end, localpathMlp1Pt->ikSol);
+#ifdef DEBUG_STATUS  
+  printf("trajSmPTPPt->courbePt->range_param = %f\n",trajSmPTPPt->courbePt->range_param); 
+#endif
 
   p3d_copy_localpath_constraints_into(robotPt, localpathMlp1Pt, trajSmPTPPt->courbePt);
 
@@ -644,7 +647,7 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool smooth, bool param_write
   trajSmPTPPt->range_param = p3d_compute_traj_rangeparam (trajSmPTPPt);
   trajSmPTPPt->rob->tcur = trajSmPTPPt;
   g3d_add_traj ( (char *) "traj_SoftMotion_PTP", trajSmPTPPt->num , trajSmPTPPt->rob , trajSmPTPPt );
-  #ifdef DEBUG_STATUS
+#ifdef DEBUG_STATUS
   printf ("BioMove3D: softMotion point-to-point trajectory OK\n");
 #endif
 
@@ -655,6 +658,10 @@ p3d_convert_traj_to_softMotion (p3d_traj * trajPt, bool smooth, bool param_write
   if(ltot < 0.01) {
     smooth = false;
   }
+  if( trajSmPTPPt->range_param == 0.0 )
+    {
+      return FALSE;
+    }
  
   //  printf("nlp = ");
 //  if (param_write_file == true) {
@@ -684,6 +691,7 @@ if(smooth == false)
   ///////////////////////////////////////////////////////////////////////////
   ////  COMPUTE THE SOFTMOTION SMOOTHED TRAJECTORY                        ///
   ///////////////////////////////////////////////////////////////////////////
+
   trajSmPt = p3d_create_empty_trajectory (robotPt);
   p3d_convert_ptpTraj_to_smoothedTraj (&gain, &ntest, trajSmPTPPt, trajSmPt);
   robotPt->tcur = trajSmPt;
