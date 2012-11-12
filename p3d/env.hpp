@@ -103,18 +103,23 @@ public:
 		HRINoRobot,
 		HRIComputeOTP,
 		HRIAutoLoadGrid,
+    
 		// Variable Visualisation
 		printTemp,
 		printRadius,
 		printNbQRand,
 		printCollFail,
 		printCostFail,
+    
 		// Ligand exit trajectory simulation :
 		// The rrt expansion is stopped when the distance from start
 		// reaches a certain value.
 		ligandExitTrajectory,
 		useRefiRadius,
+    
 		// Cost Traj && Cost Space
+    setActiveJointsGroup,
+    setStompPlanner,
 		debugCostOptim,
 		trajCostRecompute,
 		isCostSpace,
@@ -208,7 +213,8 @@ public:
 		nbCells,
 
 		//OTP
-		typeRobotBaseGrid // 0, 1, 2 or 3 for all, dist only, robot dist only and visual field only
+		typeRobotBaseGrid, // 0, 1, 2 or 3 for all, dist only, robot dist only and visual field only
+    setOfActiveJoints
 	};
 	
 	enum doubleParameter {
@@ -266,18 +272,18 @@ public:
 		colorThreshold2,
 		findLowCostThreshold,
 		bestCost,
-        minimalFinalExpansionGap,
-        //Optimisation time
-        timeOptimize,
+    minimalFinalExpansionGap,
+    //Optimisation time
+    timeOptimize,
 
-        //OTP
-        optimalDist,
-        robotMaximalDist,
-        gazeAngle,
+    //OTP
+    optimalDist,
+    robotMaximalDist,
+    gazeAngle,
 
-        optimalDistFactor,
-        robotMaximalDistFactor,
-        gazeAngleFactor
+    optimalDistFactor,
+    robotMaximalDistFactor,
+    gazeAngleFactor
 	};
 	
 	enum stringParameter {

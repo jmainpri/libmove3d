@@ -39,6 +39,8 @@ Env::Env()
   mBoolMap.insert(boolMap_t(Env::drawMultiColorLocalpath, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::biDir, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::minimize, new boolContainer(false)));
+  mBoolMap.insert(boolMap_t(Env::setActiveJointsGroup, new boolContainer(false)));
+  mBoolMap.insert(boolMap_t(Env::setStompPlanner, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::isCostSpace, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::isPasExtWhenAct, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::useDist, new boolContainer(true)));
@@ -153,7 +155,8 @@ Env::Env()
 	mIntMap.insert(intMap_t(Env::lineToShow, new intContainer(0)));
 	mIntMap.insert(intMap_t(Env::nbCells, new intContainer(30)));
 	mIntMap.insert(intMap_t(Env::typeRobotBaseGrid, new intContainer(0)));
-	
+	mIntMap.insert(intMap_t(Env::setOfActiveJoints, new intContainer(0)));
+  
 	mDoubleMap.insert(doubleMap_t(Env::dmax, new doubleContainer(30.)));
 	mDoubleMap.insert(doubleMap_t(Env::FPS, new doubleContainer(30.)));
 	mDoubleMap.insert(doubleMap_t(Env::extensionStep, new doubleContainer(6.0)));
