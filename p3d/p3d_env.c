@@ -1398,6 +1398,7 @@ void p3d_set_obst_poly_color(char *name, int num, int color,
   double zAverage, z1, z2, z3, colorCoefficient;
 
   obj = p3d_get_obst_by_name(name);
+  
   if (ENV.getBool(Env::isCostSpace) == FALSE) {
     p3d_poly_set_color(obj->pol[num-1], color, color_vect);
   } else {
@@ -1493,7 +1494,7 @@ void *p3d_sel_desc_name(int type, char* name) {
           }
         }
       }
-      PrintError(("MP: p3d_sel_desc_name: wrong name, %s\n", name));
+      PrintError(("MP: p3d_sel_desc_name: wrong name (%s)\n", name));
       return(NULL);
 
     case P3D_OBSTACLE:
@@ -1502,7 +1503,7 @@ void *p3d_sel_desc_name(int type, char* name) {
           XYZ_ENV->ocur = XYZ_ENV->o[i];
           return((void *)(XYZ_ENV->ocur));
         }
-      PrintError(("MP: p3d_sel_desc_name: wrong name\n"));
+      PrintError(("MP: p3d_sel_desc_name: wrong name (%s)\n", name));
       return(NULL);
 
     case P3D_ROBOT:
@@ -1517,7 +1518,7 @@ void *p3d_sel_desc_name(int type, char* name) {
 #endif
           return((void *)(XYZ_ENV->cur_robot));
         }
-      PrintError(("MP: p3d_sel_desc_name: wrong name\n"));
+      PrintError(("MP: p3d_sel_desc_name: wrong name (%s)\n",name));
       return(NULL);
       /* break; */
 
@@ -1530,7 +1531,7 @@ void *p3d_sel_desc_name(int type, char* name) {
           }
         }
       }
-      PrintError(("MP: p3d_sel_desc_name: wrong name\n"));
+      PrintError(("MP: p3d_sel_desc_name: wrong name (%s)\n", name));
       return(NULL);
 
     case P3D_TRAJ:
@@ -1542,7 +1543,7 @@ void *p3d_sel_desc_name(int type, char* name) {
           }
         }
       }
-      PrintError(("MP: p3d_sel_desc_name: wrong name\n"));
+      PrintError(("MP: p3d_sel_desc_name: wrong name (%s)\n", name));
       return(NULL);
 
     default:
