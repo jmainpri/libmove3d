@@ -117,7 +117,7 @@ Env::Env()
 #ifdef MULTILOCALPATH
 	mBoolMap.insert(boolMap_t(Env::plotSoftMotionCurve, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::writeSoftMotionFiles, new boolContainer(false)));
-        mBoolMap.insert(boolMap_t(Env::smoothSoftMotionTraj, new boolContainer(true)));
+  mBoolMap.insert(boolMap_t(Env::smoothSoftMotionTraj, new boolContainer(true)));
 #endif
 	mBoolMap.insert(boolMap_t(Env::startWithFKCntrt, new boolContainer(false)));
 	
@@ -155,7 +155,7 @@ Env::Env()
 	mIntMap.insert(intMap_t(Env::lineToShow, new intContainer(0)));
 	mIntMap.insert(intMap_t(Env::nbCells, new intContainer(30)));
 	mIntMap.insert(intMap_t(Env::typeRobotBaseGrid, new intContainer(0)));
-	mIntMap.insert(intMap_t(Env::setOfActiveJoints, new intContainer(0)));
+	mIntMap.insert(intMap_t(Env::setOfActiveJoints, new intContainer(-1)));
   
 	mDoubleMap.insert(doubleMap_t(Env::dmax, new doubleContainer(30.)));
 	mDoubleMap.insert(doubleMap_t(Env::FPS, new doubleContainer(30.)));
