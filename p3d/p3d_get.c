@@ -1088,7 +1088,7 @@ p3d_rob* p3d_get_robot_by_name_containing(const char *name)
 //! \param robot pointer to the robot
 //! \param name name of the searched joint
 //! \return the index of the joint if it is found, 0 otherwise
-int p3d_get_robot_jnt_index_by_name(p3d_rob* robot, char *name)
+int p3d_get_robot_jnt_index_by_name(p3d_rob* robot, const char *name)
 {
   if(robot==NULL)
   {
@@ -1122,7 +1122,7 @@ int p3d_get_robot_jnt_index_by_name(p3d_rob* robot, char *name)
 //! \param robot pointer to the robot
 //! \param name name of the searched joint
 //! \return pointer to the joint if it is found, NULL otherwise
-p3d_jnt * p3d_get_robot_jnt_by_name(p3d_rob* robot, char *name)
+p3d_jnt * p3d_get_robot_jnt_by_name(p3d_rob* robot, const char *name)
 {
   if(robot==NULL)
   {
@@ -1158,7 +1158,7 @@ p3d_jnt * p3d_get_robot_jnt_by_name(p3d_rob* robot, char *name)
 //! \param robot pointer to the robot
 //! \param name name of the searched body (without the prefix "robot_name.")
 //! \return pointer to the joint if it is found, NULL otherwise
-p3d_obj * p3d_get_robot_body_by_name(p3d_rob* robot, char *name)
+p3d_obj * p3d_get_robot_body_by_name(p3d_rob* robot, const char *name)
 {
   if(robot==NULL)
   {

@@ -156,6 +156,7 @@ Env::Env()
 	mIntMap.insert(intMap_t(Env::nbCells, new intContainer(30)));
 	mIntMap.insert(intMap_t(Env::typeRobotBaseGrid, new intContainer(0)));
 	mIntMap.insert(intMap_t(Env::setOfActiveJoints, new intContainer(-1)));
+  mIntMap.insert(intMap_t(Env::currentArmId, new intContainer(-1)));
   
 	mDoubleMap.insert(doubleMap_t(Env::dmax, new doubleContainer(30.)));
 	mDoubleMap.insert(doubleMap_t(Env::FPS, new doubleContainer(30.)));

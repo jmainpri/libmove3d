@@ -712,7 +712,21 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			ENV.setBool ( Env::isCostSpace,true );
 			continue;
 		}
-
+    if ( strcmp ( fct,"p3d_set_active_joints_group" ) == 0 )
+		{
+      if ( !read_desc_int ( fd, 1, itab ) ) {
+				printf("Error : The arm id is not specified");
+				return ( read_desc_error ( fct ) );
+			}
+			ENV.setBool( Env::setActiveJointsGroup, true );
+      ENV.setInt( Env::setOfActiveJoints, itab[0] );
+			continue;
+		}
+    if ( strcmp ( fct,"p3d_set_stomp_planner" ) == 0 )
+		{
+			ENV.setBool ( Env::setStompPlanner,true );
+			continue;
+		}
 		if ( strcmp ( fct,"p3d_set_hri_zone_size" ) == 0 )
 		{
 			if ( !read_desc_double ( fd, 1, dtab ) ) return ( read_desc_error ( fct ) );
@@ -720,6 +734,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			ENV.setBool ( Env::enableHri,true );
 			continue;
 		}
+    
 #if defined(LIGHT_PLANNER) 
 		if ( strcmp ( fct, "p3d_set_object_to_carry" ) == 0 )
 		{
@@ -2572,7 +2587,6 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 				return ( read_desc_error ( fct ) );
 			}
 
-			
 			nb_dof = p3d_get_robot_ndof();
 			robotPt = ( pp3d_rob ) p3d_get_desc_curid ( P3D_ROBOT );
 			nb_user_dof = robotPt->nb_user_dof;
@@ -2580,6 +2594,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 
 			if ( ( n != nb_user_dof ) && ( n != nb_dof ) && ( n != nb_dof - 2 ) )
 			{
+        printf("error : nb dofs in config are not good for current robot (n = %d, n_dof =%d, n_user_dof=%d)\n",n,nb_dof,nb_user_dof);
 				return ( read_desc_error ( fct ) );
 			}
 

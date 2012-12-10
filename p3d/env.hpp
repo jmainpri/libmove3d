@@ -164,8 +164,8 @@ public:
 		showOneCell
 #ifdef MULTILOCALPATH
 		,plotSoftMotionCurve,
-                writeSoftMotionFiles,
-                smoothSoftMotionTraj
+    writeSoftMotionFiles,
+    smoothSoftMotionTraj
 #endif
 	};
 	
@@ -214,7 +214,8 @@ public:
 
 		//OTP
 		typeRobotBaseGrid, // 0, 1, 2 or 3 for all, dist only, robot dist only and visual field only
-    setOfActiveJoints
+    setOfActiveJoints,
+    currentArmId
 	};
 	
 	enum doubleParameter {
