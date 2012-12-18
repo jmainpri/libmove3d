@@ -138,9 +138,9 @@ static void draw_trace(int opengl_context) {
       q = localpathPt->config_at_param(robotPt, localpathPt, u);
       p3d_set_and_update_robot_conf(q);
       /* collision checking */
-#ifdef P3D_COLLISION_CHECKING
-      p3d_numcoll = p3d_col_test_all();
-#endif
+//#ifdef P3D_COLLISION_CHECKING
+//      p3d_numcoll = p3d_col_test_all();
+//#endif
       win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
       g3d_draw_robot(robotPt->num, win, opengl_context);
 // 			int i;
@@ -238,9 +238,9 @@ static void draw_trace_2(int opengl_context)
     p3d_set_and_update_robot_conf(q);
     
     /* collision checking */
-#ifdef P3D_COLLISION_CHECKING
-    p3d_numcoll = p3d_col_test_all();
-#endif
+//#ifdef P3D_COLLISION_CHECKING
+//    p3d_numcoll = p3d_col_test_all();
+//#endif
 //    if(u!=0.)
 //    {
 //      robotPt->draw_transparent = true;
@@ -250,9 +250,9 @@ static void draw_trace_2(int opengl_context)
     p3d_destroy_config(robotPt, q);
     
 #if  defined(LIGHT_PLANNER)
-    if( (*robotPt->armManipulationData).size() > 0 ) 
+    for( int i=0; i<(*robotPt->armManipulationData).size();i++ ) 
     {
-      p3d_rob* object = (*robotPt->armManipulationData)[0].getCarriedObject();
+      p3d_rob* object = (*robotPt->armManipulationData)[i].getCarriedObject();
       if( object != NULL ) {
         p3d_sel_desc_num(P3D_ROBOT,object->num);
         g3d_draw_robot( object->num, win, opengl_context);
@@ -376,9 +376,7 @@ void g3d_show_search(void) {
         /* if we are at the end of an elementary curve */
       }
     }
-#ifdef P3D_COLLISION_CHECKING
-    p3d_numcoll = p3d_col_test_all();
-#endif
+
     g3d_draw_allwin_active();
 
     fini = 1;
@@ -494,9 +492,9 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 //      std::cout << "Print Image" << std::endl;
 
       /* collision checking */
-#ifdef P3D_COLLISION_CHECKING
-      p3d_numcoll = p3d_col_test_all();
-#endif
+//#ifdef P3D_COLLISION_CHECKING
+//      p3d_numcoll = p3d_col_test_all();
+//#endif
       count++;
 	  
 //       g3d_draw_allwin_active();

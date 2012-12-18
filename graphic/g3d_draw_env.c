@@ -43,7 +43,8 @@ int G3D_SELECTED_JOINT = -999;
 int G3D_SELECTED_ROBOT = -1;
 int G3D_MOUSE_ROTATION = 0;
 int boxlist;            // liste opengl pour la boite materialisant l'environnment
-int p3d_numcoll; // Variables externes pour le CC
+
+int p3d_numcoll = 1; // Variables externes pour le CC
 
 int NB_CASES = 10; //nombre de cases du damier
 
@@ -65,7 +66,6 @@ static void g3d_draw_robot_box();
 
 
 /****************************************************************************************************/
-
 void g3d_set_draw_coll(int n) {
   p3d_numcoll = n;
 }
@@ -926,7 +926,7 @@ void g3d_draw_robots(G3D_Window *win, int opengl_context)
 
   if (nr) {
     for (ir = 0;ir < nr;ir++) {
-      p3d_sel_desc_num(P3D_ROBOT, ir);
+      p3d_sel_desc_num( P3D_ROBOT, ir);
       p3d_rob *rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
       
       if(rob->display_mode==P3D_ROB_NO_DISPLAY || 
@@ -1961,7 +1961,7 @@ void g3d_draw(int opengl_context)
     g3d_draw_env(opengl_context);
   }
 
-  if(win->vs.enableLogo==1) {
-    g3d_display_logo(win->vs, 10.0, 10.0, 0.33);
-  }
+//  if(win->vs.enableLogo==1) {
+//    g3d_display_logo(win->vs, 10.0, 10.0, 0.33);
+//  }
 }

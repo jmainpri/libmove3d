@@ -479,8 +479,9 @@ p3d_equal_config_n(int nb_dof, configPt q_i, configPt q_f)
   return(TRUE);
 }
 
-int p3d_equal_config(p3d_rob *robotPt, configPt q_i, configPt q_f)
+int p3d_equal_config(p3d_rob *robotPt, configPt q_i, configPt q_f, bool print)
 {
+  int equal = TRUE;
   int i, j, k;
   int njnt = robotPt->njoints;
   p3d_jnt *jntPt;
@@ -489,23 +490,34 @@ int p3d_equal_config(p3d_rob *robotPt, configPt q_i, configPt q_f)
   for (i = 0; i <= njnt; i++) {
     jntPt = robotPt->joints[i];
     for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
-      if (p3d_jnt_get_dof_is_user(jntPt, j)) {
+      if (/*p3d_jnt_get_dof_is_user(jntPt, j)*/ true) {
         if (p3d_jnt_is_dof_circular(jntPt, j)) {
           if (dist_circle(q_i[k], q_f[k]) > EPS6) {
-            return FALSE;
+            if(print) {
+              printf("diff[%d] : %f\n",k,dist_circle(q_i[k], q_f[k]));
+              equal = FALSE;
+            }
+            else {
+              return FALSE;
+            }
           }
         } else {
           if (fabs(q_i[k] - q_f[k]) > EPS6) {
-            return FALSE;
+            if(print) {
+              printf("diff[%d] : %f\n",k,fabs(q_i[k] - q_f[k]));
+              equal = FALSE;
+            } 
+            else {
+              return FALSE;
+            }
           }
         }
       }
       k ++;
     }
   }
-  return TRUE;
+  return equal;
 }
-
 
 /*!
  * Check if two configs are equal without considering all the configPt
@@ -536,12 +548,12 @@ int p3d_equal_config_n_offset(p3d_rob* robotPt, int nb_dof, int offset, configPt
         {
           if (p3d_jnt_is_dof_angular(jntPt, j) && p3d_jnt_is_dof_circular(jntPt, j)) 
           {
-            if (dist_circle(q_i[k], q_f[k]) > EPS3) {
+            if (dist_circle(q_i[k], q_f[k]) > EPS6) {
               return FALSE;
             }
           }
           else {
-            if (fabs(q_i[k] - q_f[k]) > EPS3) {
+            if (fabs(q_i[k] - q_f[k]) > EPS6) {
               return FALSE;
             }
           }
@@ -609,13 +621,14 @@ void p3dCopyPassive(p3d_rob*robotPt, configPt qSource, configPt qGoal)
  * Input:  The robot,
  *         the two configurations
  */
-double p3d_dist_config(p3d_rob * robotPt, configPt q_i, configPt q_f)
+double p3d_dist_config(p3d_rob * robotPt, configPt q_i, configPt q_f, bool print)
 {
   double l = 0., ljnt = 0.;
   int i, j, njnt = robotPt->njoints;
   p3d_jnt * jntPt;
   
-//  printf("\n");
+  if(print)
+    printf("\n");
 
   for (i = 0; i <= njnt; i++) {
     jntPt = robotPt->joints[i];
@@ -626,7 +639,8 @@ double p3d_dist_config(p3d_rob * robotPt, configPt q_i, configPt q_f)
           printf("Distance computation error !!!\n");
           return P3D_HUGE;
         }
-//				printf(" dist[%d] = %f\n",jntPt->index_dof + j,dist);
+				if(print)
+          printf(" dist[%d] = %f\n",jntPt->index_dof + j,dist);
         ljnt += dist;
       }
     }

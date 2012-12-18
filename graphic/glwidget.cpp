@@ -184,7 +184,7 @@ void qt_ui_calc_param(g3d_cam_param& p)
 
 void GLWidget::initG3DFunctions()
 {
-	cout << "Init G3D Functions" << endl;
+	cout << "Init G3D Functions (set external function pointers)" << endl;
 	
 	draw_opengl = g3d_draw_allwin_active;
 	

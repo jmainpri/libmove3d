@@ -429,7 +429,7 @@ int p3d_concat_traj(p3d_traj *traj1Pt, p3d_traj *traj2Pt)
                       int i_joint;
                       printf("joint %s differ ", p3d_robot_dof_to_jnt(robotPt, k,&i_joint)->name );
                       printf("q1 = %f, q2 = %f ", q1_end[k],q2_start[k]);
-                      printf("k = %d ",k );
+                      printf("k = %d\n",k );
                   }
               }
               printf("\n");
