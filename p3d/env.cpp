@@ -166,8 +166,8 @@ Env::Env()
 	mDoubleMap.insert(doubleMap_t(Env::dist, new doubleContainer(0.0)));
 	mDoubleMap.insert(doubleMap_t(Env::temperatureStart, new doubleContainer(0.000001)));
 	mDoubleMap.insert(doubleMap_t(Env::temperatureGoal, new doubleContainer(0.000001)));
-	mDoubleMap.insert(doubleMap_t(Env::initialTemperature, new doubleContainer(0.05)));
-	mDoubleMap.insert(doubleMap_t(Env::temperatureRate, new doubleContainer(20.)));
+	mDoubleMap.insert(doubleMap_t(Env::initialTemperature, new doubleContainer(0.000001)));
+	mDoubleMap.insert(doubleMap_t(Env::temperatureRate, new doubleContainer(0.1)));
 	mDoubleMap.insert(doubleMap_t(Env::alpha, new doubleContainer(0.5)));
 	mDoubleMap.insert(doubleMap_t(Env::costStep, new doubleContainer(1.0)));
 	mDoubleMap.insert(doubleMap_t(Env::costThreshold, new doubleContainer(10.0)));
