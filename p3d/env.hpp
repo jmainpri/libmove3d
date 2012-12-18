@@ -57,6 +57,7 @@ public:
 		addCycles,
 		// Wether the exporation controls the refinement vs expansion nodes
 		expandControl,
+		refinementControl,
 		// Wether nodes are discarded for selection in RRT,
 		// after a maximum number of allowed failures.
 		discardNodes,
@@ -273,6 +274,7 @@ public:
 		colorThreshold2,
 		findLowCostThreshold,
 		bestCost,
+		costMax,
     minimalFinalExpansionGap,
     //Optimisation time
     timeOptimize,

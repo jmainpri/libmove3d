@@ -49,6 +49,7 @@ Env::Env()
 	mBoolMap.insert(boolMap_t(Env::expandBalanced, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::addCycles, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::expandControl, new boolContainer(true)));
+	mBoolMap.insert(boolMap_t(Env::refinementControl, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::discardNodes, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::findLowCostConf, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::isManhattan, new boolContainer(false)));
@@ -201,6 +202,7 @@ Env::Env()
 	mDoubleMap.insert(doubleMap_t(Env::colorThreshold2, new doubleContainer(1.80)));
 	mDoubleMap.insert(doubleMap_t(Env::findLowCostThreshold, new doubleContainer(0.07)));
 	mDoubleMap.insert(doubleMap_t(Env::bestCost, new doubleContainer(0.07)));
+	mDoubleMap.insert(doubleMap_t(Env::costMax, new doubleContainer(0.0)));
 	mDoubleMap.insert(doubleMap_t(Env::minimalFinalExpansionGap, new doubleContainer(10.0)));
 	mDoubleMap.insert(doubleMap_t(Env::showTrajFPS, new doubleContainer(1.0)));
     mDoubleMap.insert(doubleMap_t(Env::timeOptimize, new doubleContainer(4.0)));
