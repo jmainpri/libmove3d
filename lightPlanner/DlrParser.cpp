@@ -1,5 +1,6 @@
 #include "../lightPlanner/proto/DlrParser.h"
 #include <stdlib.h>
+#include <unistd.h>
 
 DlrParser::DlrParser(char* fileName){
 	_fileName.assign(fileName);

@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
 
 UdpClient* globalUdpClient = NULL;
 //public
