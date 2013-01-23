@@ -870,7 +870,7 @@ void g3d_draw_robot(int ir, G3D_Window* win, int opengl_context) {
   r=(p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   
 #ifdef P3D_COLLISION_CHECKING
-  if (p3d_numcoll) {
+  if (p3d_numcoll && XYZ_ENV->active_robot == r ) {
     coll = p3d_col_does_robot_collide(ir, p3d_numcoll);
   }
 #endif
