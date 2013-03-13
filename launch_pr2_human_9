@@ -1,0 +1,2 @@
+#!/bin/bash  
+move3d-qt-studio -launch runStomp -setgui -c pqp -f ../../move3d/assets/CostHriFunction/PR2/Pr2_ShelfAndHuman.p3d -sc ../../move3d/assets/CostHriFunction/PR2/SCENARIOS/Pr2ShelfAndHumanTmp9.sce

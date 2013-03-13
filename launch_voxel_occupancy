@@ -1,0 +1,3 @@
+#!/bin/bash  
+move3d-qt-studio -launch VoxelOccupancy -setgui -params parameters/params_voxel_occupancy -c pqp -f ../../move3d/assets/Gesture/HumanTestM.p3d -sc ../../move3d/assets/Gesture/SCENARIOS/Human.sce
+# -launch PredictionSimulation
