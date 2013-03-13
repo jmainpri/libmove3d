@@ -1,1 +1,1 @@
-move3d-qt-studio -launch runStomp -setgui -c pqp -f ../../move3d/assets/CostHriFunction/PR2/Pr2_Shelf.p3d -sc ../../move3d/assets/CostHriFunction/PR2/SCENARIOS/Pr2Shelf.sce
+move3d-qt-studio -launch runStomp  -setgui -params parameters/params_pr2_shelf -c pqp -f ../../move3d/assets/CostHriFunction/PR2/Pr2_Shelf.p3d -sc ../../move3d/assets/CostHriFunction/PR2/SCENARIOS/Pr2Shelf.sce
