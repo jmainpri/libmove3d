@@ -321,6 +321,7 @@ doubleParameter\env_futurY=0
 doubleParameter\env_futurZ=0
 doubleParameter\env_futurRZ=0
 stringParameter\titi=titi
+GestParam\boolParameter\init_module_at_start=true
 GestParam\boolParameter\draw_robot_sampled_points=false
 GestParam\boolParameter\draw_human_sampled_points=false
 GestParam\boolParameter\draw_ws_occupancy=false
