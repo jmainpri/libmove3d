@@ -1,0 +1,3 @@
+move3d-qt-studio  -launch runParallelStomp  -setgui -params parameters/params_parallel_pr2_shelf -c pqp -f ../../move3d/assets/CostHriFunction/PR2/Pr2_Shelf_Parallel.p3d -sc ../../move3d/assets/CostHriFunction/PR2/SCENARIOS/Pr2ShelfParallel.sce
+
+#-launch runParallelStomp 
