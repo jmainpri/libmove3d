@@ -181,7 +181,7 @@ public:
 		// - Set the temperature in the MONTE_CARLO_SEARCH
 		PRMType,
 		nbOfSeeds,
-    jntToDraw,
+        jntToDraw,
 		maxCostOptimFailures,
 		nbQRand,
 		nbCostTransFailed,

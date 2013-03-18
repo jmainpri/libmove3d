@@ -124,7 +124,7 @@ Env::Env()
 	
 	mIntMap.insert(intMap_t(Env::PRMType, new intContainer(0)));
 	mIntMap.insert(intMap_t(Env::nbOfSeeds, new intContainer(3)));
-  mIntMap.insert(intMap_t(Env::jntToDraw, new intContainer(1)));
+    mIntMap.insert(intMap_t(Env::jntToDraw, new intContainer(-1)));
 	mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));
 	mIntMap.insert(intMap_t(Env::maxNode, new intContainer(10000)));
 	mIntMap.insert(intMap_t(Env::maxConnect, new intContainer(100)));

@@ -7,6 +7,8 @@
 #include <Graphic-pkg.h>
 #include <Planner-pkg.h>
 
+#include "p3d/env.hpp"
+
 #include "move3d-gui.h"
 
 #if defined( CXX_PLANNER )
@@ -504,10 +506,10 @@ void g3d_draw_win(G3D_Window* win)
 static int user_drawnjnt = -1;
 
 int p3d_get_user_drawnjnt(void) {
-	return(user_drawnjnt);
+    return ENV.getInt(Env::jntToDraw);
 }
 void p3d_set_user_drawnjnt(int jnt) {
-	user_drawnjnt = jnt;
+    ENV.setInt(Env::jntToDraw,jnt);
 }
 
 void calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw) 
