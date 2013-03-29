@@ -1,4 +1,4 @@
-#include <RobotModelParser/urdf_model.h>
+#include <urdf_model/model.h>
 
 /**
  * \file urdf_p3d_converter.h
@@ -12,5 +12,18 @@
  *
  */
 
+namespace urdf
+{
+class URDFModel: public ModelInterface
+{
+public:
+    /// \brief Load Model given a filename
+    bool initFile(const std::string& filename);
+private:
+    /// \brief Load Model from a XML-string
+    bool initString(const std::string& xmlstring);
+};
+}
 
 int urdf_p3d_converter(urdf::URDFModel* model, char* modelName, double scale);
+

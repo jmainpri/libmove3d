@@ -1,2 +1,0 @@
-#!/bin/bash  
-move3d-qt-studio -launch ClassifyMotions -nogui -setgui -params parameters/params_gesture_prediction -c pqp -f ../../move3d/assets/Gesture/HumanTestM.p3d -sc ../../move3d/assets/Gesture/SCENARIOS/Human.sce

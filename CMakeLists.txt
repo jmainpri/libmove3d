@@ -412,17 +412,29 @@ ENDIF(USE_HATP_LIBS)
 #-------------- ROBOTMODELPARSER ------------------------------
 #----------------------------------------------------------
 IF(USE_ROBOTMODELPARSER)
-    FIND_PACKAGE(robotModelParser REQUIRED)
-    INCLUDE_directories(${robotModelParser_INCLUDE_DIR})
-    SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${robotModelParser_INCLUDE_DIR})
-    SET(LIBS ${LIBS} ${robotModelParser_LIBRARIES})
+    #FIND_PACKAGE(robotModelParser REQUIRED)
+    #INCLUDE_directories(${robotModelParser_INCLUDE_DIR})
+    #SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${robotModelParser_INCLUDE_DIR})
+    #SET(LIBS ${LIBS} ${robotModelParser_LIBRARIES})
+
+#  FIND_PACKAGE(PkgConfig)
+  FIND_PACKAGE(URDFDOM)
+  SET( urdfdom_LIBRARIES ${urdfdom_LIBRARIES} )
+  MESSAGE("URDFDOM_INCLUDE_DIRS : " ${urdfdom_INCLUDE_DIRS})
+  MESSAGE("URDFDOM_LIBRARIES : " ${urdfdom_LIBRARIES})
+  INCLUDE_DIRECTORIES(${urdfdom_INCLUDE_DIRS})
+  SET(LIBS ${LIBS} ${urdfdom_LIBRARIES})
+  #LINK_DIRECTORIES(${urdfdom_LIBRARIES})
 
 #-------------------- ASSIMP ------------------------------
 #----------------------------------------------------------
-    FIND_PACKAGE(ASSIMP REQUIRED)
-    INCLUDE_directories(${ASSIMP_INCLUDE_DIR}/assimp)
+    #FIND_PACKAGE(ASSIMP REQUIRED 3)
+    #INCLUDE_directories(${ASSIMP_INCLUDE_DIR}/assimp)
+    SET(ASSIMP_LIBRARIES /usr/local/lib/libassimp.so)
+    SET(ASSIMP_INCLUDE_DIR /usr/local/include)
     SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIR}/assimp)
     SET(LIBS ${LIBS} ${ASSIMP_LIBRARIES})
+   
 ENDIF(USE_ROBOTMODELPARSER)
 
 MESSAGE(${LIBS})
