@@ -1,0 +1,18 @@
+SYSDEP :
+
+sudo apt-get install cmake cmake-curses-gui doxygen mesa-common-dev libxml2-dev freeglut3-dev libxmp-dev g++ autoconf libtool pmake libgsl0-dev glpk lib gts-dev libboost1.46-dev libboost-thread1.46-dev libeigen3-dev libqt4-dev
+
+DEPENDENCIES :
+
+Install all three in ../dependencies/install, and add bin/ to the path 
+
+mkdep
+gBM
+softMotion
+
+-------
+
+Set ROBOTPKG_BASE to the install prefix of move3d
+Set PKG_CONFIG_PATH to the lib
+
+Install all libs
