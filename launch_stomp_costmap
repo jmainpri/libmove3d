@@ -1,1 +1,0 @@
-move3d-qt-studio -launch runStomp  -setgui -params parameters/params_costmap -c pqp -f ../assets/CostEnv/Montains3/Montains3.p3d

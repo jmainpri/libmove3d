@@ -1,2 +1,0 @@
-move3d-qt-studio -launch runParallelStomp -setgui -params parameters/params_parallel_stomp_costmap -c pqp -f ../assets/CostEnv/Montains3/ParralelMontains.p3d
-# -launch runParallelStomp

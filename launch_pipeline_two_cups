@@ -1,3 +1,0 @@
-#!/bin/bash  
-move3d-qt-studio -launch PredictionSimulation -setgui -params parameters/params_pipeline_two_cups -c pqp -f ../assets/Gesture/HumanPR2TwoCups.p3d -sc ../../move3d/assets/Gesture/SCENARIOS/PR2TwoCupsFacing.sce
-# -launch PredictionSimulation

@@ -1,2 +1,0 @@
-#!/bin/bash  
-move3d-qt-studio -setgui -params parameters/params_replanning -setgui -c pqp -f ../../move3d/assets/Replanning/replanPr2Stomp.p3d -sc ../../move3d/assets/Replanning/SCENARIO/Pr2Stomp.sce

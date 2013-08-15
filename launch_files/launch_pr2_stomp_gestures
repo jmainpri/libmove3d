@@ -1,1 +1,0 @@
-move3d-qt-studio -launch runStomp -setgui -c pqp -f ../../move3d-assets/Gesture/HumanPR2.p3d -sc ../../move3d-assets/Gesture/SCENARIOS/PR2.sce
