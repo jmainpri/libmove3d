@@ -2316,8 +2316,13 @@ static int p3d_end_rob(void) {
     XYZ_ENV->robot = newr;
   }
 
+  // Set the active robot
+  // this can be overriden in the UI or in the p3d file
+  XYZ_ENV->active_robot = XYZ_ROBOT;
 
+  // Set the current robot
   XYZ_ENV->cur_robot = XYZ_ROBOT;
+
 #ifdef P3D_PLANNER
   XYZ_GRAPH = XYZ_ENV->cur_robot->GRAPH;  // Modification Fabien
 #endif
