@@ -17,15 +17,16 @@ static int saveSpecifiedConfigInFile(configPt conf);
 static void rrtOptions(void);
 static int findPath(void);
 
-extern bool USE_PLANNING_TIME_LIMIT=false;
-extern double PLANNING_TIME_LIMIT=0.0;
+static bool USE_PLANNING_TIME_LIMIT=false;
+static double PLANNING_TIME_LIMIT=0.0;
+/** @brief File used to save the trajectory*/
+static FILE* trajFile = NULL;
+
 extern double SAFETY_DIST;
 extern double USE_LIN;
 #define OPTIMSTEP 200
 #define OPTIMTIME 10
 #define MAXPLANTIME 300 //5 mins
-/** @brief File used to save the trajectory*/
-static FILE* trajFile = NULL;
 
 #ifdef MULTILOCALPATH
 /** @brief Multilocalpath Id*/

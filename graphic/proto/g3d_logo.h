@@ -14,7 +14,7 @@ pixel[1] = ((((data[1] - 33) & 0xF) << 4) | ((data[2] - 33) >> 2)); \
 pixel[2] = ((((data[2] - 33) & 0x3) << 6) | ((data[3] - 33))); \
 data += 4; \
 }
-static char *LOGO_DATA =
+static const char* LOGO_DATA =
 	"T#&HQ2\"9R1^:RB\";R2&;QR*;RB*<RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";"
 	"RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";"
 	"RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";RB\";"

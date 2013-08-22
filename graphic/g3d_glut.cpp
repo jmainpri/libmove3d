@@ -37,7 +37,7 @@ int m_i = 0;
 int m_j = 0 ;
 
 // Window ID
-int m_WindowId = NULL;
+int m_WindowId = 0;
 
 // Swap buffer between front 
 // and back when true
