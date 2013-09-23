@@ -126,6 +126,22 @@ int p3d_read_model( char *namemac, char *nameobj, double scale)
 
         return p3d_load_model(model, nameobj,scale);
 }
+
+int p3d_read_urdf_model( char *namemac, char *nameobj, double scale)
+{
+        char model[200], model2[200];
+        char c_dir_name[200];
+        int  c_sz=0;
+
+        strcpy ( c_dir_name, DATA_DIR );
+        c_sz = ( int ) strlen ( DATA_DIR );
+        if ( DATA_DIR[c_sz-1] != '/' ) {strcat ( c_dir_name,"/" );}
+        sprintf ( model,"%sURDF/",c_dir_name );
+
+        strcat ( model, namemac );
+
+        return p3d_load_model( model, nameobj, scale );
+}
 #endif
 
 void p3d_set_directory ( char *dir )
@@ -666,46 +682,55 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 //---------------------------------------------------------------
 // HRI and costspace
 //---------------------------------------------------------------
-    if ( strcmp ( fct,"p3d_set_active_robot" ) == 0 )
-		{
-			if ( !read_desc_name ( fd, name ) ) return ( read_desc_error ( fct ) );
-      
-      p3d_rob* rob = p3d_get_robot_by_name( name );
-      
-      if (rob) {
-        XYZ_ENV->active_robot = rob;
-      }
-      else {
-        printf("Reading p3d_set_active_robot : No robot named %s yet in ENV\n",name);
-      }
-			continue;
-		}
-    if ( strcmp ( fct,"p3d_set_ff_limits_in_env_box" ) == 0 )
-		{
-      double limit_tab[6];
-      
-      p3d_get_env_box(&limit_tab[0],&limit_tab[1],
-                      &limit_tab[2],&limit_tab[3],
-                      &limit_tab[4],&limit_tab[5]);
-      
-      for ( int i=0; i<XYZ_ENV->nr; i++ )
-			{
-        robotPt = XYZ_ENV->robot[i];
-        
-        for ( int j=1; j<=robotPt->njoints; j++ )
+        if ( strcmp ( fct,"p3d_set_active_robot" ) == 0 )
         {
-          if( robotPt->joints[j]->type == P3D_FREEFLYER )
-          {
-            //std::cout << "Set limit of " << robotPt->name << std::endl; 
-            for ( int k=0; k<2; k++ )
-            {
-              p3d_jnt_set_dof_bounds_deg ( robotPt->joints[j], k, limit_tab[2*k], limit_tab[2*k+1] );
-              p3d_jnt_set_dof_rand_bounds_deg ( robotPt->joints[j], k, limit_tab[2*k], limit_tab[2*k+1] );
+            if ( !read_desc_name ( fd, name ) ) return ( read_desc_error ( fct ) );
+
+            p3d_rob* rob = p3d_get_robot_by_name( name );
+
+            if (rob) {
+                XYZ_ENV->active_robot = rob;
             }
-          }
+            else {
+                printf("Reading p3d_set_active_robot : No robot named %s yet in ENV\n",name);
+            }
+            continue;
         }
-      }
-			continue;
+        if ( strcmp ( fct,"p3d_set_ff_limits_in_env_box" ) == 0 )
+        {
+            double limit_tab[6];
+
+            p3d_get_env_box(&limit_tab[0],&limit_tab[1],
+                            &limit_tab[2],&limit_tab[3],
+                            &limit_tab[4],&limit_tab[5]);
+
+            for ( int i=0; i<XYZ_ENV->nr; i++ )
+            {
+                robotPt = XYZ_ENV->robot[i];
+
+                for ( int j=1; j<=robotPt->njoints; j++ )
+                {
+                    if( robotPt->joints[j]->type == P3D_FREEFLYER )
+                    {
+                        //std::cout << "Set limit of " << robotPt->name << std::endl;
+                        // Initialy only for X & Y (set to 2 instead of 3)
+                        for ( int k=0; k<3; k++ )
+                        {
+                            p3d_jnt_set_dof_bounds_deg ( robotPt->joints[j], k, limit_tab[2*k], limit_tab[2*k+1] );
+                            p3d_jnt_set_dof_rand_bounds_deg ( robotPt->joints[j], k, limit_tab[2*k], limit_tab[2*k+1] );
+                        }
+                    }
+                    if( robotPt->joints[j]->type == P3D_PLAN )
+                    {
+                        for ( int k=0; k<2; k++ )
+                        {
+                            p3d_jnt_set_dof_bounds_deg ( robotPt->joints[j], k, limit_tab[2*k], limit_tab[2*k+1] );
+                            p3d_jnt_set_dof_rand_bounds_deg ( robotPt->joints[j], k, limit_tab[2*k], limit_tab[2*k+1] );
+                        }
+                    }
+                }
+            }
+            continue;
 		}
 		if ( strcmp ( fct,"p3d_CostEnvironment" ) == 0 )
 		{
@@ -3584,6 +3609,34 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
                p3d_read_model( namemac, namecompl, 1);
           else
                p3d_read_model( namemac, namecompl, dtab[0] );
+          continue;
+#endif
+          PrintError ( ( "MP: ERROR flag USE_ROBOTMODELPARSER is OFF" ) );
+          return ( read_desc_error ( fct ) );
+        }
+
+        //##################### URDF ######################
+
+        if ( ( strcmp ( fct, "p3d_read_urdf" ) == 0 ))
+        {
+#ifdef USE_ROBOTMODELPARSER
+          if ( !read_desc_name ( fd, namemac ) ) return ( read_desc_error ( fct ) );
+          if ( !read_desc_name ( fd, name ) )  return ( read_desc_error ( fct ) );
+          if ( !read_desc_line_double ( fd, &n, dtab ) ) return ( read_desc_error ( fct ) );
+          if ( fileType )  //is a macro file
+          {
+              strcpy ( namecompl, nameobj );
+              strcat ( namecompl, "." );
+              strcat ( namecompl, name );
+          }
+          else
+          {
+              strcpy ( namecompl, name );
+          }
+          if ( n == 0 )
+               p3d_read_urdf_model( namemac, namecompl, 1);
+          else
+               p3d_read_urdf_model( namemac, namecompl, dtab[0] );
           continue;
 #endif
           PrintError ( ( "MP: ERROR flag USE_ROBOTMODELPARSER is OFF" ) );
