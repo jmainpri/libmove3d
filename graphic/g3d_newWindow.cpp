@@ -134,7 +134,7 @@ extern void g3d_export_cpp_graph();
 
 void init_all_draw_functions_dummy()
 {
-  ext_g3d_draw_cost_features = (void (*)())(dummy_g3d_draw_all_win_active);
+    ext_g3d_draw_cost_features = (void (*)())(dummy_g3d_draw_all_win_active);
 	ext_g3d_export_cpp_graph = (void (*)())(dummy_g3d_draw_all_win_active);
 	ext_g3d_get_win_mouse = (void (*) (int*,int*))(dummy_g3d_draw_all_win_active);
 	ext_g3d_draw_allwin_active = (void (*)())(dummy_g3d_draw_all_win_active);
