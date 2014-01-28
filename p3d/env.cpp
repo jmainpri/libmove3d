@@ -245,12 +245,10 @@ Env::~Env() {
          it !=  mDoubleMap.end(); ++it ) {
         delete it->second;
     }
-#ifdef QT_LIBRARY
     for (map<stringParameter, stringContainer*>::iterator it = mStringMap.begin();
          it !=  mStringMap.end(); ++it ) {
         delete it->second;
     }
-#endif
     for (map<vectorParameter, vectorContainer*>::iterator it = mVectorMap.begin();
          it !=  mVectorMap.end(); ++it ) {
         delete it->second;
@@ -265,15 +263,13 @@ void Env::setInt(intParameter p, int v) {
     mIntMap[p]->set(v);
 }
 
-#ifdef QT_LIBRARY
-QString Env::getString(stringParameter p) {
+std::string Env::getString(stringParameter p) {
     return (mStringMap[p]->get());
 }
 
-void Env::setString(stringParameter p, QString v) {
+void Env::setString(stringParameter p, std::string v) {
     mStringMap[p]->set(v);
 }
-#endif
 
 std::vector<double> Env::getVector(vectorParameter p) {
     return (mVectorMap[p]->get());

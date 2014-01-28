@@ -117,22 +117,23 @@ class stringContainer
 {
 #ifdef QT_LIBRARY
 	Q_OBJECT;
-	
-	QString _Value;
+#endif
+    std::string _Value;
 	
 public:
-	stringContainer(QString v = "");
-	QString get();
+    stringContainer(std::string v = "");
+    std::string get();
 	
-	
+#ifdef QT_LIBRARY
 	public slots:
-	void set(QString v);
-	
-	
-signals:
-	
-	void valueChanged(QString v);
 #endif
+    void set(std::string v);
+	
+#ifdef QT_LIBRARY
+signals:
+#endif
+    void valueChanged(std::string v);
+
 };
 
 // ---------------------------------------------------------------------------
@@ -245,16 +246,15 @@ public:
 		mVectorMap[p]->set(v);
 	}
 	
-	
-#ifdef QT_LIBRARY
-	QString getString(enumString p) {
+    std::string getString(enumString p) {
 		return (mStringMap[p]->get());
 	}
 	
-	void setString(enumString p, QString v) {
+    void setString(enumString p, std::string v) {
 		mStringMap[p]->set(v);
 	}
 	
+#ifdef QT_LIBRARY
 	QObject* getObject(enumInt p) {
 		return (mIntMap[p]);
 	}
