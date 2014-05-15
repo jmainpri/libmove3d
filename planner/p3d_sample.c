@@ -71,7 +71,7 @@ int p3d_standard_shoot(p3d_rob *robotPt, configPt q, int sample_passive)
 			} 
 			else
 			{ 
-				q[k] = p3d_jnt_get_dof(jntPt, j); 
+                q[k] = p3d_jnt_get_dof(jntPt, j);
 			}
 		}
   }

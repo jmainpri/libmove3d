@@ -5,9 +5,9 @@
 #include "ThreeDCell.h"
 #include "ThreeDGrid.h"
 
-class DpgCell : public API::ThreeDCell{
+class DpgCell : public Move3D::ThreeDCell{
   public:
-    DpgCell(int i, Eigen::Vector3d corner, API::ThreeDGrid* grid);
+    DpgCell(int i, Eigen::Vector3d corner, Move3D::ThreeDGrid* grid);
     //setters and getters
     inline int isValid(void){return _valid;}
     inline void setValid(int value){_valid = value;}

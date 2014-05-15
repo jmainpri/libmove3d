@@ -117,7 +117,7 @@ void DpgGrid::draw(){
  * \param y The position of the cell over y
  * \param z The position of the cell over z
  */
-API::ThreeDCell* DpgGrid::createNewCell(unsigned int index, unsigned int x, unsigned int y, unsigned int z ){
+Move3D::ThreeDCell* DpgGrid::createNewCell(unsigned int index, unsigned int x, unsigned int y, unsigned int z ){
     DpgCell* newCell = new DpgCell( index, computeCellCorner(x,y,z) , this );
     return newCell;
 }

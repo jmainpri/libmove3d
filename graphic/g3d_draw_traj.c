@@ -696,7 +696,7 @@ void g3d_draw_tcur(p3d_rob *robotPt, int indexjnt, int NbKeyFrames) {
 #ifdef P3D_PLANNER
         g3d_drawOneLine(pi[0], pi[1], Cost1 + (ZmaxEnv - ZminEnv)*0.02, pf[0], pf[1], Cost2 + (ZmaxEnv - ZminEnv)*0.02, Red, NULL);
 #endif
-        glLineWidth(3.);
+        glLineWidth(1.);
         
         if (u == 0.0 ) {
           g3d_drawSphere(pf[0],pf[1], Cost2 + (ZmaxEnv - ZminEnv)*0.02, 1.);

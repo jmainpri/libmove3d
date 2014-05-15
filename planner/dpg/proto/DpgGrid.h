@@ -5,7 +5,7 @@
 #include <vector>
 #include "ThreeDGrid.h"
 
-class DpgGrid : public API::ThreeDGrid{
+class DpgGrid : public Move3D::ThreeDGrid{
   public:  
     //constructors and destructors
     DpgGrid(p3d_env* env);
@@ -24,7 +24,7 @@ class DpgGrid : public API::ThreeDGrid{
     void unvalidObjectCells(p3d_obj* obj);
     void draw();
   protected:
-  virtual API::ThreeDCell* createNewCell(unsigned int index, unsigned int x, unsigned int y, unsigned int z );
+  virtual Move3D::ThreeDCell* createNewCell(unsigned int index, unsigned int x, unsigned int y, unsigned int z );
   private:
     p3d_env* _env;
     //The position of the origin of the grid regarding th eorigin of the world

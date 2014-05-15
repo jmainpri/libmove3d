@@ -112,7 +112,8 @@ p3d_graph * p3d_create_graph(void) {
 /*******************************************/
 p3d_node * p3d_create_node(p3d_graph * G) {
   p3d_node * nodePt;
-  double dmax = p3d_get_env_dmax();
+  // double dmax = p3d_get_env_dmax();
+  double dmax = ENV.getDouble(Env::dmax);
   nodePt = p3d_allocinit_node();
 //   nodePt->num = G->nnode + 1;
   nodePt->radius = p3d_GetLambda() * dmax;

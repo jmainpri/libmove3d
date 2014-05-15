@@ -3467,7 +3467,7 @@ void g3d_draw_solid_sphere(double radius, int nbSegments)
 //! \param z z coordinate of the sphere center
 //! \param radius radius of the sphere
 //! \param nbSegments number of segments of the discretization of the sphere silhouette
-void g3d_draw_solid_sphere(double x_, double y_, double z_, double radius, int nbSegments)
+void g3d_draw_solid_sphere( double x_, double y_, double z_, double radius, int nbSegments )
 {
     int i, j;
     double r, r0;

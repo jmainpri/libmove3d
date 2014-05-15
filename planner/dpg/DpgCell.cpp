@@ -6,7 +6,7 @@ using namespace std;
 //USING_PART_OF_NAMESPACE_EIGEN
 using namespace Eigen;
 
-DpgCell::DpgCell(int i, Eigen::Vector3d corner, API::ThreeDGrid* grid): API::ThreeDCell(i, corner, grid){
+DpgCell::DpgCell(int i, Eigen::Vector3d corner, Move3D::ThreeDGrid* grid): Move3D::ThreeDCell(i, corner, grid){
   _valid = 1;
   _edges.clear();
   _nodes.clear();

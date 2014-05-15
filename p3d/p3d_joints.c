@@ -1316,24 +1316,24 @@ double p3d_jnt_calc_dof_dist_2(p3d_jnt * jntPt, int i_dof,
  */
 double p3d_jnt_calc_dof_value(p3d_jnt * jntPt, int i_dof,
                               configPt q_init, configPt q_end, double alpha) {
-  // modif Juan
-  int k = jntPt->index_dof + i_dof;
-  double vmin,vmax;
+    // modif Juan
+    int k = jntPt->index_dof + i_dof;
+    double vmin,vmax;
 
-  alpha = MAX(0.,MIN(1.,alpha));
-  if (p3d_jnt_is_dof_circular(jntPt, i_dof)) 
-	{
-    p3d_jnt_get_dof_bounds_deg(jntPt, i_dof, &vmin, &vmax);
-    if(vmin < 0.0) {
-      return angle_limit_PI(q_init[k] + alpha *
-                            diff_angle(q_init[k], q_end[k]));
-    } else {
-      return angle_limit_2PI(q_init[k] + alpha *
-                             diff_angle(q_init[k], q_end[k]));
+    alpha = MAX(0.,MIN(1.,alpha));
+    if (p3d_jnt_is_dof_circular(jntPt, i_dof))
+    {
+        p3d_jnt_get_dof_bounds_deg(jntPt, i_dof, &vmin, &vmax);
+        if(vmin < 0.0) {
+            return angle_limit_PI(q_init[k] + alpha *
+                                  diff_angle(q_init[k], q_end[k]));
+        } else {
+            return angle_limit_2PI(q_init[k] + alpha *
+                                   diff_angle(q_init[k], q_end[k]));
+        }
+        // fmodif Juan
     }
-    // fmodif Juan
-  }
-  return (q_init[k] + alpha * (q_end[k] - q_init[k]));
+    return (q_init[k] + alpha * (q_end[k] - q_init[k]));
 }
 
 

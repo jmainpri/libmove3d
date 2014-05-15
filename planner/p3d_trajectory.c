@@ -605,6 +605,9 @@ int p3d_replace_traj(p3d_traj *traj1Pt,
 
 //start path deform
 int p3d_destroy_traj(p3d_rob* robotPt, p3d_traj* traj){
+    if( traj == NULL ){
+        return FALSE;
+    }
   int i, j, found = 0;
   for (i = 0; i<robotPt->nt; i++) {
     if(robotPt->t[i]->id == traj ->id) {

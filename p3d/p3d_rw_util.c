@@ -285,7 +285,7 @@ configPt p3d_read_word_and_config(p3d_rob *robotPt, char *line,
   static int size_max_dtab=0;
   static double *dtab=NULL;
 
-  PrintInfo(("p3d_read_word_and_config: version = %f, dimq = %i\n",version,dimq));
+  // PrintInfo(("p3d_read_word_and_config: version = %f, dimq = %i\n",version,dimq));
 
   if (p3d_read_string_name(&pos, &name) != TRUE) {
     success = FALSE;
@@ -307,7 +307,7 @@ configPt p3d_read_word_and_config(p3d_rob *robotPt, char *line,
 
   if (version == 0) {
     dimq = robotPt->njoints+4;
-    PrintInfo(("p3d_read_word_and_config: version == 0, dimq = %i\n",dimq));
+    // PrintInfo(("p3d_read_word_and_config: version == 0, dimq = %i\n",dimq));
   }
   /* check size of configuration */
   if (success) {
