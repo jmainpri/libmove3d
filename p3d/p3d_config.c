@@ -1056,7 +1056,7 @@ int p3d_adaptConfigsForCircularDofs(p3d_rob* robotPt, configPt* qi, configPt *qf
   /* translation parameters of main body */
   for (int i=0; i<=njnt; i++) {
     jntPt = robotPt->joints[i];
-    if(jntPt->type == P3D_ROTATE) {
+    if(jntPt->type == P3D_ROTATE || jntPt->type == P3D_FREEFLYER) {
       for (int j=0; j<jntPt->dof_equiv_nbr; j++) {
         k = jntPt->index_dof+j;
         if (p3d_jnt_is_dof_circular(jntPt, j)){
