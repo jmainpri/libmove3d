@@ -1119,7 +1119,7 @@ void update_robot_obj_pos(pp3d_obj o) {
   p3d_matrix4 *mat_ptr;
   int i;
 	
-#ifdef P3D_COLLISION_CHECKING
+//#ifdef P3D_COLLISION_CHECKING
   if(COLLISION_BY_OBJECT) {
     for(i=0;i<o->np;i++) {
       mat_ptr=p3d_get_poly_mat(o->pol[i]->poly);
@@ -1140,7 +1140,7 @@ void update_robot_obj_pos(pp3d_obj o) {
       (*p3d_BB_update_BB_obj)(robot->o[i],o->jnt->abs_pos);
     }
   }
-#endif
+//#endif
 }
 
 /************************************************/

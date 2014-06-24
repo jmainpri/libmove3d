@@ -1829,16 +1829,16 @@ gpDoubleGrasp & gpDoubleGrasp::operator = (const gpDoubleGrasp &dgrasp)
 
 
 //! Double grasp quality comparison operator.
-bool gpDoubleGrasp::operator < (const gpDoubleGrasp &dgrasp)
-{
-  if(this==NULL)
-  {
-    printf("%s: %d: gpDoubleGrasp::operator <: the calling instance is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-
-  return (quality < dgrasp.quality) ? true : false;
-}
+//bool gpDoubleGrasp::operator < (const gpDoubleGrasp &dgrasp)
+//{
+//  if(this==NULL)
+//  {
+//    printf("%s: %d: gpDoubleGrasp::operator <: the calling instance is NULL.\n",__FILE__,__LINE__);
+//    return GP_ERROR;
+//  }
+//
+//  return (quality < dgrasp.quality) ? true : false;
+//}
 
 
 //! Draws all the contacts of a double grasp.

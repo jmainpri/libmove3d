@@ -47,7 +47,6 @@
 * for a given hand type (among the defined ones).
  */
 
-
 #include <time.h>
 #include <sys/times.h>
 #include <stdio.h>
@@ -333,11 +332,11 @@ class gpVector3D
       }
    }
 
-   bool operator < (const gpVector3D &vector3D)
-   {   return (cost < vector3D.cost) ? true : false;   }
-
-   bool operator > (const gpVector3D &vector3D)
-   {   return (cost > vector3D.cost) ? true : false;   }
+//   bool operator < (const gpVector3D &vector3D)
+//   {   return (cost < vector3D.cost) ? true : false;   }
+//
+//   bool operator > (const gpVector3D &vector3D)
+//   {   return (cost > vector3D.cost) ? true : false;   }
 
    int set(double x0, double y0, double z0)
    {
@@ -419,8 +418,14 @@ class gpSphere
   }
 };
 
+inline bool operator < (const gpVector3D &vector3D1, const gpVector3D &vector3D2)
+{   return (vector3D1.cost < vector3D2.cost) ? true : false;   }
 
-//! @ingroup graspPlanning 
+inline bool operator > (const gpVector3D &vector3D1, const gpVector3D &vector3D2)
+{   return (vector3D1.cost > vector3D2.cost) ? true : false;   }
+
+
+//! @ingroup graspPlanning
 //! A basic class to store homogeneous transform matrix (to use in STL containers).
 //! Homogeneous transform matrix class:
 class gpHTMatrix
@@ -480,22 +485,22 @@ class gpHTMatrix
 //! @ingroup graspPlanning
 class gpIndex
 {
-  public:
-   unsigned int index;
-   double cost;
-
-   gpIndex()
-   {
-     index= 0;
-     cost= 0;
-   }
-   bool operator < (const gpIndex &gpIndex)
-   {   return (cost < gpIndex.cost) ? true : false;   }
-
-   bool operator > (const gpIndex &gpIndex)
-   {   return (cost > gpIndex.cost) ? true : false;   }
+public:
+    unsigned int index;
+    double cost;
+    
+    gpIndex()
+    {
+        index= 0;
+        cost= 0;
+    }
 };
 
+inline bool operator < (const gpIndex& idx1, const gpIndex& idx2)
+{   return (idx1.cost < idx2.cost) ? true : false;   }
+
+inline bool operator > (const gpIndex& idx1, const gpIndex& idx2)
+{   return (idx1.cost > idx2.cost) ? true : false;   }
 
 #endif
 

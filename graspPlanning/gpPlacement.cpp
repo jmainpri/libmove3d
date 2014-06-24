@@ -211,22 +211,22 @@ gpPlacement & gpPlacement::operator = (const gpPlacement &placement)
 }
 
 //! Placement comparison operator.
-bool gpPlacement::operator < (const gpPlacement &placement)
-{
-  double dstab, dclear;
-
-  dstab = fabs(stability - placement.stability);
-  dclear= fabs(clearance - placement.clearance);
-
-  if(dstab > dclear) 
-  {
-    return (stability < placement.stability) ? true : false;
-  }
-  else
-  {
-    return (clearance < placement.clearance) ? true : false;
-  }
-}
+//bool gpPlacement::operator < (const gpPlacement &placement)
+//{
+//  double dstab, dclear;
+//
+//  dstab = fabs(stability - placement.stability);
+//  dclear= fabs(clearance - placement.clearance);
+//
+//  if(dstab > dclear) 
+//  {
+//    return (stability < placement.stability) ? true : false;
+//  }
+//  else
+//  {
+//    return (clearance < placement.clearance) ? true : false;
+//  }
+//}
 
 //! This function computes the pose matrix to give to the object to place it.
 int gpPlacement::computePoseMatrix(p3d_matrix4 pose)

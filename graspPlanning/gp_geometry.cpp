@@ -27,7 +27,7 @@
 /********************FONCTIONS GEOMETRIQUES DE BASE***********************/
 /*************************************************************************/
 
-
+#include "include/graspPlanning.h"
 #include <math.h>
 #include "Collision-pkg.h"
 #include "Util-pkg.h"

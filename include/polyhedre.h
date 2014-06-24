@@ -39,7 +39,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <locale.h>
-#include <vector>
 
 #include "p3d_matrix.h"
 

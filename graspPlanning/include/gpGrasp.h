@@ -107,13 +107,23 @@ class gpDoubleGrasp
   ~gpDoubleGrasp();
   int setFromSingleGrasps(const gpGrasp &graspA, const gpGrasp &graspB);
   gpDoubleGrasp & operator = (const gpDoubleGrasp &dgrasp);
-  bool operator < (const gpDoubleGrasp &grasp);
   int print();
   int draw(double cone_length, int cone_nb_slices= 10);
   int computeStability();
   int computeQuality();
   int computeBestObjectOrientation(p3d_matrix4 torsoPose, p3d_matrix4 objectPose);
 };
+
+inline bool operator < (const gpDoubleGrasp &grasp1, const gpDoubleGrasp &grasp2)
+{
+//    if(this==NULL)
+//    {
+//        printf("%s: %d: gpDoubleGrasp::operator <: the calling instance is NULL.\n",__FILE__,__LINE__);
+//        return GP_ERROR;
+//    }
+    
+    return (grasp1.quality < grasp2.quality) ? true : false;
+}
 
 int gpNormalize_distance_score(std::list<gpDoubleGrasp> &list);
 int gpNormalize_stability(std::list<gpDoubleGrasp> &list);

@@ -100,11 +100,28 @@ class gpPlacement
   gpPlacement(const gpPlacement &placement);
   ~gpPlacement();
   gpPlacement & operator=(const gpPlacement &placement);
-  bool operator < (const gpPlacement &placement);
+//  bool operator < (const gpPlacement &placement);
   int computePoseMatrix(p3d_matrix4 pose); /*!< computes the pose to give to the object */
   int print();
   int draw(double length);
 };
+
+inline bool operator < (const gpPlacement &placement1, const gpPlacement &placement2)
+{
+    double dstab, dclear;
+    
+    dstab = fabs(placement1.stability - placement2.stability);
+    dclear= fabs(placement1.clearance - placement2.clearance);
+    
+    if(dstab > dclear)
+    {
+        return (placement1.stability < placement2.stability) ? true : false;
+    }
+    else
+    {
+        return (placement1.clearance < placement2.clearance) ? true : false;
+    }
+}
 
 bool gpCompareStability(const gpPlacement &place1, const gpPlacement &place2); 
 bool gpCompareClearance(const gpPlacement &place1, const gpPlacement &place2); 
