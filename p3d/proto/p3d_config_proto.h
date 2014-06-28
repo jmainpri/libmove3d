@@ -81,6 +81,6 @@ extern int p3d_isNullConfig(p3d_rob* robot, configPt q);
 extern double p3d_stay_within_sphere(p3d_rob* robotPt, double *distances);
 //end path deform
 extern int p3d_is_collision_free(p3d_rob* robotPt, configPt q);
-extern int p3d_isOutOfBounds(p3d_rob* robot, configPt q, bool print = true);
+extern int p3d_is_out_of_bounds(p3d_rob* robot, configPt q, bool print = true);
 extern int p3d_adaptConfigsForCircularDofs(p3d_rob* robotPt, configPt* qi, configPt *qf);
 #endif /* __CEXTRACT__ */

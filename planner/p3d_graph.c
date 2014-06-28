@@ -972,7 +972,7 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
   /* If not, create them */
   if (Ns == NULL) {
     p3d_set_robot_config(robotPt, qs);
-    if (p3d_isOutOfBounds(robotPt, qs)) {
+    if (p3d_is_out_of_bounds(robotPt, qs)) {
       PrintInfo(("qs not Valid. Check joint bounds\n"));
       return NULL;
     }
@@ -1014,7 +1014,7 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
   }
   if ((ENV.getBool(Env::expandToGoal) == true) && (Ng == NULL)) {
     p3d_set_robot_config(robotPt, qg);
-    if (p3d_isOutOfBounds(robotPt, qg)) {
+    if (p3d_is_out_of_bounds(robotPt, qg)) {
       PrintInfo(("qg not Valid. Check joint bounds\n"));
       return NULL;
     }
