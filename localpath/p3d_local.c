@@ -158,7 +158,7 @@ p3d_localpath *p3d_local_planner_array(p3d_rob *robotPt, configPt* q)
   //    }
   //  }
 
-  p3d_adaptConfigsForCircularDofs(robotPt, &(q[0]), &(q[1]));
+  p3d_adapt_configs_for_circular_dofs(robotPt, &(q[0]), &(q[1]));
 
 
   //   printf("After\n");
@@ -225,7 +225,7 @@ p3d_localpath *p3d_local_planner_array_multisol(p3d_rob *robotPt, configPt* q, i
 #ifdef  MULTILOCALPATH
 
 
-  p3d_adaptConfigsForCircularDofs(robotPt, &(q[0]), &(q[1]));
+  p3d_adapt_configs_for_circular_dofs(robotPt, &(q[0]), &(q[1]));
 
 
   //   printf("After\n");

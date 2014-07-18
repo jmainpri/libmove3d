@@ -1068,7 +1068,7 @@ int p3d_is_out_of_bounds(p3d_rob* robot, configPt q, bool print)
     return is_out_of_bounds;
 }
 
-/*  p3d_adaptConfigsForCircularDofs
+/*  p3d_adapt_configs_for_circular_dofs
  *
  *  Input:  the robot,
  *          the two configurations
@@ -1078,7 +1078,7 @@ int p3d_is_out_of_bounds(p3d_rob* robot, configPt q, bool print)
  *
  *  Description:
  */
-int p3d_adaptConfigsForCircularDofs(p3d_rob* robotPt, configPt* qi, configPt *qf){
+int p3d_adapt_configs_for_circular_dofs(p3d_rob* robotPt, configPt* qi, configPt *qf){
   p3d_jnt * jntPt = NULL;
   double vmin=0.0,vmax=0.0;
   double diff=0.0;

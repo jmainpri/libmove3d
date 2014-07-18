@@ -97,7 +97,7 @@ double dist_circle(double theta1, double theta2)
 }
 
 /* 
- *  Compute the difference between two angles between -180 and 180
+ *  Compute the difference between two angles between -PI and PI
  */
 
 double diff_angle(double theta1, double theta2)

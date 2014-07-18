@@ -124,7 +124,7 @@ p3d_localpath *p3d_softMotion_localplanner(p3d_rob *robotPt, int multiLocalpathI
     return(NULL);
   }
 
-  p3d_adaptConfigsForCircularDofs(robotPt, &qi, &qf);
+  p3d_adapt_configs_for_circular_dofs(robotPt, &qi, &qf);
   p3d_copy_config_into(robotPt, qf, &qfp1);
 
   //  p3d_localpath *localpathCostPt=NULL;
