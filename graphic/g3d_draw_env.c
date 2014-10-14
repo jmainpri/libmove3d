@@ -1873,7 +1873,7 @@ void g3d_draw(int opengl_context)
     glEnable(GL_STENCIL_TEST);
     glStencilFunc(GL_ALWAYS, 0x2, 0x0);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles, win->vs.flatBoxFloor);
+//    g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles, win->vs.flatBoxFloor);
 		
     glDisable(GL_DEPTH_TEST);
     glMatrixMode(GL_MODELVIEW);
@@ -1909,7 +1909,7 @@ void g3d_draw(int opengl_context)
     g3d_set_dim_light();
     g3d_set_shade_material();
     glEnable(GL_LIGHTING);
-    g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles, win->vs.flatBoxFloor);
+//    g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles, win->vs.flatBoxFloor);
 		
     if(win->vs.displayWalls)
     {
