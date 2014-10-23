@@ -1082,11 +1082,11 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 
 		if ( ( strcmp ( fct, "p3d_add_desc_cone" ) == 0 ) || ( strcmp ( fct, "M3D_add_desc_cone" ) == 0 ) )
 		{
-			if ( !read_desc_name ( fd, name ) ) return ( read_desc_error ( fct ) );
+            if ( !read_desc_name ( fd, name ) ) { printf("1\n"); return ( read_desc_error ( fct ) ); }
 			/* if(!read_desc_int(fd,1,itab)) return(read_desc_error(fct)); */
 			itab[0] = 12;
-			if ( !read_desc_double ( fd, 3, dtab ) ) return ( read_desc_error ( fct ) );
-			if ( !read_desc_hyp_type ( fd, &n, &type ) ) return ( read_desc_error ( fct ) );
+            if ( !read_desc_double ( fd, 3, dtab ) ) { printf("2\n");return ( read_desc_error ( fct ) ); }
+            if ( !read_desc_hyp_type ( fd, &n, &type ) ){ printf("3\n"); return ( read_desc_error ( fct ) ); }
 			if ( fileType )  //is macro file
 			{
 				strcpy ( namecompl, nameobj );
@@ -1097,6 +1097,8 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			{
 				strcpy ( namecompl, name );
 			}
+            printf("scale : %f\n", scale);
+
 			if ( n == 0 )
 			{
 				p3d_add_desc_cone ( namecompl, itab[0], scale*dtab[0], scale*dtab[1], scale*dtab[2], P3D_REAL );

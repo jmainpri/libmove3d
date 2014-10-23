@@ -13,3 +13,4 @@ extern double p3d_random(double a, double b);
 int p3d_random_integer(int a, int b);
 extern double NormalRand( double Sigma_d_a );
 extern double p3d_gaussian_random( const double& mean, const double& variance , const double& min, const double& max);
+extern double p3d_gaussian_random2( const double& mean, const double& variance );

@@ -17,9 +17,9 @@
  * ANY  SPECIAL, DIRECT,  INDIRECT, OR  CONSEQUENTIAL DAMAGES  OR  ANY DAMAGES
  * WHATSOEVER  RESULTING FROM  LOSS OF  USE, DATA  OR PROFITS,  WHETHER  IN AN
  * ACTION OF CONTRACT, NEGLIGENCE OR  OTHER TORTIOUS ACTION, ARISING OUT OF OR
- * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.                                  
+ * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * Siméon, T., Laumond, J. P., & Lamiraux, F. (2001). 
+ * Siméon, T., Laumond, J. P., & Lamiraux, F. (2001).
  * Move3d: A generic platform for path planning. In in 4th Int. Symp.
  * on Assembly and Task Planning.
  */
@@ -47,28 +47,28 @@ static void p3d_binary_search(p3d_rob *r, configPt qInObst,configPt qInFree, dou
 /*************************************************/
 bool p3d_is_sampled_dof(p3d_rob* robotPt, p3d_jnt* jntPt, int i, int sample_passive)
 {
-  const bool print_debug=false;
-  
-  // Dof in Config
-  int k = jntPt->index_dof + i;
-  int is_user = p3d_jnt_get_dof_is_user(jntPt,i);
-  int is_active = p3d_jnt_get_dof_is_active_for_planner(jntPt,i);
-  int is_not_cntrt = (robotPt->cntrt_manager->in_cntrt[k] != 2);
-  
-  if( is_user && ( sample_passive || ( is_active && is_not_cntrt )))
-  {
-    if( print_debug )
-      printf("jntPt : %s is SAMPLED for dof %d (sample_passive : %d, is_user : %d, is_active : %d, is_not_cntrt : %d)\n", jntPt->name, i, sample_passive, is_user, is_active, is_not_cntrt );
-    
-    return true;
-  }
-  else
-  {
-    if( print_debug )
-      printf("jntPt : %s is FIXED for dof %d (sample_passive : %d, is_user : %d, is_active : %d, is_not_cntrt : %d)\n", jntPt->name, i, sample_passive, is_user, is_active, is_not_cntrt );
-    
-    return false;
-  }
+    const bool print_debug=false;
+
+    // Dof in Config
+    int k = jntPt->index_dof + i;
+    int is_user = p3d_jnt_get_dof_is_user(jntPt,i);
+    int is_active = p3d_jnt_get_dof_is_active_for_planner(jntPt,i);
+    int is_not_cntrt = (robotPt->cntrt_manager->in_cntrt[k] != 2);
+
+    if( is_user && ( sample_passive || ( is_active && is_not_cntrt )))
+    {
+        if( print_debug )
+            printf("jntPt : %s is SAMPLED for dof %d (sample_passive : %d, is_user : %d, is_active : %d, is_not_cntrt : %d)\n", jntPt->name, i, sample_passive, is_user, is_active, is_not_cntrt );
+
+        return true;
+    }
+    else
+    {
+        if( print_debug )
+            printf("jntPt : %s is FIXED for dof %d (sample_passive : %d, is_user : %d, is_active : %d, is_not_cntrt : %d)\n", jntPt->name, i, sample_passive, is_user, is_active, is_not_cntrt );
+
+        return false;
+    }
 }
 
 /* modif Juan Cortes */
@@ -78,47 +78,47 @@ bool p3d_is_sampled_dof(p3d_rob* robotPt, p3d_jnt* jntPt, int i, int sample_pass
 /*************************************************/
 int p3d_standard_shoot(p3d_rob *robotPt, configPt q, int sample_passive)
 {
-	int njnt = robotPt->njoints, i, j, k;
-	double vmin, vmax;
-	p3d_jnt * jntPt;
-	
-	for(i=0; i<=njnt; i++) {
-		jntPt = robotPt->joints[i];
-		for(j=0; j<jntPt->dof_equiv_nbr; j++) 
-		{
-			k = jntPt->index_dof + j;
-			
-			if (p3d_is_sampled_dof( robotPt, jntPt, j, sample_passive))
-			{
-				p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
-				q[k] = p3d_random(vmin, vmax);
-				//std::cout << "Sample Passive = "<<sample_passive<<" , Sampling q["<<k<<"] = "<<q[k]<< std::endl;
-			} 
-			else
-			{ 
+    int njnt = robotPt->njoints, i, j, k;
+    double vmin, vmax;
+    p3d_jnt * jntPt;
+
+    for(i=0; i<=njnt; i++) {
+        jntPt = robotPt->joints[i];
+        for(j=0; j<jntPt->dof_equiv_nbr; j++)
+        {
+            k = jntPt->index_dof + j;
+
+            if (p3d_is_sampled_dof( robotPt, jntPt, j, sample_passive))
+            {
+                p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+                q[k] = p3d_random(vmin, vmax);
+                //std::cout << "Sample Passive = "<<sample_passive<<" , Sampling q["<<k<<"] = "<<q[k]<< std::endl;
+            }
+            else
+            {
                 q[k] = p3d_jnt_get_dof(jntPt, j);
-			}
-		}
-  }
-#ifdef  MULTILOCALPATH
-  p3d_localpath_type lpl_type = robotPt->lpl_type;
-  if (lpl_type == MULTI_LOCALPATH) {
-//     configPt qTmp = p3d_get_robot_config(robotPt);
-    configPt qTmp = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
-    configPt qTmp2;
-    for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
-      if(p3d_multiLocalPath_get_value_groupToPlan(robotPt, i)){
-        qTmp2 = p3d_separateMultiLocalPathConfig(robotPt, qTmp, q , i, robotPt->mlp->mlpJoints);
-        p3d_copy_config_into(robotPt, qTmp2, &qTmp);
-        p3d_destroy_config(robotPt,qTmp2);
-      }
+            }
+        }
     }
-    p3d_copy_config_into(robotPt, qTmp, &q);
-    p3d_destroy_config(robotPt,qTmp);
-  }
+#ifdef  MULTILOCALPATH
+    p3d_localpath_type lpl_type = robotPt->lpl_type;
+    if (lpl_type == MULTI_LOCALPATH) {
+        //     configPt qTmp = p3d_get_robot_config(robotPt);
+        configPt qTmp = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
+        configPt qTmp2;
+        for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
+            if(p3d_multiLocalPath_get_value_groupToPlan(robotPt, i)){
+                qTmp2 = p3d_separateMultiLocalPathConfig(robotPt, qTmp, q , i, robotPt->mlp->mlpJoints);
+                p3d_copy_config_into(robotPt, qTmp2, &qTmp);
+                p3d_destroy_config(robotPt,qTmp2);
+            }
+        }
+        p3d_copy_config_into(robotPt, qTmp, &q);
+        p3d_destroy_config(robotPt,qTmp);
+    }
 #endif
 
- return(TRUE);
+    return(TRUE);
 }
 
 /***************************************************/
@@ -127,61 +127,61 @@ int p3d_standard_shoot(p3d_rob *robotPt, configPt q, int sample_passive)
 /***************************************************/
 static int p3d_inbox_shoot(p3d_rob *robotPt,  configPt box_env[], configPt q, int sample_passive)
 {
-  double vmin, vmax;
-  double s1,s2, rand;
-  int njnt = robotPt->njoints, i, j, k; 
-  p3d_jnt * jntPt;
-  
-  for(i=0; i<=njnt; i++) {
-    jntPt = robotPt->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      k = jntPt->index_dof + j;
-      // TEST
-      /*       p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax); */
-      /*       if() { */
-      
-      /*       } */
-      ////////
-      if (p3d_is_sampled_dof( robotPt, jntPt, j, sample_passive )) 
-      {
-        p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
-        if (p3d_jnt_is_dof_angular(jntPt, j)) 
-        {
-          if(vmin >= -M_PI && vmax <= M_PI) {
-            if((box_env[0][k] <-M_PI) || (box_env[0][k] > M_PI) ||
-               (box_env[1][k] <-M_PI) || (box_env[1][k] > M_PI) )
-            { PrintInfo(("Warning :Wrong bounds of shooting box\n"));}
-          }	
-          if(box_env[0][k] <= box_env[1][k]) 
-          {
-            q[k] = p3d_random(box_env[0][k],box_env[1][k]);
-          }
-          else {
-            //we have to shoot randomly in 
-            //the union of the 2 intervals [-Pi, max]U[min, Pi]
-            s1 =  box_env[1][k]+M_PI;
-            s2= M_PI- box_env[0][k];
-            rand = p3d_random(0.,s1+s2);
-            if(rand <s1) //we are in the second interval 
+    double vmin, vmax;
+    double s1,s2, rand;
+    int njnt = robotPt->njoints, i, j, k;
+    p3d_jnt * jntPt;
+
+    for(i=0; i<=njnt; i++) {
+        jntPt = robotPt->joints[i];
+        for(j=0; j<jntPt->dof_equiv_nbr; j++) {
+            k = jntPt->index_dof + j;
+            // TEST
+            /*       p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax); */
+            /*       if() { */
+
+            /*       } */
+            ////////
+            if (p3d_is_sampled_dof( robotPt, jntPt, j, sample_passive ))
             {
-              q[k] = -M_PI+rand; 
-            }
-            else {
-              q[k] = box_env[0][k] + rand - s1;
-            }
-          }
+                p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+                if (p3d_jnt_is_dof_angular(jntPt, j))
+                {
+                    if(vmin >= -M_PI && vmax <= M_PI) {
+                        if((box_env[0][k] <-M_PI) || (box_env[0][k] > M_PI) ||
+                                (box_env[1][k] <-M_PI) || (box_env[1][k] > M_PI) )
+                        { PrintInfo(("Warning :Wrong bounds of shooting box\n"));}
+                    }
+                    if(box_env[0][k] <= box_env[1][k])
+                    {
+                        q[k] = p3d_random(box_env[0][k],box_env[1][k]);
+                    }
+                    else {
+                        //we have to shoot randomly in
+                        //the union of the 2 intervals [-Pi, max]U[min, Pi]
+                        s1 =  box_env[1][k]+M_PI;
+                        s2= M_PI- box_env[0][k];
+                        rand = p3d_random(0.,s1+s2);
+                        if(rand <s1) //we are in the second interval
+                        {
+                            q[k] = -M_PI+rand;
+                        }
+                        else {
+                            q[k] = box_env[0][k] + rand - s1;
+                        }
+                    }
+                }
+                else {
+                    q[k] = p3d_random(box_env[0][k],box_env[1][k]);
+                }
+                // if (vmin < box_env[0][k]) vmin = box_env[0][k];
+                // 	if (vmax > box_env[1][k]) vmax = box_env[1][k];
+                // 	q[k] = p3d_random(vmin, vmax);
+            } else
+            { q[k] = p3d_jnt_get_dof(jntPt, j); }
         }
-        else {
-          q[k] = p3d_random(box_env[0][k],box_env[1][k]);
-        }
-        // if (vmin < box_env[0][k]) vmin = box_env[0][k]; 
-        // 	if (vmax > box_env[1][k]) vmax = box_env[1][k]; 
-        // 	q[k] = p3d_random(vmin, vmax); 
-      } else
-      { q[k] = p3d_jnt_get_dof(jntPt, j); }
     }
-  }
-  return(TRUE);
+    return(TRUE);
 }
 
 /***************************************************/
@@ -199,41 +199,41 @@ static int p3d_inbox_shoot(p3d_rob *robotPt,  configPt box_env[], configPt q, in
 /***************************************************/
 static void p3d_gaussian_config2(p3d_rob *r, configPt c1, configPt c2, int sample_passive)
 {
-  int njnt = r->njoints, ij; 
-  double robotsize, jmin, jmax, sig = 10.0;
-  int i, k;
-  p3d_jnt * jntPt;
-  
-  /* TODO(?): somehow reflect robot size. 
+    int njnt = r->njoints, ij;
+    double robotsize, jmin, jmax, sig = 10.0;
+    int i, k;
+    p3d_jnt * jntPt;
+
+    /* TODO(?): somehow reflect robot size.
    * Something you would not want
    * to have to compute every time,
    * but just once when reading the file.
-   * It would be nicer to hace a robot.size() member 
+   * It would be nicer to hace a robot.size() member
    *inside the p3d_rob struct... */
-  p3d_get_BB_rob_max_size(r, &robotsize); /* new Carl 23052001 */
-  for(ij=0;ij<=njnt;ij++){
-    jntPt = r->joints[ij];
-    for(i=0; i<jntPt->dof_equiv_nbr; i++) {  
-      k = jntPt->index_dof+i;
-      if (p3d_is_sampled_dof( r, jntPt, i, sample_passive )) {
-        p3d_jnt_get_dof_rand_bounds(jntPt, i, &jmin, &jmax);
-        if (p3d_jnt_is_dof_angular(jntPt, i)) {
-          /* ugly hack: you would want the distribution to
-           be dependent on the used distance measure... */
-          sig = 30.0; 
-        } else
-        { sig = 10.0; }
-        if (fabs(jmax - jmin) > EPS6) {
-          do {
-            c2[k] = c1[k] + NormalRand(robotsize/sig);
-          } while((c2[k] < jmin) || (c2[k] > jmax));
+    p3d_get_BB_rob_max_size(r, &robotsize); /* new Carl 23052001 */
+    for(ij=0;ij<=njnt;ij++){
+        jntPt = r->joints[ij];
+        for(i=0; i<jntPt->dof_equiv_nbr; i++) {
+            k = jntPt->index_dof+i;
+            if (p3d_is_sampled_dof( r, jntPt, i, sample_passive )) {
+                p3d_jnt_get_dof_rand_bounds(jntPt, i, &jmin, &jmax);
+                if (p3d_jnt_is_dof_angular(jntPt, i)) {
+                    /* ugly hack: you would want the distribution to
+                        be dependent on the used distance measure... */
+                    sig = 30.0;
+                } else
+                { sig = 10.0; }
+                if (fabs(jmax - jmin) > EPS6) {
+                    do {
+                        c2[k] = c1[k] + NormalRand(robotsize/sig);
+                    } while((c2[k] < jmin) || (c2[k] > jmax));
+                }
+            }
+            else {
+                c2[k] = c1[k];
+            }
         }
-      }
-      else {
-        c2[k] = c1[k];
-      }
     }
-  }
 }
 
 /***************************************************/
@@ -251,34 +251,34 @@ static void p3d_gaussian_config2(p3d_rob *r, configPt c1, configPt c2, int sampl
 /***************************************************/
 void p3d_gaussian_config2_Joint_specific(p3d_rob *r, p3d_jnt* jntPt, configPt c1, configPt c2, double translationFactor, double rotationFactor, int sample_passive)
 {
-  int ij;
-  double factor, jmin, jmax;
-  int i, k;
-  
-  for(i=0; i<jntPt->dof_equiv_nbr; i++) 
-  {
-    k = jntPt->index_dof+i;
-    
-    if (p3d_is_sampled_dof( r, jntPt, i, sample_passive ))
+    int ij;
+    double factor, jmin, jmax;
+    int i, k;
+
+    for(i=0; i<jntPt->dof_equiv_nbr; i++)
     {
-      p3d_jnt_get_dof_rand_bounds(jntPt, i, &jmin, &jmax);
-      
-      if (p3d_jnt_is_dof_angular(jntPt, i)) {
-        factor = rotationFactor;
-      } 
-      else {
-        factor = translationFactor;
-      }
-      if (fabs(jmax - jmin) > EPS6) {
-        do {
-          c2[k] = c1[k] + NormalRand(factor);
-        } while((c2[k] < jmin) || (c2[k] > jmax));
-      }
+        k = jntPt->index_dof+i;
+
+        if (p3d_is_sampled_dof( r, jntPt, i, sample_passive ))
+        {
+            p3d_jnt_get_dof_rand_bounds(jntPt, i, &jmin, &jmax);
+
+            if (p3d_jnt_is_dof_angular(jntPt, i)) {
+                factor = rotationFactor;
+            }
+            else {
+                factor = translationFactor;
+            }
+            if (fabs(jmax - jmin) > EPS6) {
+                do {
+                    c2[k] = c1[k] + NormalRand(factor);
+                } while((c2[k] < jmin) || (c2[k] > jmax));
+            }
+        }
+        else {
+            c2[k] = c1[k];
+        }
     }
-    else {
-      c2[k] = c1[k];
-    }
-  }
 }
 
 /***************************************************/
@@ -296,35 +296,35 @@ void p3d_gaussian_config2_Joint_specific(p3d_rob *r, p3d_jnt* jntPt, configPt c1
 /***************************************************/
 void p3d_gaussian_config2_specific(p3d_rob *r, configPt c1, configPt c2, double translationFactor, double rotationFactor, int sample_passive)
 {
-  int njnt = r->njoints, ij; 
-  double factor, jmin, jmax;
-  int i, k;
-  p3d_jnt * jntPt;
+    int njnt = r->njoints, ij;
+    double factor, jmin, jmax;
+    int i, k;
+    p3d_jnt * jntPt;
 
-  for(ij=0;ij<=njnt;ij++){
-    jntPt = r->joints[ij];
-    for(i=0; i<jntPt->dof_equiv_nbr; i++) {  
-      k = jntPt->index_dof+i;
-      
-      if (p3d_is_sampled_dof( r, jntPt, i, sample_passive ))
-      {
-        p3d_jnt_get_dof_rand_bounds(jntPt, i, &jmin, &jmax);
-        if (p3d_jnt_is_dof_angular(jntPt, i)) {
-          factor = rotationFactor;
-        } else {
-          factor = translationFactor;
+    for(ij=0;ij<=njnt;ij++){
+        jntPt = r->joints[ij];
+        for(i=0; i<jntPt->dof_equiv_nbr; i++) {
+            k = jntPt->index_dof+i;
+
+            if (p3d_is_sampled_dof( r, jntPt, i, sample_passive ))
+            {
+                p3d_jnt_get_dof_rand_bounds(jntPt, i, &jmin, &jmax);
+                if (p3d_jnt_is_dof_angular(jntPt, i)) {
+                    factor = rotationFactor;
+                } else {
+                    factor = translationFactor;
+                }
+                if (fabs(jmax - jmin) > EPS6) {
+                    do {
+                        c2[k] = c1[k] + NormalRand(factor);
+                    } while((c2[k] < jmin) || (c2[k] > jmax));
+                }
+            }
+            else {
+                c2[k] = c1[k];
+            }
         }
-        if (fabs(jmax - jmin) > EPS6) {
-          do {
-            c2[k] = c1[k] + NormalRand(factor);
-          } while((c2[k] < jmin) || (c2[k] > jmax));
-        }
-      }
-      else {
-        c2[k] = c1[k];
-      }
     }
-  }
 }
 
 /***************************************************/
@@ -340,53 +340,53 @@ void p3d_gaussian_config2_specific(p3d_rob *r, configPt c1, configPt c2, double 
 static int
 p3d_gaussian_shoot(p3d_rob *r, configPt q, int sample_passive)
 {
-  int SUCCEED = 0 ;
-  configPt c1, c2, NewConfig = NULL;
-  int coll_c1,coll_c2;
+    int SUCCEED = 0 ;
+    configPt c1, c2, NewConfig = NULL;
+    int coll_c1,coll_c2;
 
-  c1 = p3d_alloc_config(r);
-  c2 = p3d_alloc_config(r);
- 
-  while(SUCCEED == 0){
-    p3d_standard_shoot(r, c1, sample_passive) ; // generates random sample
-    p3d_gaussian_config2(r, c1, c2, sample_passive) ; // generates sample nearby
-    
-    p3d_set_and_update_this_robot_conf_without_cntrt(r,c1);
-    coll_c1 = p3d_col_test(); // does c1 collide?
-    (r->GRAPH->nb_test_coll)++;//Mokhtar
-    
-    p3d_set_and_update_this_robot_conf_without_cntrt(r,c2);
-    coll_c2 = p3d_col_test(); // does c2 collide?
-    (r->GRAPH->nb_test_coll)++; //Mokhtar
-    
-    
-    if ( !coll_c1 ){
-      // c1 is a free configuration
-      if ( !coll_c2 ){
-  // c2 is a free configuration
-        SUCCEED = 0 ;
-      }
-      else{        
-        // c2 is a forbidden configuration
-        NewConfig = c1 ;
-        SUCCEED = 1 ;
-      }
+    c1 = p3d_alloc_config(r);
+    c2 = p3d_alloc_config(r);
+
+    while(SUCCEED == 0){
+        p3d_standard_shoot(r, c1, sample_passive) ; // generates random sample
+        p3d_gaussian_config2(r, c1, c2, sample_passive) ; // generates sample nearby
+
+        p3d_set_and_update_this_robot_conf_without_cntrt(r,c1);
+        coll_c1 = p3d_col_test(); // does c1 collide?
+        (r->GRAPH->nb_test_coll)++;//Mokhtar
+
+        p3d_set_and_update_this_robot_conf_without_cntrt(r,c2);
+        coll_c2 = p3d_col_test(); // does c2 collide?
+        (r->GRAPH->nb_test_coll)++; //Mokhtar
+
+
+        if ( !coll_c1 ){
+            // c1 is a free configuration
+            if ( !coll_c2 ){
+                // c2 is a free configuration
+                SUCCEED = 0 ;
+            }
+            else{
+                // c2 is a forbidden configuration
+                NewConfig = c1 ;
+                SUCCEED = 1 ;
+            }
+        }
+        else{          // c1 is a forbidden configuration
+            if ( !coll_c2 ){
+                // c2 is a free configuration
+                NewConfig = c2 ;
+                SUCCEED = 1 ;
+            }
+            else{        // c2 is a forbidden configuration
+                SUCCEED = 0 ;
+            }
+        }
     }
-    else{          // c1 is a forbidden configuration
-      if ( !coll_c2 ){
-  // c2 is a free configuration
-        NewConfig = c2 ;
-        SUCCEED = 1 ;
-      }
-      else{        // c2 is a forbidden configuration
-        SUCCEED = 0 ;
-      }
-    }
-  }
-  p3d_copy_config_into(r,NewConfig,&q);
-  p3d_destroy_config(r,c1);
-  p3d_destroy_config(r,c2);
-  return(TRUE);
+    p3d_copy_config_into(r,NewConfig,&q);
+    p3d_destroy_config(r,c1);
+    p3d_destroy_config(r,c2);
+    return(TRUE);
 }
 
 /*************************************************/
@@ -400,63 +400,63 @@ p3d_gaussian_shoot(p3d_rob *r, configPt q, int sample_passive)
 /*************************************************/
 int p3d_shoot(p3d_rob *robotPt, configPt q, int sample_passive)
 { p3d_graph *G;
-  int go_on;
-  //  int nFail = 0;
+    int go_on;
+    //  int nFail = 0;
 
-  G = robotPt->GRAPH;
-  go_on = 1;
-  while(go_on) {
-    if (p3d_get_RANDOM_CHOICE()==P3D_HALTON_SAMPLING)
-      p3d_getNextHHpoint(robotPt, &(G->hhCount), q, sample_passive);
-    else
-      /* Modif Mokhtar */
-      //new
-      switch (p3d_get_SAMPLING_CHOICE()){
-        case P3D_GAUSSIAN_SAMPLING :{
-          p3d_gaussian_shoot(robotPt,q,sample_passive);
-          break;
+    G = robotPt->GRAPH;
+    go_on = 1;
+    while(go_on) {
+        if (p3d_get_RANDOM_CHOICE()==P3D_HALTON_SAMPLING)
+            p3d_getNextHHpoint(robotPt, &(G->hhCount), q, sample_passive);
+        else
+            /* Modif Mokhtar */
+            //new
+            switch (p3d_get_SAMPLING_CHOICE()){
+            case P3D_GAUSSIAN_SAMPLING :{
+                p3d_gaussian_shoot(robotPt,q,sample_passive);
+                break;
+            }
+            case P3D_UNIFORM_SAMPLING :{
+                p3d_standard_shoot(robotPt,q,sample_passive);
+                break;
+            }
+            case P3D_BRIDGE_SAMPLING :{
+                p3d_bridge_shoot(robotPt,q,sample_passive);
+                break;
+            }
+            case P3D_OBPRM_SAMPLING :{
+                p3d_obprm_shoot(robotPt,q,sample_passive);
+                break;
+            }
+            }
+        /* Fin Modif Mokhtar */
+        if (p3d_get_RLG()) {
+            if (p3d_random_loop_generator(robotPt, q)) {
+                go_on = 0;
+            }
+        } else {
+            go_on = 0;
         }
-        case P3D_UNIFORM_SAMPLING :{
-          p3d_standard_shoot(robotPt,q,sample_passive);
-          break;
-        }
-        case P3D_BRIDGE_SAMPLING :{
-          p3d_bridge_shoot(robotPt,q,sample_passive);
-          break;
-        }
-        case P3D_OBPRM_SAMPLING :{
-           p3d_obprm_shoot(robotPt,q,sample_passive);
-          break;
-        }
-      }
-      /* Fin Modif Mokhtar */
-      if (p3d_get_RLG()) {
-        if (p3d_random_loop_generator(robotPt, q)) {
-          go_on = 0;
-        }
-      } else {
-        go_on = 0;
-      }
 
-/*     if(p3d_GetIsCostFuncSpace() && p3d_GetIsCostThreshold() ) { */
-/*       if(p3d_GetConfigCost(robotPt, q) < p3d_GetCostThreshold()) { */
-/* 	go_on = MAX(go_on, 0); */
-/*       } else if (nFail > 500) { */
-/* 	PrintInfo(("Failed 500 times to find an expansion configuration\ */
-/* with a good cost. Return a random configuration"));  */
-/* 	p3d_SetCostThreshold(p3d_GetCostThreshold() + InitCostThreshold); */
-/* 	go_on = 0; */
-/*       } */
-/*       else { */
-/* 	nFail++; */
-/* 	go_on = 1; */
-/*       } */
-/*     } */
-    if(G != NULL)
-      G->nb_q = G->nb_q + 1; 
-  }
-  
-  return(TRUE);
+        /*     if(p3d_GetIsCostFuncSpace() && p3d_GetIsCostThreshold() ) { */
+        /*       if(p3d_GetConfigCost(robotPt, q) < p3d_GetCostThreshold()) { */
+        /* 	go_on = MAX(go_on, 0); */
+        /*       } else if (nFail > 500) { */
+        /* 	PrintInfo(("Failed 500 times to find an expansion configuration\ */
+        /* with a good cost. Return a random configuration"));  */
+        /* 	p3d_SetCostThreshold(p3d_GetCostThreshold() + InitCostThreshold); */
+        /* 	go_on = 0; */
+        /*       } */
+        /*       else { */
+        /* 	nFail++; */
+        /* 	go_on = 1; */
+        /*       } */
+        /*     } */
+        if(G != NULL)
+            G->nb_q = G->nb_q + 1;
+    }
+
+    return(TRUE);
 }
 
 /*************************************************/
@@ -469,39 +469,39 @@ int p3d_shoot(p3d_rob *robotPt, configPt q, int sample_passive)
 /*************************************************/
 int p3d_shoot_inside_box(p3d_rob *robotPt, configPt q, configPt box_env_small[2], int sample_passive)
 { p3d_graph *G;
-  int go_on;
- 
-  G = robotPt->GRAPH;
-  go_on = 1;
-  while(go_on) {    
-    if (p3d_get_RANDOM_CHOICE()==P3D_HALTON_SAMPLING)
-      p3d_getNextHHpoint_for_q_in_box(robotPt,box_env_small, &(G->hhCount), q, sample_passive);
-    else
-      if(p3d_get_SAMPLING_CHOICE() == P3D_GAUSSIAN_SAMPLING)
-      	{	
-      	  p3d_gaussian_shoot(robotPt,q,sample_passive);
-	  PrintInfo(("Warning :  we no more use a box for the shooting method \n"));
-      	}
-      else
-        {
-	  p3d_inbox_shoot(robotPt,box_env_small, q, sample_passive);
-      }
-      if(p3d_get_RLG()) {
-  if(p3d_random_loop_generator(robotPt,q)) {
-    go_on = 0;
-  }
-      }
-      else {
-  go_on = 0;
-      }
-      G->nb_q = G->nb_q + 1; 
-      //modif leonard : use projection for the direction of expension
-      //if(p3d_get_is_projection == TRUE) {
-      //p3d_set_and_update_this_robot_conf(robotPt, q);
-      //}
-  }
-  
-  return(TRUE);
+    int go_on;
+
+    G = robotPt->GRAPH;
+    go_on = 1;
+    while(go_on) {
+        if (p3d_get_RANDOM_CHOICE()==P3D_HALTON_SAMPLING)
+            p3d_getNextHHpoint_for_q_in_box(robotPt,box_env_small, &(G->hhCount), q, sample_passive);
+        else
+            if(p3d_get_SAMPLING_CHOICE() == P3D_GAUSSIAN_SAMPLING)
+            {
+                p3d_gaussian_shoot(robotPt,q,sample_passive);
+                PrintInfo(("Warning :  we no more use a box for the shooting method \n"));
+            }
+            else
+            {
+                p3d_inbox_shoot(robotPt,box_env_small, q, sample_passive);
+            }
+        if(p3d_get_RLG()) {
+            if(p3d_random_loop_generator(robotPt,q)) {
+                go_on = 0;
+            }
+        }
+        else {
+            go_on = 0;
+        }
+        G->nb_q = G->nb_q + 1;
+        //modif leonard : use projection for the direction of expension
+        //if(p3d_get_is_projection == TRUE) {
+        //p3d_set_and_update_this_robot_conf(robotPt, q);
+        //}
+    }
+
+    return(TRUE);
 }
 
 /****************************************************************************/
@@ -512,35 +512,35 @@ int p3d_shoot_inside_box(p3d_rob *robotPt, configPt q, configPt box_env_small[2]
  */
 /****************************************************************************/
 void p3d_bridge_shoot(p3d_rob *r, configPt q, int sample_passive){
-   int SUCCEED = 0;
-   configPt c1, c2, middle;
+    int SUCCEED = 0;
+    configPt c1, c2, middle;
 
-   c1 = p3d_alloc_config(r);
-   c2 = p3d_alloc_config(r);
-   middle = p3d_alloc_config(r);
-   while(SUCCEED == 0){
-      p3d_standard_shoot(r, c1, sample_passive) ; // generates random sample
-      p3d_set_and_update_this_robot_conf_without_cntrt(r,c1);
-      if (p3d_col_test()){// does c1 collide?
-         (r->GRAPH->nb_test_coll)++;
-         p3d_nearby_variation_shoot(r,c2,c1,0.1);
-         p3d_set_and_update_this_robot_conf_without_cntrt(r,c2);
-         if (p3d_col_test()){// does c2 collide?
+    c1 = p3d_alloc_config(r);
+    c2 = p3d_alloc_config(r);
+    middle = p3d_alloc_config(r);
+    while(SUCCEED == 0){
+        p3d_standard_shoot(r, c1, sample_passive) ; // generates random sample
+        p3d_set_and_update_this_robot_conf_without_cntrt(r,c1);
+        if (p3d_col_test()){// does c1 collide?
             (r->GRAPH->nb_test_coll)++;
-            p3d_middleConfig(r,c1,c2,middle);
+            p3d_nearby_variation_shoot(r,c2,c1,0.1);
+            p3d_set_and_update_this_robot_conf_without_cntrt(r,c2);
+            if (p3d_col_test()){// does c2 collide?
+                (r->GRAPH->nb_test_coll)++;
+                p3d_middleConfig(r,c1,c2,middle);
 
-            p3d_set_and_update_this_robot_conf_without_cntrt(r,middle);
-            if (!p3d_col_test()){
-               (r->GRAPH->nb_test_coll)++;
-               SUCCEED = 1;
-               p3d_copy_config_into(r,middle,&q);
+                p3d_set_and_update_this_robot_conf_without_cntrt(r,middle);
+                if (!p3d_col_test()){
+                    (r->GRAPH->nb_test_coll)++;
+                    SUCCEED = 1;
+                    p3d_copy_config_into(r,middle,&q);
+                }
             }
-         }
-      }
-   }
-  p3d_destroy_config(r,c1);
-  p3d_destroy_config(r,c2);
-  p3d_destroy_config(r,middle);
+        }
+    }
+    p3d_destroy_config(r,c1);
+    p3d_destroy_config(r,c2);
+    p3d_destroy_config(r,middle);
 }
 
 /****************************************************************************/
@@ -552,18 +552,18 @@ void p3d_bridge_shoot(p3d_rob *r, configPt q, int sample_passive){
  */
 /****************************************************************************/
 static void p3d_nearby_variation_shoot(p3d_rob *r, configPt q, configPt pc, double maxVar){
-  p3d_jnt * jntPt;
-  int i, j, k,  njnt = r->njoints;
-  double vmin, vmax, d;
-  for(i=0; i<=njnt; i++){
-    jntPt = r->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      k = jntPt->index_dof + j;
-      p3d_jnt_get_dof_rand_bounds(jntPt,j,&vmin,&vmax);
-      d = vmax - vmin; 
-      q[k] = p3d_random(MAX(pc[k]-d*maxVar, vmin), MIN(pc[k]+d*maxVar,vmax));
+    p3d_jnt * jntPt;
+    int i, j, k,  njnt = r->njoints;
+    double vmin, vmax, d;
+    for(i=0; i<=njnt; i++){
+        jntPt = r->joints[i];
+        for(j=0; j<jntPt->dof_equiv_nbr; j++) {
+            k = jntPt->index_dof + j;
+            p3d_jnt_get_dof_rand_bounds(jntPt,j,&vmin,&vmax);
+            d = vmax - vmin;
+            q[k] = p3d_random(MAX(pc[k]-d*maxVar, vmin), MIN(pc[k]+d*maxVar,vmax));
+        }
     }
-  }
 }
 /****************************************************************************/
 /** \brief Generates a new RobotConfig using the OBPRM Sampling method 
@@ -573,33 +573,33 @@ static void p3d_nearby_variation_shoot(p3d_rob *r, configPt q, configPt pc, doub
  */
 /****************************************************************************/
 void p3d_obprm_shoot(p3d_rob *r, configPt q, int sample_passive){
-  int i, j, k, njnt = r->njoints;
-  double vmin, vmax, l, variation = 1, binThreshold = 0.0;
-  p3d_jnt * jntPt;
-  configPt first;
-  
-  //random shoot, don't stop until colision.
-  first = p3d_alloc_config(r);
-  do{
-    p3d_standard_shoot(r, first, sample_passive) ; // generates random sample
-    p3d_set_and_update_this_robot_conf_without_cntrt(r,first);
-  }while(!p3d_col_test());
-  // générer des configurations autour de cette configuration
-  // une configuration n'est retenue qu'une fois qu'elle n'est pas en colision
-  // une fois la configuration générér, rapprocher par recherche binaire cette
-  // configuration du bord de l'obstacle
+    int i, j, k, njnt = r->njoints;
+    double vmin, vmax, l, variation = 1, binThreshold = 0.0;
+    p3d_jnt * jntPt;
+    configPt first;
+
+    //random shoot, don't stop until colision.
+    first = p3d_alloc_config(r);
     do{
-      for(i=0;i<=njnt;i++){
-        jntPt = r->joints[i];
-        for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-          binThreshold = MAX(binThreshold, l);
-          k = jntPt->index_dof+j;
-          p3d_jnt_get_dof_rand_bounds(jntPt,j,&vmin,&vmax);
-          l = vmax-vmin;
-          q[k] = p3d_random(MAX(first[k]-variation*l,vmin),MIN(first[k]+variation*l,vmax));
+        p3d_standard_shoot(r, first, sample_passive) ; // generates random sample
+        p3d_set_and_update_this_robot_conf_without_cntrt(r,first);
+    }while(!p3d_col_test());
+    // générer des configurations autour de cette configuration
+    // une configuration n'est retenue qu'une fois qu'elle n'est pas en colision
+    // une fois la configuration générér, rapprocher par recherche binaire cette
+    // configuration du bord de l'obstacle
+    do{
+        for(i=0;i<=njnt;i++){
+            jntPt = r->joints[i];
+            for(j=0; j<jntPt->dof_equiv_nbr; j++) {
+                binThreshold = MAX(binThreshold, l);
+                k = jntPt->index_dof+j;
+                p3d_jnt_get_dof_rand_bounds(jntPt,j,&vmin,&vmax);
+                l = vmax-vmin;
+                q[k] = p3d_random(MAX(first[k]-variation*l,vmin),MIN(first[k]+variation*l,vmax));
+            }
         }
-      }
-      p3d_set_and_update_this_robot_conf_without_cntrt(r,q);
+        p3d_set_and_update_this_robot_conf_without_cntrt(r,q);
     }while(p3d_col_test());
     binThreshold *= 0.1;
     p3d_binary_search(r,first,q,binThreshold);
@@ -614,27 +614,27 @@ void p3d_obprm_shoot(p3d_rob *r, configPt q, int sample_passive){
  */
 /****************************************************************************/
 static void p3d_binary_search(p3d_rob *r, configPt qInObst,configPt qInFree, double threshold){
-  configPt first, qMiddle;
-  int i = 0;
+    configPt first, qMiddle;
+    int i = 0;
 
-  qMiddle = p3d_alloc_config(r);
-  first = p3d_alloc_config(r);
-  p3d_copy_config_into(r,qInObst,&first);
+    qMiddle = p3d_alloc_config(r);
+    first = p3d_alloc_config(r);
+    p3d_copy_config_into(r,qInObst,&first);
 
-  while (p3d_dist_config(r,first,qInFree) > threshold && i < 20){
+    while (p3d_dist_config(r,first,qInFree) > threshold && i < 20){
 
-    p3d_middleConfig(r,first,qInFree,qMiddle);
-    p3d_set_and_update_this_robot_conf_without_cntrt(r,qMiddle);
-    if(!p3d_col_test()){//Cfree
-      p3d_copy_config_into(r,qMiddle,&qInFree);
-    }else{//Cobs
-      p3d_copy_config_into(r,qMiddle,&first);
+        p3d_middleConfig(r,first,qInFree,qMiddle);
+        p3d_set_and_update_this_robot_conf_without_cntrt(r,qMiddle);
+        if(!p3d_col_test()){//Cfree
+            p3d_copy_config_into(r,qMiddle,&qInFree);
+        }else{//Cobs
+            p3d_copy_config_into(r,qMiddle,&first);
+        }
+        (r->GRAPH->nb_test_coll)++;
+        i++;
     }
-    (r->GRAPH->nb_test_coll)++;
-    i++;
-  }
-  p3d_destroy_config(r,qMiddle);
-  p3d_destroy_config(r,first);
+    p3d_destroy_config(r,qMiddle);
+    p3d_destroy_config(r,first);
 }
 
 
@@ -647,33 +647,33 @@ static void p3d_binary_search(p3d_rob *r, configPt qInObst,configPt qInFree, dou
  * @param[out] q: the configuration as random direction
  * @param[In] sample_passive: TRUE if the passive dofs have to
  * be taken into consideration
- * @return: Currently, it returns always TRUE has a new 
+ * @return: Currently, it returns always TRUE has a new
  * direction can always success, but it could change.
  */
 int p3d_RandDirShoot(p3d_rob* robotPt, configPt q, int sample_passive) {
-  int njnt = robotPt->njoints, i, j, k; 
-  double vmin, vmax;
-  p3d_jnt * jntPt;
-  
-  for(i=0; i<=njnt; i++) 
-	{
-    jntPt = robotPt->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) 
-		{
-      k = jntPt->index_dof + j;
-			
-      if (p3d_is_sampled_dof( robotPt, jntPt, j, sample_passive )) {
-				p3d_jnt_get_dof_rand_bounds(jntPt,j,&vmin,&vmax);
-				if(p3d_jnt_is_dof_angular(jntPt, j)) {
-					q[k] = p3d_random(0, 2*M_PI);
-				}
-				else {
-					q[k] = p3d_random(-(vmax-vmin)/2.,(vmax-vmin)/2.);
-				}
-      }
+    int njnt = robotPt->njoints, i, j, k;
+    double vmin, vmax;
+    p3d_jnt * jntPt;
+
+    for(i=0; i<=njnt; i++)
+    {
+        jntPt = robotPt->joints[i];
+        for(j=0; j<jntPt->dof_equiv_nbr; j++)
+        {
+            k = jntPt->index_dof + j;
+
+            if (p3d_is_sampled_dof( robotPt, jntPt, j, sample_passive )) {
+                p3d_jnt_get_dof_rand_bounds(jntPt,j,&vmin,&vmax);
+                if(p3d_jnt_is_dof_angular(jntPt, j)) {
+                    q[k] = p3d_random(0, 2*M_PI);
+                }
+                else {
+                    q[k] = p3d_random(-(vmax-vmin)/2.,(vmax-vmin)/2.);
+                }
+            }
+        }
     }
-  }
-  return TRUE;
+    return TRUE;
 }
 
 
@@ -690,62 +690,62 @@ int p3d_RandDirShoot(p3d_rob* robotPt, configPt q, int sample_passive) {
 
 int p3d_RandNShpereDirShoot(p3d_rob* robotPt, configPt q, int sample_passive)
 {
-	int njnt = robotPt->njoints, i, j, k;
-	double vmin, vmax;
-	p3d_jnt * jntPt;
+    int njnt = robotPt->njoints, i, j, k;
+    double vmin, vmax;
+    p3d_jnt * jntPt;
 
-	size_t dim = robotPt->nb_user_dof;
+    size_t dim = robotPt->nb_user_dof;
 
-	int id_num=0;
-	int *id_vect = new int[dim];
-	double *dir = new double[dim];
+    int id_num=0;
+    int *id_vect = new int[dim];
+    double *dir = new double[dim];
 
 #ifdef USE_GSL
-	gsl_ran_dir_nd (_gsl_seed,dim,dir);
+    gsl_ran_dir_nd (_gsl_seed,dim,dir);
 #else
-	printf("GSL IS NOT LINKED");
+    printf("GSL IS NOT LINKED");
 #endif
-	/*for(int i=0;i<dim;i++)
-	{
-		printf("dir[%d] = %f\n",i,dir[i]);
-	}*/
+    /*for(int i=0;i<dim;i++)
+    {
+        printf("dir[%d] = %f\n",i,dir[i]);
+    }*/
 
-	for (i = 0; i <= njnt; i++)
-	{
-		jntPt = robotPt->joints[i];
-		for (j = 0; j < jntPt->dof_equiv_nbr; j++)
-		{
-			k = jntPt->index_dof + j;
+    for (i = 0; i <= njnt; i++)
+    {
+        jntPt = robotPt->joints[i];
+        for (j = 0; j < jntPt->dof_equiv_nbr; j++)
+        {
+            k = jntPt->index_dof + j;
 
-			if (p3d_is_sampled_dof( robotPt, jntPt, j, sample_passive ))
-			{
-				/*if (p3d_jnt_is_dof_angular(jntPt, j))
-				{
-					double b = 0;
-					double a = M_PI;
-					q[k] = a*dir[id_num]+b;
-				}
-				else
-				{*/
-					p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
-					double a = (vmax - vmin) / 2.;
-					double b = (vmax + vmin) / 2.;
-					q[k] = a*dir[id_num]+b;
-//				}
-				id_vect[id_num] = k;
-				id_num++;
-			}
-		}
-	}
+            if (p3d_is_sampled_dof( robotPt, jntPt, j, sample_passive ))
+            {
+                /*if (p3d_jnt_is_dof_angular(jntPt, j))
+                {
+                    double b = 0;
+                    double a = M_PI;
+                    q[k] = a*dir[id_num]+b;
+                }
+                else
+                {*/
+                p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+                double a = (vmax - vmin) / 2.;
+                double b = (vmax + vmin) / 2.;
+                q[k] = a*dir[id_num]+b;
+                //				}
+                id_vect[id_num] = k;
+                id_num++;
+            }
+        }
+    }
 
-	/*for(int i=0;i<dim;i++)
-	{
-		printf("q[%d] = %f\n",id_vect[i],q[id_vect[i]]);
-	}
+    /*for(int i=0;i<dim;i++)
+    {
+        printf("q[%d] = %f\n",id_vect[i],q[id_vect[i]]);
+    }
 
-	printf("---------------------\n");*/
+    printf("---------------------\n");*/
 
-	return TRUE;
+    return TRUE;
 }
 
 /**
@@ -764,70 +764,70 @@ void p3d_FreeFlyerShoot(p3d_rob* robotPt, configPt q, double* box )
         }
         else
         {
-//            std::cout << "Joint " << i << " is a free flyer" << std::endl;
+            //            std::cout << "Joint " << i << " is a free flyer" << std::endl;
         }
-		p3d_JointFreeFlyerShoot(robotPt,jntPt,q,box);
+        p3d_JointFreeFlyerShoot(robotPt,jntPt,q,box);
     }
 }
 
 void p3d_JointFreeFlyerShoot(p3d_rob* robotPt, p3d_jnt* jntPt, configPt q, double* box )
 {		
-	if( jntPt->type != P3D_FREEFLYER )
-	{
-		return;
-	}
-	
-	for (int j = 0; j < jntPt->dof_equiv_nbr; j++)
-	{
-		int k = jntPt->index_dof + j;
-		
-		if (p3d_jnt_get_dof_is_user(jntPt, j) && (p3d_jnt_get_dof_is_active_for_planner(jntPt, j)))
-		{
-			if (p3d_jnt_is_dof_angular(jntPt, j))
-			{
-				double vmax,vmin;
-				p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
-				q[k] = p3d_random(vmin,vmax);
-			}
-			else
-			{
-				q[k] = p3d_random(box[2*j],box[2*j+1]);
-			}
-		}
-	}
+    if( jntPt->type != P3D_FREEFLYER )
+    {
+        return;
+    }
+
+    for (int j = 0; j < jntPt->dof_equiv_nbr; j++)
+    {
+        int k = jntPt->index_dof + j;
+
+        if (p3d_jnt_get_dof_is_user(jntPt, j) && (p3d_jnt_get_dof_is_active_for_planner(jntPt, j)))
+        {
+            if (p3d_jnt_is_dof_angular(jntPt, j))
+            {
+                double vmax,vmin;
+                p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+                q[k] = p3d_random(vmin,vmax);
+            }
+            else
+            {
+                q[k] = p3d_random(box[2*j],box[2*j+1]);
+            }
+        }
+    }
 }
 
 void p3d_shoot_justin_left_arm(p3d_rob *robotPt, configPt q, int sample_passive)
 {
-	int njnt = robotPt->njoints, i, j, k;
-	double vmin, vmax;
-	p3d_jnt * jntPt;
-	
-	for(i=0; i<=njnt; i++) {
-		jntPt = robotPt->joints[i];
-		for(j=0; j<jntPt->dof_equiv_nbr; j++) 
-		{
-			k = jntPt->index_dof + j;
-			
-			if (k<25) {
-				continue;
-			}
-			
-			if ( 
-				sample_passive ||
-				(p3d_jnt_get_dof_is_user(jntPt, j) && p3d_jnt_get_dof_is_active_for_planner(jntPt,j)) &&
-				(robotPt->cntrt_manager->in_cntrt[k] != 2) ) 
-			{
-				p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
-				q[k] = p3d_random(vmin, vmax);
-				//std::cout << "Sample Passive = "<<sample_passive<<" , Sampling q["<<k<<"] = "<<q[k]<< std::endl;
-			} 
-			else
-			{ 
-				q[k] = p3d_jnt_get_dof(jntPt, j); 
-			}
-		}
-	}
+    int njnt = robotPt->njoints, i, j, k;
+    double vmin, vmax;
+    p3d_jnt * jntPt;
+
+    for(i=0; i<=njnt; i++) {
+        jntPt = robotPt->joints[i];
+        for(j=0; j<jntPt->dof_equiv_nbr; j++)
+        {
+            k = jntPt->index_dof + j;
+
+            if (k<25) {
+                continue;
+            }
+
+            if (
+                    sample_passive ||
+                    (p3d_jnt_get_dof_is_user(jntPt, j) && p3d_jnt_get_dof_is_active_for_planner(jntPt,j)) &&
+                    (robotPt->cntrt_manager->in_cntrt[k] != 2) )
+            {
+                p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+                q[k] = p3d_random(vmin, vmax);
+                //std::cout << "Sample Passive = "<<sample_passive<<" , Sampling q["<<k<<"] = "<<q[k]<< std::endl;
+            }
+            else
+            {
+                q[k] = p3d_jnt_get_dof(jntPt, j);
+            }
+        }
+    }
 }
 /*************************************************/
 /* Fonction generant une configuration aleatoire */
@@ -835,33 +835,33 @@ void p3d_shoot_justin_left_arm(p3d_rob *robotPt, configPt q, int sample_passive)
 /*************************************************/
 bool p3d_ShootInCell(p3d_rob* robotPt, configPt q, double* box , int sample_passive)
 {
-  int njnt = robotPt->njoints, i, j, k;
-  double vmin, vmax;
-  p3d_jnt * jntPt;
+    int njnt = robotPt->njoints, i, j, k;
+    double vmin, vmax;
+    p3d_jnt * jntPt;
 
-  for(i=0; i<=njnt; i++) {
-    jntPt = robotPt->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      k = jntPt->index_dof + j;
+    for(i=0; i<=njnt; i++) {
+        jntPt = robotPt->joints[i];
+        for(j=0; j<jntPt->dof_equiv_nbr; j++) {
+            k = jntPt->index_dof + j;
 
-      if(k==6)
-      {
-          q[k] = p3d_random(box[0],box[1]);
-      }
-      else if(k==7)
-      {
-          q[k] = p3d_random(box[2],box[3]);
-      }
-      else if (p3d_is_sampled_dof( robotPt, jntPt, j, sample_passive )) {
-        p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
-        q[k] = p3d_random(vmin, vmax);
-//        std::cout << "Sample Passive = "<<sample_passive<<" , Sampling q["<<k<<"] = "<<q[k]<< std::endl;
-      } else
-        { q[k] = p3d_jnt_get_dof(jntPt, j); }
+            if(k==6)
+            {
+                q[k] = p3d_random(box[0],box[1]);
+            }
+            else if(k==7)
+            {
+                q[k] = p3d_random(box[2],box[3]);
+            }
+            else if (p3d_is_sampled_dof( robotPt, jntPt, j, sample_passive )) {
+                p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+                q[k] = p3d_random(vmin, vmax);
+                //        std::cout << "Sample Passive = "<<sample_passive<<" , Sampling q["<<k<<"] = "<<q[k]<< std::endl;
+            } else
+            { q[k] = p3d_jnt_get_dof(jntPt, j); }
+        }
     }
-  }
 
- return true;
+    return true;
 }
 
 /*************************************************/
@@ -870,32 +870,32 @@ bool p3d_ShootInCell(p3d_rob* robotPt, configPt q, double* box , int sample_pass
 /*************************************************/
 bool p3d_ShootAroundPoint(p3d_rob* robotPt, configPt q, double* point , int sample_passive)
 {
-  int njnt = robotPt->njoints, i, j, k;
-  double vmin, vmax;
-  p3d_jnt * jntPt;
+    int njnt = robotPt->njoints, i, j, k;
+    double vmin, vmax;
+    p3d_jnt * jntPt;
 
-  for(i=0; i<=njnt; i++) {
-    jntPt = robotPt->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      k = jntPt->index_dof + j;
+    for(i=0; i<=njnt; i++) {
+        jntPt = robotPt->joints[i];
+        for(j=0; j<jntPt->dof_equiv_nbr; j++) {
+            k = jntPt->index_dof + j;
 
-      if(k==6)
-      {
-          q[k] = mersenne_twister_rng.randNorm(point[0],p3d_get_env_dmax()*5);
-      }
-      else if(k==7)
-      {
-          q[k] = mersenne_twister_rng.randNorm(point[1],p3d_get_env_dmax()*5);
-      }
-      else if (p3d_jnt_get_dof_is_user(jntPt, j) &&
-          (p3d_jnt_get_dof_is_active_for_planner(jntPt,j) || sample_passive)) {
-        p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
-        q[k] = p3d_random(vmin, vmax);
-//        std::cout << "Sample Passive = "<<sample_passive<<" , Sampling q["<<k<<"] = "<<q[k]<< std::endl;
-      } else
-        { q[k] = p3d_jnt_get_dof(jntPt, j); }
+            if(k==6)
+            {
+                q[k] = mersenne_twister_rng.randNorm(point[0],p3d_get_env_dmax()*5);
+            }
+            else if(k==7)
+            {
+                q[k] = mersenne_twister_rng.randNorm(point[1],p3d_get_env_dmax()*5);
+            }
+            else if (p3d_jnt_get_dof_is_user(jntPt, j) &&
+                     (p3d_jnt_get_dof_is_active_for_planner(jntPt,j) || sample_passive)) {
+                p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+                q[k] = p3d_random(vmin, vmax);
+                //        std::cout << "Sample Passive = "<<sample_passive<<" , Sampling q["<<k<<"] = "<<q[k]<< std::endl;
+            } else
+            { q[k] = p3d_jnt_get_dof(jntPt, j); }
+        }
     }
-  }
 
- return true;
+    return true;
 }

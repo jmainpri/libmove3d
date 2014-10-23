@@ -116,3 +116,11 @@ double p3d_gaussian_random( const double& mean, const double& variance , const d
 	
 	return(result);
 }
+
+double p3d_gaussian_random2( const double& mean, const double& variance )
+{
+    double result;
+
+    result = mersenne_twister_rng.randNorm(mean,variance);
+    return(result);
+}
