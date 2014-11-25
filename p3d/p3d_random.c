@@ -105,7 +105,7 @@ double p3d_gaussian_random( const double& mean, const double& variance , const d
 {
 	double result;
 	
-	result = mersenne_twister_rng.randNorm(mean,variance);
+    result = p3d_gaussian_random2(mean,variance);
 	
 	if (min<min){
 		result = min;
