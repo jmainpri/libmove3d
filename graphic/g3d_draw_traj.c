@@ -58,6 +58,8 @@
 #include "cost_space.hpp"
 #endif
 
+#include <vector>
+
 static void draw_trace(void);
 static void draw_trace_2(int opengl_context);
 static int NB_KEY_FRAME = 500;
