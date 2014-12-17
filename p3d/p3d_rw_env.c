@@ -3376,7 +3376,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			{
 				char tempChar;
 				if ( fscanf ( fd, "%c", &tempChar ) != 1 ) return ( read_desc_error ( fct ) );
-				if ( tempChar == '-' ) {fscanf ( fd, "%c", &tempChar );}
+                if ( tempChar == '-' ) { int val = fscanf ( fd, "%c", &tempChar );}
 				if ( tempChar == '>' ) {
 					int lastJnt = 0;
 					if ( fscanf ( fd, "%d", &lastJnt ) != 1 ) {

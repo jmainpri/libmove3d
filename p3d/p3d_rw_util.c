@@ -61,6 +61,7 @@
 int p3d_read_line(FILE * f, char ** line, int size, int * num_line)
 {
   int i, len_str, test;
+  char* str;
 
   if (size == 0) {
     *line = MY_ALLOC(char, INIT_SIZE_CHAR); 
@@ -100,7 +101,7 @@ int p3d_read_line(FILE * f, char ** line, int size, int * num_line)
       }
     }
     if (test)
-      { fgets((*line)+len_str, size-len_str-1, f); }    
+      { str = fgets((*line)+len_str, size-len_str-1, f); }
   } while(test);
 
   /* avoid space at the end of a line */

@@ -504,10 +504,11 @@ void gnuplot_plot_x(
   strcpy(handle->to_delete[handle->ntmp], name) ;
   handle->ntmp ++ ;
   handle->nbCurves ++;
+  ssize_t str_size;
   /* Write data to this file  */
   for (i = 0 ; i < n ; i++) {
     sprintf(line, "%g\n", d[i]);
-    write(tmpfd, line, strlen(line));
+    str_size = write(tmpfd, line, strlen(line));
     fputs(line, handle->curves[handle->nbCurves - 1]);
   }
   close(tmpfd) ;
@@ -614,9 +615,10 @@ void gnuplot_plot_xy(
   handle->nbCurves ++;
 
   /* Write data to this file  */
+  ssize_t str_size;
   for (i = 0 ; i < n; i++) {
     sprintf(line, "%g %g\n", x[i], y[i]) ;
-    write(tmpfd, line, strlen(line));
+    str_size =write(tmpfd, line, strlen(line));
     fputs(line, handle->curves[handle->nbCurves - 1]);
   }
   close(tmpfd) ;

@@ -873,13 +873,13 @@ int gpConvexHull::voronoi(bool verbose)
 
      // read the output file of qhull: 
      rewind(outfile);
-     fgets(buffer, 256, outfile);
+     char* str = fgets(buffer, 256, outfile);
      iss.str(buffer);
-     result= (iss >> dimension );
+     result = (iss >> dimension );
      if( !result || iss.fail() )
      {   printf("%s: %d: error\n",__FILE__,__LINE__);   } 
 
-     fgets(buffer, 256, outfile);
+     str = fgets(buffer, 256, outfile);
      iss.str(buffer);
      result= (iss >> nbVoronoiVertices );
      if( !result || iss.fail() )
@@ -888,7 +888,7 @@ int gpConvexHull::voronoi(bool verbose)
      v.resize(dimension);
      for(i=0; i<nbVoronoiVertices; ++i)
      {
-       fgets(buffer, 256, outfile);
+       str = fgets(buffer, 256, outfile);
        iss.str(buffer);
 
        for(j=0; j<dimension; ++j)
@@ -901,7 +901,7 @@ int gpConvexHull::voronoi(bool verbose)
        voronoi_vertices_.push_back(v);
      }
 
-     fgets(buffer, 256, outfile);
+     str = fgets(buffer, 256, outfile);
      iss.str(buffer);
      result= (iss >> nbVoronoiRidges );
      if( !result || iss.fail() )
@@ -912,7 +912,7 @@ int gpConvexHull::voronoi(bool verbose)
      {
        atInfinity= false;
 
-       fgets(buffer, 256, outfile);
+       str = fgets(buffer, 256, outfile);
        iss.str(buffer);
        result= (iss >> nbElements >> site1 >> site2 );
        if( !result || iss.fail() )

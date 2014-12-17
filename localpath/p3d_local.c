@@ -710,7 +710,7 @@ int p3d_unvalid_localpath_separated_classic_test(p3d_rob *robotPt,
   else
     *Kpath = Kpath_col;
 
-  system("xrandt -o inverted");
+  int val = system("xrandt -o inverted");
   return (unvalid_cntrt || unvalid_col);
 }
 
