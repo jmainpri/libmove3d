@@ -1034,6 +1034,7 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
     p3d_destroy_config(robotPt, qp);
     MY_FREE(distances, double, njnt + 1);  /****** FREE *******/
     p3d_col_set_tolerance(tolerance);
+    printf("C\n");
     return TRUE;
   }
   for (j = 0; j <= njnt; j++) {
@@ -1064,6 +1065,7 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
     p3d_destroy_config(robotPt, qp);
     MY_FREE(distances, double, njnt + 1);/********** FREE ****/
     p3d_col_set_tolerance(tolerance);
+    printf("D\n");
     return TRUE;
   }
   for (j = 0; j <= njnt; j++) {
@@ -1089,6 +1091,7 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
       p3d_destroy_config(robotPt, qp);
       MY_FREE(distances, double, njnt + 1);/********** FREE ****/
       p3d_col_set_tolerance(tolerance);
+      printf("A\n");
       return TRUE;
     }
     p3d_get_robot_config_into(robotPt, &qp);

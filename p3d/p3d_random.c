@@ -39,15 +39,16 @@ void p3d_init_random_seed(int seed)
 /* In :                                        */
 /* Out :                                       */
 /***********************************************/
-void p3d_init_random(void)
+uint p3d_init_random(void)
 {
 	// srand(time(NULL)); // C library implementation
   uint t = (uint)time(NULL);
   printf("Used Seed = %u\n", t);
-	mersenne_twister_rng.seed(t);
+  mersenne_twister_rng.seed(t);
 #ifdef USE_GSL
 	_gsl_seed = gsl_rng_alloc (gsl_rng_taus);
 #endif
+  return t;
 }
 
 /*******************************************/

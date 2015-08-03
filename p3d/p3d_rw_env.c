@@ -59,6 +59,7 @@ static char DATA_FILE[200];
 static char DATA_DIR[200] = "./";
 int GOTO_READ = FALSE;
 int START_READ = FALSE;
+bool is_cost_environment = false;
 
 /***************************************************************/
 int num_data_error ( char *msg );
@@ -110,8 +111,9 @@ int p3d_read_macro ( char *namemac,char *nameobj,double scale )
 	sprintf ( macro,"%sMACROS/",c_dir_name );
 
 	strcat ( macro,namemac );
-	if ( ENV.getBool ( Env::isCostSpace ) )
+    if ( is_cost_environment )
 	{
+        ENV.setBool ( Env::isCostSpace,true );
 		strcpy ( macro2,macro );
 		strcat ( macro2,newNameAc );
 		if ( ! ( fd=fopen ( macro2,"r" ) ) )
@@ -759,7 +761,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 		}
 		if ( strcmp ( fct,"p3d_CostEnvironment" ) == 0 )
 		{
-			ENV.setBool ( Env::isCostSpace,true );
+            is_cost_environment = true;
 			continue;
 		}
     if ( strcmp ( fct,"p3d_set_active_joints_group" ) == 0 )
