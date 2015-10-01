@@ -18,6 +18,8 @@ endif( NOT BIOMOVE3D_VERSION)
 
 message( STATUS "Current project version is ${BIOMOVE3D_VERSION}")
 
+message( STATUS "Current project version is ${BIOMOVE3D_VERSION}")
+
 # Define the project version
 
 if( NOT NON_NATIVE_TARGET)
@@ -572,9 +574,24 @@ ADD_DEFINITIONS(-DKCD_MOVE3D -DPRINT_ERROR -DPRINT_INFO)
 # --- Compilation and Installation ----------------------------
 # -------------------------------------------------------------
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-#  SET(CMAKE_INSTALL_PREFIX "${libmove3d_BINARY_DIR}/install" CACHE PATH "libmove3d install prefix" FORCE)
-   SET(CMAKE_INSTALL_PREFIX "$ENV{ROBOTPKG_BASE}" CACHE PATH "libmove3d install prefix" FORCE)
-ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
+    message("CMAKE_INSTALL_PREFIX set to default")
+
+    if(DEFINED ENV{MOVE3D_INSTALL_DIR})
+        set(LIBMOVE3d_INSTALL_PREFIX $ENV{MOVE3D_INSTALL_DIR})
+    else()
+        set(LIBMOVE3d_INSTALL_PREFIX $ENV{ROBOTPKG_BASE})
+    endif()
+
+    set(CMAKE_INSTALL_PREFIX "${LIBMOVE3d_INSTALL_PREFIX}" CACHE PATH "libmove3d install prefix" FORCE )
+
+else()
+
+    message("CMAKE_INSTALL_PREFIX not set to default")
+
+endif()
+
+message( STATUS "CMAKE_INSTALL_PREFIX " ${CMAKE_INSTALL_PREFIX} )
 		
 ADD_LIBRARY(move3d SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
 #SET_TARGET_PROPERTIES(move3d PROPERTIES LINKER_LANGUAGE CXX)
@@ -612,7 +629,7 @@ ADD_CUSTOM_TARGET(uninstall
 # -------------------------------------------------------------
 ENABLE_TESTING()
 
-MESSAGE("CMAKE_BINARY_DIR = " ${CMAKE_BINARY_DIR})
+MESSAGE( STATUS "CMAKE_BINARY_DIR = " ${CMAKE_BINARY_DIR})
 
 ADD_TEST(NAME basic COMMAND move3dtest)
 
