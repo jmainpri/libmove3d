@@ -351,7 +351,9 @@ configPt p3d_copy_config_rad_to_deg(p3d_rob *robotPt, configPt q)
     for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
       if (p3d_jnt_is_dof_angular(jntPt, j)) {
         copy_q[k] = RTOD(q[k]);
+        printf("dof angular: %f, %s\n", q[k], robotPt->joints[i]->name);
       } else {
+        printf("save dof: %f, %s\n", q[k] , robotPt->joints[i]->name );
         copy_q[k] = q[k];
       }
       k ++;

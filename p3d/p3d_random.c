@@ -26,11 +26,13 @@ MTRand mersenne_twister_rng = MTRand(time(NULL));
 /***********************************************/
 void p3d_init_random_seed(int seed)
 {
-	//  srand((unsigned int) (seed)); // C library implementation
+  // SHOULD THAT BE IN THERE ?? (TRO deadline 2016)
+  std::srand((unsigned int) (seed)); // C library implementation
 	mersenne_twister_rng.seed(seed);
 #ifdef USE_GSL
 	_gsl_seed = gsl_rng_alloc (gsl_rng_taus);
 #endif
+  printf("Used Seed (set user) = %u\n", seed);
 }
 
 /***********************************************/
