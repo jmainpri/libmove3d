@@ -239,6 +239,7 @@ configPt p3d_lin_config_at_distance(p3d_rob *robotPt,
 //  printf("q[%d] = %f\n", 14, lin_specificPt->q_init[14] );
 //  printf("q[%d] = %f\n", 14, lin_specificPt->q_end[14] );
 
+  //printf("length : %f\n",localpathPt->length_lp);
   q = p3d_alloc_config(robotPt);
 
   if (distance < 0)
@@ -628,13 +629,13 @@ p3d_localpath *p3d_linear_localplanner(p3d_rob *robotPt, configPt qi,
 
   /* If initconfPt == goalconfPt, free initconfPt and goalconfPt
      and return NULL */
-  if(p3d_equal_config(robotPt,initconfPt, goalconfPt)) {
-    PrintInfo((("MP: p3d_linear_localplanner: q_init = q_goal!\n")));
-    p3d_set_search_status(P3D_CONFIG_EQUAL);
-    p3d_destroy_config(robotPt, initconfPt);
-    p3d_destroy_config(robotPt, goalconfPt);
-    return(NULL);
-  }
+//  if(p3d_equal_config(robotPt,initconfPt, goalconfPt)) {
+//    PrintInfo((("MP: p3d_linear_localplanner: q_init = q_goal!\n")));
+//    p3d_set_search_status(P3D_CONFIG_EQUAL);
+//    p3d_destroy_config(robotPt, initconfPt);
+//    p3d_destroy_config(robotPt, goalconfPt);
+//    return(NULL);
+//  }
 
   /* Modif NIC
   on verifie que les initconfPt et goalconfPt sont valides
