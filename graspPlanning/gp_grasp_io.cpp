@@ -249,7 +249,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="version")
        { 
-         result= (iss >> data.version);
+         result= static_cast<bool>(iss >> data.version);
          if( !result || !iss.eof() )
          {
            message= "Usage: <version> version of the grasp planner </version>.";
@@ -261,7 +261,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="autoGen")
        { 
-         result= (iss >> data.autoGen);
+         result= static_cast<bool>(iss >> data.autoGen);
          if( !result || !iss.eof() )
          {
            message= "Usage: <autoGen> wether or not the grasp was generated automatically (true or false) </autoGen>.";
@@ -273,7 +273,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="object_name")
        { 
-         result= (iss >> data.object_name);
+         result= static_cast<bool>(iss >> data.object_name);
          if( !result || !iss.eof() )
          {
            message= "Usage: <object_name> object name </object_name>.";
@@ -285,7 +285,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="frame")
        { 
-         result= (iss >> data.frame[0][0] >> data.frame[0][1] >> data.frame[0][2] >> data.frame[0][3] >> data.frame[1][0] >> data.frame[1][1] >> data.frame[1][2] >> data.frame[1][3] >>
+         result= static_cast<bool>(iss >> data.frame[0][0] >> data.frame[0][1] >> data.frame[0][2] >> data.frame[0][3] >> data.frame[1][0] >> data.frame[1][1] >> data.frame[1][2] >> data.frame[1][3] >>
          data.frame[2][0] >> data.frame[2][1] >> data.frame[2][2] >> data.frame[2][3] >> 
          data.frame[3][0] >> data.frame[3][1] >> data.frame[3][2] >> data.frame[3][3] );
 
@@ -302,7 +302,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="hand_type")
        {
-         result= (iss >> data.hand_type );
+         result= static_cast<bool>(iss >> data.hand_type );
          if( !result || !iss.eof() )
          {
            message= "Usage: <hand_type> hand or gripper type </hand_type>.";
@@ -314,7 +314,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="position")
        {
-         result= (iss >> data.position[0] >> data.position[1] >> data.position[2] );
+         result= static_cast<bool>(iss >> data.position[0] >> data.position[1] >> data.position[2] );
          if( !result || !iss.eof() )
          {
            message= "Usage: <position> x y z </position>.";
@@ -326,7 +326,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="normal")
        {
-         result= (iss >> data.normal[0] >> data.normal[1] >> data.normal[2] );
+         result= static_cast<bool>(iss >> data.normal[0] >> data.normal[1] >> data.normal[2] );
          if( !result || !iss.eof() )
          {
            message= "Usage: <normal> x y z </normal>.";
@@ -338,7 +338,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="force_direction")
        {
-         result= (iss >> data.force_direction[0] >> data.force_direction[1] >> data.force_direction[2] );
+         result= static_cast<bool>(iss >> data.force_direction[0] >> data.force_direction[1] >> data.force_direction[2] );
          if( !result || !iss.eof() )
          {
            message= "Usage: <force_direction> x y z </force_direction>.";
@@ -350,7 +350,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="barycentric_cordinates")
        {
-         result= (iss >> data.baryCoords[0] >> data.baryCoords[1] >> data.baryCoords[2] );
+         result= static_cast<bool>(iss >> data.baryCoords[0] >> data.baryCoords[1] >> data.baryCoords[2] );
          if( !result || !iss.eof() )
          {
            message= "Usage: <barycentric_cordinates> alpha beta gamma </barycentric_cordinates>.";
@@ -362,7 +362,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="stability")
        {
-         result= (iss >> data.stability );
+         result= static_cast<bool>(iss >> data.stability );
          if( !result || !iss.eof() )
          {
            message= "Usage: <stability> grasp stability score </stability>.";
@@ -374,7 +374,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="quality")
        {
-         result= (iss >> data.quality );
+         result= static_cast<bool>(iss >> data.quality );
          if( !result || !iss.eof() )
          {
            message= "Usage: <quality> grasp quality score </quality>.";
@@ -386,7 +386,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="friction_coefficient")
        {
-         result= (iss >> data.friction_coefficient );
+         result= static_cast<bool>(iss >> data.friction_coefficient );
          if( !result || !iss.eof() )
          {
            message= "Usage: <friction_coefficient> friction coefficient of the contact </friction_coefficient>.";
@@ -398,7 +398,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="curvature")
        {
-         result= (iss >> data.curvature );
+         result= static_cast<bool>(iss >> data.curvature );
          if( !result || !iss.eof() )
          {
            message= "Usage: <curvature> surface curvature at the contact </curvature>.";
@@ -411,7 +411,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="ID")
        {
-         result= (iss >> data.ID );
+         result= static_cast<bool>(iss >> data.ID );
          if( !result || !iss.eof() )
          {
            message= "Usage: <ID> grasp ID </ID>.";
@@ -423,7 +423,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="handID")
        {
-         result= (iss >> data.handID );
+         result= static_cast<bool>(iss >> data.handID );
          if( !result || !iss.eof() )
          {
            message= "Usage: <handID> hand ID </handID>.";
@@ -435,7 +435,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="body_index")
        {
-         result= (iss >> data.body_index );
+         result= static_cast<bool>(iss >> data.body_index );
          if( !result || !iss.eof() )
          {
            message= "Usage: <body_index> index of the grasped body (in the array of p3d_obj* of the object (a freeflyer robot)) </body_index>.";
@@ -447,7 +447,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="fingerID")
        {
-         result= (iss >> data.fingerID );
+         result= static_cast<bool>(iss >> data.fingerID );
          if( !result || !iss.eof() )
          {
            message= "Usage: <fingerID> finger ID </fingerID>.";
@@ -459,7 +459,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 
        if(element=="face")
        {
-         result= (iss >> data.face );
+         result= static_cast<bool>(iss >> data.face );
          if( !result || !iss.eof() )
          {
            message= "Usage: <face> face index (starting from 0) </face>.";
@@ -474,7 +474,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
           data.configuration.clear();
           while(!iss.eof())
           {
-            result= (iss >> x );
+            result= static_cast<bool>(iss >> x );
             if(!result)
             {
               message= "Usage: <configuration> hand's joint parameters (angles are given in radians, lengths in meters) </configuration>.";
@@ -494,7 +494,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
           data.open_configuration.clear();
           while(!iss.eof())
           {
-            result= (iss >> x );
+            result= static_cast<bool>(iss >> x );
             if(!result)
             {
               message= "Usage: <open_configuration> hand's joint parameters (angles are given in radians, lengths in meters) </open_configuration>.";
@@ -981,7 +981,7 @@ int gpInvert_axis(std::string inputFile, std::string outputFile, p3d_matrix4 T)
   bool relative= false;
 
   in.open(inputFile.c_str());
-  if(in==NULL)
+  if(in)
   {
     printf("fichier %s introuvable\n", inputFile.c_str());
     return GP_ERROR;

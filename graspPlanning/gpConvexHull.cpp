@@ -875,13 +875,13 @@ int gpConvexHull::voronoi(bool verbose)
      rewind(outfile);
      char* str = fgets(buffer, 256, outfile);
      iss.str(buffer);
-     result = (iss >> dimension );
+     result = static_cast<bool>(iss >> dimension );
      if( !result || iss.fail() )
      {   printf("%s: %d: error\n",__FILE__,__LINE__);   } 
 
      str = fgets(buffer, 256, outfile);
      iss.str(buffer);
-     result= (iss >> nbVoronoiVertices );
+     result= static_cast<bool>(iss >> nbVoronoiVertices );
      if( !result || iss.fail() )
      {   printf("%s: %d: error\n",__FILE__,__LINE__);   } 
 
@@ -893,7 +893,7 @@ int gpConvexHull::voronoi(bool verbose)
 
        for(j=0; j<dimension; ++j)
        {
-         result= (iss >> coord );
+         result= static_cast<bool>(iss >> coord );
          if( !result || iss.fail() )
          {   printf("%s: %d: error\n",__FILE__,__LINE__);   } 
          v.at(j)= coord;
@@ -903,7 +903,7 @@ int gpConvexHull::voronoi(bool verbose)
 
      str = fgets(buffer, 256, outfile);
      iss.str(buffer);
-     result= (iss >> nbVoronoiRidges );
+     result= static_cast<bool>(iss >> nbVoronoiRidges );
      if( !result || iss.fail() )
      {   printf("%s: %d: error\n",__FILE__,__LINE__);   } 
 
@@ -914,7 +914,7 @@ int gpConvexHull::voronoi(bool verbose)
 
        str = fgets(buffer, 256, outfile);
        iss.str(buffer);
-       result= (iss >> nbElements >> site1 >> site2 );
+       result= static_cast<bool>(iss >> nbElements >> site1 >> site2 );
        if( !result || iss.fail() )
        {   printf("%s: %d: error\n",__FILE__,__LINE__);   } 
        voronoiRidge.site1_id_= site1;
@@ -928,7 +928,7 @@ int gpConvexHull::voronoi(bool verbose)
        voronoiRidge.vertices_.clear();
        for(j=0; j<nbElements-2; ++j)
        {
-         result= (iss >> index );
+         result= static_cast<bool>(iss >> index );
          if( !result || iss.fail() )
          {   printf("%s: %d: error\n",__FILE__,__LINE__);   } 
        
